@@ -24,7 +24,7 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-#use lib "@NAGIOS_PLUGINS@";
+#use lib "/srv/nagios/libexec";
 use lib "/usr/local/nagios/libexec/";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
@@ -62,8 +62,8 @@ GetOptions
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
      "S=s" => \$opt_S, "ServiceId=s"  => \$opt_S,
-     "H=s" => \$opt_H, "hostname=s"   => \$opt_H, 
-     "f" => \$opt_f);
+     "H=s" => \$opt_H, "hostname=s"   => \$opt_H,
+     "f"   => \$opt_f, "perfparse"    => \$opt_f);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
@@ -147,9 +147,7 @@ if ($opt_g && ( $return_code == 0) ) {
 my $PERFPARSE = "";
 
 if ($return_code == 0){
-    if ($opt_f){
-		$PERFPARSE = "|load1=".$un."%;;;0;100 load5=".$cinq."%;;;0;100 load15=".$quinze."%;;;0;100";
-    }
+    $PERFPARSE = "|load1=".$un."%;;;0;100 load5=".$cinq."%;;;0;100 load15=".$quinze."%;;;0;100";
     print "load average: $un, $cinq, $quinze".$PERFPARSE."\n";
     exit $ERRORS{'OK'};
 } else {
@@ -173,7 +171,6 @@ sub print_usage () {
     print "   -S (--ServiceId)  Oreon Service Id\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
-    print "   -f                Perfparse Compatible\n";
 }
 
 sub print_help () {
