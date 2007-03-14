@@ -25,8 +25,8 @@ use strict;
 use DBI;
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_H $opt_h $opt_i);
-use lib "@NAGIOS_PLUGINS@";
+use vars qw($opt_V $opt_d $opt_H $opt_h $opt_i);
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 ## For Debug mode = 1
@@ -38,22 +38,8 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h" => \$opt_h, 
-     "help" => \$opt_h,
      "V" => \$opt_V, 
-     "H" => \$opt_H,
      "i=s" => \$opt_i);
-
-
-my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost",
-                         "oreon", "oreon",
-                         {'RaiseError' => 1});
-
-my $sth1 = $dbh->prepare("SELECT * FROM `cfg_perfparse`");
-if (!$sth1->execute) {die "Error:" . $sth1->errstr . "\n";}
-my $ref1 = $sth1->fetchrow_hashref();
-my $dbh2 = DBI->connect("DBI:".$ref1->{'Storage_Modules_Load'}.":database=".$ref1->{'DB_Name'}.";host=".$ref1->{'DB_Host'},
-                         $ref1->{'DB_User'}, $ref1->{'DB_Pass'},
-                         {'RaiseError' => 1});
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 0.1 $');
@@ -65,6 +51,17 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
+my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost",
+                         "oreon", "oreon-pwd",
+                         {'RaiseError' => 1});
+
+my $sth1 = $dbh->prepare("SELECT * FROM `cfg_perfparse`");
+if (!$sth1->execute) {die "Error: cannot prepare query\n";}
+my $ref1 = $sth1->fetchrow_hashref();
+my $dbh2 = DBI->connect("DBI:".$ref1->{'Storage_Modules_Load'}.":database=".$ref1->{'DB_Name'}.";host=".$ref1->{'DB_Host'},
+                         $ref1->{'DB_User'}, $ref1->{'DB_Pass'},
+                         {'RaiseError' => 1});
+
 my $result;
 my $warning;
 my $critical;
@@ -73,31 +70,61 @@ my $metric_id;
 sub return_value($$$){
     
     #print "warning : ".$warning."-Critical : ".$critical.":$result\b";
-    
+    if ($opt_d) {
+	$opt_d =~ s/\%d/$result/g;
+    }
     if ($warning ne $critical){
 	if ($warning < $critical){ # Bon sens
 	    if ($result < $warning){
-		print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}
 		exit $ERRORS{'OK'};
 	    } elsif (($result >= $warning) && ($result < $critical)){
-		print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}
 		exit $ERRORS{'WARNING'};
 	    } elsif ($result >= $critical){
-		print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}
 		exit $ERRORS{'CRITICAL'};
 	    }
 	} else { # sens inverse
 	    if ($result < $critical){
-	    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";	    
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";	    
+		}
 		exit $ERRORS{'CRITICAL'};
 	    } elsif ($result >= $critical && $result < $warning){
-		print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}
 		exit $ERRORS{'WARNING'};
 	    } elsif ($result >= $warning){
-		print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}else {
+		    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		}
 		exit $ERRORS{'OK'};
 	    } else{
-		print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($opt_d) {
+		     print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+		 }else {
+		     print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		 }
 		exit $ERRORS{'OK'};
 	    }
 	}
@@ -204,94 +231,92 @@ my $svc_relation2;
 
 if ($opt_i){
     my $str;
-
     # get osl info
-    my $sth = $dbh->prepare("SELECT calcul_type,regexp_str,warning,critical,metric, meta_select_mode FROM meta_service WHERE meta_id = '".$opt_i."'");
+    my $sth = $dbh->prepare("SELECT meta_display,calcul_type,regexp_str,warning,critical,metric, meta_select_mode FROM meta_service WHERE meta_id = '".$opt_i."'");
     if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
     $ref = $sth->fetchrow_hashref();
     if (!defined($ref->{'calcul_type'})){
-		print "Unvalidate Meta Service\n";
-		exit $ERRORS{'CRITICAL'};
+	print "Unvalidate Meta Service\n";
+	exit $ERRORS{'CRITICAL'};
     }
     
     $warning = $ref->{'warning'};
     $critical = $ref->{'critical'};
-    
+    $opt_d = $ref->{'meta_display'};
+
     # Get Service List by regexp    
     if ($ref->{'meta_select_mode'} eq '2'){
-	
 	###############################################
-	
 	$str = "SELECT service_id FROM service WHERE `service_description` LIKE '".$ref->{'regexp_str'}."' AND service_activate = '1' AND service_register = '1'";
 	if ($debug) {print $str . "\n";}
 	$sth = $dbh->prepare($str);
 	if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
 	while ($svc = $sth->fetchrow_hashref()){
-		my $sth2 = $dbh->prepare("SELECT * FROM host_service_relation WHERE service_service_id = '".$svc->{'service_id'}."'");
+	    my $sth2 = $dbh->prepare("SELECT * FROM host_service_relation WHERE service_service_id = '".$svc->{'service_id'}."'");
 	    if (!$sth2->execute) {die "Error:" . $sth2->errstr . "\n";}
 	    my $svc_relation = $sth2->fetchrow_hashref();
 	    if (defined($svc_relation->{'host_host_id'}) && $svc_relation->{'host_host_id'}){
     		#### Par Host    		
-			if (defined($svc->{'service_id'})){$svc_id = $svc->{'service_id'};} else {$svc_id = $svc->{'svc_id'};}
-			if (defined($ref->{'regexp_str'})){$metric = $ref->{'metric'};} else {$metric = $svc->{'metric'};}
-			$value = get_value_in_database_by_host($dbh,$dbh2,$svc_id,$metric,$debug);			    
-			if ($ref->{'calcul_type'} =~ "AVE"){			
-			    if (defined($value) && $value){$total += $value;}
-			    if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
-			    $cpt++;
-			    $result = $total / $cpt;
-			} elsif ($ref->{'calcul_type'} =~ "SOM"){
-			    if ($value){$total += $value;}
-			    if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-			    $result = $total;
-			} elsif ($ref->{'calcul_type'} =~ "MIN"){
-			    if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-			    if ($value && $value <= $min){$min = $value;}
-			    $result = $min;
-			} elsif ($ref->{'calcul_type'} =~ "MAX"){
-			    if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-			    if ($value && $value >= $max){$max = $value;}
-			    $result = $max;
-			}
-		} elsif (defined($svc_relation->{'hostgroup_hg_id'}) && $svc_relation->{'hostgroup_hg_id'}) {
-			### Par Hostgroup
-			my $sth3 = $dbh->prepare("SELECT host_host_id FROM hostgroup_relation WHERE hostgroup_hg_id = '".$svc_relation->{'hostgroup_hg_id'}."'");
+		if (defined($svc->{'service_id'})){$svc_id = $svc->{'service_id'};} else {$svc_id = $svc->{'svc_id'};}
+		if (defined($ref->{'regexp_str'})){$metric = $ref->{'metric'};} else {$metric = $svc->{'metric'};}
+		$value = get_value_in_database_by_host($dbh,$dbh2,$svc_id,$metric,$debug);			    
+		if ($ref->{'calcul_type'} =~ "AVE"){			
+		    if (defined($value) && $value){$total += $value;}
+		    if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
+		    $cpt++;
+		    $result = $total / $cpt;
+		} elsif ($ref->{'calcul_type'} =~ "SOM"){
+		    if ($value){$total += $value;}
+		    if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
+		    $result = $total;
+		} elsif ($ref->{'calcul_type'} =~ "MIN"){
+		    if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
+		    if ($value && $value <= $min){$min = $value;}
+		    $result = $min;
+		} elsif ($ref->{'calcul_type'} =~ "MAX"){
+		    if ($debug){print "max = " . $max . "  value = ".$value."\n";}
+		    if ($value && $value >= $max){$max = $value;}
+		    $result = $max;
+		}
+	    } elsif (defined($svc_relation->{'hostgroup_hg_id'}) && $svc_relation->{'hostgroup_hg_id'}) {
+		### Par Hostgroup
+		my $sth3 = $dbh->prepare("SELECT host_host_id FROM hostgroup_relation WHERE hostgroup_hg_id = '".$svc_relation->{'hostgroup_hg_id'}."'");
 	    	if (!$sth3->execute) {die "Error:" . $sth3->errstr . "\n";}
 	    	while ($svc_relation2 = $sth3->fetchrow_hashref()){
-	    		if (defined($svc->{'service_id'})){
-		    		$svc_id = $svc->{'service_id'};
-		    	} else {
-		    		$svc_id = $svc->{'svc_id'};
-		    	}
-		    	if (defined($ref->{'regexp_str'})){
-		    		$metric = $ref->{'metric'};
-		    	} else {
-		    		$metric = $svc->{'metric'};
-		    	}
-		    	$host_id = $svc_relation2->{'host_host_id'};
-		    	$value = get_value_in_database_by_hg($dbh,$dbh2,$svc_id, $host_id, $metric, $debug);			    
-		    	if ($ref->{'calcul_type'} =~ "AVE"){			
-					if (defined($value) && $value){
-						$total += $value;
-					}
-					if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
-					$cpt++;
-		    	} elsif ($ref->{'calcul_type'} =~ "SOM"){
-					if ($value){
-						$total += $value;
-					}
-					if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-		    	} elsif ($ref->{'calcul_type'} =~ "MIN"){
-					if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-					if ($value && $value <= $min){
-						$min = $value;
-					}
-		    	} elsif ($ref->{'calcul_type'} =~ "MAX"){
-					if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-					if ($value && $value >= $max){
-					$max = $value;
-				}
+		    if (defined($svc->{'service_id'})){
+			$svc_id = $svc->{'service_id'};
+		    } else {
+			$svc_id = $svc->{'svc_id'};
+		    }
+		    if (defined($ref->{'regexp_str'})){
+			$metric = $ref->{'metric'};
+		    } else {
+			$metric = $svc->{'metric'};
+		    }
+		    $host_id = $svc_relation2->{'host_host_id'};
+		    $value = get_value_in_database_by_hg($dbh,$dbh2,$svc_id, $host_id, $metric, $debug);			    
+		    if ($ref->{'calcul_type'} =~ "AVE"){			
+			if (defined($value) && $value){
+			    $total += $value;
 			}
+			if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
+			$cpt++;
+		    } elsif ($ref->{'calcul_type'} =~ "SOM"){
+			if ($value){
+			    $total += $value;
+			}
+			if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
+		    } elsif ($ref->{'calcul_type'} =~ "MIN"){
+			if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
+			if ($value && $value <= $min){
+			    $min = $value;
+			}
+		    } elsif ($ref->{'calcul_type'} =~ "MAX"){
+			if ($debug){print "max = " . $max . "  value = ".$value."\n";}
+			if ($value && $value >= $max){
+			    $max = $value;
+			}
+		    }
 		}
 		if ($ref->{'calcul_type'} =~ "AVE"){
 		    $result = $total / $cpt;
@@ -315,6 +340,10 @@ if ($opt_i){
 		$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
 		if (defined($value) && $value){$total += $value;}
 		$cpt++;
+	    }
+	    if (!$sth->rows) {
+		print "no result in table meta_service_relation for id $opt_i\n";
+		exit $ERRORS{'UNKNOWN'};
 	    }
 	    $result = $total / $cpt;
 	} elsif ($ref->{'calcul_type'} =~ "SOM"){
@@ -341,7 +370,7 @@ if ($opt_i){
 		if ($value && $value >= $max){$max = $value;}
 	    }
 	    $result = $max;
-	}     
+	}
 	return_value($result, $warning, $critical);
     }
 }
@@ -349,8 +378,7 @@ if ($opt_i){
 
 sub print_usage () {
     print "Usage:\n";
-    print " check_osl.pl\n";
-    print "   -H		Hostname to query (Required)\n";
+    print " check_meta_service.pl\n";
     print "   -i		OSL id\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
