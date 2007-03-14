@@ -26,7 +26,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {
@@ -58,7 +58,6 @@ GetOptions
     ("h"     => \$opt_h, "help"             => \$opt_h,
      "V"     => \$opt_V, "version"          => \$opt_V,
      "g"     => \$opt_g, "rrdgraph"         => \$opt_g,
-     "rrd_step=s" => \$opt_step,
      "S=s"   => \$opt_S, "ServiceId=s"      => \$opt_S,
      "H=s"   => \$opt_H, "hostname=s"       => \$opt_H,
      "I=s"   => \$opt_I, "IP-address=s"     => \$opt_I,
@@ -91,112 +90,97 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
-
-($opt_S) || ($opt_S = shift) || ($opt_S = "1_1");
-my $ServiceId = is_valid_serviceid($opt_S);
+#$opt_H = shift unless ($opt_H);
+#(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
 
 ($opt_step) || ($opt_step = shift) || ($opt_step = "300");
 $step = $1 if ($opt_step =~ /(\d+)/);
 
 my $args_check_http = "";
 if ( $opt_H ) {
-    $args_check_http .= " -H $opt_H";
+    $args_check_http .= " -H \'$opt_H\'";
 }
 if ( $opt_I ) {
-    $args_check_http .= " -I $opt_I";
+    $args_check_http .= " -I \'$opt_I\'";
 }
 if ( $opt_e ) {
-    $args_check_http .= " -e $opt_e";
+    $args_check_http .= " -e \'$opt_e\'";
 }
 if ( $opt_s ) {
-    $args_check_http .= " -s $opt_s";
+    $args_check_http .= " -s \'$opt_s\'";
 }
 if ( $opt_u ) {
-    $args_check_http .= " -u $opt_u";
+    $args_check_http .= " -u \'$opt_u\'";
 }
 if ( $opt_p ) {
-    $args_check_http .= " -p $opt_p";
+    $args_check_http .= " -p \'$opt_p\'";
 }
 if ( $opt_P ) {
-    $args_check_http .= " -P $opt_P";
+    $args_check_http .= " -P \'$opt_P\'";
 }
 if ( $opt_I ) {
-    $args_check_http .= " -I $opt_I";
+    $args_check_http .= " -I \'$opt_I\'";
 }
 if ( $opt_e ) {
-    $args_check_http .= " -e $opt_e";
+    $args_check_http .= " -e \'$opt_e\'";
 }
 if ( $opt_w ) {
-    $args_check_http .= " -w $opt_w";
+    $args_check_http .= " -w \'$opt_w\'";
 }
 if ( $opt_c ) {
-    $args_check_http .= " -c $opt_c";
+    $args_check_http .= " -c \'$opt_c\'";
 }
 if ( $opt_t ) {
-    $args_check_http .= " -t $opt_t";
+    $args_check_http .= " -t \'$opt_t\'";
 }
 if ( $opt_a ) {
-    $args_check_http .= " -a $opt_a";
+    $args_check_http .= " -a \'$opt_a\'";
 }
 if ( $opt_L ) {
-    $args_check_http .= " -L $opt_L";
+    $args_check_http .= " -L \'$opt_L\'";
 }
 if ( $opt_f ) {
-    $args_check_http .= " -f $opt_f";
+    $args_check_http .= " -f \'$opt_f\'";
 }
 if ( $opt_l ) {
-    $args_check_http .= " -l $opt_l";
+    $args_check_http .= " -l \'$opt_l\'";
 }
 if ( $opt_r ) {
-    $args_check_http .= " -r $opt_r";
+    $args_check_http .= " -r \'$opt_r\'";
 }
 if ( $opt_R ) {
-    $args_check_http .= " -R $opt_R";
+    $args_check_http .= " -R \'$opt_R\'";
 }
 if ( $opt_C ) {
-    $args_check_http .= " -C $opt_C";
+    $args_check_http .= " -C \'$opt_C\'";
 }
 if ( $opt_z ) {
     $args_check_http .= " --ssl";
 }
 
 
-my $rrd = $pathtorrdbase.$ServiceId.".rrd";
 
 my $start=time;
 my $name = $0;
 $name =~ s/\.pl.*//g;
 
-##
-## RRDTools create rrd
-##
-if ($opt_g) {
-	if (! -e $rrd) {
-        create_rrd ($rrd,1,$start,$step,"U","U","GAUGE");
-	}
-}
-##
+
 ## Plugin requests
-##
-# print "args: $args_check_http \n";
+
 my $result = `$pathtolibexechttp $args_check_http`;
 my $return_code = $? / 256;
 
 $_ = $result;
 m/time=\s*(\d*\.\d*)/;
 my $time = $1;
-
-##
-## RRDtools update
-##
-if ($opt_g && $time ) {
-    $start=time;
-    update_rrd ($rrd,$start,$time);
+$result =~ s/\n//;
+my @output = split(/\|/,$result);
+print $output[0];
+if ($output[1]) {
+    my @outputpp = split(/\ /,$output[1]);
+    print "|".$outputpp[0];
 }
-
-print "$result";
+print "\n";
 exit $return_code;
 
 ##
