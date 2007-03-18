@@ -24,7 +24,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {

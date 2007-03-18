@@ -26,7 +26,7 @@ use DBI;
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_d $opt_H $opt_h $opt_i);
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 ## For Debug mode = 1
