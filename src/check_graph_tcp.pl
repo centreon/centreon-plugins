@@ -20,8 +20,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-#use lib "@NAGIOS_PLUGINS@";
-use lib "/usr/lib/nagios/plugins";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {

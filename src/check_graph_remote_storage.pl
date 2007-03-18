@@ -25,7 +25,7 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 #use lib "/usr/lib/nagios/plugins/";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
