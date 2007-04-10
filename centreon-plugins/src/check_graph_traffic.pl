@@ -258,7 +258,7 @@ if (defined($opt_T)){
 $last_in_bits = 0;
 $last_out_bits  = 0;
 
-my $flg_created;
+my $flg_created = 0;
 
 if (-e "/tmp/traffic_if".$interface."_".$opt_H) {
     open(FILE,"<"."/tmp/traffic_if".$interface."_".$opt_H);
@@ -283,7 +283,7 @@ unless (open(FILE,">"."/tmp/traffic_if".$interface."_".$opt_H)){
 print FILE "$update_time:$in_bits:$out_bits";
 close(FILE);
 
-if ($flg_created eq 0){
+if ($flg_created == 0){
     print "First execution : Buffer in creation.... \n";
     exit($ERRORS{"UNKNOWN"});
 }
