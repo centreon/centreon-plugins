@@ -26,7 +26,8 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+#use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec/";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {
@@ -249,6 +250,7 @@ if (defined($opt_T)){
 } else {
 	$speed_card = $result->{$OID_SPEED};
 }
+
 #############################################
 #####          Plugin return code
 ##
@@ -261,18 +263,18 @@ my $flg_created;
 if (-e "/tmp/traffic_if".$interface."_".$opt_H) {
     open(FILE,"<"."/tmp/traffic_if".$interface."_".$opt_H);
     while($row = <FILE>){
-	@last_values = split(":",$row);
-	$last_check_time = $last_values[0];
-	$last_in_bits = $last_values[1];
-	$last_out_bits = $last_values[2];
-	$flg_created = 1;
+		@last_values = split(":",$row);
+		$last_check_time = $last_values[0];
+		$last_in_bits = $last_values[1];
+		$last_out_bits = $last_values[2];
+		$flg_created = 1;
     }
     close(FILE);
 } else {
     $flg_created = 0;
 }
 
-$update_time = time;
+$update_time = time();
 
 unless (open(FILE,">"."/tmp/traffic_if".$interface."_".$opt_H)){
     print "Unknown - /tmp/traffic_if".$interface."_".$opt_H. " !\n";
@@ -299,7 +301,9 @@ if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
 	} else {
 		$total = $in_bits - $last_in_bits;
 	}
-    my $pct_in_traffic = $in_traffic = abs($total / (time - $last_check_time));
+	my $diff = time() - $last_check_time;
+	if ($diff == 0){$diff = 1;}
+    my $pct_in_traffic = $in_traffic = abs($total / $diff);
 } else {
     $in_traffic = 0;
 } 
@@ -307,11 +311,13 @@ if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
 if ($out_bits - $last_out_bits > 0 && defined($last_out_bits)) {
     my $total = 0;
     if ($out_bits - $last_out_bits < 0){
-	$total = 4294967296 - $last_out_bits + $out_bits;
+		$total = 4294967296 - $last_out_bits + $out_bits;
     } else {
-	$total = $out_bits - $last_out_bits;
+		$total = $out_bits - $last_out_bits;
     }
-    my $pct_out_traffic = $out_traffic = abs($total / (time - $last_check_time));
+    my $diff =  time() - $last_check_time;
+    if ($diff == 0){$diff = 1;}
+    my $pct_out_traffic = $out_traffic = abs($total / $diff);
 } else {
     $out_traffic = 0;
 }
