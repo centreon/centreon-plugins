@@ -353,13 +353,14 @@ $out_perfparse_traffic_str =~ s/\./,/g;
 
 my $status = "OK";
 
+if(($in_usage > $warning) or ($out_usage > $warning)){
+	$status = "WARNING";
+}
+
 if (($in_usage > $critical) or ($out_usage > $critical)){
 	$status = "CRITICAL";
 }
 
-if(($in_usage > $warning) or ($out_usage > $warning)){
-	$status = "WARNING";
-}
 		
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
 printf("Total RX Bits In : %.2f ".$in_bits_unit."B, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);

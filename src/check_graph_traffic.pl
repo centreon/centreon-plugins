@@ -400,12 +400,12 @@ $out_perfparse_traffic_str =~ s/\./,/g;
 
 my $status = "OK";
 
-if (($in_usage > $critical) or ($out_usage > $critical)){
-	$status = "CRITICAL";
-}
-
 if(($in_usage > $warning) or ($out_usage > $warning)){
 	$status = "WARNING";
+}
+
+if (($in_usage > $critical) or ($out_usage > $critical)){
+	$status = "CRITICAL";
 }
 
 		
