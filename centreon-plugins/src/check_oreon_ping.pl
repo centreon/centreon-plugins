@@ -136,7 +136,7 @@ if( $rta == -1 ) {
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
     print "GPING CRITICAL - ". $tab[1] ."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
     exit $ERRORS{'CRITICAL'};
-} elsif ( ($pl >= $pl_warning) || ($rta >= $rta_warning) ) {
+} elsif (($pl >= $pl_warning) || ($rta >= $rta_warning) ) {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
     print "GPING WARNING - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
