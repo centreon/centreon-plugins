@@ -51,9 +51,7 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost",
-                         "oreon", "oreon-pwd",
-                         {'RaiseError' => 1});
+my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost","oreon", "oreon-pwd",{'RaiseError' => 1});
 
 my $sth1 = $dbh->prepare("SELECT * FROM `cfg_perfparse`");
 if (!$sth1->execute) {die "Error: cannot prepare query\n";}
@@ -69,68 +67,67 @@ my $metric_id;
 
 sub return_value($$$){
     
-    #print "warning : ".$warning."-Critical : ".$critical.":$result\b";
     if ($opt_d) {
-	$opt_d =~ s/\%d/$result/g;
+		$opt_d =~ s/\%d/$result/g;
     }
     if ($warning ne $critical){
-	if ($warning < $critical){ # Bon sens
-	    if ($result < $warning){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		if ($warning < $critical){ # Bon sens
+		    if ($result < $warning){
+				if ($opt_d) {
+				    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    } elsif (($result >= $warning) && ($result < $critical)){
+				if ($opt_d) {
+				    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $critical){
+				if ($opt_d) {
+				    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'CRITICAL'};
+		    }
+		} else { # sens inverse
+		    if ($result < $critical){
+				if ($opt_d) {
+				    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";	    
+				}
+				exit $ERRORS{'CRITICAL'};
+		    } elsif ($result >= $critical && $result < $warning){
+				if ($opt_d) {
+				    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $warning){
+				if ($opt_d) {
+			   		print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}else {
+				    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    } else{
+				if ($opt_d) {
+			    	print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
+				} else {
+			     	print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+			 	}
+				exit $ERRORS{'OK'};
+		    }
 		}
-		exit $ERRORS{'OK'};
-	    } elsif (($result >= $warning) && ($result < $critical)){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}
-		exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $critical){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}
-		exit $ERRORS{'CRITICAL'};
-	    }
-	} else { # sens inverse
-	    if ($result < $critical){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";	    
-		}
-		exit $ERRORS{'CRITICAL'};
-	    } elsif ($result >= $critical && $result < $warning){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}
-		exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $warning){
-		if ($opt_d) {
-		    print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}else {
-		    print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}
-		exit $ERRORS{'OK'};
-	    } else{
-		if ($opt_d) {
-		     print "$opt_d|OMS=" . $result . ";".$warning.";".$critical."\n";
-		 }else {
-		     print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		 }
-		exit $ERRORS{'OK'};
-	    }
-	}
     } else {
-	print "ERROR : warnig level = critical level";
-	exit $ERRORS{'CRITICAL'};
+		print "ERROR : warnig level = critical level";
+		exit $ERRORS{'CRITICAL'};
     }
 }
 
