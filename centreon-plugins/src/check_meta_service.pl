@@ -51,14 +51,10 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost","oreon", "oreon-pwd",{'RaiseError' => 1});
+require("@OREON_PATH@/ODS/etc/conf.pm");
 
-my $sth1 = $dbh->prepare("SELECT * FROM `cfg_perfparse`");
-if (!$sth1->execute) {die "Error: cannot prepare query\n";}
-my $ref1 = $sth1->fetchrow_hashref();
-my $dbh2 = DBI->connect("DBI:".$ref1->{'Storage_Modules_Load'}.":database=".$ref1->{'DB_Name'}.";host=".$ref1->{'DB_Host'},
-                         $ref1->{'DB_User'}, $ref1->{'DB_Pass'},
-                         {'RaiseError' => 1});
+my $dbh = DBI->connect("DBI:mysql:database=oreon;host=localhost","oreon", "oreon-pwd",{'RaiseError' => 1});
+my $dbh2 = DBI->connect("DBI:mysql:database=oreon;host=localhost","ods", "oreon-pwd",{'RaiseError' => 1});
 
 my $result;
 my $warning;
