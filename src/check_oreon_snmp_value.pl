@@ -28,12 +28,12 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_h $opt_V $opt_D $opt_H $opt_C $opt_v $opt_o $opt_c $opt_w $opt_t);
+use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_o $opt_c $opt_w $opt_t);
 
 $PROGNAME = $0;
 sub print_help ();
@@ -64,14 +64,21 @@ if ($opt_h) {
 $opt_H = shift unless ($opt_H);
 (print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
 
-($opt_v) || ($opt_v = shift) || ($opt_v = "1");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
+my $snmp = "1";
+if ($opt_v && $opt_v =~ /^[0-9]$/) {
+    $snmp = $opt_v;
+}
 
 ($opt_C) || ($opt_C = shift) || ($opt_C = "public");
-my $rrd = $pathtorrdbase.$ServiceId.".rrd";
 
+my $DS_type = "GAUGE";
 ($opt_t) || ($opt_t = shift) || ($opt_t = "GAUGE");
-my $DS_type = $1 if ($opt_t =~ /(GAUGE)/ || $opt_t =~ /(COUNTER)/);
+$DS_type = $1 if ($opt_t =~ /(GAUGE)/ || $opt_t =~ /(COUNTER)/);
+
+if (!$opt_c || !$opt_w) {
+    print "You must specify -c and -w options\n";
+    exit $ERRORS{'OK'};
+}
 
 ($opt_c) || ($opt_c = shift);
 my $critical = $1 if ($opt_c =~ /([0-9]+)/);
@@ -81,6 +88,14 @@ my $warning = $1 if ($opt_w =~ /([0-9]+)/);
 if ($critical <= $warning){
     print "(--critical) must be superior to (--warning)";
     print_usage();
+    exit $ERRORS{'OK'};
+}
+
+if (!$opt_o) {
+    print "Option -o needed.\n";
+    exit $ERRORS{'OK'};
+}elsif (!($opt_o =~ /^[0-9\.]+$/)) {
+    print "Wrong OID format\n";
     exit $ERRORS{'OK'};
 }
 
@@ -106,16 +121,17 @@ if (!defined($result)) {
 my $return_result =  $result->{$opt_o};
 
 #===  Plugin return code  ====
+
 if (defined($return_result)){
     if ($opt_w && $opt_c && $return_result < $opt_w){
     	print "Ok value : " . $return_result . "|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";
-		exit $ERRORS{'OK'};
+	exit $ERRORS{'OK'};
     } elsif ($opt_w && $opt_c && $return_result >= $opt_w && $return_result < $opt_c){
-		print "Warning value : " . $return_result . "|value=$return_result;".$opt_w.";".$opt_c.";;\n";}
-		exit $ERRORS{'WARNING'};
+	print "Warning value : " . $return_result . "|value=$return_result;".$opt_w.";".$opt_c.";;\n";
+	exit $ERRORS{'WARNING'};
     } elsif ($opt_w && $opt_c && $return_result >= $opt_c){
-    	print "Critical value : " . $return_result."|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";}
-		exit $ERRORS{'CRITICAL'};
+    	print "Critical value : " . $return_result."|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";
+	exit $ERRORS{'CRITICAL'};
     }
 } else {
     print "CRITICAL Host unavailable\n";

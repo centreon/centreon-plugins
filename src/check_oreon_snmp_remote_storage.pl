@@ -28,12 +28,19 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-
+if (eval "require oreon" ) {
+    use oreon qw(get_parameters);
+    use vars qw(%oreon);
+    %oreon=get_parameters();
+} else {
+	print "Unable to load oreon perl module\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_d $opt_n $opt_w $opt_c $opt_H $opt_D $opt_s @test);
+use vars qw($opt_V $opt_h $opt_v $opt_f $opt_C $opt_d $opt_n $opt_w $opt_c $opt_H $opt_s @test);
 
 # Plugin var init
 
@@ -53,6 +60,7 @@ GetOptions
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
      "d=s" => \$opt_d, "disk=s"       => \$opt_d,
+     "f"   => \$opt_f, "perfparse"         => \$opt_f,
      "n"   => \$opt_n, "name"         => \$opt_n,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
@@ -68,20 +76,26 @@ if ($opt_h) {
 	print_help();
 	exit $ERRORS{'OK'};
 }
-
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
+if (!$opt_H) {
+print_usage();
+exit $ERRORS{'OK'};
+}
 
 if ($opt_n && !$opt_d) {
     print "Option -n (--name) need option -d (--disk)\n";
     exit $ERRORS{'UNKNOWN'};
 }
+my $snmp = "1";
+if ($opt_v && $opt_v =~ /(\d)/) {
+$snmp = $opt_v;
+}
 
-($opt_v) || ($opt_v = shift) || ($opt_v = "2");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
-
-($opt_C) || ($opt_C = shift) || ($opt_C = "public");
-
+if (!$opt_C) {
+$opt_C = "public";
+}
+if (!$opt_d) {
+$opt_d = 2;
+}
 ($opt_d) || ($opt_d = shift) || ($opt_d = 2);
 
 my $partition = 0;
@@ -92,20 +106,21 @@ elsif (!$opt_n){
     print "Unknown -d number expected... or it doesn't exist, try another disk - number\n";
     exit $ERRORS{'UNKNOWN'};
 }
+my $critical = 95;
+if ($opt_c && $opt_c =~ /^[0-9]+$/) {
+    $critical = $opt_c;
+}
+my $warning = 90;
+if ($opt_w && $opt_w =~ /^[0-9]+$/) {
+    $warning = $opt_w;
+}
 
-($opt_c) || ($opt_c = shift) || ($opt_c = 95);
-my $critical = $1 if ($opt_c =~ /([0-9]+)/);
-
-($opt_w) || ($opt_w = shift) || ($opt_w = 80);
-my $warning = $1 if ($opt_w =~ /([0-9]+)/);
 if ($critical <= $warning){
     print "(--crit) must be superior to (--warn)";
     print_usage();
     exit $ERRORS{'OK'};
 }
 
-($opt_step) || ($opt_step = shift) || ($opt_step = "300");
-$step = $1 if ($opt_step =~ /(\d+)/);
 
 my $name = $0;
 $name =~ s/\.pl.*//g;
@@ -210,6 +225,7 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         @test = split (/\./, $pourcent);
         $pourcent = $test[0];
     }
+    my $lastTot = $tot;
     $tot = $tot / 1073741824;
     $Used = ($Used * $AllocationUnits) / 1073741824;
     
@@ -236,7 +252,7 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         	my $size_o = $Used * 1073741824;
         	my $warn = $opt_w * $size_o;
         	my $crit = $opt_c * $size_o;
-        	print "|size=".$totrrd."o used=".$size_o.";".$warn.";".$crit;
+        	print "|size=".$lastTot."o used=".$size_o.";".$warn.";".$crit;
         }
         print "\n";
         exit $return_code;
