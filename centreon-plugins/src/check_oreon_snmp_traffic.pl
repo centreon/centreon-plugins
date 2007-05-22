@@ -28,9 +28,16 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-
+if (eval "require oreon" ) {
+    use oreon qw(get_parameters);
+    use vars qw(%oreon);
+    %oreon=get_parameters();
+} else {
+	print "Unable to load oreon perl module\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_h $opt_v $opt_C $opt_b $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T);
@@ -60,7 +67,7 @@ GetOptions
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
-    exit $ERRORS{'OK'};
+  exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
@@ -72,29 +79,43 @@ if ($opt_h) {
 #####      Verify Options
 ##
 
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
-
-($opt_v) || ($opt_v = shift) || ($opt_v = "1");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
+if (!$opt_H) {
+print_usage();
+exit $ERRORS{'OK'};
+}
+my $snmp = "1";
+if ($opt_v && $opt_v =~ /(\d)/) {
+$snmp = $opt_v;
+}
 
 if ($opt_n && !$opt_i) {
     print "Option -n (--name) need option -i (--interface)\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-($opt_C) || ($opt_C = shift) || ($opt_C = "public");
-($opt_i) || ($opt_i = shift) || ($opt_i = 2);
+if (!$opt_C) {
+$opt_C = "public";
+}
 
-($opt_b) || ($opt_b = shift) || ($opt_b = 95);
-my $bps = $1 if ($opt_b =~ /([0-9]+)/);
+if (!$opt_i) {
+$opt_i = 2;
+}
 
-($opt_c) || ($opt_c = shift) || ($opt_c = 95);
-my $critical = $1 if ($opt_c =~ /([0-9]+)/);
+if (!$opt_b) {
+$opt_b = 95;
+}
 
-($opt_w) || ($opt_w = shift) || ($opt_w = 80);
-my $warning = $1 if ($opt_w =~ /([0-9]+)/);
-
+if ($opt_b =~ /([0-9]+)/) {
+my $bps = $1;
+}
+my $critical = 95;
+if ($opt_c && $opt_c =~ /[0-9]+/) {
+$critical = $opt_c;
+}
+my $warning = 80;
+if ($opt_w && $opt_w =~ /[0-9]+/) {
+$warning = $opt_w;
+}
 my $interface = 0;
 if ($opt_i =~ /([0-9]+)/ && !$opt_n){
     $interface = $1;
@@ -217,8 +238,8 @@ $last_out_bits  = 0;
 
 my $flg_created = 0;
 
-if (-e "/tmp/traffic_if".$interface."_".$opt_H) {
-    open(FILE,"<"."/tmp/traffic_if".$interface."_".$opt_H);
+if (-e "/tmp/oreon_traffic_if".$interface."_".$opt_H) {
+    open(FILE,"<"."/tmp/oreon_traffic_if".$interface."_".$opt_H);
     while($row = <FILE>){
 		@last_values = split(":",$row);
 		$last_check_time = $last_values[0];
@@ -233,8 +254,8 @@ if (-e "/tmp/traffic_if".$interface."_".$opt_H) {
 
 $update_time = time();
 
-unless (open(FILE,">"."/tmp/traffic_if".$interface."_".$opt_H)){
-    print "Unknown - /tmp/traffic_if".$interface."_".$opt_H. " !\n";
+unless (open(FILE,">"."/tmp/oreon_traffic_if".$interface."_".$opt_H)){
+    print "Unknown - /tmp/oreon_traffic_if".$interface."_".$opt_H. " !\n";
     exit $ERRORS{"UNKNOWN"};
 }
 print FILE "$update_time:$in_bits:$out_bits";
