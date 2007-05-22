@@ -28,9 +28,16 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-
+if (eval "require oreon" ) {
+    use oreon qw(get_parameters);
+    use vars qw($VERSION %oreon);
+    %oreon=get_parameters();
+} else {
+	print "Unable to load oreon perl module\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_D $snmp);
@@ -61,13 +68,18 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
+if (!$opt_H) {
+print_usage();
+exit $ERRORS{'OK'};
+}
+my $snmp = "1";
+if ($opt_v && $opt_v =~ /(\d)/) {
+$snmp = $opt_v;
+}
 
-($opt_v) || ($opt_v = shift) || ($opt_v = "2");
-$snmp = $1 if ($opt_v =~ /(\d)/);
-
-($opt_C) || ($opt_C = shift) || ($opt_C = "public");
+if (!$opt_C) {
+$opt_C = "public";
+}
 
 my $name = $0;
 $name =~ s/\.pl.*//g;

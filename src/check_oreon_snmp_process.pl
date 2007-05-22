@@ -28,12 +28,20 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
+if (eval "require oreon" ) {
+    use oreon qw(get_parameters);
+    use vars qw($VERSION %oreon);
+    %oreon=get_parameters();
+} else {
+	print "Unable to load oreon perl module\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_p $opt_H $opt_D $opt_n $result @result %process_list %STATUS);
+use vars qw($opt_V $opt_h $opt_v $opt_C $opt_p $opt_H $opt_n $result @result %process_list %STATUS);
 
 # Plugin var init
 
@@ -50,43 +58,48 @@ Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
      "V"   => \$opt_V, "version"      => \$opt_V,
-     "g"   => \$opt_g, "rrdgraph"     => \$opt_g,
-     "rrd_step=s" => \$opt_step, "f"  => \$opt_f,
      "n"   => \$opt_n, "number"       => \$opt_n,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
      "p=s" => \$opt_p, "process=s"    => \$opt_p,
-     "S=s" => \$opt_S, "ServiceId=s"  => \$opt_S,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
-    exit $ERRORS{'OK'};
+ exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
-    print_help();
-    exit $ERRORS{'OK'};
+  print_help();
+ exit $ERRORS{'OK'};
 }
 
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
+if (!$opt_H) {
+print_usage();
+exit $ERRORS{'OK'};
+}
+my $snmp = "1";
+if ($opt_v && $opt_v =~ /(\d)/) {
+$snmp = $opt_v;
+}
+if (!$opt_C) {
+$opt_C = "public";
+}
 
-($opt_v) || ($opt_v = shift) || ($opt_v = "1");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
-
-($opt_C) || ($opt_C = shift) || ($opt_C = "public");
-
-my $process = "";
-if ($opt_p){
-    $process = $1 if ($opt_p =~ /([-.A-Za-z0-9]+)/);
-} 
+my $process;
+if(!$opt_p) {
+print_usage();
+exit $ERRORS{'OK'};
+}elsif ($opt_p !~ /([-.A-Za-z0-9]+)/){
+print_usage();
+exit $ERRORS{'OK'};
+}
+$process = $opt_p;
 
 my $name = $0;
 $name =~ s/\.pl.*//g;
 
 # Plugin snmp requests
-
 my $OID_SW_RunName = $oreon{MIB2}{SW_RUNNAME};
 my $OID_SW_RunIndex =$oreon{MIB2}{SW_RUNINDEX};
 my $OID_SW_RunStatus =$oreon{MIB2}{SW_RUNSTATUS};
@@ -109,11 +122,11 @@ foreach my $key (oid_lex_sort(keys %$result)) {
     my @oid_list = split (/\./,$key);
     $process_list{$$result{$key}} =  pop (@oid_list) ;
     if (defined($opt_p) && $opt_p ne ""){
-		if ($$result{$key} eq $opt_p){
-	    	$proc++;
-		}
+	if ($$result{$key} eq $opt_p){
+	    $proc++;
+	}
     } else {
-		$proc++;
+	$proc++;
     }
 }
 
@@ -127,7 +140,6 @@ if (!($opt_n))
             exit $ERRORS{'UNKNOWN'};
         }
 	$proc_run =  $result->{$OID_SW_RunStatus . "." . $process_list{$process} };
-	print $proc_run;
     }
 }
 
