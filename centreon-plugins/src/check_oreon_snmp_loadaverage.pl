@@ -40,7 +40,7 @@ if (eval "require oreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_D $snmp $opt_k $opt_u $opt_p);
+use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_c $opt_w $opt_D $snmp $opt_k $opt_u $opt_p @critical @warning);
 
 # Plugin var init
 
@@ -59,6 +59,8 @@ GetOptions
      "V"   => \$opt_V, "version"      => \$opt_V,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
+     "w=s" => \$opt_w, "warning=s"  => \$opt_w,
+     "c=s" => \$opt_c, "critical=s"  => \$opt_c,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
 if ($opt_V) {
@@ -79,6 +81,29 @@ exit $ERRORS{'OK'};
 my $snmp = "1";
 if ($opt_v && $opt_v =~ /^[0-9]$/) {
 $snmp = $opt_v;
+}
+
+@critical = ('2', '4', '6');
+if ($opt_c && $opt_c =~ /^([0-9]+),([0-9]+),([0-9]+)$/) {
+@critical = ($1,$2,$3);
+}else {
+print "Specify three critical treshold separated with a coma\n";
+exit $ERRORS{'OK'};
+}
+
+@warning = ('1', '3', '5');
+if ($opt_w && $opt_w =~ /^([0-9]+),([0-9]+),([0-9]+)$/) {
+@warning = ($1,$2,$3);
+}else {
+print "Specify three warning treshold separated with a coma\n";
+exit $ERRORS{'OK'};
+}
+
+for (my $i = 0; $i < scalar(@warning); $i++) {
+if ($warning[$i] >= $critical[$i]) {
+print "Critical tresholds must be superior to warning tresholds.\n";
+exit $ERRORS{'OK'};
+}
 }
 
 if ($snmp eq "3") {
@@ -103,8 +128,6 @@ my $name = $0;
 $name =~ s/\.pl.*//g;
 
 # Plugin snmp requests
-
-$return_code = 0;
 
 my $OID_CPULOAD_1 =$oreon{UNIX}{CPU_LOAD_1M};
 my $OID_CPULOAD_5 =$oreon{UNIX}{CPU_LOAD_5M};
@@ -145,24 +168,25 @@ my $cinq  =  $result->{$OID_CPULOAD_5};
 my $quinze  =  $result->{$OID_CPULOAD_15};
 
 # Plugin return code
-
-my $PERFPARSE = "";
-
-if ($return_code == 0){
-    $PERFPARSE = "|load1=".$un."%;;;0;100 load5=".$cinq."%;;;0;100 load15=".$quinze."%;;;0;100";
-    print "load average: $un, $cinq, $quinze".$PERFPARSE."\n";
-    exit $ERRORS{'OK'};
-} else {
-    print "Load Average CRITICAL\n";
-    exit $ERRORS{'CRITICAL'};
+my $status = "OK";
+if ($warning[0] <= $un || $warning[1] <= $cinq || $warning[2] <= $quinze) {
+    $status = "WARNING";
 }
+if ($critical[0] <= $un || $critical[1] <= $cinq || $critical[2] <= $quinze) {
+    $status = "CRITICAL";
+}
+
+print "load average: ".$un.", ".$cinq.", ".$quinze.".|load1=".$un."%;;;0;100 load5=".$cinq."%;;;0;100 load15=".$quinze."%;;;0;100\n";
+exit $ERRORS{$status};
 
 sub print_usage () {
     print "\nUsage:\n";
     print "$PROGNAME\n";
     print "   -H (--hostname)   Hostname to query - (required)\n";
     print "   -C (--community)  SNMP read community (defaults to public,\n";
-    print "                     used with SNMP v1 and v2c\n";
+    print "   -C (--community)  SNMP read community (defaults to public,\n";
+    print "   -c (--critical)   Three critical tresholds (defaults : 2,4,6)\n";
+    print "   -w (--warning)   Three warning tresholds (defaults : 1,3,5)\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
     print "   -V (--version)    Plugin version\n";
