@@ -41,7 +41,7 @@ if (eval "require oreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_p $opt_H $opt_n $result @result %process_list %STATUS);
+use vars qw($opt_V $opt_h $opt_v $opt_C $opt_p $opt_H $opt_n $opt_k $opt_u $opt_x $result @result %process_list %STATUS);
 
 # Plugin var init
 
@@ -51,12 +51,14 @@ $PROGNAME = "check_graph_process";
 sub print_help ();
 sub print_usage ();
 
-
 %STATUS=(1=>'running',2=>'runnable',3=>'notRunnable',4=>'invalid');
 
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
+     "u=s"   => \$opt_u, "username=s" => \$opt_u,
+     "x=s"   => \$opt_x, "password=s" => \$opt_x,
+     "k=s"   => \$opt_k, "key=s"      => \$opt_k,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "n"   => \$opt_n, "number"       => \$opt_n,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
@@ -79,9 +81,24 @@ print_usage();
 exit $ERRORS{'OK'};
 }
 my $snmp = "1";
-if ($opt_v && $opt_v =~ /(\d)/) {
+if ($opt_v && $opt_v =~ /^[0-9]$/) {
 $snmp = $opt_v;
 }
+
+if ($snmp eq "3") {
+if (!$opt_u) {
+print "Option -u (--username) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}
+if (!$opt_x && !$opt_k) {
+print "Option -k (--key) or -x (--password) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}elsif ($opt_x && $opt_k) {
+print "Only option -k (--key) or -x (--password) is needed for snmpV3\n";
+exit $ERRORS{'OK'};
+}
+}
+
 if (!$opt_C) {
 $opt_C = "public";
 }
@@ -104,10 +121,25 @@ my $OID_SW_RunName = $oreon{MIB2}{SW_RUNNAME};
 my $OID_SW_RunIndex =$oreon{MIB2}{SW_RUNINDEX};
 my $OID_SW_RunStatus =$oreon{MIB2}{SW_RUNSTATUS};
 
-my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);
-if ( !defined($session) ) {
-    print("UNKNOWN: $error");
+my ($session, $error);
+if ($snmp eq "1" || $snmp eq "2") {
+($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
     exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_k) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_x) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_x);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
 }
 
 $result = $session->get_table(Baseoid => $OID_SW_RunName);

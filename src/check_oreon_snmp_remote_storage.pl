@@ -40,7 +40,7 @@ if (eval "require oreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_f $opt_C $opt_d $opt_n $opt_w $opt_c $opt_H $opt_s @test);
+use vars qw($opt_V $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s @test);
 
 # Plugin var init
 
@@ -55,6 +55,9 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
+     "u=s"   => \$opt_u, "username=s" => \$opt_u,
+     "p=s"   => \$opt_p, "password=s" => \$opt_p,
+     "k=s"   => \$opt_k, "key=s"      => \$opt_k,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "s"   => \$opt_s, "show"         => \$opt_s,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
@@ -86,8 +89,22 @@ if ($opt_n && !$opt_d) {
     exit $ERRORS{'UNKNOWN'};
 }
 my $snmp = "1";
-if ($opt_v && $opt_v =~ /(\d)/) {
+if ($opt_v && $opt_v =~ /^[0-9]$/) {
 $snmp = $opt_v;
+}
+
+if ($snmp eq "3") {
+if (!$opt_u) {
+print "Option -u (--username) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}
+if (!$opt_p && !$opt_k) {
+print "Option -k (--key) or -p (--password) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}elsif ($opt_p && $opt_k) {
+print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
+exit $ERRORS{'OK'};
+}
 }
 
 if (!$opt_C) {
@@ -133,10 +150,25 @@ my $OID_hrStorageSize =$oreon{MIB2}{HR_STORAGE_SIZE};
 my $OID_hrStorageUsed =$oreon{MIB2}{HR_STORAGE_USED};
 
 # create a SNMP session
-my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);
-if ( !defined($session) ) {
-    print("CRITICAL: SNMP Session : $error");
-    exit $ERRORS{'CRITICAL'};
+my ($session, $error);
+if ($snmp eq "1" || $snmp eq "2") {
+($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_k) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_p) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
 }
 
 #getting partition using its name instead of its oid index

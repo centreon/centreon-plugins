@@ -33,7 +33,7 @@ use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_o $opt_c $opt_w $opt_t);
+use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_o $opt_c $opt_w $opt_t $opt_p $opt_k $opt_u);
 
 $PROGNAME = $0;
 sub print_help ();
@@ -42,11 +42,14 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
+     "u=s" => \$opt_u, "username=s"   => \$opt_u,
+     "p=s" => \$opt_p, "password=s"   => \$opt_p,
+     "k=s" => \$opt_k, "key=s"        => \$opt_k,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
-     "o=s"   => \$opt_o, "oid=s"          => \$opt_o,
-     "t=s"   => \$opt_t, "type=s"          => \$opt_t,
+     "o=s" => \$opt_o, "oid=s"        => \$opt_o,
+     "t=s" => \$opt_t, "type=s"       => \$opt_t,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
@@ -66,7 +69,21 @@ $opt_H = shift unless ($opt_H);
 
 my $snmp = "1";
 if ($opt_v && $opt_v =~ /^[0-9]$/) {
-    $snmp = $opt_v;
+$snmp = $opt_v;
+}
+
+if ($snmp eq "3") {
+if (!$opt_u) {
+print "Option -u (--username) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}
+if (!$opt_p && !$opt_k) {
+print "Option -k (--key) or -p (--password) is required for snmpV3\n";
+exit $ERRORS{'OK'};
+}elsif ($opt_p && $opt_k) {
+print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
+exit $ERRORS{'OK'};
+}
 }
 
 ($opt_C) || ($opt_C = shift) || ($opt_C = "public");
@@ -105,10 +122,25 @@ my $day = 0;
 
 #===  create a SNMP session ====
 
-my ($session, $error) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);
+my ($session, $error);
+if ($snmp eq "1" || $snmp eq "2") {
+($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
 if (!defined($session)) {
-    print("CRITICAL: $error");
-    exit $ERRORS{'CRITICAL'};
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_k) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
+}elsif ($opt_p) {
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
+if (!defined($session)) {
+    print("UNKNOWN: SNMP Session : $error\n");
+    exit $ERRORS{'UNKNOWN'};
+}
 }
 
 my $result = $session->get_request(-varbindlist => [$opt_o]);
@@ -123,6 +155,10 @@ my $return_result =  $result->{$opt_o};
 #===  Plugin return code  ====
 
 if (defined($return_result)){
+    if ($return_result !~ /^[0-9]$/) {
+	print "Snmp return value isn't numeric.\n";
+	exit $ERRORS{'OK'};
+    }
     if ($opt_w && $opt_c && $return_result < $opt_w){
     	print "Ok value : " . $return_result . "|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";
 	exit $ERRORS{'OK'};
