@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl 
 #
 # $Id: check_graph_nt.pl,v 1.3 2005/08/01 18:04:00 gollum123 Exp $
 #
@@ -24,7 +24,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {
@@ -136,7 +136,6 @@ $name =~ s/\.pl.*//g;
 my $return_code;
 
 ## Plugin requests
-
 my $start=time;
 if ($op_v) {
     if ($op_v) {$op_v = "-v ".$op_v;}
@@ -147,12 +146,15 @@ if ($op_v) {
     if ($op_t) {$op_t = "-t ".$op_t;} else { $op_t = " ";}
     if ($op_s) {$op_s = "-s ".$op_s;} else { $op_s = " ";}
     if ($op_d) {$op_d = "-d ".$op_d;} else { $op_d = " ";}
-#    print "$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d\n";
-    $_ = `$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d 2>/dev/null`;
+#   print "$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d\n";
+    $_ = `$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d  `;
     my $return = $_;
+    if (!defined($return) || $return eq "")  {
+	print "Error in command, check your command options\n";
+	exit (3);
+    }
     $return =~ s/\\//g;
     $return_code = $? / 256;
-
     ## CLIENTVERSION
     if ($op_v =~ /CLIENTVERSION/){
         print "CLIENTVERSION impossible to Graph!\n";
@@ -206,13 +208,15 @@ if ($op_v) {
         #$return =~ s/%/ pct/g;
         ## Put value in octets : Mo -> o
 	if (defined($test[3]) && defined($test[7]) && defined($test[12])){
-	    $test[3] = $test[3] * 1024 * 1024;
-	    $test[7] = $test[7] * 1024 * 1024;
+	    $test[3] =~ s/\,/\./g;
+	    $test[3] = eval($test[3] * 1024 * 1024 * 1024);
+	    $test[7] =~ s/\,/\./g;
+	    $test[7] = eval ($test[7] * 1024 * 1024 * 1024);
 	    print $return_part[0] . "|total=".$test[3]."o used=".$test[7]."o\n";
 	} else {
 	    print $return_part[0] . "\n";
 	}
-		exit $return_code;
+	exit $return_code;
     } elsif ($op_v =~ /MEMUSE/){    ## MEMUSE
         $start = time;
         my @test = split(/ /,$_);
@@ -228,10 +232,12 @@ if ($op_v) {
         $return =~ s/\n/ /g;
         #$return =~ s/%/ pct/g;
         if ($test4[1] && $test[6] && $test[11]){
-		    ## Put value in octets : Mo -> o
-		    $test4[1] = $test4[1] * 1024 * 1024;
-		    $test[6] = $test[6] * 1024 * 1024;
-		    print $return_data[0] . "|total=".$test4[1]."o used=".$test[6]."o\n";
+	    ## Put value in octets : Mo -> o
+	    $test4[1] =~ s/\,/\./g;
+	    $test4[1] = eval($test4[1] * 1024 * 1024);
+	    $test[6] =~ s/\,/\./g;
+	    $test[6] = eval($test[6] * 1024 * 1024);
+	    print $return_data[0] . "|total=".$test4[1]."o used=".$test[6]."o\n";
         } else {
         	print $return_data[0] . "\n";
         }
@@ -244,7 +250,7 @@ if ($op_v) {
             if (defined($etat)) {
                	$etat =~ s/\n//;
             } else {
-               	$etat = "Unknow";
+               	$etat = "Unknown";
             }
             if ($etat =~ /Started/)
 	    {$etat=1;}
@@ -271,7 +277,8 @@ if ($op_v) {
 	## Print Plugins Output
         $return =~ s/\n/ /g;
         $return =~ s/%/ pct/g;
-        print $return . "|counter=".@values."\n";
+        #print "---".$return ."---\n";
+	print $return . "|counter=".@values."\n";
         exit $return_code;
     }
 } else {
