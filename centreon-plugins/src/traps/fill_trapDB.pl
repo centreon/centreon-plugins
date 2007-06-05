@@ -33,7 +33,7 @@ use DBI;
 
 sub set_db	{
 	require "@OREON_PATH@/ODS/etc/conf.pm"
-    my $dsn   = "dbi:mysql:$mysql_database_oreon";
+    my $dsn   = "dbi:mysql:database=$mysql_database_oreon;host=$mysql_host";
     return $dsn, $mysql_user, $mysql_passwd;
 }
 
