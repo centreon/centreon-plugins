@@ -5,7 +5,7 @@
 # GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Julien Mathis - Romain Le Merlus 
-#                 Christophe Coraboeuf
+#                 Mathavarajan Sugumaran
 #
 ###################################################################
 # This program is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@ use utils qw($TIMEOUT %ERRORS &print_revision &support);
 if (eval "require oreon" ) {
     use oreon qw(get_parameters);
     use vars qw($VERSION %oreon);
-    %oreon=get_parameters();
+    %oreon = get_parameters();
 } else {
 	print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
@@ -74,55 +74,51 @@ if ($opt_h) {
 }
 
 if (!$opt_H) {
-print_usage();
-exit $ERRORS{'OK'};
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 
 my $snmp = "1";
-if ($opt_v && $opt_v =~ /^[0-9]$/) {
-$snmp = $opt_v;
-}
+$snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
 
 @critical = ('2', '4', '6');
 if ($opt_c && $opt_c =~ /^([0-9]+),([0-9]+),([0-9]+)$/) {
-@critical = ($1,$2,$3);
-}else {
-print "Specify three critical treshold separated with a coma\n";
-exit $ERRORS{'OK'};
+	@critical = ($1,$2,$3);
+} else {
+	print "Specify three critical treshold separated with a coma\n";
+	exit $ERRORS{'OK'};
 }
 
 @warning = ('1', '3', '5');
 if ($opt_w && $opt_w =~ /^([0-9]+),([0-9]+),([0-9]+)$/) {
-@warning = ($1,$2,$3);
-}else {
-print "Specify three warning treshold separated with a coma\n";
-exit $ERRORS{'OK'};
+	@warning = ($1,$2,$3);
+} else {
+	print "Specify three warning treshold separated with a coma\n";
+	exit $ERRORS{'OK'};
 }
 
 for (my $i = 0; $i < scalar(@warning); $i++) {
-if ($warning[$i] >= $critical[$i]) {
-print "Critical tresholds must be superior to warning tresholds.\n";
-exit $ERRORS{'OK'};
-}
+	if ($warning[$i] >= $critical[$i]) {
+		print "Critical tresholds must be superior to warning tresholds.\n";
+		exit $ERRORS{'OK'};
+	}
 }
 
 if ($snmp eq "3") {
-if (!$opt_u) {
-print "Option -u (--username) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-if (!$opt_p && !$opt_k) {
-print "Option -k (--key) or -p (--password) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}elsif ($opt_p && $opt_k) {
-print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
-exit $ERRORS{'OK'};
-}
+	if (!$opt_u) {
+		print "Option -u (--username) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
+	if (!$opt_p && !$opt_k) {
+		print "Option -k (--key) or -p (--password) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	} elsif ($opt_p && $opt_k) {
+		print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
 }
 
-if (!$opt_C) {
-$opt_C = "public";
-}
+$opt_C = "public" if (!$opt_C);
 
 my $name = $0;
 $name =~ s/\.pl.*//g;
@@ -135,23 +131,23 @@ my $OID_CPULOAD_15 =$oreon{UNIX}{CPU_LOAD_15M};
 
 my ($session, $error);
 if ($snmp eq "1" || $snmp eq "2") {
-($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }elsif ($opt_k) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }elsif ($opt_p) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }
 
 my $result = $session->get_request(
