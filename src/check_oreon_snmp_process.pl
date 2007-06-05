@@ -68,48 +68,44 @@ GetOptions
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
- exit $ERRORS{'OK'};
+ 	exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
-  print_help();
- exit $ERRORS{'OK'};
+  	print_help();
+ 	exit $ERRORS{'OK'};
 }
 
 if (!$opt_H) {
-print_usage();
-exit $ERRORS{'OK'};
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 my $snmp = "1";
-if ($opt_v && $opt_v =~ /^[0-9]$/) {
-$snmp = $opt_v;
-}
+$snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
 
 if ($snmp eq "3") {
-if (!$opt_u) {
-print "Option -u (--username) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-if (!$opt_x && !$opt_k) {
-print "Option -k (--key) or -x (--password) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}elsif ($opt_x && $opt_k) {
-print "Only option -k (--key) or -x (--password) is needed for snmpV3\n";
-exit $ERRORS{'OK'};
-}
+	if (!$opt_u) {
+		print "Option -u (--username) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
+	if (!$opt_x && !$opt_k) {
+		print "Option -k (--key) or -x (--password) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	} elsif ($opt_x && $opt_k) {
+		print "Only option -k (--key) or -x (--password) is needed for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
 }
 
-if (!$opt_C) {
-$opt_C = "public";
-}
+$opt_C = "public" if (!$opt_C);
 
 my $process;
 if(!$opt_p) {
-print_usage();
-exit $ERRORS{'OK'};
-}elsif ($opt_p !~ /([-.A-Za-z0-9]+)/){
-print_usage();
-exit $ERRORS{'OK'};
+	print_usage();
+	exit $ERRORS{'OK'};
+} elsif ($opt_p !~ /([-.A-Za-z0-9]+)/){
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 $process = $opt_p;
 
@@ -123,23 +119,23 @@ my $OID_SW_RunStatus =$oreon{MIB2}{SW_RUNSTATUS};
 
 my ($session, $error);
 if ($snmp eq "1" || $snmp eq "2") {
-($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
-}elsif ($opt_k) {
+	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
+} elsif ($opt_k) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
-}elsif ($opt_x) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_x);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	if (!defined($session)) {
+    	print("UNKNOWN: SNMP Session : $error\n");
+    	exit $ERRORS{'UNKNOWN'};
+	}
+} elsif ($opt_x) {
+	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_x);
+	if (!defined($session)) {
+    	print("UNKNOWN: SNMP Session : $error\n");
+    	exit $ERRORS{'UNKNOWN'};
+	}
 }
 
 $result = $session->get_table(Baseoid => $OID_SW_RunName);
@@ -154,16 +150,13 @@ foreach my $key (oid_lex_sort(keys %$result)) {
     my @oid_list = split (/\./,$key);
     $process_list{$$result{$key}} =  pop (@oid_list) ;
     if (defined($opt_p) && $opt_p ne ""){
-	if ($$result{$key} eq $opt_p){
-	    $proc++;
-	}
+		$proc++ if ($$result{$key} eq $opt_p);
     } else {
-	$proc++;
+		$proc++;
     }
 }
 
-if (!($opt_n))
-{
+if (!($opt_n)) {
     if ($process_list{$process}) {
         $result = $session->get_request(-varbindlist => [$OID_SW_RunStatus . "." . $process_list{$process}]);
         if (!defined($result)) {
@@ -171,7 +164,7 @@ if (!($opt_n))
             $session->close;
             exit $ERRORS{'UNKNOWN'};
         }
-	$proc_run =  $result->{$OID_SW_RunStatus . "." . $process_list{$process} };
+		$proc_run =  $result->{$OID_SW_RunStatus . "." . $process_list{$process} };
     }
 }
 
@@ -212,4 +205,3 @@ sub print_help () {
     print_usage();
     print "\n";
 }
-
