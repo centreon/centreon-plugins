@@ -88,7 +88,7 @@ if ( ($rta_critical <= $rta_warning) || ($pl_critical <= $pl_warning) ) {
 my $NbPing;
 if ($opt_n =~ /([0-9]+)/){
     $NbPing = $1;
-} else{
+} else {
     print "Unknown ping number\n";
     exit $ERRORS{'UNKNOWN'};
 }
