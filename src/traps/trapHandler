@@ -41,8 +41,7 @@ sub set_db	{
 #
 
 sub get_hostinfos($$){
-    my $requete = "SELECT host_name FROM host WHERE host_address='$_[1]' ";
-    my $sth = $_[0]->prepare($requete);
+    my $sth = $_[0]->prepare("SELECT host_name FROM host WHERE host_address='$_[1]' ");
     $sth->execute();
     my @host;
     while (my $temp = $sth->fetchrow_array()) {
@@ -55,18 +54,19 @@ sub get_hostinfos($$){
 ##########################
 ## GET SERVICE DESCRIPTION
 #
+
 sub get_servicename($$$)	{
     my $query_host = "SELECT host_id from host WHERE host_name ='$_[2]'";
     my $sth = $_[0]->prepare($query_host);
     $sth->execute();
-    my $host_id = $sth -> fetchrow_array;
+    my $host_id = $sth -> fetchrow_array();
     exit if (!defined $host_id);
     $sth->finish();
     
     my $query_trap = "SELECT traps_id, traps_args, traps_status from traps where traps_oid='$_[1]'";
     $sth = $_[0]->prepare($query_trap);
     $sth->execute();
-    my ($trap_id,$argument, $trap_status)  =  $sth -> fetchrow_array;
+    my ($trap_id,$argument, $trap_status) = $sth->fetchrow_array();
     exit if (!defined $trap_id);
     
     my $query_services = "SELECT service_description FROM service s, host_service_relation h, traps_service_relation t";
@@ -75,7 +75,7 @@ sub get_servicename($$$)	{
     $sth = $_[0]->prepare($query_services);
     $sth->execute();
     my @service;
-    while (my $temp = $sth -> fetchrow_array) {
+    while (my $temp = $sth -> fetchrow_array()) {
 		$service[scalar(@service)] = $temp;
     }
     

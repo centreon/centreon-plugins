@@ -43,7 +43,7 @@ sub set_db	{
 
 sub existsInDB($$) {
     my ($dbh, $oid,$manuf) = @_;
-    my $sth = $dbh->prepare("SELECT traps_id from traps where traps_oid='$oid'");
+    my $sth = $dbh->prepare("SELECT traps_id FROM traps WHERE traps_oid = '$oid'");
     $sth->execute();
     if (defined($sth->fetchrow_array)) {
 		$sth->finish();
@@ -95,8 +95,7 @@ sub main($$) {
 				$last_oid = $oid;
 		    }
 		} elsif ($_ =~/^FORMAT\ (.*)/ && $last_oid ne "") {
-		    my $query = "UPDATE `traps` set traps_args='$1' where traps_oid='$last_oid'";
-		    my $sth = $dbh->prepare($query);
+		    my $sth = $dbh->prepare("UPDATE `traps` set traps_args='$1' WHERE traps_oid = '$last_oid'");
 		    $sth->execute();
 		    $sth->finish();
 		} elsif ($_ =~ /^SDESC(.*)/ && $last_oid ne "") {	    
