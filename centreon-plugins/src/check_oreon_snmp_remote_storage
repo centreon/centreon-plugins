@@ -80,8 +80,8 @@ if ($opt_h) {
 	exit $ERRORS{'OK'};
 }
 if (!$opt_H) {
-print_usage();
-exit $ERRORS{'OK'};
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 
 if ($opt_n && !$opt_d) {
@@ -89,40 +89,35 @@ if ($opt_n && !$opt_d) {
     exit $ERRORS{'UNKNOWN'};
 }
 my $snmp = "1";
-if ($opt_v && $opt_v =~ /^[0-9]$/) {
-$snmp = $opt_v;
-}
+$snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
 
 if ($snmp eq "3") {
-if (!$opt_u) {
-print "Option -u (--username) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-if (!$opt_p && !$opt_k) {
-print "Option -k (--key) or -p (--password) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}elsif ($opt_p && $opt_k) {
-print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
-exit $ERRORS{'OK'};
-}
+	if (!$opt_u) {
+		print "Option -u (--username) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
+	if (!$opt_p && !$opt_k) {
+		print "Option -k (--key) or -p (--password) is required for snmpV3\n";
+		exit $ERRORS{'OK'};
+	} elsif ($opt_p && $opt_k) {
+		print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
+		exit $ERRORS{'OK'};
+	}
 }
 
-if (!$opt_C) {
-$opt_C = "public";
-}
-if (!$opt_d) {
-$opt_d = 2;
-}
+$opt_C = "public" if (!$opt_C);
+$opt_d = 2 if (!$opt_d);
+
 ($opt_d) || ($opt_d = shift) || ($opt_d = 2);
 
 my $partition = 0;
 if ($opt_d =~ /([0-9]+)/ && !$opt_n){
     $partition = $1;
-}
-elsif (!$opt_n){
+} elsif (!$opt_n){
     print "Unknown -d number expected... or it doesn't exist, try another disk - number\n";
     exit $ERRORS{'UNKNOWN'};
 }
+
 my $critical = 95;
 if ($opt_c && $opt_c =~ /^[0-9]+$/) {
     $critical = $opt_c;
