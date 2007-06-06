@@ -27,15 +27,8 @@ use strict;
 use Getopt::Long;
 use DBI;
 
-#############################
-## SET DATABASE CONFIGURATION
-#
-
-sub set_db	{
-	require "@OREON_PATH@/ODS/etc/conf.pm"
-    my $dsn   = "dbi:mysql:database=$mysql_database_oreon;host=$mysql_host";
-    return $dsn, $mysql_user, $mysql_passwd;
-}
+use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
+require "@OREON_PATH@/ODS/etc/conf.pm";
 
 ######################################
 ## Get snmptt configuration files path
@@ -54,17 +47,18 @@ sub getPath($) {
 sub main() {
     print "Generating SNMPTT configuration files...\n";
     my ($nbMan, $nbTraps) = (0,0);
-    my @db = set_db();
-    my $dbh = DBI->connect($db[0], $db[1], $db[2]) or die "Echec de la connexion mysql\n";
+
+	my $dsn = "dbi:mysql:$mysql_database_oreon";
+    my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
     my $confFiles_path = getPath($dbh);
     
-	my $sth = $_[0]->prepare("SELECT nagios_path_plugins FROM general_opt LIMIT 1");
+	my $sth = $dbh->prepare("SELECT nagios_path_plugins FROM general_opt LIMIT 1");
 	$sth->execute();
-	my $conf = $sth->fetchrow_array();
+	my @conf = $sth->fetchrow_array();
 	$sth->finish();
-	my $NAGIOS_TRAPS = $conf->{'nagios_path_plugins'}."traps/";
+	my $NAGIOS_TRAPS = $conf[0]."traps/";
     
-    my $sth = $dbh->prepare("SELECT id, name from inventory_manufacturer");
+    $sth = $dbh->prepare("SELECT id, name from inventory_manufacturer");
     $sth->execute();
     my $snmpttIni = "";
     while (my ($man_id, $man_name) = $sth->fetchrow_array()) {
