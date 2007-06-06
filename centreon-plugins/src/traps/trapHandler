@@ -26,15 +26,8 @@
 use strict;
 use DBI;
 
-#############################
-## SET DATABASE CONFIGURATION
-#
-
-sub set_db	{
-	require "@OREON_PATH@/ODS/etc/conf.pm"
-    my $dsn   = "dbi:mysql:database=$mysql_database_oreon;host=$mysql_host";
-    return $dsn, $mysql_user, $mysql_passwd;
-}
+use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
+require "@OREON_PATH@/ODS/etc/conf.pm";
 
 ###############################
 ## GET HOSTNAME FROM IP ADDRESS
@@ -66,7 +59,7 @@ sub get_servicename($$$)	{
     my $query_trap = "SELECT traps_id, traps_args, traps_status from traps where traps_oid='$_[1]'";
     $sth = $_[0]->prepare($query_trap);
     $sth->execute();
-    my ($trap_id,$argument, $trap_status) = $sth->fetchrow_array();
+    my ($trap_id, $argument, $trap_status) = $sth->fetchrow_array();
     exit if (!defined $trap_id);
     
     my $query_services = "SELECT service_description FROM service s, host_service_relation h, traps_service_relation t";
@@ -101,8 +94,9 @@ sub getTrapsInfos($$$){
     my $ip = shift;
     my $oid = shift;
     my $arguments_line = shift;
-    my @db = set_db();
-    my $dbh = DBI->connect($db[0], $db[1], $db[2]) or die "Echec de la connexion\n";
+    
+    my $dsn   = "dbi:mysql:$mysql_database_oreon";    
+    my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
     my @host = get_hostinfos($dbh, $ip);
     foreach(@host) {
 		my $this_host = $_;
@@ -115,9 +109,9 @@ sub getTrapsInfos($$$){
 		    chomp($datetime);
 		    $sth = $_[0]->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
     		$sth->execute();
-			my $conf = $sth->fetchrow_array();
+			my @conf = $sth->fetchrow_array();
 		   	$sth->finish();
-		    my $submit = `/usr/bin/printf "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$argument" >> $conf->{'command_file'}`;
+		    my $submit = `/usr/bin/printf "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$argument" >> $conf[0]`;
 		}
     }
     $dbh->disconnect();
