@@ -27,15 +27,8 @@ use strict;
 use Getopt::Long;
 use DBI;
 
-#############################
-## SET DATABASE CONFIGURATION
-#
-
-sub set_db	{
-	require "@OREON_PATH@/ODS/etc/conf.pm"
-    my $dsn   = "dbi:mysql:database=$mysql_database_oreon;host=$mysql_host";
-    return $dsn, $mysql_user, $mysql_passwd;
-}
+use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
+require "@OREON_PATH@/ODS/etc/conf.pm";
 
 #########################################
 ## TEST IF OID ALREADY EXISTS IN DATABASE
@@ -72,10 +65,12 @@ sub getStatus($$) {
 ################
 ## MAIN FUNCTION
 #
+
 sub main($$) {
     my $manuf = $_[1];
-    my @db = set_db();
-    my $dbh = DBI->connect($db[0], $db[1], $db[2]) or die "DB connexion error\n";
+    
+    my $dsn   = "dbi:mysql:$mysql_database_oreon";
+    my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
     if (!open(FILE, $_[0])) {
 		print "Cannot open configuration file : $_[0]\n";
 		exit;
