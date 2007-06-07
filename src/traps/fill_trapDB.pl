@@ -5,6 +5,7 @@
 # GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Mathavarajan Sugumaran - msugumaran@merethis.com
+#                 Julien Mathis - Romain Le Merlus
 #
 ###################################################################
 # This program is free software; you can redistribute it and/or
