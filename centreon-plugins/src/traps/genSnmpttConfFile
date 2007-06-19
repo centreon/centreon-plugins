@@ -59,7 +59,7 @@ sub main() {
 	$sth->finish();
 	my $NAGIOS_TRAPS = $conf[0]."traps/";
     
-    $sth = $dbh->prepare("SELECT id, name from inventory_manufacturer");
+    $sth = $dbh->prepare("SELECT id, name from traps_vendor");
     $sth->execute();
     my $snmpttIni = "";
     while (my ($man_id, $man_name) = $sth->fetchrow_array()) {
