@@ -28,7 +28,7 @@ use strict;
 use DBI;
 
 use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
-require "@INSTALL_DIR_OREON@/ODS/etc/conf.pm";
+require "@OREON_PATH@/ODS/etc/conf.pm";
 
 ###############################
 ## GET HOSTNAME FROM IP ADDRESS
@@ -108,11 +108,11 @@ sub getTrapsInfos($$$){
 		    my @vars = split(/\ /,$arguments_line);
 		    $argument =~ s/\$([0-9]+)/$vars[$1-1]/g;
 		    chomp($datetime);
-		    $sth = $_[0]->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
-    		$sth->execute();
+		    my $sth = $dbh->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
+		    $sth->execute();
 			my @conf = $sth->fetchrow_array();
 		   	$sth->finish();
-		    my $submit = `/usr/bin/printf "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$argument" >> $conf[0]`;
+		    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$arguments_line" >> $conf[0]`;
 		}
     }
     $dbh->disconnect();
