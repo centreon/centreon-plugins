@@ -8,8 +8,6 @@
 # TODO : put $o_delta as an option
 ###############################################################
 #
-# help : ./check_snmp_process -h
-
 ############### BASE DIRECTORY FOR TEMP FILE ########
 my $o_base_dir="/tmp/tmp_Nagios_proc.";
 my $file_history=200;   # number of data to keep in files.

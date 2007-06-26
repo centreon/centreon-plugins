@@ -1,46 +1,55 @@
 #! /usr/bin/perl -w
-###################################################################
-# Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/gpl.txt
+# $Id: check_oreon_ping,v 1.2 2006/04/28 10:21:49 Julien Mathis $
 #
-# Developped by : Julien Mathis - Romain Le Merlus 
-#                 Christophe Coraboeuf
+# Oreon's plugins are developped with GPL Licence :
+# http://www.fsf.org/licenses/gpl.txt
+# Developped by : Julien Mathis - Mathieu Mettre - Romain Le Merlus 
 #
-###################################################################
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
+# Modified By Julien Mathis - Sugumaran Mathavarajan For Merethis Company
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-#    For information : contact@merethis.com
-####################################################################
+# The Software is provided to you AS IS and WITH ALL FAULTS.
+# OREON makes no representation and gives no warranty whatsoever,
+# whether express or implied, and without limitation, with regard to the quality,
+# safety, contents, performance, merchantability, non-infringement or suitability for
+# any particular or intended purpose of the Software found on the OREON web site.
+# In no event will OREON be liable for any direct, indirect, punitive, special,
+# incidental or consequential damages however they may arise and even if OREON has
+# been previously advised of the possibility of such damages.
+
 #
-# Script init
+# Plugin init
 #
 
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
+
+if (eval "require oreon" ) {
+	use oreon qw(get_parameters);
+	use vars qw($VERSION %oreon);
+	%oreon=get_parameters();
+} else {
+	print "Unable to load oreon perl module\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_H $opt_D $opt_w $opt_c $opt_n $rta_critical $rta_warning $pl_critical $pl_warning $opt_s);
+use vars qw($opt_V $opt_h $opt_g $opt_H $opt_D $opt_w $opt_c $opt_n $opt_f $opt_S $rta_critical $rta_warning $pl_critical $pl_warning $opt_s $opt_step $step );
 
+#
 # Plugin var init
+#
 
 my $ping = `whereis -b ping`;
 $ping =~ /^.*:\s(.*)$/;
 $ping = $1;
 
-$PROGNAME = "check_graph_ping";
+$PROGNAME = "$0";
 sub print_help ();
 sub print_usage ();
 
@@ -48,6 +57,7 @@ Getopt::Long::Configure('bundling');
 GetOptions
     ("h" => \$opt_h,		"help" => \$opt_h,
      "V" => \$opt_V,		"version" => \$opt_V,
+     "rrd_step=s" => \$opt_step,"f" => \$opt_f,
      "w=s" => \$opt_w,		"warning=s" => \$opt_w,
      "c=s" => \$opt_c,		"critical=s" => \$opt_c,
      "n=s" => \$opt_n,		"number=s" => \$opt_n,
@@ -77,6 +87,10 @@ if ($opt_w =~ /([0-9]+),([0-9]+)%/) {
     $rta_warning = $1;
     $pl_warning = $2;
 }
+if (!$rta_warning || !$rta_critical || !$pl_warning || !$pl_critical) {
+    print "bad initialisation of Treshholds\n";
+    exit $ERRORS{'OK'};
+}
 
 if ( ($rta_critical <= $rta_warning) || ($pl_critical <= $pl_warning) ) {
     print "critical must be superior to warning\n";
@@ -88,18 +102,31 @@ if ( ($rta_critical <= $rta_warning) || ($pl_critical <= $pl_warning) ) {
 my $NbPing;
 if ($opt_n =~ /([0-9]+)/){
     $NbPing = $1;
-} else {
+} else{
     print "Unknown ping number\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
+my $start=time;
+
+#
+# RRDTools create rrd
+#
+
+#
 # Plugin requests
+#
 
 $_ = `$ping -n -c $NbPing $opt_H 2>/dev/null`;
 my $return = $? / 256;
 
+#
 # Get Data From Ping Result
-
+#
+if (!$_) {
+    print "no value returned by ping\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 my $ping_result = $_;
 my @ping_result_array = split(/\n/,$ping_result);
 my @ping_subresult1_array;
@@ -123,7 +150,9 @@ if( ( $return != 0 ) || $ping_result_array[@ping_result_array -2 ] =~ /100% pack
     $pl = $1;
 }
 
+#
 # Plugin return code
+#
 
 my $result_str = "";
 
@@ -136,7 +165,7 @@ if( $rta == -1 ) {
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
     print "GPING CRITICAL - ". $tab[1] ."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
     exit $ERRORS{'CRITICAL'};
-} elsif (($pl >= $pl_warning) || ($rta >= $rta_warning) ) {
+} elsif ( ($pl >= $pl_warning) || ($rta >= $rta_warning) ) {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
     print "GPING WARNING - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
@@ -164,7 +193,7 @@ sub print_usage () {
 
 sub print_help () {
     print "######################################################\n";
-    print "#      Copyright (c) 2004-2007 Oreon-project         #\n";
+    print "#      Copyright (c) 2004-2006 Oreon-project         #\n";
 	print "#      Bugs to http://www.oreon-project.org/         #\n";
 	print "######################################################\n";
     print_usage();
