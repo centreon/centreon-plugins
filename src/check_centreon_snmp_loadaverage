@@ -185,6 +185,9 @@ sub print_usage () {
     print "   -w (--warning)   Three warning tresholds (defaults : 1,3,5)\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
+    print "   -k (--key)        snmp V3 key\n";
+    print "   -p (--password)   snmp V3 password\n";
+    print "   -u (--username)   snmp v3 username \n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }

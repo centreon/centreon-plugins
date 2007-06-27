@@ -57,10 +57,10 @@ sub get_servicename($$$)	{
     exit if (!defined $host_id);
     $sth->finish();
     
-    my $query_trap = "SELECT traps_id, traps_args, traps_status from traps where traps_oid='$_[1]'";
+    my $query_trap = "SELECT traps_id, traps_status from traps where traps_oid='$_[1]'";
     $sth = $_[0]->prepare($query_trap);
     $sth->execute();
-    my ($trap_id, $argument, $trap_status) = $sth->fetchrow_array();
+    my ($trap_id, $trap_status) = $sth->fetchrow_array();
     exit if (!defined $trap_id);
     
     my $query_services = "SELECT service_description FROM service s, host_service_relation h, traps_service_relation t";
@@ -84,7 +84,7 @@ sub get_servicename($$$)	{
 		$new_service[scalar(@new_service)] = $temp;
     }
     $sth->finish();
-    return $trap_status, $argument, (@service,@new_service);
+    return $trap_status, (@service,@new_service);
 }
 
 #######################################
@@ -101,18 +101,16 @@ sub getTrapsInfos($$$){
     my @host = get_hostinfos($dbh, $ip);
     foreach(@host) {
 		my $this_host = $_;
-		my ($status, $argument, @servicename) = get_servicename($dbh, $oid, $_);
+		my ($status, @servicename) = get_servicename($dbh, $oid, $_);
 		foreach (@servicename) {
 		    my $this_service = $_;
 		    my $datetime=`date +%s`;
-		    my @vars = split(/\ /,$arguments_line);
-		    $argument =~ s/\$([0-9]+)/$vars[$1-1]/g;
 		    chomp($datetime);
 		    my $sth = $dbh->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
 		    $sth->execute();
 			my @conf = $sth->fetchrow_array();
-		   	$sth->finish();
-		    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$argument" >> $conf[0]`;
+		   	$sth->finish(); 
+		    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$arguments_line" >> $conf[0]`;
 		}
     }
     $dbh->disconnect();
@@ -126,5 +124,6 @@ if (scalar(@ARGV)) {
     my $ip = $ARGV[0];
     my $oid = $ARGV[1];
     my $arguments = $ARGV[2];
+    my $toto = `/bin/echo $arguments >> /tmp/traphandler.log`; 
     getTrapsInfos($ip, $oid, $arguments);
 }
