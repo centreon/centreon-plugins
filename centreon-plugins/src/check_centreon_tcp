@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# $Id: check_graph_tcp.pl,v 1.2 2005/08/01 17:50:50 gollum123 Exp $
+# $Id: check_graph_tcp.pl,v 1.3 2005/08/01 17:50:50 gollum123 Exp $
 #
 # Oreon's plugins are developped with GPL Licence :
 # http://www.fsf.org/licenses/gpl.txt
@@ -20,8 +20,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-#use lib "/srv/nagios/libexec";
-use lib "/usr/lib/nagios/plugins";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {

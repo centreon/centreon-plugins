@@ -13,7 +13,7 @@
 ############################## check_oreon_snmp_process_detailed ##############
 # Version : 1.2.2
 # Date : Jun 20 2007
-# Author  : Sugumaran Mathavarajan - mat.sugumaran@merethis.com
+# Author  : Sugumaran Mathavarajan - msugumaran@merethis.com
 # Company : Merethis
 # Licence : GPL - http://www.fsf.org/licenses/gpl.txt
 # TODO : put $o_delta as an option
@@ -32,7 +32,7 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
 
 # Oreon specific

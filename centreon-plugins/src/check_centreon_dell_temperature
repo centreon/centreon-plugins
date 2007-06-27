@@ -1,12 +1,12 @@
 #! /usr/bin/perl -w
 #
-# $Id: check_graph_dell_temperature.pl,v 1.1 2005/07/27 22:22:48 wistof Exp $
+# $Id: check_graph_dell_temperature,v 1.4 2005/07/27 22:22:48 wistof Exp $
 #
 # Oreon's plugins are developped with GPL Licence :
 # http://www.fsf.org/licenses/gpl.txt
 # Developped by : Wistof
 #
-# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
+# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf - Sugumaran Mathavarajan
 #
 # The Software is provided to you AS IS and WITH ALL FAULTS.
 # OREON makes no representation and gives no warranty whatsoever,
@@ -16,8 +16,6 @@
 # In no event will OREON be liable for any direct, indirect, punitive, special,
 # incidental or consequential damages however they may arise and even if OREON has
 # been previously advised of the possibility of such damages.
-
-# based on "graph plugins" developped by Oreon Team. See http://www.oreon.org.
 ##
 ## Plugin init
 ##
@@ -25,7 +23,7 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {

@@ -1,15 +1,13 @@
 #! /usr/bin/perl -w
 #
-# $Id: check_graph_nt.pl,v 1.3 2005/08/01 18:04:00 gollum123 Exp $
+# $Id: check_graph_nt.pl,v 1.4 2005/08/01 18:04:00 gollum123 Exp $
 #
 # Oreon's plugins are developped with GPL Licence :
 # http://www.fsf.org/licenses/gpl.txt
 # Developped by : Julien Mathis - Mathieu Mettre
-# Under control of Flavien Astraud, Jerome Landrieu for Epitech.
-# Oreon's plugins are developped in partnership with Linagora company.
 #
 # Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
-# Modified for Oreon Project by : Sugumaran Mathavarajan - mat.sugumaran@merethis.com
+# Modified for Oreon Project by : Sugumaran Mathavarajan - msugumaran@merethis.com
 #
 # The Software is provided to you AS IS and WITH ALL FAULTS.
 # OREON makes no representation and gives no warranty whatsoever,
@@ -26,7 +24,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 
