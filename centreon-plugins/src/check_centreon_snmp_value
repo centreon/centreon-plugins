@@ -28,7 +28,7 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 use vars qw($PROGNAME);
@@ -185,6 +185,9 @@ sub print_usage () {
     print "                        2 for SNMP v2c\n";
     print "   -t (--type)       Data Source Type (GAUGE or COUNTER) (GAUGE by default)\n";
     print "   -o (--oid)        OID to check\n";
+    print "   -k (--key)        snmp V3 key\n";
+    print "   -p (--password)   snmp V3 password\n";
+    print "   -u (--username)   snmp v3 username \n";
     print "   -w (--warning)    Warning level\n";
     print "   -c (--critical)   Critical level\n";
     print "   -V (--version)    Plugin version\n";

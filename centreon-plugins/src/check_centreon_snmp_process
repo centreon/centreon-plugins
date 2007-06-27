@@ -193,6 +193,9 @@ sub print_usage () {
     print "                        2 for SNMP v2c\n";
     print "   -n (--number)     Return the number of current running processes. \n";
     print "   -p (--process)    Set the process name ex: by default smbd\n";
+    print "   -k (--key)        snmp V3 key\n";
+    print "   -x (--password)   snmp V3 password\n";
+    print "   -u (--username)   snmp v3 username \n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }
