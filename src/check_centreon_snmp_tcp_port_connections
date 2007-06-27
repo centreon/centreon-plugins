@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-# $Id: check_TcpConn.pl,v 1.2 2005/11/17 10:21:49 Sugumaran Mat $
+# $Id: check_TcpConn.pl,v 1.3 2005/11/17 10:21:49 Sugumaran Mat $
 #
 # This plugin is developped under GPL Licence:
 # http://www.fsf.org/licenses/gpl.txt
@@ -24,7 +24,7 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require oreon" ) {
@@ -41,7 +41,7 @@ use Getopt::Long;
 use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_p $opt_c $opt_w);
 use vars qw($snmp);
 
-$PROGNAME = "ckeck_TcpConn";
+$PROGNAME = "$0";
 sub print_help ();
 sub print_usage ();
 

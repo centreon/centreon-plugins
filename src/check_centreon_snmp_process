@@ -5,7 +5,7 @@
 # GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Julien Mathis - Romain Le Merlus 
-#                 Christophe Coraboeuf
+#                 Christophe Coraboeuf - Sugumaran Mathavarajan
 #
 ###################################################################
 # This program is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 if (eval "require oreon" ) {
     use oreon qw(get_parameters);

@@ -24,7 +24,6 @@ use utils qw(%ERRORS $TIMEOUT);
 
 # Oreon specific
 
-#use lib "@NAGIOS_PLUGINS@";
 if (eval "require oreon" ) {
   use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
   use vars qw($VERSION %oreon);
