@@ -29,7 +29,7 @@ use Getopt::Long;
 use DBI;
 
 use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
-require "@CENTREON_PATH@/ODS/etc/conf.pm";
+require "/srv/oreon/ODS/etc/conf.pm";
 
 ######################################
 ## Get snmptt configuration files path
@@ -76,8 +76,10 @@ sub main() {
 		    print FILE "EVENT ".$values[0]." ".$values[1]." \"Status Event\" ".$values[2]."\n";
 		    if (defined($values[3])) {
 			print FILE "FORMAT ".$values[3]."\n";
-		    } 
-		    print FILE "EXEC ".$NAGIOS_TRAPS."/trapHandler \$aA \$o \"$values[3]\"\n";
+		    }else {
+			$values[3] = "no output for trap!";
+		    }
+		    print FILE "EXEC ".$NAGIOS_TRAPS."trapHandler \$aA \$o \"$values[3]\"\n";
 		    if (defined($values[4])) {
 				print FILE "SDESC\n".$values[4];
 				if ($values[4] =~ /\n$/) {
