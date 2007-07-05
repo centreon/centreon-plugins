@@ -172,7 +172,7 @@ if ($critical[0] <= $un || $critical[1] <= $cinq || $critical[2] <= $quinze) {
     $status = "CRITICAL";
 }
 
-print "load average: ".$un.", ".$cinq.", ".$quinze.".|load1=".$un."%;;;0;100 load5=".$cinq."%;;;0;100 load15=".$quinze."%;;;0;100\n";
+print "load average: ".$un.", ".$cinq.", ".$quinze.".|load1=".$un." load5=".$cinq." load15=".$quinze."\n";
 exit $ERRORS{$status};
 
 sub print_usage () {
