@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Arguments:
+#  $1 = host_name (Short name of host that the service is
+#       associated with)
+#  $2 = state_string (A string representing the status of
+#       the given service - "UP", "DOWN", "UNREACHABLE"
+#  $3 = plugin_output (A text string that should be used
+#       as the plugin output for the service checks)
+#
+
+# pipe the service check info into the send_nsca program, which
+# in turn transmits the data to the nsca daemon on the central
+# monitoring server
+
+
+        return_code=-1
+
+        case "$2" in
+            UP)
+            return_code=0
+                    ;;
+                DOWN)
+                    return_code=1
+                        ;;
+                UNREACHABLE)
+                    return_code=2
+                        ;;
+        esac
+
+# Test everything works fine
+#/usr/bin/printf "%s\t%s\t%s\n" "$1" "$2" "$3" >> /tmp/test
+
+/usr/bin/printf "%s\t%s\t%s\n" "$1" "$return_code" "$3" | /usr/sbin/send_nsca IP -p PORT -c /etc/send_nsca.cfg
