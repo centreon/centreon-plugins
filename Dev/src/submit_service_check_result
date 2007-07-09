@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Arguments:
+#  $1 = host_name (Short name of host that the service is
+#       associated with)
+#  $2 = svc_description (Description of the service)
+#  $3 = state_string (A string representing the status of
+#       the given service - "OK", "WARNING", "CRITICAL"
+#       or "UNKNOWN")
+#  $4 = plugin_output (A text string that should be used
+#       as the plugin output for the service checks)
+#
+
+# pipe the service check info into the send_nsca program, which
+# in turn transmits the data to the nsca daemon on the central
+# monitoring server
+
+	return_code=-1
+
+	case "$3" in
+    	    OK)
+       	        return_code=0
+            	    ;;
+	        WARNING)
+    	            return_code=1
+        	        ;;
+	        CRITICAL)
+    	            return_code=2
+        	        ;;
+	        UNKNOWN)
+    	            return_code=-1
+        	        ;;
+	esac
+
+# Test everything works fine
+#/usr/bin/printf "%s\t%s\t%s\t%s\n" "$1" "$2" "$3" "$4" >> /tmp/test
+
+/usr/bin/printf "%s\t%s\t%s\t%s\n" "$1" "$2" "$return_code" "$4" | /usr/sbin/send_nsca IP -p PORT -c /etc/send_nsca.cfg
