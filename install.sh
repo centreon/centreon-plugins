@@ -35,7 +35,6 @@ echo "##########################################################################
 echo "#                     OREON Project (www.oreon-project.org)              #"
 echo "#                         Thanks for using OREON                         #"
 echo "#                                                                        #"
-echo "#                                v 1.2.3                                 #"
 echo "#                                                                        #"
 echo "#                            infos@oreon-project.org                     #"
 echo "#                                                                        #"

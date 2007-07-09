@@ -1,5 +1,5 @@
 ############################
-# Oreon Plugins Installation
+# Centreon Plugins Installation
 ############################
 
 - just run install.sh in src/ directory
