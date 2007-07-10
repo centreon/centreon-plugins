@@ -63,7 +63,6 @@ GetOptions
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
      "d=s" => \$opt_d, "disk=s"       => \$opt_d,
-     "f"   => \$opt_f, "perfparse"         => \$opt_f,
      "n"   => \$opt_n, "name"         => \$opt_n,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
@@ -117,7 +116,12 @@ if ($opt_d =~ /([0-9]+)/ && !$opt_n){
     print "Unknown -d number expected... or it doesn't exist, try another disk - number\n";
     exit $ERRORS{'UNKNOWN'};
 }
-
+if (!$opt_c) {
+	$opt_c = 95;
+}
+if (!$opt_w) {
+	$opt_w = 90;
+}
 my $critical = 95;
 if ($opt_c && $opt_c =~ /^[0-9]+$/) {
     $critical = $opt_c;
@@ -275,12 +279,10 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         print " Go USED: " . $pourcent . "% : ";
         printf("%.3f", $Used);
         print " Go";
-        if ($opt_f){
         	my $size_o = $Used * 1073741824;
         	my $warn = $opt_w * $size_o;
         	my $crit = $opt_c * $size_o;
         	print "|size=".$lastTot."o used=".$size_o.";".$warn.";".$crit;
-        }
         print "\n";
         exit $return_code;
     } else {
