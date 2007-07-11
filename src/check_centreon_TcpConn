@@ -52,12 +52,8 @@ GetOptions
      "V"   => \$opt_V, "version"      => \$opt_V,
      "H=s"   => \$opt_H, "Hostname"     => \$opt_H,
      "p=i"   => \$opt_p, "port"         => \$opt_p,
-<<<<<<< .mine
-     "C=s"   => \$opt_c, "Community"    => \$opt_c
-=======
      "C=s"   => \$opt_C, "Community"    => \$opt_C, 
      "c=s"	=> \$opt_c, "w=s"	=> \$opt_w
->>>>>>> .r479
 );
 
 if ($opt_V) {
