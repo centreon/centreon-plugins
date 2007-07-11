@@ -19,23 +19,20 @@
 ##
 ## Plugin init
 ##
-
 use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "@NAGIOS_PLUGINS";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-
 if (eval "require oreon" ) {
-    use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+    use oreon qw(get_parameters);
     use vars qw($VERSION %oreon);
-    %oreon=get_parameters();
+    %oreon = get_parameters();
 } else {
     print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
-
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_p $opt_c $opt_w);
@@ -48,12 +45,12 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
-     "v=s"   => \$opt_v, "snmp_version" => \$opt_v,
+     "v=s"   => \$opt_v, "snmp_version=s" => \$opt_v,
      "V"   => \$opt_V, "version"      => \$opt_V,
-     "H=s"   => \$opt_H, "Hostname"     => \$opt_H,
-     "p=i"   => \$opt_p, "port"         => \$opt_p,
-     "C=s"   => \$opt_C, "Community"    => \$opt_C, 
-     "c=s"	=> \$opt_c, "w=s"	=> \$opt_w
+     "H=s"   => \$opt_H, "Hostname=s"     => \$opt_H,
+     "p=i"   => \$opt_p, "port=s"         => \$opt_p,
+     "C=s"   => \$opt_C, "Community=s"    => \$opt_C,
+     "c=s"=> \$opt_c, "w=s"=> \$opt_w
 );
 
 if ($opt_V) {
