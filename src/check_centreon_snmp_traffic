@@ -154,6 +154,8 @@ if ($critical <= $warning){
 ##
 
 my $OID_DESC =$oreon{MIB2}{IF_DESC};
+my $OID_OPERSTATUS =$oreon{MIB2}{IF_OPERSTATUS};
+my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
 
 # create a SNMP session
 my ($session, $error);
@@ -202,17 +204,32 @@ my $OID_SPEED = $oreon{MIB2}{IF_SPEED}.".".$interface;
 
 if ($opt_s) {
     my $result = $session->get_table(Baseoid => $OID_DESC);
+if (!defined($result)) {
+    printf("ERROR: Description Table : %s.\n", $session->error);
+    $session->close;
+    exit $ERRORS{'UNKNOWN'};
+}
+foreach my $key ( oid_lex_sort(keys %$result)) {
+    my @oid_list = split (/\./,$key);
+    my $index = pop (@oid_list) ;
+    my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
     if (!defined($result)) {
-        printf("ERROR: Description Table : %s.\n", $session->error);
-        $session->close;
-        exit $ERRORS{'UNKNOWN'};
-    }
-    foreach my $key ( oid_lex_sort(keys %$result)) {
-        my @oid_list = split (/\./,$key);
-        my $index = pop (@oid_list) ;
-        print "Interface $index :: $$result{$key}\n";
-    }
-    exit $ERRORS{'OK'};
+	printf("ERROR: Interface Status Request : %s", $session->error);
+	exit $ERRORS{'UNKNOWN'};
+	}
+        print "Interface $index :: $$result{$key} :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
+}
+exit $ERRORS{'OK'};
+}
+
+my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface]);
+if (!defined($interface_status)) {
+    printf("ERROR: Interface Status Request : %s", $session->error);
+exit $ERRORS{'UNKNOWN'};
+}
+if ($operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1] ne "up") {
+    print "Error : interface is not ready - status : ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1]."\n";
+exit $ERRORS{'CRITICAL'};
 }
 
 
