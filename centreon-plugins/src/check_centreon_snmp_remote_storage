@@ -2,7 +2,7 @@
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/gpl.txt
+# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #
 # Developped by : Julien Mathis - Romain Le Merlus 
 #                 Christophe Coraboeuf - Sugumaran Mathavarajan
@@ -279,10 +279,10 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         print " Go USED: " . $pourcent . "% : ";
         printf("%.3f", $Used);
         print " Go";
-        	my $size_o = $Used * 1073741824;
-        	my $warn = $opt_w * $size_o;
-        	my $crit = $opt_c * $size_o;
-        	print "|size=".$lastTot."o used=".$size_o.";".$warn.";".$crit;
+        my $size_o = $Used * 1073741824;
+        my $warn = $opt_w * $size_o;
+        my $crit = $opt_c * $size_o;
+        print "|size=".$lastTot."o used=".$size_o.";".$warn.";".$crit;
         print "\n";
         exit $return_code;
     } else {
