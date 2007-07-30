@@ -1,23 +1,25 @@
 #! /usr/bin/perl -w
+###################################################################
+# Oreon is developped with GPL Licence 2.0 
 #
-# $Id: check_packetsErrors.pl,v 1.2 2005/07/27 22:21:49 Julio $
+# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #
-# Oreon's plugins are developped with GPL Licence :
-# http://www.fsf.org/licenses/gpl.txt
-# Developped by : Julien Mathis - Romain Le Merlus - Sugumaran Mat
+# Developped by : Julien Mathis - Romain Le Merlus 
+#                 Mathavarajan Sugumaran
 #
-# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
-# Modified By Julien Mathis For Merethis Company
+###################################################################
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-# The Software is provided to you AS IS and WITH ALL FAULTS.
-# OREON makes no representation and gives no warranty whatsoever,
-# whether express or implied, and without limitation, with regard to the quality,
-# safety, contents, performance, merchantability, non-infringement or suitability for
-# any particular or intended purpose of the Software found on the OREON web site.
-# In no event will OREON be liable for any direct, indirect, punitive, special,
-# incidental or consequential damages however they may arise and even if OREON has
-# been previously advised of the possibility of such damages.
-
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+#    For information : contact@merethis.com
+####################################################################
 #
 # Plugin init
 #
@@ -151,29 +153,28 @@ foreach my $err (oid_lex_sort(keys %$result_out)) {
 
 for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
     if (-e "/tmp/packet_errors_if".$i."_".$opt_H.".tmp") {
-	open(FILE,"<"."/tmp/packet_errors_if".$i."_".$opt_H.".tmp");
-	while($row = <FILE>){
-	    my @last_values = split(":",$row);
-	    $last_check_time[$i] = $last_values[0];
-	    $last_in_errors[$i] = $last_values[1];
-	    $last_out_errors[$i] = $last_values[2];
-	    $flg_created[$i] = 1;
-	}
-	close(FILE);
+		open(FILE,"<"."/tmp/packet_errors_if".$i."_".$opt_H.".tmp");
+		while($row = <FILE>){
+		    my @last_values = split(":",$row);
+		    $last_check_time[$i] = $last_values[0];
+		    $last_in_errors[$i] = $last_values[1];
+		    $last_out_errors[$i] = $last_values[2];
+		    $flg_created[$i] = 1;
+		}
+		close(FILE);
     } else {
-	$flg_created[$i] = 0;
+		$flg_created[$i] = 0;
     }
 
     $update_time = time;
-
     unless (open(FILE,">"."/tmp/packet_errors_if".$i."_".$opt_H.".tmp")){
 	print "Unknown - /tmp/tmp/packet_errors_if".$i."_".$opt_H.".tmp!\n";
 	exit $ERRORS{"UNKNOWN"};
-    }
+}
     print FILE "$update_time:$nb_in_errors[$i]:$nb_out_errors[$i]";
     close(FILE);
     if ($flg_created[$i] eq 0){
-	print "First execution : Buffer in creation.... \n";
+		print "First execution : Buffer in creation.... \n";
     }
 }
 
@@ -186,19 +187,19 @@ my $diff_test = 0;
 for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
     my $interface = $i+1;
     if ($flg_created[$i]) {
-	if (($nb_in_errors[$i] - $last_in_errors[$i] >= $critical) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $critical)){ 
-	    $msg[$i] = "$interface:critical ";
-	    $status = "CRITICAL";
-	}
-	if(($nb_in_errors[$i] - $last_in_errors[$i] >= $warning) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $warning)){
-	    if (!defined($msg[$i])) {
-		$msg[$i] = "$interface:warning ";
-	    }
-	    if ($status ne "CRITICAL") {
-		$status = "WARNING";
-	    }
-	}
-	$diff_test = 1;
+		if (($nb_in_errors[$i] - $last_in_errors[$i] >= $critical) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $critical)){ 
+		    $msg[$i] = "$interface:critical ";
+		    $status = "CRITICAL";
+		}
+		if (($nb_in_errors[$i] - $last_in_errors[$i] >= $warning) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $warning)){
+		    if (!defined($msg[$i])) {
+				$msg[$i] = "$interface:warning ";
+		    }	
+		    if ($status ne "CRITICAL") {
+				$status = "WARNING";
+		    }
+		}
+		$diff_test = 1;
     }
 }
 
@@ -213,7 +214,7 @@ for (my $i = 0; $i < scalar (@msg); $i++) {
 }
 if ($output ne ""){
     print $output."\n";
-}else {
+} else {
     print "Status OK on all interfaces\n";
 }
 exit($ERRORS{$status});
@@ -231,13 +232,13 @@ exit($ERRORS{$status});
 	print "                     (default 100)\n";
 	print "   -V (--version)    Plugin version\n";
 	print "   -h (--help)       usage help\n";
-    }
+}
 
-    sub print_help () {
-	print "##########################################\n";
-	print "#  Copyright (c) 2004-2006 Oreon         #\n";
-	    print "#  Bugs to http://www.oreon-project.org/ #\n";
-	    print "##########################################\n";
-	print_usage();
-	print "\n";
-    }
+sub print_help () {
+    print "##############################################\n";
+    print "#    Copyright (c) 2004-2007 Centreon        #\n";
+    print "#    Bugs to http://bugs.oreon-project.org/  #\n";
+    print "##############################################\n";
+    print_usage();
+    print "\n";
+}

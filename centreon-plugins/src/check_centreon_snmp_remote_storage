@@ -321,11 +321,10 @@ sub print_usage () {
 }
 
 sub print_help () {
-    print "######################################################\n";
-    print "#      Copyright (c) 2004-2007 Oreon-project         #\n";
-	print "#      Bugs to http://www.oreon-project.org/         #\n";
-	print "######################################################\n";
+    print "##############################################\n";
+    print "#    Copyright (c) 2004-2007 Centreon        #\n";
+    print "#    Bugs to http://bugs.oreon-project.org/  #\n";
+    print "##############################################\n";
     print_usage();
     print "\n";
 }
-
