@@ -1,26 +1,29 @@
 #! /usr/bin/perl -w
+###################################################################
+# Oreon is developped with GPL Licence 2.0 
 #
-# $Id: check_graph_nt.pl,v 1.4 2005/08/01 18:04:00 gollum123 Exp $
+# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #
-# Oreon's plugins are developped with GPL Licence :
-# http://www.fsf.org/licenses/gpl.txt
-# Developped by : Julien Mathis - Mathieu Mettre
+# Developped by : Julien Mathis - Romain Le Merlus 
+#                 Mathavarajan Sugumaran
 #
-# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
-# Modified for Oreon Project by : Sugumaran Mathavarajan - msugumaran@merethis.com
+###################################################################
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-# The Software is provided to you AS IS and WITH ALL FAULTS.
-# OREON makes no representation and gives no warranty whatsoever,
-# whether express or implied, and without limitation, with regard to the quality,
-# safety, contents, performance, merchantability, non-infringement or suitability for
-# any particular or intended purpose of the Software found on the OREON web site.
-# In no event will OREON be liable for any direct, indirect, punitive, special,
-# incidental or consequential damages however they may arise and even if OREON has
-# been previously advised of the possibility of such damages.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+#    For information : contact@merethis.com
+####################################################################
+#
+# Plugin init
+#
 
-##
-## Plugin init
-##
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
@@ -153,15 +156,13 @@ if ($op_v) {
     if ($op_t) {$op_t = "-t ".$op_t;} else { $op_t = " ";}
     if ($op_s) {$op_s = "-s ".$op_s;} else { $op_s = " ";}
     if ($op_d) {$op_d = "-d ".$op_d;} else { $op_d = " ";}
-#   print "$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d\n";
     $_ = `$pathtolibexecnt -H $opt_H $op_v $port $warning $critical $op_l $op_t $op_s $op_d 2>/dev/null`;
     my $return = $_;
     $return =~ s/\\//g;
     $return_code = $? / 256;
 
-    ##
-    ## CLIENTVERSION
-    ##
+    # CLIENTVERSION
+    #
     if ($op_v =~ /CLIENTVERSION/){
         print "CLIENTVERSION impossible to Graph!\n";
         exit $ERRORS{'UNKNOWN'};
@@ -328,9 +329,10 @@ sub print_usage () {
 }
 
 sub print_help () {
-    print "Copyright (c) 2004 OREON\n";
-    print "Bugs to http://www.oreon.org/\n";
-    print "\n";
+    print "##############################################\n";
+    print "#    Copyright (c) 2004-2007 Centreon        #\n";
+    print "#    Bugs to http://bugs.oreon-project.org/  #\n";
+    print "##############################################\n";
     print_usage();
     print "\n";
 }
