@@ -42,6 +42,8 @@ use Getopt::Long;
 use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_p $opt_c $opt_w);
 use vars qw($snmp);
 
+my $Revision = 1.2.1;
+
 $PROGNAME = "ckeck_TcpConn";
 sub print_help ();
 sub print_usage ();
