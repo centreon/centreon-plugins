@@ -189,7 +189,7 @@ if ($opt_n) {
         exit $ERRORS{'UNKNOWN'};
     }
     foreach my $key ( oid_lex_sort(keys %$result)) {
-        if ($result->{$key} =~ m/$opt_i/) {
+        if ($result->{$key} eq $opt_i) {
 		    my @oid_list = split (/\./,$key);
 		    $interface = pop (@oid_list) ;
 		}
@@ -325,7 +325,7 @@ if ($flg_created == 0){
 if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
 	my $total = 0;
 	if ($in_bits - $last_in_bits < 0){
-		$total = 4294967296 - $last_in_bits + $in_bits;
+		$total = 4294967296 * 8 - $last_in_bits + $in_bits;
 	} else {
 		$total = $in_bits - $last_in_bits;
 	}
@@ -339,7 +339,7 @@ if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
 if ($out_bits - $last_out_bits > 0 && defined($last_out_bits)) {
     my $total = 0;
     if ($out_bits - $last_out_bits < 0){
-		$total = 4294967296 - $last_out_bits + $out_bits;
+		$total = 4294967296 * 8 - $last_out_bits + $out_bits;
     } else {
 		$total = $out_bits - $last_out_bits;
     }
@@ -351,8 +351,8 @@ if ($out_bits - $last_out_bits > 0 && defined($last_out_bits)) {
 }
 
 if ( $speed_card != 0 ) {
-    $in_usage = sprintf("%.1f",($in_traffic*100) / $speed_card);
-    $out_usage = sprintf("%.1f",($out_traffic*100) / $speed_card);
+    $in_usage = sprintf("%.1f",($in_traffic * 100) / $speed_card);
+    $out_usage = sprintf("%.1f",($out_traffic * 100) / $speed_card);
 }
 
 my $in_prefix = "";
