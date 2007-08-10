@@ -322,7 +322,7 @@ if ($flg_created == 0){
 ## Count must round at 4294967296 
 ##
 
-if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
+if (($in_bits - $last_in_bits != 0) && defined($last_in_bits)) {
 	my $total = 0;
 	if ($in_bits - $last_in_bits < 0){
 		$total = 4294967296 * 8 - $last_in_bits + $in_bits;
@@ -336,7 +336,7 @@ if (($in_bits - $last_in_bits > 0) && defined($last_in_bits)) {
     $in_traffic = 0;
 } 
 
-if ($out_bits - $last_out_bits > 0 && defined($last_out_bits)) {
+if ($out_bits - $last_out_bits != 0 && defined($last_out_bits)) {
     my $total = 0;
     if ($out_bits - $last_out_bits < 0){
 		$total = 4294967296 * 8 - $last_out_bits + $out_bits;
