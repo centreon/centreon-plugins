@@ -36,7 +36,7 @@ require "@INSTALL_DIR_OREON@/ODS/etc/conf.pm";
 #
 
 sub existsInDB($$) {
-    my ($dbh, $oid,$manuf) = @_;
+    my ($dbh, $oid) = @_;
     my $sth = $dbh->prepare("SELECT traps_id FROM traps WHERE traps_oid = '$oid'");
     $sth->execute();
     if (defined($sth->fetchrow_array)) {
