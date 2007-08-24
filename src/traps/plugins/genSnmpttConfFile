@@ -2,7 +2,7 @@
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+# GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Mathavarajan Sugumaran - msugumaran@merethis.com
 #                 Julien Mathis - Romain Le Merlus
@@ -79,7 +79,7 @@ sub main() {
 		    }else {
 			$values[3] = "no output for trap!";
 		    }
-		    print FILE "EXEC ".$NAGIOS_TRAPS."trapHandler \$aA \$o \"$values[3]\"\n";
+		    print FILE "EXEC ".$NAGIOS_TRAPS."trapHandler \$aA \$A \$o \"$values[3]\"\n";
 		    if (defined($values[4])) {
 				print FILE "SDESC\n".$values[4];
 				if ($values[4] =~ /\n$/) {
@@ -132,3 +132,4 @@ sub main() {
 }
 
 main();
+

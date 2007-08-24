@@ -34,8 +34,8 @@ require "@INSTALL_DIR_OREON@/ODS/etc/conf.pm";
 ## GET HOSTNAME FROM IP ADDRESS
 #
 
-sub get_hostinfos($$){
-    my $sth = $_[0]->prepare("SELECT host_name FROM host WHERE host_address='$_[1]' ");
+sub get_hostinfos($$$){
+    my $sth = $_[0]->prepare("SELECT host_name FROM host WHERE host_address='$_[1]' OR host_address='$_[2]'");
     $sth->execute();
     my @host;
     while (my $temp = $sth->fetchrow_array()) {
@@ -140,14 +140,15 @@ sub get_servicename($$$)	{
 ## GET HOSTNAME AND SERVICE DESCRIPTION
 #
 
-sub getTrapsInfos($$$){
+sub getTrapsInfos($$$$){
     my $ip = shift;
+    my $hostname = shift;
     my $oid = shift;
     my $arguments_line = shift;
     
     my $dsn   = "dbi:mysql:$mysql_database_oreon";    
     my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
-    my @host = get_hostinfos($dbh, $ip);
+    my @host = get_hostinfos($dbh, $ip, $hostname);
     foreach(@host) {
 	my $this_host = $_;
 	my ($status, @servicename) = get_servicename($dbh, $oid, $_);
@@ -171,7 +172,8 @@ sub getTrapsInfos($$$){
 #
 if (scalar(@ARGV)) {
     my $ip = $ARGV[0];
-    my $oid = $ARGV[1];
-    my $arguments = $ARGV[2];
-    getTrapsInfos($ip, $oid, $arguments);
+    my $hostname = $ARGV[1];
+    my $oid = $ARGV[2];
+    my $arguments = $ARGV[3];
+    getTrapsInfos($ip, $hostname, $oid, $arguments);
 }
