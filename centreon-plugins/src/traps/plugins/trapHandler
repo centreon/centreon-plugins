@@ -2,7 +2,7 @@
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+# GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Mathavarajan Sugumaran - msugumaran@merethis.com
 #                 Julien Mathis - Romain Le Merlus
@@ -39,10 +39,60 @@ sub get_hostinfos($$){
     $sth->execute();
     my @host;
     while (my $temp = $sth->fetchrow_array()) {
-		$host[scalar(@host)] = $temp;
+	$host[scalar(@host)] = $temp;
     }
     $sth -> finish;
     return @host;
+}
+
+#####################################################################
+## GET SERVICES FOR GIVEN HOST (GETTING SERVICES TEMPLATES IN ACCOUNT)
+#
+
+sub getServicesIncludeTemplate($$$$) {
+    my ($dbh, $sth_st, $host_id, $trap_id) = @_;
+    my @service;
+    $sth_st->execute();
+    while (my @temp = $sth_st -> fetchrow_array()) {
+	my $tr_query = "select traps_id from traps_service_relation where service_id ='".$temp[0]."' and traps_id='".$trap_id."'";
+	my $sth_st3 = $dbh->prepare($tr_query);
+	$sth_st3->execute();
+	my @trap = $sth_st3 -> fetchrow_array();
+	if (defined($trap[0])) {
+	    $service[scalar(@service)] = $temp[1];
+	}else {
+	    if (defined($temp[2])) {
+		my $found = 0;
+		my $service_template = $temp[2];
+		while (!$found) {
+		    my $st1_query = "select service_id, service_template_model_stm_id, service_description from service s where service_id ='".$service_template."'";
+		    my $sth_st1 = $dbh->prepare($st1_query);
+		    $sth_st1 -> execute();
+		    my @st1_result = $sth_st1 -> fetchrow_array();
+		    if (defined($st1_result[0])) {
+			my $st2_query = "select traps_id from traps_service_relation where service_id ='".$service_template."' and traps_id='".$trap_id."'";
+			my $sth_st2 = $dbh->prepare($st2_query);
+			$sth_st2 -> execute();
+			my @st2_result = $sth_st2 -> fetchrow_array();
+			if (defined($st2_result[0])) {
+			    $found = 1;
+			    $service[scalar(@service)] = $temp[1];
+			}else {
+			    $found = 1;
+			    if (defined($st1_result[1]) && $st1_result[1]) {
+				$service_template = $st1_result[1];
+				$found = 0;
+			    }
+			}
+			$sth_st2->finish;		    
+		    }
+		    $sth_st1->finish;
+		}
+	    }
+	}
+	$sth_st3->finish;
+    }
+    return (@service);
 }
 
 ##########################
@@ -62,29 +112,28 @@ sub get_servicename($$$)	{
     $sth->execute();
     my ($trap_id, $trap_status) = $sth->fetchrow_array();
     exit if (!defined $trap_id);
+    $sth->finish();
+
+    ##
+    ### getting all "services by host" for given host
+    ##
+    my $st_query = "SELECT s.service_id, service_description, service_template_model_stm_id FROM service s, host_service_relation h";
+    $st_query .= " where  s.service_id=h.service_service_id and h.host_host_id='$host_id'";
+    my $sth_st = $_[0]->prepare($st_query); 
+    my @service = getServicesIncludeTemplate($_[0], $sth_st, $host_id, $trap_id);
+    $sth_st->finish;
     
-    my $query_services = "SELECT service_description FROM service s, host_service_relation h, traps_service_relation t";
-    $query_services .= " where s.service_id = t.service_id and t.traps_id='$trap_id' and s.service_id=h.service_service_id";
-    $query_services .= " and h.host_host_id='$host_id'";
-    $sth = $_[0]->prepare($query_services);
-    $sth->execute();
-    my @service;
-    while (my $temp = $sth -> fetchrow_array()) {
-		$service[scalar(@service)] = $temp;
-    }
-    
-    my $query_hostgroup_services = "SELECT service_description FROM hostgroup_relation hgr, traps_service_relation t, service s, host_service_relation hsr";
+    ##
+    ### getting all "services by hostgroup" for given host
+    ##
+    my $query_hostgroup_services = "SELECT s.service_id, service_description, service_template_model_stm_id FROM hostgroup_relation hgr,  service s, host_service_relation hsr";
     $query_hostgroup_services .= " WHERE hgr.host_host_id = '".$host_id."' AND hsr.hostgroup_hg_id = hgr.hostgroup_hg_id";
-    $query_hostgroup_services .= " AND s.service_id = hsr.service_service_id and s.service_id=t.service_id and t.traps_id='$trap_id'";
-    $sth->finish();
-    $sth = $_[0]->prepare($query_hostgroup_services);
-    $sth->execute();
-    my @new_service;
-    while (my $temp = $sth->fetchrow_array()){
-		$new_service[scalar(@new_service)] = $temp;
-    }
-    $sth->finish();
-    return $trap_status, (@service,@new_service);
+    $query_hostgroup_services .= " AND s.service_id = hsr.service_service_id";
+    $sth_st = $_[0]->prepare($query_hostgroup_services);
+    $sth_st->execute();
+    @service = (@service,getServicesIncludeTemplate($_[0], $sth_st, $host_id, $trap_id));
+    $sth_st->finish;
+    return $trap_status, (@service);
 }
 
 #######################################
@@ -100,18 +149,18 @@ sub getTrapsInfos($$$){
     my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
     my @host = get_hostinfos($dbh, $ip);
     foreach(@host) {
-		my $this_host = $_;
-		my ($status, @servicename) = get_servicename($dbh, $oid, $_);
-		foreach (@servicename) {
-		    my $this_service = $_;
-		    my $datetime=`date +%s`;
-		    chomp($datetime);
-		    my $sth = $dbh->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
-		    $sth->execute();
-			my @conf = $sth->fetchrow_array();
-		   	$sth->finish(); 
+	my $this_host = $_;
+	my ($status, @servicename) = get_servicename($dbh, $oid, $_);
+	foreach (@servicename) {
+	    my $this_service = $_;
+	    my $datetime=`date +%s`;
+	    chomp($datetime);
+	    my $sth = $dbh->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
+	    $sth->execute();
+	    my @conf = $sth->fetchrow_array();
+	    $sth->finish(); 
 		    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$arguments_line" >> $conf[0]`;
-		}
+	}
     }
     $dbh->disconnect();
     exit;
