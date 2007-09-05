@@ -31,17 +31,17 @@ use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require oreon" ) {
-    use oreon qw(get_parameters);
-    use vars qw($VERSION %oreon);
-    %oreon=get_parameters();
+if (eval "require centreon" ) {
+    use centreon qw(get_parameters);
+    use vars qw($VERSION %centreon);
+    %centreon = get_parameters();
 } else {
     print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-use vars qw($VERSION %oreon);
-use vars qw(%oreon);
+use vars qw($VERSION %centreon);
+use vars qw(%centreon);
 $VERSION = '$Revision: 1.2 $';
 $VERSION =~ s/^\$.*:\W(.*)\W.+?$/$1/;
 

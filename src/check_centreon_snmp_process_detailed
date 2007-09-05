@@ -32,15 +32,15 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "/srv/nagios/libexec";
+use lib "@NAGIOS_PLUGIN@";
 use utils qw(%ERRORS $TIMEOUT);
 
-# Oreon specific
+# centreon specific
 
-if (eval "require oreon" ) {
+if (eval "require centreon" ) {
   use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-  use vars qw($VERSION %oreon);
-  %oreon=get_parameters();
+  use vars qw($VERSION %centreon);
+  %centreon = get_parameters();
 } else {
   print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};

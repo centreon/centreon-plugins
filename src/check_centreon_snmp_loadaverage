@@ -30,14 +30,16 @@ use FindBin;
 use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-if (eval "require oreon" ) {
-    use oreon qw(get_parameters);
-    use vars qw($VERSION %oreon);
-    %oreon = get_parameters();
+
+if (eval "require centreon" ) {
+    use centreon qw(get_parameters);
+    use vars qw($VERSION %centreon);
+    %centreon = get_parameters();
 } else {
 	print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
+
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_c $opt_w $opt_D $snmp $opt_k $opt_u $opt_p @critical @warning);
