@@ -57,4 +57,4 @@
 	esac
 
 # Test everything works fine
-/usr/bin/printf "%s\t%s\t%s\t%s\n" "$1" "$2" "$return_code" "$4" | /usr/sbin/send_nsca IP -p PORT -c /etc/send_nsca.cfg
+/usr/bin/printf "%s\t%s\t%s\t%s|%s\n" "$1" "$2" "$return_code" "$4" "$5" | /usr/sbin/send_nsca IP -p PORT -c /etc/send_nsca.cfg
