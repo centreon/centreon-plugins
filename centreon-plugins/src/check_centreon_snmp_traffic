@@ -153,6 +153,12 @@ if ($opt_64bits && $snmp !~ /2/) {
         print "Error : Usage : SNMP v2 is required with option --64-bits\n";
         exit $ERRORS{'UNKNOWN'};
 }
+if (defined ($opt_64bits)) {
+      if (eval "require bigint") {
+        use bigint;
+      } else  { print "ERROR : Need bigint module for 64 bit counters\n"; exit $ERRORS{"UNKNOWN"}}
+    }
+
 #################################################
 #####            Plugin snmp requests
 ##
