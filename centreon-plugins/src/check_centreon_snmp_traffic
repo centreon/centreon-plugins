@@ -40,7 +40,7 @@ if (eval "require oreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T);
+use vars qw($opt_V $opt_h $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T);
 
 # Plugin var init
 
@@ -59,6 +59,7 @@ GetOptions
      "s"   => \$opt_s, "show"         => \$opt_s,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "i=s" => \$opt_i, "interface=s"  => \$opt_i,
+      "64-bits" => \$opt_64bits,
      "n"   => \$opt_n, "name"         => \$opt_n,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
@@ -148,7 +149,10 @@ if ($critical <= $warning){
     print_usage();
     exit $ERRORS{'OK'};
 }
-
+if ($opt_64bits && $snmp !~ /2/) {
+        print "Error : Usage : SNMP v2 is required with option --64-bits\n";
+        exit $ERRORS{'UNKNOWN'};
+}
 #################################################
 #####            Plugin snmp requests
 ##
@@ -159,7 +163,7 @@ my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lo
 
 # create a SNMP session
 my ($session, $error);
-if ($snmp eq "1" || $snmp eq "2") {
+if ($snmp eq "1" || $snmp =~ /2/) {
 ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
 if (!defined($session)) {
     print("UNKNOWN: SNMP Session : $error\n");
@@ -183,7 +187,7 @@ if (!defined($session)) {
 
 if ($opt_n) {
     my $result = $session->get_table(Baseoid => $OID_DESC);
-    if (!defined($result)) {
+    if (!$result) {
         printf("ERROR: Description Table : %s.\n", $session->error);
         $session->close;
         exit $ERRORS{'UNKNOWN'};
@@ -195,16 +199,22 @@ if ($opt_n) {
 		}
     }
 }
-
-my $OID_IN =$oreon{MIB2}{IF_IN_OCTET}.".".$interface;
-my $OID_OUT = $oreon{MIB2}{IF_OUT_OCTET}.".".$interface;
-my $OID_SPEED = $oreon{MIB2}{IF_SPEED}.".".$interface;
+my ($OID_IN, $OID_OUT, $OID_SPEED);
+if ($opt_64bits) {
+    $OID_IN =$oreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
+$OID_OUT = $oreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
+$OID_SPEED = $oreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
+}else {
+    $OID_IN =$oreon{MIB2}{IF_IN_OCTET}.".".$interface;
+$OID_OUT = $oreon{MIB2}{IF_OUT_OCTET}.".".$interface;
+$OID_SPEED = $oreon{MIB2}{IF_SPEED}.".".$interface;
+}
 
 # Get desctiption table
 
 if ($opt_s) {
     my $result = $session->get_table(Baseoid => $OID_DESC);
-if (!defined($result)) {
+if (!$result) {
     printf("ERROR: Description Table : %s.\n", $session->error);
     $session->close;
     exit $ERRORS{'UNKNOWN'};
@@ -223,7 +233,7 @@ exit $ERRORS{'OK'};
 }
 
 my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface]);
-if (!defined($interface_status)) {
+if (!$interface_status) {
     printf("ERROR: Interface Status Request : %s", $session->error);
 exit $ERRORS{'UNKNOWN'};
 }
@@ -251,7 +261,7 @@ $in_bits =  $result->{$OID_IN} * 8;
 
 my $out_bits;
 $result = $session->get_request(-varbindlist => [$OID_OUT]);
-if (!defined($result)) {
+if (!$result) {
     printf("ERROR: Out Bits : %s", $session->error);
     if ($opt_n) { print " - You must specify interface name when option -n is used";}
     print ".\n";
@@ -265,7 +275,7 @@ $out_bits = $result->{$OID_OUT} * 8;
 
 my $speed_card;
 $result = $session->get_request(-varbindlist => [$OID_SPEED]);
-if (!defined($result)) {
+if (!$result) {
     printf("ERROR: Interface Speed : %s", $session->error);
     if ($opt_n) { print " - You must specify interface name when option -n is used";}
     print ".\n";
@@ -277,6 +287,10 @@ if (defined($opt_T)){
 	$speed_card = $opt_T * 1000000;
 } else {
 	$speed_card = $result->{$OID_SPEED};
+if (!$speed_card) {
+    print "Error : Card speed is null, check command options\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 }
 
 #############################################
