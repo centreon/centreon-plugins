@@ -2,7 +2,7 @@
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/gpl.txt
+# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #
 # Developped by : Mathavarajan Sugumaran - msugumaran@merethis.com
 #                 Julien Mathis - Romain Le Merlus
@@ -75,9 +75,9 @@ sub main() {
 		    my $args = "";
 		    print FILE "EVENT ".$values[0]." ".$values[1]." \"Status Event\" ".$values[2]."\n";
 		    if (defined($values[3])) {
-			print FILE "FORMAT ".$values[3]."\n";
-		    }else {
-			$values[3] = "no output for trap!";
+				print FILE "FORMAT ".$values[3]."\n";
+		    } else {
+				$values[3] = "no output for trap!";
 		    }
 		    print FILE "EXEC ".$NAGIOS_TRAPS."trapHandler \$aA \$A \$o \"$values[3]\"\n";
 		    if (defined($values[4])) {
@@ -103,21 +103,21 @@ sub main() {
 		exit;
     }
     if (!open(TEMP, "> /tmp/snmptt.ini.tmp")) {
-	print "Cannot open /tmp/snmptt.ini.tmp in write mode - Export Aborded\n";
-	exit;
+		print "Cannot open /tmp/snmptt.ini.tmp in write mode - Export Aborded\n";
+		exit;
     }
     my $continue = 1;
     while ($continue == 1) {
-	my $line = <FILE>;
-	if ($line) {
-	    if (!($line =~ /^snmptt\_conf\_files/)) {
-		print TEMP $line;
-	    } else {
-		$continue = 0;
-	    }
-	} else {
-	    $continue = -1;
-	}
+		my $line = <FILE>;
+		if ($line) {
+		    if (!($line =~ /^snmptt\_conf\_files/)) {
+				print TEMP $line;
+		    } else {
+				$continue = 0;
+		    }
+		} else {
+		    $continue = -1;
+		}
     }
     if (!$continue) {
 		print TEMP "snmptt_conf_files = <<END\n";
