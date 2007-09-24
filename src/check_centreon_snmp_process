@@ -35,7 +35,7 @@ if (eval "require centreon" ) {
     use vars qw($VERSION %centreon);
     %centreon = get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 

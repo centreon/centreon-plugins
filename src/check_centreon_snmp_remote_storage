@@ -32,11 +32,11 @@ use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require centreon" ) {
-    use oreon qw(get_parameters);
+    use centreon qw(get_parameters);
     use vars qw(%centreon);
     %centreon = get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 use vars qw($PROGNAME);
