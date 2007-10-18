@@ -254,6 +254,12 @@ if (!$Size){
 }
 
 if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
+	
+	if ($hrStorageDescr =~ /\:/){
+        my @tab = split(/\:/, $hrStorageDescr);
+        $hrStorageDescr = $tab[0] . ":";
+    }
+	
     if (!$Size){
         print "The number of the option -p is not a hard drive\n";
         exit $ERRORS{'CRITICAL'};
