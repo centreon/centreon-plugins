@@ -148,11 +148,11 @@ my $OID_hrStorageDescr = "";
 if (defined($opt_t) && ($opt_t eq "AIX" || $opt_t eq "AS400")){
 	$OID_hrStorageDescr = ".1.3.6.1.2.1.25.3.8.1.2";
 } else { 
-	$OID_hrStorageDescr = $oreon{MIB2}{HR_STORAGE_DESCR};
+	$OID_hrStorageDescr = $centreon{MIB2}{HR_STORAGE_DESCR};
 }
-my $OID_hrStorageAllocationUnits = $oreon{MIB2}{HR_STORAGE_ALLOCATION_UNITS};
-my $OID_hrStorageSize = $oreon{MIB2}{HR_STORAGE_SIZE};
-my $OID_hrStorageUsed = $oreon{MIB2}{HR_STORAGE_USED};
+my $OID_hrStorageAllocationUnits = $centreon{MIB2}{HR_STORAGE_ALLOCATION_UNITS};
+my $OID_hrStorageSize = $centreon{MIB2}{HR_STORAGE_SIZE};
+my $OID_hrStorageUsed = $centreon{MIB2}{HR_STORAGE_USED};
 
 # create a SNMP session
 my ($session, $error);

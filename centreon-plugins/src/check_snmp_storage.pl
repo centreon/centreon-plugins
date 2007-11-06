@@ -24,16 +24,16 @@ use utils qw(%ERRORS $TIMEOUT);
 # Oreon specific
 
 #use lib "@NAGIOS_PLUGINS@";
-if (eval "require oreon" ) {
-  use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-  use vars qw($VERSION %oreon);
-  %oreon=get_parameters();
+if (eval "require centreon" ) {
+  use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+  use vars qw($VERSION %centreon);
+  %centreon=get_parameters();
 } else {
-  print "Unable to load oreon perl module\n";
+  print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-my $pathtorrdbase = $oreon{GLOBAL}{DIR_RRDTOOL};
+my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
 
 # SNMP Datas
 my $storage_table= '1.3.6.1.2.1.25.2.3.1';
@@ -96,7 +96,7 @@ my @o_shortL=	undef;		# output type,where,cut
 # SNMP V3 specific
 my $o_login=	undef;		# snmp v3 login
 my $o_passwd=	undef;		# snmp v3 passwd
-# Oreon specific
+# centreon specific
 my $o_step=	undef;
 my $o_g=	undef;
 my $o_S=	undef;
@@ -206,7 +206,7 @@ warn if %used > warn and critical if %used > crit
    prints version number
 -g (--rrdgraph)   Create a rrd base if necessary and add datas into this one
 --rrd_step	     Specifies the base interval in seconds with which data will be fed into the RRD (300 by default)
--S (--ServiceId)  Oreon Service Id
+-S (--ServiceId)  centreon Service Id
 
 Note :
   with T=pu or T=bu : OK < warn < crit
@@ -254,7 +254,7 @@ sub check_options {
 	'2'	=> \$o_version2,	'v2c'		=> \$o_version2,
 	'S:s'   => \$o_short,         	'short:s'       => \$o_short,
 	'f'	=> \$o_perf,		'perfparse'	=> \$o_perf,
-	# For Oreon rrdtool graph
+	# For centreon rrdtool graph
   "rrd_step:s" => \$o_step,
   "g"   => \$o_g, "rrdgraph"     => \$o_g,
 #  "S=s" => \$o_S,
@@ -306,7 +306,7 @@ sub check_options {
 	  if (defined ($o_shortL[2]) && isnnum($o_shortL[2]))
 	    {print "-S last option must be an integer\n";print_usage(); exit $ERRORS{"UNKNOWN"};}
 	}
-	 ###### Oreon #######
+	 ###### centreon #######
 
 	if (!defined($o_S)) { $o_S="1_1" }
 	$ServiceId = is_valid_serviceid($o_S);

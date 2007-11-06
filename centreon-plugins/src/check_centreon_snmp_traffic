@@ -163,8 +163,8 @@ if (defined ($opt_64bits)) {
 #####            Plugin snmp requests
 ##
 
-my $OID_DESC =$oreon{MIB2}{IF_DESC};
-my $OID_OPERSTATUS =$oreon{MIB2}{IF_OPERSTATUS};
+my $OID_DESC =$centreon{MIB2}{IF_DESC};
+my $OID_OPERSTATUS =$centreon{MIB2}{IF_OPERSTATUS};
 my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
 
 # create a SNMP session
@@ -207,13 +207,13 @@ if ($opt_n) {
 }
 my ($OID_IN, $OID_OUT, $OID_SPEED);
 if ($opt_64bits) {
-    $OID_IN =$oreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
-$OID_OUT = $oreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
-$OID_SPEED = $oreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
+    $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
+$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
+$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
 }else {
-    $OID_IN =$oreon{MIB2}{IF_IN_OCTET}.".".$interface;
-$OID_OUT = $oreon{MIB2}{IF_OUT_OCTET}.".".$interface;
-$OID_SPEED = $oreon{MIB2}{IF_SPEED}.".".$interface;
+    $OID_IN =$centreon{MIB2}{IF_IN_OCTET}.".".$interface;
+$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
+$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
 }
 
 # Get desctiption table
@@ -308,8 +308,8 @@ $last_out_bits  = 0;
 
 my $flg_created = 0;
 
-if (-e "/tmp/oreon_traffic_if".$interface."_".$opt_H) {
-    open(FILE,"<"."/tmp/oreon_traffic_if".$interface."_".$opt_H);
+if (-e "/tmp/centreon_traffic_if".$interface."_".$opt_H) {
+    open(FILE,"<"."/tmp/centreon_traffic_if".$interface."_".$opt_H);
     while($row = <FILE>){
 		@last_values = split(":",$row);
 		$last_check_time = $last_values[0];
@@ -324,8 +324,8 @@ if (-e "/tmp/oreon_traffic_if".$interface."_".$opt_H) {
 
 $update_time = time();
 
-unless (open(FILE,">"."/tmp/oreon_traffic_if".$interface."_".$opt_H)){
-    print "Unknown - /tmp/oreon_traffic_if".$interface."_".$opt_H. " !\n";
+unless (open(FILE,">"."/tmp/centreon_traffic_if".$interface."_".$opt_H)){
+    print "Unknown - /tmp/centreon_traffic_if".$interface."_".$opt_H. " !\n";
     exit $ERRORS{"UNKNOWN"};
 }
 print FILE "$update_time:$in_bits:$out_bits";

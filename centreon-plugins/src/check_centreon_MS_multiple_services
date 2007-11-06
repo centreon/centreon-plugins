@@ -31,7 +31,7 @@ use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 if (eval "require centreon" ) {
-    use oreon qw(get_parameters);
+    use centreon qw(get_parameters);
     use vars qw($VERSION %centreon);
     %centreon=get_parameters();
 } else {

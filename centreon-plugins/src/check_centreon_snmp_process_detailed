@@ -10,7 +10,7 @@
 #
 # help : ./check_snmp_process -h
 
-############################## check_oreon_snmp_process_detailed ##############
+############################## check_centreon_snmp_process_detailed ##############
 # Version : 1.2.2
 # Date : Jun 20 2007
 # Author  : Sugumaran Mathavarajan - msugumaran@merethis.com

@@ -82,9 +82,9 @@ my $day = 0;
 
 
 # Plugin snmp requests
-my $OID_OBJECTID =$oreon{MIB2}{OBJECTID};
-my $OID_UPTIME_WINDOWS =$oreon{MIB2}{UPTIME_WINDOWS};
-my $OID_UPTIME_OTHER =$oreon{MIB2}{UPTIME_OTHER};
+my $OID_OBJECTID =$centreon{MIB2}{OBJECTID};
+my $OID_UPTIME_WINDOWS =$centreon{MIB2}{UPTIME_WINDOWS};
+my $OID_UPTIME_OTHER =$centreon{MIB2}{UPTIME_OTHER};
 
 # create a SNMP session
 my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);

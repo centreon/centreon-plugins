@@ -24,16 +24,16 @@ use utils qw(%ERRORS $TIMEOUT);
 
 # Oreon specific
 
-if (eval "require oreon" ) {
-  use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-  use vars qw($VERSION %oreon);
-  %oreon=get_parameters();
+if (eval "require centreon" ) {
+  use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+  use vars qw($VERSION %centreon);
+  %centreon=get_parameters();
 } else {
-  print "Unable to load oreon perl module\n";
+  print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-my $pathtorrdbase = $oreon{GLOBAL}{DIR_RRDTOOL};
+my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
 
 # SNMP Datas
 

@@ -27,12 +27,12 @@ use lib "$FindBin::Bin";
 use lib "/usr/local/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require oreon" ) {
-	use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-	use vars qw($VERSION %oreon);
-	%oreon=get_parameters();
+if (eval "require centreon" ) {
+	use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+	use vars qw($VERSION %centreon);
+	%centreon=get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
@@ -169,7 +169,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##########################################\n";
-    print "#  Copyright (c) 2004-2006 Oreon         #\n";
+    print "#  Copyright (c) 2004-2006 centreon      #\n";
     print "#  Bugs to http://www.oreon-project.org/ #\n";
     print "##########################################\n";
     print_usage();

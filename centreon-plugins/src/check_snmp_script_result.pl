@@ -3,19 +3,19 @@
 #
 # $Id: check_graph_remote_storage.pl,v 1.2 2005/07/27 22:21:49 wistof Exp $
 #
-# Oreon's plugins are developped with GPL Licence :
+# centreon's plugins are developped with GPL Licence :
 # http://www.fsf.org/licenses/gpl.txt
 # Developped by : Julien Mathis - Mathieu Mettre - Romain Le Merlus - Yohann Lecarpentier
 #
-# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
+# Modified for centreon Project by : Mathieu Chateau - Christophe Coraboeuf
 #
 # The Software is provided to you AS IS and WITH ALL FAULTS.
-# OREON makes no representation and gives no warranty whatsoever,
+# centreon makes no representation and gives no warranty whatsoever,
 # whether express or implied, and without limitation, with regard to the quality,
 # safety, contents, performance, merchantability, non-infringement or suitability for
-# any particular or intended purpose of the Software found on the OREON web site.
-# In no event will OREON be liable for any direct, indirect, punitive, special,
-# incidental or consequential damages however they may arise and even if OREON has
+# any particular or intended purpose of the Software found on the centreon web site.
+# In no event will centreon be liable for any direct, indirect, punitive, special,
+# incidental or consequential damages however they may arise and even if centreon has
 # been previously advised of the possibility of such damages.
 
 # Plugin init
@@ -27,12 +27,12 @@ use lib "$FindBin::Bin";
 use lib "/usr/local/nagios/libexec";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require oreon" ) {
-	use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-	use vars qw($VERSION %oreon);
-	%oreon=get_parameters();
+if (eval "require centreon" ) {
+	use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+	use vars qw($VERSION %centreon);
+	%centreon=get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
@@ -188,7 +188,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##########################################\n";
-    print "#  Copyright (c) 2004-2006 Oreon         #\n";
+    print "#  Copyright (c) 2004-2006 centreon      #\n";
     print "#  Bugs to http://www.oreon-project.org/ #\n";
     print "##########################################\n";
     print_usage();
