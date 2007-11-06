@@ -155,7 +155,7 @@ my $return_result =  $result->{$opt_o};
 #===  Plugin return code  ====
 
 if (defined($return_result)){
-    if ($return_result !~ /^[0-9]$/) {
+    if ($return_result !~ /^[0-9]+$/) {
 	print "Snmp return value isn't numeric.\n";
 	exit $ERRORS{'OK'};
     }
@@ -176,7 +176,7 @@ if (defined($return_result)){
 
 
 sub print_usage () {
-    print "\nUsage:\n";
+    print "Usage:";
     print "$PROGNAME\n";
     print "   -H (--hostname)   Hostname to query - (required)\n";
     print "   -C (--community)  SNMP read community (defaults to public,\n";
