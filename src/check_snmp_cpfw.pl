@@ -25,16 +25,16 @@ use utils qw(%ERRORS $TIMEOUT);
 
 # Oreon specific
 
-if (eval "require oreon" ) {
-  use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-  use vars qw($VERSION %oreon);
-  %oreon=get_parameters();
+if (eval "require centreon" ) {
+  use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+  use vars qw($VERSION %centreon);
+  %centreon=get_parameters();
 } else {
-  print "Unable to load oreon perl module\n";
+  print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-my $pathtorrdbase = $oreon{GLOBAL}{DIR_RRDTOOL};
+my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
 
 
 ########### SNMP Datas ###########
@@ -108,7 +108,7 @@ my $o_perf=	undef;		# Performance data output
 my $o_login=	undef;		# Login for snmpv3
 my $o_passwd=	undef;		# Pass for snmpv3
 
-# Oreon specific
+# centreon specific
 my $o_step=	undef;
 my $o_g=	undef;
 my $o_S=	undef;
@@ -172,7 +172,7 @@ sub help {
    prints version number
 -g (--rrdgraph)   Create a rrd base if necessary and add datas into this one
 --rrd_step	     Specifies the base interval in seconds with which data will be fed into the RRD (300 by default)
--S (--ServiceId)  Oreon Service Id
+-S (--ServiceId)  centreon Service Id
 
 EOT
 }
@@ -199,7 +199,7 @@ sub check_options {
 	'p:s'	=> \$o_policy,		'policy:s'	=> \$o_policy,
 	'c:s'	=> \$o_conn,		'connexions:s'	=> \$o_conn,
 	'f'	=> \$o_perf,		'perfparse'	=> \$o_perf,
-	# For Oreon rrdtool graph
+	# For centreon rrdtool graph
   "rrd_step:s" => \$o_step,
   "g"   => \$o_g, "rrdgraph"     => \$o_g,
   "S=s" => \$o_S, "ServiceId=s"  => \$o_S
@@ -235,7 +235,7 @@ sub check_options {
     if (!defined($o_fw) && !defined($o_ha) && !defined($o_mgmt) && !defined($o_svn))
 	{ print "Must select a product to check !\n";print_usage(); exit $ERRORS{"UNKNOWN"}}
 
-	###### Oreon #######
+	###### centreon #######
 
 	if (!defined($o_S)) { $o_S="1_1" }
 	$ServiceId = is_valid_serviceid($o_S);

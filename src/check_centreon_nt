@@ -35,7 +35,7 @@ if (eval "require centreon" ) {
 	use vars qw($VERSION %centreon);
 	%centreon = get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
@@ -46,7 +46,7 @@ use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_S $opt_
 ##
 ## Plugin var init
 ##
-my $pathtolibexecnt = $oreon{GLOBAL}{NAGIOS_LIBEXEC}."check_nt";
+my $pathtolibexecnt = $centreon{GLOBAL}{NAGIOS_LIBEXEC}."check_nt";
 
 my($op_v, $op_d, $op_s, $op_t, $op_l, $port, @values,  @test, @test2, @test3, @test4, @test5, $warning, $critical, @w, @c, $uptime);
 my($warning2, $critical2, $warning3, $critical3, $warning4, $critical4, @output);

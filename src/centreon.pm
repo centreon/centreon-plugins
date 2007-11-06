@@ -64,7 +64,7 @@ my @ds = ("a","b","c","d","e","f","g","h","i","j","k","l");
 sub get_parameters	{
 	$params_file = "@NAGIOS_PLUGINS@/$params_file";
 	unless (-e $params_file)	{
-		print "Unknown - In oreon.pm :: $params_file :: $!\n";
+		print "Unknown - In centreon.pm :: $params_file :: $!\n";
         exit $ERRORS{'UNKNOWN'};
     }
     my %centreon;
@@ -182,7 +182,7 @@ centreon - shared module for Oreon plugins
 
 =head1 SYNOPSIS
 
-  use oreon;
+  use centreon;
   centreon::get_parameters()
   centreon::create_rrd( )
   centreon::update_rrd( )
@@ -191,7 +191,7 @@ centreon - shared module for Oreon plugins
 
 =head2 Functions
 
-B<oreon::create_rrd> create a rrd database.
+B<centreon::create_rrd> create a rrd database.
 
   create_rrd($rrd, $nb_ds ,$start, $step, $min, $max, $type );
 
