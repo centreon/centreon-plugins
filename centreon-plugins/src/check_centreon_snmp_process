@@ -169,13 +169,20 @@ if (!($opt_n)) {
 }
 
 # Plugin return code
-
+my $status;
 if ($opt_n){
-    print "Processes OK - Number of current processes: $proc|nbproc=$proc\n";
-    exit $ERRORS{'OK'};
+	$status = 'OK';
+	if ($proc >= $opt_w){
+		$status = 'WARNING';
+	}
+	if ($proc >= $opt_c){
+		$status = 'CRITICAL';
+	}
+    print "Number of current processes: $proc|nbproc=$proc\n";
+    exit $ERRORS{$status};
 } else {
     if ($proc_run){
-        print "Process OK - $process: $STATUS{$proc_run}|procstatus=$proc_run\n";
+        print "Process OK - $process: $STATUS{$proc_run}\n";
         exit $ERRORS{'OK'};
     } else {
         print "Process CRITICAL - $process not in 'running' state\n";
