@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-############################## check_snmp_process ##############
+###################### check_snmp_process #####################
 # Version : 1.2.1
 # Date : Dec 12 2004
 # Author  : Patrick Proy (patrick at proy.org)
@@ -10,7 +10,7 @@
 #
 # help : ./check_snmp_process -h
 
-############################## check_centreon_snmp_process_detailed ##############
+########### check_centreon_snmp_process_detailed ##############
 # Version : 1.2.2
 # Date : Jun 20 2007
 # Author  : Sugumaran Mathavarajan - msugumaran@merethis.com
@@ -32,7 +32,7 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "@NAGIOS_PLUGIN@";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
 
 # centreon specific
@@ -239,7 +239,7 @@ sub check_options {
         'x:s'   => \$o_passwd,          'passwd:s'      => \$o_passwd,
         'c:s'   => \$o_crit,    	'critical:s'	=> \$o_crit,
         'w:s'   => \$o_warn,    	'warn:s'	=> \$o_warn,
-	't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
+		't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
         'n:s'   => \$o_descr,		'name:s'	=> \$o_descr,
         'r'     => \$o_noreg,           'noregexp'      => \$o_noreg,
         'f'     => \$o_path,           	'fullpath'      => \$o_path,
