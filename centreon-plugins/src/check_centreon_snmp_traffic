@@ -59,7 +59,7 @@ GetOptions
      "s"   => \$opt_s, "show"         => \$opt_s,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "i=s" => \$opt_i, "interface=s"  => \$opt_i,
-      "64-bits" => \$opt_64bits,
+     "64-bits" => \$opt_64bits,
      "n"   => \$opt_n, "name"         => \$opt_n,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
@@ -71,14 +71,13 @@ GetOptions
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
-  exit $ERRORS{'OK'};
+  	exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
     print_help();
     exit $ERRORS{'OK'};
-
-Getopt::Long::Configure('bundling');
+	Getopt::Long::Configure('bundling');
 }
 
 ##################################################
@@ -86,12 +85,12 @@ Getopt::Long::Configure('bundling');
 ##
 
 if (!$opt_H) {
-print_usage();
-exit $ERRORS{'OK'};
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 my $snmp = "1";
 if ($opt_v && $opt_v =~ /^[0-9]$/) {
-$snmp = $opt_v;
+	$snmp = $opt_v;
 }
 
 if ($snmp eq "3") {
@@ -157,7 +156,7 @@ if (defined ($opt_64bits)) {
       if (eval "require bigint") {
         use bigint;
       } else  { print "ERROR : Need bigint module for 64 bit counters\n"; exit $ERRORS{"UNKNOWN"}}
-    }
+}
 
 #################################################
 #####            Plugin snmp requests
@@ -208,44 +207,44 @@ if ($opt_n) {
 my ($OID_IN, $OID_OUT, $OID_SPEED);
 if ($opt_64bits) {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
-$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
-$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
+	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
+	$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
 }else {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET}.".".$interface;
-$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
-$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
+	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
+	$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
 }
 
 # Get desctiption table
 
 if ($opt_s) {
     my $result = $session->get_table(Baseoid => $OID_DESC);
-if (!$result) {
-    printf("ERROR: Description Table : %s.\n", $session->error);
-    $session->close;
-    exit $ERRORS{'UNKNOWN'};
-}
-foreach my $key ( oid_lex_sort(keys %$result)) {
-    my @oid_list = split (/\./,$key);
-    my $index = pop (@oid_list) ;
-    my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
-    if (!defined($result)) {
-	printf("ERROR: Interface Status Request : %s", $session->error);
-	exit $ERRORS{'UNKNOWN'};
+	if (!$result) {
+	    printf("ERROR: Description Table : %s.\n", $session->error);
+	    $session->close;
+	    exit $ERRORS{'UNKNOWN'};
 	}
-        print "Interface $index :: $$result{$key} :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
-}
-exit $ERRORS{'OK'};
+	foreach my $key ( oid_lex_sort(keys %$result)) {
+	    my @oid_list = split (/\./,$key);
+	    my $index = pop (@oid_list) ;
+	    my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
+	    if (!defined($result)) {
+			printf("ERROR: Interface Status Request : %s", $session->error);
+			exit $ERRORS{'UNKNOWN'};
+		}
+	    print "Interface $index :: $$result{$key} :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
+	}
+	exit $ERRORS{'OK'};
 }
 
 my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface]);
 if (!$interface_status) {
     printf("ERROR: Interface Status Request : %s", $session->error);
-exit $ERRORS{'UNKNOWN'};
+	exit $ERRORS{'UNKNOWN'};
 }
 if ($operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1] ne "up") {
     print "Error : interface is not ready - status : ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1]."\n";
-exit $ERRORS{'CRITICAL'};
+	exit $ERRORS{'CRITICAL'};
 }
 
 
@@ -293,10 +292,10 @@ if (defined($opt_T)){
 	$speed_card = $opt_T * 1000000;
 } else {
 	$speed_card = $result->{$OID_SPEED};
-if (!$speed_card) {
-    print "Error : Card speed is null, check command options\n";
-    exit $ERRORS{'UNKNOWN'};
-}
+	if (!$speed_card && !defined($opt_T)) {
+	    print "Error : Card speed is null, check command options\n";
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }
 
 #############################################
@@ -447,12 +446,10 @@ my $status = "OK";
 if(($in_usage > $warning) or ($out_usage > $warning)){
 	$status = "WARNING";
 }
-
 if (($in_usage > $critical) or ($out_usage > $critical)){
 	$status = "CRITICAL";
 }
 
-		
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
 printf("Total RX Bits In : %.2f ".$in_bits_unit."B, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);
 printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s traffic_out=".$out_perfparse_traffic_str."Bits/s\n");
@@ -475,7 +472,6 @@ sub print_usage () {
     print "                     (default 80)\n";
     print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
     print "   -T                Max Banwidth\n";
-    print "                     (default 95)\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }
