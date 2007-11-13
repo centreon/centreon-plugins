@@ -30,12 +30,12 @@ use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require centreon" ) {
-	use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-	use vars qw($VERSION %centreon);
-	%centreon = get_parameters();
+if (eval "require oreon" ) {
+	use oreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+	use vars qw($VERSION %oreon);
+	%oreon = get_parameters();
 } else {
-	print "Unable to load centreon perl module\n";
+	print "Unable to load oreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
@@ -46,7 +46,7 @@ use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_S $opt_
 ##
 ## Plugin var init
 ##
-my $pathtolibexecnt = $centreon{GLOBAL}{NAGIOS_LIBEXEC}."check_nt";
+my $pathtolibexecnt = $oreon{GLOBAL}{NAGIOS_LIBEXEC}."check_nt";
 
 my($op_v, $op_d, $op_s, $op_t, $op_l, $port, @values,  @test, @test2, @test3, @test4, @test5, $warning, $critical, @w, @c, $uptime);
 my($warning2, $critical2, $warning3, $critical3, $warning4, $critical4, @output);
@@ -168,20 +168,25 @@ if ($op_v) {
     }
     
     if (($op_v =~ /CPULOAD/) && ($op_l =~ /([-\.,\w]+)/)){    ## CPULOAD
-	@output = split(/\|/,$_);
-        @values = $output[0] =~ /(\d*)\%/g  ;
-        $start=time;
-        ## Print Plugins Output
+		$start = time();
+        @output = split(/\|/, $_);
+        $return = $output[0];
+        @values = $output[1] =~ /\'([0-9]*)\ [a-zA-Z\ 0-9]*\'=(\d*)\%\;([0-9]*);([0-9]*);([0-9]*);([0-9]*)/g;
+		my $i = 0;
+		my $perfdata = "";
+        foreach (@values){
+			if ($i%6 == 0){
+				$perfdata .= " cpu".$_."=";
+			} elsif ($i%6 == 1) {
+				$perfdata .= $_."%";
+			} else {
+				$perfdata .= ";".$_;
+			} 
+        	$i++;
+        }
+        $perfdata .= "\n";
         $return =~ s/\n/ /g;
-        if (@values){
-	    if (defined($opt_c) && defined($opt_w)){
-		print $return . "|cpu=@values;$opt_w;$opt_c\n";
-	    } else {
-		print $return . "|cpu=@values\n";
-	    }
-	} else {
-	    print $return . "\n";
-	}
+        print $return."|".$perfdata;
         exit $return_code;
     } elsif ($op_v =~ /UPTIME/){		## UPTIME
         if ($_ =~ /.*[-:]+\s(\d+)\s.*$/ ) {
