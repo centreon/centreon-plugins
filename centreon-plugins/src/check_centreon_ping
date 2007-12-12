@@ -41,7 +41,7 @@ if (eval "require centreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_g $opt_H $opt_D $opt_w $opt_c $opt_n $opt_f $opt_S $rta_critical $rta_warning $pl_critical $pl_warning $opt_s $opt_step $step );
+use vars qw($opt_V $opt_h $opt_H $opt_D $opt_w $opt_c $opt_n $rta_critical $rta_warning $pl_critical $pl_warning $opt_s);
 
 #
 # Plugin var init
@@ -58,8 +58,7 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h" => \$opt_h,		"help" => \$opt_h,
-     "V" => \$opt_V,		"version" => \$opt_V,
-     "rrd_step=s" => \$opt_step,"f" => \$opt_f,
+     "V" => \$opt_V,		"version" => \$opt_V
      "w=s" => \$opt_w,		"warning=s" => \$opt_w,
      "c=s" => \$opt_c,		"critical=s" => \$opt_c,
      "n=s" => \$opt_n,		"number=s" => \$opt_n,
@@ -96,7 +95,6 @@ if (!$rta_warning || !$rta_critical || !$pl_warning || !$pl_critical) {
 
 if ( ($rta_critical <= $rta_warning) || ($pl_critical <= $pl_warning) ) {
     print "critical must be superior to warning\n";
-    print_usage();
     exit $ERRORS{'OK'};
 }
 
@@ -110,10 +108,6 @@ if ($opt_n =~ /([0-9]+)/){
 }
 
 my $start=time;
-
-#
-# RRDTools create rrd
-#
 
 #
 # Plugin requests
@@ -183,9 +177,6 @@ sub print_usage () {
     print "Usage:\n";
     print "$PROGNAME\n";
     print "   -H (--hostname)   Hostname to query (Required)\n";
-    print "   -g (--rrdgraph)   Create a rrd base if necessary and add datas into this one\n";
-    print "   --rrd_step	Specifies the base interval in seconds with which data will be fed into the RRD (300 by default)\n";
-    print "   -S (--ServiceId)  Oreon Service Id\n";
     print "   -w (--warning)    Threshold pair (Default: 200,20%)\n";
     print "   -c (--critical)   Threshold pair (Default: 500,40%)\n";
     print "   -n (--number)     number of ICMP ECHO packets to send (Default: 1)\n";
