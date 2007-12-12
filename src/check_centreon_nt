@@ -30,23 +30,15 @@ use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require centreon" ) {
-	use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
-	use vars qw($VERSION %centreon);
-	%centreon = get_parameters();
-} else {
-	print "Unable to load centreon perl module\n";
-    exit $ERRORS{'UNKNOWN'};
-}
-
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_S $opt_g $opt_t $opt_l $opt_d $opt_D $opt_step $step $opt_f);
+use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_t $opt_l $opt_d $opt_D $opt_f);
 
-##
-## Plugin var init
-##
-my $pathtolibexecnt = $centreon{GLOBAL}{NAGIOS_LIBEXEC}."check_nt";
+#
+# Plugin var init
+#
+
+my $pathtolibexecnt = "@NAGIOS_PLUGINS@check_nt";
 
 my($op_v, $op_d, $op_s, $op_t, $op_l, $port, @values,  @test, @test2, @test3, @test4, @test5, $warning, $critical, @w, @c, $uptime);
 my($warning2, $critical2, $warning3, $critical3, $warning4, $critical4, @output);
@@ -81,18 +73,16 @@ if ($opt_V) {
 }
 
 if ($opt_p) {
-  if ($opt_p =~ /([0-9]+)/){
-    $port = $1;
-  }
-  else{
-    print "Unknown -p number expected... or it doesn't exist, try another port - number\n";
-    exit $ERRORS{'UNKNOWN'};
-  }
+  	if ($opt_p =~ /([0-9]+)/){
+    	$port = $1;
+  	} else {
+		print "Unknown -p : number expected... \n";
+    	exit $ERRORS{'UNKNOWN'};
+  	}
 }
 
 $opt_H = shift unless ($opt_H);
 (print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
-
 
 if ($opt_c) {
   ($opt_c) || ($opt_c = shift);
@@ -106,45 +96,43 @@ if ($opt_w) {
 
 if (($critical && $warning) && ($critical <= $warning)) {
     print "(--crit) must be superior to (--warn)";
-    print_usage();
     exit $ERRORS{'OK'};
 }
 
 
 if ($opt_t) {
-  ($opt_t) || ($opt_t = shift);
-  $op_t = $1 if ($opt_t =~ /([-\.,\w]+)/);
+	($opt_t) || ($opt_t = shift);
+  	$op_t = $1 if ($opt_t =~ /([-\.,\w]+)/);
 }
 
 if ($opt_l) {
-  ($opt_l) || ($opt_l = shift);
-   $op_l = $1 if ($opt_l =~ /(.+)/);
+  	($opt_l) || ($opt_l = shift);
+   	$op_l = $1 if ($opt_l =~ /(.+)/);
 }
 
 if ($opt_s) {
-  ($opt_s) || ($opt_s = shift);
-  $op_s = $1 if ($opt_s =~ /([-.,A-Za-z0-9]+)/);
+  	($opt_s) || ($opt_s = shift);
+  	$op_s = $1 if ($opt_s =~ /([-.,A-Za-z0-9]+)/);
 }
 
 if ($opt_d) {
-  ($opt_d) || ($opt_d = shift);
-  $op_d = $1 if ($opt_d =~ /([-.,A-Za-z0-9]+)/);
+  	($opt_d) || ($opt_d = shift);
+  	$op_d = $1 if ($opt_d =~ /([-.,A-Za-z0-9]+)/);
 }
 
 if ($opt_v) {
-  ($opt_v) || ($opt_v = shift);
-  $op_v = $1 if ($opt_v =~ /([-.,A-Za-z0-9]+)/);
+  	($opt_v) || ($opt_v = shift);
+  	$op_v = $1 if ($opt_v =~ /([-.,A-Za-z0-9]+)/);
 }
-
-($opt_step) || ($opt_step = shift) || ($opt_step = 300);
-$step = $1 if ($opt_step =~ /(\d+)/);
 
 my $name = $0;
 $name =~ s/\.pl.*//g;
 my $return_code;
-##
-## Plugin requests
-##
+
+#
+# Plugin requests
+#
+
 my $start=time;
 if ($op_v) {
     if ($op_v) {$op_v = "-v ".$op_v;}
@@ -168,6 +156,11 @@ if ($op_v) {
     }
     
     if (($op_v =~ /CPULOAD/) && ($op_l =~ /([-\.,\w]+)/)){    ## CPULOAD
+	@output = split(/\|/,$_);
+        @values = $output[0] =~ /(\d*)\%/g  ;
+        $start = time;
+        ## Print Plugins Output
+
 		$start = time();
         @output = split(/\|/, $_);
         $return = $output[0];
@@ -186,6 +179,15 @@ if ($op_v) {
         }
         $perfdata .= "\n";
         $return =~ s/\n/ /g;
+        if (@values){
+	    	if (defined($opt_c) && defined($opt_w)){
+				print $return . "|cpu=@values;$opt_w;$opt_c\n";
+	    	} else {
+				print $return . "|cpu=@values\n";
+	    	}
+		} else {
+	  	  	print $return . "\n";
+		}
         print $return."|".$perfdata;
         exit $return_code;
     } elsif ($op_v =~ /UPTIME/){		## UPTIME
@@ -214,11 +216,18 @@ if ($op_v) {
         $warning = $w[1];
         ## Print Plugins Output
         $return =~ s/\n/ /g;
-        $return =~ s/%/ pct/g;
+        my @tab_return = split(/\|/, $return);
+        if ($test[4] =~ "Mb"){
+        	$test[3] = $test[3] * 1024 * 1024;
+        	$test[7] = $test[7] * 1024 * 1024;
+        } elsif ($test[4] =~ "Gb"){
+        	$test[3] = $test[3] * 1024 * 1024 * 1024;
+        	$test[7] = $test[7] * 1024 * 1024 * 1024;        	
+        }
         if (defined($test[3]) && defined($test[7]) && defined($test[12])){
-	        print $return . "|total=".$test[3]."Mo used=".$test[7]."Mo free=".$test[12]."Mo\n";
+	        print $tab_return[0]."|size=".$test[3]."o used=".$test[7]."o\n";
 		} else {
-			print $return . "\n";
+			print $tab_return[0]."\n";
 		}
 		exit $return_code;
     } elsif ($op_v =~ /MEMUSE/){    ## MEMUSE
@@ -233,11 +242,18 @@ if ($op_v) {
         $warning = $w[1];
         ## Print Plugins Output
         $return =~ s/\n/ /g;
-        $return =~ s/%/ pct/g;
+        if ($test4[2] =~ "Mb"){
+        	$test4[1] = $test4[1] * 1024 * 1024;
+        	$test4[6] = $test4[6] * 1024 * 1024;
+        } elsif ($test[4] =~ "Gb"){
+        	$test4[1] = $test4[1] * 1024 * 1024 * 1024;
+        	$test4[6] = $test4[6] * 1024 * 1024 * 1024;
+        }
+		my @tab_return = split(/\|/, $return);
         if ($test4[1] && $test[6] && $test[11]){
-	        print $return . "|total=".$test4[1]." used=".$test[6]." free=".$test[11]."\n";
+	        print $tab_return[0]."|total=".$test4[1]."o used=".$test[6]."o\n";
         } else {
-        	print $return . "\n";
+        	print $tab_return[0]."\n";
         }
         exit $return_code;
     } elsif ($op_v =~ /SERVICESTATE/){## SERVICESTATE
@@ -290,7 +306,7 @@ if ($op_v) {
 sub print_usage () {
     print "\nUsage:\n";
     print "$PROGNAME\n";
-    print "   Usage: check_graph_nt -H host -v variable [-p port] [-s password] [-w warning] [-c critical] [-l params] [-d SHOWALL] [-t timeout] \n";
+    print "   Usage: check_centreon_nt -H host -v variable [-p port] [-s password] [-w warning] [-c critical] [-l params] [-d SHOWALL] [-t timeout] \n";
     print "   Options:\n";
     print "   -H, --hostname=HOST\n";
     print "      Name of the host to check\n";
