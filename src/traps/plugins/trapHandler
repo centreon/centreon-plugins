@@ -2,7 +2,7 @@
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
-# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+# GPL License: http://www.gnu.org/licenses/gpl.txt
 #
 # Developped by : Mathavarajan Sugumaran - msugumaran@merethis.com
 #                 Julien Mathis - Romain Le Merlus
@@ -39,7 +39,7 @@ sub get_hostinfos($$$){
     $sth->execute();
     my @host;
     while (my $temp = $sth->fetchrow_array()) {
-		$host[scalar(@host)] = $temp;
+	$host[scalar(@host)] = $temp;
     }
     $sth -> finish;
     return @host;
@@ -54,76 +54,78 @@ sub getServicesIncludeTemplate($$$$) {
     my @service;
     $sth_st->execute();
     while (my @temp = $sth_st -> fetchrow_array()) {
-		my $tr_query = "SELECT `traps_id` FROM `traps_service_relation` WHERE `service_id` = '".$temp[0]."' AND `traps_id` = '".$trap_id."'";
-		my $sth_st3 = $dbh->prepare($tr_query);
-		$sth_st3->execute();
-		my @trap = $sth_st3 -> fetchrow_array();
-		if (defined($trap[0])) {
-		    $service[scalar(@service)] = $temp[1];
-		} else {
-		    if (defined($temp[2])) {
-				my $found = 0;
-				my $service_template = $temp[2];
-				while (!$found) {
-				    my $st1_query = "SELECT `service_id`, `service_template_model_stm_id`, `service_description` FROM service s WHERE `service_id` = '".$service_template."'";
-				    my $sth_st1 = $dbh->prepare($st1_query);
-				    $sth_st1 -> execute();
-				    my @st1_result = $sth_st1 -> fetchrow_array();
-				    if (defined($st1_result[0])) {
-						my $sth_st2 = $dbh->prepare("SELECT `traps_id` FROM `traps_service_relation` WHERE `service_id` = '".$service_template."' AND `traps_id` = '".$trap_id."'");
-						$sth_st2 -> execute();
-						my @st2_result = $sth_st2 -> fetchrow_array();
-						if (defined($st2_result[0])) {
-						    $found = 1;
-						    $service[scalar(@service)] = $temp[1];
-						} else {
-						    $found = 1;
-						    if (defined($st1_result[1]) && $st1_result[1]) {
-								$service_template = $st1_result[1];
-								$found = 0;
-						    }
-						}
-						$sth_st2->finish;		    
-				    }
-				    $sth_st1->finish;
-				}
+	my $tr_query = "select traps_id from traps_service_relation where service_id ='".$temp[0]."' and traps_id='".$trap_id."'";
+	my $sth_st3 = $dbh->prepare($tr_query);
+	$sth_st3->execute();
+	my @trap = $sth_st3 -> fetchrow_array();
+	if (defined($trap[0])) {
+	    $service[scalar(@service)] = $temp[1];
+	}else {
+	    if (defined($temp[2])) {
+		my $found = 0;
+		my $service_template = $temp[2];
+		while (!$found) {
+		    my $st1_query = "select service_id, service_template_model_stm_id, service_description from service s where service_id ='".$service_template."'";
+		    my $sth_st1 = $dbh->prepare($st1_query);
+		    $sth_st1 -> execute();
+		    my @st1_result = $sth_st1 -> fetchrow_array();
+		    if (defined($st1_result[0])) {
+			my $st2_query = "select traps_id from traps_service_relation where service_id ='".$service_template."' and traps_id='".$trap_id."'";
+			my $sth_st2 = $dbh->prepare($st2_query);
+			$sth_st2 -> execute();
+			my @st2_result = $sth_st2 -> fetchrow_array();
+			if (defined($st2_result[0])) {
+			    $found = 1;
+			    $service[scalar(@service)] = $temp[1];
+			}else {
+			    $found = 1;
+			    if (defined($st1_result[1]) && $st1_result[1]) {
+				$service_template = $st1_result[1];
+				$found = 0;
+			    }
+			}
+			$sth_st2->finish;		    
 		    }
+		    $sth_st1->finish;
 		}
-		$sth_st3->finish;
+	    }
+	}
+	$sth_st3->finish;
     }
     return (@service);
 }
 
 ##########################
-# GET SERVICE DESCRIPTION
+## GET SERVICE DESCRIPTION
 #
 
-sub getServiceInformations($$$)	{
-
-    my $sth = $_[0]->prepare("SELECT `host_id` FROM `host` WHERE `host_name` = '$_[2]'");
+sub get_servicename($$$)	{
+    my $query_host = "SELECT host_id from host WHERE host_name ='$_[2]'";
+    my $sth = $_[0]->prepare($query_host);
     $sth->execute();
-    my $host_id = $sth->fetchrow_array();
+    my $host_id = $sth -> fetchrow_array();
     exit if (!defined $host_id);
     $sth->finish();
     
-    $sth = $_[0]->prepare("SELECT `traps_id`, `traps_status`, `traps_submit_result_enable`, `traps_execution_command`, `traps_reschedule_svc_enable`, `traps_execution_command_enable` FROM `traps` WHERE `traps_oid` = '$_[1]'");
+    my $query_trap = "SELECT traps_id, traps_status from traps where traps_oid='$_[1]'";
+    $sth = $_[0]->prepare($query_trap);
     $sth->execute();
-    my ($trap_id, $trap_status, $traps_submit_result_enable, $traps_execution_command, $traps_reschedule_svc_enable, $traps_reschedule_svc_enable) = $sth->fetchrow_array();
+    my ($trap_id, $trap_status) = $sth->fetchrow_array();
     exit if (!defined $trap_id);
     $sth->finish();
 
-    #
-    ## getting all "services by host" for given host
-    #
+    ##
+    ### getting all "services by host" for given host
+    ##
     my $st_query = "SELECT s.service_id, service_description, service_template_model_stm_id FROM service s, host_service_relation h";
     $st_query .= " where  s.service_id=h.service_service_id and h.host_host_id='$host_id'";
     my $sth_st = $_[0]->prepare($st_query); 
     my @service = getServicesIncludeTemplate($_[0], $sth_st, $host_id, $trap_id);
     $sth_st->finish;
     
-    #
-    ## getting all "services by hostgroup" for given host
-    #
+    ##
+    ### getting all "services by hostgroup" for given host
+    ##
     my $query_hostgroup_services = "SELECT s.service_id, service_description, service_template_model_stm_id FROM hostgroup_relation hgr,  service s, host_service_relation hsr";
     $query_hostgroup_services .= " WHERE hgr.host_host_id = '".$host_id."' AND hsr.hostgroup_hg_id = hgr.hostgroup_hg_id";
     $query_hostgroup_services .= " AND s.service_id = hsr.service_service_id";
@@ -131,11 +133,11 @@ sub getServiceInformations($$$)	{
     $sth_st->execute();
     @service = (@service,getServicesIncludeTemplate($_[0], $sth_st, $host_id, $trap_id));
     $sth_st->finish;
-    return $trap_status, (@service), $traps_submit_result_enable, $traps_execution_command, $traps_reschedule_svc_enable, $traps_execution_command_enable;
+    return $trap_status, (@service);
 }
 
 #######################################
-# GET HOSTNAME AND SERVICE DESCRIPTION
+## GET HOSTNAME AND SERVICE DESCRIPTION
 #
 
 sub getTrapsInfos($$$$){
@@ -144,41 +146,30 @@ sub getTrapsInfos($$$$){
     my $oid = shift;
     my $arguments_line = shift;
     
-    my $dbh = DBI->connect("dbi:mysql:$mysql_database_oreon", $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
+    my $dsn   = "dbi:mysql:$mysql_database_oreon";    
+    my $dbh = DBI->connect($dsn, $mysql_user, $mysql_passwd) or die "Echec de la connexion\n";
     my @host = get_hostinfos($dbh, $ip, $hostname);
     foreach(@host) {
-		my $this_host = $_;
-		my ($status, @servicename, $traps_submit_result_enable, $traps_execution_command, $traps_reschedule_svc_enable, $traps_execution_command_enable) = getServiceInformations($dbh, $oid, $_);
-		foreach (@servicename) {
-		    my $this_service = $_;
-	    	my $datetime = `date +%s`;
-	    	chomp($datetime);
-	    	my $sth = $dbh->prepare("SELECT `command_file` FROM `cfg_nagios` WHERE `nagios_activate` = '1' LIMIT 1");
-	    	$sth->execute();
-	    	my @conf = $sth->fetchrow_array();
-	    	$sth->finish();
-	    	if (defined($traps_submit_result_enable) && $traps_submit_result_enable eq 1){ 
-			    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$arguments_line" >> $conf[0]`;
-			}
-			if (defined($traps_reschedule_svc_enable) && $traps_reschedule_svc_enable eq 1){
-				my $time_now = time();
-			    my $submit = `/bin/echo "[$datetime] SCHEDULE_FORCED_SVC_CHECK;$this_host;$this_service;$time_now" >> $conf[0]`;	
-				undef($time_now);
-			} 
-			if (defined($traps_execution_command_enable) && $traps_execution_command_enable){
-				system($traps_execution_command);				
-			}
-			undef($sth);
-		}
+	my $this_host = $_;
+	my ($status, @servicename) = get_servicename($dbh, $oid, $_);
+	foreach (@servicename) {
+	    my $this_service = $_;
+	    my $datetime=`date +%s`;
+	    chomp($datetime);
+	    my $sth = $dbh->prepare("SELECT command_file FROM cfg_nagios WHERE nagios_activate = '1' LIMIT 1");
+	    $sth->execute();
+	    my @conf = $sth->fetchrow_array();
+	    $sth->finish(); 
+		    my $submit = `/bin/echo "[$datetime] PROCESS_SERVICE_CHECK_RESULT;$this_host;$this_service;$status;$arguments_line" >> $conf[0]`;
+	}
     }
     $dbh->disconnect();
     exit;
 }
 
 ##########################
-# PARSE TRAP INFORMATIONS
+## PARSE TRAP INFORMATIONS
 #
-
 if (scalar(@ARGV)) {
     my $ip = $ARGV[0];
     my $hostname = $ARGV[1];
@@ -186,4 +177,3 @@ if (scalar(@ARGV)) {
     my $arguments = $ARGV[3];
     getTrapsInfos($ip, $hostname, $oid, $arguments);
 }
-
