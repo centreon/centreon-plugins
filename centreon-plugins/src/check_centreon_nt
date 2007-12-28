@@ -156,7 +156,7 @@ if ($op_v) {
     }
     
     if (($op_v =~ /CPULOAD/) && ($op_l =~ /([-\.,\w]+)/)){    ## CPULOAD
-	@output = split(/\|/,$_);
+		@output = split(/\|/,$_);
         @values = $output[0] =~ /(\d*)\%/g  ;
         $start = time;
         ## Print Plugins Output
