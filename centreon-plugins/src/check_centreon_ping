@@ -27,7 +27,8 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/srv/nagios/libexec";
+#use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require centreon" ) {
@@ -41,7 +42,8 @@ if (eval "require centreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_H $opt_D $opt_w $opt_c $opt_n $rta_critical $rta_warning $pl_critical $pl_warning $opt_s);
+use vars qw($opt_V $opt_h $opt_H $opt_D $opt_w $opt_c $opt_n $opt_f $opt_i $rta_critical $rta_warning $pl_critical $pl_warning $opt_s);
+
 
 #
 # Plugin var init
@@ -58,11 +60,12 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h" => \$opt_h,		"help" => \$opt_h,
-     "V" => \$opt_V,		"version" => \$opt_V
+     "V" => \$opt_V,		"version" => \$opt_V,
      "w=s" => \$opt_w,		"warning=s" => \$opt_w,
      "c=s" => \$opt_c,		"critical=s" => \$opt_c,
      "n=s" => \$opt_n,		"number=s" => \$opt_n,
-     "H=s" => \$opt_H,		"hostname=s" => \$opt_H);
+     "H=s" => \$opt_H,		"hostname=s" => \$opt_H, 
+     "i=s" => \$opt_i);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
@@ -113,16 +116,20 @@ my $start=time;
 # Plugin requests
 #
 
-$_ = `$ping -n -c $NbPing $opt_H 2>/dev/null`;
+$opt_i = 1 if (!defined($opt_i) || !$opt_i);
+
+$_ = `$ping -n -c $NbPing $opt_H -i $opt_i 2>/dev/null`;
 my $return = $? / 256;
 
 #
 # Get Data From Ping Result
 #
+
 if (!$_) {
     print "no value returned by ping\n";
     exit $ERRORS{'UNKNOWN'};
 }
+
 my $ping_result = $_;
 my @ping_result_array = split(/\n/,$ping_result);
 my @ping_subresult1_array;
@@ -180,6 +187,7 @@ sub print_usage () {
     print "   -w (--warning)    Threshold pair (Default: 200,20%)\n";
     print "   -c (--critical)   Threshold pair (Default: 500,40%)\n";
     print "   -n (--number)     number of ICMP ECHO packets to send (Default: 1)\n";
+    print "   -i 			    Interval between ping (Default: 1s)\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }
