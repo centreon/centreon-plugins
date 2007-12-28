@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl
 ###################################################################
 # Oreon is developped with GPL Licence 2.0 
 #
@@ -38,7 +38,7 @@ use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_t $opt_
 # Plugin var init
 #
 
-my $pathtolibexecnt = "@NAGIOS_PLUGINS@check_nt";
+my $pathtolibexecnt = "@NAGIOS_PLUGINS@/check_nt";
 
 my($op_v, $op_d, $op_s, $op_t, $op_l, $port, @values,  @test, @test2, @test3, @test4, @test5, $warning, $critical, @w, @c, $uptime);
 my($warning2, $critical2, $warning3, $critical3, $warning4, $critical4, @output);
@@ -179,15 +179,6 @@ if ($op_v) {
         }
         $perfdata .= "\n";
         $return =~ s/\n/ /g;
-        if (@values){
-	    	if (defined($opt_c) && defined($opt_w)){
-				print $return . "|cpu=@values;$opt_w;$opt_c\n";
-	    	} else {
-				print $return . "|cpu=@values\n";
-	    	}
-		} else {
-	  	  	print $return . "\n";
-		}
         print $return."|".$perfdata;
         exit $return_code;
     } elsif ($op_v =~ /UPTIME/){		## UPTIME
@@ -240,16 +231,17 @@ if ($op_v) {
         $critical = $c[1];
         @w = split(/ /, $warning);
         $warning = $w[1];
+        
         ## Print Plugins Output
-        $return =~ s/\n/ /g;
-        if ($test4[2] =~ "Mb"){
+        if (defined($test[3]) && $test[3] =~ "Mb"){
         	$test4[1] = $test4[1] * 1024 * 1024;
-        	$test4[6] = $test4[6] * 1024 * 1024;
-        } elsif ($test[4] =~ "Gb"){
+        	$test[6] = $test[6] * 1024 * 1024;
+        } elsif (defined($test[3]) && $test[3] =~ "Gb"){
         	$test4[1] = $test4[1] * 1024 * 1024 * 1024;
-        	$test4[6] = $test4[6] * 1024 * 1024 * 1024;
+        	$test[6] = $test[6] * 1024 * 1024 * 1024;
         }
 		my @tab_return = split(/\|/, $return);
+        $tab_return[0] =~ s/\n/ /g;
         if ($test4[1] && $test[6] && $test[11]){
 	        print $tab_return[0]."|total=".$test4[1]."o used=".$test[6]."o\n";
         } else {
