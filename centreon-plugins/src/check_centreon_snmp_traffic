@@ -28,7 +28,8 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/usr/local/nagios/libexec";
+#use lib "@NAGIOS_LIBEXEC@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 if (eval "require centreon" ) {
     use centreon qw(get_parameters);
@@ -307,8 +308,8 @@ $last_out_bits  = 0;
 
 my $flg_created = 0;
 
-if (-e "/tmp/centreon_traffic_if".$interface."_".$opt_H) {
-    open(FILE,"<"."/tmp/centreon_traffic_if".$interface."_".$opt_H);
+if (-e "/usr/local/centreon/temp/traffic_if".$interface."_".$opt_H) {
+    open(FILE,"<"."/usr/local/centreon/temp/traffic_if".$interface."_".$opt_H);
     while($row = <FILE>){
 		@last_values = split(":",$row);
 		$last_check_time = $last_values[0];
@@ -323,8 +324,8 @@ if (-e "/tmp/centreon_traffic_if".$interface."_".$opt_H) {
 
 $update_time = time();
 
-unless (open(FILE,">"."/tmp/centreon_traffic_if".$interface."_".$opt_H)){
-    print "Unknown - /tmp/centreon_traffic_if".$interface."_".$opt_H. " !\n";
+unless (open(FILE,">"."/usr/local/centreon/temp/traffic_if".$interface."_".$opt_H)){
+    print "Unknown - /usr/local/centreon/temp/traffic_if".$interface."_".$opt_H. " !\n";
     exit $ERRORS{"UNKNOWN"};
 }
 print FILE "$update_time:$in_bits:$out_bits";
