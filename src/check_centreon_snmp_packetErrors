@@ -28,7 +28,8 @@ use strict;
 use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/usr/local/nagios/libexec";
+#use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require centreon" ) {
@@ -152,8 +153,8 @@ foreach my $err (oid_lex_sort(keys %$result_out)) {
 # ##
 
 for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
-    if (-e "/tmp/packet_errors_if".$i."_".$opt_H.".tmp") {
-		open(FILE,"<"."/tmp/packet_errors_if".$i."_".$opt_H.".tmp");
+    if (-e "/usr/local/centreon/temp/packet_errors_if".$i."_".$opt_H.".tmp") {
+		open(FILE,"<"."/usr/local/centreon/temp/packet_errors_if".$i."_".$opt_H.".tmp");
 		while($row = <FILE>){
 		    my @last_values = split(":",$row);
 		    $last_check_time[$i] = $last_values[0];
@@ -167,8 +168,8 @@ for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
     }
 
     $update_time = time;
-    unless (open(FILE,">"."/tmp/packet_errors_if".$i."_".$opt_H.".tmp")){
-	print "Unknown - /tmp/tmp/packet_errors_if".$i."_".$opt_H.".tmp!\n";
+    unless (open(FILE,">"."/usr/local/centreon/temp/packet_errors_if".$i."_".$opt_H.".tmp")){
+	print "Unknown - /usr/local/centreon/temp/packet_errors_if".$i."_".$opt_H.".tmp!\n";
 	exit $ERRORS{"UNKNOWN"};
 }
     print FILE "$update_time:$nb_in_errors[$i]:$nb_out_errors[$i]";

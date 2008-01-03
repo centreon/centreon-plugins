@@ -28,7 +28,8 @@ use strict;
 use Net::SNMP qw(:snmp);
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "/usr/local/nagios/libexec";
+#use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require centreon" ) {
@@ -208,9 +209,8 @@ if ($opt_s) {
     # Get description table
     my $result = $session->get_table(
         Baseoid => $OID_hrStorageDescr
-    );
-
     if (!defined($result)) {
+    );
         printf("ERROR: hrStorageDescr Table : %s.\n", $session->error);
         $session->close;
         exit $ERRORS{'UNKNOWN'};
@@ -219,11 +219,10 @@ if ($opt_s) {
     foreach my $key ( oid_lex_sort(keys %$result)) {
         my @oid_list = split (/\./,$key);
         my $index = pop (@oid_list) ;
-        print "hrStorage $index :: $$result{$key}\n";
+        print "hrStorage $index :: @$result{$key}\n";
     }
 	exit $ERRORS{'OK'};
 }
-
 
 my $result = $session->get_request(
                                    -varbindlist => [$OID_hrStorageDescr.".".$partition  ,
