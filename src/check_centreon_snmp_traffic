@@ -41,7 +41,7 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T);
+use vars qw($opt_V $opt_h $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_r);
 
 # Plugin var init
 
@@ -67,7 +67,7 @@ GetOptions
      "b=s" => \$opt_b, "bps=s"        => \$opt_b,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-     "T=s" => \$opt_T,
+     "T=s" => \$opt_T, "r"			  => \$opt_r,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
 if ($opt_V) {
@@ -170,41 +170,58 @@ my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lo
 # create a SNMP session
 my ($session, $error);
 if ($snmp eq "1" || $snmp =~ /2/) {
-($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }elsif ($opt_k) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }elsif ($opt_p) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
+	if (!defined($session)) {
+	    print("UNKNOWN: SNMP Session : $error\n");
+	    exit $ERRORS{'UNKNOWN'};
+	}
 }
-}
+$session->translate(Net::SNMP->TRANSLATE_NONE) if (defined($session));
 
 #getting interface using its name instead of its oid index
 
 if ($opt_n) {
-    my $result = $session->get_table(Baseoid => $OID_DESC);
-    if (!$result) {
-        printf("ERROR: Description Table : %s.\n", $session->error);
-        $session->close;
-        exit $ERRORS{'UNKNOWN'};
-    }
-    foreach my $key ( oid_lex_sort(keys %$result)) {
-        if ($result->{$key} eq $opt_i) {
-		    my @oid_list = split (/\./,$key);
-		    $interface = pop (@oid_list) ;
-		}
-    }
+	if ($opt_r){
+	    my $result = $session->get_table(Baseoid => $OID_DESC);
+	    if (!$result) {
+	        printf("ERROR: Description Table : %s.\n", $session->error);
+	        $session->close;
+	        exit $ERRORS{'UNKNOWN'};
+	    }
+	    foreach my $key ( oid_lex_sort(keys %$result)) {
+	        if ($result->{$key} =~ m/$opt_i/) {
+			    my @oid_list = split (/\./,$key);
+			    $interface = pop (@oid_list) ;
+			}
+	    }
+	} else {
+		my $result = $session->get_table(Baseoid => $OID_DESC);
+	    if (!$result) {
+	        printf("ERROR: Description Table : %s.\n", $session->error);
+	        $session->close;
+	        exit $ERRORS{'UNKNOWN'};
+	    }
+	    foreach my $key ( oid_lex_sort(keys %$result)) {
+	        if ($result->{$key} eq $opt_i) {
+			    my @oid_list = split (/\./,$key);
+			    $interface = pop (@oid_list) ;
+			}
+	    }
+	}
 }
+
 my ($OID_IN, $OID_OUT, $OID_SPEED);
 if ($opt_64bits) {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
@@ -474,6 +491,7 @@ sub print_usage () {
     print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
     print "   -T                Max Banwidth\n";
     print "   -V (--version)    Plugin version\n";
+    print "   -r                Regexp Match Mode\n";
     print "   -h (--help)       usage help\n";
 }
 
