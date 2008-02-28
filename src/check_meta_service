@@ -49,15 +49,10 @@ GetOptions
 ## Set Database information
 ###########################
 use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
-require "@INSTALL_DIR_OREON@/ODS/etc/conf.pm";
+require "/usr/local/centreon/etc/conf.pm";
 
-my $dbh = DBI->connect("DBI:mysql:database=$mysql_database_oreon;host=$mysql_host",
-                         "$mysql_user", "$mysql_passwd",
-                         {'RaiseError' => 1});
-
-my $dbh2 = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host",
-                         "$mysql_user", "$mysql_passwd",
-                         {'RaiseError' => 1});
+my $dbh  = DBI->connect("DBI:mysql:database=$mysql_database_oreon;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
+my $dbh2 = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 0.1 $');
@@ -74,9 +69,9 @@ my $warning;
 my $critical;
 my $metric_id;
 
-sub return_value($$$){
+sub return_value($$$$){
     
-    my $sth_output = $dbh->prepare("SELECT meta_display FROM `meta_service`");
+    my $sth_output = $dbh->prepare("SELECT meta_display FROM `meta_service` WHERE `meta_id` = '".$_[3]."'");
     if (!$sth_output->execute) {die "Error:" . $sth_output->errstr . "\n";}
     my $sth_output_data = $sth_output->fetchrow_hashref();
     my $output = $sth_output_data->{'meta_display'};
@@ -204,11 +199,8 @@ sub get_value_in_database_by_host($$$$$){
 }
 
 sub get_value_in_database_by_hg($$$$$$){
-
     my $str;
-   
     ## Get hostname 
-    
     $str = "SELECT host_name FROM host WHERE host.host_id = '".$host_id."'";
     if ($debug) {print $str . "\n";}
     my $hd = $dbh->prepare($str);
@@ -341,56 +333,56 @@ if ($opt_i){
 		}
 	    }
 	}
-	return_value($result, $warning, $critical);
+	return_value($result, $warning, $critical, $opt_i);
 	###############################################
     } else {
-	$sth = $dbh->prepare("SELECT metric_id FROM `meta_service_relation` WHERE meta_id = '".$opt_i."'");
-	if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
-	if ($ref->{'calcul_type'} =~ "AVE"){
-	 	if (!$sth->rows) {
-            print "no result in table meta_service_relation for id $opt_i\n";
-        	exit $ERRORS{'UNKNOWN'};
-        }
-	    while ($svc = $sth->fetchrow_hashref()){
-		if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-		$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-		if (defined($value) && $value){$total += $value;}
-		$cpt++;
-	    }
-	    $result = $total / $cpt;
-	} elsif ($ref->{'calcul_type'} =~ "SOM"){
-	    while ($svc = $sth->fetchrow_hashref()){
-		if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-		$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-		if ($value){$total += $value;}
-		if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-	    }
-	    $result = $total;
-	} elsif ($ref->{'calcul_type'} =~ "MIN"){
-	    while ($svc = $sth->fetchrow_hashref()){
-		if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-		$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-		if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-		if ($value && $value <= $min){$min = $value;}
-	    }
-	    $result = $min;
-	} elsif ($ref->{'calcul_type'} =~ "MAX"){
-	    while ($svc = $sth->fetchrow_hashref()){
-		if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-		$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-		if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-		if ($value && $value >= $max){$max = $value;}
-	    }
-	    $result = $max;
-	}     
-	return_value($result, $warning, $critical);
+		$sth = $dbh->prepare("SELECT metric_id FROM `meta_service_relation` WHERE meta_id = '".$opt_i."'");
+		if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
+		if ($ref->{'calcul_type'} =~ "AVE"){
+		 	if (!$sth->rows) {
+	            print "no result in table meta_service_relation for id $opt_i\n";
+	        	exit $ERRORS{'UNKNOWN'};
+	        }
+		    while ($svc = $sth->fetchrow_hashref()){
+			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
+			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
+			if (defined($value) && $value){$total += $value;}
+			$cpt++;
+		    }
+		    $result = $total / $cpt;
+		} elsif ($ref->{'calcul_type'} =~ "SOM"){
+		    while ($svc = $sth->fetchrow_hashref()){
+			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
+			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
+			if ($value){$total += $value;}
+			if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
+		    }
+		    $result = $total;
+		} elsif ($ref->{'calcul_type'} =~ "MIN"){
+		    while ($svc = $sth->fetchrow_hashref()){
+			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
+			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
+			if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
+			if ($value && $value <= $min){$min = $value;}
+		    }
+		    $result = $min;
+		} elsif ($ref->{'calcul_type'} =~ "MAX"){
+		    while ($svc = $sth->fetchrow_hashref()){
+			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
+			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
+			if ($debug){print "max = " . $max . "  value = ".$value."\n";}
+			if ($value && $value >= $max){$max = $value;}
+		    }
+		    $result = $max;
+		}     
+		return_value($result, $warning, $critical, $opt_i);
     }
 }
 
 
 sub print_usage () {
     print "Usage:\n";
-    print " check_meta_service.pl\n";
+    print " check_meta_service\n";
     print "   -i				Meta Service id\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
@@ -398,7 +390,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2007 Centreon        #\n";
+    print "#    Copyright (c) 2004-2008 Centreon        #\n";
     print "#    Bugs to http://bugs.oreon-project.org/  #\n";
     print "##############################################\n";
     print_usage();
