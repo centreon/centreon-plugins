@@ -118,7 +118,7 @@ my $start=time;
 
 $opt_i = 1 if (!defined($opt_i) || !$opt_i);
 
-$_ = `$ping -n -c $NbPing $opt_H -i $opt_i 2>/dev/null`;
+$_ = `$ping -n -c $NbPing -i $opt_i $opt_H 2>/dev/null`;
 my $return = $? / 256;
 
 #
