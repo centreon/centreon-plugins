@@ -72,106 +72,6 @@ sub get_parameters	{
     return %centreon;
 }
 
-
-###############################################################################
-#  Create RRD file
-###############################################################################
-sub create_rrd($$$$$$$)
-{
-	my @rrd_arg;
-	my ($rrd, $nb_ds ,$start, $step, $min, $max, $type) = @_;
-	$nb_ds = 1 unless($nb_ds);
-	$start = time unless($start);
-	$step = 300 unless($step);
-	$min = "U" unless($min);
-	$max = "U" unless($max);
-	$type = "GAUGE" unless($type);
-
-	my $ERROR = RRDs::error;
-
-	@rrd_arg=($rrd,
-			  "--start",
-			  $start-1,
-			  "--step",
-			  $step);
-
-	for ($i = 0; $i < $nb_ds; $i++) {
-        push(@rrd_arg,"DS:".$ds[$i].":$type:".($step * 2).":".$min.":".$max);
-     }
-	push(@rrd_arg,"RRA:AVERAGE:0.5:1:8640",
-             	  "RRA:MIN:0.5:12:8640",
-             	  "RRA:MAX:0.5:12:8640");
-	RRDs::create (@rrd_arg);
-        $ERROR = RRDs::error;
-        if ($ERROR) {
-            print "unable to create '$rrd' : $ERROR\n" ;
-            exit 3;
-        }
-}
-
-###############################################################################
-#  Update RRD file
-###############################################################################
-sub update_rrd($$@)
-{
-	my @rrd_arg;
-	my ($rrd, $start,@values) = @_;
-	$start = time unless($start);
-
-	my $ERROR = RRDs::error;
-	for (@values) {
-		s/,/\./ ;
-		$str_value .= ":" . $_;
-		}
-	RRDs::update ($rrd, "$start$str_value");
-    $ERROR = RRDs::error;
-    if ($ERROR) {
-    	print "unable to update '$rrd' : $ERROR\n" ;
-        exit 3;
-     }
-}
-
-###############################################################################
-#  Fetch RRD file
-###############################################################################
-sub fetch_rrd($$){
-	my ($line, $val, @valeurs, $update_time, $step, $ds_names, $data, $i) ;
-	my ($rrd, $CF, @values) = @_;
-	$start = time unless($start);
-
-	my $ERROR = RRDs::error;
-
-	($update_time,$step,$ds_names,$data) = RRDs::fetch($rrd, "--resolution=300","--start=now-5min","--end=now",$CF);
-
-
-    $ERROR = RRDs::error;
-    if ($ERROR) {
-    	print "unable to update '$rrd' : $ERROR\n" ;
-        exit 3;
-    }
-    foreach $line (@$data) {
-    	foreach $val (@$line) {
-	    	if ( defined $val ) { $valeur[$i]=$val; } else { $valeur[$i]="undef"; }
-	        $i++;
-     	}
-    }
-    return @valeur;
-}
-
-###############################################################################
-#  Is a valid ServiceId
-###############################################################################
-
-sub is_valid_serviceid {
-	my $ServiceId = shift;
-	if ($ServiceId && $ServiceId =~ m/^([0-9_]+)$/) {
-		return $ServiceId;
-	} else {
-		print "Unknown -S Service ID expected... or it doesn't exist, try another id - number\n";
-		exit $ERRORS{'UNKNOWN'};
-	}
-}
-
 1;
 
 __END__
@@ -184,8 +84,6 @@ centreon - shared module for Oreon plugins
 
   use centreon;
   centreon::get_parameters()
-  centreon::create_rrd( )
-  centreon::update_rrd( )
 
 =head1 DESCRIPTION
 
