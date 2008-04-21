@@ -89,23 +89,6 @@ centreon - shared module for Oreon plugins
 
 =head2 Functions
 
-B<centreon::create_rrd> create a rrd database.
-
-  create_rrd($rrd, $nb_ds ,$start, $step, $min, $max, $type );
-
-	  $rrd : RRD filename
-	  $nb_ds : Number of Data Sources to create
-	  $start : Start time of RRD
-	  $step : RRD step
-	  $min : Minimum value in RRD
-	  $max : Maximum value in RRD
-	  $type : GAUGE or COUNTER
-
-  update_rrd($rrd, $start,@values);
-
-  	  $rrd : RRD filename to update
-	  $start :
-	  @values : update RRD with list values
 
 =head1 AUTHOR
 
