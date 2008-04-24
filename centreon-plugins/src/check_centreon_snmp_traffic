@@ -29,7 +29,7 @@ use Net::SNMP qw(:snmp oid_lex_sort);
 use FindBin;
 use lib "$FindBin::Bin";
 use lib "/usr/local/nagios/libexec";
-#use lib "@NAGIOS_LIBEXEC@";
+#use lib "@NAGIOS_PLUGIN@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 if (eval "require centreon" ) {
     use centreon qw(get_parameters);

@@ -18,7 +18,7 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "@NAGIOS_PLUGINS@";
+use lib "@NAGIOS_PLUGIN@";
 use utils qw(%ERRORS $TIMEOUT);
 #my $TIMEOUT = 15;
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);

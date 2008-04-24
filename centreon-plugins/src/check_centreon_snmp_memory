@@ -1,25 +1,28 @@
 #! /usr/bin/perl -w
+###################################################################
+# Oreon is developped with GPL Licence 2.0 
 #
-# $Id: check_grah_real_memory.pl,v 1.2 2005/07/27 22:21:49 wistof Exp $
+# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
 #
-# Oreon's plugins are developped with GPL Licence :
-# http://www.fsf.org/licenses/gpl.txt
-# Developped by : Julien Mathis - Mathieu Mettre - Romain Le Merlus - Yohann Lecarpentier
+# Developped by : Julien Mathis - Romain Le Merlus 
+#                 Mathavarajan Sugumaran
 #
-# Modified for Oreon Project by : Mathieu Chateau - Christophe Coraboeuf
+###################################################################
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
-# The Software is provided to you AS IS and WITH ALL FAULTS.
-# OREON makes no representation and gives no warranty whatsoever,
-# whether express or implied, and without limitation, with regard to the quality,
-# safety, contents, performance, merchantability, non-infringement or suitability for
-# any particular or intended purpose of the Software found on the OREON web site.
-# In no event will OREON be liable for any direct, indirect, punitive, special,
-# incidental or consequential damages however they may arise and even if OREON has
-# been previously advised of the possibility of such damages.
-
-##
-## Plugin init
-##
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+#    For information : contact@merethis.com
+####################################################################
+#
+# Script init
+#
 
 use strict;
 use Net::SNMP qw(:snmp);
