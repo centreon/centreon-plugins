@@ -27,7 +27,7 @@ package	centreon;
 use Exporter   ();
 use FindBin qw($Bin);
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
+use lib "@NAGIOS_PLUGIN@";
 
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
@@ -62,7 +62,7 @@ my @ds = ("a","b","c","d","e","f","g","h","i","j","k","l");
 #  Get all parameters from the ini file
 ###############################################################################
 sub get_parameters	{
-	$params_file = "@NAGIOS_PLUGINS@/$params_file";
+	$params_file = "@NAGIOS_PLUGIN@/$params_file";
 	unless (-e $params_file)	{
 		print "Unknown - In centreon.pm :: $params_file :: $!\n";
         exit $ERRORS{'UNKNOWN'};

@@ -21,14 +21,14 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "@NAGIOS_PLUGINS@";
+use lib "@NAGIOS_PLUGIN@";
 use utils qw(%ERRORS $TIMEOUT);
 #my $TIMEOUT = 5;
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 
 # centreon specific
 
-#use lib "@NAGIOS_PLUGINS@";
+#use lib "@NAGIOS_PLUGIN@";
 if (eval "require centreon" ) {
   use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
   use vars qw($VERSION %centreon);
