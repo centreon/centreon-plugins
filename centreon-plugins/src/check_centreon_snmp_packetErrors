@@ -152,8 +152,8 @@ foreach my $err (oid_lex_sort(keys %$result_out)) {
 # ##
 
 for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
-    if (-e "@CENTREON_TMP@/packet_errors_if".$i."_".$opt_H.".tmp") {
-		open(FILE,"<"."@CENTREON_TMP@/packet_errors_if".$i."_".$opt_H.".tmp");
+    if (-e "@CENTPLUGINS_TMP@/packet_errors_if".$i."_".$opt_H.".tmp") {
+		open(FILE,"<"."@CENTPLUGINS_TMP@/packet_errors_if".$i."_".$opt_H.".tmp");
 		while($row = <FILE>){
 		    my @last_values = split(":",$row);
 		    $last_check_time[$i] = $last_values[0];
@@ -167,8 +167,8 @@ for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
     }
 
     $update_time = time;
-    unless (open(FILE,">"."@CENTREON_TMP@/packet_errors_if".$i."_".$opt_H.".tmp")){
-	print "Unknown - @CENTREON_TMP@/packet_errors_if".$i."_".$opt_H.".tmp!\n";
+    unless (open(FILE,">"."@CENTPLUGINS_TMP@/packet_errors_if".$i."_".$opt_H.".tmp")){
+	print "Unknown - @CENTPLUGINS_TMP@/packet_errors_if".$i."_".$opt_H.".tmp!\n";
 	exit $ERRORS{"UNKNOWN"};
 }
     print FILE "$update_time:$nb_in_errors[$i]:$nb_out_errors[$i]";
