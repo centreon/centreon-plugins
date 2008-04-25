@@ -127,13 +127,13 @@ fi
 		echo ""
 	fi
 
-	if [ -z $NAGIOS_PLUGIN ];then
+	if [ -z $NAGIOS_PLUGINS ];then
 		#nagios plugins directory for oreon
-		NAGIOS_PLUGIN="$INSTALL_DIR_NAGIOS/libexec"
+		NAGIOS_PLUGINS="$INSTALL_DIR_NAGIOS/libexec"
 		echo "Where are your nagios plugin / libexec  directory ?"
-		echo -n "default to [$NAGIOS_PLUGIN]:"
+		echo -n "default to [$NAGIOS_PLUGINS]:"
 		read temp
-		test_answer NAGIOS_PLUGIN $temp
+		test_answer NAGIOS_PLUGINS $temp
 		echo ""
 	fi
 
@@ -210,10 +210,10 @@ echo ""
 
 echo "Other Stuff"
 echo "------------"
-if test -d $NAGIOS_PLUGIN ; then
+if test -d $NAGIOS_PLUGINS ; then
     echo_success "Nagios libexec directory" "OK"
 else
-    mkdir -p $NAGIOS_PLUGIN > /dev/null
+    mkdir -p $NAGIOS_PLUGINS > /dev/null
     echo_success "Nagios libexec directory created" "OK"
 fi
 

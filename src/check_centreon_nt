@@ -27,7 +27,7 @@
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGIN@";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 use vars qw($PROGNAME);
@@ -38,7 +38,7 @@ use vars qw($opt_H $opt_p $opt_s $opt_v $opt_V $opt_h $opt_w $opt_c $opt_t $opt_
 # Plugin var init
 #
 
-my $pathtolibexecnt = "@NAGIOS_PLUGIN@/check_nt";
+my $pathtolibexecnt = "@NAGIOS_PLUGINS@/check_nt";
 
 my($op_v, $op_d, $op_s, $op_t, $op_l, $port, @values,  @test, @test2, @test3, @test4, @test5, $warning, $critical, @w, @c, $uptime);
 my($warning2, $critical2, $warning3, $critical3, $warning4, $critical4, @output);
