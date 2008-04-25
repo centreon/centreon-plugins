@@ -32,7 +32,7 @@ use Getopt::Long;
 
 # Nagios specific
 
-use lib "@NAGIOS_PLUGIN@";
+use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
 
 # centreon specific
