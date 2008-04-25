@@ -31,19 +31,19 @@ use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
-if (eval "require oreon" ) {
-	use oreon qw(get_parameters);
-	use vars qw($VERSION %oreon);
-	%oreon=get_parameters();
+if (eval "require centreon" ) {
+	use centreon qw(get_parameters);
+	use vars qw($VERSION %centreon);
+	%centreon=get_parameters();
 } else {
-	print "Unable to load oreon perl module\n";
+	print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_h $opt_g $opt_v $opt_C $opt_w $opt_c $opt_s $opt_H @test);
-my $pathtorrdbase = $oreon{GLOBAL}{DIR_RRDTOOL};
+my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
 
 ##
 ## Plugin var init
@@ -110,10 +110,10 @@ my $name = $0;
 
 ## Plugin snmp requests
 
-# my $OID_hrStorageDescr = $oreon{MIB2}{HR_STORAGE_DESCR};
-# my $OID_hrStorageAllocationUnits =$oreon{MIB2}{HR_STORAGE_ALLOCATION_UNITS};
-# my $OID_hrStorageSize =$oreon{MIB2}{HR_STORAGE_SIZE};
-# my $OID_hrStorageUsed =$oreon{MIB2}{HR_STORAGE_USED};
+# my $OID_hrStorageDescr = $centreon{MIB2}{HR_STORAGE_DESCR};
+# my $OID_hrStorageAllocationUnits =$centreon{MIB2}{HR_STORAGE_ALLOCATION_UNITS};
+# my $OID_hrStorageSize =$centreon{MIB2}{HR_STORAGE_SIZE};
+# my $OID_hrStorageUsed =$centreon{MIB2}{HR_STORAGE_USED};
 
 # create a SNMP session
 
