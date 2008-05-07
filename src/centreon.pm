@@ -52,7 +52,7 @@ if (eval "require RRDs" ) {
 #$VERSION = do { my @r = (q$Revision: XXX $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(get_parameters create_rrd update_rrd fetch_rrd &is_valid_serviceid);
+our @EXPORT_OK = qw(get_parameters);
 our @EXPORT = @EXPORT_OK;
 
 my $params_file = "centreon.conf";
