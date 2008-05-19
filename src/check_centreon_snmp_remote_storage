@@ -41,7 +41,7 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_t $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s @test);
+use vars qw($opt_V $opt_t $opt_P $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s @test);
 
 # Plugin var init
 
@@ -59,6 +59,7 @@ GetOptions
      "u=s"   => \$opt_u, "username=s" => \$opt_u,
      "p=s"   => \$opt_p, "password=s" => \$opt_p,
      "k=s"   => \$opt_k, "key=s"      => \$opt_k,
+     "P=s"   => \$opt_P, "--snmp-port=s" => \$opt_P,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "s"   => \$opt_s, "show"         => \$opt_s,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
@@ -75,7 +76,9 @@ if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
     exit $ERRORS{'OK'};
 }
-
+if (!defined($opt_P)) {
+	$opt_P = 161;
+}
 if ($opt_h) {
 	print_help();
 	exit $ERRORS{'OK'};
@@ -157,19 +160,19 @@ my $OID_hrStorageUsed = $centreon{MIB2}{HR_STORAGE_USED};
 # create a SNMP session
 my ($session, $error);
 if ($snmp eq "1" || $snmp eq "2") {
-	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
+	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp, -port => $opt_P);
 	if (!defined($session)) {
 	    print("UNKNOWN: SNMP Session : $error\n");
 	    exit $ERRORS{'UNKNOWN'};
 	}
 } elsif ($opt_k) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k, -port => $opt_P);
 	if (!defined($session)) {
 	    print("UNKNOWN: SNMP Session : $error\n");
 	    exit $ERRORS{'UNKNOWN'};
 	}
 } elsif ($opt_p) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
+    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p, -port => $opt_P);
 	if (!defined($session)) {
 	    print("UNKNOWN: SNMP Session : $error\n");
 	    exit $ERRORS{'UNKNOWN'};
@@ -235,7 +238,7 @@ my $result = $session->get_request(
                                                     ]
                                    );
 if (!defined($result)) {
-    printf("ERROR:  %s", $session->error);
+    printf("ERROR:  %s.\n", $session->error);
     if ($opt_n) { print(" - You must specify the disk name when option -n is used");}
     print ".\n";
     $session->close;
