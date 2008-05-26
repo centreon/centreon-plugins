@@ -38,7 +38,7 @@ use utils qw(%ERRORS $TIMEOUT);
 # centreon specific
 
 if (eval "require centreon" ) {
-  use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+  use centreon qw(get_parameters);
   use vars qw($VERSION %centreon);
   %centreon = get_parameters();
 } else {
@@ -305,9 +305,6 @@ sub check_options {
     }
 	 ###### Oreon #######
 
-	if (!defined($o_S)) { $o_S="1_1" }
-	$ServiceId = is_valid_serviceid($o_S);
-
 	if (!defined($o_step)) { $o_step="300" }
 	$step = $1 if ($o_step =~ /(\d+)/);
 
@@ -317,7 +314,6 @@ sub check_options {
 
 check_options();
 
-#$rrd = $pathtorrdbase.$ServiceId.".rrd";
 $start=time;
 
 # Check gobal timeout if snmp screws up
