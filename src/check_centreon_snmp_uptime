@@ -133,7 +133,7 @@ if ($opt_d) {
 
 if ($un || ( $un == 0) ){
     if ($opt_d) {
-        print "OK - Uptime (in day): $un|uptime=".$un."hs\n";
+        print "OK - Uptime (in day): $un|uptime=".$un."day\(s\)\n";
     } else {
         print "OK - Uptime (in hundredths of a second): $un|uptime=".$un."hs\n";
     }
