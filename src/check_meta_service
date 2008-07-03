@@ -49,7 +49,7 @@ GetOptions
 ## Set Database information
 ###########################
 use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
-require "/usr/local/centreon/etc/conf.pm";
+require "@CENTREON_ETC@/conf.pm";
 
 my $dbh  = DBI->connect("DBI:mysql:database=$mysql_database_oreon;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
 my $dbh2 = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
