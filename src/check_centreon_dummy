@@ -58,7 +58,7 @@ if ($opt_h) {
 if (!defined($opt_s)) {
     print_usage && exit 0;
 }
-if ($opt_s ne "0" && $opt_s ne "0" && $opt_s ne "0" && $opt_s ne "0") {
+if ($opt_s ne "0" && $opt_s ne "1" && $opt_s ne "2" && $opt_s ne "3") {
     print_usage;
     exit 0;
 } 
