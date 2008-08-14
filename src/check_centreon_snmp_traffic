@@ -203,6 +203,7 @@ if ($opt_n) {
 	        exit $ERRORS{'UNKNOWN'};
 	    }
 	    foreach my $key ( oid_lex_sort(keys %$result)) {
+		    $result->{$key} =~ s/\x00//g; //Added line to strip the illegal character off.
 	        if ($result->{$key} =~ m/$opt_i/) {
 			    my @oid_list = split (/\./,$key);
 			    $interface = pop (@oid_list) ;
@@ -216,6 +217,7 @@ if ($opt_n) {
 	        exit $ERRORS{'UNKNOWN'};
 	    }
 	    foreach my $key ( oid_lex_sort(keys %$result)) {
+	    	$result->{$key} =~ s/\x00//g; //Added line to strip the illegal character off.
 	        if ($result->{$key} eq $opt_i) {
 			    my @oid_list = split (/\./,$key);
 			    $interface = pop (@oid_list) ;
