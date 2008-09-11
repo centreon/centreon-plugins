@@ -83,7 +83,7 @@ if (!$opt_H) {
 	exit $ERRORS{'OK'};
 }
 
-if ($opt_n && !$opt_c && !$opt_w) {
+if ($opt_n && !$opt_c || !$opt_w) {
 	print_usage();
 	exit $ERRORS{'OK'};
 }
