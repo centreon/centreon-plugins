@@ -72,70 +72,76 @@ my $metric_id;
 sub return_value($$$$){
     
     my $sth_output = $dbh->prepare("SELECT meta_display FROM `meta_service` WHERE `meta_id` = '".$_[3]."'");
-    if (!$sth_output->execute) {die "Error:" . $sth_output->errstr . "\n";}
+    if (!$sth_output->execute) {
+    	die "Error:" . $sth_output->errstr . "\n";
+    }
     my $sth_output_data = $sth_output->fetchrow_hashref();
     my $output = $sth_output_data->{'meta_display'};
     if ($output) {
 	    $output =~ s/\%d/$result/g;
 	}
-    if ($warning ne $critical){
-	if ($warning < $critical){ # Bon sens
-	    if ($result < $warning){
-	    if ($output) {
-	    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-	    }else {
-			print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		}
-			exit $ERRORS{'OK'};
-	    } elsif (($result >= $warning) && ($result < $critical)){
+    if (defined($warning) && defined($critical) && $warning ne $critical){
+		if ($warning < $critical){ # Bon sens
+		    if ($result < $warning){
 		    if ($output) {
-		    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
+		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+		    } else {
+				print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
 			}
-			exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $critical){
-	        if ($output) {
-			   	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-	    	}else {
-				print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'CRITICAL'};
-	    }
-	} else { # sens inverse
-	    if ($result < $critical){
-	    	if ($output) {
-		    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-	   			 print "CRITICAL result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";	    
-	   		}
-			exit $ERRORS{'CRITICAL'};
-	    } elsif ($result >= $critical && $result < $warning){
-	    	if ($output) {
-		    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "WARNING result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $warning){
-	    	if ($output) {
-		    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'OK'};
-	    } else{
-	       	if ($output) {
-		    	print $output. "|OMS=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "OK result : " . $result . "|OMS=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'OK'};
-	    }
-	}
+				exit $ERRORS{'OK'};
+		    } elsif (($result >= $warning) && ($result < $critical)){
+			    if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $critical){
+		        if ($output) {
+				   	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+		    	} else {
+					print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'CRITICAL'};
+		    }
+		} else { # sens inverse
+		    if ($result < $critical){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+		   			 print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";	    
+		   		}
+				exit $ERRORS{'CRITICAL'};
+		    } elsif ($result >= $critical && $result < $warning){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $warning){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    } else{
+		       	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    }
+		}
     } else {
-	print "ERROR : warnig level = critical level";
-	exit $ERRORS{'CRITICAL'};
+		if ($output) {
+            print $output. "|value=" . $result . "\n";
+        } else {
+            print "OK result : " . $result . "|value=".$result."\n";
+        }
+        exit $ERRORS{'OK'};
     }
 }
 
