@@ -154,7 +154,7 @@ my $host_id;
 
 sub get_value_in_database_metric_id($$$$){
     ## Get last entry in perfparse database for this service
-    my $str = "SELECT value FROM data_bin WHERE id_metric = '".$metric_id."'";
+    my $str = "SELECT `value` FROM `data_bin` WHERE `id_metric` = '".$metric_id."' ORDER BY `ctime` DESC LIMIT 1";
     if ($debug) {print $str . "\n";}
     my $sth_deb2 = $dbh2->prepare($str);
     if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
