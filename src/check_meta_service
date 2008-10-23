@@ -79,66 +79,72 @@ sub return_value($$$$){
 	    $output =~ s/\%d/$result/g;
 	}
     if (defined($warning) && defined($critical) && $warning ne $critical){
-	if ($warning < $critical){ # Bon sens
-	    if ($result < $warning){
-	    if ($output) {
-	    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-	    }else {
-			print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+		if ($warning < $critical){ # Bon sens
+		    if ($result < $warning){
+			    if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    } else {
+					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    } elsif (($result >= $warning) && ($result < $critical)){
+			    if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    }else {
+					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $critical){
+		        if ($output) {
+				   	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+		    	}else {
+					print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'CRITICAL'};
+		    }
+		} else { # sens inverse
+		    if ($result < $critical){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    }else {
+		   			 print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";	    
+		   		}
+				exit $ERRORS{'CRITICAL'};
+		    } elsif ($result >= $critical && $result < $warning){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    }else {
+					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'WARNING'};
+		    } elsif ($result >= $warning){
+		    	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    }else {
+					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    } else{
+		       	if ($output) {
+			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
+			    }else {
+					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
+				}
+				exit $ERRORS{'OK'};
+		    }
 		}
-			exit $ERRORS{'OK'};
-	    } elsif (($result >= $warning) && ($result < $critical)){
-		    if ($output) {
-		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $critical){
-	        if ($output) {
-			   	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-	    	}else {
-				print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'CRITICAL'};
-	    }
-	} else { # sens inverse
-	    if ($result < $critical){
-	    	if ($output) {
-		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-	   			 print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";	    
-	   		}
-			exit $ERRORS{'CRITICAL'};
-	    } elsif ($result >= $critical && $result < $warning){
-	    	if ($output) {
-		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'WARNING'};
-	    } elsif ($result >= $warning){
-	    	if ($output) {
-		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'OK'};
-	    } else{
-	       	if ($output) {
-		    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    }else {
-				print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-			}
-			exit $ERRORS{'OK'};
-	    }
-	}
     } elsif (!defined($warning) || !defined($critical)) {
-	print "Result : " . $result . "|value=" . $result . "\n";
-	exit $ERRORS{'OK'};
+		if ($output) {
+	    	if ($output) {
+		    	print $output. "|value=" . $result . "\n";
+		    } else {
+				print "OK result : " . $result . "|value=" . $result . "\n";
+			}
+		}
+		exit $ERRORS{'OK'};
     } else {
-	print "ERROR : warnig level = critical level";
-	exit $ERRORS{'CRITICAL'};
+		print "ERROR : warnig level = critical level";
+		exit $ERRORS{'CRITICAL'};
     }
 }
 
@@ -151,7 +157,7 @@ my $host_id;
 
 sub get_value_in_database_metric_id($$$$){
     ## Get last entry in perfparse database for this service
-    my $str = "SELECT value FROM data_bin WHERE id_metric = '".$metric_id."'";
+    my $str = "SELECT value FROM data_bin WHERE id_metric = '".$metric_id."' ORDER BY ctime DESC LIMIT 1";
     if ($debug) {print $str . "\n";}
     my $sth_deb2 = $dbh2->prepare($str);
     if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
@@ -175,7 +181,7 @@ service.service_id = host_service_relation.service_service_id AND service.servic
     my $data = $host_data->fetchrow_hashref();
     
     ## Get last entry in perfparse database for this service
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND and m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."'");
+    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND and m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
     if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
     my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
     return $sth_deb2_data->{'value'};
@@ -195,7 +201,7 @@ sub get_value_in_database_by_host($$$$$){
 
     ## Get last entry in perfparse database for this service
 
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."'");
+    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
     if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
     my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
     return $sth_deb2_data->{'value'};
@@ -220,7 +226,7 @@ sub get_value_in_database_by_hg($$$$$$){
     
     ## Get last entry in perfparse database for this service
     
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$host_data->{'host_name'}."' AND i.service_description = '".$service_data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."'");
+    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$host_data->{'host_name'}."' AND i.service_description = '".$service_data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
     if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
     my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
     return $sth_deb2_data->{'value'};
