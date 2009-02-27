@@ -41,7 +41,7 @@ if (eval "require centreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_c $opt_w $opt_D $snmp $opt_k $opt_u $opt_p @critical @warning);
+use vars qw($opt_V $opt_h $opt_v $opt_C $opt_H $opt_c $opt_w $opt_D $snmp $opt_k $opt_u $opt_p @critical @warning $opt_l);
 
 # Plugin var init
 
@@ -62,7 +62,8 @@ GetOptions
      "C=s" 		=> \$opt_C, "community=s"  	=> \$opt_C,
      "w=s" 		=> \$opt_w, "warning=s"  	=> \$opt_w,
      "c=s" 		=> \$opt_c, "critical=s"  	=> \$opt_c,
-     "H=s" 		=> \$opt_H, "hostname=s"   	=> \$opt_H);
+     "H=s" 		=> \$opt_H, "hostname=s"   	=> \$opt_H, 
+     "l"		=> \$opt_l);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
@@ -78,6 +79,8 @@ if (!$opt_H) {
 	print_usage();
 	exit $ERRORS{'OK'};
 }
+
+$opt_l = 0 if (!defined($opt_l));
 
 my $snmp = "1";
 $snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
@@ -185,8 +188,10 @@ if ($opt_w <= $cpu) {
 }
 
 my $str = "CPU utilization percentage : ".$cpu."%|avg=".$cpu."%";
-for ($i = 0; defined($cpulist[$i]); $i++){
+if ($opt_l == 0) {
+    for ($i = 0; defined($cpulist[$i]); $i++){
 	$str .= " cpu$i=".$cpulist[$i]."%";
+    }
 }
 print $str."\n";
 undef($str);
@@ -212,7 +217,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2008 Merethis        #\n";
+    print "#    Copyright (c) 2004-2009 Merethis        #\n";
     print "#    Bugs to http://trac.centreon.com/       #\n";
     print "##############################################\n";
     print_usage();
