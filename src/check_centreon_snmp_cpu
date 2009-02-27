@@ -181,16 +181,16 @@ $cpu /= $i;
 
 # Plugin return code
 my $status = "OK";
-if ($opt_w <= $cpu) {
-    $status = "WARNING";
-} elsif ($opt_c <= $cpu) {
+if ($cpu >= $opt_c) {
     $status = "CRITICAL";
+} elsif ($cpu >= $opt_w) {
+    $status = "WARNING";
 }
 
 my $str = "CPU utilization percentage : ".$cpu."%|avg=".$cpu."%";
 if ($opt_l == 0) {
     for ($i = 0; defined($cpulist[$i]); $i++){
-	$str .= " cpu$i=".$cpulist[$i]."%";
+		$str .= " cpu$i=".$cpulist[$i]."%";
     }
 }
 print $str."\n";
