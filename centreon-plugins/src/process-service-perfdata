@@ -48,17 +48,7 @@ HOSTNAME=$2
 SERVICEDESC=$3
 HARDSTATE=$4
 SERVICESTATE=$5
-
-# Check if parameter 6 is defined
-if test $6
-then
-    PERFDATA=$6
-else
-    PERFDATA=0
-fi
+PERFDATA=$6
 
 # Write data in perfdata file
-if test $PERFDATA != 0
-then
-    /usr/bin/printf "%b" "$TIMET\t$HOSTNAME\t$SERVICEDESC\t$HARDSTATE\t$SERVICESTATE\t$PERFDATA\n" >> $PERFFILE
-fi
+/usr/bin/printf "%b" "$TIMET\t$HOSTNAME\t$SERVICEDESC\t$HARDSTATE\t$SERVICESTATE\t$PERFDATA\n" >> $PERFFILE
