@@ -1,407 +1,270 @@
 #! /usr/bin/perl -w
-###################################################################
-# Oreon is developped with GPL Licence 2.0 
-#
-# GPL License: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
-#
-# Developped by : Julien Mathis - Romain Le Merlus 
-#                 Mathavarajan Sugumaran
-#
-###################################################################
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-#    For information : contact@merethis.com
-####################################################################
-#
-# Plugin init
-#
+###################################################
+## MERETHIS
+##
+## Source Copyright 2005-2008 MERETHIS
+##
+## Unauthorized reproduction, copy and distribution
+## are not allowed.
+##
+## For more informations : contact@merethis.com
+##
+###################################################
 
 use strict;
 use DBI;
-use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_H $opt_h $opt_i);
-use lib "@NAGIOS_PLUGINS@";
-use utils qw($TIMEOUT %ERRORS &print_revision &support);
+use vars qw($mysql_user $mysql_passwd $mysql_host $mysql_database_oreon $mysql_database_ods);
 
-## For Debug mode = 1
-my $debug = 0;
+########################################
+# GLOBAL VARIABLES COMMON TO ALL PLUGINS
+########################################
 
-sub print_help ();
-sub print_usage ();
+my $PROGNAME = $0;
+my $VERSION = "2.1";
+my $MODIF_DATE = "04/05/2009";
 
-Getopt::Long::Configure('bundling');
-GetOptions
-    ("h" => \$opt_h, 
-     "help" => \$opt_h,
-     "V" => \$opt_V, 
-     "i=s" => \$opt_i);
+my %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3);
 
-###########################
-## Set Database information
-###########################
-use vars qw($mysql_database_oreon $mysql_database_ods $mysql_host $mysql_user $mysql_passwd);
 require "@CENTREON_ETC@/conf.pm";
-
 my $dbh  = DBI->connect("DBI:mysql:database=$mysql_database_oreon;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
-my $dbh2 = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
+my $db_centstorage  = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
+my $db_broker;
 
-if ($opt_V) {
-    print_revision($PROGNAME,'$Revision: 0.1 $');
-    exit $ERRORS{'OK'};
+my $DBRESULT = $dbh->prepare("SELECT * FROM `cfg_ndo2db`");
+if (!$DBRESULT->execute) {
+	die "Error:" . $dbh->errstr . "\n";
+}
+my $ndo_prefix;
+my $row = $DBRESULT->fetchrow_hashref();
+if (defined($row)) {	
+	$db_broker = DBI->connect("DBI:mysql:database=".$row->{'db_name'}.";host=".$row->{'db_host'}, $row->{'db_user'}, $row->{'db_pass'}, {'RaiseError' => 1});
+	$ndo_prefix = $row->{'db_prefix'};
+}
+else {
+	print "Could not find broker connection info!\n";
+    exit $ERRORS{'UNKNOWN'};
 }
 
-if ($opt_h) {
-    print_help();
-    exit $ERRORS{'OK'};
-}
-
-my $result;
+my @metric_value_tab;
 my $warning;
 my $critical;
-my $metric_id;
+my $calculation;
+my $regexp;
+my $metric_select;
 
-sub return_value($$$$){
-    
-    my $sth_output = $dbh->prepare("SELECT meta_display FROM `meta_service` WHERE `meta_id` = '".$_[3]."'");
-    if (!$sth_output->execute) {die "Error:" . $sth_output->errstr . "\n";}
-    my $sth_output_data = $sth_output->fetchrow_hashref();
-    my $output = $sth_output_data->{'meta_display'};
-    if (defined($output) && $output) {
-	    $output =~ s/\%d/$result/g;
-	}
-    if (defined($warning) && defined($critical) && $warning ne $critical){
-		if ($warning < $critical){ # Bon sens
-		    if ($result < $warning){
-			    if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    } else {
-					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'OK'};
-		    } elsif (($result >= $warning) && ($result < $critical)){
-			    if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    }else {
-					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'WARNING'};
-		    } elsif ($result >= $critical){
-		        if ($output) {
-				   	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-		    	}else {
-					print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'CRITICAL'};
-		    }
-		} else { # sens inverse
-		    if ($result < $critical){
-		    	if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    }else {
-		   			 print "CRITICAL result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";	    
-		   		}
-				exit $ERRORS{'CRITICAL'};
-		    } elsif ($result >= $critical && $result < $warning){
-		    	if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    }else {
-					print "WARNING result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'WARNING'};
-		    } elsif ($result >= $warning){
-		    	if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    }else {
-					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'OK'};
-		    } else{
-		       	if ($output) {
-			    	print $output. "|value=" . $result . ";".$warning.";".$critical."\n";
-			    }else {
-					print "OK result : " . $result . "|value=" . $result . ";".$warning.";".$critical."\n";
-				}
-				exit $ERRORS{'OK'};
-		    }
-		}
-    } elsif (!defined($warning) || !defined($critical)) {
-		if ($output) {
-	    	if ($output) {
-		    	print $output. "|value=" . $result . "\n";
-		    } else {
-				print "OK result : " . $result . "|value=" . $result . "\n";
-			}
-		}
-		exit $ERRORS{'OK'};
-    } else {
-		print "ERROR : warnig level = critical level";
-		exit $ERRORS{'CRITICAL'};
-    }
-}
-
-my $ref;
-my $svc_id;
-my $metric;
-my $host_id;
-
-## Get Value by metric Option
-
-sub get_value_in_database_metric_id($$$$){
-    ## Get last entry in perfparse database for this service
-    my $str = "SELECT value FROM data_bin WHERE id_metric = '".$metric_id."' ORDER BY ctime DESC LIMIT 1";
-    if ($debug) {print $str . "\n";}
-    my $sth_deb2 = $dbh2->prepare($str);
-    if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
-    my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
-    return $sth_deb2_data->{'value'};
-}
-
-## Get value For Regexp Options
-
-sub get_value_in_database($$$$$){
-
-    my $str;
-    ## Get hostname and service description for perfparse request
-    
-    $str = "SELECT host_name,service_description FROM host,host_service_relation,service WHERE host.host_id = host_service_relation.host_host_id AND 
-service.service_id = host_service_relation.service_service_id AND service.service_id = '".$svc_id."'";
-    
-    if ($debug) {print $str . "\n";}
-    my $host_data = $dbh->prepare($str);
-    if (!$host_data->execute) {die "Error:" . $host_data->errstr . "\n";}
-    my $data = $host_data->fetchrow_hashref();
-    
-    ## Get last entry in perfparse database for this service
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND and m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
-    if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
-    my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
-    return $sth_deb2_data->{'value'};
-}
-
-sub get_value_in_database_by_host($$$$$){
-
-    my $str;
-    
-    ## Get hostname and service description for perfparse request
-    
-    $str = "SELECT host_name,service_description FROM host,host_service_relation,service WHERE host.host_id = host_service_relation.host_host_id AND service.service_id = host_service_relation.service_service_id AND service.service_id = '".$svc_id."'";
-    if ($debug) {print $str . "\n";}
-    my $host_data = $dbh->prepare($str);
-    if (!$host_data->execute) {die "Error:" . $host_data->errstr . "\n";}
-    my $data = $host_data->fetchrow_hashref();
-
-    ## Get last entry in perfparse database for this service
-
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$data->{'host_name'}."' AND i.service_description = '".$data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
-    if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
-    my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
-    return $sth_deb2_data->{'value'};
-}
-
-sub get_value_in_database_by_hg($$$$$$){
-    my $str;
-    ## Get hostname 
-    $str = "SELECT host_name FROM host WHERE host.host_id = '".$host_id."'";
-    if ($debug) {print $str . "\n";}
-    my $hd = $dbh->prepare($str);
-    if (!$hd->execute) {die "Error:" . $hd->errstr . "\n";}
-    my $host_data = $hd->fetchrow_hashref();
-   
-    ## Get service description
-    
-    $str = "SELECT service_description FROM service WHERE service.service_id = '".$svc_id."'";
-    if ($debug) {print $str . "\n";}
-    my $sd = $dbh->prepare($str);
-    if (!$sd->execute) {die "Error:" . $sd->errstr . "\n";}
-    my $service_data = $sd->fetchrow_hashref();
-    
-    ## Get last entry in perfparse database for this service
-    
-    my $sth_deb2 = $dbh2->prepare("SELECT value FROM metrics m, data_bin d, index_data i WHERE i.host_name = '".$host_data->{'host_name'}."' AND i.service_description = '".$service_data->{'service_description'}."' AND m.index_id=i.id AND m.metric_id = d.id_metric AND m.metric_name = '".$metric."' ORDER BY ctime DESC LIMIT 1");
-    if (!$sth_deb2->execute) {die "Error:" . $sth_deb2->errstr . "\n";}
-    my $sth_deb2_data = $sth_deb2->fetchrow_hashref();
-    return $sth_deb2_data->{'value'};
-}
-
-my $cpt = 0;
-my $total = 0;
-my $max = 0;
-my $min = 999999999;
-my $svc;
-my $value = 0;
-my $svc_relation2;
-
-if ($opt_i){
-    my $str;
-
-    # get osl info
-    my $sth = $dbh->prepare("SELECT calcul_type,regexp_str,warning,critical,metric, meta_select_mode FROM meta_service WHERE meta_id = '".$opt_i."'");
-    if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
-    $ref = $sth->fetchrow_hashref();
-    if (!defined($ref->{'calcul_type'})){
-		print "Unvalidate Meta Service\n";
-		exit $ERRORS{'CRITICAL'};
-    }
-    
-    $warning = $ref->{'warning'};
-    $critical = $ref->{'critical'};
-    
-    # Get Service List by regexp    
-    if ($ref->{'meta_select_mode'} eq '2'){
-	
-	###############################################
-	
-	$str = "SELECT service_id FROM service WHERE `service_description` LIKE '".$ref->{'regexp_str'}."' AND service_activate = '1' AND service_register = '1'";
-	if ($debug) {print $str . "\n";}
-	$sth = $dbh->prepare($str);
-	if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
-	while ($svc = $sth->fetchrow_hashref()){
-		my $sth2 = $dbh->prepare("SELECT * FROM host_service_relation WHERE service_service_id = '".$svc->{'service_id'}."'");
-	    if (!$sth2->execute) {die "Error:" . $sth2->errstr . "\n";}
-	    my $svc_relation = $sth2->fetchrow_hashref();
-	    if (defined($svc_relation->{'host_host_id'}) && $svc_relation->{'host_host_id'}){
-    		#### Par Host    		
-			if (defined($svc->{'service_id'})){$svc_id = $svc->{'service_id'};} else {$svc_id = $svc->{'svc_id'};}
-			if (defined($ref->{'regexp_str'})){$metric = $ref->{'metric'};} else {$metric = $svc->{'metric'};}
-			$value = get_value_in_database_by_host($dbh,$dbh2,$svc_id,$metric,$debug);			    
-			if ($ref->{'calcul_type'} =~ "AVE"){			
-			    if (defined($value) && $value){$total += $value;}
-			    if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
-			    $cpt++;
-			    $result = $total / $cpt;
-			} elsif ($ref->{'calcul_type'} =~ "SOM"){
-			    if ($value){$total += $value;}
-			    if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-			    $result = $total;
-			} elsif ($ref->{'calcul_type'} =~ "MIN"){
-			    if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-			    if ($value && $value <= $min){$min = $value;}
-			    $result = $min;
-			} elsif ($ref->{'calcul_type'} =~ "MAX"){
-			    if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-			    if ($value && $value >= $max){$max = $value;}
-			    $result = $max;
-			}
-		} elsif (defined($svc_relation->{'hostgroup_hg_id'}) && $svc_relation->{'hostgroup_hg_id'}) {
-			### Par Hostgroup
-			my $sth3 = $dbh->prepare("SELECT host_host_id FROM hostgroup_relation WHERE hostgroup_hg_id = '".$svc_relation->{'hostgroup_hg_id'}."'");
-	    	if (!$sth3->execute) {die "Error:" . $sth3->errstr . "\n";}
-	    	while ($svc_relation2 = $sth3->fetchrow_hashref()){
-	    		if (defined($svc->{'service_id'})){
-		    		$svc_id = $svc->{'service_id'};
-		    	} else {
-		    		$svc_id = $svc->{'svc_id'};
-		    	}
-		    	if (defined($ref->{'regexp_str'})){
-		    		$metric = $ref->{'metric'};
-		    	} else {
-		    		$metric = $svc->{'metric'};
-		    	}
-		    	$host_id = $svc_relation2->{'host_host_id'};
-		    	$value = get_value_in_database_by_hg($dbh,$dbh2,$svc_id, $host_id, $metric, $debug);			    
-		    	if ($ref->{'calcul_type'} =~ "AVE"){			
-					if (defined($value) && $value){
-						$total += $value;
-					}
-					if ($debug) {print "total = " . $total . "  value = ".$value."\n";} 
-					$cpt++;
-		    	} elsif ($ref->{'calcul_type'} =~ "SOM"){
-					if ($value){
-						$total += $value;
-					}
-					if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-		    	} elsif ($ref->{'calcul_type'} =~ "MIN"){
-					if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-					if ($value && $value <= $min){
-						$min = $value;
-					}
-		    	} elsif ($ref->{'calcul_type'} =~ "MAX"){
-					if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-					if ($value && $value >= $max){
-					$max = $value;
-				}
-			}
-		}
-		if ($ref->{'calcul_type'} =~ "AVE"){
-		    $result = $total / $cpt;
-		} elsif ($ref->{'calcul_type'} =~ "SOM"){
-		    $result = $total;
-		} elsif ($ref->{'calcul_type'} =~ "MIN"){
-		    $result = $min;
-		} elsif ($ref->{'calcul_type'} =~ "MAX"){
-		    $result = $max;
-		}
-	    }
-	}
-	return_value($result, $warning, $critical, $opt_i);
-	###############################################
-    } else {
-		$sth = $dbh->prepare("SELECT metric_id FROM `meta_service_relation` WHERE meta_id = '".$opt_i."'");
-		if (!$sth->execute) {die "Error:" . $sth->errstr . "\n";}
-		if ($ref->{'calcul_type'} =~ "AVE"){
-		 	if (!$sth->rows) {
-	            print "no result in table meta_service_relation for id $opt_i\n";
-	        	exit $ERRORS{'UNKNOWN'};
-	        }
-		    while ($svc = $sth->fetchrow_hashref()){
-			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-			if (defined($value) && $value){$total += $value;}
-			$cpt++;
-		    }
-		    $result = $total / $cpt;
-		} elsif ($ref->{'calcul_type'} =~ "SOM"){
-		    while ($svc = $sth->fetchrow_hashref()){
-			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-			if ($value){$total += $value;}
-			if ($debug){print "total = " . $total . "  value = ".$value."\n";} 
-		    }
-		    $result = $total;
-		} elsif ($ref->{'calcul_type'} =~ "MIN"){
-		    while ($svc = $sth->fetchrow_hashref()){
-			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-			if ($debug){print " min : " . $min . "  value = ".$value."\n";} 
-			if ($value && $value <= $min){$min = $value;}
-		    }
-		    $result = $min;
-		} elsif ($ref->{'calcul_type'} =~ "MAX"){
-		    while ($svc = $sth->fetchrow_hashref()){
-			if (defined($svc->{'metric_id'})){$metric_id = $svc->{'metric_id'};}
-			$value = get_value_in_database_metric_id($dbh,$dbh2,$metric_id,$debug);
-			if ($debug){print "max = " . $max . "  value = ".$value."\n";}
-			if ($value && $value >= $max){$max = $value;}
-		    }
-		    $result = $max;
-		}     
-		return_value($result, $warning, $critical, $opt_i);
-    }
-}
-
-
-sub print_usage () {
-    print "Usage:\n";
-    print " check_meta_service\n";
-    print "   -i				Meta Service id\n";
+###############
+# HELP FUNCTION
+###############
+sub print_help() {
+    print "Usage: ".$PROGNAME."\n";
+    print "   -i (--id)   Hostname to query (required)\n";    
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }
 
-sub print_help () {
-    print "##############################################\n";
-    print "#    Copyright (c) 2004-2008 Centreon        #\n";
-    print "#    Bugs to http://trac.centreon.com/       #\n";
-    print "##############################################\n";
-    print_usage();
-    print "\n";
+############################
+# GETTING PARAMETERS OPTIONS
+############################
+
+my %OPTION = ( "help" => undef, "version" => undef, "id" => undef);          
+
+Getopt::Long::Configure('bundling');
+GetOptions
+    ("h|help"   => \$OPTION{'help'},
+     "V|version"   => \$OPTION{'version'},
+     "i|id=s" => \$OPTION{'id'});
+
+if (defined($OPTION{'version'})) {
+    print $PROGNAME." : ".$VERSION." last modification : ".$MODIF_DATE."\n";
+    exit $ERRORS{'UNKNOWN'};
 }
+
+if (defined($OPTION{'help'})) {
+    print_help();
+    exit $ERRORS{'UNKNOWN'};
+}
+if (!defined($OPTION{'id'})) {
+        print_help;
+        exit $ERRORS{'UNKNOWN'};
+}
+
+##################################################
+##
+## Functions
+##
+##################################################
+sub calculate_meta() {
+	my $result;
+	my $val;
+	
+	if ($calculation eq "MIN") {
+		@metric_value_tab = sort(@metric_value_tab);
+		if (defined($metric_value_tab[0])) {
+			$result = $metric_value_tab[0];
+		}
+		else {
+			$result = 0;
+		}
+	}
+	elsif ($calculation eq "MAX") {
+		@metric_value_tab = sort(@metric_value_tab);
+		if (defined($metric_value_tab[0])) {
+			$result = $metric_value_tab[scalar(@metric_value_tab) - 1];
+		}
+		else {
+			$result = 0;
+		}
+	}
+	elsif ($calculation eq "SOM") {
+		$result = 0;
+		foreach $val (@metric_value_tab) {
+			$result += $val;	
+		}
+	}
+	elsif ($calculation eq "AVE") {
+		$result = 0;
+		foreach $val (@metric_value_tab) {
+			$result += $val;
+		}
+		$result = $result / scalar(@metric_value_tab);
+	}
+	return $result;
+} 
+
+sub retrieve_by_regexp() {	
+	my $row2;
+	my $query2 = "SELECT ss.perfdata FROM `".$ndo_prefix."servicestatus` ss, `".$ndo_prefix."services` s WHERE ss.service_object_id = s.service_object_id AND s.display_name LIKE '".$regexp."'";
+	my $DBRES2 = $db_broker->prepare($query2);
+	if (!$DBRES2->execute) {die "Error:" . $DBRES2->errstr . "\n";}
+	my $i = 0;
+	while ($row2 = $DBRES2->fetchrow_hashref()) {
+		if (defined($metric_select)) {
+			$row2->{'perfdata'} =~ m/$metric_select=([0-9\.]+)/;
+			if (defined($1)) {
+				$metric_value_tab[$i] = $1;				
+				$i++;
+			}
+		}
+		else {
+			print "No metric defined!\n";
+			exit $ERRORS{'UNKNOWN'};
+		}
+	}
+}
+
+sub retrieve_by_list() {
+	my $row2;
+		
+	my $query3;
+	my $DBRES3;
+	my $row3;
+	
+	my $query4;
+	my $DBRES4;
+	my $row4;	
+	
+	my $query2 = "SELECT host_id, metric_id FROM `meta_service_relation` WHERE meta_id = '".$OPTION{'id'}."'";
+	my $DBRES2 = $dbh->prepare($query2);
+	if (!$DBRES2->execute) {die "Error:" . $DBRES2->errstr . "\n";}
+	my $i = 0;
+	while ($row2 = $DBRES2->fetchrow_hashref()) {
+		$query3 = "SELECT host_name, service_description, m.metric_name FROM index_data i, metrics m WHERE i.id = m.index_id AND m.metric_id = '".$row2->{'metric_id'}."' LIMIT 1";
+		$DBRES3 = $db_centstorage->prepare($query3);
+		if (!$DBRES3->execute) {die "Error:" . $DBRES3->errstr . "\n";}
+		$row3 = $DBRES3->fetchrow_hashref();
+		
+		$query4 = "SELECT ss.perfdata FROM `".$ndo_prefix."servicestatus` ss, `".$ndo_prefix."services` s, `".$ndo_prefix."hosts` h WHERE ss.service_object_id = s.service_object_id AND s.host_object_id = h.host_object_id AND h.display_name = '".$row3->{'host_name'}."' AND s.display_name = '".$row3->{'service_description'}."' LIMIT 1"; 
+		$DBRES4 = $db_broker->prepare($query4);
+		if (!$DBRES4->execute) {die "Error:" . $DBRES4->errstr . "\n";}
+		$row4 = $DBRES4->fetchrow_hashref();
+		$row4->{'perfdata'} =~ m/$row3->{'metric_name'}=([0-9\.]+)/;
+		if (defined($1)) {
+			$metric_value_tab[$i] = $1;
+			$i++;
+		}		
+	}
+}
+
+##################################################
+##
+## MAIN
+##
+##################################################
+
+##################################################
+##
+## First query
+##
+##################################################
+my $query = "SELECT calcul_type, regexp_str, warning, critical, metric, meta_select_mode FROM `meta_service` WHERE meta_id = '".$OPTION{'id'}."' LIMIT 1";
+my $DBRES = $dbh->prepare($query);
+if (!$DBRES->execute) {die "Error:" . $DBRES->errstr . "\n";}
+$row = $DBRES->fetchrow_hashref();
+if (!defined($row->{'calcul_type'})){
+	print "Meta Service is not valid\n";
+    exit $ERRORS{'CRITICAL'};
+}
+
+##################################################
+##
+## Initialization of Variables
+##
+##################################################
+$warning = $row->{'warning'};
+$critical = $row->{'critical'};
+$calculation = $row->{'calcul_type'};
+$regexp = $row->{'regexp_str'};
+$metric_select = $row->{'metric'};
+my $selection_mode = $row->{'meta_select_mode'};
+
+
+if ($selection_mode eq '2') {
+	retrieve_by_regexp();
+}
+else {
+	retrieve_by_list();
+}
+
+my $res = calculate_meta();
+$res = sprintf("%02.2f", $res);
+
+my $msg = "";
+my $meta_status = $ERRORS{'OK'};
+if ($warning <= $critical) {
+	if ($res >= $warning) {
+		$meta_status = $ERRORS{'WARNING'};
+	}
+	if ($res >= $critical) {
+		$meta_status = $ERRORS{'CRITICAL'};
+	}
+}
+elsif ($warning > $critical) {
+	if ($res <= $warning) {
+		$meta_status = $ERRORS{'WARNING'};
+	}
+	if ($res <= $critical) {
+		$meta_status = $ERRORS{'CRITICAL'};
+	}
+}
+
+if ($calculation eq "AVE") {
+	$msg .= "Average - ";
+}
+elsif ($calculation eq "SOM") {
+	$msg .= "Sum - ";
+}
+elsif ($calculation eq "MIN") {
+	$msg .= "Min - ";
+}
+elsif ($calculation eq "MAX") {
+	$msg .= "Max - ";
+}
+
+$msg .= "value : " . $res . "|value=".$res; 
+
+##############
+# PRINT RESULT
+##############
+print $msg."\n";
+exit $meta_status;
