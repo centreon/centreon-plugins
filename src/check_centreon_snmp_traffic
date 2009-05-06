@@ -474,8 +474,8 @@ if (($in_usage > $critical) or ($out_usage > $critical)){
 }
 
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
-printf("Total bits In : %.2f ".$in_bits_unit."b, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);
-printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s traffic_out=".$out_perfparse_traffic_str."Bits/s\n");
+printf("Total RX Bits In : %.2f ".$in_bits_unit."B, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);
+printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s;0;$speed_card traffic_out=".$out_perfparse_traffic_str."Bits/s;0;$speed_card\n");
 exit($ERRORS{$status});
 
 sub print_usage () {
@@ -502,8 +502,8 @@ sub print_usage () {
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2007 Centreon        #\n";
-    print "#    Bugs to http://bugs.oreon-project.org/  #\n";
+    print "#    Copyright (c) 2004-2009 Centreon        #\n";
+    print "#    Bugs to http://trac.centreon.com        #\n";
     print "##############################################\n";
     print_usage();
     print "\n";
