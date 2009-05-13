@@ -1,7 +1,7 @@
 #! /usr/bin/perl 
 
 #
-# $Id: check_graph_remote_storage.pl,v 1.2 2005/07/27 22:21:49 wistof Exp $
+# $Id$
 #
 # Oreon's plugins are developped with GPL Licence :
 # http://www.fsf.org/licenses/gpl.txt
