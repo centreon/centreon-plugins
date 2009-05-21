@@ -209,6 +209,8 @@ if ($opt_l == 0) {
 		$str .= " cpu$i=".$cpulist[$i]."%";
     }
 }
+
+# Display Ouptut
 print $str."\n";
 undef($str);
 exit $ERRORS{$status};
@@ -222,6 +224,7 @@ sub print_usage () {
     print "   -C (--community)  SNMP read community (defaults to public,\n";
     print "   -c (--critical)   Three critical tresholds (defaults : 95)\n";
     print "   -w (--warning)    Three warning tresholds (defaults : 90)\n";
+    print "   -l                Display only cpu average\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
     print "   -k (--key)        snmp V3 key\n";
@@ -234,7 +237,7 @@ sub print_usage () {
 sub print_help () {
     print "##############################################\n";
     print "#    Copyright (c) 2004-2009 Merethis        #\n";
-    print "#    Bugs to http://trac.centreon.com/       #\n";
+    print "#    Bugs to http://forge.centreon.com/      #\n";
     print "##############################################\n";
     print_usage();
     print "\n";
