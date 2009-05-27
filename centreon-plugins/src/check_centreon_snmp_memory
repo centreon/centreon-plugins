@@ -57,7 +57,7 @@ if (eval "require centreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_g $opt_v $opt_C $opt_w $opt_c $opt_s $opt_H @test);
+use vars qw($opt_V $opt_h $opt_g $opt_v $opt_C $opt_w $opt_c $opt_s $opt_H $opt_P @test);
 my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
 
 ##
@@ -76,6 +76,7 @@ GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
+	 "P=s"   => \$opt_P, "snmp-port=s" => \$opt_P,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
@@ -86,6 +87,10 @@ GetOptions
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
     exit $ERRORS{'OK'};
+}
+
+if (!defined($opt_P)) {
+	$opt_P = 161;
 }
 
 if ($opt_h) {
@@ -132,7 +137,7 @@ my $name = $0;
 
 # create a SNMP session
 
-my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);
+my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp, -port => $opt_P);
 if ( !defined($session) ) {
     print("CRITICAL: SNMP Session : $error");
     exit $ERRORS{'CRITICAL'};
@@ -250,6 +255,7 @@ sub print_usage () {
     print "                     used with SNMP v1 and v2c\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
+	print "   -P (--snmp-port)	SNMP port (default: 161)\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
     print "   -c (--critical)   percentage of memory used at which a critical message will be generated\n";
