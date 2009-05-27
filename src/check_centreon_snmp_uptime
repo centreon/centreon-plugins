@@ -56,7 +56,7 @@ if (eval "require centreon" ) {
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_d $day);
+use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_d $opt_P $day);
 
 $PROGNAME = $0;
 sub print_help ();
@@ -68,6 +68,7 @@ GetOptions
      "V"   => \$opt_V, "version"      => \$opt_V,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
      "C=s" => \$opt_C, "community=s"  => \$opt_C,
+	 "P=s"   => \$opt_P, "snmp-port=s" => \$opt_P,
      "d"   => \$opt_d, "day"     => \$opt_d,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
@@ -75,7 +76,9 @@ if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
     exit $ERRORS{'OK'};
 }
-
+if (!defined($opt_P)) {
+	$opt_P = 161;
+}
 if ($opt_h) {
     print_help();
     exit $ERRORS{'OK'};
@@ -102,7 +105,7 @@ my $OID_UPTIME_WINDOWS =$centreon{MIB2}{UPTIME_WINDOWS};
 my $OID_UPTIME_OTHER =$centreon{MIB2}{UPTIME_OTHER};
 
 # create a SNMP session
-my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp);
+my ( $session, $error ) = Net::SNMP->session(-hostname  => $opt_H,-community => $opt_C, -version  => $snmp, -port => $opt_P);
 if ( !defined($session) ) {
     print("CRITICAL: $error");
     exit $ERRORS{'CRITICAL'};
@@ -168,6 +171,7 @@ sub print_usage () {
     print "                     used with SNMP v1 and v2c\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
+    print "   -P (--snmp-port)	SNMP port (default: 161)\n";
     print "   -d (--day)        Uptime in day\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
