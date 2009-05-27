@@ -74,7 +74,7 @@ GetOptions
      "u=s"   => \$opt_u, "username=s" => \$opt_u,
      "p=s"   => \$opt_p, "password=s" => \$opt_p,
      "k=s"   => \$opt_k, "key=s"      => \$opt_k,
-     "P=s"   => \$opt_P, "--snmp-port=s" => \$opt_P,
+     "P=s"   => \$opt_P, "snmp-port=s" => \$opt_P,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "s"   => \$opt_s, "show"         => \$opt_s,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
@@ -266,7 +266,7 @@ $Size  =  $result->{$OID_hrStorageSize.".".$partition };
 $Used  =  $result->{$OID_hrStorageUsed.".".$partition };
 
 
-# Plugins var treatment
+# Plugins var treatmen
 
 if (!$Size){
     print "Disk CRITICAL - no output (-p number expected... it doesn't exist, try another disk - number\n";
@@ -341,11 +341,12 @@ sub print_usage () {
     print "\nUsage:\n";
     print "$PROGNAME\n";
     print "   -H (--hostname)   Hostname to query - (required)\n";
-    print "   -C (--community)  SNMP read community (defaults to public,\n";
+    print "   -C (--community)  SNMP read community (default: public)\n";
     print "                     used with SNMP v1 and v2c\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
-    print "   -d (--disk)       Set the disk (number expected) ex: 1, 2,... (defaults to 2 )\n";
+    print "   -P (--snmp-port)	SNMP port (default: 161)\n";
+    print "   -d (--disk)       Set the disk (number expected) ex: 1, 2,... (default: 2 )\n";
     print "   -n (--name)       Allows to use disk name with option -d instead of disk oid index\n";
     print "                     (ex: -d \"C:\" -n, -d \"E:\" -n, -d \"Swap Memory\" -n, -d \"Real Memory\" -n\n";
     print "                     (choose an unique expression for each disk)\n";
