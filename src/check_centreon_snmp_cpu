@@ -82,7 +82,7 @@ GetOptions
      "l"		=> \$opt_l);
 
 if ($opt_V) {
-    print_revision($PROGNAME,'$Revision: 1.2 $');
+    print_revision($PROGNAME,'$Revision: 1.3 $');
     exit $ERRORS{'OK'};
 }
 
@@ -149,9 +149,10 @@ if ($snmp eq "1" || $snmp eq "2") {
 sub get_netsnmp_version ($){
 	my $sess = $_[0];
     my $OID_VERSION = "1.3.6.1.2.1.25.6.3.1.2";
+	$sess->max_msg_size(5000);
     my $result = $sess->get_table(Baseoid => $OID_VERSION);
     if (!defined($result)) {
-    	printf("ERROR when getting CPU percentage use values : ProcessorLoad Table : %s.\n", $session->error);
+    	printf("ERROR when getting SNMP version : %s.\n", $session->error);
         $session->close;
         exit $ERRORS{'UNKNOWN'};
     }
