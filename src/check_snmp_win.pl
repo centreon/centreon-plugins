@@ -244,7 +244,7 @@ if ( defined($o_login) && defined($o_passwd)) {
   }
 }
 
-$session->max_msg_size(5000);
+$session->max_msg_size(10000);
 verb($session->max_msg_size);
 #print $session->max_msg_size(),"\n";
 
