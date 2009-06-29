@@ -213,8 +213,9 @@ sub retrieve_by_list() {
 			$row4 = $DBRES4->fetchrow_hashref();
 	
 			while ($row4->{'perfdata'} =~ m/\'?([a-zA-Z0-9\_\-\/\.\:\ ]+)\'?=([0-9\.\,\-]+)/g) {
-            	if (defined($1) && defined($2) && $1 =~ $row3->{'metric_name'}) {
-                	$metric_value_tab[$i] = $2;
+            	my $value = $2;
+            	if (defined($1) && defined($value) && $1 =~ $row3->{'metric_name'}) {
+                	$metric_value_tab[$i] = $value;
                     $i++;
                 }
             }
