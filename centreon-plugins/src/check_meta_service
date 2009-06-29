@@ -203,16 +203,22 @@ sub retrieve_by_list() {
 		$DBRES3 = $db_centstorage->prepare($query3);
 		if (!$DBRES3->execute) {die "Error:" . $DBRES3->errstr . "\n";}
 		$row3 = $DBRES3->fetchrow_hashref();
-		if (defined($row3->{'service_description'}) {
+		
+		$row3->{'service_description'} =~ s/\#S\#/\//g;
+        $row3->{'service_description'} =~ s/\#BS\#/\\/g;
+		
+		if (defined($row3->{'service_description'})) {
 			$query4 = "SELECT ss.perfdata FROM `".$ndo_prefix."servicestatus` ss, `".$ndo_prefix."services` s, `".$ndo_prefix."hosts` h WHERE ss.service_object_id = s.service_object_id AND s.host_object_id = h.host_object_id AND h.display_name = '".$row3->{'host_name'}."' AND s.display_name = '".$row3->{'service_description'}."' LIMIT 1"; 
 			$DBRES4 = $db_broker->prepare($query4);
 			if (!$DBRES4->execute) {die "Error:" . $DBRES4->errstr . "\n";}
 			$row4 = $DBRES4->fetchrow_hashref();
-			$row4->{'perfdata'} =~ m/$row3->{'metric_name'}=([0-9\.]+)/;
-			if (defined($1)) {
-				$metric_value_tab[$i] = $1;
-				$i++;
-			}
+	
+			while ($row4->{'perfdata'} =~ m/\'?([a-zA-Z0-9\_\-\/\.\:\ ]+)\'?=([0-9\.\,\-]+)/g) {
+            	if (defined($1) && defined($2) && $1 =~ $row3->{'metric_name'}) {
+                	$metric_value_tab[$2] = $2;
+                    $i++;
+                }
+            }
 		}
 	}
 }
@@ -262,33 +268,31 @@ $res = sprintf("%02.2f", $res);
 
 my $msg = "";
 my $meta_status = $ERRORS{'OK'};
-if ($warning <= $critical) {
-	if ($res >= $warning) {
-		$meta_status = $ERRORS{'WARNING'};
-	}
-	if ($res >= $critical) {
-		$meta_status = $ERRORS{'CRITICAL'};
-	}
-}
-elsif ($warning > $critical) {
-	if ($res <= $warning) {
-		$meta_status = $ERRORS{'WARNING'};
-	}
-	if ($res <= $critical) {
-		$meta_status = $ERRORS{'CRITICAL'};
+if (defined($warning) && defined($critical)) {
+	if ($warning <= $critical) {
+		if ($res >= $warning) {
+			$meta_status = $ERRORS{'WARNING'};
+		}
+		if ($res >= $critical) {
+			$meta_status = $ERRORS{'CRITICAL'};
+		}
+	} elsif ($warning > $critical) {
+		if ($res <= $warning) {
+			$meta_status = $ERRORS{'WARNING'};
+		}
+		if ($res <= $critical) {
+			$meta_status = $ERRORS{'CRITICAL'};
+		}
 	}
 }
 
 if ($calculation eq "AVE") {
 	$msg .= "Average - ";
-}
-elsif ($calculation eq "SOM") {
+} elsif ($calculation eq "SOM") {
 	$msg .= "Sum - ";
-}
-elsif ($calculation eq "MIN") {
+} elsif ($calculation eq "MIN") {
 	$msg .= "Min - ";
-}
-elsif ($calculation eq "MAX") {
+} elsif ($calculation eq "MAX") {
 	$msg .= "Max - ";
 }
 
