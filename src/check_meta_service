@@ -128,30 +128,29 @@ sub calculate_meta() {
 		@metric_value_tab = sort(@metric_value_tab);
 		if (defined($metric_value_tab[0])) {
 			$result = $metric_value_tab[0];
-		}
-		else {
+		} else {
 			$result = 0;
 		}
-	}
-	elsif ($calculation eq "MAX") {
+	} elsif ($calculation eq "MAX") {
 		@metric_value_tab = sort(@metric_value_tab);
 		if (defined($metric_value_tab[0])) {
 			$result = $metric_value_tab[scalar(@metric_value_tab) - 1];
-		}
-		else {
+		} else {
 			$result = 0;
 		}
-	}
-	elsif ($calculation eq "SOM") {
+	} elsif ($calculation eq "SOM") {
 		$result = 0;
 		foreach $val (@metric_value_tab) {
-			$result += $val;	
+			if ($val) {
+				$result += $val;	
+			}
 		}
-	}
-	elsif ($calculation eq "AVE") {
+	} elsif ($calculation eq "AVE") {
 		$result = 0;
 		foreach $val (@metric_value_tab) {
-			$result += $val;
+			if ($val) {
+				$result = $result + $val;
+			}
 		}
 		$total = scalar(@metric_value_tab);
 		if (!$total) {
@@ -215,7 +214,7 @@ sub retrieve_by_list() {
 	
 			while ($row4->{'perfdata'} =~ m/\'?([a-zA-Z0-9\_\-\/\.\:\ ]+)\'?=([0-9\.\,\-]+)/g) {
             	if (defined($1) && defined($2) && $1 =~ $row3->{'metric_name'}) {
-                	$metric_value_tab[$2] = $2;
+                	$metric_value_tab[$i] = $2;
                     $i++;
                 }
             }
