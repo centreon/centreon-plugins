@@ -344,7 +344,8 @@ my $force_critical=0;
 foreach my $List (@o_descrL) {
   my $test=0;
   for (my $i=0; $i< $num_int; $i++) {
-    if ( $descr[$i] =~ /$List/i  ) { $test++; }
+    if ( !defined($o_noreg) && ($descr[$i] =~ /$List/i) ) { $test++; }
+    if ( defined($o_noreg) && ($descr[$i] eq $List) ) { $test++; }
   }
   if ($test==0) {
     $output .= ", " if defined($output);
