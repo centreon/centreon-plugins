@@ -269,7 +269,7 @@ $Used  =  $result->{$OID_hrStorageUsed.".".$partition };
 # Plugins var treatmen
 
 if (!$Size){
-    print "Disk CRITICAL - no output (-p number expected... it doesn't exist, try another disk - number\n";
+    print "Disk CRITICAL - no output (-p number expected... it doesn't exist, try another disk number)\n";
     exit $ERRORS{'CRITICAL'};
 }
 
@@ -294,9 +294,8 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         @test = split (/\./, $pourcent);
         $pourcent = $test[0];
     }
-    my $lastTot = $tot;
-    $tot = $tot / 1073741824;
-    $Used = ($Used * $AllocationUnits) / 1073741824;
+    my $totMB = $tot / 1073741824;
+    my $usedMB = $used / 1073741824;
     
     # Plugin return code
     
@@ -313,27 +312,17 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
 
     if ($hrStorageDescr){
         $hrStorageDescr =~ s/\ //g if (defined($opt_t) && $opt_t eq "AS400");
-        print $hrStorageDescr . " TOTAL: ";
-        printf("%.3f", $tot);
-        print " Go USED: " . $pourcent . "% : ";
-        printf("%.3f", $Used);
-        print " Go";
-        my $size_o = $Used * 1073741824;
-        my $warn = $opt_w * $size_o;
-        my $crit = $opt_c * $size_o;
-        print "|size=".$lastTot."o used=".$size_o."o;".$warn.";".$crit;
-        print "\n";
+        my $warn = $opt_w * $tot;
+        my $crit = $opt_c * $tot;
+        printf($hrStorageDescr . " TOTAL: %.3fGB USED: %.3fGB (%d%%)", $totMB, $usedMB, $pourcent );
+        print "|size=".$tot."B used=".$used."B;".$warn.";".$crit."\n";
         exit $return_code;
     } else {
-        print "TOTAL: ";
-        printf("%.3f", $tot);
-        print " Go USED: " . $pourcent . "% : ";
-        printf("%.3f", $Used);
-        print " Go\n";
+        printf("TOTAL: %.3fGB USED: %.3fGB (%d%%)", $totMB, $usedMB, $pourcent );
         exit $return_code;
     }
 } else {
-    print "Disk CRITICAL - no output (-d number expected... it doesn't exist, try another disk - number\n";
+    print "Disk CRITICAL - no output (-d number expected... it doesn't exist, try another disk number)\n";
     exit $ERRORS{'CRITICAL'};
 }
 
@@ -350,10 +339,10 @@ sub print_usage () {
     print "   -n (--name)       Allows to use disk name with option -d instead of disk oid index\n";
     print "                     (ex: -d \"C:\" -n, -d \"E:\" -n, -d \"Swap Memory\" -n, -d \"Real Memory\" -n\n";
     print "                     (choose an unique expression for each disk)\n";
-    print "   -s (--show)       Describes all disk (debug mode)\n";
-    print "   -w (--warn)       Signal strength at which a warning message will be generated\n";
+    print "   -s (--show)       Lists all disks (debug mode)\n";
+    print "   -w (--warn)       Minimum fill level at which a warning message will be generated\n";
     print "                     (default 80)\n";
-    print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
+    print "   -c (--crit)       Minimum fill level at which a critical message will be generated\n";
     print "                     (default 95)\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
