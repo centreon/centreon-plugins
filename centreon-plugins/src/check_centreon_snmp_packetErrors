@@ -127,6 +127,7 @@ my $start=time;
 
 my $OID_IN_ERRORS = ".1.3.6.1.2.1.2.2.1.14";
 my $OID_OUT_ERRORS = ".1.3.6.1.2.1.2.2.1.20";
+my $OID_IF_DESC = ".1.3.6.1.2.1.2.2.1.2";
 
 
 # create a SNMP session
@@ -161,6 +162,19 @@ if (!defined($result_out)) {
 foreach my $err (oid_lex_sort(keys %$result_out)) {
     $nb_out_errors[scalar(@nb_out_errors)] = $result_out->{$err};
 }
+
+# #######  Get Interface descriptions for output
+my @desc_tab;
+my $if_description = $session->get_table(Baseoid => $OID_IF_DESC);
+if (!defined($if_description)) {
+    printf("ERROR: DESCRIPTIONS ERRORS : %s.\n", $session->error);
+    $session->close;
+    exit $ERRORS{'UNKNOWN'};
+}
+foreach my $desc (oid_lex_sort(keys %$if_description)) {
+    $desc_tab[scalar(@desc_tab)] = $if_description->{$desc};
+}
+
 
 # #############################################
 # #####      read and write in buffer file
@@ -203,12 +217,12 @@ for (my $i = 0; $i < scalar(@nb_in_errors); $i++) {
     my $interface = $i+1;
     if ($flg_created[$i]) {
 		if (($nb_in_errors[$i] - $last_in_errors[$i] >= $critical) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $critical)){ 
-		    $msg[$i] = "$interface:critical ";
+		    $msg[$i] = $desc_tab[$i] . ":critical ";
 		    $status = "CRITICAL";
 		}
 		if (($nb_in_errors[$i] - $last_in_errors[$i] >= $warning) or ($nb_out_errors[$i] - $last_out_errors[$i] >= $warning)){
 		    if (!defined($msg[$i])) {
-				$msg[$i] = "$interface:warning ";
+				$msg[$i] = $desc_tab[$i] . ":warning ";
 		    }	
 		    if ($status ne "CRITICAL") {
 				$status = "WARNING";
