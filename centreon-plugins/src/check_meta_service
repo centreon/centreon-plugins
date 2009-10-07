@@ -77,6 +77,7 @@ my $critical;
 my $calculation;
 my $regexp;
 my $metric_select;
+my $display;
 
 ###############
 # HELP FUNCTION
@@ -234,7 +235,7 @@ sub retrieve_by_list() {
 ## First query
 ##
 ##################################################
-my $query = "SELECT calcul_type, regexp_str, warning, critical, metric, meta_select_mode FROM `meta_service` WHERE meta_id = '".$OPTION{'id'}."' LIMIT 1";
+my $query = "SELECT meta_display, calcul_type, regexp_str, warning, critical, metric, meta_select_mode FROM `meta_service` WHERE meta_id = '".$OPTION{'id'}."' LIMIT 1";
 my $DBRES = $dbh->prepare($query);
 if (!$DBRES->execute) {die "Error:" . $DBRES->errstr . "\n";}
 $row = $DBRES->fetchrow_hashref();
@@ -253,11 +254,13 @@ $critical = $row->{'critical'};
 $calculation = $row->{'calcul_type'};
 $regexp = $row->{'regexp_str'};
 $metric_select = $row->{'metric'};
+$display = $row->{'meta_display'};
+
 my $selection_mode = $row->{'meta_select_mode'};
 
 
 if ($selection_mode eq '2') {
-	retrieve_by_regexp();
+    retrieve_by_regexp();
 }
 else {
 	retrieve_by_list();
@@ -286,17 +289,21 @@ if (defined($warning) && defined($critical)) {
 	}
 }
 
-if ($calculation eq "AVE") {
+if (!defined($display) || !$display) {
+    if ($calculation eq "AVE") {
 	$msg .= "Average - ";
-} elsif ($calculation eq "SOM") {
+    } elsif ($calculation eq "SOM") {
 	$msg .= "Sum - ";
-} elsif ($calculation eq "MIN") {
+    } elsif ($calculation eq "MIN") {
 	$msg .= "Min - ";
-} elsif ($calculation eq "MAX") {
+    } elsif ($calculation eq "MAX") {
 	$msg .= "Max - ";
+    }
+    $msg .= "value : " . $res . "|value=".$res; 
+} else {
+    $msg = sprintf($display, $res);
+    $msg .= "|value=".$res;
 }
-
-$msg .= "value : " . $res . "|value=".$res; 
 
 ##############
 # PRINT RESULT
