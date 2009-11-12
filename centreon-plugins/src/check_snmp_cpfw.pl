@@ -26,7 +26,7 @@ use utils qw(%ERRORS $TIMEOUT);
 # Oreon specific
 
 if (eval "require centreon" ) {
-  use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+  use centreon qw(get_parameters &is_valid_serviceid);
   use vars qw($VERSION %centreon);
   %centreon=get_parameters();
 } else {
@@ -249,7 +249,6 @@ sub check_options {
 
 check_options();
 
-$rrd = $pathtorrdbase.$ServiceId.".rrd";
 $start=time;
 
 # Check gobal timeout if snmp screws up
@@ -391,18 +390,6 @@ if (defined ($o_fw)) {
 	}
       }
       $perf_conn=$$resultat{$connections};
-
-     	##
-		## RRD management
-		##
-
-		if ($o_g) {
-			$start=time;
-			 if (! -e $rrd) {
-		        create_rrd($rrd,1,$start,$step,0,"U","GAUGE");
-		     }
-		     update_rrd($rrd,$start, $perf_conn);
-		}
     }
   } else {
     $fw_print .= "cannot find oids";
