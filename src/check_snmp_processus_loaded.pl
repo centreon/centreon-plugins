@@ -28,7 +28,7 @@ use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
 
 if (eval "require centreon" ) {
-	use centreon qw(get_parameters create_rrd update_rrd &is_valid_serviceid);
+	use centreon qw(get_parameters &is_valid_serviceid);
 	use vars qw($VERSION %centreon);
 	%centreon=get_parameters();
 } else {
@@ -121,7 +121,6 @@ if ($opt_n) {
 	}
     }
 }
-
 
 if ($scriptname eq "") {
 	print "No such process, verify your snmpd configuration\n";

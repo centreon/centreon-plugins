@@ -209,9 +209,6 @@ Notes on warning and critical :
    timeout for SNMP in seconds (Default: 5)
 -V, --version
    prints version number
--g (--rrdgraph)   Create a rrd base if necessary and add datas into this one
---rrd_step	     Specifies the base interval in seconds with which data will be fed into the RRD (300 by default)
--S (--ServiceId)  Oreon Service Id
 
 Note :
   CPU usage is in % of one cpu, so maximum can be 100% * number of CPU
@@ -249,12 +246,7 @@ sub check_options {
 	#### To be compatible with version 1.2, will be removed... ####
 	's'     => \$compat_o_cpu_sum,  'cpusum'        => \$compat_o_cpu_sum,
 	##########
-	'V'     => \$o_version,         'version'       => \$o_version,
-		# For Oreon rrdtool graph
-  "rrd_step:s" => \$o_step,
-  "g"   => \$o_g, "rrdgraph"     => \$o_g,
-  "S=s" => \$o_S, "ServiceId=s"  => \$o_S
-    );
+	'V'     => \$o_version,         'version'       => \$o_version );
     if (defined ($o_help)) { help(); exit $ERRORS{"UNKNOWN"}};
     if (defined($o_version)) { p_version(); exit $ERRORS{"UNKNOWN"}};
     # check snmp information
@@ -458,8 +450,6 @@ for (my $i=0; $i< $num_int; $i++) {
 
 $session->close;
 
-#$rrd_data[0] = $num_int_ok;
-
 my $final_status=0;
 my ($res_memory,$res_cpu)=(0,0);
 my $memory_print="";
@@ -494,9 +484,6 @@ if (defined ($o_mem) ) {
    $res_memory = $res_memory * 1024 * 1024;
    $metrics .=  " Ramused=".$res_memory."o";
  }
-
-#push @rrd_data, $res_memory;
-
 }
 
 ######## Checks CPU usage
@@ -562,27 +549,12 @@ if (defined ($o_cpu) ) {
       $cpu_print.=", Cpu : ".sprintf("%.0f",$found_value)."% OK";
       $metrics .= " CpuUsed=$found_value";
   }
-	#push @rrd_data, $found_value;
   } else {
     if ($final_status==0) { $final_status=3 };
     $cpu_print.=", No data for CPU (".$n_rows." line(s)):UNKNOWN";
   }
 
 }
-
-
-  ##
-  ## RRD management
-  ##
-
-#	if ($o_g) {
-#		$start=time;
-#		 if (! -e $rrd) {
-#	        create_rrd($rrd,$#rrd_data+1,$start,$step,0,"U","GAUGE");
-#	     }
-#	     update_rrd($rrd,$start,@rrd_data);
-	#}
-
 
 
 print $num_int_ok, " process ", (defined ($o_noreg)) ? "named " : "matching ", $o_descr, " ";
