@@ -56,11 +56,11 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_t $opt_P $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s @test);
+use vars qw($opt_V $opt_t $opt_P $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s $opt_L $opt_M @test);
 
 # Plugin var init
 
-my ($hrStorageDescr, $hrStorageAllocationUnits, $hrStorageSize, $hrStorageUsed);
+my ($hrStorageDescr, $hrStorageAllocationUnits, $hrStorageSize, $hrStorageUsed, $hrStorageLabel);
 my ($AllocationUnits, $Size, $Used);
 my ($tot, $used, $pourcent, $return_code);
 
@@ -71,10 +71,10 @@ sub print_usage ();
 Getopt::Long::Configure('bundling');
 GetOptions
     ("h"   => \$opt_h, "help"         => \$opt_h,
-     "u=s"   => \$opt_u, "username=s" => \$opt_u,
-     "p=s"   => \$opt_p, "password=s" => \$opt_p,
-     "k=s"   => \$opt_k, "key=s"      => \$opt_k,
-     "P=s"   => \$opt_P, "snmp-port=s" => \$opt_P,
+     "u=s" => \$opt_u, "username=s"   => \$opt_u,
+     "p=s" => \$opt_p, "password=s"   => \$opt_p,
+     "k=s" => \$opt_k, "key=s"        => \$opt_k,
+     "P=s" => \$opt_P, "snmp-port=s"  => \$opt_P,
      "V"   => \$opt_V, "version"      => \$opt_V,
      "s"   => \$opt_s, "show"         => \$opt_s,
      "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
@@ -83,12 +83,14 @@ GetOptions
      "n"   => \$opt_n, "name"         => \$opt_n,
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-     "H=s" => \$opt_H, "hostname=s"   => \$opt_H, 
-     "t=s"   => \$opt_t);
+     "H=s" => \$opt_H, "hostname=s"   => \$opt_H,
+     "L"   => \$opt_L, "label"        => \$opt_L,
+     "M"   => \$opt_M, 
+     "t=s" => \$opt_t);
 
 
 if ($opt_V) {
-    print_revision($PROGNAME,'$Revision: 1.2 $');
+    print_revision($PROGNAME,'$Revision: 1.3 $');
     exit $ERRORS{'OK'};
 }
 if (!defined($opt_P)) {
@@ -142,19 +144,52 @@ if (!$opt_c) {
 if (!$opt_w) {
 	$opt_w = 90;
 }
+
+# this are boolean variables to see if --warn or --crit were set in MB/GB
+# --warn and --crit values will be stored in $warning and $critical variables
+# if they are set in GB they are converted to MB 
+my $criticalMB = 0;
+my $warningMB = 0;
+
 my $critical = 95;
 if ($opt_c && $opt_c =~ /^[0-9]+$/) {
     $critical = $opt_c;
 }
+if ($opt_c && $opt_c =~ /^([0-9]+)(.)[Bb]$/) {
+    $criticalMB = 1;
+    $critical = $1;
+    ($critical = $critical * 1024) if $2 =~ /[Gg]/ ;
+}
+
 my $warning = 90;
 if ($opt_w && $opt_w =~ /^[0-9]+$/) {
     $warning = $opt_w;
 }
+if ($opt_w && $opt_w =~ /^([0-9]+)(.)[Bb]$/) {
+    $warningMB = 1;
+    $warning = $1;
+    ($warning = $warning * 1024) if $2 =~ /[Gg]/ ;
+}
 
-if ($critical <= $warning){
-    print "(--crit) must be superior to (--warn)";
-    print_usage();
-    exit $ERRORS{'OK'};
+# If one of the warning/critical thresholds is set in MB/GB and the other in percent the check will fail
+# if both are percent or storage size the check will be performed in different ways
+# percent applies to used space so --crit must be higher than --warn
+# MB applies to free space so --crit must be lower than --warn
+if ($criticalMB == $warningMB) {
+    if ($criticalMB && ($critical >= $warning)) {
+	print "(--crit) must be inferior to (--warn) when using absolute size";
+	print_usage();
+	exit $ERRORS{'OK'};
+    } 
+    if (!$criticalMB && ($critical <= $warning)) {
+	print "(--crit) must be superior to (--warn)";
+	print_usage();
+	exit $ERRORS{'OK'};
+    }
+} else {
+	print "(--crit) and (--warn) must both use either percent or absolute sizes";
+	print_usage();
+	exit $ERRORS{'OK'};
 }
 
 
@@ -265,6 +300,13 @@ $AllocationUnits  =  $result->{$OID_hrStorageAllocationUnits.".".$partition };
 $Size  =  $result->{$OID_hrStorageSize.".".$partition };
 $Used  =  $result->{$OID_hrStorageUsed.".".$partition };
 
+$hrStorageLabel = $hrStorageDescr;
+if ($hrStorageDescr =~ /Label:(.*) Serial Number/) {
+	$hrStorageLabel = $1;
+} else {
+	$hrStorageLabel = '';
+}
+
 
 # Plugins var treatmen
 
@@ -294,15 +336,19 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
         @test = split (/\./, $pourcent);
         $pourcent = $test[0];
     }
-    my $totMB = $tot / 1073741824;
-    my $usedMB = $used / 1073741824;
+    my $totMB = $tot / 1048576;
+    my $usedMB = $used / 1048576;
+    my $freeMB = $totMB - $usedMB;
+    my $totGB = $totMB / 1024;
+    my $usedGB = $usedMB / 1024;
+    my $freeGB = $freeMB / 1024;
     
     # Plugin return code
     
-    if ($pourcent >= $critical){
+    if ($criticalMB ? ($freeMB <= $critical) : ($pourcent >= $critical)) {
         print "Disk CRITICAL - ";
         $return_code = 2;
-    } elsif ($pourcent >= $warning){
+    } elsif ($warningMB ? ($freeMB <= $warning) : ($pourcent >= $warning)) {
         print "Disk WARNING - ";
         $return_code = 1;
     } else {
@@ -312,9 +358,17 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
 
     if ($hrStorageDescr){
         $hrStorageDescr =~ s/\ //g if (defined($opt_t) && $opt_t eq "AS400");
-        my $warn = $opt_w * $tot;
-        my $crit = $opt_c * $tot;
-        printf($hrStorageDescr . " TOTAL: %.3fGB USED: %.3fGB (%d%%)", $totMB, $usedMB, $pourcent );
+	my $warn; my $crit;
+        $warn = $warningMB ? $tot-$warning*1024*1024 : int($warning * $tot / 100);
+        $crit = $criticalMB ? $tot-$critical*1024*1024 : int($critical * $tot / 100);
+	if ($opt_M){
+           printf($hrStorageDescr . " TOTAL: %dMB USED: %dMB (%d%%) FREE: %dMB (%d%%)", $totMB, $usedMB, $pourcent, $freeMB, 100-$pourcent );
+	} else {
+           printf($hrStorageDescr . " TOTAL: %.3fGB USED: %.3fGB (%d%%) FREE: %.3fGB (%d%%)", $totGB, $usedGB, $pourcent, $freeGB, 100-$pourcent );
+	}
+	if ($opt_L) {
+		print " - ".$hrStorageLabel;
+	}
         print "|size=".$tot."B used=".$used."B;".$warn.";".$crit."\n";
         exit $return_code;
     } else {
@@ -335,6 +389,9 @@ sub print_usage () {
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
     print "   -P (--snmp-port)	SNMP port (default: 161)\n";
+    print "   -k (--key)        snmp V3 key\n";
+    print "   -p (--password)   snmp V3 password\n";
+    print "   -u (--username)   snmp v3 username \n";
     print "   -d (--disk)       Set the disk (number expected) ex: 1, 2,... (default: 2 )\n";
     print "   -n (--name)       Allows to use disk name with option -d instead of disk oid index\n";
     print "                     (ex: -d \"C:\" -n, -d \"E:\" -n, -d \"Swap Memory\" -n, -d \"Real Memory\" -n\n";
@@ -342,9 +399,17 @@ sub print_usage () {
     print "   -s (--show)       Lists all disks (debug mode)\n";
     print "   -w (--warn)       Minimum fill level at which a warning message will be generated\n";
     print "                     (default 80)\n";
+    print "                     By using the optional suffixes MB/GB the argument is interpreted as absolute size \n";
+    print "                     and it becomes a threshold for free space. (ex. 100MB; 3GB)\n";
     print "   -c (--crit)       Minimum fill level at which a critical message will be generated\n";
     print "                     (default 95)\n";
+    print "                     By using the optional suffixes MB/GB the argument is interpreted as absolute size \n";
+    print "                     and it becomes a threshold for free space. (ex. 50MB; 1GB)\n";
+    print "                     ex.: -w 1GB -c 256MB generates a warning when free space reaches 1GB\n";
+    print "                          and critical when there are less than 256MB left\n";
     print "   -V (--version)    Plugin version\n";
+    print "   -L                add Windows drive label to output\n";
+    print "   -M                Shows the size in output in MB instead of GB\n";
     print "   -h (--help)       usage help\n";
 
 }
@@ -352,7 +417,7 @@ sub print_usage () {
 sub print_help () {
     print "##############################################\n";
     print "#    Copyright (c) 2004-2007 Centreon        #\n";
-    print "#    Bugs to http://bugs.oreon-project.org/  #\n";
+    print "#    Bugs to http://forge.centreon.com/      #\n";
     print "##############################################\n";
     print_usage();
     print "\n";
