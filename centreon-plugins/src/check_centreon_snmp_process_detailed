@@ -181,7 +181,7 @@ sub help {
 -p, --port=PORT
    SNMP port (Default 161)
 -n, --name=NAME
-   Name of the process (regexp)
+   Name of the process (regexp, case insensitive per default)
    No trailing slash !
 -r, --noregexp
    Do not use regexp to match NAME in description OID
@@ -379,7 +379,7 @@ foreach my $key ( keys %$resultat) {
    # test by regexp or exact match
    my $test = defined($o_noreg)
                 ? $$resultat{$key} eq $o_descr
-                : $$resultat{$key} =~ /$o_descr/;
+                : $$resultat{$key} =~ /$o_descr/i;
   if ($test) {
      # get the index number of the interface
      my @oid_list = split (/\./,$key);
