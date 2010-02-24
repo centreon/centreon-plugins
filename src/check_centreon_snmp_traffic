@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 ################################################################################
-# Copyright 2005-2009 MERETHIS
+# Copyright 2004-2010 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -488,9 +488,12 @@ if (($in_usage > $critical) or ($out_usage > $critical)){
 	$status = "CRITICAL";
 }
 
+my $warningBit = $warning * $speed_card / 100;
+my $criticalBit = $critical * $speed_card / 100;
+
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
 printf("Total RX Bits In : %.2f ".$in_bits_unit."B, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);
-printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s;0;$speed_card traffic_out=".$out_perfparse_traffic_str."Bits/s;0;$speed_card\n");
+printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card traffic_out=".$out_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card\n");
 exit($ERRORS{$status});
 
 sub print_usage () {
@@ -517,7 +520,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2009 Centreon        #\n";
+    print "#    Copyright (c) 2004-2010 Centreon        #\n";
     print "#    Bugs to http://trac.centreon.com        #\n";
     print "##############################################\n";
     print_usage();
