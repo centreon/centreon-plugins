@@ -55,7 +55,7 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_P $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_r);
+use vars qw($opt_V $opt_h $opt_P $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r);
 
 # Plugin var init
 
@@ -83,6 +83,7 @@ GetOptions
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
      "T=s" => \$opt_T, "r"			  => \$opt_r,
+     "a=s" => \$opt_a, "cache=s"	  => \$opt_a,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
 if ($opt_V) {
@@ -135,6 +136,8 @@ $opt_C = "public";
 if (!$opt_i) {
 $opt_i = 2;
 }
+
+$opt_a = 3 if (!$opt_a);
 
 if (!$opt_b) {
 $opt_b = 95;
@@ -207,38 +210,91 @@ if ($snmp eq "1" || $snmp =~ /2/) {
 }
 $session->translate(Net::SNMP->TRANSLATE_NONE) if (defined($session));
 
-#getting interface using its name instead of its oid index
 
+my $cacheFile = "@CENTPLUGINS_TMP@/traffic_cache_".$opt_H;
+my $result;
+my $mustCreateFile = 0;
+#my $row;
+my $countLine;
+
+#
+# Cache File exists, lets read it
+#
+if (-e $cacheFile) {
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>){
+        if (!$countLine) {
+            my $deltaTime = time() -  $row;
+            if ($deltaTime > ($opt_a * 3600)) {
+                $mustCreateFile = 1;
+            }
+        }
+        $countLine++;
+    }
+    close(FILE);
+}
+else {
+    $mustCreateFile = 1;
+}
+
+if ($mustCreateFile) {
+    $result = $session->get_table(Baseoid => $OID_DESC);
+    unless (open(FILE,">".$cacheFile)){
+        print "Check mod for temporary file : ".$cacheFile."...\n";
+        exit $ERRORS{"UNKNOWN"};
+    }
+    my $currentTime = time();
+    print FILE $currentTime."\n";
+    foreach my $key (oid_lex_sort(keys %$result)) {
+	   	my @oid_list = split (/\./,$key);
+	   	my $interfaceIndex = pop (@oid_list);
+        print FILE $interfaceIndex.";".$result->{$key}."\n";
+    }
+    close(FILE);
+}
+
+
+#getting interface using its name instead of its oid index
 if ($opt_n) {
 	if ($opt_r){
-	    my $result = $session->get_table(Baseoid => $OID_DESC);
-	    if (!$result) {
-	        printf("ERROR: Description Table : %s.\n", $session->error);
-	        $session->close;
-	        exit $ERRORS{'UNKNOWN'};
-	    }
-	    foreach my $key ( oid_lex_sort(keys %$result)) {
-	    	# Added line to strip the illegal character off.
-		    $result->{$key} =~ s/\x00//g;
-	        if ($result->{$key} =~ m/$opt_i/) {
-			    my @oid_list = split (/\./,$key);
-			    $interface = pop (@oid_list) ;
-			}
-	    }
-	} else {
-		my $result = $session->get_table(Baseoid => $OID_DESC);
-	    if (!$result) {
-	        printf("ERROR: Description Table : %s.\n", $session->error);
-	        $session->close;
-	        exit $ERRORS{'UNKNOWN'};
-	    }
-	    foreach my $key ( oid_lex_sort(keys %$result)) {
-	    	$result->{$key} =~ s/\x00//g;
-	        if ($result->{$key} eq $opt_i) {
-			    my @oid_list = split (/\./,$key);
-			    $interface = pop (@oid_list) ;
-			}
-	    }
+	    if (!-e $cacheFile) {
+            printf("ERROR: Could not open " . $cacheFile);        
+            exit $ERRORS{'UNKNOWN'};
+        }
+        
+        open(FILE,"<".$cacheFile);
+        $countLine = 0;
+        while ($row = <FILE>){
+            if ($countLine) {
+                my @resLine = split(/\;/, $row);                
+                if ($resLine[1] =~ m/$opt_i/) {    	   	 	
+                    $interface = $resLine[0];
+                }
+            }
+            $countLine++;
+        }
+        close(FILE);
+	}
+    else {		
+	    if (!-e $cacheFile) {
+            printf("ERROR: Could not open " . $cacheFile);
+            exit $ERRORS{'UNKNOWN'};
+        }
+        
+        open(FILE,"<".$cacheFile);
+        $countLine = 0;
+        while ($row = <FILE>){
+            if ($countLine) {
+                my @resLine = split(/\;/, $row);            
+                $resLine[1] =~ s/\x00//g;
+                if ($resLine[1] =~ $opt_i) {
+                    $interface = $resLine[0];
+                }
+            }
+            $countLine++;
+        }
+        close(FILE);
 	}
 }
 
@@ -256,22 +312,24 @@ if ($opt_64bits) {
 # Get desctiption table
 
 if ($opt_s) {
-    my $result = $session->get_table(Baseoid => $OID_DESC);
-	if (!$result) {
-	    printf("ERROR: Description Table : %s.\n", $session->error);
-	    $session->close;
-	    exit $ERRORS{'UNKNOWN'};
-	}
-	foreach my $key ( oid_lex_sort(keys %$result)) {
-	    my @oid_list = split (/\./,$key);
-	    my $index = pop (@oid_list) ;
-	    my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
-	    if (!defined($result)) {
-			printf("ERROR: Interface Status Request : %s", $session->error);
-			exit $ERRORS{'UNKNOWN'};
-		}
-	    print "Interface $index :: $$result{$key} :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
-	}
+    if (!-e $cacheFile) {
+        printf("ERROR: Could not open " . $cacheFile);        
+        exit $ERRORS{'UNKNOWN'};
+    }
+    
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>){
+        if ($countLine) {
+            my @resLine = split(/\;/, $row);            
+            my $index = $resLine[0];
+            my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
+            $resLine[1] =~ s/\x00//g;
+            print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
+        }
+        $countLine++;
+    }
+    close(FILE);
 	exit $ERRORS{'OK'};
 }
 
@@ -289,7 +347,7 @@ if ($operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1] ne "up"
 #######  Get IN bytes
 
 my $in_bits;
-my $result = $session->get_request(-varbindlist => [$OID_IN]);
+$result = $session->get_request(-varbindlist => [$OID_IN]);
 if (!defined($result)) {
     printf("ERROR: IN Bits :  %s", $session->error);
     if ($opt_n) { print " - You must specify interface name when option -n is used";}
@@ -515,6 +573,7 @@ sub print_usage () {
     print "   -T                Max Banwidth\n";
     print "   -V (--version)    Plugin version\n";
     print "   -r                Regexp Match Mode\n";
+    print "   -a (--cache)      Updates cache file every n hours instead of doing snmpwalk for every check (default: 3)\n";
     print "   -h (--help)       usage help\n";
 }
 
