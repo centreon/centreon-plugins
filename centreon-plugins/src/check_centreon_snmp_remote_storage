@@ -56,7 +56,7 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_t $opt_P $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s $opt_L $opt_M @test);
+use vars qw($opt_V $opt_t $opt_P $opt_h $opt_v $opt_f $opt_C $opt_d $opt_k $opt_u $opt_p $opt_n $opt_w $opt_c $opt_H $opt_s $opt_L $opt_M $opt_a @test);
 
 # Plugin var init
 
@@ -85,6 +85,7 @@ GetOptions
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H,
      "L"   => \$opt_L, "label"        => \$opt_L,
+     "a=s" => \$opt_a, "cache=s"    => \$opt_a,
      "M"   => \$opt_M, 
      "t=s" => \$opt_t);
 
@@ -128,6 +129,7 @@ if ($snmp eq "3") {
 
 $opt_C = "public" if (!$opt_C);
 $opt_d = 2 if (!$opt_d);
+$opt_a = 3 if (!$opt_a);
 
 ($opt_d) || ($opt_d = shift) || ($opt_d = 2);
 
@@ -231,14 +233,60 @@ if ($snmp eq "1" || $snmp eq "2") {
 $session->translate(Net::SNMP->TRANSLATE_NONE) if (defined($session));
 
 
+my $cacheFile = "@CENTPLUGINS_TMP@/remote_storage_cache_".$opt_H;
+my $result;
+my $mustCreateFile = 0;
+my $row;
+my $countLine;
+
+#
+# Cache File exists, lets read it
+#
+if (-e $cacheFile) {
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>){
+        if (!$countLine) {
+            my $deltaTime = time() -  $row;
+            if ($deltaTime > ($opt_a * 3600)) {
+                $mustCreateFile = 1;
+            }
+        }
+        $countLine++;
+    }
+    close(FILE);
+}
+else {
+    $mustCreateFile = 1;
+}
+
+if ($mustCreateFile) {
+    $result = $session->get_table(Baseoid => $OID_hrStorageDescr);
+    unless (open(FILE,">".$cacheFile)){
+        print "Check mod for temporary file : ".$cacheFile."...\n";
+        exit $ERRORS{"UNKNOWN"};
+    }
+    my $currentTime = time();
+    print FILE $currentTime."\n";
+    foreach my $key (oid_lex_sort(keys %$result)) {
+        if (defined($opt_t) && $opt_t eq "AS400"){
+            $result->{$key} =~ s/\ //g;
+        }        
+	   	my @oid_list = split (/\./,$key);
+	   	my $partitionIndex = pop (@oid_list);
+        print FILE $partitionIndex.";".$result->{$key}."\n";
+    }
+    close(FILE);
+}
+
+
 #getting partition using its name instead of its oid index
-if ($opt_n) {
-    my $result = $session->get_table(Baseoid => $OID_hrStorageDescr);
-    if (!defined($result)) {
-        printf("ERROR: hrStorageDescr Table : %s.\n", $session->error);
-        $session->close;
+if ($opt_n) {    
+    if (!-e $cacheFile) {
+        printf("ERROR: Could not open " . $cacheFile);        
         exit $ERRORS{'UNKNOWN'};
     }
+
     my $expr = "";
     if ($opt_d =~ m/^[A-Za-z]:/) {
 		$opt_d =~ s/\\/\\\\/g;
@@ -248,45 +296,49 @@ if ($opt_n) {
     }else {
 		$expr = "$opt_d";
     }
-    foreach my $key ( oid_lex_sort(keys %$result)) {
-        if (defined($opt_t) && $opt_t eq "AS400"){
-		$result->{$key} =~ s/\ //g;
-	}
-	if ($result->{$key} =~ m/$expr/) {
-	   	 	my @oid_list = split (/\./,$key);
-	   	 	$partition = pop (@oid_list) ;
-		}
+    
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>){
+        if ($countLine) {
+            my @resLine = split(/\;/, $row);            
+            if ($resLine[1] =~ m/$expr/) {    	   	 	
+    	   	 	$partition = $resLine[0];
+            }
+        }
+        $countLine++;
     }
+    close(FILE);    
 }
 
 if ($opt_s) {
-    # Get description table
-    my $result = $session->get_table(
-        Baseoid => $OID_hrStorageDescr
-    );
-
-    if (!defined($result)) {
-        printf("ERROR: hrStorageDescr Table : %s.\n", $session->error);
-        $session->close;
+    if (!-e $cacheFile) {
+        printf("ERROR: Could not open " . $cacheFile);        
         exit $ERRORS{'UNKNOWN'};
     }
 
-    foreach my $key ( oid_lex_sort(keys %$result)) {
-        my @oid_list = split (/\./,$key);
-        my $index = pop (@oid_list) ;
-        print "hrStorage $index :: $$result{$key}\n";
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>){
+        if ($countLine) {
+            my @resLine = split(/\;/, $row);
+            print "hrStorage ".$resLine[0]." :: ".$resLine[1];
+        }
+        $countLine++;
     }
+    close(FILE);
 	exit $ERRORS{'OK'};
 }
 
 
-my $result = $session->get_request(
-                                   -varbindlist => [$OID_hrStorageDescr.".".$partition  ,
-                                                    $OID_hrStorageAllocationUnits.".".$partition  ,
-                                                    $OID_hrStorageSize.".".$partition,
-                                                    $OID_hrStorageUsed.".".$partition
-                                                    ]
-                                   );
+$result = $session->get_request(
+                            -varbindlist => [$OID_hrStorageDescr.".".$partition  ,
+                                             $OID_hrStorageAllocationUnits.".".$partition  ,
+                                             $OID_hrStorageSize.".".$partition,
+                                             $OID_hrStorageUsed.".".$partition
+                                            ]
+                                );
+
 if (!defined($result)) {
     printf("ERROR:  %s.\n", $session->error);
     if ($opt_n) { print(" - You must specify the disk name when option -n is used");}
@@ -410,6 +462,7 @@ sub print_usage () {
     print "   -V (--version)    Plugin version\n";
     print "   -L                add Windows drive label to output\n";
     print "   -M                Shows the size in output in MB instead of GB\n";
+    print "   -a (--cache)      Updates cache file every n hours instead of doing snmpwalk for every check (default: 3)\n";
     print "   -h (--help)       usage help\n";
 
 }
