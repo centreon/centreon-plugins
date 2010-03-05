@@ -174,8 +174,18 @@ if( ( $return != 0 ) || $ping_result_array[@ping_result_array -2 ] =~ /100% pack
 my $result_str = "";
 
 if( $rta == -1 ) {
-    $ping_result_array[@ping_result_array -2 ] =~ s/\%/percent/g; 
-    print "GPING CRITICAL - ".$ping_result_array[@ping_result_array -2 ]."|time=0 ok=0\n";
+    $ping_result_array[@ping_result_array - 2] =~ s/\%/percent/g;
+	if (length($ping_result_array[@ping_result_array - 5]) && $ping_result_array[@ping_result_array - 5] !~ m/pipe/g) {
+	    print "PING CRITICAL - ".$ping_result_array[@ping_result_array - 5]."|time=0 ok=0\n";
+	} elsif (length($ping_result_array[@ping_result_array - 1]) != 0 && $ping_result_array[@ping_result_array - 1] !~ m/pipe/g) {
+	    print "PING CRITICAL - ".$ping_result_array[@ping_result_array - 1]."|time=0 ok=0\n";
+	} elsif (length($ping_result_array[@ping_result_array - 4]) && $ping_result_array[@ping_result_array - 4] !~ m/pipe/g) {
+	    print "PING CRITICAL - ".$ping_result_array[@ping_result_array - 4]."|time=0 ok=0\n";
+	} elsif (length($ping_result_array[@ping_result_array - 1]) !~ m/pipe/g) {
+	    print "PING CRITICAL - ".$ping_result_array[@ping_result_array - 1]."|time=0 ok=0\n";
+	} else {
+	    print "PING CRITICAL - ".$ping_result_array[@ping_result_array - 3]."|time=0 ok=0\n";
+	}
     exit $ERRORS{'CRITICAL'};
 } elsif ( ($pl >= $pl_critical) || ($rta >= $rta_critical) ) {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
