@@ -219,7 +219,9 @@ my $realM_used = $used_mem->{$OID_RealM_storage_used} * $alloc_units->{$OID_Real
 my $cache_used = 0;
 
 if (defined $indexC > 0) {
-	$cache_used = $total_mem->{$OID_Cache_storage_size} * $alloc_units->{$OID_Cache_storage_allocationUnits};
+	if (defined($total_mem->{$OID_Cache_storage_size}) && defined($alloc_units->{$OID_Cache_storage_allocationUnits})) {
+		$cache_used = $total_mem->{$OID_Cache_storage_size} * $alloc_units->{$OID_Cache_storage_allocationUnits};
+	}
 }
 
 my $swap_size = $total_mem->{$OID_Swap_storage_size} * $alloc_units->{$OID_Swap_storage_allocationUnits};
