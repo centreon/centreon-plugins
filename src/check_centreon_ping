@@ -210,10 +210,10 @@ sub print_usage () {
     print "   -H (--hostname)   Hostname to query (Required)\n";
     print "   -w (--warning)    Threshold pair (Default: 200,20%)\n";
     print "   -c (--critical)   Threshold pair (Default: 500,40%)\n";
-    print "   -n (--number)     number of ICMP ECHO packets to send (Default: 1)\n";
+    print "   -n (--number)     Number of ICMP ECHO packets to send (Default: 1)\n";
     print "   -i 			    Interval between ping (Default: 1s)\n";
     print "   -V (--version)    Plugin version\n";
-    print "   -h (--help)       usage help\n";
+    print "   -h (--help)       Usage help\n";
 }
 
 sub print_help () {

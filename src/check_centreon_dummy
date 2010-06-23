@@ -90,11 +90,14 @@ print $opt_o;
 exit $opt_s;
 
 sub print_usage () {
-    print "Usage:";
-    print "$PROGNAME\n";
-    print "   -s (--status)     status that must be returned [0-3]\n";
-    print "   -o (--output)     output that must be returned\n";
-    print "   -h (--help)       usage help\n";
+    print "Usage: $PROGNAME -s 2 -o 'This service is CRITICAL'\n";
+    print "   -s (--status)     Value between 0 and 3 to return the Nagios status (Required)\n";
+    print "                     	0 returns OK status\n";
+    print "                     	1 returns WARNING status\n";
+    print "                     	2 returns CRITICAL status\n";
+    print "                     	3 returns UNKNOWN status\n";
+    print "   -o (--output)     Output message that must be returned (Default: 'OK')\n";
+    print "   -h (--help)       Usage help\n";
 }
 
 sub print_help () {
