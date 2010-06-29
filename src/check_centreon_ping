@@ -190,17 +190,17 @@ if( $rta == -1 ) {
 } elsif ( ($pl >= $pl_critical) || ($rta >= $rta_critical) ) {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
-    print "PING CRITICAL - ". $tab[1] ."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
+    print "PING CRITICAL - ". $tab[1] ."|time=".$time_answer."ms;$pl_warning;$pl_critical;0; ok=1\n";
     exit $ERRORS{'CRITICAL'};
 } elsif ( ($pl >= $pl_warning) || ($rta >= $rta_warning) ) {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
-    print "PING WARNING - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
+    print "PING WARNING - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;0; ok=1\n";
     exit $ERRORS{'WARNING'};
 } else {
     $ping_result_array[@ping_result_array -1 ] =~ s/\%/percent/g;
     my @tab = split(/,/,$ping_result_array[@ping_result_array -1 ]);
-    print "PING OK - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;; ok=1\n";
+    print "PING OK - ".$tab[0]."|time=".$time_answer."ms;$pl_warning;$pl_critical;0; ok=1\n";
     exit $ERRORS{'OK'};
 }
 
