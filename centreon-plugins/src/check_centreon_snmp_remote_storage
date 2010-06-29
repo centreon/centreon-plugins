@@ -421,7 +421,7 @@ if (($Size =~  /([0-9]+)/) && ($AllocationUnits =~ /([0-9]+)/)){
 	if ($opt_L) {
 		print " - ".$hrStorageLabel;
 	}
-        print "|size=".$tot."B used=".$used."B;".$warn.";".$crit."\n";
+        print "|size=".$tot."B used=".$used."B;".$warn.";".$crit.";0;".$tot."\n";
         exit $return_code;
     } else {
         printf("TOTAL: %.3fGB USED: %.3fGB (%d%%)", $totMB, $usedMB, $pourcent );
