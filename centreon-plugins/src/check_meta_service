@@ -63,7 +63,7 @@ if (!$DBRESULT->execute) {
 my $ndo_prefix;
 my $row = $DBRESULT->fetchrow_hashref();
 if (defined($row)) {	
-	$db_broker = DBI->connect("DBI:mysql:database=".$row->{'db_name'}.";host=".$row->{'db_host'}, $row->{'db_user'}, $row->{'db_pass'}, {'RaiseError' => 1});
+	$db_broker = DBI->connect("DBI:mysql:database=".$row->{'db_name'}.";host=".$row->{'db_host'}.":".$row->{'db_port'}, $row->{'db_user'}, $row->{'db_pass'}, {'RaiseError' => 1});
 	$ndo_prefix = $row->{'db_prefix'};
 }
 else {
