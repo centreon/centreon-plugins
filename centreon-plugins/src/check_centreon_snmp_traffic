@@ -257,8 +257,8 @@ if ($mustCreateFile) {
     }
 }
 
-
-#getting interface using its name instead of its oid index
+################################################################
+# Getting interface using its name instead of its oid index
 if ($opt_n) {
 	if ($opt_r){
 	    if (!-e $cacheFile) {
@@ -290,7 +290,8 @@ if ($opt_n) {
             if ($countLine) {
                 my @resLine = split(/\;/, $row);            
                 $resLine[1] =~ s/\x00//g;
-                if ($resLine[1] =~ $opt_i) {
+                $resLine[1] =~ s/\n//g;
+                if ($resLine[1] eq $opt_i) {
                     $interface = $resLine[0];
                 }
             }
