@@ -55,7 +55,7 @@ if (eval "require centreon" ) {
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_P $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r);
+use vars qw($opt_V $opt_h $opt_P $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S);
 
 # Plugin var init
 
@@ -83,6 +83,7 @@ GetOptions
      "w=s" => \$opt_w, "warning=s"    => \$opt_w,
      "c=s" => \$opt_c, "critical=s"   => \$opt_c,
      "T=s" => \$opt_T, "r"			  => \$opt_r,
+     "S" => \$opt_S,
      "a=s" => \$opt_a, "cache=s"	  => \$opt_a,
      "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
 
@@ -195,13 +196,13 @@ if ($snmp eq "1" || $snmp =~ /2/) {
 	    print("UNKNOWN: SNMP Session : $error\n");
 	    exit $ERRORS{'UNKNOWN'};
 	}
-}elsif ($opt_k) {
+} elsif ($opt_k) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k, -port => $opt_P);
 	if (!defined($session)) {
 	    print("UNKNOWN: SNMP Session : $error\n");
 	    exit $ERRORS{'UNKNOWN'};
 	}
-}elsif ($opt_p) {
+} elsif ($opt_p) {
     ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p, -port => $opt_P);
 	if (!defined($session)) {
 	    print("UNKNOWN: SNMP Session : $error\n");
@@ -277,16 +278,15 @@ if ($opt_n) {
             $countLine++;
         }
         close(FILE);
-	}
-    else {		
-	    if (!-e $cacheFile) {
-            printf("ERROR: Could not open " . $cacheFile);
-            exit $ERRORS{'UNKNOWN'};
+	} else {		
+		if (!-e $cacheFile) {
+        	printf("ERROR: Could not open " . $cacheFile);
+        	exit $ERRORS{'UNKNOWN'};
         }
         
         open(FILE,"<".$cacheFile);
         $countLine = 0;
-        while ($row = <FILE>){
+        while ($row = <FILE>) {
             if ($countLine) {
                 my @resLine = split(/\;/, $row);            
                 $resLine[1] =~ s/\x00//g;
@@ -305,7 +305,7 @@ if ($opt_64bits) {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
 	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
 	$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
-}else {
+} else {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET}.".".$interface;
 	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
 	$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
@@ -318,7 +318,6 @@ if ($opt_s) {
         printf("ERROR: Could not open " . $cacheFile);        
         exit $ERRORS{'UNKNOWN'};
     }
-    
     open(FILE,"<".$cacheFile);
     $countLine = 0;
     while ($row = <FILE>){
@@ -327,7 +326,17 @@ if ($opt_s) {
             my $index = $resLine[0];
             my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
             $resLine[1] =~ s/\x00//g;
-            print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1]."\n";
+            print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1];
+			if ($opt_S) {
+				my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED.".".$index]);
+				if (!defined($link_speed)) {
+					printf("ERROR: Interface Speed Request : %s", $session->error);
+					exit $ERRORS{'UNKNOWN'};
+				}
+				print " :: speed ".$link_speed->{$OID_SPEED_BASE.".".$index}."\n";
+			} else {
+				print "\n";
+			}
         }
         $countLine++;
     }
@@ -432,7 +441,6 @@ if ($flg_created == 0){
     print "First execution : Buffer in creation.... \n";
     exit($ERRORS{"UNKNOWN"});
 }
-
 
 ## Bandwith = IN + OUT / Delta(T) = 6 Mb/s
 ## (100 * Bandwith) / (2(si full duplex) * Ispeed)
@@ -552,27 +560,35 @@ my $warningBit = $warning * $speed_card / 100;
 my $criticalBit = $critical * $speed_card / 100;
 
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
-printf("Total RX Bits In : %.2f ".$in_bits_unit."B, Out : %.2f ".$out_bits_unit."b", $in_bits, $out_bits);
+if ($opt_S) {
+ 	printf(" - Link Speed : %d", $speed_card);
+}
 printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card traffic_out=".$out_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card\n");
 exit($ERRORS{$status});
 
 sub print_usage () {
     print "\nUsage:\n";
     print "$PROGNAME\n";
-    print "   -H (--hostname)   Hostname to query - (required)\n";
-    print "   -C (--community)  SNMP read community (defaults to public,\n";
+    print "   -H (--hostname)   Hostname to query (required)\n";
+    print "   -C (--community)  SNMP read community (defaults to public)\n";
     print "                     used with SNMP v1 and v2c\n";
     print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
+    print "                        3 for SNMP v3\n";
+    print "   -P (--snmp-port)  SNMP port (default: 161)\n";
+	print "   -k (--key)        snmp V3 key\n";
+	print "   -p (--password)   snmp V3 password\n";
+	print "   -u (--username)   snmp v3 username \n";
     print "   -s (--show)       Describes all interfaces number (debug mode)\n";
     print "   -i (--interface)  Set the interface number (2 by default)\n";
-    print "   -n (--name)       Allows to use interface name with option -d instead of interface oid index\n";
+    print "   -n (--name)       Allows to use interface name with option -i instead of interface oid index\n";
     print "                     (ex: -i \"eth0\" -n, -i \"VMware Virtual Ethernet Adapter for VMnet8\" -n\n";
     print "                     (choose an unique expression for each interface)\n";
     print "   -w (--warn)       Signal strength at which a warning message will be generated\n";
     print "                     (default 80)\n";
     print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
-    print "   -T                Max Banwidth\n";
+    print "   -T                Set maximum bandwidth\n";
+    print "   -S                Show link speed in output\n";
     print "   -V (--version)    Plugin version\n";
     print "   -r                Regexp Match Mode\n";
     print "   -a (--cache)      Updates cache file every n hours instead of doing snmpwalk for every check (default: 3)\n";
