@@ -301,15 +301,17 @@ if ($opt_n) {
 	}
 }
 
-my ($OID_IN, $OID_OUT, $OID_SPEED);
+my ($OID_IN, $OID_OUT, $OID_SPEED, $OID_SPEED_BASE);
 if ($opt_64bits) {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
 	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
 	$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
+	$OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED_64_BITS};
 } else {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET}.".".$interface;
 	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
 	$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
+	$OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED};
 }
 
 # Get desctiption table
@@ -327,14 +329,17 @@ if ($opt_s) {
             my $index = $resLine[0];
             my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
             $resLine[1] =~ s/\x00//g;
+            $resLine[1] =~ s/\n//g;
             print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1];
 			if ($opt_S) {
-				my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED.".".$index]);
+				my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED_BASE.".".$index]);
 				if (!defined($link_speed)) {
 					printf("ERROR: Interface Speed Request : %s", $session->error);
 					exit $ERRORS{'UNKNOWN'};
 				}
-				print " :: speed ".$link_speed->{$OID_SPEED.".".$index}."\n";
+				my $unit = "bit/s";
+				my speed = $link_speed->{$OID_SPEED_BASE.".".$index};
+				print " :: speed ".$speed." ".$unit."\n";
 			} else {
 				print "\n";
 			}
