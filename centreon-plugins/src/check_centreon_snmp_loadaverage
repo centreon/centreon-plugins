@@ -118,13 +118,13 @@ if ($opt_w && $opt_w =~ /^([0-9]+),([0-9]+),([0-9]+)$/) {
 	@warning = ('1', '3', '5');
 } else {
 	print "Specify three warning treshold separated with a coma\n";
-	exit $ERRORS{'OK'};
+	exit $ERRORS{'UNKNOWN'};
 }
 
 for (my $i = 0; $i < scalar(@warning); $i++) {
 	if ($warning[$i] >= $critical[$i]) {
 		print "Critical tresholds must be superior to warning tresholds.\n";
-		exit $ERRORS{'OK'};
+		exit $ERRORS{'UNKNOWN'};
 	}
 }
 
@@ -135,10 +135,10 @@ if ($snmp eq "3") {
 	}
 	if (!$opt_p && !$opt_k) {
 		print "Option -k (--key) or -p (--password) is required for snmpV3\n";
-		exit $ERRORS{'OK'};
+		exit $ERRORS{'UNKNOWN'};
 	} elsif ($opt_p && $opt_k) {
 		print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
-		exit $ERRORS{'OK'};
+		exit $ERRORS{'UNKNOWN'};
 	}
 }
 
