@@ -318,6 +318,24 @@ if ($opt_64bits) {
 
 if ($opt_s) {
     if (!-e $cacheFile) {
+        $result = $session->get_table(Baseoid => $OID_DESC);
+        if (defined($result)) {
+            unless (open(FILE,">".$cacheFile)){
+                print "Check mod for temporary file : ".$cacheFile."...\n";
+                exit $ERRORS{"UNKNOWN"};
+            }
+            my $currentTime = time();
+            print FILE $currentTime."\n";
+            foreach my $key (oid_lex_sort(keys %$result)) {
+                my @oid_list = split (/\./,$key);
+                my $interfaceIndex = pop (@oid_list);
+                print FILE $interfaceIndex.";".$result->{$key}."\n";
+            }
+            close(FILE);
+        }
+    }
+    
+    if (!-e $cacheFile) {
         printf("ERROR: Could not open " . $cacheFile);        
         exit $ERRORS{'UNKNOWN'};
     }
