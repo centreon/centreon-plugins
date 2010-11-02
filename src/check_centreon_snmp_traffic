@@ -560,7 +560,7 @@ if (($in_usage > $critical) or ($out_usage > $critical)){
 my $warningBit = $warning * $speed_card / 100;
 my $criticalBit = $critical * $speed_card / 100;
 
-printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) - ", $in_traffic, $out_traffic);
+printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) ", $in_traffic, $out_traffic);
 if ($opt_S) {
  	printf(" - Link Speed : %d", $speed_card);
 }
