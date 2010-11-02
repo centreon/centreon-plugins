@@ -61,14 +61,13 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(get_parameters);
 our @EXPORT = @EXPORT_OK;
 
-my $params_file = "centreon.conf";
+my $params_file = "@NAGIOS_PLUGINS@/centreon.conf";
 my @ds = ("a","b","c","d","e","f","g","h","i","j","k","l");
 
 ###############################################################################
 #  Get all parameters from the ini file
 ###############################################################################
 sub get_parameters	{
-	$params_file = "@NAGIOS_PLUGINS@/$params_file";
 	unless (-e $params_file)	{
 		print "Unknown - In centreon.pm :: $params_file :: $!\n";
         exit $ERRORS{'UNKNOWN'};
