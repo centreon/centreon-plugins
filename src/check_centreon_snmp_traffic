@@ -334,7 +334,7 @@ if ($opt_s) {
 					printf("ERROR: Interface Speed Request : %s", $session->error);
 					exit $ERRORS{'UNKNOWN'};
 				}
-				print " :: speed ".$link_speed->{$OID_SPEED_BASE.".".$index}."\n";
+				print " :: speed ".$link_speed->{$OID_SPEED.".".$index}."\n";
 			} else {
 				print "\n";
 			}
