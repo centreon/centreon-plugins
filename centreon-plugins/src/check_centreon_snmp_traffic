@@ -356,7 +356,7 @@ if ($opt_s) {
 					exit $ERRORS{'UNKNOWN'};
 				}
 				my $unit = "bit/s";
-				my speed = $link_speed->{$OID_SPEED_BASE.".".$index};
+				my $speed = $link_speed->{$OID_SPEED_BASE.".".$index};
 				print " :: speed ".$speed." ".$unit."\n";
 			} else {
 				print "\n";
