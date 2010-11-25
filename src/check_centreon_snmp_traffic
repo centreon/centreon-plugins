@@ -254,6 +254,11 @@ if ($mustCreateFile) {
 	        print FILE $interfaceIndex.";".$result->{$key}."\n";
 	    }
 	    close(FILE);
+    } else {
+        if (!$result) {
+           printf("ERROR: Cannot get SNMP info : %s", $session->error);
+           exit $ERRORS{'UNKNOWN'};
+        }
     }
 }
 
