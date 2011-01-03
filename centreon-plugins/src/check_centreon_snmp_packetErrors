@@ -173,7 +173,7 @@ if (!defined($if_description)) {
     exit $ERRORS{'UNKNOWN'};
 }
 foreach my $desc (oid_lex_sort(keys %$if_description)) {
-    $desc_tab[scalar(@desc_tab)] = $if_description->{$desc};
+    $desc_tab[scalar(@desc_tab)] = $if_description->{$desc} if ($if_description->{$desc} !~ m/StackSub/i);
 }
 
 
