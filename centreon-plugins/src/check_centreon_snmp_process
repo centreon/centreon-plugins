@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 ################################################################################
-# Copyright 2004-2010 MERETHIS
+# Copyright 2004-2011 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -233,7 +233,7 @@ sub print_usage () {
 }
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2010 Centreon        #\n";
+    print "#    Copyright (c) 2004-2011 Centreon        #\n";
     print "#    Bugs to http://forge.centreon.com/      #\n";
     print "##############################################\n";
     print_usage();

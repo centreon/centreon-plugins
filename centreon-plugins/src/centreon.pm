@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2004-2010 MERETHIS
+# Copyright 2004-2011 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -54,7 +54,7 @@ if (eval "require Config::IniFiles" ) {
     exit $ERRORS{'UNKNOWN'};
 }
 
-# On défini une version pour les vérifications
+# On dï¿½fini une version pour les vï¿½rifications
 #$VERSION = do { my @r = (q$Revision: XXX $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 our @ISA = qw(Exporter);
