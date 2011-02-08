@@ -288,7 +288,7 @@ if ($opt_n) {
     }
 
     my $expr = "";
-    if ($opt_d =~ m/^[A-Za-z]:/) {
+    if ($opt_d =~ m/^[A-Za-z]:/i) {
 		$opt_d =~ s/\\/\\\\/g;
 		$expr = "^$opt_d";
     }elsif ($opt_d =~ m/^\//) {
@@ -301,12 +301,15 @@ if ($opt_n) {
     $countLine = 0;
     while ($row = <FILE>){
         if ($countLine) {
-            my @resLine = split(/\;/, $row);            
+            my @resLine = split(/\;/, $row);
             if ($resLine[1] =~ m/$expr/) {    	   	 	
     	   	 	$partition = $resLine[0];
             }
         }
         $countLine++;
+    }
+    if ($countLine == 1) {
+    	unlink($cacheFile);
     }
     close(FILE);    
 }
