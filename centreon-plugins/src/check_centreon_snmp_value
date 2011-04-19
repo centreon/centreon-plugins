@@ -38,175 +38,394 @@
 #
 # Script init
 #
+# check_value -f "The cpu is used %s %d" -m CPU -u "%"
 
 use strict;
-use Net::SNMP qw(:snmp);
-use FindBin;
-use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
-use utils qw($TIMEOUT %ERRORS &print_revision &support);
-
-use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_h $opt_V $opt_H $opt_C $opt_v $opt_o $opt_c $opt_w $opt_t $opt_p $opt_k $opt_u);
 
-$PROGNAME = $0;
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
+
+my $PROGNAME = "$0";
+
+my %OPTION = ('host' => undef, 'help' => undef, 'warning' => '5', 'critical' => '10', 
+			'snmpversion' => 1, 'display' => 0, 'snmpcomm' => 'public',	'min' => 0, 'max' => 0,
+			'host' => undef,'username' => undef, 'authpassword' => undef, 'authprotocol' => undef,
+			'privprotocol' => undef , 'privpassword' => undef, 'snmpport' => 161, 'type' => 'GAUGE', 'base' => 1000,
+			'output' => 'The value is %f', 'metric' =>'value', 'unit' => 'nounit', 'divide' => 1);
+my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
+my $prefix = "";
+
 sub print_help ();
 sub print_usage ();
 
 Getopt::Long::Configure('bundling');
 GetOptions
-    ("h"   => \$opt_h, "help"         => \$opt_h,
-     "u=s" => \$opt_u, "username=s"   => \$opt_u,
-     "p=s" => \$opt_p, "password=s"   => \$opt_p,
-     "k=s" => \$opt_k, "key=s"        => \$opt_k,
-     "V"   => \$opt_V, "version"      => \$opt_V,
-     "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
-     "C=s" => \$opt_C, "community=s"  => \$opt_C,
-     "o=s" => \$opt_o, "oid=s"        => \$opt_o,
-     "t=s" => \$opt_t, "type=s"       => \$opt_t,
-     "w=s" => \$opt_w, "warning=s"    => \$opt_w,
-     "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-     "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
+    ("h"   		=> \$OPTION{'help'}, 			"help"				=> \$OPTION{'help'},
+	 "P=s" 		=> \$OPTION{'snmpport'}, 		"snmpport=s" 		=> \$OPTION{'snmpport'},
+	 "V"   		=> \$OPTION{'pluginversion'},	"version"			=> \$OPTION{'pluginversion'},
+     "u=s"   	=> \$OPTION{'username'}, 		"username=s"   		=> \$OPTION{'username'},
+	 "a=s" 		=> \$OPTION{'authprotocol'}, 	"authprotocol=s"  	=> \$OPTION{'authprotocol'}, 
+	 "A=s"   	=> \$OPTION{'authpassword'}, 	"authpassword=s"    => \$OPTION{'authpassword'},
+	 "x=s" 		=> \$OPTION{'privprotocol'}, 	"privprotocol=s"   	=> \$OPTION{'privprotocol'}, 
+	 "X=s" 		=> \$OPTION{'privpassword'}, 	"privpassword=s"   	=> \$OPTION{'privpassword'}, 
+     "v=s" 		=> \$OPTION{'snmpversion'}, 	"snmp=s"  			=> \$OPTION{'snmpversion'},
+     "C=s" 		=> \$OPTION{'snmpcomm'}, 		"community=s"  		=> \$OPTION{'snmpcomm'},
+     "w=s" 		=> \$OPTION{'warning'}, 		"warning=s"  		=> \$OPTION{'warning'},
+     "c=s" 		=> \$OPTION{'critical'}, 		"critical=s"  		=> \$OPTION{'critical'},
+     "H=s" 		=> \$OPTION{'host'}, 			"host=s"   			=> \$OPTION{'host'}, 
+	 "W=s" 		=> \$OPTION{'warning_table'}, 	"warning_table=s"   => \$OPTION{'warning_table'}, 
+	 "T=s" 		=> \$OPTION{'critical_table'}, 	"critical_table=s"  => \$OPTION{'critical_table'}, 
+	 "O=s" 		=> \$OPTION{'ok_table'}, 		"ok_table=s" 		=> \$OPTION{'ok_table'}, 
+	 "o=s" 		=> \$OPTION{'oid'}, 			"oid=s"   			=> \$OPTION{'oid'},
+	 "t=s" 		=> \$OPTION{'type'}, 			"type=s"   			=> \$OPTION{'type'}, 
+	 "d=s" 		=> \$OPTION{'divide'}, 			"divide=s"   		=> \$OPTION{'divide'}, 
+	 "U=s" 		=> \$OPTION{'unit'}, 			"unit=s"   		=> \$OPTION{'unit'},
+	 "max=s"   	=> \$OPTION{'max'},
+	 "convert"   	=> \$OPTION{'convert'},
+	 "debug" 	=> \$OPTION{'debug'}, 
+	 "min=s" 	=> \$OPTION{'min'}, 
+	 "base=s" 	=> \$OPTION{'base'}, 
+	 "64-bits=s"   	=> \$OPTION{'64-bits'},
+	 "f=s" 		=> \$OPTION{'output'}, 			"output=s"   		=> \$OPTION{'output'},		
+	 "m=s" 		=> \$OPTION{'metric'}, 			"metric=s"   		=> \$OPTION{'metric'}
+);
+ 	 
+# For counter metric type
+my $metricsname = undef;
+my $unit = undef;
+my $output = undef;
+my $min = undef;
+my $max = undef;
+my $cache = undef;
+my $divide = undef;
 
-if ($opt_V) {
-    print_revision($PROGNAME,'$Revision: 1.0');
-    exit $ERRORS{'OK'};
+# Used for counter type metric
+my $previousValue = undef;
+my $previousTime = undef;
+my $currentTime = time();
+my $currentValue =  undef;
+
+# Table used when personnal threshold are set
+my @critical_table = ();
+my @warning_table = ();
+my @ok_table = ();
+
+if ($OPTION{'critical_table'}){
+	@critical_table = split(/\,/, $OPTION{'critical_table'});
 }
-
-if ($opt_h) {
+if ($OPTION{'warning_table'}){
+	@warning_table = split(/\,/, $OPTION{'warning_table'});
+}
+if ($OPTION{'ok_table'}){
+	@ok_table = split(/\,/, $OPTION{'ok_table'});
+}
+if (defined($OPTION{'pluginversion'})) {
+    print("$PROGNAME  1.1");
+    exit $ERRORS{'UNKNOWN'};
+}
+if (defined($OPTION{'help'})) {
     print_help();
-    exit $ERRORS{'OK'};
+    exit $ERRORS{'UNKNOWN'};
+}
+if (!$OPTION{'host'}) {
+	print_usage();
+	exit $ERRORS{'UNKNOWN'};
+}
+if (!$OPTION{'oid'}) {
+	print_usage();
+	exit $ERRORS{'UNKNOWN'};
 }
 
-$opt_H = shift unless ($opt_H);
-(print_usage() && exit $ERRORS{'OK'}) unless ($opt_H);
+my $cacheFile = "/var/lib/centreon/centplugins/snmp_value".$OPTION{'host'}."-".$OPTION{'oid'};
 
-my $snmp = "1";
-if ($opt_v && $opt_v =~ /^[0-9]$/) {
-$snmp = $opt_v;
+# Store option values in simpler variables
+if ($OPTION{'divide'} ne "" && $OPTION{'metric'} ne "" &&  $OPTION{'unit'} ne "" && $OPTION{'output'} ne "" && $OPTION{'min'} ne "" && $OPTION{'max'} ne "") {
+	$metricsname = $OPTION{'metric'};
+	$unit = $OPTION{'unit'};
+	
+	# Output Verification?
+	$output = $OPTION{'output'};
+	
+	# check parameter format
+	if ($OPTION{'base'} !~ /^[0-9]*\.?[0-9]*$/) {
+		print(" Base option should be a numerical \n");
+		exit $ERRORS{'UNKNOWN'};
+	}
+	
+	if ($OPTION{'min'} !~ /^[0-9]*\.?[0-9]*$/) {
+		print(" Min option should be a numerical \n");
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if ($OPTION{'max'} !~ /^[0-9]*\.?[0-9]*$/) {
+		print(" Max option should be a numerical \n");
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if ($OPTION{'divide'} !~ /^[0-9]*\.?[0-9]*$/) {
+		print(" -d option should be a numerical \n");
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if ($OPTION{'warning'} !~ /^[0-9]*\.?[0-9]*$/ || $OPTION{'critical'} !~ /^[0-9]*\.?[0-9]*$/) {
+		print(" Option warning &/or critical should be numerical \n");
+		exit $ERRORS{'UNKNOWN'};
+	}
+	
+	$min = $OPTION{'min'};
+	$max = $OPTION{'max'};
+	$divide = $OPTION{'divide'};
+	
+} else {
+	print("One or more arguments are not set \n");
+    exit $ERRORS{'UNKNOWN'};
 }
 
-if ($snmp eq "3") {
-if (!$opt_u) {
-print "Option -u (--username) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-if (!$opt_p && !$opt_k) {
-print "Option -k (--key) or -p (--password) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}elsif ($opt_p && $opt_k) {
-print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-}
+# Check if version passed in option exists
+$OPTION{'snmpversion'} =~ s/v//g;
+exit $ERRORS{'UNKNOWN'} if(!Centreon::SNMP::Utils->checkVersion($OPTION{'snmpversion'}));
 
-($opt_C) || ($opt_C = shift) || ($opt_C = "public");
+# Check which connection mode is used
+my $sessionType = 1;
+if ($OPTION{'snmpversion'} =~ /3/) {
+
+	$sessionType = Centreon::SNMP::Utils->checkSessiontype($OPTION{'username'},$OPTION{'authprotocol'},$OPTION{'authpassword'},$OPTION{'privprotocol'},$OPTION{'privpassword'});
+	exit $ERRORS{'UNKNOWN'} if(!$sessionType);
+
+}
 
 my $DS_type = "GAUGE";
-($opt_t) || ($opt_t = shift) || ($opt_t = "GAUGE");
-$DS_type = $1 if ($opt_t =~ /(GAUGE)/ || $opt_t =~ /(COUNTER)/);
+$DS_type = $1 if ($OPTION{'type'} =~ /(GAUGE)/ || $OPTION{'type'} =~ /(COUNTER)/);
 
-if (!$opt_c || !$opt_w) {
-    print "You must specify -c and -w options\n";
-    exit $ERRORS{'OK'};
-}
+my $critical = $1 if ($OPTION{'critical'} =~ /([0-9]+)/);
+my $warning = $1 if ($OPTION{'warning'} =~ /([0-9]+)/);
 
-($opt_c) || ($opt_c = shift);
-my $critical = $1 if ($opt_c =~ /([0-9]+)/);
-
-($opt_w) || ($opt_w = shift);
-my $warning = $1 if ($opt_w =~ /([0-9]+)/);
-if ($critical <= $warning){
+if ($critical < $warning){
     print "(--critical) must be superior to (--warning)";
     print_usage();
-    exit $ERRORS{'OK'};
+    exit $ERRORS{'UNKNOWN'};
 }
 
-if (!$opt_o) {
+if (!$OPTION{'oid'}) {
     print "Option -o needed.\n";
-    exit $ERRORS{'OK'};
-}elsif (!($opt_o =~ /^[0-9\.]+$/)) {
+    exit $ERRORS{'UNKNOWN'};
+} elsif (!($OPTION{'oid'} =~ /^[0-9\.]+$/)) {
     print "Wrong OID format\n";
-    exit $ERRORS{'OK'};
-}
-
-my $name = $0;
-$name =~ s/\.pl.*//g;
-my $day = 0;
-
-#===  create a SNMP session ====
-
-my ($session, $error);
-if ($snmp eq "1" || $snmp eq "2") {
-($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
     exit $ERRORS{'UNKNOWN'};
 }
-}elsif ($opt_k) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
-}elsif ($opt_p) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p);
-if (!defined($session)) {
-    print("UNKNOWN: SNMP Session : $error\n");
-    exit $ERRORS{'UNKNOWN'};
-}
+
+# Plugin snmp connection
+my ($session);
+if (!($session = Centreon::SNMP::Utils->connection($sessionType,\%OPTION))) {
+	exit $ERRORS{'UNKNOWN'};
 }
 
-my $result = $session->get_request(-varbindlist => [$opt_o]);
+# Get the value returned by OID
+my $result = $session->get_request(-varbindlist => [$OPTION{'oid'}]);
+
 if (!defined($result)) {
     printf("UNKNOWN: %s.\n", $session->error);
     $session->close;
     exit $ERRORS{'UNKNOWN'};
 }
+$currentValue =  $result->{$OPTION{'oid'}};
 
-my $return_result =  $result->{$opt_o};
+# Check if value returned is a number and then save it
+if(!defined($currentValue) ||  $currentValue =~ /noSuch/){
+	print("No instance on OID  $OPTION{'oid'} \n ");
+	exit $ERRORS{'UNKNOWN'};
+}
+if (defined($currentValue)){
+	if ($currentValue !~ /^[-+]?[0-9]*\.?[0-9]*/) {
+			print "Snmp returned value isn't numeric (signed/float values included) .\n";
+			exit $ERRORS{'UNKNOWN'};
+	}
+}
 
-#===  Plugin return code  ====
+# If metric type = counter, use the cache file to get the last value (or create cache file)
+if ($DS_type eq 'COUNTER') {
 
-if (defined($return_result)){
-    if ($return_result !~ /^[0-9]+$/) {
-	print "Snmp return value isn't numeric.\n";
-	exit $ERRORS{'OK'};
-    }
-    if ($opt_w && $opt_c && $return_result < $opt_w){
-    	print "Ok value : " . $return_result . "|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";
-	exit $ERRORS{'OK'};
-    } elsif ($opt_w && $opt_c && $return_result >= $opt_w && $return_result < $opt_c){
-	print "Warning value : " . $return_result . "|value=$return_result;".$opt_w.";".$opt_c.";;\n";
-	exit $ERRORS{'WARNING'};
-    } elsif ($opt_w && $opt_c && $return_result >= $opt_c){
-    	print "Critical value : " . $return_result."|value=".$return_result.";".$opt_w.";".$opt_c.";;\n";
-	exit $ERRORS{'CRITICAL'};
+	#If file exist
+
+	if (-e $cacheFile){
+		my @cache;
+		open(FILE,"<".$cacheFile);
+		my $countLine = 0;
+		my $row = <FILE>;
+		@cache = split(/\;/, $row);
+		$previousTime = $cache[0];	
+		$previousValue = $cache[1];
+		close(FILE);
+		# Set new values in cache file
+		open(FILE,">".$cacheFile);
+		print FILE $currentTime.";".$currentValue;
+		close(FILE);
+		
+	} else {
+	 	#If the file doesnt exist, a new file is created and values are inserted 
+		unless (open(FILE,">".$cacheFile)){
+			print "Check temporary file's rights : ".$cacheFile."...\n";
+			exit $ERRORS{"UNKNOWN"};
+		}
+		my $currentTime = time();
+		print FILE $currentTime.";".$currentValue;
+		print("Buffer in creation . . . please wait \n");
+		exit $ERRORS{"OK"};
+		close(FILE);
+	}
+}
+
+
+#===  Plugin return  ====
+
+if (defined($currentValue)){
+	my $returnValue = $currentValue;
+	my $status = "UNKNOWN";
+	my $state= "unknownState";
+	$returnValue = 7 if($OPTION{'debug'});
+	
+	
+	###############################################################
+	# If personnal tresholds are set for warning and / or critical #
+	###############################################################
+	if ($OPTION{'warning_table'} || $OPTION{'critical_table'} || $OPTION{'ok_table'}) {
+	
+		print "Mode personal threshold ON \n" if($OPTION{'debug'});
+		
+		if ($OPTION{'ok_table'}) {
+			my $max_ok= scalar(@ok_table);
+			my $i = 0;
+			
+			while ($i < $max_ok) {
+				print "OK[$i]:  $ok_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+				if($ok_table[$i] == $returnValue) {
+					$status =  "OK";
+					$state = $ok_table[$i+1];
+				}
+				$i = $i+2;
+			}
+		}
+		if ($OPTION{'warning_table'}){
+			my $max_warn= scalar(@warning_table);
+			my $i = 0;
+		
+			while ($i < $max_warn) {
+				print "Warning[$i]:  $warning_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+				if($warning_table[$i] == $returnValue) {
+					$status =  "WARNING";
+					$state = $warning_table[$i+1];
+				}
+				$i = $i+2;
+			}
+		}
+		if ($OPTION{'critical_table'}) {
+				my $i = 0;
+				my $max_crit= scalar(@critical_table);
+				while ($i < $max_crit) {
+					print "Critical[$i] = $critical_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+					if ($critical_table[$i] == $returnValue) {
+						$status =  "CRITICAL";
+						$state = $warning_table[$i+1];
+					}
+					$i = $i +2;
+				}
+
+		}
+		print(" Statut = $status \n ") if($OPTION{'debug'});
+		printf($output."\n",$state,$returnValue);
+		exit $ERRORS{$status};	
+	}
+
+	if ($DS_type eq 'COUNTER') {
+		 #calculate value for counter metric type
+		# if counter has been reseted between 2 checks 
+		if ($currentValue - $previousValue < 0) {
+			if (defined($OPTION{'64-bits'})) {
+				$returnValue = ((18446744073709551616) - $previousValue + $currentValue)/($currentTime - $previousTime);
+			} else {
+				$returnValue = ((4294967296) - $previousValue + $currentValue) / ($currentTime - $previousTime);
+			}
+		} else {
+			$returnValue = ($currentValue - $previousValue) / ($currentTime - $previousTime);
+		}
+	}
+	
+	my $i =0;
+	my $perfdata = $returnValue;
+	while ($returnValue > $OPTION{'base'}) {
+		$returnValue = $returnValue / $OPTION{'base'};
+		$i++;
+	}
+	
+	if($OPTION{'base'} == 1024){
+		$prefix = "ki" if($i == 1);
+		$prefix = "Mi" if($i == 2);
+		$prefix = "Gi" if($i == 3);
+		$prefix = "Ti" if($i == 4);
+	}
+		if($OPTION{'base'} == 1000){
+		$prefix = "k" if($i == 1);
+		$prefix = "M" if($i == 2);
+		$prefix = "G" if($i == 3);
+		$prefix = "T" if($i == 4);
+	}
+	if(defined($OPTION{'convert'})){
+		$warning = ($OPTION{'warning'} * $max)/100;
+		$critical = ($OPTION{'critical'} * $max)/100;
+	} else {
+		$warning = $OPTION{'warning'};
+		$critical = $OPTION{'critical'};
+	}
+	
+
+    if ($perfdata < $warning) {
+    	printf("OK :".$output." ".$prefix." ".$unit."|".$metricsname."=".$perfdata.$unit.";".$warning.";".$critical.";".$min.";".$max."\n",$returnValue);
+		$status = "OK";
+		exit $ERRORS{$status};
+    } elsif ($perfdata >= $warning && $perfdata < $critical) {
+		printf("WARNING :".$output." ".$prefix.$unit."|".$metricsname."=".$perfdata.$unit.";".$warning.";".$critical.";".$min.";".$max."\n",$returnValue);
+		$status = "WARNING";
+		exit $ERRORS{$status};
+    } elsif ($perfdata >= $critical) {
+    	printf("CRITICAL :".$output." ".$prefix.$unit."|".$metricsname."=".$perfdata.$unit.";".$warning.";".$critical.";".$min.";".$max."\n",$returnValue);
+		$status = "CRITICAL";
+		exit $ERRORS{$status};
     }
 } else {
     print "CRITICAL Host unavailable\n";
     exit $ERRORS{'CRITICAL'};
 }
 
+# Define Common functions
 
 sub print_usage () {
     print "Usage:";
     print "$PROGNAME\n";
-    print "   -H (--hostname)   Hostname to query - (required)\n";
-    print "   -C (--community)  SNMP read community (defaults to public,\n";
-    print "                     used with SNMP v1 and v2c\n";
-    print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
-    print "                        2 for SNMP v2c\n";
-    print "   -t (--type)       Data Source Type (GAUGE or COUNTER) (GAUGE by default)\n";
-    print "   -o (--oid)        OID to check\n";
-    print "   -k (--key)        snmp V3 key\n";
-    print "   -p (--password)   snmp V3 password\n";
-    print "   -u (--username)   snmp v3 username \n";
-    print "   -w (--warning)    Warning level\n";
-    print "   -c (--critical)   Critical level\n";
-    print "   -V (--version)    Plugin version\n";
-    print "   -h (--help)       usage help\n";
+    print "   -H (--hostname)   \t Hostname to query - (required)\n";
+    print "   -C (--community)  \t SNMP read community (defaults to public,\n";
+    print "               \t \t used with SNMP v1 and v2c\n";
+    print "   -v (--snmp_version) \t 1 for SNMP v1 (default)\n";
+    print "                       \t 2 for SNMP v2c\n";
+    print "   -t (--type)       \t Data Source Type (GAUGE or COUNTER) (GAUGE by default)\n";
+    print "   -o (--oid)        \t OID to check\n";
+   	print "   -u (--username)     \t snmp v3 username \n";
+	print "   -a (--authprotocol) \t protocol MD5/SHA1  (v3)\n";
+	print "   -A (--authpassword) \t password (v3) \n";
+	print "   -x (--privprotocol) \t encryption system (DES/AES)(v3) \n";
+	print "   -X (--privpassword)\t passphrase (v3) \n";
+    print "   -w (--warning)    \t Warning level \n";
+    print "   -c (--critical) \t Critical level \n";
+	print "   -W (--wtreshold)    \t Personal warning threshold : -W 1,normal,... \n";
+	print "   -T (--ctreshold)    \t Personal critical threshold : -T 3,notResponding,4,NotFunctionning,... \n";
+	print "   --convert \t \t If critical and warning have to be converted regarding to the max value \n";
+	print "   -m (--metric)   \t Metric Name\n";
+	print "   --64-bits \t \t  If counter type to use = 64-bits \n";
+	print "   -U (--unit)   \t Metric's unit ( /!\\ for % write %% ) \n";
+	print "   -f (--output)  \t Output format (ex : -f \"My metric's percentage value = %f %%\" \n";
+	print "   --min  \t \t min value for the metric (default = 0) \n";
+	print "   --max  \t \t max value for the metric (default = 0)\n";
+	print "   --base  \t \t will divide the returned number by base until it's inferior to it. \n";
+    print "            \t \t ex: 2000000 in base 1000 will be transformed to 2M (default 1000) \n";
+    print "   -O (--ctreshold)    \t Personal critical threshold : -O okstate1,okstate2... \n";
+	print "   -V (--version)  \t Plugin version\n";
+    print "   -h (--help)      \t usage help\n";
 }
 
 sub print_help () {
