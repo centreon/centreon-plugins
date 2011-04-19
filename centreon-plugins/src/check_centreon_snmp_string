@@ -1,0 +1,263 @@
+#! /usr/bin/perl -w
+################################################################################
+# Copyright 2004-2011 MERETHIS
+# Centreon is developped by : Julien Mathis and Romain Le Merlus under
+# GPL Licence 2.0.
+# 
+# This program is free software; you can redistribute it and/or modify it under 
+# the terms of the GNU General Public License as published by the Free Software 
+# Foundation ; either version 2 of the License.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along with 
+# this program; if not, see <http://www.gnu.org/licenses>.
+# 
+# Linking this program statically or dynamically with other modules is making a 
+# combined work based on this program. Thus, the terms and conditions of the GNU 
+# General Public License cover the whole combination.
+# 
+# As a special exception, the copyright holders of this program give MERETHIS 
+# permission to link this program with independent modules to produce an executable, 
+# regardless of the license terms of these independent modules, and to copy and 
+# distribute the resulting executable under terms of MERETHIS choice, provided that 
+# MERETHIS also meet, for each linked independent module, the terms  and conditions 
+# of the license of that module. An independent module is a module which is not 
+# derived from this program. If you modify this program, you may extend this 
+# exception to your version of the program, but you are not obliged to do so. If you
+# do not wish to do so, delete this exception statement from your version.
+# 
+# For more information : contact@centreon.com
+# 
+# SVN : $URL: http://svn.centreon.com/trunk/plugins-2.x/src/check_centreon_snmp_value $
+# SVN : $Id: check_centreon_snmp_value 11631 2011-02-08 17:02:51Z shotamchay $
+#
+####################################################################################
+#
+# Script init
+#
+# check_value -f "The cpu is used %s %d" -m CPU -u "%"
+
+use strict;
+use Getopt::Long;
+
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
+
+my $PROGNAME = "$0";
+
+my %OPTION = ('host' => undef, 'help' => undef, 
+			'snmpversion' => 1, 'snmpcomm' => 'public',	'min' => 0, 'max' => 0,
+			'host' => undef,'username' => undef, 'authpassword' => undef, 'authprotocol' => undef,
+			'privprotocol' => undef , 'privpassword' => undef, 'snmpport' => 161,
+			'output' => 'The value is %f');
+my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
+my $prefix = "";
+
+sub print_help ();
+sub print_usage ();
+
+Getopt::Long::Configure('bundling');
+GetOptions
+    ("h"   		=> \$OPTION{'help'}, 			"help"				=> \$OPTION{'help'},
+	 "P=s" 		=> \$OPTION{'snmpport'}, 		"snmpport=s" 		=> \$OPTION{'snmpport'},
+	 "V"   		=> \$OPTION{'pluginversion'},	"version"			=> \$OPTION{'pluginversion'},
+     "u=s"   	=> \$OPTION{'username'}, 		"username=s"   		=> \$OPTION{'username'},
+	 "a=s" 		=> \$OPTION{'authprotocol'}, 	"authprotocol=s"  	=> \$OPTION{'authprotocol'}, 
+	 "A=s"   	=> \$OPTION{'authpassword'}, 	"authpassword=s"    => \$OPTION{'authpassword'},
+	 "x=s" 		=> \$OPTION{'privprotocol'}, 	"privprotocol=s"   	=> \$OPTION{'privprotocol'}, 
+	 "X=s" 		=> \$OPTION{'privpassword'}, 	"privpassword=s"   	=> \$OPTION{'privpassword'}, 
+     "v=s" 		=> \$OPTION{'snmpversion'}, 	"snmp=s"  			=> \$OPTION{'snmpversion'},
+     "C=s" 		=> \$OPTION{'snmpcomm'}, 		"community=s"  		=> \$OPTION{'snmpcomm'},
+     "H=s" 		=> \$OPTION{'host'}, 			"host=s"   			=> \$OPTION{'host'}, 
+	 "W=s" 		=> \$OPTION{'warning_table'}, 	"warning_table=s"   => \$OPTION{'warning_table'}, 
+	 "T=s" 		=> \$OPTION{'critical_table'}, 	"critical_table=s"  => \$OPTION{'critical_table'}, 
+	 "O=s" 		=> \$OPTION{'ok_table'}, 		"ok_table=s" 		=> \$OPTION{'ok_table'}, 
+	 "o=s" 		=> \$OPTION{'oid'}, 			"oid=s"   			=> \$OPTION{'oid'},
+	 "debug" 	=> \$OPTION{'debug'}, 
+	 "f=s" 		=> \$OPTION{'output'}, 			"output=s"   		=> \$OPTION{'output'},		
+	 "m=s" 		=> \$OPTION{'metric'}, 			"metric=s"   		=> \$OPTION{'metric'});
+ 	 
+
+my $metricsname = undef;
+my $unit = undef;
+my $output = undef;
+
+
+# Table used when personnal threshold are set
+my @critical_table = ();
+my @warning_table = ();
+my @ok_table = ();
+
+if ($OPTION{'critical_table'}) {
+	@critical_table = split(/\,/, $OPTION{'critical_table'});
+}
+if ($OPTION{'warning_table'}) {
+	@warning_table = split(/\,/, $OPTION{'warning_table'});
+}
+if ($OPTION{'ok_table'}) {
+	@ok_table = split(/\,/, $OPTION{'ok_table'});
+}
+if (defined($OPTION{'pluginversion'})) {
+    print("$PROGNAME  0.1");
+    exit $ERRORS{'UNKNOWN'};
+}
+if (defined($OPTION{'help'})) {
+    print_help();
+    exit $ERRORS{'UNKNOWN'};
+}
+if (!$OPTION{'host'}) {
+	print_usage();
+	exit $ERRORS{'UNKNOWN'};
+}
+if (!$OPTION{'oid'}) {
+	print_usage();
+	exit $ERRORS{'UNKNOWN'};
+}
+
+# Store option values in simpler variables
+if ($OPTION{'output'} ne "" ){
+	#Output Verification?
+	$output = $OPTION{'output'};
+} else{
+	print("Output is not correctly set \n");
+    exit $ERRORS{'UNKNOWN'};
+}
+
+# Check if version passed in option exists
+$OPTION{'snmpversion'} =~ s/v//g;
+exit $ERRORS{'UNKNOWN'} if(!Centreon::SNMP::Utils->checkVersion($OPTION{'snmpversion'}));
+
+# Check which connection mode is used
+my $sessionType = 1;
+if ($OPTION{'snmpversion'} =~ /3/) {
+	$sessionType = Centreon::SNMP::Utils->checkSessiontype($OPTION{'username'},$OPTION{'authprotocol'},$OPTION{'authpassword'},$OPTION{'privprotocol'},$OPTION{'privpassword'});
+	exit $ERRORS{'UNKNOWN'} if(!$sessionType);
+}
+
+if (!$OPTION{'oid'}) {
+    print "Option -o needed.\n";
+    exit $ERRORS{'UNKNOWN'};
+} elsif (!($OPTION{'oid'} =~ /^[0-9\.]+$/)) {
+    print "Wrong OID format\n";
+    exit $ERRORS{'UNKNOWN'};
+}
+
+# Plugin snmp connection
+my ($session);
+if (!($session = Centreon::SNMP::Utils->connection($sessionType,\%OPTION))){
+	exit $ERRORS{'UNKNOWN'};
+}
+
+# Get the value returned by OID
+my $result = $session->get_request(-varbindlist => [$OPTION{'oid'}]);
+
+if (!defined($result)) {
+    printf("UNKNOWN: %s.\n", $session->error);
+    $session->close;
+    exit $ERRORS{'UNKNOWN'};
+}
+my $currentValue =  $result->{$OPTION{'oid'}};
+
+# Check if value returned is a number and then save it
+if (!defined($currentValue) ||  $currentValue =~ /noSuch/){
+	print("No instance on OID  $OPTION{'oid'} \n ");
+	exit $ERRORS{'UNKNOWN'};
+}
+
+#===  Plugin return  ====
+
+if (defined($currentValue)){
+	my $returnValue = $currentValue;
+	my $status = "UNKNOWN";
+	my $state= "unknownState";
+	$returnValue = "warningvalue" if($OPTION{'debug'});
+	
+	
+	#################################################################
+	# If personnal thresholds are set for warning and / or critical #
+	#################################################################
+	if ($OPTION{'warning_table'} || $OPTION{'critical_table'} || $OPTION{'ok_table'}) {
+		print "Mode personal threshold ON \n" if($OPTION{'debug'});
+		if ($OPTION{'ok_table'}) {
+			my $max_ok= scalar(@ok_table);
+			my $i = 0;
+			
+			while ($i < $max_ok) {
+				print "OK[$i]:  $ok_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+				if($ok_table[$i] eq $returnValue) {
+					$status =  "OK";
+					$state = $ok_table[$i];
+				}
+				$i++;
+			}
+		}
+		if ($OPTION{'warning_table'}) {
+			my $max_warn= scalar(@warning_table);
+			my $i = 0;
+			
+			while ($i < $max_warn) {
+				print "Warning[$i]:  $warning_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+				if($warning_table[$i] eq $returnValue) {
+					$status =  "WARNING";
+					$state = $warning_table[$i];
+				}
+				$i++;
+			}
+		}
+		if ($OPTION{'critical_table'}){
+				my $i = 0;
+				my $max_crit= scalar(@critical_table);
+				while($i < $max_crit) {	
+					print "Critical[$i] = $critical_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
+					if($critical_table[$i] eq $returnValue) {
+						$status =  "CRITICAL";
+						$state = $warning_table[$i];
+					}
+					$i++;
+				}
+		}
+		print(" Statut = $status \n ") if($OPTION{'debug'});
+		printf($output."\n",$state,$returnValue);
+		exit $ERRORS{$status};	
+	}
+} else {
+    print "CRITICAL Host unavailable\n";
+    exit $ERRORS{'CRITICAL'};
+}
+
+
+sub print_usage () {
+    print "Usage:";
+    print "$PROGNAME\n";
+    print "   -H (--hostname)   \t Hostname to query - (required)\n";
+    print "   -C (--community)  \t SNMP read community (defaults to public,\n";
+    print "               \t \t used with SNMP v1 and v2c\n";
+    print "   -v (--snmp_version) \t 1 for SNMP v1 (default)\n";
+    print "                       \t 2 for SNMP v2c\n";
+    print "   -t (--type)       \t Data Source Type (GAUGE or COUNTER) (GAUGE by default)\n";
+    print "   -o (--oid)        \t OID to check\n";
+   	print "   -u (--username)     \t snmp v3 username \n";
+	print "   -a (--authprotocol) \t protocol MD5/SHA1  (v3)\n";
+	print "   -A (--authpassword) \t password (v3) \n";
+	print "   -x (--privprotocol) \t encryption system (DES/AES)(v3) \n";
+	print "   -X (--privpassword)\t passphrase (v3) \n";
+	print "   -W (--wtreshold)    \t Personal warning threshold : -W warningstate... \n";
+	print "   -T (--ctreshold)    \t Personal critical threshold : -T criticalstate1,criticalstate2... \n";
+	print "   -O (--ctreshold)    \t Personal critical threshold : -O okstate1,okstate2... \n";
+	print "   -m (--metric)   \t Metric Name\n";
+	print "   -U (--unit)   \t Metric's unit ( /!\\ for % write %% ) \n";
+	print "   -f (--output)  \t Output format (ex : -f \"My metric's percentage value = %f %%\" \n";
+	print "   -V (--version)  \t Plugin version\n";
+    print "   -h (--help)      \t usage help\n";
+}
+
+sub print_help () {
+    print "##############################################\n";
+    print "#    Copyright (c) 2004-2011 Centreon        #\n";
+    print "#    Bugs to http://forge.centreon.com/      #\n";
+    print "##############################################\n";
+    print_usage();
+    print "\n";
+}
