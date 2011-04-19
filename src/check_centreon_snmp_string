@@ -31,8 +31,8 @@
 # 
 # For more information : contact@centreon.com
 # 
-# SVN : $URL: http://svn.centreon.com/trunk/plugins-2.x/src/check_centreon_snmp_value $
-# SVN : $Id: check_centreon_snmp_value 11631 2011-02-08 17:02:51Z shotamchay $
+# SVN : $URL$
+# SVN : $Id$
 #
 ####################################################################################
 #
