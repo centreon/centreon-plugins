@@ -322,7 +322,7 @@ if (defined($currentValue)){
 					print "Critical[$i] = $critical_table[$i] / returnValue = $returnValue \n" if($OPTION{'debug'});
 					if ($critical_table[$i] == $returnValue) {
 						$status =  "CRITICAL";
-						$state = $warning_table[$i+1];
+						$state = $critical_table[$i+1];
 					}
 					$i = $i +2;
 				}
