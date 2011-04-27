@@ -136,7 +136,7 @@ if (!$OPTION{'oid'}) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-my $cacheFile = "/var/lib/centreon/centplugins/snmp_value".$OPTION{'host'}."-".$OPTION{'oid'};
+my $cacheFile = "@CENTREON_VARLIB@/centplugins/snmp_value".$OPTION{'host'}."-".$OPTION{'oid'};
 
 # Store option values in simpler variables
 if ($OPTION{'divide'} ne "" && $OPTION{'metric'} ne "" &&  $OPTION{'unit'} ne "" && $OPTION{'output'} ne "" && $OPTION{'min'} ne "" && $OPTION{'max'} ne "") {
