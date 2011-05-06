@@ -143,7 +143,7 @@ if (!$OPTION{'host'}) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-my $cacheFile = "@CENTREON_VARLIB@/centplugins/snmp_value_table".$OPTION{'host'}."-".$OPTION{'oid'};
+my $cacheFile = "@CENTPLUGINS_TMP@/centplugins/snmp_value_table".$OPTION{'host'}."-".$OPTION{'oid'};
 
 #Store option values in simpler variables
 if($OPTION{'divide'} ne "" && $OPTION{'metric'} ne "" &&  $OPTION{'unit'} ne "" && $OPTION{'output'} ne "" && $OPTION{'min'} ne "" && $OPTION{'max'} ne "" ){
