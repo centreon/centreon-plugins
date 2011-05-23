@@ -194,7 +194,7 @@ $status = "WARNING" if ($warning[0] <= $un || $warning[1] <= $cinq || $warning[2
 $status = "CRITICAL" if ($critical[0] <= $un || $critical[1] <= $cinq || $critical[2] <= $quinze);
 
 # Print output
-print "load average: ".$un.", ".$cinq.", ".$quinze.".|load1=".$un." load5=".$cinq." load15=".$quinze."\n";
+print "Load average: ".$un.", ".$cinq.", ".$quinze.".|load1=".$un." load5=".$cinq." load15=".$quinze."\n";
 exit $ERRORS{$status};
 
 sub print_usage () {

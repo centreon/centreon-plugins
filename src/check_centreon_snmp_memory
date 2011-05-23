@@ -230,7 +230,6 @@ my $total_memory_used = $swap_used + $realM_used - $cache_used;
 my $total_memory_size = $swap_size + $realM_size;
 
 # percentage of total, physical and swap  memory used
-
 if ($swap_size eq "0"){
     $swap_size = 1;
 }
@@ -244,23 +243,22 @@ $percent_realM_used =~ s/\.[0-9]+//;
 
 # return
 
-if(($opt_s) && ($opt_s =~ /([0-9]+)/))
-{
-    if(($percent_realM_used >= 99) && ($percent_swap_used > $swap_limit))
+if(($opt_s) && ($opt_s =~ /([0-9]+)/)) {
+    if (($percent_realM_used >= 99) && ($percent_swap_used > $swap_limit))
     {
-	print "swap threshold (".$opt_s."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used : ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
-	exit $ERRORS{'CRITICAL'};
+		print "Swap threshold (".$opt_s."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used : ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
+		exit $ERRORS{'CRITICAL'};
     }
 }
 
 if ($percent_used >= $opt_c){
-    print "threshold (".$opt_c."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used : ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
+    print "Threshold (".$opt_c."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used : ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
     exit $ERRORS{'CRITICAL'};
 } elsif ($percent_used >= $opt_w){
-    print "threshold (".$opt_w."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
+    print "Threshold (".$opt_w."%) excedeed : total memory used : ".$percent_used."%, ram used : ".$percent_realM_used."%, swap used ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
     exit $ERRORS{'WARNING'};	
 } else {
-    print "total memory used : ".$percent_used."%  ram used : ".$percent_realM_used."%, swap used ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
+    print "Total memory used : ".$percent_used."%  ram used : ".$percent_realM_used."%, swap used ".$percent_swap_used."% | used=".$total_memory_used."o size=".$total_memory_size."o\n";
     exit $ERRORS{'OK'};
 }
 
