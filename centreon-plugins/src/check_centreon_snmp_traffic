@@ -296,6 +296,7 @@ if ($opt_n) {
                 my @resLine = split(/\;/, $row);            
                 $resLine[1] =~ s/\x00//g;
                 $resLine[1] =~ s/\n//g;
+                $resLine[1] =~ s/\s*$//g;
                 if ($resLine[1] eq $opt_i) {
                     $interface = $resLine[0];
                 }
