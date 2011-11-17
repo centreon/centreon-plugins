@@ -98,8 +98,8 @@ if (!$opt_H) {
 
 $opt_l = 0 if (!defined($opt_l));
 
-my $snmp = "1";
-$snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
+($opt_v) || ($opt_v = shift) || ($opt_v = "2");
+my $snmp = $1 if ($opt_v =~ /(\d)/);
 
 $opt_c = 95 if (!defined($opt_c) || !$opt_c);
 $opt_w = 90 if (!defined($opt_w) || !$opt_w);

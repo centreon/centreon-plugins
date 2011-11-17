@@ -106,10 +106,8 @@ if (!$opt_H) {
 	print_usage();
 	exit $ERRORS{'OK'};
 }
-my $snmp = "1";
-if ($opt_v && $opt_v =~ /^[0-9]$/) {
-	$snmp = $opt_v;
-}
+($opt_v) || ($opt_v = shift) || ($opt_v = "2");
+my $snmp = $1 if ($opt_v =~ /(\d)/);
 
 if ($snmp eq "3") {
 if (!$opt_u) {
