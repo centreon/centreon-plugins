@@ -100,8 +100,8 @@ if (!$opt_H) {
 	exit $ERRORS{'OK'};
 }
 
-my $snmp = "1";
-$snmp = $opt_v if ($opt_v && $opt_v =~ /^[0-9]$/);
+($opt_v) || ($opt_v = shift) || ($opt_v = "2");
+my $snmp = $1 if ($opt_v =~ /(\d)/);
 
 if ($opt_c && $opt_c =~ /^([0-9\.]+),([0-9\.]+),([0-9\.]+)$/) {
 	@critical = ($1,$2,$3);
