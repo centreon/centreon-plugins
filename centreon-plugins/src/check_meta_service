@@ -203,7 +203,7 @@ sub retrieve_by_regexp() {
 	my $i = 0;
 	while ($row2 = $DBRES2->fetchrow_hashref()) {
 		if (defined($metric_select)) {
-			$row2->{'perfdata'} =~ m/$metric_select=([0-9\.]+)/;
+			$row2->{'perfdata'} =~ m/\'?$metric_select\'?=([0-9\.]+)/;
 			if (defined($1)) {
 				$metric_value_tab[$i] = $1;				
 				$i++;
