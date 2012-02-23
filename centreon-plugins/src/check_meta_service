@@ -143,6 +143,7 @@ sub calculate_meta() {
 		$result = 0;
 		foreach $val (@metric_value_tab) {
 			if ($val) {
+				$val =~ s/,/./;
 				$result += $val;	
 			}
 		}
@@ -150,6 +151,7 @@ sub calculate_meta() {
 		$result = 0;
 		foreach $val (@metric_value_tab) {
 			if ($val) {
+				$val =~ s/,/./;
 				$result = $result + $val;
 			}
 		}
