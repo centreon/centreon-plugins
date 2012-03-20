@@ -414,6 +414,13 @@ if (defined($warning) && defined($critical)) {
 	}
 }
 
+my $metric = "";
+if (defined($metric_select)) {
+	$metric = $metric_select;
+} else {
+	$metric = "value";
+}
+
 if (!defined($display) || !$display) {
     if ($calculation eq "AVE") {
 	$msg .= "Average - ";
@@ -424,10 +431,10 @@ if (!defined($display) || !$display) {
     } elsif ($calculation eq "MAX") {
 	$msg .= "Max - ";
     }
-    $msg .= "value : " . $res . "|value=".$res; 
+    $msg .= $metric." : " . $res . "|".$metric."=".$res;
 } else {
     $msg = sprintf($display, $res);
-    $msg .= "|value=".$res;
+    $msg .= "|".$metric."=".$res;
 }
 
 ##############
