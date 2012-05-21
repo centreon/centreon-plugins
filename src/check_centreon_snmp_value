@@ -136,7 +136,7 @@ if (!$OPTION{'oid'}) {
 	exit $ERRORS{'UNKNOWN'};
 }
 
-my $cacheFile = "@CENTPLUGINS_TMP@/centplugins/snmp_value".$OPTION{'host'}."-".$OPTION{'oid'};
+my $cacheFile = "@CENTPLUGINS_TMP@/snmp_value".$OPTION{'host'}."-".$OPTION{'oid'};
 
 # Store option values in simpler variables
 if ($OPTION{'divide'} ne "" && $OPTION{'metric'} ne "" &&  $OPTION{'unit'} ne "" && $OPTION{'output'} ne "" && $OPTION{'min'} ne "" && $OPTION{'max'} ne "") {
