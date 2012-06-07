@@ -168,7 +168,7 @@ if ($critical <= $warning){
     print_usage();
     exit $ERRORS{'OK'};
 }
-if ($opt_64bits && ($snmp !~ /2/ || $snmp !~ /3/) {
+if ($opt_64bits && ($snmp !~ /2/ || $snmp !~ /3/)) {
         print "Error : Usage : SNMP v2/v3 is required with option --64-bits\n";
         exit $ERRORS{'UNKNOWN'};
 }
