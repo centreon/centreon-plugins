@@ -1,0 +1,1238 @@
+#!/usr/bin/perl -w
+
+BEGIN {
+	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+}
+
+use strict;
+use VMware::VIRuntime;
+use VMware::VILib;
+use IO::Socket;
+use Net::hostent; # for OOish version of gethostbyaddr
+use threads;
+use Thread::Queue;
+use POSIX ":sys_wait_h";
+use Data::Dumper;
+use Time::HiRes;
+
+use vars qw($port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION $LOG);
+
+require '/etc/centreon/centreon_esxd.pm';
+
+our $session_id;
+our $data_queue;
+our $response_queue;
+our %sockets = ();
+our %child_proc;
+our %return_child;
+our $vsphere_connected = 0;
+our $last_time_vsphere;
+our $keeper_session_time;
+our $last_time_check;
+our $perfmanager_view;
+our %perfcounter_cache;
+our %perfcounter_cache_reverse;
+our $perfcounter_refreshrate = 20;
+our $perfcounter_speriod = -1;
+our $stop = 0;
+our $counter_request_id = 0;
+
+our %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3, "PENDING" => 4);
+our %MYERRORS = (0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN");
+our %MYERRORS_MASK = ("CRITICAL" => 3, "WARNING" => 1, "UNKNOWN" => 7, "OK" => 0);
+our %checks_descr = (
+			"healthhost" => {'arg' => \&healthhost_check_args, 'compute' => \&healthhost_compute_args, 'exec' => \&healthhost_do},
+			"datastores" => {'arg' => \&datastores_check_args, 'compute' => \&datastores_compute_args, 'exec' => \&datastores_do},
+			"maintenancehost" => {'arg' => \&maintenancehost_check_args, 'compute' => \&maintenancehost_compute_args, 'exec' => \&maintenancehost_do},
+			"statushost" => {'arg' => \&statushost_check_args, 'compute' => \&statushost_compute_args, 'exec' => \&statushost_do},
+			"cpuhost" => {'arg' => \&cpuhost_check_args, 'compute' => \&cpuhost_compute_args, 'exec' => \&cpuhost_do},
+			"nethost" => {'arg' => \&nethost_check_args, 'compute' => \&nethost_compute_args, 'exec' => \&nethost_do},
+			"memhost" => {'arg' => \&memhost_check_args, 'compute' => \&memhost_compute_args, 'exec' => \&memhost_do},
+			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
+			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
+			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
+			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do}
+		    ); 
+
+sub writeLogFile($){
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
+	open (LOG, ">> ".$LOG) || print "can't write $LOG: $!";
+	printf LOG "%04d-%02d-%02d %02d:%02d:%02d - %s", $year+1900, $mon+1, $mday, $hour, $min, $sec, $_[0];
+	close LOG;
+}
+
+sub connect_vsphere {
+	writeLogFile("Vsphere connection in progress\n");
+	eval {
+		$SIG{ALRM} = sub { die('TIMEOUT'); };
+		alarm($TIMEOUT_VSPHERE);
+		Vim::login(service_url=> $service_url, user_name => $username, password => $password);
+		alarm(0);
+	};
+	if($@) {
+		writeLogFile("No response from VirtualCentre server\n") if($@ =~ /TIMEOUT/);
+		writeLogFile("You need to upgrade HTTP::Message!\n") if($@ =~ /HTTP::Message/);
+		writeLogFile("Login to VirtualCentre server failed: $@");
+		return 1;
+	}
+	eval {
+		$session_id = Vim::get_session_id();
+	};
+	if($@) {
+		writeLogFile("Can't get session_id: $@\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub output_add($$$$) {
+	my ($output_str, $output_append, $delim, $str) = (shift, shift, shift, shift);
+	$$output_str .= $$output_append . $str;
+	$$output_append = $delim;
+}
+
+sub simplify_number{
+	my ($number, $cnt) = @_;
+	$cnt = 2 if (!defined($cnt));
+	return sprintf("%.${cnt}f", "$number");
+}
+
+sub convert_number {
+	my ($number) = shift(@_);
+	$number =~ s/\,/\./;
+	return $number;
+}
+
+sub get_views {
+	my $results;
+
+	eval {
+		$results = Vim::get_views(mo_ref_array => $_[0], properties => $_[1]);
+	};
+	if ($@) {
+		writeLogFile("$@");
+		my $lerror = $@;
+		$lerror =~ s/\n/ /g;
+		print "-1|Error: " . $lerror . "\n";
+		return undef;
+	}
+	return $results;
+}
+
+sub get_perf_metric_ids {
+	my $perf_names = $_[0];
+	my @filtered_list;
+   
+	foreach (@$perf_names) {
+		if (defined($perfcounter_cache{$_->{'label'}})) {
+			foreach my $instance (@{$_->{'instances'}}) {
+				my $metric = PerfMetricId->new(counterId => $perfcounter_cache{$_->{'label'}}{'key'},
+							       instance => $instance);
+				push @filtered_list, $metric;
+			}
+		} else {
+			writeLogFile("Metric '" . $_->{'label'} . "' unavailable.\n");
+		}
+	}
+	return \@filtered_list;
+}
+
+sub generic_performance_values_historic {
+	my ($view, $perfs, $interval) = @_;
+	my $counter = 0;
+	my %results;
+
+	eval {
+		my @perf_metric_ids = get_perf_metric_ids($perfs);
+
+		my (@t) = gmtime(time() - $interval);
+		my $start = sprintf("%04d-%02d-%02dT%02d:%02d:00Z",
+			(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1]);
+ 		my $perf_query_spec = PerfQuerySpec->new(entity => $view,
+					 metricId => @perf_metric_ids,
+					 format => 'normal',
+					 intervalId => $interval,
+					 startTime => $start
+					);
+					#maxSample => 1);
+		my $perfdata = $perfmanager_view->QueryPerf(querySpec => $perf_query_spec);
+		foreach (@{$$perfdata[0]->value}) {
+			$results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+		}
+	};
+	if ($@) {
+		writeLogFile($@);
+		return undef;
+	}
+	return \%results;
+}
+
+sub cache_perf_counters {
+	eval {
+		$perfmanager_view = Vim::get_view(mo_ref => Vim::get_service_content()->perfManager, properties => ['perfCounter', 'historicalInterval']);
+		foreach (@{$perfmanager_view->perfCounter}) {
+			my $label = $_->groupInfo->key . "." . $_->nameInfo->key . "." . $_->rollupType->val;
+			$perfcounter_cache{$label} = {'key' => $_->key, 'unitkey' => $_->unitInfo->key};
+			$perfcounter_cache_reverse{$_->key} = $label;
+		}
+
+		my $historical_intervals = $perfmanager_view->historicalInterval;
+
+		foreach (@$historical_intervals) {
+			if ($perfcounter_speriod == -1 || $perfcounter_speriod > $_->samplingPeriod) {
+				$perfcounter_speriod = $_->samplingPeriod;
+			}
+		}
+	};
+	if ($@) {
+		writeLogFile($@);
+		return 1;
+	}
+	return 0;
+}
+
+sub get_entities_host {
+	my ($view_type, $filters, $properties) = @_;
+	my $entity_views;
+
+	eval {
+		$entity_views = Vim::find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
+	};
+	if ($@ =~ /decryption failed or bad record mac/) {
+		writeLogFile("$@");
+		eval {
+			$entity_views = Vim::find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
+		};
+		if ($@) {
+			my $lerror = $@;
+			$lerror =~ s/\n/ /g;
+			print "-1|Error: " . $lerror . "\n";
+			return undef;
+		}
+	} elsif ($@) {
+		writeLogFile("$@");
+		my $lerror = $@;
+		$lerror =~ s/\n/ /g;
+		print "-1|Error: " . $lerror . "\n";
+		return undef;
+	}
+	if (!@$entity_views) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+        	print $ERRORS{$MYERRORS{$status}} . "|Host does not exist.\n";
+		return undef;
+	}
+	#eval {
+	#	$$entity_views[0]->update_view_data(properties => $properties);
+	#};
+	#if ($@) {
+	#	writeLogFile("$@");
+	#	my $lerror = $@;
+	#	$lerror =~ s/\n/ /g;
+	#	print "-1|Error: " . $lerror . "\n";
+	#	return undef;
+	#}
+	return $entity_views;
+}
+
+##############
+# Health Function
+##############
+
+sub healthhost_check_args {
+	my ($host) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub healthhost_compute_args {
+	my $lhost = $_[0];
+	return ($lhost);
+}
+
+sub healthhost_do {
+	my ($lhost) = @_;
+
+	my %filters = ('name' => $lhost);
+	my @properties = ('runtime.healthSystemRuntime.hardwareStatusInfo.cpuStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+	
+	my $status = 0; # OK
+	my $output_critical = '';
+	my $output_critical_append = '';
+	my $output_warning = '';
+	my $output_warning_append = '';
+	my $output = '';
+	my $output_append = '';
+	my $OKCount = 0;
+	my $CAlertCount = 0;
+	my $WAlertCount = 0;
+	foreach my $entity_view (@$result) {
+    		my $cpuStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo.cpuStatusInfo'};
+		my $numericSensorInfo = $entity_view->{'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo'};
+		if (!defined($cpuStatusInfo)) {
+			$status |= $MYERRORS_MASK{'CRITICAL'};
+			output_add(\$output_critical, \$output_critical_append, ", ",
+				"API error - unable to get cpuStatusInfo");
+		}
+		if (!defined($numericSensorInfo)) {
+			$status |= $MYERRORS_MASK{'CRITICAL'};
+			output_add(\$output_critical, \$output_critical_append, ", ",
+				"API error - unable to get numericSensorInfo");
+		}
+
+		# CPU
+		foreach (@$cpuStatusInfo) {
+			if ($_->status->key =~ /^red$/i) {
+				output_add(\$output_critical, \$output_critical_append, ", ",
+					$_->name . ": " . $_->status->summary);
+				$status |= $MYERRORS_MASK{'CRITICAL'};
+				$CAlertCount++;
+			} elsif ($_->status->key =~ /^yellow$/i) {
+				output_add(\$output_warning, \$output_warning_append, ", ",
+					$_->name . ": " . $_->status->summary);
+				$status |= $MYERRORS_MASK{'WARNING'};
+				$WAlertCount++;
+			} else {
+				$OKCount++;
+			}
+		}
+		# Sensor
+		foreach (@$numericSensorInfo) {
+			if ($_->healthState->key =~ /^red$/i) {
+				output_add(\$output_critical, \$output_critical_append, ", ",
+					$_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
+				$status |= $MYERRORS_MASK{'CRITICAL'};
+				$CAlertCount++;
+			} elsif ($_->healthState->key =~ /^yellow$/i) {
+				output_add(\$output_warning, \$output_warning_append, ", ",
+					$_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
+				$status |= $MYERRORS_MASK{'WARNING'};
+				$WAlertCount++;
+			} else {
+				$OKCount++;
+			}
+		}
+	}
+
+	if ($output_critical ne "") {
+		$output .= $output_append . "CRITICAL - $CAlertCount health issue(s) found: $output_critical";
+		$output_append = ". ";
+	}
+	if ($output_warning ne "") {
+		$output .= $output_append . "WARNING - $WAlertCount health issue(s) found: $output_warning";
+	}
+	if ($status == 0) {
+		$output = "All $OKCount health checks are green";
+	}
+	
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# Datastores Function
+############
+
+sub datastores_check_args {
+	my ($ds, $warn, $crit) = @_;
+	if (!defined($ds) || $ds eq "") {
+		writeLogFile("ARGS error: need datastore name\n");
+		return 1;
+	}
+	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	} 
+	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn > $crit) {
+		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub datastores_compute_args {
+	my $ds = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : 80);
+	my $crit = (defined($_[2]) ? $_[2] : 90);
+	return ($ds, $warn, $crit);
+}
+
+sub datastores_do {
+	my ($ds, $warn, $crit) = @_;
+	my %filters = ();
+	my @properties = ('datastore');
+
+	my $result = get_entities_host('Datacenter', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my @ds_array = ();
+	foreach my $entity_view (@$result) {
+		if (defined $entity_view->datastore) {
+	 		   @ds_array = (@ds_array, @{$entity_view->datastore});
+		}
+	}
+
+	@properties = ('summary');
+	$result = get_views(\@ds_array, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $ds_find;
+	foreach my $datastore (@$result) {
+		if ($datastore->summary->accessible && $datastore->summary->name eq $ds) {
+			$ds_find = $datastore;
+			last;	
+		}
+	}
+
+	my $output = '';
+	my $status = 0; # OK
+	if (defined($ds_find)) {
+		my $dsName = $ds_find->summary->name;
+		my $capacity = $ds_find->summary->capacity;
+		my $free = $ds_find->summary->freeSpace;
+		my $pct = ($capacity - $free) / $capacity * 100;
+
+		my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
+		my $sizeD = $capacity / 1024 / 1024 / 1024;
+	
+		$output = "Datastore $dsName - used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %) |used=".($capacity - $free)."o;;;0;".$capacity." size=".$capacity."o\n";
+		if ($pct >= $warn) {
+			$status |= $MYERRORS_MASK{'WARNING'};
+		}
+		if ($pct > $crit) {
+			$status |= $MYERRORS_MASK{'CRITICAL'};
+		}
+	} else {
+		$output = "Datastore '$ds' not found or summary not accessible.";
+		$status |= $MYERRORS_MASK{'UNKNOWN'};
+	}
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# Maintenance Func
+############
+
+sub maintenancehost_check_args {
+	my ($host) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub maintenancehost_compute_args {
+	my $lhost = $_[0];
+	return ($lhost);
+}
+
+sub maintenancehost_do {
+	my ($lhost) = @_;
+	my %filters = ('name' => $lhost);
+	my @properties = ('runtime.inMaintenanceMode');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output = '';
+
+	foreach my $entity_view (@$result) {
+		if ($entity_view->{'runtime.inMaintenanceMode'} ne "false") {
+			$status |= $MYERRORS_MASK{'CRITICAL'};
+			$output = "Server $lhost is on maintenance mode.";
+		} else {
+			$output = "Server $lhost is not on maintenance mode.";
+		}
+	}
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# Status Func
+############
+
+sub statushost_check_args {
+	my ($host) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub statushost_compute_args {
+	my $lhost = $_[0];
+	return ($lhost);
+}
+
+sub statushost_do {
+	my ($lhost) = @_;
+	my %filters = ('name' => $lhost);
+	my @properties = ('summary.overallStatus');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output = '';
+
+	my %overallStatus = (
+		'gray' => 'status is unknown',
+ 		'green' => 'is OK',
+		'red' => 'has a problem',
+		'yellow' => 'might have a problem',
+	);
+	my %overallStatusReturn = (
+		'gray' => 'UNKNOWN',
+		'green' => 'OK',
+		'red' => 'CRITICAL',
+		'yellow' => 'WARNING'
+	);
+
+	foreach my $entity_view (@$result) {
+		my $status = $entity_view->{'summary.overallStatus'}->val;
+
+		if (defined($status) && $overallStatus{$status}) {
+			$output = "The Server '$lhost' " . $overallStatus{$status};
+			if ($MYERRORS_MASK{$overallStatusReturn{$status}} != 0) {
+				$status |= $MYERRORS_MASK{$overallStatusReturn{$status}};
+			}
+		} else {
+			$output = "Can't interpret data...";
+			$status |= $MYERRORS_MASK{'UNKNOWN'};
+		}
+	}
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# CPUHost Func
+############
+
+sub cpuhost_check_args {
+	my ($host, $warn, $crit) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	} 
+	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn > $crit) {
+		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub cpuhost_compute_args {
+	my $lhost = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : 80);
+	my $crit = (defined($_[2]) ? $_[2] : 90);
+	return ($lhost, $warn, $crit);
+}
+
+sub cpuhost_do {
+	my ($lhost, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+                print $ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n";
+		return ;
+	}
+
+	my %filters = ('name' => $lhost);
+	my @properties = ('hardware.cpuInfo.numCpuThreads');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my @instances = ('*');
+	foreach my $index (0..($$result[0]->{'hardware.cpuInfo.numCpuThreads'} - 1)) {
+		push @instances, $index;
+	}
+
+
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'cpu.usage.average', 'instances' => \@instances}],
+						$perfcounter_speriod);
+
+	my $status = 0; # OK
+	my $output = '';
+	my $total_cpu_average = simplify_number(convert_number($values->{$perfcounter_cache{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
+	
+	if ($total_cpu_average >= $warn) {
+		$status |= $MYERRORS_MASK{'WARNING'};
+	}
+	if ($total_cpu_average >= $crit) {
+		$status |= $MYERRORS_MASK{'CRITICAL'};
+	}
+
+	$output = "Total Average CPU usage '$total_cpu_average%' on last " . ($perfcounter_speriod / 60) . "min | cpu_total=$total_cpu_average%;$warn;$crit;0;100";
+
+	foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
+			       my ($cidb, $cib) = split /:/, $b;
+                               $cia = -1 if (!defined($cia) || $cia eq "");
+                               $cib = -1 if (!defined($cib) || $cib eq "");
+			       $cia <=> $cib} keys %$values) {
+		my ($counter_id, $instance) = split /:/, $id;
+		if ($instance ne "") {
+			$output .= " cpu$instance=" . simplify_number(convert_number($values->{$id}[0]) * 0.01) . "%;;0;100";
+		}
+	}
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# NetHost Func
+############
+
+sub nethost_check_args {
+	my ($host, $pnic, $warn, $crit) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	if (!defined($pnic) || $pnic eq "") {
+		writeLogFile("ARGS error: need physical nic name\n");
+		return 1;
+	}
+	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn > $crit) {
+		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub nethost_compute_args {
+	my $lhost = $_[0];
+	my $pnic = $_[1];
+	my $warn = (defined($_[2]) ? $_[2] : 80);
+	my $crit = (defined($_[3]) ? $_[3] : 90);
+	return ($lhost, $pnic, $warn, $crit);
+}
+
+sub nethost_do {
+	my ($lhost, $pnic, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+                print $ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n";
+		return ;
+	}
+
+	my %filters = ('name' => $lhost);
+	my @properties = ('config.network.pnic');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+	my %pnic_def = ();
+	foreach (@{$$result[0]->{'config.network.pnic'}}) {
+		if (defined($_->linkSpeed)) {
+			$pnic_def{$_->device} = $_->linkSpeed->speedMb;
+		}
+	}
+
+	if (!defined($pnic_def{$pnic})) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+                print $ERRORS{$MYERRORS{$status}} . "|Link '$pnic' not exist or down.\n";
+		return ;
+	}
+
+
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'net.received.average', 'instances' => [$pnic]},
+						 {'label' => 'net.transmitted.average', 'instances' => [$pnic]}],
+						$perfcounter_speriod);
+
+	my $traffic_in = simplify_number(convert_number($values->{$perfcounter_cache{'net.received.average'}->{'key'} . ":" . $pnic}[0]));	
+	my $traffic_out = simplify_number(convert_number($values->{$perfcounter_cache{'net.transmitted.average'}->{'key'} . ":" . $pnic}[0]));
+	my $status = 0; # OK
+	my $output = '';
+	
+	if (($traffic_in / 1024 * 8 * 100 / $pnic_def{$pnic}) >= $warn || ($traffic_out / 1024 * 8 * 100 / $pnic_def{$pnic}) >= $warn) {
+		$status |= $MYERRORS_MASK{'WARNING'};
+	}
+	if (($traffic_in / 1024 * 8 * 100 / $pnic_def{$pnic}) >= $crit || ($traffic_out / 1024 * 8 * 100 / $pnic_def{$pnic}) >= $crit) {
+		$status |= $MYERRORS_MASK{'CRITICAL'};
+	}
+
+	$output = "Traffic In : " . simplify_number($traffic_in / 1024 * 8) . " Mb/s (" . simplify_number($traffic_in / 1024 * 8 * 100 / $pnic_def{$pnic}) . " %), Out : " . simplify_number($traffic_out / 1024 * 8) . " Mb/s (" . simplify_number($traffic_out / 1024 * 8 * 100 / $pnic_def{$pnic}) . " %)";
+	$output .= "|traffic_in=" . ($traffic_in * 1024 * 8) . "b/s traffic_out=" . (($traffic_out * 1024 * 8)) . "b/s";
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# MemHost Func
+############
+
+sub memhost_check_args {
+	my ($host, $warn, $crit) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn > $crit) {
+		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub memhost_compute_args {
+	my $lhost = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : 80);
+	my $crit = (defined($_[2]) ? $_[2] : 90);
+	return ($lhost, $warn, $crit);
+}
+
+sub memhost_do {
+	my ($lhost, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+                print $ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n";
+		return ;
+	}
+
+	my %filters = ('name' => $lhost);
+	my @properties = ('summary.hardware.memorySize');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $memory_size = $$result[0]->{'summary.hardware.memorySize'};
+
+
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'mem.consumed.average', 'instances' => ['']},
+						 {'label' => 'mem.overhead.average', 'instances' => ['']}],
+						$perfcounter_speriod);
+
+	my $mem_used = simplify_number(convert_number($values->{$perfcounter_cache{'mem.consumed.average'}->{'key'} . ":"}[0]));	
+	my $mem_overhead = simplify_number(convert_number($values->{$perfcounter_cache{'mem.overhead.average'}->{'key'} . ":"}[0]));
+	my $status = 0; # OK
+	my $output = '';
+	
+	if ($mem_used * 100 / ($memory_size / 1024) >= $warn) {
+		$status |= $MYERRORS_MASK{'WARNING'};
+	}
+	if ($mem_used * 100 / ($memory_size / 1024) >= $crit) {
+		$status |= $MYERRORS_MASK{'CRITICAL'};
+	}
+
+	$output = "Memory used : " . simplify_number($mem_used / 1024 / 1024) . " Go - size : " . simplify_number($memory_size / 1024 / 1024 / 1024) . " Go - percent : " . simplify_number($mem_used * 100 / ($memory_size / 1024)) . " %";
+	$output .= "|used=" . ($mem_used * 1024) . "o;" . simplify_number($memory_size * $warn / 100, 0) . ";" . simplify_number($memory_size * $crit / 100, 0) . ";0;" . ($memory_size) . " size=" . $memory_size . "o" . " overhead=" . ($mem_used * 1024) . "o";
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# SwapHost Func
+############
+
+sub swaphost_check_args {
+	my ($host, $warn, $crit) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn > $crit) {
+		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub swaphost_compute_args {
+	my $lhost = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : 0.8);
+	my $crit = (defined($_[2]) ? $_[2] : 1);
+	return ($lhost, $warn, $crit);
+}
+
+sub swaphost_do {
+	my ($lhost, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+                print $ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n";
+		return ;
+	}
+
+	my %filters = ('name' => $lhost);
+	#my @properties = ('summary');
+	my @properties = ();
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'mem.swapinRate.average', 'instances' => ['']},
+						 {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
+						$perfcounter_speriod);
+
+	my $swap_in = simplify_number(convert_number($values->{$perfcounter_cache{'mem.swapinRate.average'}->{'key'} . ":"}[0]));
+        my $swap_out = simplify_number(convert_number($values->{$perfcounter_cache{'mem.swapoutRate.average'}->{'key'} . ":"}[0]));
+        my $status = 0; # OK
+        my $output = '';
+
+        if (($swap_in / 1024) >= $warn || ($swap_out / 1024) >= $warn) {
+                $status |= $MYERRORS_MASK{'WARNING'};
+        }
+        if (($swap_in / 1024) >= $crit || ($swap_out / 1024) >= $crit) {
+                $status |= $MYERRORS_MASK{'CRITICAL'};
+        }
+
+        $output = "Swap In : " . simplify_number($swap_in / 1024 * 8) . " Mb/s , Swap Out : " . simplify_number($swap_out / 1024 * 8) . " Mb/s ";
+        $output .= "|swap_in=" . ($swap_in * 1024 * 8) . "b/s swap_out=" . (($swap_out * 1024 * 8)) . "b/s";
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+
+############
+# List Host Func
+############
+
+sub listhost_check_args {
+	return 0;
+}
+
+sub listhost_compute_args {
+	return undef;
+}
+
+sub listhost_do {
+	my ($lhost) = @_;
+	my %filters = ();
+	my @properties = ('name');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output = 'Host List: ';
+	my $output_append = "";
+
+	foreach my $entity_view (@$result) {
+		$output .= $output_append . $entity_view->{name};
+		$output_append = ', ';
+	}
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# List Datastore Func
+############
+
+sub listdatastore_check_args {
+	return 0;
+}
+
+sub listdatastore_compute_args {
+	return undef;
+}
+
+sub listdatastore_do {
+	my ($ds, $warn, $crit) = @_;
+	my %filters = ();
+	my @properties = ('datastore');
+
+	my $result = get_entities_host('Datacenter', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my @ds_array = ();
+	foreach my $entity_view (@$result) {
+		if (defined $entity_view->datastore) {
+	 		   @ds_array = (@ds_array, @{$entity_view->datastore});
+		}
+	}
+
+	@properties = ('summary');
+	$result = get_views(\@ds_array, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output = 'Datastore List: ';
+	my $output_append = "";
+	foreach my $datastore (@$result) {
+		if ($datastore->summary->accessible) {
+			$output .= $output_append . "'" . $datastore->summary->name . "'";
+			$output_append = ', ';
+		}
+	}
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
+}
+
+############
+# List Host Func
+############
+
+sub listnichost_check_args {
+	my ($host) = @_;
+	if (!defined($host) || $host eq "") {
+		writeLogFile("ARGS error: need hostname\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub listnichost_compute_args {
+	my $lhost = $_[0];
+	return ($lhost);
+}
+
+sub listnichost_do {
+	my ($lhost) = @_;
+	my %filters = ('name' => $lhost);
+	my @properties = ('config.network.pnic');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output_up = 'Nic Up List: ';
+	my $output_down = 'Nic Down List: ';
+	my $output_up_append = "";
+	my $output_down_append = "";
+	foreach (@{$$result[0]->{'config.network.pnic'}}) {
+		if (defined($_->linkSpeed)) {
+			$output_up .= $output_up_append . "'" . $_->device . "'";
+			$output_up_append = ', ';
+		} else {
+			$output_down .= $output_down_append . "'" . $_->device . "'";
+			$output_down_append = ', ';
+		}
+	}
+
+	print $ERRORS{$MYERRORS{$status}} . "|$output_up. $output_down.\n";
+}
+
+############
+
+sub catch_zap_term {
+	writeLogFile("$$ Receiving order to stop...\n");
+	$stop = 1;
+}
+
+sub REAPER {
+	my $child_pid;
+
+	while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
+		$return_child{$child_pid} = {'status' => 1, 'rtime' => time()};
+	}
+	$SIG{CHLD} = \&REAPER;
+}
+
+sub verify_child {
+	my $progress = 0;
+
+	# Verify process
+	foreach (keys %child_proc) {
+		if (defined($return_child{$child_proc{$_}->{'pid'}}) && $return_child{$child_proc{$_}->{'pid'}}->{'status'} == 1) {
+			my $handle = ${$child_proc{$_}->{'reading'}};
+			my $output = <$handle>;
+			close $handle;
+			if ($output =~ /^-1/) {
+				$last_time_check = $child_proc{$_}->{'ctime'};
+			}
+			chomp $output;
+			$response_queue->enqueue("$_|$output\n");
+			delete $return_child{$child_proc{$_}->{'pid'}};
+			delete $child_proc{$_};
+		} else {
+			# Check ctime
+			if (time() - $child_proc{$_}->{'ctime'} > $TIMEOUT) {
+				my $handle = ${$child_proc{$_}->{'reading'}};
+				$response_queue->enqueue("$_|-1|Timeout Process.\n");
+				kill('INT', $child_proc{$_}->{'pid'});
+				close $handle;
+				delete $child_proc{$_};
+			} else {
+				$progress++;
+			}
+		}
+	}
+	# Clean old hash CHILD (security)
+	foreach (keys %return_child) {
+		if (time() - $return_child{$_}->{'rtime'} > 600) {
+			writeLogFile("Clean Old return_child list = " . $_ . "\n");
+			delete $return_child{$_};
+		}
+	}
+
+	return $progress;
+}
+
+sub vsphere_handler {
+	while (1) {
+		if ($stop == 1) {
+			my $timeout_process = 0;
+			while ($timeout_process <= $TIMEOUT_KILL) {
+				if (!verify_child()) {
+					last;
+				}
+				$timeout_process++;
+				sleep(1);
+			}
+			if ($timeout_process > $TIMEOUT_KILL) {
+				writeLogFile("Kill child not gently.\n");
+				foreach (keys %child_proc) {
+					kill('INT', $child_proc{$_}->{'pid'});
+				}
+			}
+
+			if ($vsphere_connected) {
+				eval {
+					Vim::logout();
+				};
+			}
+			$response_queue->enqueue("STOPPED\n");
+			exit (0);
+		}
+
+
+		if (defined($last_time_vsphere) && defined($last_time_check) && $last_time_vsphere < $last_time_check) {
+			$vsphere_connected = 0;
+			eval {
+				Vim::logout();
+			};
+		}
+		if ($vsphere_connected == 0) {
+			if (!connect_vsphere()) {
+				writeLogFile("Vsphere connection ok\n");
+				writeLogFile("Create perf counters cache in progress\n");
+				if (!cache_perf_counters()) {
+					$last_time_vsphere = time();
+					$keeper_session_time = time();
+					$vsphere_connected = 1;
+					writeLogFile("Create perf counters cache done\n");
+				}
+			}
+		}
+
+		if (defined($keeper_session_time) && (time() - $keeper_session_time) > ($REFRESH_KEEPER_SESSION * 60)) {
+			my $stime;
+
+			eval {
+				$stime = Vim::get_service_instance()->CurrentTime();
+				$keeper_session_time = time();
+			};
+			if ($@) {
+				writeLogFile("$@");
+				writeLogFile("Ask a new connection");
+				# Ask a new connection
+				$last_time_check = time();
+			} else {
+				writeLogFile("Get current time = " . Data::Dumper::Dumper($stime));
+			}
+		}
+
+		my $num_queued = $data_queue->pending();
+		while ($num_queued) {
+			my $data_element = $data_queue->dequeue();
+			chomp $data_element;
+			$num_queued--;
+			if ($data_element =~ /^STOP$/) {
+				$stop = 1;
+				next;
+			}
+
+			my ($id) = split(/\|/, $data_element);
+			if ($vsphere_connected) {
+				writeLogFile("vpshere handler asking: $data_element\n");
+				$child_proc{$id} = {'ctime' => time()};
+				
+				my $reader;
+				my $writer;
+				pipe($reader, $writer);
+				$writer->autoflush(1);
+
+				$child_proc{$id}->{'reading'} = \*$reader;
+				$child_proc{$id}->{'pid'} = fork;
+				if (!$child_proc{$id}->{'pid'}) {
+					# Child	
+					close $reader;
+					open STDOUT, '>&', $writer;
+					my ($id, $name, @args) = split /\|/, $data_element;
+					$checks_descr{$name}->{'exec'}($checks_descr{$name}->{'compute'}(@args));
+					exit(0);
+				} else {
+					# Parent
+					close $writer;
+				}
+			} else {
+				$response_queue->enqueue("$id|-1|Vsphere connection error.");
+			}
+		}
+
+		verify_child();
+
+		if ($vsphere_connected == 0) {
+			sleep(5);
+		} else {
+			Time::HiRes::sleep(0.2);
+		}
+	}
+}
+
+$SIG{TERM}  = \&catch_zap_term;
+$SIG{CHLD} = \&REAPER;
+
+open my $centesx_fh, '>>', $LOG;
+open STDOUT, '>&', $centesx_fh;
+open STDERR, '>&', $centesx_fh;
+
+
+$data_queue = Thread::Queue->new();
+$response_queue = Thread::Queue->new();
+my $thr = threads->create(\&vsphere_handler);
+$thr->detach();
+
+my $server = IO::Socket::INET->new( Proto => "tcp",
+			         LocalPort => $port,
+    				 Listen => SOMAXCONN,
+    				 Reuse => 1,
+				 Timeout => 0.5);
+if (!$server) {
+	writeLogFile("Can't setup server: $!\n");
+	exit(1);
+}
+writeLogFile("[Server accepting clients]\n");
+while (1) {
+	my $client;
+
+	if (!$stop) {
+		$client = $server->accept();
+	}
+	if ($stop == 1) {		
+		writeLogFile("Send STOP command to thread.\n");
+		$data_queue->enqueue("STOP\n");
+		$stop = 2;
+	}
+	###
+	# Check
+	###
+	my $num_queued = $response_queue->pending();
+	while ($num_queued) {
+		my $data_element = $response_queue->dequeue();
+		chomp $data_element;
+		if ($data_element =~ /^STOPPED$/) {
+			writeLogFile("Thread has stopped\n");
+			exit(0);
+		}
+		# Verify responde queue
+		#print "Response queue = $data_element\n";
+		my @results = split(/\|/, $data_element);
+		my $id = $results[0];
+		$num_queued--;
+		if (!defined($sockets{$id})) {
+			writeLogFile("Too much time to get response.\n");
+			next;
+		}
+
+		writeLogFile("response = $data_element\n");
+		$data_element =~ s/^.*?\|//;
+		${$sockets{$id}->{'obj'}}->send($data_element . "\n");
+		close ${$sockets{$id}->{"obj"}};
+		delete $sockets{$id};
+	}
+	foreach (keys %sockets) {
+		if (time() - $sockets{$_}->{'ctime'} > $TIMEOUT) {
+			writeLogFile("Timeout returns for uuid = '" . $sockets{$_}->{'uuid'} . "'.\n");
+			${$sockets{$_}->{'obj'}}->send("3|TIMEOUT\n");
+			close ${$sockets{$_}->{"obj"}};
+			delete $sockets{$_};
+		}
+	}
+
+	if (!$client) {
+		next;
+	}
+	my $uuid = $counter_request_id;
+	$counter_request_id++;
+	$client->autoflush(1);
+	my $hostinfo = gethostbyaddr($client->peeraddr);
+	#writeLogFile("[Connect from " . ($hostinfo ? $hostinfo->name : $client->peerhost) . "]\n");
+	my $line = <$client>;
+	if (defined($line) && $line ne "") {
+		chomp $line;
+		my ($name, @args) = split /\|/, $line;
+		if (!defined($checks_descr{$name})) {
+			$client->send("3|Unknown method name '$name'\n");
+			close $client;
+			next;
+		}
+		if ($checks_descr{$name}->{'arg'}(@args)) {
+			$client->send("3|Params error '$name'\n");
+			close $client;
+			next;
+		}
+
+		$sockets{$uuid} = {"obj" => \$client, "ctime" => time(), "uuid" => $uuid};
+		$data_queue->enqueue("$uuid|$line\n");
+	} else {
+		$client->send("3|Need arguments\n");
+		close $client;
+	}
+}
+
+exit(0);
