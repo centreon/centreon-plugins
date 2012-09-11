@@ -1086,11 +1086,9 @@ sub vsphere_handler {
 			}
 		}
 
-		my $num_queued = $data_queue->pending();
-		while ($num_queued) {
-			my $data_element = $data_queue->dequeue();
+		my $data_element;
+		while (($data_element = $data_queue->dequeue_nb())) {
 			chomp $data_element;
-			$num_queued--;
 			if ($data_element =~ /^STOP$/) {
 				$stop = 1;
 				next;
@@ -1171,9 +1169,9 @@ while (1) {
 	###
 	# Check
 	###
-	my $num_queued = $response_queue->pending();
-	while ($num_queued) {
-		my $data_element = $response_queue->dequeue();
+	my $data_element;
+	
+	while (($data_element = $response_queue->dequeue_nb())) {
 		chomp $data_element;
 		if ($data_element =~ /^STOPPED$/) {
 			writeLogFile("Thread has stopped\n");
@@ -1183,7 +1181,6 @@ while (1) {
 		#print "Response queue = $data_element\n";
 		my @results = split(/\|/, $data_element);
 		my $id = $results[0];
-		$num_queued--;
 		if (!defined($sockets{$id})) {
 			writeLogFile("Too much time to get response.\n");
 			next;
