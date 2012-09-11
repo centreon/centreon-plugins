@@ -763,7 +763,7 @@ sub memhost_do {
 	}
 
 	$output = "Memory used : " . simplify_number($mem_used / 1024 / 1024) . " Go - size : " . simplify_number($memory_size / 1024 / 1024 / 1024) . " Go - percent : " . simplify_number($mem_used * 100 / ($memory_size / 1024)) . " %";
-	$output .= "|used=" . ($mem_used * 1024) . "o;" . simplify_number($memory_size * $warn / 100, 0) . ";" . simplify_number($memory_size * $crit / 100, 0) . ";0;" . ($memory_size) . " size=" . $memory_size . "o" . " overhead=" . ($mem_used * 1024) . "o";
+	$output .= "|used=" . ($mem_used * 1024) . "o;" . simplify_number($memory_size * $warn / 100, 0) . ";" . simplify_number($memory_size * $crit / 100, 0) . ";0;" . ($memory_size) . " size=" . $memory_size . "o" . " overhead=" . ($mem_overhead * 1024) . "o";
 
 	print $ERRORS{$MYERRORS{$status}} . "|$output\n";
 }
