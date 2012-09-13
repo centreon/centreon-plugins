@@ -1,7 +1,13 @@
 #!/usr/bin/perl -w
 
+
 BEGIN {
 	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+	eval 'require Unix::Syslog;';
+	if (!$@) {
+		require Unix::Syslog;
+		Unix::Syslog->import(qw(:subs :macros));
+	}
 }
 
 use strict;
@@ -13,7 +19,12 @@ use IO::Select;
 use POSIX ":sys_wait_h";
 use Data::Dumper;
 
-use vars qw($port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION $LOG);
+use vars qw($port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION);
+use vars qw($LOG $log_mode $log_crit $log_facility);
+use constant {
+	LOG_ESXD_ERROR => 1,
+	LOG_ESXD_INFO  => 2
+};
 
 require '/etc/centreon/centreon_esxd.pm';
 
@@ -59,15 +70,25 @@ our %checks_descr = (
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do}
 		    ); 
 
-sub writeLogFile($){
-	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
-	open (LOG, ">> ".$LOG) || print "can't write $LOG: $!";
-	printf LOG "%04d-%02d-%02d %02d:%02d:%02d - %s", $year+1900, $mon+1, $mday, $hour, $min, $sec, $_[0];
-	close LOG;
+sub writeLogFile($$) {
+	if (($log_crit & $_[0]) == 0) {
+		return ;
+	}
+	if ($log_mode == 0) {
+		print $_[1];
+	} elsif ($log_mode == 1) {
+		my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
+		open (LOG, ">> ".$LOG) || print "can't write $LOG: $!";
+		printf LOG "%04d-%02d-%02d %02d:%02d:%02d - %s", $year+1900, $mon+1, $mday, $hour, $min, $sec, $_[1];
+		close LOG;
+	} elsif ($log_mode == 2) {
+		syslog LOG_ERR, $_[1] if ($_[0] == LOG_ESXD_ERROR);
+		syslog LOG_INFO, $_[1] if ($_[0] == LOG_ESXD_INFO);
+	}
 }
 
 sub connect_vsphere {
-	writeLogFile("Vsphere connection in progress\n");
+	writeLogFile(LOG_ESXD_INFO, "Vsphere connection in progress\n");
 	eval {
 		$SIG{ALRM} = sub { die('TIMEOUT'); };
 		alarm($TIMEOUT_VSPHERE);
@@ -78,9 +99,9 @@ sub connect_vsphere {
 		alarm(0);
 	};
 	if($@) {
-		writeLogFile("No response from VirtualCentre server\n") if($@ =~ /TIMEOUT/);
-		writeLogFile("You need to upgrade HTTP::Message!\n") if($@ =~ /HTTP::Message/);
-		writeLogFile("Login to VirtualCentre server failed: $@");
+		writeLogFile(LOG_ESXD_ERROR, "No response from VirtualCentre server\n") if($@ =~ /TIMEOUT/);
+		writeLogFile(LOG_ESXD_ERROR, "You need to upgrade HTTP::Message!\n") if($@ =~ /HTTP::Message/);
+		writeLogFile(LOG_ESXD_ERROR, "Login to VirtualCentre server failed: $@");
 		return 1;
 	}
 #	eval {
@@ -122,7 +143,7 @@ sub get_views {
 		$results = $session1->get_views(mo_ref_array => $_[0], properties => $_[1]);
 	};
 	if ($@) {
-		writeLogFile("$@");
+		writeLogFile(LOG_ESXD_ERROR, "$@");
 		my $lerror = $@;
 		$lerror =~ s/\n/ /g;
 		print_response("-1|Error: " . $lerror . "\n");
@@ -143,7 +164,7 @@ sub get_perf_metric_ids {
 				push @filtered_list, $metric;
 			}
 		} else {
-			writeLogFile("Metric '" . $_->{'label'} . "' unavailable.\n");
+			writeLogFile(LOG_ESXD_ERROR, "Metric '" . $_->{'label'} . "' unavailable.\n");
 		}
 	}
 	return \@filtered_list;
@@ -173,7 +194,7 @@ sub generic_performance_values_historic {
 		}
 	};
 	if ($@) {
-		writeLogFile($@);
+		writeLogFile(LOG_ESXD_ERROR, "$@");
 		return undef;
 	}
 	return \%results;
@@ -197,7 +218,7 @@ sub cache_perf_counters {
 		}
 	};
 	if ($@) {
-		writeLogFile($@);
+		writeLogFile(LOG_ESXD_ERROR, "$@");
 		return 1;
 	}
 	return 0;
@@ -211,18 +232,19 @@ sub get_entities_host {
 		$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 	};
 	if ($@ =~ /decryption failed or bad record mac/) {
-		writeLogFile("$@");
+		writeLogFile(LOG_ESXD_ERROR, "$@");
 		eval {
 			$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 		};
 		if ($@) {
+			writeLogFile(LOG_ESXD_ERROR, "$@");
 			my $lerror = $@;
 			$lerror =~ s/\n/ /g;
 			print_response("-1|Error: " . Data::Dumper::Dumper($lerror) . "\n");
 			return undef;
 		}
 	} elsif ($@) {
-		writeLogFile("$@");
+		writeLogFile(LOG_ESXD_ERROR, "$@");
 		my $lerror = $@;
 		$lerror =~ s/\n/ /g;
 		print_response("-1|Error: " . $lerror . "\n");
@@ -253,7 +275,7 @@ sub get_entities_host {
 sub healthhost_check_args {
 	my ($host) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	return 0;
@@ -353,19 +375,19 @@ sub healthhost_do {
 sub datastores_check_args {
 	my ($ds, $warn, $crit) = @_;
 	if (!defined($ds) || $ds eq "") {
-		writeLogFile("ARGS error: need datastore name\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need datastore name\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
 		return 1;
 	} 
 	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($warn) && defined($crit) && $warn > $crit) {
-		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
 		return 1;
 	}
 	return 0;
@@ -441,7 +463,7 @@ sub datastores_do {
 sub maintenancehost_check_args {
 	my ($host) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	return 0;
@@ -483,7 +505,7 @@ sub maintenancehost_do {
 sub statushost_check_args {
 	my ($host) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	return 0;
@@ -543,19 +565,19 @@ sub statushost_do {
 sub cpuhost_check_args {
 	my ($host, $warn, $crit) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
 		return 1;
 	} 
 	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($warn) && defined($crit) && $warn > $crit) {
-		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
 		return 1;
 	}
 	return 0;
@@ -626,23 +648,23 @@ sub cpuhost_do {
 sub nethost_check_args {
 	my ($host, $pnic, $warn, $crit) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	if (!defined($pnic) || $pnic eq "") {
-		writeLogFile("ARGS error: need physical nic name\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need physical nic name\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($warn) && defined($crit) && $warn > $crit) {
-		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
 		return 1;
 	}
 	return 0;
@@ -714,19 +736,19 @@ sub nethost_do {
 sub memhost_check_args {
 	my ($host, $warn, $crit) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($warn) && defined($crit) && $warn > $crit) {
-		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
 		return 1;
 	}
 	return 0;
@@ -787,19 +809,19 @@ sub memhost_do {
 sub swaphost_check_args {
 	my ($host, $warn, $crit) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: warn threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-		writeLogFile("ARGS error: crit threshold must be a positive number\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
 		return 1;
 	}
 	if (defined($warn) && defined($crit) && $warn > $crit) {
-		writeLogFile("ARGS error: warn threshold must be lower than crit threshold\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
 		return 1;
 	}
 	return 0;
@@ -940,7 +962,7 @@ sub listdatastore_do {
 sub listnichost_check_args {
 	my ($host) = @_;
 	if (!defined($host) || $host eq "") {
-		writeLogFile("ARGS error: need hostname\n");
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
 	}
 	return 0;
@@ -981,7 +1003,7 @@ sub listnichost_do {
 ############
 
 sub catch_zap_term {
-	writeLogFile("$$ Receiving order to stop...\n");
+	writeLogFile(LOG_ESXD_INFO, "$$ Receiving order to stop...\n");
 	$stop = 1;
 }
 
@@ -1014,7 +1036,7 @@ sub verify_child {
 	# Clean old hash CHILD (security)
 	foreach (keys %return_child) {
 		if (time() - $return_child{$_}->{'rtime'} > 600) {
-			writeLogFile("Clean Old return_child list = " . $_ . "\n");
+			writeLogFile(LOG_ESXD_INFO, "Clean Old return_child list = " . $_ . "\n");
 			delete $return_child{$_};
 		}
 	}
@@ -1033,7 +1055,7 @@ sub vsphere_handler {
 		# Manage ending
 		#####
 		if ($stop && $timeout_process > $TIMEOUT_KILL) {
-			writeLogFile("Kill child not gently.\n");
+			writeLogFile(LOG_ESXD_ERROR, "Kill child not gently.\n");
 			foreach (keys %child_proc) {
 				kill('INT', $child_proc{$_}->{'pid'});
 			}
@@ -1053,7 +1075,7 @@ sub vsphere_handler {
 		# Manage vpshere connection
 		###
 		if (defined($last_time_vsphere) && defined($last_time_check) && $last_time_vsphere < $last_time_check) {
-			writeLogFile("Deconnect\n");
+			writeLogFile(LOG_ESXD_ERROR, "Deconnect\n");
 			$vsphere_connected = 0;
 			eval {
 				$session1->logout();
@@ -1061,13 +1083,13 @@ sub vsphere_handler {
 		}
 		if ($vsphere_connected == 0) {
 			if (!connect_vsphere()) {
-				writeLogFile("Vsphere connection ok\n");
-				writeLogFile("Create perf counters cache in progress\n");
+				writeLogFile(LOG_ESXD_INFO, "Vsphere connection ok\n");
+				writeLogFile(LOG_ESXD_INFO, "Create perf counters cache in progress\n");
 				if (!cache_perf_counters()) {
 					$last_time_vsphere = time();
 					$keeper_session_time = time();
 					$vsphere_connected = 1;
-					writeLogFile("Create perf counters cache done\n");
+					writeLogFile(LOG_ESXD_INFO, "Create perf counters cache done\n");
 				}
 			}
 		}
@@ -1083,12 +1105,12 @@ sub vsphere_handler {
 				$keeper_session_time = time();
 			};
 			if ($@) {
-				writeLogFile("$@");
-				writeLogFile("Ask a new connection");
+				writeLogFile(LOG_ESXD_ERROR, "$@");
+				writeLogFile(LOG_ESXD_ERROR, "Ask a new connection");
 				# Ask a new connection
 				$last_time_check = time();
 			} else {
-				writeLogFile("Get current time = " . Data::Dumper::Dumper($stime));
+				writeLogFile(LOG_ESXD_INFO, "Get current time = " . Data::Dumper::Dumper($stime));
 			}
 		}
 
@@ -1116,7 +1138,7 @@ sub vsphere_handler {
 
 				my ($id) = split(/\|/, $data_element);
 				if ($vsphere_connected) {
-					writeLogFile("vpshere handler asking: $data_element\n");
+					writeLogFile(LOG_ESXD_INFO, "vpshere handler asking: $data_element\n");
 					$child_proc{$id} = {'ctime' => time()};
 				
 					my $reader;
@@ -1164,9 +1186,14 @@ sub vsphere_handler {
 $SIG{TERM}  = \&catch_zap_term;
 $SIG{CHLD} = \&REAPER;
 
-open my $centesx_fh, '>>', $LOG;
-open STDOUT, '>&', $centesx_fh;
-open STDERR, '>&', $centesx_fh;
+if ($log_mode == 1) {
+	open my $centesx_fh, '>>', $LOG;
+	open STDOUT, '>&', $centesx_fh;
+	open STDERR, '>&', $centesx_fh;
+}
+if ($log_mode == 2) {
+	openlog $0, LOG_PID, $log_facility;
+}
 
 pipe($reader_pipe_one, $writer_pipe_one);
 pipe($reader_pipe_two, $writer_pipe_two);
@@ -1178,7 +1205,7 @@ my $server = IO::Socket::INET->new( Proto => "tcp",
     				 Listen => SOMAXCONN,
     				 Reuse => 1);
 if (!$server) {
-	writeLogFile("Can't setup server: $!\n");
+	writeLogFile(LOG_ESXD_ERROR, "Can't setup server: $!\n");
 	exit(1);
 }
 
@@ -1195,12 +1222,12 @@ close $reader_pipe_two;
 $read_select = new IO::Select();
 $read_select->add($server);
 $read_select->add($reader_pipe_one);
-writeLogFile("[Server accepting clients]\n");
+writeLogFile(LOG_ESXD_INFO, "[Server accepting clients]\n");
 while (1) {
 
 	my @rh_set = $read_select->can_read(30);
 	if ($stop == 1) {
-		writeLogFile("Send STOP command to thread.\n");
+		writeLogFile(LOG_ESXD_INFO, "Send STOP command to thread.\n");
 		print $writer_pipe_two "STOP\n";
 		$stop = 2;
 	}
@@ -1220,7 +1247,7 @@ while (1) {
 			my $data_element = <$rh>;
 			chomp $data_element;
 			if ($data_element =~ /^STOPPED$/) {
-				writeLogFile("Thread has stopped\n");
+				writeLogFile(LOG_ESXD_INFO, "Thread has stopped\n");
 				exit(0);
 			}
 			# Verify responde queue
@@ -1228,11 +1255,11 @@ while (1) {
 			my @results = split(/\|/, $data_element);
 			my ($id, $counter) = split(/\./, $results[0]);
 			if (!defined($sockets{$id}) || $counter != $sockets{$id}->{'counter'}) {
-				writeLogFile("Too much time to get response.\n");
+				writeLogFile(LOG_ESXD_INFO, "Too much time to get response.\n");
 				next;
 			}
 
-			writeLogFile("response = $data_element\n");
+			writeLogFile(LOG_ESXD_INFO, "response = $data_element\n");
 			$data_element =~ s/^.*?\|//;
 			${$sockets{$id}->{'obj'}}->send($data_element . "\n");
 			$read_select->remove(${$sockets{$id}->{"obj"}});
@@ -1272,7 +1299,7 @@ while (1) {
 	# Verify socket 
 	foreach (keys %sockets) {
 		if (time() - $sockets{$_}->{'ctime'} > $TIMEOUT) {
-			writeLogFile("Timeout returns.\n");
+			writeLogFile(LOG_ESXD_INFO, "Timeout returns.\n");
 			${$sockets{$_}->{'obj'}}->send("3|TIMEOUT\n");
 			$read_select->remove(${$sockets{$_}->{"obj"}});
 			close ${$sockets{$_}->{"obj"}};
