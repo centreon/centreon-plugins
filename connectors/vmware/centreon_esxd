@@ -67,7 +67,8 @@ our %checks_descr = (
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
-			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do}
+			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},
+			"getmap" => {'arg' => \&getmap_check_args, 'compute' => \&getmap_compute_args, 'exec' => \&getmap_do}
 		    ); 
 
 sub writeLogFile($$) {
@@ -887,7 +888,6 @@ sub listhost_compute_args {
 }
 
 sub listhost_do {
-	my ($lhost) = @_;
 	my %filters = ();
 	my @properties = ('name');
 	my $result = get_entities_host('HostSystem', \%filters, \@properties);
@@ -998,6 +998,61 @@ sub listnichost_do {
 	}
 
 	print_response($ERRORS{$MYERRORS{$status}} . "|$output_up. $output_down.\n");
+}
+
+############
+# Get Map Func
+############
+
+sub getmap_check_args {
+	return 0;
+}
+
+sub getmap_compute_args {
+	my $lhost = $_[0];
+	return ($lhost);
+}
+
+sub getmap_do {
+	my ($lhost) = @_;
+	my %filters = ();
+	if (defined($lhost) and $lhost ne "") {
+		%filters = ('name' => $lhost);
+	}
+	my @properties = ('name', 'vm');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $status = 0; # OK
+	my $output = '';
+	my $output_append = "";
+
+	foreach my $entity_view (@$result) {
+		$output .= $output_append . "ESX Host '" . $entity_view->name . "': ";
+		my @vm_array = ();
+		if (defined $entity_view->vm) {
+	 		   @vm_array = (@vm_array, @{$entity_view->vm});
+		}
+
+		@properties = ('name', 'summary.runtime.powerState');
+		my $result2 = get_views(\@vm_array, \@properties);
+		if (!defined($result)) {
+			return ;
+		}
+		
+		my $output_append2 = '';
+		foreach my $vm (@$result2) {
+			if ($vm->{'summary.runtime.powerState'}->val eq "poweredOn") {
+				$output .= $output_append2 . "[" . $vm->name . "]";
+				$output_append2 = ', ';
+			}
+		}
+		$output_append = ". ";
+	}
+
+	print_response($ERRORS{$MYERRORS{$status}} . "|$output\n");
 }
 
 ############
@@ -1273,16 +1328,16 @@ while (1) {
 				my ($name, @args) = split /\|/, $line;
 				if (!defined($checks_descr{$name})) {
 					$rh->send("3|Unknown method name '$name'\n");
+					delete $sockets{fileno($rh)};
 					$read_select->remove($rh);
 					close $rh;
-					delete $sockets{fileno($rh)};
 					next;
 				}
 				if ($checks_descr{$name}->{'arg'}(@args)) {
 					$rh->send("3|Params error '$name'\n");
+					delete $sockets{fileno($rh)};
 					$read_select->remove($rh);
 					close $rh;
-					delete $sockets{fileno($rh)};
 					next;
 				}
 

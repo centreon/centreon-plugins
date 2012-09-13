@@ -108,6 +108,9 @@ sub print_usage () {
 	print "\n";
 	print "'listnichost':\n";
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
+	print "\n";
+	print "'getmap':\n";
+	print "   -e (--esx-host)   Esx Host to check\n";
 }
 
 sub print_help () {
@@ -309,6 +312,17 @@ sub listnichost_get_str {
 	return "listnichost|" . $OPTION{'esx-host'};
 }
 
+sub getmap_check_arg {
+	if (!defined($OPTION{'esx-host'})) {
+		$OPTION{'esx-host'} = "";
+	}
+	return 0;
+}
+
+sub getmap_get_str {
+	return "getmap|" . $OPTION{'esx-host'};
+}
+
 #################
 #################
 
@@ -323,7 +337,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastores|maintenancehost|statushost|cpuhost|nethost|memhost|swaphost|listhost|listdatastore|listnichost)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastores|maintenancehost|statushost|cpuhost|nethost|memhost|swaphost|listhost|listdatastore|listnichost|getmap)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
