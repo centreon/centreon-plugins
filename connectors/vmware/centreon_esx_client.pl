@@ -74,10 +74,15 @@ sub print_usage () {
 	print "'statushost':\n";
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
 	print "\n";
-	print "'datastores':\n";
+	print "'datastore-usage':\n";
 	print "   --datastore       Datastore name to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
 	print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+	print "\n";
+	print "'datastore-io':\n";
+	print "   --datastore       Datastore name to check (required)\n";
+	print "   -w (--warning)    Warning Threshold in kBps (default none)\n";
+	print "   -c (--critical)   Critical Threshold in kBps (default none)\n";
 	print "\n";
 	print "'cpuhost':\n";
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -99,6 +104,11 @@ sub print_usage () {
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in MB/s (default 0.8)\n";
 	print "   -c (--critical)   Critical Threshold in MB/s (default 1)\n";
+	print "\n";
+	print "'datastoreshost':\n";
+	print "   -e (--esx-host)   Esx Host to check (required)\n";
+	print "   -w (--warning)    Warning Threshold in ms (latency) (default none)\n";
+	print "   -c (--critical)   Critical Threshold in ms (latency) (default none)\n";
 	print "\n";
 	print "'listhost':\n";
 	print "   None\n";
@@ -182,7 +192,7 @@ sub healthhost_get_str {
 	return "healthhost|" . $OPTION{'esx-host'};
 }
 
-sub datastores_check_arg {
+sub datastoreusage_check_arg {
 	if (!defined($OPTION{'datastore'})) {
 		print "Option --datastore is required\n";
 		print_usage();
@@ -197,12 +207,30 @@ sub datastores_check_arg {
 	return 0;
 }
 
-sub datastores_get_str {
-	return "datastores|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+sub datastoreusage_get_str {
+	return "datastoreusage|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
+sub datastoreio_check_arg {
+	if (!defined($OPTION{'datastore'})) {
+		print "Option --datastore is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if (!defined($OPTION{'warning'})) {
+		$OPTION{'warning'} = '';
+	}
+	if (!defined($OPTION{'critical'})) {
+		$OPTION{'critical'} = '';
+	}
+	return 0;
+}
+
+sub datastoreio_get_str {
+	return "datastoreio|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub cpuhost_check_arg {
-
 	if (!defined($OPTION{'esx-host'})) {
 		print "Option --esx-host is required\n";
 		print_usage();
@@ -219,6 +247,25 @@ sub cpuhost_check_arg {
 
 sub cpuhost_get_str {
 	return "cpuhost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
+sub datastoreshost_check_arg {
+	if (!defined($OPTION{'esx-host'})) {
+		print "Option --esx-host is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if (!defined($OPTION{'warning'})) {
+		$OPTION{'warning'} = '';
+	}
+	if (!defined($OPTION{'critical'})) {
+		$OPTION{'critical'} = '';
+	}
+	return 0;
+}
+
+sub datastoreshost_get_str {
+        return "datastoreshost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub memhost_check_arg {
@@ -337,12 +384,13 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastores|maintenancehost|statushost|cpuhost|nethost|memhost|swaphost|listhost|listdatastore|listnichost|getmap)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|listhost|listdatastore|listnichost|getmap)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
 
+$OPTION{'usage'} =~ s/-//g;
 my $func_check_arg = $OPTION{'usage'} . "_check_arg";
 my $func_get_str = $OPTION{'usage'} . "_get_str";
 &$func_check_arg();

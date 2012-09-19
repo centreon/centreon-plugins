@@ -14,6 +14,7 @@ use strict;
 use VMware::VIRuntime;
 use VMware::VILib;
 use IO::Socket;
+use File::Basename;
 use Net::hostent; # for OOish version of gethostbyaddr
 use IO::Select;
 use POSIX ":sys_wait_h";
@@ -58,11 +59,13 @@ our %MYERRORS = (0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN");
 our %MYERRORS_MASK = ("CRITICAL" => 3, "WARNING" => 1, "UNKNOWN" => 7, "OK" => 0);
 our %checks_descr = (
 			"healthhost" => {'arg' => \&healthhost_check_args, 'compute' => \&healthhost_compute_args, 'exec' => \&healthhost_do},
-			"datastores" => {'arg' => \&datastores_check_args, 'compute' => \&datastores_compute_args, 'exec' => \&datastores_do},
+			"datastoreusage" => {'arg' => \&datastoreusage_check_args, 'compute' => \&datastoreusage_compute_args, 'exec' => \&datastoreusage_do},
+			"datastoreio" => {'arg' => \&datastoreio_check_args, 'compute' => \&datastoreio_compute_args, 'exec' => \&datastoreio_do},
 			"maintenancehost" => {'arg' => \&maintenancehost_check_args, 'compute' => \&maintenancehost_compute_args, 'exec' => \&maintenancehost_do},
 			"statushost" => {'arg' => \&statushost_check_args, 'compute' => \&statushost_compute_args, 'exec' => \&statushost_do},
 			"cpuhost" => {'arg' => \&cpuhost_check_args, 'compute' => \&cpuhost_compute_args, 'exec' => \&cpuhost_do},
 			"nethost" => {'arg' => \&nethost_check_args, 'compute' => \&nethost_compute_args, 'exec' => \&nethost_do},
+			"datastoreshost" => {'arg' => \&datastoreshost_check_args, 'compute' => \&datastoreshost_compute_args, 'exec' => \&datastoreshost_do},
 			"memhost" => {'arg' => \&memhost_check_args, 'compute' => \&memhost_compute_args, 'exec' => \&memhost_do},
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
@@ -75,6 +78,7 @@ sub writeLogFile($$) {
 	if (($log_crit & $_[0]) == 0) {
 		return ;
 	}
+
 	if ($log_mode == 0) {
 		print $_[1];
 	} elsif ($log_mode == 1) {
@@ -253,7 +257,7 @@ sub get_entities_host {
 	}
 	if (!@$entity_views) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
-		print_response($ERRORS{$MYERRORS{$status}} . "|Host does not exist.\n");
+		print_response($ERRORS{$MYERRORS{$status}} . "|Object $view_type does not exist.\n");
 		return undef;
 	}
 	#eval {
@@ -370,10 +374,10 @@ sub healthhost_do {
 }
 
 ############
-# Datastores Function
+# DatastoreUsage Function
 ############
 
-sub datastores_check_args {
+sub datastoreusage_check_args {
 	my ($ds, $warn, $crit) = @_;
 	if (!defined($ds) || $ds eq "") {
 		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need datastore name\n");
@@ -394,50 +398,29 @@ sub datastores_check_args {
 	return 0;
 }
 
-sub datastores_compute_args {
+sub datastoreusage_compute_args {
 	my $ds = $_[0];
 	my $warn = (defined($_[1]) ? $_[1] : 80);
 	my $crit = (defined($_[2]) ? $_[2] : 90);
 	return ($ds, $warn, $crit);
 }
 
-sub datastores_do {
+sub datastoreusage_do {
 	my ($ds, $warn, $crit) = @_;
-	my %filters = ();
-	my @properties = ('datastore');
+	my %filters = ('summary.name' => $ds);
+	my @properties = ('summary');
 
-	my $result = get_entities_host('Datacenter', \%filters, \@properties);
+	my $result = get_entities_host('Datastore', \%filters, \@properties);
 	if (!defined($result)) {
 		return ;
 	}
 
-	my @ds_array = ();
-	foreach my $entity_view (@$result) {
-		if (defined $entity_view->datastore) {
-	 		   @ds_array = (@ds_array, @{$entity_view->datastore});
-		}
-	}
-
-	@properties = ('summary');
-	$result = get_views(\@ds_array, \@properties);
-	if (!defined($result)) {
-		return ;
-	}
-
-	my $ds_find;
-	foreach my $datastore (@$result) {
-		if ($datastore->summary->accessible && $datastore->summary->name eq $ds) {
-			$ds_find = $datastore;
-			last;	
-		}
-	}
-
-	my $output = '';
 	my $status = 0; # OK
-	if (defined($ds_find)) {
-		my $dsName = $ds_find->summary->name;
-		my $capacity = $ds_find->summary->capacity;
-		my $free = $ds_find->summary->freeSpace;
+	my $output = "";
+	if ($$result[0]->summary->accessible == 1) {
+		my $dsName = $$result[0]->summary->name;
+		my $capacity = $$result[0]->summary->capacity;
+		my $free = $$result[0]->summary->freeSpace;
 		my $pct = ($capacity - $free) / $capacity * 100;
 
 		my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
@@ -451,9 +434,80 @@ sub datastores_do {
 			$status |= $MYERRORS_MASK{'CRITICAL'};
 		}
 	} else {
-		$output = "Datastore '$ds' not found or summary not accessible.";
+		$output = "Datastore '$ds' summary not accessible.";
 		$status |= $MYERRORS_MASK{'UNKNOWN'};
 	}
+	print_response($ERRORS{$MYERRORS{$status}} . "|$output\n");
+}
+
+############
+# DatastoreIO Func
+############
+
+sub datastoreio_check_args {
+	my ($ds, $warn, $crit) = @_;
+	if (!defined($ds) || $ds eq "") {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need datastore name\n");
+		return 1;
+	}
+	if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($crit) && $crit ne "" && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn ne "" && $crit ne "" && $warn > $crit) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub datastoreio_compute_args {
+	my $ds = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : '');
+	my $crit = (defined($_[2]) ? $_[2] : '');
+	return ($ds, $warn, $crit);
+}
+
+sub datastoreio_do {
+	my ($ds, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+		print_response($ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n");
+		return ;
+	}
+
+	my %filters = ('summary.name' => $ds);
+	my @properties = ('summary.name');
+	my $result = get_entities_host('Datastore', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'datastore.read.average', 'instances' => ['']},
+						 {'label' => 'datastore.write.average', 'instances' => ['']}],
+						$perfcounter_speriod);
+
+	my $read_counter = simplify_number(convert_number($values->{$perfcounter_cache{'datastore.read.average'}->{'key'} . ":"}[0]));	
+	my $write_counter = simplify_number(convert_number($values->{$perfcounter_cache{'datastore.write.average'}->{'key'} . ":"}[0]));
+
+	my $status = 0; # OK
+	my $output = '';
+	
+	if ((defined($warn) && $warn ne "") && ($read_counter >= $warn || $write_counter >= $warn)) {
+		$status |= $MYERRORS_MASK{'WARNING'};
+	}
+	if ((defined($crit) && $crit ne "") && ($read_counter >= $crit || $write_counter >= $crit)) {
+		$status |= $MYERRORS_MASK{'CRITICAL'};
+	}
+
+	$output = "Rate of reading data : " . simplify_number($read_counter / 1024 * 8) . " Mb/s,  Rate of writing data : " . simplify_number($write_counter / 1024 * 8) . " Mb/s";
+	$output .= "|read_rate=" . ($read_counter * 1024 * 8) . "b/s write_rate=" . (($write_counter * 1024 * 8)) . "b/s";
+
 	print_response($ERRORS{$MYERRORS{$status}} . "|$output\n");
 }
 
@@ -607,10 +661,6 @@ sub cpuhost_do {
 	}
 
 	my @instances = ('*');
-	foreach my $index (0..($$result[0]->{'hardware.cpuInfo.numCpuThreads'} - 1)) {
-		push @instances, $index;
-	}
-
 
 	my $values = generic_performance_values_historic($$result[0], 
 						[{'label' => 'cpu.usage.average', 'instances' => \@instances}],
@@ -729,6 +779,124 @@ sub nethost_do {
 
 	print_response($ERRORS{$MYERRORS{$status}} . "|$output\n");
 }
+
+############
+# DiskHost Func
+############
+
+sub datastoreshost_check_args {
+	my ($lhost, $warn, $crit) = @_;
+	if (!defined($lhost) || $lhost eq "") {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need host name\n");
+		return 1;
+	}
+	if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($crit) && $crit ne "" && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: crit threshold must be a positive number\n");
+		return 1;
+	}
+	if (defined($warn) && defined($crit) && $warn ne "" && $crit ne "" && $warn > $crit) {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: warn threshold must be lower than crit threshold\n");
+		return 1;
+	}
+	return 0;
+}
+
+sub datastoreshost_compute_args {
+	my $lhost = $_[0];
+	my $warn = (defined($_[1]) ? $_[1] : '');
+	my $crit = (defined($_[2]) ? $_[2] : '');
+	return ($lhost, $warn, $crit);
+}
+
+sub datastoreshost_do {
+	my ($lhost, $warn, $crit) = @_;
+	if (!($perfcounter_speriod > 0)) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+		print_response($ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n");
+		return ;
+	}
+
+	my %filters = ('name' => $lhost);
+	my @properties = ('config.fileSystemVolume.mountInfo');
+	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	if (!defined($result)) {
+		return ;
+	}
+
+	my %uuid_list = ();
+	my %disk_name = ();
+	foreach (@{$$result[0]->{'config.fileSystemVolume.mountInfo'}}) {
+		if ($_->volume->isa('HostVmfsVolume')) {
+			$uuid_list{$_->volume->uuid} = $_->volume->name;
+			# Not need. We are on Datastore level (not LUN level)
+			#foreach my $extent (@{$_->volume->extent}) {
+			#	$disk_name{$extent->diskName} = $_->volume->name;
+			#}
+		}
+		if ($_->volume->isa('HostNasVolume')) {
+			$uuid_list{basename($_->mountInfo->path)} = $_->volume->name;
+		}
+	}
+
+	# Vsphere >= 4.1
+	my $values = generic_performance_values_historic($$result[0], 
+						[{'label' => 'datastore.totalReadLatency.average', 'instances' => ['*']},
+						{'label' => 'datastore.totalWriteLatency.average', 'instances' => ['*']}],
+						$perfcounter_speriod);
+
+	my $status = 0; # OK
+	my $output = '';
+	my $output_append = '';
+	my $output_warning = '';
+	my $output_warning_append = '';
+	my $output_critical = '';
+	my $output_critical_append = '';
+	my $perfdata = '';
+	foreach (keys %uuid_list) {
+		if (defined($values->{$perfcounter_cache{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}) and
+		    defined($values->{$perfcounter_cache{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $_})) {
+			my $read_counter = simplify_number(convert_number($values->{$perfcounter_cache{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}[0]));
+			my $write_counter = simplify_number(convert_number($values->{$perfcounter_cache{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $_}[0]));
+			if (defined($crit) && $crit ne "" && ($read_counter >= $crit)) {
+				output_add(\$output_critical, \$output_critical_append, ", ",
+					"read on '" . $uuid_list{$_} . "' is $read_counter ms");
+				$status |= $MYERRORS_MASK{'WARNING'};
+			} elsif (defined($warn) && $warn ne "" && ($read_counter >= $warn)) {
+				output_add(\$output_warning, \$output_warning_append, ", ",
+					"read on '" . $uuid_list{$_} . "' is $read_counter ms");
+				$status |= $MYERRORS_MASK{'WARNING'};
+			}
+			if (defined($crit) && $crit ne "" && ($write_counter >= $crit)) {
+				output_add(\$output_critical, \$output_critical_append, ", ",
+					"write on '" . $uuid_list{$_} . "' is $write_counter ms");
+				$status |= $MYERRORS_MASK{'WARNING'};
+			} elsif (defined($warn) && $warn ne "" && ($write_counter >= $warn)) {
+				output_add(\$output_warning, \$output_warning_append, ", ",
+					"write on '" . $uuid_list{$_} . "' is $write_counter ms");
+				$status |= $MYERRORS_MASK{'WARNING'};
+			}
+			
+			$perfdata .= " 'trl_" . $uuid_list{$_} . "'=" . $read_counter . "ms 'twl_" . $uuid_list{$_} . "'=" . $write_counter . 'ms';
+		}
+	}
+
+	if ($output_critical ne "") {
+		$output .= $output_append . "CRITICAL - Latency counter: $output_critical";
+		$output_append = ". ";
+	}
+	if ($output_warning ne "") {
+		$output .= $output_append . "WARNING - Latency counter: $output_warning";
+	}
+        if ($status == 0) {
+                $output = "All Datastore latency counters are ok";
+        }
+	print_response($ERRORS{$MYERRORS{$status}} . "|$output|$perfdata\n");
+}
+
 
 ############
 # MemHost Func
@@ -1208,6 +1376,8 @@ sub vsphere_handler {
 						# Child	
 						close $reader;
 						open STDOUT, '>&', $writer;
+						# Can't print on stdout
+						$log_mode = 1 if ($log_mode == 0);
 						my ($id, $name, @args) = split /\|/, $data_element;
 						$global_id = $id;
 						$checks_descr{$name}->{'exec'}($checks_descr{$name}->{'compute'}(@args));
