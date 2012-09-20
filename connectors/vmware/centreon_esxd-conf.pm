@@ -1,3 +1,5 @@
+
+our $libpath = '/usr/share/centreon/lib/centreon-esxd';
 our $port = 5700;
 our $service_url = "https://XXXX.XXXX.XXX/sdk";
 our $username = "xxxxx";
