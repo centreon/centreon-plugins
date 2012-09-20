@@ -34,6 +34,7 @@ GetOptions(
 
 	"u|usage=s"			=> \$OPTION{'usage'},
 	"e|esx-host=s"			=> \$OPTION{'esx-host'},
+	"vm=s"				=> \$OPTION{'vm'},
 	
 	"datastore=s"			=> \$OPTION{'datastore'},
 	"nic=s"				=> \$OPTION{'nic'},
@@ -109,6 +110,11 @@ sub print_usage () {
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in ms (latency) (default none)\n";
 	print "   -c (--critical)   Critical Threshold in ms (latency) (default none)\n";
+	print "\n";
+	print "'cpuvm':\n";
+	print "   --vm              VM to check (required)\n";
+	print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
+	print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
 	print "\n";
 	print "'listhost':\n";
 	print "   None\n";
@@ -330,6 +336,25 @@ sub nethost_get_str {
 	return "nethost|" . $OPTION{'esx-host'} . "|" . $OPTION{'nic'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
+sub cpuvm_check_arg {
+	if (!defined($OPTION{'vm'})) {
+		print "Option --vm is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if (!defined($OPTION{'warning'})) {
+		$OPTION{'warning'} = 80;
+	}
+	if (!defined($OPTION{'critical'})) {
+		$OPTION{'critical'} = 90;
+	}
+	return 0;
+}
+
+sub cpuvm_get_str {
+	return "cpuvm|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
 sub listhost_check_arg {
 	return 0;
 }
@@ -384,7 +409,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|listhost|listdatastore|listnichost|getmap)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|cpuvm|listhost|listdatastore|listnichost|getmap)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};

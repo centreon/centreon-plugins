@@ -30,6 +30,7 @@ use constant {
 require '/etc/centreon/centreon_esxd.pm';
 require $libpath . '/esxd-common.pm';
 require $libpath . '/command-cpuhost.pm';
+require $libpath . '/command-cpuvm.pm';
 require $libpath . '/command-datastoreio.pm';
 require $libpath . '/command-datastoreshost.pm';
 require $libpath . '/command-datastoreusage.pm';
@@ -83,6 +84,7 @@ our %checks_descr = (
 			"datastoreshost" => {'arg' => \&datastoreshost_check_args, 'compute' => \&datastoreshost_compute_args, 'exec' => \&datastoreshost_do},
 			"memhost" => {'arg' => \&memhost_check_args, 'compute' => \&memhost_compute_args, 'exec' => \&memhost_do},
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
+			"cpuvm" => {'arg' => \&cpuvm_check_args, 'compute' => \&cpuvm_compute_args, 'exec' => \&cpuvm_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},
