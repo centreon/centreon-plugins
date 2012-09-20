@@ -9,22 +9,9 @@ sub listdatastore_compute_args {
 sub listdatastore_do {
 	my ($ds, $warn, $crit) = @_;
 	my %filters = ();
-	my @properties = ('datastore');
+	my @properties = ('summary');
 
-	my $result = get_entities_host('Datacenter', \%filters, \@properties);
-	if (!defined($result)) {
-		return ;
-	}
-
-	my @ds_array = ();
-	foreach my $entity_view (@$result) {
-		if (defined $entity_view->datastore) {
-	 		   @ds_array = (@ds_array, @{$entity_view->datastore});
-		}
-	}
-
-	@properties = ('summary');
-	$result = get_views(\@ds_array, \@properties);
+	my $result = get_entities_host('Datastore', \%filters, \@properties);
 	if (!defined($result)) {
 		return ;
 	}

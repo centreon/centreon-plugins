@@ -28,7 +28,7 @@ sub datastoreusage_compute_args {
 
 sub datastoreusage_do {
 	my ($ds, $warn, $crit) = @_;
-	my %filters = ('summary.name' => $ds);
+	my %filters = ('name' => $ds);
 	my @properties = ('summary');
 
 	my $result = get_entities_host('Datastore', \%filters, \@properties);
