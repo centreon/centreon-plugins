@@ -48,6 +48,7 @@ require $libpath . '/command-memhost.pm';
 require $libpath . '/command-nethost.pm';
 require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
+require $libpath . '/command-toolsvm.pm';
 
 our $session_id;
 our %sockets = ();
@@ -97,6 +98,7 @@ our %checks_descr = (
 			"memhost" => {'arg' => \&memhost_check_args, 'compute' => \&memhost_compute_args, 'exec' => \&memhost_do},
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
 			"cpuvm" => {'arg' => \&cpuvm_check_args, 'compute' => \&cpuvm_compute_args, 'exec' => \&cpuvm_do},
+			"toolsvm" => {'arg' => \&toolsvm_check_args, 'compute' => \&toolsvm_compute_args, 'exec' => \&toolsvm_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},
