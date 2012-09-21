@@ -39,6 +39,10 @@ GetOptions(
 	"datastore=s"			=> \$OPTION{'datastore'},
 	"nic=s"				=> \$OPTION{'nic'},
 
+	"older=i"			=> \$OPTION{'older'},
+	"warn"				=> \$OPTION{'warn'},
+	"crit"				=> \$OPTION{'crit'},
+
 	"w|warning=i"			=> \$OPTION{'warning'},
 	"c|critical=i"			=> \$OPTION{'critical'},
 );
@@ -118,6 +122,12 @@ sub print_usage () {
 	print "\n";
 	print "'toolsvm':\n";
 	print "   --vm              VM to check (required)\n";
+	print "\n";
+	print "'snapshotvm':\n";
+	print "   --vm              VM to check (required)\n";
+	print "   --older           If older than ms\n";
+	print "   --crit            Critical if: there is a snasphot, or a snapshot is older than (--older)\n";
+	print "   --warn            Warn if: there is a snasphot, or a snapshot is older than (--older)\n";
 	print "\n";
 	print "'listhost':\n";
 	print "   None\n";
@@ -371,6 +381,32 @@ sub toolsvm_get_str {
 	return "toolsvm|" . $OPTION{'vm'};
 }
 
+sub snapshotvm_check_arg {
+	if (!defined($OPTION{'vm'})) {
+		print "Option --vm is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if (!defined($OPTION{'older'})) {
+		$OPTION{'older'} = '';
+	}
+	if (!defined($OPTION{'warn'})) {
+		$OPTION{'warn'} = 0;
+	} else {
+		$OPTION{'warn'} = 1;
+	}
+	if (!defined($OPTION{'crit'})) {
+		$OPTION{'crit'} = 0;
+	} else {
+		$OPTION{'crit'} = 1;
+	}
+	return 0;
+}
+
+sub snapshotvm_get_str {
+	return "snapshotvm|" . $OPTION{'vm'} . "|" . $OPTION{'older'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};;
+}
+
 sub listhost_check_arg {
 	return 0;
 }
@@ -425,7 +461,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|cpuvm|toolsvm|listhost|listdatastore|listnichost|getmap)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|cpuvm|toolsvm|snapshotvm|listhost|listdatastore|listnichost|getmap)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};

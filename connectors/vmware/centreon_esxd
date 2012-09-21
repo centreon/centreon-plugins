@@ -22,6 +22,13 @@ use IO::Select;
 use POSIX ":sys_wait_h";
 use Data::Dumper;
 
+our $module_date_parse_loaded = 0;
+eval 'require DateTime::Format::ISO8601';
+if (!$@) {
+	$module_date_parse_loaded = 1;
+	require DateTime::Format::ISO8601;
+}
+
 use vars qw($libpath $port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION);
 use vars qw($LOG $log_mode $log_crit $log_facility);
 use vars qw($openlog_option $syslog_err_priority $syslog_info_priority);
@@ -46,6 +53,7 @@ require $libpath . '/command-listnichost.pm';
 require $libpath . '/command-maintenancehost.pm';
 require $libpath . '/command-memhost.pm';
 require $libpath . '/command-nethost.pm';
+require $libpath . '/command-snapshotvm.pm';
 require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
 require $libpath . '/command-toolsvm.pm';
@@ -99,6 +107,7 @@ our %checks_descr = (
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
 			"cpuvm" => {'arg' => \&cpuvm_check_args, 'compute' => \&cpuvm_compute_args, 'exec' => \&cpuvm_do},
 			"toolsvm" => {'arg' => \&toolsvm_check_args, 'compute' => \&toolsvm_compute_args, 'exec' => \&toolsvm_do},
+			"snapshotvm" => {'arg' => \&snapshotvm_check_args, 'compute' => \&snapshotvm_compute_args, 'exec' => \&snapshotvm_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},
