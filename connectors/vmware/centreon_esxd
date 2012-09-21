@@ -3,8 +3,10 @@
 
 BEGIN {
 	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+	$ENV{ESX_SYSLOGD_LOAD} = 0;
 	eval 'require Unix::Syslog;';
 	if (!$@) {
+		$ENV{ESX_SYSLOGD_LOAD} = 1;
 		require Unix::Syslog;
 		Unix::Syslog->import(qw(:subs :macros));
 	}
@@ -22,6 +24,8 @@ use Data::Dumper;
 
 use vars qw($libpath $port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION);
 use vars qw($LOG $log_mode $log_crit $log_facility);
+use vars qw($openlog_option $syslog_err_priority $syslog_info_priority);
+
 use constant {
 	LOG_ESXD_ERROR => 1,
 	LOG_ESXD_INFO  => 2
@@ -69,6 +73,14 @@ our $writer_pipe_two;
 our $session1;
 our $counter = 0;
 our $global_id;
+
+our $openlog_option;
+our $syslog_err_priority;
+our $syslog_info_priority;
+
+if ($ENV{ESX_SYSLOGD_LOAD} == 1) {
+	require $libpath . '/esxd-syslog.pm';
+}
 
 our %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3, "PENDING" => 4);
 our %MYERRORS = (0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN");
@@ -283,7 +295,7 @@ if ($log_mode == 1) {
 	open STDERR, '>&', $centesx_fh;
 }
 if ($log_mode == 2) {
-	openlog $0, LOG_PID, $log_facility;
+	openlog($0, $openlog_option, $log_facility);
 }
 
 pipe($reader_pipe_one, $writer_pipe_one);

@@ -11,8 +11,8 @@ sub writeLogFile($$) {
 		printf LOG "%04d-%02d-%02d %02d:%02d:%02d - %s", $year+1900, $mon+1, $mday, $hour, $min, $sec, $_[1];
 		close LOG;
 	} elsif ($log_mode == 2) {
-		syslog LOG_ERR, $_[1] if ($_[0] == LOG_ESXD_ERROR);
-		syslog LOG_INFO, $_[1] if ($_[0] == LOG_ESXD_INFO);
+		syslog($syslog_err_priority, $_[1]) if ($_[0] == LOG_ESXD_ERROR);
+		syslog($syslog_info_priority, $_[1]) if ($_[0] == LOG_ESXD_INFO);
 	}
 }
 
