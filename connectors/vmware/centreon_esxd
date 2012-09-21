@@ -44,6 +44,7 @@ require $libpath . '/command-cpuhost.pm';
 require $libpath . '/command-cpuvm.pm';
 require $libpath . '/command-datastoreio.pm';
 require $libpath . '/command-datastoreshost.pm';
+require $libpath . '/command-datastoresvm.pm';
 require $libpath . '/command-datastoreusage.pm';
 require $libpath . '/command-getmap.pm';
 require $libpath . '/command-healthhost.pm';
@@ -108,6 +109,7 @@ our %checks_descr = (
 			"cpuvm" => {'arg' => \&cpuvm_check_args, 'compute' => \&cpuvm_compute_args, 'exec' => \&cpuvm_do},
 			"toolsvm" => {'arg' => \&toolsvm_check_args, 'compute' => \&toolsvm_compute_args, 'exec' => \&toolsvm_do},
 			"snapshotvm" => {'arg' => \&snapshotvm_check_args, 'compute' => \&snapshotvm_compute_args, 'exec' => \&snapshotvm_do},
+			"datastoresvm" => {'arg' => \&datastoresvm_check_args, 'compute' => \&datastoresvm_compute_args, 'exec' => \&datastoresvm_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},
