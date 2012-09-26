@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 
-
 BEGIN {
 	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 	$ENV{ESX_SYSLOGD_LOAD} = 0;
@@ -17,7 +16,6 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use IO::Socket;
 use File::Basename;
-use Net::hostent; # for OOish version of gethostbyaddr
 use IO::Select;
 use POSIX ":sys_wait_h";
 use Data::Dumper;
@@ -61,6 +59,7 @@ require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
 require $libpath . '/command-toolsvm.pm';
 
+our $VERSION = "1.2";
 our $session_id;
 our %sockets = ();
 our %child_proc;
