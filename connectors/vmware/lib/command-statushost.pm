@@ -38,12 +38,12 @@ sub statushost_do {
 	);
 
 	foreach my $entity_view (@$result) {
-		my $status = $entity_view->{'summary.overallStatus'}->val;
+		my $status_esx = $entity_view->{'summary.overallStatus'}->val;
 
-		if (defined($status) && $overallStatus{$status}) {
-			$output = "The Server '$lhost' " . $overallStatus{$status};
-			if ($MYERRORS_MASK{$overallStatusReturn{$status}} != 0) {
-				$status |= $MYERRORS_MASK{$overallStatusReturn{$status}};
+		if (defined($status) && $overallStatus{$status_esx}) {
+			$output = "The Server '$lhost' " . $overallStatus{$status_esx};
+			if ($MYERRORS_MASK{$overallStatusReturn{$status_esx}} != 0) {
+				$status |= $MYERRORS_MASK{$overallStatusReturn{$status_esx}};
 			}
 		} else {
 			$output = "Can't interpret data...";
