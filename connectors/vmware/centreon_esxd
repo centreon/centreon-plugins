@@ -17,7 +17,6 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use IO::Socket;
 use File::Basename;
-use Net::hostent; # for OOish version of gethostbyaddr
 use IO::Select;
 use POSIX ":sys_wait_h";
 use Data::Dumper;
@@ -61,6 +60,8 @@ require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
 require $libpath . '/command-toolsvm.pm';
 
+
+our $VERSION = "1.3";
 our $session_id;
 our %sockets = ();
 our %child_proc;
@@ -451,7 +452,7 @@ while (1) {
 				}
 
 				my $tmp_handle = ${$vsphere_server{$vsphere_name}->{'writer_two'}};
-				print $tmp_handle $current_fileno . "." . $sockets{$current_fileno}->{'counter'} . "|$name|@args\n";
+				print $tmp_handle $current_fileno . "." . $sockets{$current_fileno}->{'counter'} . "|$name|" . join('|', @args) . "\n";
 			} else {
 				delete $sockets{$current_fileno};
 				$rh->send("3|Need arguments\n");

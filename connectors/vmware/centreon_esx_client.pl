@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.0";
+my $VERSION = "1.3";
 my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 my $socket;
 
