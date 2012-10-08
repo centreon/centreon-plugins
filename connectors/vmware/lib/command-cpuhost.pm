@@ -1,5 +1,5 @@
 sub cpuhost_check_args {
-	my ($host, $warn, $crit) = @_;
+	my ($host, $warn, $crit, $light_perfdata) = @_;
 	if (!defined($host) || $host eq "") {
 		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
 		return 1;
@@ -23,11 +23,12 @@ sub cpuhost_compute_args {
 	my $lhost = $_[0];
 	my $warn = (defined($_[1]) ? $_[1] : 80);
 	my $crit = (defined($_[2]) ? $_[2] : 90);
-	return ($lhost, $warn, $crit);
+	my $light_perfdata = (defined($_[3]) ? $_[3] : 0);
+	return ($lhost, $warn, $crit, $light_perfdata);
 }
 
 sub cpuhost_do {
-	my ($lhost, $warn, $crit) = @_;
+	my ($lhost, $warn, $crit, $light_perfdata) = @_;
 	if (!($perfcounter_speriod > 0)) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
 		print_response($ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n");
@@ -66,7 +67,7 @@ sub cpuhost_do {
                                $cib = -1 if (!defined($cib) || $cib eq "");
 			       $cia <=> $cib} keys %$values) {
 		my ($counter_id, $instance) = split /:/, $id;
-		if ($instance ne "") {
+		if ($instance ne "" and $light_perfdata != 1) {
 			$output .= " cpu$instance=" . simplify_number(convert_number($values->{$id}[0]) * 0.01) . "%;;0;100";
 		}
 	}

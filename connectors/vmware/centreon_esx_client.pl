@@ -19,6 +19,7 @@ my %OPTION = (
 	"esxd-host" => undef, "esxd-port" => 5700,
 	"vsphere" => '',
 	"usage" => undef,
+	"light-perfdata" => undef,
 	"esx-host" => undef,
 	"datastore" => undef,
 	"nic" => undef,
@@ -39,6 +40,7 @@ GetOptions(
 	"e|esx-host=s"			=> \$OPTION{'esx-host'},
 	"vm=s"				=> \$OPTION{'vm'},
 	
+	"light-perfdata"		=> \$OPTION{'light-perfdata'},
 	"datastore=s"			=> \$OPTION{'datastore'},
 	"nic=s"				=> \$OPTION{'nic'},
 
@@ -97,6 +99,7 @@ sub print_usage () {
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
 	print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+	print "   --light-perfdata  Display only total average cpu perfdata\n";
 	print "\n";
 	print "'nethost':\n";
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -289,11 +292,14 @@ sub cpuhost_check_arg {
 	if (!defined($OPTION{'critical'})) {
 		$OPTION{'critical'} = 90;
 	}
+	if (!defined($OPTION{'light-perfdata'})) {
+		$OPTION{'light-perfdata'} = 0;
+	}
 	return 0;
 }
 
 sub cpuhost_get_str {
-	return "cpuhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "cpuhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'} . "|" . $OPTION{'light-perfdata'};
 }
 
 sub datastoreshost_check_arg {
