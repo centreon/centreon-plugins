@@ -17,6 +17,7 @@ sub writeLogFile($$) {
 }
 
 sub connect_vsphere {
+	my ($service_url, $username, $password) = @_;
 	writeLogFile(LOG_ESXD_INFO, "Vsphere connection in progress\n");
 	eval {
 		$SIG{ALRM} = sub { die('TIMEOUT'); };
@@ -160,7 +161,7 @@ sub get_entities_host {
 	eval {
 		$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 	};
-	if ($@) {
+	if ($@ =~ /decryption failed or bad record mac/) {
 		writeLogFile(LOG_ESXD_ERROR, "$@");
 		eval {
 			$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
@@ -172,6 +173,12 @@ sub get_entities_host {
 			print_response("-1|Error: " . Data::Dumper::Dumper($lerror) . "\n");
 			return undef;
 		}
+	} elsif ($@) {
+		writeLogFile(LOG_ESXD_ERROR, "$@");
+		my $lerror = $@;
+		$lerror =~ s/\n/ /g;
+		print_response("-1|Error: " . $lerror . "\n");
+		return undef;
 	}
 	if (!@$entity_views) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};

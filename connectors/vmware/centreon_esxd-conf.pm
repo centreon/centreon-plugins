@@ -1,9 +1,13 @@
 
 our $libpath = '/usr/share/centreon/lib/centreon-esxd';
 our $port = 5700;
-our $service_url = "https://XXXX.XXXX.XXX/sdk";
-our $username = "xxxxx";
-our $password = 'xxxxx';
+our %vsphere_server = ('default' => {'url' => 'https://XXXXXX/sdk',
+                                     'username' => 'XXXXX',
+                                     'password' => 'XXXXX'},
+                       'testvc' =>  {'url' => 'https://XXXXXX/sdk',
+                                     'username' => 'XXXXX',
+                                     'password' => 'XXXXXX'}
+                      );
 our $TIMEOUT_VSPHERE = 60;
 our $TIMEOUT = 60;
 our $TIMEOUT_KILL = 30;

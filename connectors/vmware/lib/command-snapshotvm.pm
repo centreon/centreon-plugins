@@ -23,7 +23,7 @@ sub snapshotvm_compute_args {
 sub snapshotvm_do {
 	my ($lvm, $older, $warn, $crit) = @_;
 
-	if ($older != -1 && $module_date_parse_loaded == 0) {
+	if ($module_date_parse_loaded == 0) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
 		print_response($ERRORS{$MYERRORS{$status}} . "|Need to install DateTime::Format::ISO8601 CPAN Module.\n");
 		return ;
@@ -45,10 +45,10 @@ sub snapshotvm_do {
 		return ;
 	}
 	
+	# 2012-09-21T14:16:17.540469Z
 	foreach my $snapshot (@{$$result[0]->{'snapshot.rootSnapshotList'}}) {
+		my $create_time = DateTime::Format::ISO8601->parse_datetime($snapshot->createTime);
 		if ($older != -1 && time() - $create_time->epoch > $older) {
-            # 2012-09-21T14:16:17.540469Z
-            my $create_time = DateTime::Format::ISO8601->parse_datetime($snapshot->createTime);
 			if ($warn == 1) {
 				$output = 'Older snapshot problem (' . $snapshot->createTime . ').';
 				$status |= $MYERRORS_MASK{'WARNING'};
@@ -59,11 +59,11 @@ sub snapshotvm_do {
 			}
 		} elsif ($older == -1) {
 			if ($warn == 1) {
-				$output = 'There is at least one snapshot.';
+				$output = 'There is at least one snapshot (' . $snapshot->createTime . ').';
 				$status |= $MYERRORS_MASK{'WARNING'};
 			}
 			if ($crit == 1) {
-				$output = 'There is at least one snapshot.';
+				$output = 'There is at least one snapshot (' . $snapshot->createTime . ').';
 				$status |= $MYERRORS_MASK{'CRITICAL'};
 			}
 		}

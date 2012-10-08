@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.2";
+my $VERSION = "1.0";
 my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 my $socket;
 
@@ -17,6 +17,7 @@ sub print_revision($$);
 my %OPTION = (
 	"help" => undef, "version" => undef,
 	"esxd-host" => undef, "esxd-port" => 5700,
+	"vsphere" => '',
 	"usage" => undef,
 	"esx-host" => undef,
 	"datastore" => undef,
@@ -31,6 +32,8 @@ GetOptions(
 	"V|version"			=> \$OPTION{'version'},
 	"H|centreon-esxd-host=s"	=> \$OPTION{'esxd-host'},
 	"P|centreon-esxd-port=i"	=> \$OPTION{'esxd-port'},
+
+	"vsphere=s"			=> \$OPTION{'vsphere'},
 
 	"u|usage=s"			=> \$OPTION{'usage'},
 	"e|esx-host=s"			=> \$OPTION{'esx-host'},
@@ -68,6 +71,7 @@ sub print_usage () {
 	print "   -h (--help)       usage help\n";
 	print "   -H  		    centreon-esxd Host (required)\n";
 	print "   -P  		    centreon-esxd Port (default 5700)\n";
+	print "   --vsphere	    vsphere name (default: none)\n";
 	print "   -u (--usage)	    What to check. The list and args (required)\n";
 	print "\n";
 	print "'healthhost':\n";
@@ -197,7 +201,7 @@ sub maintenancehost_check_arg {
 }
 
 sub maintenancehost_get_str {
-	return "maintenancehost|" . $OPTION{'esx-host'};
+	return "maintenancehost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
 sub statushost_check_arg {
@@ -210,7 +214,7 @@ sub statushost_check_arg {
 }
 
 sub statushost_get_str {
-	return "statushost|" . $OPTION{'esx-host'};
+	return "statushost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
 sub healthhost_check_arg {
@@ -223,7 +227,7 @@ sub healthhost_check_arg {
 }
 
 sub healthhost_get_str {
-	return "healthhost|" . $OPTION{'esx-host'};
+	return "healthhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
 sub datastoreusage_check_arg {
@@ -242,7 +246,7 @@ sub datastoreusage_check_arg {
 }
 
 sub datastoreusage_get_str {
-	return "datastoreusage|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "datastoreusage|" . $OPTION{'vsphere'} . "|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub datastoreio_check_arg {
@@ -261,7 +265,7 @@ sub datastoreio_check_arg {
 }
 
 sub datastoreio_get_str {
-	return "datastoreio|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "datastoreio|" . $OPTION{'vsphere'} . "|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub cpuhost_check_arg {
@@ -280,7 +284,7 @@ sub cpuhost_check_arg {
 }
 
 sub cpuhost_get_str {
-	return "cpuhost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "cpuhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub datastoreshost_check_arg {
@@ -299,7 +303,7 @@ sub datastoreshost_check_arg {
 }
 
 sub datastoreshost_get_str {
-        return "datastoreshost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+        return "datastoreshost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub memhost_check_arg {
@@ -318,7 +322,7 @@ sub memhost_check_arg {
 }
 
 sub memhost_get_str {
-	return "memhost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "memhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub swaphost_check_arg {
@@ -337,7 +341,7 @@ sub swaphost_check_arg {
 }
 
 sub swaphost_get_str {
-	return "swaphost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "swaphost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub nethost_check_arg {
@@ -361,7 +365,7 @@ sub nethost_check_arg {
 }
 
 sub nethost_get_str {
-	return "nethost|" . $OPTION{'esx-host'} . "|" . $OPTION{'nic'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "nethost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'nic'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub countvmhost_check_arg {
@@ -380,7 +384,7 @@ sub countvmhost_check_arg {
 }
 
 sub countvmhost_get_str {
-	return "countvmhost|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "countvmhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub cpuvm_check_arg {
@@ -399,7 +403,7 @@ sub cpuvm_check_arg {
 }
 
 sub cpuvm_get_str {
-	return "cpuvm|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "cpuvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub toolsvm_check_arg {
@@ -412,7 +416,7 @@ sub toolsvm_check_arg {
 }
 
 sub toolsvm_get_str {
-	return "toolsvm|" . $OPTION{'vm'};
+	return "toolsvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'};
 }
 
 sub snapshotvm_check_arg {
@@ -438,7 +442,7 @@ sub snapshotvm_check_arg {
 }
 
 sub snapshotvm_get_str {
-	return "snapshotvm|" . $OPTION{'vm'} . "|" . $OPTION{'older'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};
+	return "snapshotvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'older'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};
 }
 
 sub datastoresvm_check_arg {
@@ -457,7 +461,7 @@ sub datastoresvm_check_arg {
 }
 
 sub datastoresvm_get_str {
-	return "datastoresvm|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "datastoresvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 sub memvm_check_arg {
@@ -476,7 +480,7 @@ sub memvm_check_arg {
 }
 
 sub memvm_get_str {
-	return "memvm|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+	return "memvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
 
@@ -485,7 +489,7 @@ sub listhost_check_arg {
 }
 
 sub listhost_get_str {
-	return "listhost";
+	return "listhost|" . $OPTION{'vsphere'};
 }
 
 sub listdatastore_check_arg {
@@ -493,7 +497,7 @@ sub listdatastore_check_arg {
 }
 
 sub listdatastore_get_str {
-	return "listdatastore";
+	return "listdatastore|" . $OPTION{'vsphere'};
 }
 
 sub listnichost_check_arg {
@@ -506,7 +510,7 @@ sub listnichost_check_arg {
 }
 
 sub listnichost_get_str {
-	return "listnichost|" . $OPTION{'esx-host'};
+	return "listnichost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
 sub getmap_check_arg {
@@ -517,7 +521,7 @@ sub getmap_check_arg {
 }
 
 sub getmap_get_str {
-	return "getmap|" . $OPTION{'esx-host'};
+	return "getmap|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
 #################
@@ -561,11 +565,11 @@ if ($status_return == -1) {
 }
 exit $status_return;
 
-#print $remote "healthhost|srvi-esx-dev-1.merethis.net\n";
-#print $remote "datastores|LUN-VMFS-QGARNIER|80|90\n";
-#print $remote "maintenancehost|srvi-esx-dev-1.merethis.net\n";
-#print $remote "statushost|srvi-esx-dev-1.merethis.net\n";
-#print $remote "cpuhost|srvi-esx-dev-1.merethis.net|60\n";
-#print $remote "nethost|srvi-esx-dev-1.merethis.net|vmnic1|60\n";
-#print $remote "memhost|srvi-esx-dev-1.merethis.net|80\n";
-#print $remote "swaphost|srvi-esx-dev-1.merethis.net|80\n";
+#print $remote "healthhost||srvi-esx-dev-1.merethis.net\n";
+#print $remote "datastores||LUN-VMFS-QGARNIER|80|90\n";
+#print $remote "maintenancehost||srvi-esx-dev-1.merethis.net\n";
+#print $remote "statushost||srvi-esx-dev-1.merethis.net\n";
+#print $remote "cpuhost||srvi-esx-dev-1.merethis.net|60\n";
+#print $remote "nethost||srvi-esx-dev-1.merethis.net|vmnic1|60\n";
+#print $remote "memhost||srvi-esx-dev-1.merethis.net|80\n";
+#print $remote "swaphost||srvi-esx-dev-1.merethis.net|80\n";

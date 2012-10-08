@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+
 BEGIN {
 	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 	$ENV{ESX_SYSLOGD_LOAD} = 0;
@@ -16,6 +17,7 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use IO::Socket;
 use File::Basename;
+use Net::hostent; # for OOish version of gethostbyaddr
 use IO::Select;
 use POSIX ":sys_wait_h";
 use Data::Dumper;
@@ -27,7 +29,7 @@ if (!$@) {
 	require DateTime::Format::ISO8601;
 }
 
-use vars qw($libpath $port $service_url $username $password $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION);
+use vars qw($libpath $port %vsphere_server $TIMEOUT_VSPHERE $TIMEOUT $TIMEOUT_KILL $REFRESH_KEEPER_SESSION);
 use vars qw($LOG $log_mode $log_crit $log_facility);
 use vars qw($openlog_option $syslog_err_priority $syslog_info_priority);
 
@@ -59,7 +61,6 @@ require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
 require $libpath . '/command-toolsvm.pm';
 
-our $VERSION = "1.2";
 our $session_id;
 our %sockets = ();
 our %child_proc;
@@ -77,13 +78,11 @@ our $stop = 0;
 our $counter_request_id = 0;
 our $child_vpshere_pid;
 our $read_select;
-our $reader_pipe_one;
-our $writer_pipe_one;
-our $reader_pipe_two;
-our $writer_pipe_two;
 our $session1;
 our $counter = 0;
 our $global_id;
+our $whoaim; # to know which vsphere to connect
+our %filenos;
 
 our $openlog_option;
 our $syslog_err_priority;
@@ -135,13 +134,14 @@ sub REAPER {
 
 sub verify_child {
 	my $progress = 0;
+	my $handle_writer_pipe = ${$vsphere_server{$whoaim}->{'writer_one'}};
 
 	# Verify process
 	foreach (keys %child_proc) {
 		# Check ctime
 		if (time() - $child_proc{$_}->{'ctime'} > $TIMEOUT) {
 			my $handle = ${$child_proc{$_}->{'reading'}};
-			print $writer_pipe_one "$_|-1|Timeout Process.\n";
+			print $handle_writer_pipe "$_|-1|Timeout Process.\n";
 			kill('INT', $child_proc{$_}->{'pid'});
 			$read_select->remove($handle);
 			close $handle;
@@ -163,8 +163,12 @@ sub verify_child {
 
 sub vsphere_handler {
 	my $timeout_process;
+
+	my $handle_reader_pipe = ${$vsphere_server{$whoaim}->{'reader_two'}};
+	my $fileno_reader = fileno($handle_reader_pipe);
+	my $handle_writer_pipe = ${$vsphere_server{$whoaim}->{'writer_one'}};
 	$read_select = new IO::Select();
-	$read_select->add($reader_pipe_two);
+	$read_select->add($handle_reader_pipe);
 	while (1) {
 		my $progress = verify_child();
 
@@ -184,7 +188,7 @@ sub vsphere_handler {
 					$session1->logout();
 				};
 			}
-			print $writer_pipe_one "STOPPED\n";
+			print $handle_writer_pipe "STOPPED|$whoaim\n";
 			exit (0);
 		}
 
@@ -199,7 +203,7 @@ sub vsphere_handler {
 			};
 		}
 		if ($vsphere_connected == 0) {
-			if (!connect_vsphere()) {
+			if (!connect_vsphere($vsphere_server{$whoaim}->{'url'}, $vsphere_server{$whoaim}->{'username'}, $vsphere_server{$whoaim}->{'password'})) {
 				writeLogFile(LOG_ESXD_INFO, "Vsphere connection ok\n");
 				writeLogFile(LOG_ESXD_INFO, "Create perf counters cache in progress\n");
 				if (!cache_perf_counters()) {
@@ -223,7 +227,7 @@ sub vsphere_handler {
 			};
 			if ($@) {
 				writeLogFile(LOG_ESXD_ERROR, "$@");
-				writeLogFile(LOG_ESXD_ERROR, "Ask a new connection");
+				writeLogFile(LOG_ESXD_ERROR, "Ask a new connection\n");
 				# Ask a new connection
 				$last_time_check = time();
 			} else {
@@ -244,7 +248,7 @@ sub vsphere_handler {
 			@rh_set = $read_select->can_read(0);
 		}
 		foreach my $rh (@rh_set) {
-			if ($rh == $reader_pipe_two && !$stop) {
+			if (fileno($rh) == $fileno_reader && !$stop) {
 				$data_element = <$rh>;
 				chomp $data_element;
 				if ($data_element =~ /^STOP$/) {
@@ -281,7 +285,7 @@ sub vsphere_handler {
 						close $writer;
 					}
 				} else {
-					print $writer_pipe_one "$id|-1|Vsphere connection error.\n";
+					print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
 				}
 			} else {
 				# Read pipe
@@ -294,7 +298,7 @@ sub vsphere_handler {
 					$last_time_check = $child_proc{$lid}->{'ctime'};
 				}
 				chomp $output;
-				print $writer_pipe_one "$lid|$output\n";
+				print $handle_writer_pipe "$lid|$output\n";
 				delete $return_child{$child_proc{$lid}->{'pid'}};
 				delete $child_proc{$lid};
 			}
@@ -314,10 +318,6 @@ if ($log_mode == 2) {
 	openlog($0, $openlog_option, $log_facility);
 }
 
-pipe($reader_pipe_one, $writer_pipe_one);
-pipe($reader_pipe_two, $writer_pipe_two);
-$writer_pipe_one->autoflush(1);
-$writer_pipe_two->autoflush(1);
 
 my $server = IO::Socket::INET->new( Proto => "tcp",
 			         LocalPort => $port,
@@ -328,32 +328,58 @@ if (!$server) {
 	exit(1);
 }
 
-$child_vpshere_pid = fork();
-if (!$child_vpshere_pid) {
-	close $reader_pipe_one;
-	close $writer_pipe_two;
-	vsphere_handler();
-	exit(0);
+
+##
+# Create childs
+##
+foreach (keys %vsphere_server) {
+	my ($reader_pipe_one, $writer_pipe_one);
+	my ($reader_pipe_two, $writer_pipe_two);
+	$whoaim = $_;
+
+	pipe($reader_pipe_one, $writer_pipe_one);
+	pipe($reader_pipe_two, $writer_pipe_two);
+	$writer_pipe_one->autoflush(1);
+	$writer_pipe_two->autoflush(1);
+
+	$vsphere_server{$whoaim}->{'reader_one'} = \*$reader_pipe_one;
+	$vsphere_server{$whoaim}->{'writer_one'} = \*$writer_pipe_one;
+	$vsphere_server{$whoaim}->{'reader_two'} = \*$reader_pipe_two;
+	$vsphere_server{$whoaim}->{'writer_two'} = \*$writer_pipe_two;
+	$child_vpshere_pid = fork();
+	if (!$child_vpshere_pid) {
+		close $vsphere_server{$whoaim}->{'reader_one'};
+		close $vsphere_server{$whoaim}->{'writer_two'};
+		vsphere_handler();
+		exit(0);
+	}
+	$vsphere_server{$whoaim}->{'running'} = 1;
+	close $vsphere_server{$whoaim}->{'writer_one'};
+	close $vsphere_server{$whoaim}->{'reader_two'};
 }
-close $writer_pipe_one;
-close $reader_pipe_two;
 
 $read_select = new IO::Select();
 $read_select->add($server);
-$read_select->add($reader_pipe_one);
+foreach (keys %vsphere_server) {
+	$filenos{fileno(${$vsphere_server{$_}->{'reader_one'}})} = 1;
+	$read_select->add(${$vsphere_server{$_}->{'reader_one'}});
+}
+my $socket_fileno = fileno($server);
 writeLogFile(LOG_ESXD_INFO, "[Server accepting clients]\n");
 while (1) {
-
 	my @rh_set = $read_select->can_read(30);
 	if ($stop == 1) {
 		writeLogFile(LOG_ESXD_INFO, "Send STOP command to thread.\n");
-		print $writer_pipe_two "STOP\n";
+		foreach (keys %vsphere_server) {
+			my $writer_handle = $vsphere_server{$_}->{'writer_two'};
+			print $writer_handle "STOP\n";
+		}
 		$stop = 2;
 	}
 	foreach my $rh (@rh_set) {
-		if (!$stop && $rh == $server) {
+		my $current_fileno = fileno($rh);
+		if (!$stop && $current_fileno == $socket_fileno) {
 			my $client;
-
 			# Connect to accept
 			$client = $rh->accept();
 			$client->autoflush(1);
@@ -361,16 +387,26 @@ while (1) {
 			$sockets{fileno($client)} = {"obj" => \$client, "ctime" => time(), "counter" => $counter};
 			$read_select->add($client);
 			next;
-		} elsif ($rh == $reader_pipe_one) {
+		} elsif (defined($filenos{$current_fileno})) {
 			# Return to read
 			my $data_element = <$rh>;
 			chomp $data_element;
-			if ($data_element =~ /^STOPPED$/) {
-				writeLogFile(LOG_ESXD_INFO, "Thread has stopped\n");
-				exit(0);
+			if ($data_element =~ /^STOPPED/) {
+				# We have to wait all childs
+				my ($name, $which_one) = split(/\|/, $data_element);
+				writeLogFile(LOG_ESXD_INFO, "Thread vsphere '$which_one' has stopped\n");
+				$vsphere_server{$which_one}->{'running'} = 0;
+				my $to_stop_or_not = 1;
+				foreach (keys %vsphere_server) {
+					$to_stop_or_not = 0 if ($vsphere_server{$_}->{'running'} == 1);
+				}
+				if ($to_stop_or_not == 1) {
+					# We quit
+					writeLogFile(LOG_ESXD_INFO, "Quit main process\n");
+					exit(0);
+				}
+				next;
 			}
-			# Verify responde queue
-			#print "Response queue = $data_element\n";
 			my @results = split(/\|/, $data_element);
 			my ($id, $counter) = split(/\./, $results[0]);
 			if (!defined($sockets{$id}) || $counter != $sockets{$id}->{'counter'}) {
@@ -389,25 +425,35 @@ while (1) {
 			my $line = <$rh>;
 			if (defined($line) && $line ne "") {
 				chomp $line;
-				my ($name, @args) = split /\|/, $line;
+				my ($name, $vsphere_name, @args) = split /\|/, $line;
 				if (!defined($checks_descr{$name})) {
 					$rh->send("3|Unknown method name '$name'\n");
-					delete $sockets{fileno($rh)};
+					delete $sockets{$current_fileno};
 					$read_select->remove($rh);
 					close $rh;
 					next;
 				}
 				if ($checks_descr{$name}->{'arg'}(@args)) {
 					$rh->send("3|Params error '$name'\n");
-					delete $sockets{fileno($rh)};
+					delete $sockets{$current_fileno};
 					$read_select->remove($rh);
 					close $rh;
 					next;
 				}
 
-				print $writer_pipe_two fileno($rh) . "." . $sockets{fileno($rh)}->{'counter'} . "|$line\n";
+				$vsphere_name = 'default' if (!defined($vsphere_name) || $vsphere_name eq '');
+				if (!defined($vsphere_server{$vsphere_name})) {
+					$rh->send("3|Vsphere name unknown\n");
+					delete $sockets{$current_fileno};
+					$read_select->remove($rh);
+					close $rh;
+					next;
+				}
+
+				my $tmp_handle = ${$vsphere_server{$vsphere_name}->{'writer_two'}};
+				print $tmp_handle $current_fileno . "." . $sockets{$current_fileno}->{'counter'} . "|$name|@args\n";
 			} else {
-				delete $sockets{fileno($rh)};
+				delete $sockets{$current_fileno};
 				$rh->send("3|Need arguments\n");
 				$read_select->remove($rh);
 				close $rh;
