@@ -16,6 +16,14 @@ sub writeLogFile($$) {
 	}
 }
 
+sub response_client1 {
+	my ($rh, $current_fileno, $msg) = @_;
+	$rh->send($msg);
+	delete $sockets{$current_fileno};
+	$read_select->remove($rh);
+	close $rh;
+}
+
 sub connect_vsphere {
 	my ($service_url, $username, $password) = @_;
 	writeLogFile(LOG_ESXD_INFO, "'$whoaim' Vsphere connection in progress\n");
@@ -196,6 +204,24 @@ sub get_entities_host {
 	#	return undef;
 	#}
 	return $entity_views;
+}
+
+sub stats_info {
+	my ($rh, $current_fileno, $args) = @_;
+	my $output;
+	my $status = 0;
+	
+	$$args[0] ='' if (!defined($$args[0]));
+	$$args[1] = '' if (!defined($$args[1]));
+	
+	my $num_connection = scalar(keys(%sockets));
+	$output = "'$num_connection' total client connections | connection=$num_connection;$$args[0];$$args[1] requests=$counter";
+	if ($$args[1] ne '' and $num_connection >= $$args[1]) {
+		$status |= $MYERRORS_MASK{'CRITICAL'};
+	} elsif ($$args[0] ne '' and $num_connection >= $$args[0]) {
+		$status |= $MYERRORS_MASK{'WARNING'};
+	}
+	response_client1($rh, $current_fileno, $ERRORS{$MYERRORS{$status}}. "|$output\n");
 }
 
 1;

@@ -159,6 +159,10 @@ sub print_usage () {
 	print "\n";
 	print "'getmap':\n";
 	print "   -e (--esx-host)   Esx Host to check\n";
+	print "\n";
+	print "'stats':\n";
+	print "   -w (--warning)    Warning Threshold in total client connections (default none)\n";
+	print "   -c (--critical)   Critical Threshold in total client connections (default none)\n";
 }
 
 sub print_help () {
@@ -524,6 +528,20 @@ sub getmap_get_str {
 	return "getmap|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
 }
 
+sub stats_check_arg {
+	if (!defined($OPTION{'warning'})) {
+		$OPTION{'warning'} = "";
+	}
+	if (!defined($OPTION{'critical'})) {
+		$OPTION{'critical'} = "";
+	}
+	return 0;
+}
+
+sub stats_get_str {
+	return "stats||" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
 #################
 #################
 
@@ -538,7 +556,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|listhost|listdatastore|listnichost|getmap)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};

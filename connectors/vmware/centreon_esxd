@@ -368,10 +368,10 @@ foreach (keys %vsphere_server) {
 my $socket_fileno = fileno($server);
 writeLogFile(LOG_ESXD_INFO, "[Server accepting clients]\n");
 while (1) {
-	my @rh_set = $read_select->can_read(30);
+	my @rh_set = $read_select->can_read(15);
 	if ($stop == 1) {
-		writeLogFile(LOG_ESXD_INFO, "Send STOP command to thread.\n");
 		foreach (keys %vsphere_server) {
+			writeLogFile(LOG_ESXD_INFO, "Send STOP command to '$_' child.\n");
 			my $writer_handle = $vsphere_server{$_}->{'writer_two'};
 			print $writer_handle "STOP\n";
 		}
@@ -427,37 +427,30 @@ while (1) {
 			if (defined($line) && $line ne "") {
 				chomp $line;
 				my ($name, $vsphere_name, @args) = split /\|/, $line;
+				
+				if ($name eq 'stats') {
+					stats_info($rh, $current_fileno, \@args);
+					next;
+				}
 				if (!defined($checks_descr{$name})) {
-					$rh->send("3|Unknown method name '$name'\n");
-					delete $sockets{$current_fileno};
-					$read_select->remove($rh);
-					close $rh;
+					response_client1($rh, $current_fileno, "3|Unknown method name '$name'\n");
 					next;
 				}
 				if ($checks_descr{$name}->{'arg'}(@args)) {
-					$rh->send("3|Params error '$name'\n");
-					delete $sockets{$current_fileno};
-					$read_select->remove($rh);
-					close $rh;
+					response_client1($rh, $current_fileno, "3|Params error '$name'\n");
 					next;
 				}
 
 				$vsphere_name = 'default' if (!defined($vsphere_name) || $vsphere_name eq '');
 				if (!defined($vsphere_server{$vsphere_name})) {
-					$rh->send("3|Vsphere name unknown\n");
-					delete $sockets{$current_fileno};
-					$read_select->remove($rh);
-					close $rh;
+					response_client1($rh, $current_fileno, "3|Vsphere name unknown\n");
 					next;
 				}
 
 				my $tmp_handle = ${$vsphere_server{$vsphere_name}->{'writer_two'}};
 				print $tmp_handle $current_fileno . "." . $sockets{$current_fileno}->{'counter'} . "|$name|" . join('|', @args) . "\n";
 			} else {
-				delete $sockets{$current_fileno};
-				$rh->send("3|Need arguments\n");
-				$read_select->remove($rh);
-				close $rh;
+				response_client1($rh, $current_fileno, "3|Need arguments\n");
 			}
 		}
 	}
