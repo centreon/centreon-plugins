@@ -176,7 +176,7 @@ sub vsphere_handler {
 		# Manage ending
 		#####
 		if ($stop && $timeout_process > $TIMEOUT_KILL) {
-			writeLogFile(LOG_ESXD_ERROR, "Kill child not gently.\n");
+			writeLogFile(LOG_ESXD_ERROR, "'$whoaim' Kill child not gently.\n");
 			foreach (keys %child_proc) {
 				kill('INT', $child_proc{$_}->{'pid'});
 			}
@@ -196,7 +196,7 @@ sub vsphere_handler {
 		# Manage vpshere connection
 		###
 		if (defined($last_time_vsphere) && defined($last_time_check) && $last_time_vsphere < $last_time_check) {
-			writeLogFile(LOG_ESXD_ERROR, "Deconnect\n");
+			writeLogFile(LOG_ESXD_ERROR, "'$whoaim' Deconnect\n");
 			$vsphere_connected = 0;
 			eval {
 				$session1->logout();
@@ -204,13 +204,13 @@ sub vsphere_handler {
 		}
 		if ($vsphere_connected == 0) {
 			if (!connect_vsphere($vsphere_server{$whoaim}->{'url'}, $vsphere_server{$whoaim}->{'username'}, $vsphere_server{$whoaim}->{'password'})) {
-				writeLogFile(LOG_ESXD_INFO, "Vsphere connection ok\n");
-				writeLogFile(LOG_ESXD_INFO, "Create perf counters cache in progress\n");
+				writeLogFile(LOG_ESXD_INFO, "'$whoaim' Vsphere connection ok\n");
+				writeLogFile(LOG_ESXD_INFO, "'$whoaim' Create perf counters cache in progress\n");
 				if (!cache_perf_counters()) {
 					$last_time_vsphere = time();
 					$keeper_session_time = time();
 					$vsphere_connected = 1;
-					writeLogFile(LOG_ESXD_INFO, "Create perf counters cache done\n");
+					writeLogFile(LOG_ESXD_INFO, "'$whoaim' Create perf counters cache done\n");
 				}
 			}
 		}
@@ -227,11 +227,11 @@ sub vsphere_handler {
 			};
 			if ($@) {
 				writeLogFile(LOG_ESXD_ERROR, "$@");
-				writeLogFile(LOG_ESXD_ERROR, "Ask a new connection\n");
+				writeLogFile(LOG_ESXD_ERROR, "'$whoaim' Ask a new connection\n");
 				# Ask a new connection
 				$last_time_check = time();
 			} else {
-				writeLogFile(LOG_ESXD_INFO, "Get current time = " . Data::Dumper::Dumper($stime));
+				writeLogFile(LOG_ESXD_INFO, "'$whoaim' Get current time = " . Data::Dumper::Dumper($stime));
 			}
 		}
 
@@ -259,7 +259,7 @@ sub vsphere_handler {
 
 				my ($id) = split(/\|/, $data_element);
 				if ($vsphere_connected) {
-					writeLogFile(LOG_ESXD_INFO, "vpshere handler asking: $data_element\n");
+					writeLogFile(LOG_ESXD_INFO, "vpshere '$whoaim' handler asking: $data_element\n");
 					$child_proc{$id} = {'ctime' => time()};
 				
 					my $reader;

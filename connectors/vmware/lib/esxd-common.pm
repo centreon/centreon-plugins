@@ -18,7 +18,7 @@ sub writeLogFile($$) {
 
 sub connect_vsphere {
 	my ($service_url, $username, $password) = @_;
-	writeLogFile(LOG_ESXD_INFO, "Vsphere connection in progress\n");
+	writeLogFile(LOG_ESXD_INFO, "'$whoaim' Vsphere connection in progress\n");
 	eval {
 		$SIG{ALRM} = sub { die('TIMEOUT'); };
 		alarm($TIMEOUT_VSPHERE);
@@ -29,9 +29,9 @@ sub connect_vsphere {
 		alarm(0);
 	};
 	if($@) {
-		writeLogFile(LOG_ESXD_ERROR, "No response from VirtualCentre server\n") if($@ =~ /TIMEOUT/);
-		writeLogFile(LOG_ESXD_ERROR, "You need to upgrade HTTP::Message!\n") if($@ =~ /HTTP::Message/);
-		writeLogFile(LOG_ESXD_ERROR, "Login to VirtualCentre server failed: $@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' No response from VirtualCentre server\n") if($@ =~ /TIMEOUT/);
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' You need to upgrade HTTP::Message!\n") if($@ =~ /HTTP::Message/);
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' Login to VirtualCentre server failed: $@");
 		return 1;
 	}
 #	eval {
@@ -73,7 +73,7 @@ sub get_views {
 		$results = $session1->get_views(mo_ref_array => $_[0], properties => $_[1]);
 	};
 	if ($@) {
-		writeLogFile(LOG_ESXD_ERROR, "$@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		my $lerror = $@;
 		$lerror =~ s/\n/ /g;
 		print_response("-1|Error: " . $lerror . "\n");
@@ -124,7 +124,7 @@ sub generic_performance_values_historic {
 		}
 	};
 	if ($@) {
-		writeLogFile(LOG_ESXD_ERROR, "$@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		return undef;
 	}
 	return \%results;
@@ -148,7 +148,7 @@ sub cache_perf_counters {
 		}
 	};
 	if ($@) {
-		writeLogFile(LOG_ESXD_ERROR, "$@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		return 1;
 	}
 	return 0;
@@ -162,19 +162,19 @@ sub get_entities_host {
 		$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 	};
 	if ($@ =~ /decryption failed or bad record mac/) {
-		writeLogFile(LOG_ESXD_ERROR, "$@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		eval {
 			$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 		};
 		if ($@) {
-			writeLogFile(LOG_ESXD_ERROR, "$@");
+			writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 			my $lerror = $@;
 			$lerror =~ s/\n/ /g;
 			print_response("-1|Error: " . Data::Dumper::Dumper($lerror) . "\n");
 			return undef;
 		}
 	} elsif ($@) {
-		writeLogFile(LOG_ESXD_ERROR, "$@");
+		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		my $lerror = $@;
 		$lerror =~ s/\n/ /g;
 		print_response("-1|Error: " . $lerror . "\n");
