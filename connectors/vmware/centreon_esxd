@@ -58,6 +58,7 @@ require $libpath . '/command-nethost.pm';
 require $libpath . '/command-snapshotvm.pm';
 require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
+require $libpath . '/command-swapvm.pm';
 require $libpath . '/command-toolsvm.pm';
 
 
@@ -113,6 +114,7 @@ our %checks_descr = (
 			"snapshotvm" => {'arg' => \&snapshotvm_check_args, 'compute' => \&snapshotvm_compute_args, 'exec' => \&snapshotvm_do},
 			"datastoresvm" => {'arg' => \&datastoresvm_check_args, 'compute' => \&datastoresvm_compute_args, 'exec' => \&datastoresvm_do},
 			"memvm" => {'arg' => \&memvm_check_args, 'compute' => \&memvm_compute_args, 'exec' => \&memvm_do},
+			"swapvm" => {'arg' => \&swapvm_check_args, 'compute' => \&swapvm_compute_args, 'exec' => \&swapvm_do},
 			"listhost" => {'arg' => \&listhost_check_args, 'compute' => \&listhost_compute_args, 'exec' => \&listhost_do},
 			"listdatastore" => {'arg' => \&listdatastore_check_args, 'compute' => \&listdatastore_compute_args, 'exec' => \&listdatastore_do},
 			"listnichost" => {'arg' => \&listnichost_check_args, 'compute' => \&listnichost_compute_args, 'exec' => \&listnichost_do},

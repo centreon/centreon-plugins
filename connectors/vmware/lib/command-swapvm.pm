@@ -1,7 +1,7 @@
-sub swaphost_check_args {
-	my ($host, $warn, $crit) = @_;
-	if (!defined($host) || $host eq "") {
-		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need hostname\n");
+sub swapvm_check_args {
+	my ($vm, $warn, $crit) = @_;
+	if (!defined($vm) || $vm eq "") {
+		writeLogFile(LOG_ESXD_ERROR, "ARGS error: need vm name\n");
 		return 1;
 	}
 	if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
@@ -19,24 +19,24 @@ sub swaphost_check_args {
 	return 0;
 }
 
-sub swaphost_compute_args {
-	my $lhost = $_[0];
+sub swapvm_compute_args {
+	my $lvm = $_[0];
 	my $warn = (defined($_[1]) ? $_[1] : 0.8);
 	my $crit = (defined($_[2]) ? $_[2] : 1);
-	return ($lhost, $warn, $crit);
+	return ($lvm, $warn, $crit);
 }
 
-sub swaphost_do {
-	my ($lhost, $warn, $crit) = @_;
+sub swapvm_do {
+	my ($lvm, $warn, $crit) = @_;
 	if (!($perfcounter_speriod > 0)) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
 		print_response($ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n");
 		return ;
 	}
 
-	my %filters = ('name' => $lhost);
+	my %filters = ('name' => $lvm);
 	my @properties = ('name');
-	my $result = get_entities_host('HostSystem', \%filters, \@properties);
+	my $result = get_entities_host('VirtualMachine', \%filters, \@properties);
 	if (!defined($result)) {
 		return ;
 	}

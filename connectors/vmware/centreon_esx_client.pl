@@ -148,6 +148,11 @@ sub print_usage () {
 	print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
 	print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
 	print "\n";
+	print "'swapvm':\n";
+	print "   --vm              VM to check (required)\n";
+	print "   -w (--warning)    Warning Threshold in MB/s (default 0.8)\n";
+	print "   -c (--critical)   Critical Threshold in MB/s (default 1)\n";
+	print "\n";
 	print "'listhost':\n";
 	print "   None\n";
 	print "\n";
@@ -487,6 +492,25 @@ sub memvm_get_str {
 	return "memvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
+sub swapvm_check_arg {
+	if (!defined($OPTION{'vm'})) {
+		print "Option --vm is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	if (!defined($OPTION{'warning'})) {
+		$OPTION{'warning'} = 0.8;
+	}
+	if (!defined($OPTION{'critical'})) {
+		$OPTION{'critical'} = 1;
+	}
+	return 0;
+}
+
+sub swapvm_get_str {
+	return "swapvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
 
 sub listhost_check_arg {
 	return 0;
@@ -556,7 +580,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
