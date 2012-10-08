@@ -169,7 +169,7 @@ sub get_entities_host {
 	eval {
 		$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
 	};
-	if ($@ =~ /decryption failed or bad record mac/) {
+	if ($@) {
 		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
 		eval {
 			$entity_views = $session1->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
@@ -181,12 +181,6 @@ sub get_entities_host {
 			print_response("-1|Error: " . Data::Dumper::Dumper($lerror) . "\n");
 			return undef;
 		}
-	} elsif ($@) {
-		writeLogFile(LOG_ESXD_ERROR, "'$whoaim' $@");
-		my $lerror = $@;
-		$lerror =~ s/\n/ /g;
-		print_response("-1|Error: " . $lerror . "\n");
-		return undef;
 	}
 	if (!@$entity_views) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
