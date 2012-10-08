@@ -40,6 +40,7 @@ GetOptions(
 	"e|esx-host=s"			=> \$OPTION{'esx-host'},
 	"vm=s"				=> \$OPTION{'vm'},
 	
+	"filter-datastores=s"		=> \$OPTION{'filter-datastores'},
 	"light-perfdata"		=> \$OPTION{'light-perfdata'},
 	"datastore=s"			=> \$OPTION{'datastore'},
 	"nic=s"				=> \$OPTION{'nic'},
@@ -121,6 +122,7 @@ sub print_usage () {
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in ms (latency) (default none)\n";
 	print "   -c (--critical)   Critical Threshold in ms (latency) (default none)\n";
+	print "   --filter-datastores   Datastores to verify (separated by coma)\n";
 	print "\n";
 	print "'countvmhost':\n";
 	print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -314,11 +316,14 @@ sub datastoreshost_check_arg {
 	if (!defined($OPTION{'critical'})) {
 		$OPTION{'critical'} = '';
 	}
+	if (!defined($OPTION{'filter-datastores'})) {
+		$OPTION{'filter-datastores'} = '';
+	}
 	return 0;
 }
 
 sub datastoreshost_get_str {
-        return "datastoreshost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+        return "datastoreshost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'} . "|" . $OPTION{'filter-datastores'};
 }
 
 sub memhost_check_arg {

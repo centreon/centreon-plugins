@@ -23,11 +23,20 @@ sub datastoreshost_compute_args {
 	my $lhost = $_[0];
 	my $warn = (defined($_[1]) ? $_[1] : '');
 	my $crit = (defined($_[2]) ? $_[2] : '');
-	return ($lhost, $warn, $crit);
+	my $filter_ds = (defined($_[3]) ? $_[3] : '');
+	return ($lhost, $warn, $crit, $filter_ds);
 }
 
 sub datastoreshost_do {
-	my ($lhost, $warn, $crit) = @_;
+	my ($lhost, $warn, $crit, $filter_ds) = @_;
+
+	my %valid_ds = ();
+	my $filter_ok = 0;
+	if ($filter_ds ne '') {
+		foreach (split /,/, $filter_ds) {
+			$valid_ds{$_} = 1;
+		}
+	}
 	if (!($perfcounter_speriod > 0)) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
 		print_response($ERRORS{$MYERRORS{$status}} . "|Can't retrieve perf counters.\n");
@@ -71,6 +80,9 @@ sub datastoreshost_do {
 	my $output_critical_append = '';
 	my $perfdata = '';
 	foreach (keys %uuid_list) {
+		if ($filter_ds ne '' and !defined($valid_ds{$uuid_list{$_}})) {
+			next;
+		}
 		if (defined($values->{$perfcounter_cache{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}) and
 		    defined($values->{$perfcounter_cache{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $_})) {
 			my $read_counter = simplify_number(convert_number($values->{$perfcounter_cache{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}[0]));
@@ -94,10 +106,16 @@ sub datastoreshost_do {
 				$status |= $MYERRORS_MASK{'WARNING'};
 			}
 			
+			$filter_ok = 1;
 			$perfdata .= " 'trl_" . $uuid_list{$_} . "'=" . $read_counter . "ms 'twl_" . $uuid_list{$_} . "'=" . $write_counter . 'ms';
 		}
 	}
 
+	if ($filter_ds ne '' and $filter_ok == 0) {
+		my $status |= $MYERRORS_MASK{'UNKNOWN'};
+		print_response($ERRORS{$MYERRORS{$status}} . "|Datastore names in filter are unknown.\n");
+		return ;
+	}
 	if ($output_critical ne "") {
 		$output .= $output_append . "CRITICAL - Latency counter: $output_critical";
 		$output_append = ". ";
