@@ -290,7 +290,7 @@ sub retrieve_by_list_centreon_broker() {
                                 }
                             }
                         } else {
-                            while ($row4->{'perfdata'} =~ m/\'?([a|c|d|g]\[)?([a-zA-Z0-9\_\-\/\.\:\ ]+)(\])?\'?=([0-9\.\,\-])+/g) {
+                            while ($row4->{'perfdata'} =~ m/\'?([a|c|d|g]\[)?([a-zA-Z0-9\_\-\/\.\:\ ]+)(\])?\'?=([0-9\.\,\-]+)/g) {
                                 my $value = $4;
                                 if (defined($2) && defined($value) && $2 =~ $row3->{'metric_name'}) {
                                     $metric_value_tab[$i] = $value;
