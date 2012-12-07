@@ -55,7 +55,7 @@ sub nethost_do {
 
 	if (!defined($pnic_def{$pnic})) {
 		my $status |= $MYERRORS_MASK{'UNKNOWN'};
-                print $ERRORS{$MYERRORS{$status}} . "|Link '$pnic' not exist or down.\n";
+        print_response($ERRORS{$MYERRORS{$status}} . "|Link '$pnic' not exist or down.\n");
 		return ;
 	}
 
