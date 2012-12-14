@@ -52,3 +52,4 @@ PERFDATA=$6
 
 # Write data in perfdata file
 /usr/bin/printf "%b" "$TIMET\t$HOSTNAME\t$SERVICEDESC\t$HARDSTATE\t$SERVICESTATE\t$PERFDATA\n" >> $PERFFILE
+chmod 775 $PERFFILE
