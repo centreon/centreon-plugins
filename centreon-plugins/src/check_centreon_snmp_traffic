@@ -31,8 +31,8 @@
 # 
 # For more information : contact@centreon.com
 # 
-# SVN : $URL$
-# SVN : $Id$
+# SVN : $URL: http://svn.centreon.com/trunk/plugins-2.x/src/check_centreon_snmp_traffic $
+# SVN : $Id: check_centreon_snmp_traffic 13081 2012-06-07 09:15:11Z jmathis $
 #
 ####################################################################################
 #
@@ -45,118 +45,202 @@ use FindBin;
 use lib "$FindBin::Bin";
 use lib "@NAGIOS_PLUGINS@";
 use utils qw($TIMEOUT %ERRORS &print_revision &support);
-if (eval "require centreon" ) {
+if (eval "require centreon") {
     use centreon qw(get_parameters);
     use vars qw(%centreon);
     %centreon=get_parameters();
 } else {
-	print "Unable to load centreon perl module\n";
+    print "Unable to load centreon perl module\n";
     exit $ERRORS{'UNKNOWN'};
 }
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_P $opt_64bits $opt_v $opt_C $opt_b $opt_k $opt_u $opt_p $opt_H $opt_D $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S);
+use vars qw($opt_V $opt_h $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S);
 
 # Plugin var init
-
-my($proc, $proc_run, @test, $row, @laste_values, $last_check_time, $last_in_bits, $last_out_bits, @last_values, $update_time, $db_file, $in_traffic, $out_traffic, $in_usage, $out_usage);
+my ($session, $error);
+my ($row, $last_check_time, $last_in_bits, $last_out_bits, @last_values, $update_time, $in_traffic, $out_traffic, $in_usage, $out_usage);
 
 $PROGNAME = "$0";
 sub print_help ();
 sub print_usage ();
 
+my %OPTION = (
+    "host" => undef, "64-bits" => undef,
+    "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
+    "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-passwd" => undef
+);
+
 Getopt::Long::Configure('bundling');
 GetOptions
-    ("h"   => \$opt_h, "help"         => \$opt_h,
-     "u=s"   => \$opt_u, "username=s" => \$opt_u,
-     "p=s"   => \$opt_p, "password=s" => \$opt_p,
-     "P=s"   => \$opt_P, "--snmp-port=s" => \$opt_P,
-     "k=s"   => \$opt_k, "key=s"      => \$opt_k,
-     "s"   => \$opt_s, "show"         => \$opt_s,
-     "V"   => \$opt_V, "version"      => \$opt_V,
-     "i=s" => \$opt_i, "interface=s"  => \$opt_i,
-     "64-bits" => \$opt_64bits,
-     "n"   => \$opt_n, "name"         => \$opt_n,
-     "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
-     "C=s" => \$opt_C, "community=s"  => \$opt_C,
-     "b=s" => \$opt_b, "bps=s"        => \$opt_b,
-     "w=s" => \$opt_w, "warning=s"    => \$opt_w,
-     "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-     "T=s" => \$opt_T, "r"			  => \$opt_r,
-     "S" => \$opt_S,
-     "a=s" => \$opt_a, "cache=s"	  => \$opt_a,
-     "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
+    (
+    "H|hostname=s"	        => \$OPTION{'host'},
+    "C|community=s"        => \$OPTION{'snmp-community'},
+    "v|snmp-version=s"      => \$OPTION{'snmp-version'},
+    "P|snmp-port=i"	        => \$OPTION{'snmp-port'},
+    "k|key=s"               => \$OPTION{'snmp-auth-key'},
+    "u|username=s"          => \$OPTION{'snmp-auth-user'},
+    "p|password=s"          => \$OPTION{'snmp-auth-passwd'},
+    "64-bits"               => \$OPTION{'64-bits'},
+    "maxrepetitions=s"      => \$OPTION{'maxrepetitions'},
+    "disable-warn-state"      => \$OPTION{'disable-warn-state'},
+    "h"   => \$opt_h, "help"         => \$opt_h,
+    "s"   => \$opt_s, "show"         => \$opt_s,
+    "V"   => \$opt_V, "version"      => \$opt_V,
+    "i=s" => \$opt_i, "interface=s"  => \$opt_i,
+    "n"   => \$opt_n, "name"         => \$opt_n,
+    "w=s" => \$opt_w, "warning=s"    => \$opt_w,
+    "c=s" => \$opt_c, "critical=s"   => \$opt_c,
+    "T=s" => \$opt_T, "r"			  => \$opt_r,
+    "S" => \$opt_S,
+    "a=i" => \$opt_a, "cache=s"	  => \$opt_a);
 
 if ($opt_V) {
-    print_revision($PROGNAME,'$Revision: 1.2 $');
-  	exit $ERRORS{'OK'};
+    print_revision($PROGNAME,'$Revision: 1.3 $');
+    exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
     print_help();
     exit $ERRORS{'OK'};
-	Getopt::Long::Configure('bundling');
+    Getopt::Long::Configure('bundling');
+}
+
+##################################################
+#####      Functions
+##
+
+sub create_snmp_session() {
+    if ($OPTION{'snmp-version'} =~ /[1-2]/) {
+        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
+                                                -community 	=> $OPTION{'snmp-community'}, 
+                                                -version 	=> $OPTION{'snmp-version'}, 
+                                                -port 		=> $OPTION{'snmp-port'});
+        if (!defined($session)) {
+            print("UNKNOWN: SNMP Session : $error\n");
+            exit $ERRORS{'UNKNOWN'};
+        }
+    } elsif (defined($OPTION{'snmp-auth-key'})) {
+        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
+                                                -version 	=> $OPTION{'snmp-version'}, 
+                                                -username 	=> $OPTION{'snmp-auth-user'}, 
+                                                -authkey 	=> $OPTION{'snmp-auth-key'}, 
+                                                -port		=> $OPTION{'snmp-port'});
+        if (!defined($session)) {
+            print("UNKNOWN: SNMP Session : $error\n");
+            exit $ERRORS{'UNKNOWN'};
+        }
+    } elsif (defined($OPTION{'snmp-auth-passwd'})) {
+        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
+                                                -version 	=> $OPTION{'snmp-version'}, 
+                                                -username 	=> $OPTION{'snmp-auth-user'}, 
+                                                -authpassword => $OPTION{'snmp-auth-passwd'}, 
+                                                -port 		=> $OPTION{'snmp-port'});
+        if (!defined($session)) {
+            print("UNKNOWN: SNMP Session : $error\n");
+            exit $ERRORS{'UNKNOWN'};
+        }
+    }
+
+    if (defined($session)) {
+        $session->translate(Net::SNMP->TRANSLATE_NONE);
+    }
+
+    return $session;
+}
+
+sub get_snmp_table($$) {
+    my ($oid, $session) = (shift, shift);
+    my $result;
+    
+    if (defined($OPTION{'maxrepetitions'})) {
+        $result = $session->get_table(Baseoid => $oid, -maxrepetitions => $OPTION{'maxrepetitions'});
+    } else {
+        $result = $session->get_table(Baseoid => $oid);
+    }
+    if (!defined($result)) {
+        printf("SNMP TABLE ERROR : %s.\n", $session->error);
+        $session->close;
+        exit $ERRORS{'UNKNOWN'};
+    }
+	return $result;
 }
 
 ##################################################
 #####      Verify Options
 ##
 
-if (!$opt_H) {
-	print_usage();
-	exit $ERRORS{'OK'};
-}
-($opt_v) || ($opt_v = shift) || ($opt_v = "2");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
-
-if ($snmp eq "3") {
-if (!$opt_u) {
-print "Option -u (--username) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}
-if (!$opt_p && !$opt_k) {
-print "Option -k (--key) or -p (--password) is required for snmpV3\n";
-exit $ERRORS{'OK'};
-}elsif ($opt_p && $opt_k) {
-print "Only option -k (--key) or -p (--password) is needed for snmpV3\n";
-exit $ERRORS{'OK'};
-}
+if (!$OPTION{'host'}) {
+    print_usage();
+    exit $ERRORS{'OK'};
 }
 
+######
+### SNMP Check
+##
+if (defined($OPTION{'snmp-version'}) && $OPTION{'snmp-version'} =~ /^([1-3])c?$/) {
+    $OPTION{'snmp-version'} = $1;
+} elsif (defined($OPTION{'snmp-version'})) {
+    print "Unknown snmp version\n";
+    print_usage();
+    exit $ERRORS{'UNKNOWN'};
+}
+
+if ($OPTION{'snmp-version'} eq "3") {
+    if (!defined($OPTION{'snmp-auth-user'})) {
+        print "Option -u (--username) is required for snmpV3\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+    if (!defined($OPTION{'snmp-auth-passwd'}) && !defined($OPTION{'snmp-auth-key'})) {
+        print "Option -k (--key) or -p (--password) is required for snmp v3\n";
+        exit $ERRORS{'UNKNOWN'};
+    } elsif (defined($OPTION{'snmp-auth-passwd'}) && defined($OPTION{'snmp-auth-key'})) {
+        print "Only option -k (--key) or -p (--password) is needed for snmp v3\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+}
+
+if (defined($OPTION{'64-bits'}) && $OPTION{'snmp-version'} !~ /2/) {
+    print "Error : Usage : SNMP v2 is required with option --64-bits\n";
+    exit $ERRORS{'UNKNOWN'};
+}
+
+if (defined($OPTION{'64-bits'})) {
+    if (eval "require bigint") {
+        use bigint;
+    } else {
+        print "ERROR : Need bigint module for 64 bit counters\n"; 
+        exit $ERRORS{"UNKNOWN"}
+    }
+}
+
+######
+### Others
+##
 if ($opt_n && !$opt_i) {
     print "Option -n (--name) need option -i (--interface)\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-if (!$opt_C) {
-$opt_C = "public";
-}
-
 if (!$opt_i) {
-$opt_i = 2;
+    $opt_i = 2;
 }
 
-$opt_a = 3 if (!$opt_a);
+if (!defined($opt_a)) {
+    $opt_a = 3;
+}
 
-if (!$opt_b) {
-$opt_b = 95;
-}
-if (!defined($opt_P)) {
-	$opt_P = 161;
-}
-if ($opt_b =~ /([0-9]+)/) {
-my $bps = $1;
-}
 my $critical = 95;
 if ($opt_c && $opt_c =~ /[0-9]+/) {
-$critical = $opt_c;
+    $critical = $opt_c;
 }
 my $warning = 80;
 if ($opt_w && $opt_w =~ /[0-9]+/) {
-$warning = $opt_w;
+    $warning = $opt_w;
 }
-my $interface = 0;
-if ($opt_i =~ /([0-9]+)/ && !$opt_n){
+
+my $interface;
+if ($opt_i =~ /^([0-9]+)$/ && !$opt_n){
     $interface = $1;
 } elsif (!$opt_n) {
     print "Unknown -i number expected... or it doesn't exist, try another interface - number\n";
@@ -168,52 +252,20 @@ if ($critical <= $warning){
     print_usage();
     exit $ERRORS{'OK'};
 }
-if ($opt_64bits && $snmp !~ /2/ && $snmp !~ /3/) {
-        print "Error : Usage : SNMP v2/v3 is required with option --64-bits\n";
-        exit $ERRORS{'UNKNOWN'};
-}
-if (defined ($opt_64bits)) {
-      if (eval "require bigint") {
-        use bigint;
-      } else  { print "ERROR : Need bigint module for 64 bit counters\n"; exit $ERRORS{"UNKNOWN"}}
-}
 
 #################################################
 #####            Plugin snmp requests
 ##
 
-my $OID_DESC =$centreon{MIB2}{IF_DESC};
-my $OID_OPERSTATUS =$centreon{MIB2}{IF_OPERSTATUS};
+$session = create_snmp_session();
+
+my $OID_DESC = $centreon{MIB2}{IF_DESC};
+my $OID_OPERSTATUS = $centreon{MIB2}{IF_OPERSTATUS};
 my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
 
-# create a SNMP session
-my ($session, $error);
-if ($snmp eq "1" || $snmp =~ /2/) {
-	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp, -port => $opt_P);
-	if (!defined($session)) {
-	    print("UNKNOWN: SNMP Session : $error\n");
-	    exit $ERRORS{'UNKNOWN'};
-	}
-} elsif ($opt_k) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k, -port => $opt_P);
-	if (!defined($session)) {
-	    print("UNKNOWN: SNMP Session : $error\n");
-	    exit $ERRORS{'UNKNOWN'};
-	}
-} elsif ($opt_p) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_p, -port => $opt_P);
-	if (!defined($session)) {
-	    print("UNKNOWN: SNMP Session : $error\n");
-	    exit $ERRORS{'UNKNOWN'};
-	}
-}
-$session->translate(Net::SNMP->TRANSLATE_NONE) if (defined($session));
-
-
-my $cacheFile = "@CENTPLUGINS_TMP@/traffic_cache_".$opt_H;
+my $cacheFile = "@CENTPLUGINS_TMP@/traffic_cache_". $OPTION{'host'};
 my $result;
 my $mustCreateFile = 0;
-#my $row;
 my $countLine;
 
 #
@@ -221,122 +273,105 @@ my $countLine;
 #
 if (-e $cacheFile) {
     open(FILE,"<".$cacheFile);
-    $countLine = 0;
-    while ($row = <FILE>){
-        if (!$countLine) {
-            my $deltaTime = time() -  $row;
-            if ($deltaTime > ($opt_a * 3600)) {
-                $mustCreateFile = 1;
-            }
+    $row = <FILE>;
+    if (defined($row)) {
+        chomp $row;
+        my $deltaTime = time() - $row;
+        if ($deltaTime > ($opt_a * 3600)) {
+            $mustCreateFile = 1;
         }
-        $countLine++;
     }
     close(FILE);
-}
-else {
+    
+    # Manage file empty or line 1 empty
+    if (!defined($row) || $row eq '') {
+        $mustCreateFile = 1;
+    }
+} else {
     $mustCreateFile = 1;
 }
 
 if ($mustCreateFile) {
-    $result = $session->get_table(Baseoid => $OID_DESC);
-    if (defined($result)) {
-	    unless (open(FILE,">".$cacheFile)){
-	        print "Check mod for temporary file : ".$cacheFile."...\n";
-	        exit $ERRORS{"UNKNOWN"};
-	    }
-	    my $currentTime = time();
-	    print FILE $currentTime."\n";
-	    foreach my $key (oid_lex_sort(keys %$result)) {
-		   	my @oid_list = split (/\./,$key);
-		   	my $interfaceIndex = pop (@oid_list);
-	        print FILE $interfaceIndex.";".$result->{$key}."\n";
-	    }
-	    close(FILE);
-    } else {
-        if (!$result) {
-           printf("ERROR: Cannot get SNMP info : %s", $session->error);
-           exit $ERRORS{'UNKNOWN'};
-        }
+    $result = get_snmp_table($OID_DESC, $session);
+    unless (open(FILE,">".$cacheFile)){
+        print "Check mod for temporary file : ".$cacheFile."...\n";
+        exit $ERRORS{"UNKNOWN"};
     }
+    my $currentTime = time();
+    print FILE $currentTime."\n";
+    foreach my $key (oid_lex_sort(keys %$result)) {
+        my @oid_list = split (/\./,$key);
+        my $interfaceIndex = pop (@oid_list);
+        print FILE $interfaceIndex.";".$result->{$key}."\n";
+    }
+    close(FILE);
 }
 
 ################################################################
 # Getting interface using its name instead of its oid index
 if ($opt_n) {
-	if ($opt_r){
-	    if (!-e $cacheFile) {
-            printf("ERROR: Could not open " . $cacheFile);        
-            exit $ERRORS{'UNKNOWN'};
-        }
+    if (!-e $cacheFile) {
+        printf("ERROR: Could not open " . $cacheFile);
+        exit $ERRORS{'UNKNOWN'};
+    }
         
-        open(FILE,"<".$cacheFile);
-        $countLine = 0;
-        while ($row = <FILE>){
-            if ($countLine) {
-                my @resLine = split(/\;/, $row);                
-                if ($resLine[1] =~ m/$opt_i/) {    	   	 	
-                    $interface = $resLine[0];
-                }
-            }
-            $countLine++;
-        }
-        close(FILE);
-	} else {		
-		if (!-e $cacheFile) {
-        	printf("ERROR: Could not open " . $cacheFile);
-        	exit $ERRORS{'UNKNOWN'};
-        }
-        
-        open(FILE,"<".$cacheFile);
-        $countLine = 0;
-        while ($row = <FILE>) {
-            if ($countLine) {
-                my @resLine = split(/\;/, $row);            
+    open(FILE,"<".$cacheFile);
+    $countLine = 0;
+    while ($row = <FILE>) {
+        if ($countLine) {
+            my @resLine = split(/\;/, $row);            
+         
+            if (defined($opt_r) && $resLine[1] =~ /$opt_i/) {
+                $interface = $resLine[0];
+            } else {
                 $resLine[1] =~ s/\x00//g;
                 $resLine[1] =~ s/\n//g;
                 $resLine[1] =~ s/\s*$//g;
                 if ($resLine[1] eq $opt_i) {
                     $interface = $resLine[0];
                 }
-            }
-            $countLine++;
+            } 
         }
-        close(FILE);
-	}
+        $countLine++;
+    }
+    close(FILE);
+    
+    # Can't find an interface in cache file
+    if (!defined($interface)) {
+        print "ERROR: Can't find interface name '$opt_i' in cache file '$cacheFile'. Maybe you need a cache rebuild (Command with option '-a 0').";
+        exit($ERRORS{'UNKNOWN'});
+    }
 }
 
 my ($OID_IN, $OID_OUT, $OID_SPEED, $OID_SPEED_BASE);
-if ($opt_64bits) {
+if (defined($OPTION{'64-bits'})) {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET_64_BITS}.".".$interface;
-	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
-	$OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
-	$OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED_64_BITS};
+    $OID_OUT = $centreon{MIB2}{IF_OUT_OCTET_64_BITS}.".".$interface;
+    $OID_SPEED = $centreon{MIB2}{IF_SPEED_64_BITS}.".".$interface;
+    $OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED_64_BITS};
 } else {
     $OID_IN =$centreon{MIB2}{IF_IN_OCTET}.".".$interface;
-	$OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
-	$OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
-	$OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED};
+    $OID_OUT = $centreon{MIB2}{IF_OUT_OCTET}.".".$interface;
+    $OID_SPEED = $centreon{MIB2}{IF_SPEED}.".".$interface;
+    $OID_SPEED_BASE = $centreon{MIB2}{IF_SPEED};
 }
 
 # Get desctiption table
-
 if ($opt_s) {
     if (!-e $cacheFile) {
-        $result = $session->get_table(Baseoid => $OID_DESC);
-        if (defined($result)) {
-            unless (open(FILE,">".$cacheFile)){
-                print "Check mod for temporary file : ".$cacheFile."...\n";
-                exit $ERRORS{"UNKNOWN"};
-            }
-            my $currentTime = time();
-            print FILE $currentTime."\n";
-            foreach my $key (oid_lex_sort(keys %$result)) {
-                my @oid_list = split (/\./,$key);
-                my $interfaceIndex = pop (@oid_list);
-                print FILE $interfaceIndex.";".$result->{$key}."\n";
-            }
-            close(FILE);
+        $result = get_snmp_table($OID_DESC, $session);
+        unless (open(FILE,">".$cacheFile)){
+            print "Check mod for temporary file : ".$cacheFile."...\n";
+            exit $ERRORS{"UNKNOWN"};
         }
+        my $currentTime = time();
+        print FILE $currentTime."\n";
+        foreach my $key (oid_lex_sort(keys %$result)) {
+            my @oid_list = split (/\./,$key);
+            my $interfaceIndex = pop (@oid_list);
+            print FILE $interfaceIndex.";".$result->{$key}."\n";
+        }
+        close(FILE);
     }
     
     if (!-e $cacheFile) {
@@ -353,84 +388,78 @@ if ($opt_s) {
             $resLine[1] =~ s/\x00//g;
             $resLine[1] =~ s/\n//g;
             print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1];
-			if ($opt_S) {
-				my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED_BASE.".".$index]);
-				if (!defined($link_speed)) {
-					printf("ERROR: Interface Speed Request : %s", $session->error);
-					exit $ERRORS{'UNKNOWN'};
-				}
-				my $unit = "bit/s";
-				my $speed = $link_speed->{$OID_SPEED_BASE.".".$index};
-				print " :: speed ".$speed." ".$unit."\n";
-			} else {
-				print "\n";
-			}
+            if ($opt_S) {
+                my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED_BASE.".".$index]);
+                if (!defined($link_speed)) {
+                    printf("ERROR: Interface Speed Request : %s", $session->error);
+                    exit $ERRORS{'UNKNOWN'};
+                }
+                my $unit = "bit/s";
+                my $speed = $link_speed->{$OID_SPEED_BASE.".".$index};
+                print " :: speed ".$speed." ".$unit."\n";
+            } else {
+                print "\n";
+            }
         }
         $countLine++;
     }
     close(FILE);
-	exit $ERRORS{'OK'};
+    exit $ERRORS{'OK'};
 }
 
-my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface]);
-if (!$interface_status) {
-    printf("ERROR: Interface Status Request : %s", $session->error);
-	exit $ERRORS{'UNKNOWN'};
-}
-if ($operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1] ne "up") {
-    print "Error : interface is not ready - status : ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$interface} - 1]."\n";
-	exit $ERRORS{'CRITICAL'};
-}
-
-
-#######  Get IN bytes
-
-my $in_bits;
-$result = $session->get_request(-varbindlist => [$OID_IN]);
+$result = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface, $OID_IN, $OID_OUT, $OID_SPEED]);
 if (!defined($result)) {
-    printf("ERROR: IN Bits :  %s", $session->error);
-    if ($opt_n) { print " - You must specify interface name when option -n is used";}
+    printf("ERROR: SNMP Request:  %s", $session->error);
+    if ($opt_n) {
+        print " - You must specify interface name when option -n is used";
+    }
     print ".\n";
     $session->close;
     exit $ERRORS{'UNKNOWN'};
+}
+if (!defined($result->{$OID_OPERSTATUS.".".$interface}) || $result->{$OID_OPERSTATUS.".".$interface} eq "") {
+    print "ERROR: Can't get interface '$interface' status\n";
+    exit $ERRORS{'CRITICAL'};
+}
+if ($operstatus[$result->{$OID_OPERSTATUS.".".$interface} - 1] ne "up") {
+    if (defined($OPTION{'disable-warn-state'})) {
+        print "OK: interface is not ready - status : " . $operstatus[$result->{$OID_OPERSTATUS.".".$interface} - 1] . "\n";
+        exit $ERRORS{'OK'};
+    } else {
+        print "ERROR: interface is not ready - status : " . $operstatus[$result->{$OID_OPERSTATUS.".".$interface} - 1] . "\n";
+        exit $ERRORS{'CRITICAL'};
+    }
+}
+
+#######  Get IN bytes
+my $in_bits;
+if (!defined($result->{$OID_IN})) {
+    print "ERROR: Can't get interface '$interface' IN Bits\n";
+    exit $ERRORS{'CRITICAL'};
 }
 $in_bits =  $result->{$OID_IN} * 8;
 
-
 #######  Get OUT bytes
-
 my $out_bits;
-$result = $session->get_request(-varbindlist => [$OID_OUT]);
-if (!$result) {
-    printf("ERROR: Out Bits : %s", $session->error);
-    if ($opt_n) { print " - You must specify interface name when option -n is used";}
-    print ".\n";
-    $session->close;
-    exit $ERRORS{'UNKNOWN'};
+if (!defined($result->{$OID_OUT})) {
+    print "ERROR: Can't get interface '$interface' OUT Bits\n";
+    exit $ERRORS{'CRITICAL'};
 }
 $out_bits = $result->{$OID_OUT} * 8;
 
-
 #######  Get SPEED of interface
-
 my $speed_card;
-$result = $session->get_request(-varbindlist => [$OID_SPEED]);
-if (!$result) {
-    printf("ERROR: Interface Speed : %s", $session->error);
-    if ($opt_n) { print " - You must specify interface name when option -n is used";}
-    print ".\n";
-    $session->close;
-    exit $ERRORS{'UNKNOWN'};
-}
-
 if (defined($opt_T)){
-	$speed_card = $opt_T * 1000000;
+    $speed_card = $opt_T * 1000000;
 } else {
-	$speed_card = $result->{$OID_SPEED};
-	if (!$speed_card && !defined($opt_T)) {
-	    print "Error : Card speed is null, check command options\n";
-	    exit $ERRORS{'UNKNOWN'};
-	}
+    $speed_card = $result->{$OID_SPEED};
+    if (!defined($result->{$OID_SPEED}) || int($result->{$OID_SPEED}) !~ /^[0-9]+$/) {
+        print "ERROR: Card speed is null or incorrect. You should force the value with -T option.\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+    if (defined($OPTION{'64-bits'})) {
+        $speed_card = $speed_card * 1000000;
+    }
 }
 
 #############################################
@@ -442,14 +471,14 @@ $last_out_bits  = 0;
 
 my $flg_created = 0;
 
-if (-e "@CENTPLUGINS_TMP@/traffic_if".$interface."_".$opt_H) {
-    open(FILE,"<"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$opt_H);
+if (-e "@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'}) {
+    open(FILE,"<"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'});
     while($row = <FILE>){
-		@last_values = split(":",$row);
-		$last_check_time = $last_values[0];
-		$last_in_bits = $last_values[1];
-		$last_out_bits = $last_values[2];
-		$flg_created = 1;
+        @last_values = split(":",$row);
+        $last_check_time = $last_values[0];
+        $last_in_bits = $last_values[1];
+        $last_out_bits = $last_values[2];
+        $flg_created = 1;
     }
     close(FILE);
 } else {
@@ -458,8 +487,8 @@ if (-e "@CENTPLUGINS_TMP@/traffic_if".$interface."_".$opt_H) {
 
 $update_time = time();
 
-unless (open(FILE,">"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$opt_H)){
-    print "Check mod for temporary file : @CENTPLUGINS_TMP@/traffic_if".$interface."_".$opt_H. " !\n";
+unless (open(FILE,">"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'})){
+    print "Check mod for temporary file : @CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'}. " !\n";
     exit $ERRORS{"UNKNOWN"};
 }
 print FILE "$update_time:$in_bits:$out_bits";
@@ -476,14 +505,20 @@ if ($flg_created == 0){
 ##
 
 if (($in_bits - $last_in_bits != 0) && defined($last_in_bits)) {
-	my $total = 0;
-	if ($in_bits - $last_in_bits < 0){
-		$total = 4294967296 * 8 - $last_in_bits + $in_bits;
-	} else {
-		$total = $in_bits - $last_in_bits;
-	}
-	my $diff = time() - $last_check_time;
-	if ($diff == 0){$diff = 1;}
+    my $total = 0;
+    if ($in_bits < $last_in_bits && !defined($OPTION{'64-bits'})) {
+        print "ERROR: IN counter is going back. Two cases: 1) equipment restarted (= ok the next check), COUNTER in 32 bits (= should use COUNTER in 64 bits with option '--64-bits')\n";  
+        exit($ERRORS{"UNKNOWN"});
+    } elsif ($in_bits < $last_in_bits && defined($OPTION{'64-bits'})) {
+        print "ERROR: IN counter is going back. One case: 1) equipment restarted (= ok the next check)\n";  
+        exit($ERRORS{"UNKNOWN"});
+    } else {
+        $total = $in_bits - $last_in_bits;
+    }
+    my $diff = time() - $last_check_time;
+    if ($diff == 0) {
+        $diff = 1;
+    }
     my $pct_in_traffic = $in_traffic = abs($total / $diff);
 } else {
     $in_traffic = 0;
@@ -491,13 +526,19 @@ if (($in_bits - $last_in_bits != 0) && defined($last_in_bits)) {
 
 if ($out_bits - $last_out_bits != 0 && defined($last_out_bits)) {
     my $total = 0;
-    if ($out_bits - $last_out_bits < 0){
-		$total = 4294967296 * 8 - $last_out_bits + $out_bits;
+    if ($out_bits < $last_out_bits && !defined($OPTION{'64-bits'})) {
+        print "ERROR: OUT counter is going back. Two cases: 1) equipment restarted (= ok the next check), COUNTER in 32 bits (= should use COUNTER in 64 bits with option '--64-bits')\n";  
+        exit($ERRORS{"UNKNOWN"});
+    } elsif ($out_bits < $last_out_bits && defined($OPTION{'64-bits'})) {
+        print "ERROR: OUT counter is going back. One case: 1) equipment restarted (= ok the next check)\n";  
+        exit($ERRORS{"UNKNOWN"});
     } else {
-		$total = $out_bits - $last_out_bits;
+        $total = $out_bits - $last_out_bits;
     }
     my $diff =  time() - $last_check_time;
-    if ($diff == 0){$diff = 1;}
+    if ($diff == 0) {
+        $diff = 1;
+    }
     my $pct_out_traffic = $out_traffic = abs($total / $diff);
 } else {
     $out_traffic = 0;
@@ -518,12 +559,12 @@ if ($in_traffic > 1000) {
     $in_traffic = $in_traffic / 1000;
     $in_prefix = "k";
     if($in_traffic > 1000){
-		$in_traffic = $in_traffic / 1000;
-		$in_prefix = "M";
+        $in_traffic = $in_traffic / 1000;
+        $in_prefix = "M";
     }
     if($in_traffic > 1000){
-		$in_traffic = $in_traffic / 1000;
-		$in_prefix = "G";
+        $in_traffic = $in_traffic / 1000;
+        $in_prefix = "G";
     }
 }
 
@@ -531,12 +572,12 @@ if ($out_traffic > 1000){
     $out_traffic = $out_traffic / 1000;
     $out_prefix = "k";
     if ($out_traffic > 1000){
-		$out_traffic = $out_traffic / 1000;
-		$out_prefix = "M";
-	}
+        $out_traffic = $out_traffic / 1000;
+        $out_prefix = "M";
+    }
     if ($out_traffic > 1000){
-		$out_traffic = $out_traffic / 1000;
-		$out_prefix = "G";
+        $out_traffic = $out_traffic / 1000;
+        $out_prefix = "G";
     }
 }
 
@@ -558,7 +599,6 @@ if ($out_bits > 1000){
     $out_bits_unit = "M";
 }
 
-
 if ( $speed_card == 0 ) {
     print "CRITICAL: Interface speed equal 0! Interface must be down.|traffic_in=0B/s traffic_out=0B/s\n";
     exit($ERRORS{"CRITICAL"});
@@ -578,10 +618,10 @@ $out_perfparse_traffic_str =~ s/\./,/g;
 my $status = "OK";
 
 if(($in_usage > $warning) or ($out_usage > $warning)){
-	$status = "WARNING";
+    $status = "WARNING";
 }
 if (($in_usage > $critical) or ($out_usage > $critical)){
-	$status = "CRITICAL";
+    $status = "CRITICAL";
 }
 
 my $warningBit = $warning * $speed_card / 100;
@@ -589,7 +629,7 @@ my $criticalBit = $critical * $speed_card / 100;
 
 printf("Traffic In : %.2f ".$in_prefix."b/s (".$in_usage." %%), Out : %.2f ".$out_prefix."b/s (".$out_usage." %%) ", $in_traffic, $out_traffic);
 if ($opt_S) {
- 	printf(" - Link Speed : %d", $speed_card);
+    printf(" - Link Speed : %d", $speed_card);
 }
 printf("|traffic_in=".$in_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card traffic_out=".$out_perfparse_traffic_str."Bits/s;$warningBit;$criticalBit;0;$speed_card\n");
 exit($ERRORS{$status});
@@ -600,33 +640,37 @@ sub print_usage () {
     print "   -H (--hostname)   Hostname to query (required)\n";
     print "   -C (--community)  SNMP read community (defaults to public)\n";
     print "                     used with SNMP v1 and v2c\n";
-    print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
+    print "   -v (--snmp-version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
     print "                        3 for SNMP v3\n";
     print "   -P (--snmp-port)  SNMP port (default: 161)\n";
-	print "   -k (--key)        snmp V3 key\n";
-	print "   -p (--password)   snmp V3 password\n";
-	print "   -u (--username)   snmp v3 username \n";
-    print "   -s (--show)       Describes all interfaces number (debug mode)\n";
-    print "   -i (--interface)  Set the interface number (2 by default)\n";
-    print "   -n (--name)       Allows to use interface name with option -i instead of interface oid index\n";
-    print "                     (ex: -i \"eth0\" -n, -i \"VMware Virtual Ethernet Adapter for VMnet8\" -n\n";
-    print "                     (choose an unique expression for each interface)\n";
-    print "   -w (--warn)       Signal strength at which a warning message will be generated\n";
-    print "                     (default 80)\n";
-    print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
-    print "   -T                Set maximum bandwidth\n";
-    print "   -S                Show link speed in output\n";
-    print "   -V (--version)    Plugin version\n";
-    print "   -r                Regexp Match Mode\n";
-    print "   -a (--cache)      Updates cache file every n hours instead of doing snmpwalk for every check (default: 3)\n";
-    print "   -h (--help)       usage help\n";
+    print "   -k (--key)        snmp V3 key\n";
+    print "   -u (--username)   snmp V3 username \n";
+    print "   -p (--password)   snmp V3 password\n";
+    print "   --64-bits         Use 64 bits OID\n";
+    print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
+    print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
+    print "   -s (--show)          Describes all interfaces number (debug mode)\n";
+    print "   -i (--interface)     Set the interface number (2 by default)\n";
+    print "   -n (--name)          Allows to use interface name with option -i instead of interface oid index\n";
+    print "                        (ex: -i \"eth0\" -n, -i \"VMware Virtual Ethernet Adapter for VMnet8\" -n\n";
+    print "                        (choose an unique expression for each interface)\n";
+    print "   -w (--warning)       Signal strength at which a warning message will be generated\n";
+    print "                        (default 80)\n";
+    print "   -c (--critical)      Signal strength at which a critical message will be generated\n";
+    print "   --disable-warn-state To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
+    print "   -T                   Set maximum bandwidth\n";
+    print "   -S                   Show link speed in output\n";
+    print "   -V (--version)       Plugin version\n";
+    print "   -r                   Regexp Match Mode\n";
+    print "   -a (--cache)         Updates cache file every n hours instead of doing snmpwalk for every check (default: 3)\n";
+    print "   -h (--help)          usage help\n";
 }
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2004-2011 Centreon        #\n";
-    print "#    Bugs to http://trac.centreon.com        #\n";
+    print "#    Copyright (c) 2004-2013 Centreon        #\n";
+    print "#    Bugs to http://forge.centreon.com        #\n";
     print "##############################################\n";
     print_usage();
     print "\n";
