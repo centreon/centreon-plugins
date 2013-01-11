@@ -40,60 +40,65 @@
 #
 
 use strict;
-use Net::SNMP qw(:snmp oid_lex_sort);
-use FindBin;
-use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
-use utils qw($TIMEOUT %ERRORS &print_revision &support);
-if (eval "require centreon") {
-    use centreon qw(get_parameters);
-    use vars qw(%centreon);
-    %centreon=get_parameters();
-} else {
-    print "Unable to load centreon perl module\n";
-    exit $ERRORS{'UNKNOWN'};
-}
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
+
 use vars qw($PROGNAME);
 use Getopt::Long;
 use vars qw($opt_V $opt_h $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S);
+
+my $centplugins_path = "@CENTPLUGINS_TMP@";
+my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
+
+my %centreon = Centreon::SNMP::Utils::load_oids($ERRORS{'UNKNOWN'}, "@NAGIOS_PLUGINS@/centreon.conf");
 
 # Plugin var init
 my ($session, $error);
 my ($row, $last_check_time, $last_in_bits, $last_out_bits, @last_values, $update_time, $in_traffic, $out_traffic, $in_usage, $out_usage);
 
 $PROGNAME = "$0";
+
 sub print_help ();
 sub print_usage ();
 
 my %OPTION = (
-    "host" => undef, "64-bits" => undef,
+    "host" => undef,
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
-    "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-passwd" => undef
+    "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
+    "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
+    "maxrepetitions" => undef,
+    "64-bits" => undef,
+
+    "disable-warn-state" => undef
 );
 
 Getopt::Long::Configure('bundling');
 GetOptions
     (
-    "H|hostname=s"	        => \$OPTION{'host'},
-    "C|community=s"        => \$OPTION{'snmp-community'},
-    "v|snmp-version=s"      => \$OPTION{'snmp-version'},
-    "P|snmp-port=i"	        => \$OPTION{'snmp-port'},
-    "k|key=s"               => \$OPTION{'snmp-auth-key'},
-    "u|username=s"          => \$OPTION{'snmp-auth-user'},
-    "p|password=s"          => \$OPTION{'snmp-auth-passwd'},
-    "64-bits"               => \$OPTION{'64-bits'},
-    "maxrepetitions=s"      => \$OPTION{'maxrepetitions'},
-    "disable-warn-state"      => \$OPTION{'disable-warn-state'},
-    "h"   => \$opt_h, "help"         => \$opt_h,
-    "s"   => \$opt_s, "show"         => \$opt_s,
-    "V"   => \$opt_V, "version"      => \$opt_V,
-    "i=s" => \$opt_i, "interface=s"  => \$opt_i,
-    "n"   => \$opt_n, "name"         => \$opt_n,
-    "w=s" => \$opt_w, "warning=s"    => \$opt_w,
-    "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-    "T=s" => \$opt_T, "r"			  => \$opt_r,
+    "H|hostname|host=s"         => \$OPTION{'host'},
+    "C|community=s"             => \$OPTION{'snmp-community'},
+    "v|snmp|snmp-version=s"     => \$OPTION{'snmp-version'},
+    "P|snmpport|snmp-port=i"    => \$OPTION{'snmp-port'},
+    "u|username=s"              => \$OPTION{'snmp-auth-user'},
+    "p|authpassword|password=s" => \$OPTION{'snmp-auth-password'},
+    "k|authkey=s"               => \$OPTION{'snmp-auth-key'},
+    "authprotocol=s"            => \$OPTION{'snmp-auth-protocol'},
+    "privpassword=s"            => \$OPTION{'snmp-priv-password'},
+    "privkey=s"                 => \$OPTION{'snmp-priv-key'},
+    "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
+    "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+    "64-bits"                   => \$OPTION{'64-bits'},
+
+    "disable-warn-state"    => \$OPTION{'disable-warn-state'},
+    "h"   => \$opt_h, "help"        => \$opt_h,
+    "s"   => \$opt_s, "show"        => \$opt_s,
+    "V"   => \$opt_V, "version"     => \$opt_V,
+    "i=s" => \$opt_i, "interface=s" => \$opt_i,
+    "n"   => \$opt_n, "name"        => \$opt_n,
+    "w=s" => \$opt_w, "warning=s"   => \$opt_w,
+    "c=s" => \$opt_c, "critical=s"  => \$opt_c,
+    "T=s" => \$opt_T, "r"           => \$opt_r,
     "S" => \$opt_S,
-    "a=i" => \$opt_a, "cache=s"	  => \$opt_a);
+    "a=i" => \$opt_a, "cache=s"     => \$opt_a);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.3 $');
@@ -107,112 +112,13 @@ if ($opt_h) {
 }
 
 ##################################################
-#####      Functions
-##
-
-sub create_snmp_session() {
-    if ($OPTION{'snmp-version'} =~ /[1-2]/) {
-        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
-                                                -community 	=> $OPTION{'snmp-community'}, 
-                                                -version 	=> $OPTION{'snmp-version'}, 
-                                                -port 		=> $OPTION{'snmp-port'});
-        if (!defined($session)) {
-            print("UNKNOWN: SNMP Session : $error\n");
-            exit $ERRORS{'UNKNOWN'};
-        }
-    } elsif (defined($OPTION{'snmp-auth-key'})) {
-        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
-                                                -version 	=> $OPTION{'snmp-version'}, 
-                                                -username 	=> $OPTION{'snmp-auth-user'}, 
-                                                -authkey 	=> $OPTION{'snmp-auth-key'}, 
-                                                -port		=> $OPTION{'snmp-port'});
-        if (!defined($session)) {
-            print("UNKNOWN: SNMP Session : $error\n");
-            exit $ERRORS{'UNKNOWN'};
-        }
-    } elsif (defined($OPTION{'snmp-auth-passwd'})) {
-        ($session, $error) = Net::SNMP->session(-hostname 	=> $OPTION{'host'}, 
-                                                -version 	=> $OPTION{'snmp-version'}, 
-                                                -username 	=> $OPTION{'snmp-auth-user'}, 
-                                                -authpassword => $OPTION{'snmp-auth-passwd'}, 
-                                                -port 		=> $OPTION{'snmp-port'});
-        if (!defined($session)) {
-            print("UNKNOWN: SNMP Session : $error\n");
-            exit $ERRORS{'UNKNOWN'};
-        }
-    }
-
-    if (defined($session)) {
-        $session->translate(Net::SNMP->TRANSLATE_NONE);
-    }
-
-    return $session;
-}
-
-sub get_snmp_table($$) {
-    my ($oid, $session) = (shift, shift);
-    my $result;
-    
-    if (defined($OPTION{'maxrepetitions'})) {
-        $result = $session->get_table(Baseoid => $oid, -maxrepetitions => $OPTION{'maxrepetitions'});
-    } else {
-        $result = $session->get_table(Baseoid => $oid);
-    }
-    if (!defined($result)) {
-        printf("SNMP TABLE ERROR : %s.\n", $session->error);
-        $session->close;
-        exit $ERRORS{'UNKNOWN'};
-    }
-	return $result;
-}
-
-##################################################
 #####      Verify Options
 ##
-
-if (!$OPTION{'host'}) {
-    print_usage();
-    exit $ERRORS{'OK'};
-}
 
 ######
 ### SNMP Check
 ##
-if (defined($OPTION{'snmp-version'}) && $OPTION{'snmp-version'} =~ /^([1-3])c?$/) {
-    $OPTION{'snmp-version'} = $1;
-} elsif (defined($OPTION{'snmp-version'})) {
-    print "Unknown snmp version\n";
-    print_usage();
-    exit $ERRORS{'UNKNOWN'};
-}
-
-if ($OPTION{'snmp-version'} eq "3") {
-    if (!defined($OPTION{'snmp-auth-user'})) {
-        print "Option -u (--username) is required for snmpV3\n";
-        exit $ERRORS{'UNKNOWN'};
-    }
-    if (!defined($OPTION{'snmp-auth-passwd'}) && !defined($OPTION{'snmp-auth-key'})) {
-        print "Option -k (--key) or -p (--password) is required for snmp v3\n";
-        exit $ERRORS{'UNKNOWN'};
-    } elsif (defined($OPTION{'snmp-auth-passwd'}) && defined($OPTION{'snmp-auth-key'})) {
-        print "Only option -k (--key) or -p (--password) is needed for snmp v3\n";
-        exit $ERRORS{'UNKNOWN'};
-    }
-}
-
-if (defined($OPTION{'64-bits'}) && $OPTION{'snmp-version'} !~ /2/) {
-    print "Error : Usage : SNMP v2 is required with option --64-bits\n";
-    exit $ERRORS{'UNKNOWN'};
-}
-
-if (defined($OPTION{'64-bits'})) {
-    if (eval "require bigint") {
-        use bigint;
-    } else {
-        print "ERROR : Need bigint module for 64 bit counters\n"; 
-        exit $ERRORS{"UNKNOWN"}
-    }
-}
+my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
 
 ######
 ### Others
@@ -257,13 +163,13 @@ if ($critical <= $warning){
 #####            Plugin snmp requests
 ##
 
-$session = create_snmp_session();
+$session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
 my $OID_DESC = $centreon{MIB2}{IF_DESC};
 my $OID_OPERSTATUS = $centreon{MIB2}{IF_OPERSTATUS};
 my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
 
-my $cacheFile = "@CENTPLUGINS_TMP@/traffic_cache_". $OPTION{'host'};
+my $cacheFile = "$centplugins_path/traffic_cache_". $OPTION{'host'};
 my $result;
 my $mustCreateFile = 0;
 my $countLine;
@@ -292,7 +198,7 @@ if (-e $cacheFile) {
 }
 
 if ($mustCreateFile) {
-    $result = get_snmp_table($OID_DESC, $session);
+    $result = Centreon::SNMP::Utils::get_snmp_table($OID_DESC, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
     unless (open(FILE,">".$cacheFile)){
         print "Check mod for temporary file : ".$cacheFile."...\n";
         exit $ERRORS{"UNKNOWN"};
@@ -359,7 +265,7 @@ if (defined($OPTION{'64-bits'})) {
 # Get desctiption table
 if ($opt_s) {
     if (!-e $cacheFile) {
-        $result = get_snmp_table($OID_DESC, $session);
+        $result = Centreon::SNMP::Utils::get_snmp_table($OID_DESC, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
         unless (open(FILE,">".$cacheFile)){
             print "Check mod for temporary file : ".$cacheFile."...\n";
             exit $ERRORS{"UNKNOWN"};
@@ -384,12 +290,12 @@ if ($opt_s) {
         if ($countLine) {
             my @resLine = split(/\;/, $row);            
             my $index = $resLine[0];
-            my $interface_status = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$index]);
+            my $interface_status = Centreon::SNMP::Utils::get_snmp_leef([$OID_OPERSTATUS.".".$index], $session, $ERRORS{'UNKNOWN'});
             $resLine[1] =~ s/\x00//g;
             $resLine[1] =~ s/\n//g;
             print "Interface ". $index . " :: " . $resLine[1] . " :: ".$operstatus[$interface_status->{$OID_OPERSTATUS.".".$index} - 1];
             if ($opt_S) {
-                my $link_speed = $session->get_request(-varbindlist => [$OID_SPEED_BASE.".".$index]);
+                my $link_speed = Centreon::SNMP::Utils::get_snmp_leef([$OID_SPEED_BASE.".".$index], $session, $ERRORS{'UNKNOWN'});
                 if (!defined($link_speed)) {
                     printf("ERROR: Interface Speed Request : %s", $session->error);
                     exit $ERRORS{'UNKNOWN'};
@@ -407,16 +313,9 @@ if ($opt_s) {
     exit $ERRORS{'OK'};
 }
 
-$result = $session->get_request(-varbindlist => [$OID_OPERSTATUS.".".$interface, $OID_IN, $OID_OUT, $OID_SPEED]);
-if (!defined($result)) {
-    printf("ERROR: SNMP Request:  %s", $session->error);
-    if ($opt_n) {
-        print " - You must specify interface name when option -n is used";
-    }
-    print ".\n";
-    $session->close;
-    exit $ERRORS{'UNKNOWN'};
-}
+
+$result = Centreon::SNMP::Utils::get_snmp_leef([$OID_OPERSTATUS.".".$interface, $OID_IN, $OID_OUT, $OID_SPEED], $session, $ERRORS{'UNKNOWN'},
+                                               defined($opt_n) ? "You must specify interface name when option -n is used." : undef);
 if (!defined($result->{$OID_OPERSTATUS.".".$interface}) || $result->{$OID_OPERSTATUS.".".$interface} eq "") {
     print "ERROR: Can't get interface '$interface' status\n";
     exit $ERRORS{'CRITICAL'};
@@ -471,8 +370,8 @@ $last_out_bits  = 0;
 
 my $flg_created = 0;
 
-if (-e "@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'}) {
-    open(FILE,"<"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'});
+if (-e "$centplugins_path/traffic_if".$interface."_".$OPTION{'host'}) {
+    open(FILE,"<"."$centplugins_path/traffic_if".$interface."_".$OPTION{'host'});
     while($row = <FILE>){
         @last_values = split(":",$row);
         $last_check_time = $last_values[0];
@@ -487,8 +386,8 @@ if (-e "@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'}) {
 
 $update_time = time();
 
-unless (open(FILE,">"."@CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'})){
-    print "Check mod for temporary file : @CENTPLUGINS_TMP@/traffic_if".$interface."_".$OPTION{'host'}. " !\n";
+unless (open(FILE,">"."$centplugins_path/traffic_if".$interface."_".$OPTION{'host'})){
+    print "Check mod for temporary file : $centplugins_path/traffic_if".$interface."_".$OPTION{'host'}. " !\n";
     exit $ERRORS{"UNKNOWN"};
 }
 print FILE "$update_time:$in_bits:$out_bits";
@@ -647,6 +546,9 @@ sub print_usage () {
     print "   -k (--key)        snmp V3 key\n";
     print "   -u (--username)   snmp V3 username \n";
     print "   -p (--password)   snmp V3 password\n";
+    print "   --authprotocol    protocol MD5/SHA1  (v3)\n";
+    print "   --privprotocol    encryption system (DES/AES)(v3) \n";
+    print "   --privpassword    passphrase (v3) \n";
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
@@ -658,7 +560,7 @@ sub print_usage () {
     print "   -w (--warning)       Signal strength at which a warning message will be generated\n";
     print "                        (default 80)\n";
     print "   -c (--critical)      Signal strength at which a critical message will be generated\n";
-    print "   --disable-warn-state To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
+    print "   --disable-warn-state Option for not alerting on interface state\n";
     print "   -T                   Set maximum bandwidth\n";
     print "   -S                   Show link speed in output\n";
     print "   -V (--version)       Plugin version\n";
