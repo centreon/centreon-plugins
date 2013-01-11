@@ -52,7 +52,7 @@ my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
 my %centreon = Centreon::SNMP::Utils::load_oids($ERRORS{'UNKNOWN'}, "@NAGIOS_PLUGINS@/centreon.conf");
 
 # Plugin var init
-my ($session, $error);
+my $session;
 my ($row, $last_check_time, $last_in_bits, $last_out_bits, @last_values, $update_time, $in_traffic, $out_traffic, $in_usage, $out_usage);
 
 $PROGNAME = "$0";
