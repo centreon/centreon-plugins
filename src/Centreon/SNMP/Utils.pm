@@ -89,8 +89,9 @@ sub check_snmp_options {
             print "Missing parameter to open SNMPv3 session\n";
             exit $exit_status;
         }
-        if ($OPTION->{'snmp-auth-protocol'} ne "MD5" && $OPTION->{'snmp-auth-protocol'} ne "SHA1") {
-            print "Wrong authentication protocol. Must be MD5 or SHA1\n";
+        $OPTION->{'snmp-auth-protocol'} = lc($OPTION->{'snmp-auth-protocol'});
+        if ($OPTION->{'snmp-auth-protocol'} ne "md5" && $OPTION->{'snmp-auth-protocol'} ne "sha") {
+            print "Wrong authentication protocol. Must be MD5 or SHA\n";
             exit $exit_status;
         }
         $session_params{-username} = $OPTION->{'snmp-auth-user'};
@@ -102,8 +103,9 @@ sub check_snmp_options {
         }
 
         if ((defined($OPTION->{'snmp-priv-password'}) || defined($OPTION->{'snmp-priv-key'})) && defined($OPTION->{'snmp-priv-protocol'})) {
-            if ($OPTION->{'snmp-priv-protocol'} ne "DES" && $OPTION->{'snmp-priv-protocol'} ne "AES") {
-                print "Wrong encryption protocol. Must be DES or AES\n";
+            $OPTION->{'snmp-priv-protocol'} = lc($OPTION->{'snmp-priv-protocol'});
+            if ($OPTION->{'snmp-priv-protocol'} ne "des" && $OPTION->{'snmp-priv-protocol'} ne "aes" && $OPTION->{'snmp-priv-protocol'} ne "aes128") {
+                print "Wrong encryption protocol. Must be DES, AES or AES128\n";
                 exit $exit_status;
             }
 
