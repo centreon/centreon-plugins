@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 ################################################################################
-# Copyright 2004-2011 MERETHIS
+# Copyright 2004-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -40,23 +40,15 @@
 #
 
 use strict;
-use Net::SNMP qw(:snmp oid_lex_sort);
-use FindBin;
-use lib "$FindBin::Bin";
-use lib "@NAGIOS_PLUGINS@";
-use utils qw($TIMEOUT %ERRORS &print_revision &support);
-if (eval "require centreon" ) {
-    use centreon qw(get_parameters);
-    use vars qw($VERSION %centreon);
-    %centreon=get_parameters();
-} else {
-	print "Unable to load centreon perl module\n";
-    exit $ERRORS{'UNKNOWN'};
-}
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_d $opt_h $opt_v $opt_C $opt_p $opt_H $opt_n $opt_k $opt_u $opt_x $result @result %process_list %STATUS);
+use vars qw($opt_V $opt_d $opt_h $opt_n $opt_p $result @result %process_list);
+
+my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
+
+my %centreon = Centreon::SNMP::Utils::load_oids($ERRORS{'UNKNOWN'}, "@NAGIOS_PLUGINS@/centreon.conf");
 
 # Plugin var init
 
@@ -66,71 +58,66 @@ $PROGNAME = $0;
 sub print_help ();
 sub print_usage ();
 
-%STATUS=(1=>'running',2=>'runnable',3=>'notRunnable',4=>'invalid');
+my %OPTION = (
+    "host" => undef,
+    "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
+    "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
+    "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
+    "maxrepetitions" => undef,
+    "64-bits" => undef,
+);
 
 Getopt::Long::Configure('bundling');
 GetOptions
-    ("h"   => \$opt_h, "help"         => \$opt_h,
-     "u=s"   => \$opt_u, "username=s" => \$opt_u,
-     "x=s"   => \$opt_x, "password=s" => \$opt_x,
-     "k=s"   => \$opt_k, "key=s"      => \$opt_k,
-     "V"   => \$opt_V, "version"      => \$opt_V,
-     "n"   => \$opt_n, "number"       => \$opt_n,
-     "v=s" => \$opt_v, "snmp=s"       => \$opt_v,
-     "d" => \$opt_d, "debug"       => \$opt_d,
-     "C=s" => \$opt_C, "community=s"  => \$opt_C,
-     "p=s" => \$opt_p, "process=s"    => \$opt_p,
-     "H=s" => \$opt_H, "hostname=s"   => \$opt_H);
+    (
+    "H|hostname|host=s"         => \$OPTION{'host'},
+    "C|community=s"             => \$OPTION{'snmp-community'},
+    "v|snmp|snmp-version=s"     => \$OPTION{'snmp-version'},
+    "P|snmpport|snmp-port=i"    => \$OPTION{'snmp-port'},
+    "u|username=s"              => \$OPTION{'snmp-auth-user'},
+    "authpassword|password=s"   => \$OPTION{'snmp-auth-password'},
+    "k|authkey=s"               => \$OPTION{'snmp-auth-key'},
+    "authprotocol=s"            => \$OPTION{'snmp-auth-protocol'},
+    "privpassword=s"            => \$OPTION{'snmp-priv-password'},
+    "privkey=s"                 => \$OPTION{'snmp-priv-key'},
+    "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
+    "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+    "64-bits"                   => \$OPTION{'64-bits'},
+
+     "h"    => \$opt_h, "help"      => \$opt_h,
+     "V"    => \$opt_V, "version"   => \$opt_V,
+     "p=s"  => \$opt_p, "process=s" => \$opt_p,
+     "n"    => \$opt_n, "number"    => \$opt_n,
+     "d"    => \$opt_d, "debug"     => \$opt_d);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
- 	exit $ERRORS{'OK'};
+    exit $ERRORS{'OK'};
 }
 
 if ($opt_h) {
-  	print_help();
- 	exit $ERRORS{'OK'};
+    print_help();
+    exit $ERRORS{'OK'};
 }
 
-if (!$opt_H) {
-	print_usage();
-	exit $ERRORS{'OK'};
-}
-($opt_v) || ($opt_v = shift) || ($opt_v = "2");
-my $snmp = $1 if ($opt_v =~ /(\d)/);
-
-if ($snmp eq "3") {
-	if (!$opt_u) {
-		print "Option -u (--username) is required for snmpV3\n";
-		exit $ERRORS{'OK'};
-	}
-	if (!$opt_x && !$opt_k) {
-		print "Option -k (--key) or -x (--password) is required for snmpV3\n";
-		exit $ERRORS{'OK'};
-	} elsif ($opt_x && $opt_k) {
-		print "Only option -k (--key) or -x (--password) is needed for snmpV3\n";
-		exit $ERRORS{'OK'};
-	}
-}
-
-$opt_C = "public" if (!$opt_C);
+my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
 
 my $process;
 if(!$opt_p) {
-	print_usage();
-	exit $ERRORS{'OK'};
+    print_usage();
+    exit $ERRORS{'OK'};
 } elsif ($opt_p !~ /([-.A-Za-z0-9\,]+)/){
-	print_usage();
-	exit $ERRORS{'OK'};
+    print_usage();
+    exit $ERRORS{'OK'};
 }
 $process = $opt_p;
 my @process_temp = split /\,/,$opt_p;
 my (@proc,@status,@parameters);
 foreach (@process_temp) {
-my @tab = split /\:/,$_;
-$status[scalar(@proc)] = 0;
-$proc[scalar(@proc)] = $tab[0];
-$parameters[scalar(@parameters)] = $tab[1];
+    my @tab = split /\:/,$_;
+    $status[scalar(@proc)] = 0;
+    $proc[scalar(@proc)] = $tab[0];
+    $parameters[scalar(@parameters)] = $tab[1];
 } 
 my $name = $0;
 
@@ -140,63 +127,29 @@ my $OID_SW_RunParameters = $centreon{MIB2}{SW_RUNPARAMETERS};
 my $OID_SW_RunIndex =$centreon{MIB2}{SW_RUNINDEX};
 my $OID_SW_RunStatus =$centreon{MIB2}{SW_RUNSTATUS};
 
-my ($session, $error);
-if ($snmp eq "1" || $snmp eq "2") {
-	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -community => $opt_C, -version => $snmp);
-	if (!defined($session)) {
-	    print("UNKNOWN: SNMP Session : $error\n");
-	    exit $ERRORS{'UNKNOWN'};
-	}
-} elsif ($opt_k) {
-    ($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp, -username => $opt_u, -authkey => $opt_k);
-	if (!defined($session)) {
-    	print("UNKNOWN: SNMP Session : $error\n");
-    	exit $ERRORS{'UNKNOWN'};
-	}
-} elsif ($opt_x) {
-	($session, $error) = Net::SNMP->session(-hostname => $opt_H, -version => $snmp,  -username => $opt_u, -authpassword => $opt_x);
-	if (!defined($session)) {
-    	print("UNKNOWN: SNMP Session : $error\n");
-    	exit $ERRORS{'UNKNOWN'};
-	}
-}
-$result = $session->get_table(Baseoid => $OID_SW_RunName);
-if (!defined($result)) {
-    printf("UNKNOWN: %s.\n", $session->error);
-    $session->close;
-    exit $ERRORS{'UNKNOWN'};
-}
+my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
+$result = Centreon::SNMP::Utils::get_snmp_table($OID_SW_RunName, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
 
 my %defined_status = (0=>"NotPresent", 1=>"Running", 2=> "Runnable", 3=> "NotRunnable", 4=>"Invalid");
 foreach my $key (oid_lex_sort(keys %$result)) {
     my $found = 0;
     for(my $i = 0; $i < scalar(@proc) && !$found; $i++) {
-	my @oid_list = split (/\./,$key);
-	my $value = pop(@oid_list);
- 	if (lc $proc[$i] eq lc $result->{$key}) {
-		my $result2 = $session->get_request(-varbindlist => [$OID_SW_RunStatus . "." . $value]);
-		if (!defined($result)) {
-		       printf("UNKNOWN: %s.\n", $session->error);
-		       $session->close;
-			exit $ERRORS{'UNKNOWN'};
-		}
-		my $temp_status_val = $result2->{$OID_SW_RunStatus . "." . $value};
-		 if (defined ($parameters[$i]) && $parameters[$i] ne "") {
-			$result2 = $session->get_request(-varbindlist => [$OID_SW_RunParameters . "." . $value]);
-			if (!defined($result)) {
-			       printf("UNKNOWN: %s.\n", $session->error);
-				$session->close;
-				exit $ERRORS{'UNKNOWN'};
-			}
-			if (lc $parameters[$i] eq lc $result2->{$OID_SW_RunParameters . "." . $value}) {
-				$status[$i] = $temp_status_val;
-				$found = 1;
-			}
-		}else {
-			$status[$i] = $temp_status_val;
-			$found = 1;
- 		} 
- 	}
+        my @oid_list = split (/\./,$key);
+        my $value = pop(@oid_list);
+        if (lc $proc[$i] eq lc $result->{$key}) {
+            my $result2 = Centreon::SNMP::Utils::get_snmp_leef([$OID_SW_RunStatus . "." . $value], $session, $ERRORS{'UNKNOWN'});
+            my $temp_status_val = $result2->{$OID_SW_RunStatus . "." . $value};
+            if (defined ($parameters[$i]) && $parameters[$i] ne "") {
+                $result2 = Centreon::SNMP::Utils::get_snmp_leef([$OID_SW_RunParameters . "." . $value], $session, $ERRORS{'UNKNOWN'});
+                if (lc $parameters[$i] eq lc $result2->{$OID_SW_RunParameters . "." . $value}) {
+                    $status[$i] = $temp_status_val;
+                    $found = 1;
+                }
+            } else {
+                $status[$i] = $temp_status_val;
+                $found = 1;
+            } 
+        }
     }
 }
 
@@ -209,34 +162,34 @@ my $OK = "";
 my $unKnown = "";
 #$msg =~ s/\-$//;
 for (my $i = 0; $i < scalar(@proc); $i++) {
-	if (defined($status[$i])) {
-		if ($status[$i] != 1 && $status[$i] != 2) {
-			if ($status[$i] == 0) {
-				$final_status = "CRITICAL";
-			       $notPresent .= $proc[$i]." - ";
-			}
-			if ($status[$i]) {
-				$final_status = "CRITICAL";
-				$critical .= $proc[$i]." - ";
-			}
-		}else {
-			$OK .= $proc[$i]." - ";
-		}
-	}else {
-		$unKnown .= $proc[$i]." - ";
-	}
+    if (defined($status[$i])) {
+        if ($status[$i] != 1 && $status[$i] != 2) {
+            if ($status[$i] == 0) {
+                $final_status = "CRITICAL";
+                $notPresent .= $proc[$i]." - ";
+            }
+            if ($status[$i]) {
+                $final_status = "CRITICAL";
+                $critical .= $proc[$i]." - ";
+            }
+        } else {
+            $OK .= $proc[$i]." - ";
+        }
+    } else {
+        $unKnown .= $proc[$i]." - ";
+    }
 }
 if ($critical ne "") {
-$msg = "CRITICAL : $critical";
+    $msg = "CRITICAL : $critical";
 }
 if ($notPresent ne "") {
-$msg .= "NOT-PRESENT : $notPresent";
+    $msg .= "NOT-PRESENT : $notPresent";
 }
 if ($OK ne "" && $opt_d) {
-$msg .= "OK :  $OK";
+    $msg .= "OK :  $OK";
 }
 if ($msg eq "" ) {
-  $msg = "All process OK";
+    $msg = "All process OK";
 }
 $msg =~ s/\- $//;
 print "$msg\n";
@@ -245,22 +198,30 @@ exit $ERRORS{$final_status};
 sub print_usage () {
     print "\nUsage:\n";
     print "$PROGNAME\n";
-    print "   -H (--hostname)   Hostname to query - (required)\n";
-    print "   -C (--community)  SNMP read community (defaults to public,\n";
+    print "   -H (--hostname)   Hostname to query (required)\n";
+    print "   -C (--community)  SNMP read community (defaults to public)\n";
     print "                     used with SNMP v1 and v2c\n";
-    print "   -v (--snmp_version)  1 for SNMP v1 (default)\n";
+    print "   -v (--snmp-version)  1 for SNMP v1 (default)\n";
     print "                        2 for SNMP v2c\n";
-    print "   -n (--number)     Return the number of current running processes. \n";
-    print "   -p (--process)    Set the process name ex: by default smbd\n";
+    print "                        3 for SNMP v3\n";
+    print "   -P (--snmp-port)  SNMP port (default: 161)\n";
     print "   -k (--key)        snmp V3 key\n";
-    print "   -x (--password)   snmp V3 password\n";
-    print "   -u (--username)   snmp v3 username \n";
+    print "   -u (--username)   snmp V3 username \n";
+    print "   --password        snmp V3 password\n";
+    print "   --authprotocol    protocol MD5/SHA1  (v3)\n";
+    print "   --privprotocol    encryption system (DES/AES)(v3) \n";
+    print "   --privpassword    passphrase (v3) \n";
+    print "   --64-bits         Use 64 bits OID\n";
+    print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
+    print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
+    print "   -n (--number)     Return the number of current running processes.\n";
+    print "   -p (--process)    Set the process name ex: by default smbd\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 }
 sub print_help () {
-	print "##############################################\n";
-    print "#    Copyright (c) 2004-2011 Centreon        #\n";
+    print "##############################################\n";
+    print "#    Copyright (c) 2004-2013 Centreon        #\n";
     print "#    Bugs to http://forge.centreon.com/      #\n";
     print "##############################################\n";
     print_usage();
