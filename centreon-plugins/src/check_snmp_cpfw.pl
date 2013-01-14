@@ -13,29 +13,24 @@
 #
 
 use strict;
-use Net::SNMP;
 use Getopt::Long;
 
 # Nagios specific
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
 #my $TIMEOUT = 15;
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
-
-# Oreon specific
-
-if (eval "require centreon" ) {
-  use centreon qw(get_parameters &is_valid_serviceid);
-  use vars qw($VERSION %centreon);
-  %centreon=get_parameters();
-} else {
-  print "Unable to load centreon perl module\n";
-    exit $ERRORS{'UNKNOWN'};
-}
-
-my $pathtorrdbase = $centreon{GLOBAL}{DIR_RRDTOOL};
-
+my %OPTION = (
+    "host" => undef,
+    "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
+    "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
+    "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
+    "maxrepetitions" => undef,
+    "64-bits" => undef,
+);
+my $session_params;
 
 ########### SNMP Datas ###########
 
@@ -88,9 +83,6 @@ my @mgmt_checks_oid	= ($mgmt_status,$mgmt_alive);
 
 my $Version='0.7';
 
-my $o_host = 	undef; 		# hostname
-my $o_community = undef; 	# community
-my $o_port = 	161; 		# port
 my $o_help=	undef; 		# wan't some help ?
 my $o_verb=	undef;		# verbose mode
 my $o_version=	undef;		# print version
@@ -104,20 +96,6 @@ my $o_policy=	undef;		# Check for policy name
 my $o_conn=	undef;		# Check for connexions
 my $o_perf=	undef;		# Performance data output
 
-# SNMPv3 specific
-my $o_login=	undef;		# Login for snmpv3
-my $o_passwd=	undef;		# Pass for snmpv3
-
-# centreon specific
-my $o_step=	undef;
-my $o_g=	undef;
-my $o_S=	undef;
-my $step=	undef;
-my $rrd=	undef;
-my $start=	undef;
-my $ServiceId=	undef;
-my @rrd_data= undef;
-
 
 # functions
 
@@ -128,9 +106,9 @@ sub print_usage {
 }
 
 sub isnnum { # Return true if arg is not a number
-  my $num = shift;
-  if ( $num =~ /^(\d+\.?\d*)|(^\.\d+)$/ ) { return 0 ;}
-  return 1;
+    my $num = shift;
+    if ( $num =~ /^(\d+\.?\d*)|(^\.\d+)$/ ) { return 0 ;}
+    return 1;
 }
 
 sub help {
@@ -171,7 +149,6 @@ sub help {
 -V, --version
    prints version number
 -g (--rrdgraph)   Create a rrd base if necessary and add datas into this one
---rrd_step	     Specifies the base interval in seconds with which data will be fed into the RRD (300 by default)
 -S (--ServiceId)  centreon Service Id
 
 EOT
@@ -183,35 +160,35 @@ sub verb { my $t=shift; print $t,"\n" if defined($o_verb) ; }
 sub check_options {
     Getopt::Long::Configure ("bundling");
     GetOptions(
-   	'v'	=> \$o_verb,		'verbose'	=> \$o_verb,
-        'h'     => \$o_help,    	'help'        	=> \$o_help,
-        'H:s'   => \$o_host,		'hostname:s'	=> \$o_host,
-        'P:i'   => \$o_port,   		'port:i'	=> \$o_port,
-        'C:s'   => \$o_community,	'community:s'	=> \$o_community,
-	'l:s'	=> \$o_login,		'login:s'	=> \$o_login,
-	'x:s'	=> \$o_passwd,		'passwd:s'	=> \$o_passwd,
-        't:i'   => \$TIMEOUT,    	'timeout:i'	=> \$TIMEOUT,
-	'V'	=> \$o_version,		'version'	=> \$o_version,
-	's'	=> \$o_svn,		'svn'		=> \$o_svn,
-	'w'	=> \$o_fw,		'fw'		=> \$o_fw,
-	'a'	=> \$o_ha,		'ha'		=> \$o_ha,
-	'm'	=> \$o_mgmt,		'mgmt'		=> \$o_mgmt,
-	'p:s'	=> \$o_policy,		'policy:s'	=> \$o_policy,
-	'c:s'	=> \$o_conn,		'connexions:s'	=> \$o_conn,
-	'f'	=> \$o_perf,		'perfparse'	=> \$o_perf,
-	# For centreon rrdtool graph
-  "rrd_step:s" => \$o_step,
-  "g"   => \$o_g, "rrdgraph"     => \$o_g,
-  "S=s" => \$o_S, "ServiceId=s"  => \$o_S
+        "H|hostname|host=s"         => \$OPTION{'host'},
+        "C|community=s"             => \$OPTION{'snmp-community'},
+        "snmp|snmp-version=s"       => \$OPTION{'snmp-version'},
+        "port|P|snmpport|snmp-port=i"    => \$OPTION{'snmp-port'},
+        "l|login|username=s"        => \$OPTION{'snmp-auth-user'},
+        "x|passwd|authpassword|password=s" => \$OPTION{'snmp-auth-password'},
+        "k|authkey=s"               => \$OPTION{'snmp-auth-key'},
+        "authprotocol=s"            => \$OPTION{'snmp-auth-protocol'},
+        "privpassword=s"            => \$OPTION{'snmp-priv-password'},
+        "privkey=s"                 => \$OPTION{'snmp-priv-key'},
+        "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
+        "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "64-bits"                   => \$OPTION{'64-bits'},
+        'v'     => \$o_verb,    'verbose'       => \$o_verb,
+        'h'     => \$o_help,    'help'          => \$o_help,
+        't:i'   => \$TIMEOUT,   'timeout:i'     => \$TIMEOUT,
+        'V'     => \$o_version, 'version'       => \$o_version,
+        's'     => \$o_svn,     'svn'           => \$o_svn,
+        'w'     => \$o_fw,      'fw'            => \$o_fw,
+        'a'     => \$o_ha,      'ha'            => \$o_ha,
+        'm'     => \$o_mgmt,    'mgmt'          => \$o_mgmt,
+        'p:s'   => \$o_policy,  'policy:s'      => \$o_policy,
+        'c:s'   => \$o_conn,    'connexions:s'  => \$o_conn,
+        'f'     => \$o_perf,    'perfparse'     => \$o_perf,
     );
     if (defined ($o_help) ) { help(); exit $ERRORS{"UNKNOWN"}};
     if (defined($o_version)) { p_version(); exit $ERRORS{"UNKNOWN"}};
-    if ( ! defined($o_host) ) # check host and filter
-	{ print_usage(); exit $ERRORS{"UNKNOWN"}}
-    # check snmp information
-    if ( !defined($o_community) && (!defined($o_login) || !defined($o_passwd)) )
-	{ print "Put snmp login info!\n"; print_usage(); exit $ERRORS{"UNKNOWN"}}
     # Check firewall options
+    ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
     if ( defined($o_conn)) {
       if ( ! defined($o_fw))
  	{ print "Cannot check connexions without checking fw\n"; print_usage(); exit $ERRORS{"UNKNOWN"}}
@@ -235,13 +212,6 @@ sub check_options {
     if (!defined($o_fw) && !defined($o_ha) && !defined($o_mgmt) && !defined($o_svn))
 	{ print "Must select a product to check !\n";print_usage(); exit $ERRORS{"UNKNOWN"}}
 
-	###### centreon #######
-
-	if (!defined($o_S)) { $o_S="1_1" }
-	$ServiceId = is_valid_serviceid($o_S);
-
-	if (!defined($o_step)) { $o_step="300" }
-	$step = $1 if ($o_step =~ /(\d+)/);
 
 }
 
@@ -249,37 +219,9 @@ sub check_options {
 
 check_options();
 
-$start=time;
-
 # Check gobal timeout if snmp screws up
 alarm($TIMEOUT+15);
-
-# Connect to host
-my ($session,$error);
-if ( defined($o_login) && defined($o_passwd)) {
-  # SNMPv3 login
-  verb("SNMPv3 login");
-  ($session, $error) = Net::SNMP->session(
-      -hostname   	=> $o_host,
-      -version		=> '3',
-      -username		=> $o_login,
-      -authpassword	=> $o_passwd,
-      -authprotocol	=> 'md5',
-      -privpassword	=> $o_passwd
-   );
-} else {
-  # SNMPV1 login
-  ($session, $error) = Net::SNMP->session(
-     -hostname  => $o_host,
-     -community => $o_community,
-     -port      => $o_port,
-     -timeout   => $TIMEOUT
-  );
-}
-if (!defined($session)) {
-   printf("ERROR opening session: %s.\n", $error);
-   exit $ERRORS{"UNKNOWN"};
-}
+my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
 ########### Global checks #################
 
@@ -291,61 +233,44 @@ my $svn_print="";
 my $svn_state=0;
 
 if (defined ($o_svn)) {
+    $resultat = Centreon::SNMP::Utils::get_snmp_leef(\@svn_checks_oid, $session, $ERRORS{'UNKNOWN'});
 
-$resultat = $session->get_request(
-    Varbindlist => \@svn_checks_oid
-);
-
-  if (defined($resultat)) {
     foreach $key ( keys %svn_checks) {
-      verb("$svn_checks_n{$key} : $svn_checks{$key} / $$resultat{$key}");
-      if ( $$resultat{$key} ne $svn_checks{$key} ) {
-	$svn_print .= $svn_checks_n{$key} . ":" . $$resultat{$key} . " ";
-	$svn_state=2;
-      }
+        verb("$svn_checks_n{$key} : $svn_checks{$key} / $$resultat{$key}");
+        if ( $$resultat{$key} ne $svn_checks{$key} ) {
+            $svn_print .= $svn_checks_n{$key} . ":" . $$resultat{$key} . " ";
+            $svn_state=2;
+        }
     }
-  } else {
-    $svn_print .= "cannot find oids";
-    #Critical state if not found because it means soft is not activated
-    $svn_state=2;
-  }
 
-  if ($svn_state == 0) {
-    $svn_print="SVN : OK";
-  } else {
-    $svn_print="SVN : " . $svn_print;
-  }
-  verb("$svn_print");
+    if ($svn_state == 0) {
+        $svn_print="SVN : OK";
+    } else {
+        $svn_print="SVN : " . $svn_print;
+    }
+    verb("$svn_print");
 }
 ##########  Check mgmt status #############
 my $mgmt_state=0;
 my $mgmt_print="";
 
 if (defined ($o_mgmt)) {
-# Check all states
-  $resultat=undef;
-  $resultat = $session->get_request(
-      Varbindlist => \@mgmt_checks_oid
-  );
-  if (defined($resultat)) {
+    # Check all states
+    $resultat=undef;
+    $resultat = Centreon::SNMP::Utils::get_snmp_leef(\@mgmt_checks_oid, $session, $ERRORS{'UNKNOWN'});
     foreach $key ( keys %mgmt_checks) {
-      verb("$mgmt_checks_n{$key} : $mgmt_checks{$key} / $$resultat{$key}");
-      if ( $$resultat{$key} ne $mgmt_checks{$key} ) {
-        $mgmt_print .= $mgmt_checks_n{$key} . ":" . $$resultat{$key} . " ";
-        $mgmt_state=2;
-      }
+        verb("$mgmt_checks_n{$key} : $mgmt_checks{$key} / $$resultat{$key}");
+        if ( $$resultat{$key} ne $mgmt_checks{$key} ) {
+            $mgmt_print .= $mgmt_checks_n{$key} . ":" . $$resultat{$key} . " ";
+            $mgmt_state=2;
+        }
     }
-  } else {
-    $mgmt_print .= "cannot find oids";
-    #Critical state if not found because it means soft is not activated
-    $mgmt_state=2;
-  }
-  if ($mgmt_state == 0) {
-    $mgmt_print="MGMT : OK";
-  } else {
-    $mgmt_print="MGMT : " . $mgmt_print;
-  }
-  verb("$svn_print");
+    if ($mgmt_state == 0) {
+        $mgmt_print="MGMT : OK";
+    } else {
+        $mgmt_print="MGMT : " . $mgmt_print;
+    }
+    verb("$svn_print");
 }
 
 ########### Check fw status  ##############
@@ -355,54 +280,43 @@ my $fw_print="";
 my $perf_conn=undef;
 
 if (defined ($o_fw)) {
-
-# Check all states
-
-  $resultat = $session->get_request(
-      Varbindlist => \@fw_checks
-  );
-  if (defined($resultat)) {
+    # Check all states
+    $resultat = Centreon::SNMP::Utils::get_snmp_leef(\@fw_checks, $session, $ERRORS{'UNKNOWN'});
     verb("State : $$resultat{$policy_state}");
     verb("Name : $$resultat{$policy_name}");
     verb("connections : $$resultat{$connections}");
 
     if ($$resultat{$policy_state} ne "Installed") {
-      $fw_state=2;
-      $fw_print .= "Policy:". $$resultat{$policy_state}." ";
-      verb("Policy state not installed");
+        $fw_state=2;
+        $fw_print .= "Policy:". $$resultat{$policy_state}." ";
+        verb("Policy state not installed");
     }
 
     if (defined($o_policy)) {
-      if ($$resultat{$policy_name} ne $o_policy) {
-	$fw_state=2;
-	$fw_print .= "Policy installed : $$resultat{$policy_name}";
-      }
+        if ($$resultat{$policy_name} ne $o_policy) {
+            $fw_state=2;
+            $fw_print .= "Policy installed : $$resultat{$policy_name}";
+        }
     }
 
     if (defined($o_conn)) {
-      if ($$resultat{$connections} > $o_crit) {
-	$fw_state=2;
-    $fw_print .= "Connexions : ".$$resultat{$connections}." > ".$o_crit." ";
-      } else {
-	if ($$resultat{$connections} > $o_warn) {
-	  $fw_state=1;
-	  $fw_print .= "Connexions : ".$$resultat{$connections}." > ".$o_warn." ";
-	}
-      }
-      $perf_conn=$$resultat{$connections};
+        if ($$resultat{$connections} > $o_crit) {
+            $fw_state=2;
+            $fw_print .= "Connexions : ".$$resultat{$connections}." > ".$o_crit." ";
+        } else {
+            if ($$resultat{$connections} > $o_warn) {
+                $fw_state=1;
+                $fw_print .= "Connexions : ".$$resultat{$connections}." > ".$o_warn." ";
+            }
+        }
+        $perf_conn=$$resultat{$connections};
     }
-  } else {
-    $fw_print .= "cannot find oids";
-    #Critical state if not found because it means soft is not activated
-    $fw_state=2;
-  }
 
-  if ($fw_state==0) {
-    $fw_print="FW : OK";
-  } else {
-    $fw_print="FW : " . $fw_print;
-  }
-
+    if ($fw_state==0) {
+        $fw_print="FW : OK";
+    } else {
+        $fw_print="FW : " . $fw_print;
+    }
 }
 ########### Check ha status  ##############
 
@@ -410,83 +324,59 @@ my $ha_state_n=0;
 my $ha_print="";
 
 if (defined ($o_ha)) {
-  # Check all states
-
-  $resultat = $session->get_request(
-      Varbindlist => \@ha_checks_oid
-  );
-
-  if (defined($resultat)) {
+    # Check all states
+    $resultat =  Centreon::SNMP::Utils::get_snmp_leef(\@ha_checks_oid, $session, $ERRORS{'UNKNOWN'});
     foreach $key ( keys %ha_checks) {
-      verb("$ha_checks_n{$key} : $ha_checks{$key} / $$resultat{$key}");
-      if ( $$resultat{$key} ne $ha_checks{$key} ) {
-	$ha_print .= $ha_checks_n{$key} . ":" . $$resultat{$key} . " ";
-	$ha_state_n=2;
-      }
+        verb("$ha_checks_n{$key} : $ha_checks{$key} / $$resultat{$key}");
+        if ( $$resultat{$key} ne $ha_checks{$key} ) {
+            $ha_print .= $ha_checks_n{$key} . ":" . $$resultat{$key} . " ";
+            $ha_state_n=2;
+        }
     }
     #my $ha_mode		= "1.3.6.1.4.1.2620.1.5.11.0";  # "Sync only" : ha Working mode
-  } else {
-    $ha_print .= "cannot find oids";
-    #Critical state if not found because it means soft is not activated
-    $ha_state_n=2;
-  }
 
-  # get ha status table
-  $resultat = $session->get_table(
-	  Baseoid => $ha_tables
-  );
-  my %status;
-  my (@index,@oid) = (undef,undef);
-  my $nindex=0;
-  my $index_search= $ha_tables . $ha_tables_index;
+    # get ha status table
+    $resultat = Centreon::SNMP::Utils::get_snmp_table($ha_tables, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
+    my %status;
+    my (@index,@oid) = (undef,undef);
+    my $nindex=0;
+    my $index_search= $ha_tables . $ha_tables_index;
 
-  if (defined($resultat)) {
     foreach $key ( keys %$resultat) {
-      if ( $key =~ /$index_search/) {
-	@oid=split (/\./,$key);
-	pop(@oid);
-	$index[$nindex]=pop(@oid);
-	$nindex++;
-      }
+        if ( $key =~ /$index_search/) {
+            @oid=split (/\./,$key);
+            pop(@oid);
+            $index[$nindex]=pop(@oid);
+            $nindex++;
+        }
     }
-  } else {
-    $ha_print .= "cannot find oids" if ($ha_state_n ==0);
-    #Critical state if not found because it means soft is not activated
-    $ha_state_n=2;
-  }
-  verb ("found $nindex ha softs");
-  if ( $nindex == 0 )
-  {
-    $ha_print .= " no ha soft found" if ($ha_state_n ==0);
-    $ha_state_n=2;
-  } else {
-    my $ha_soft_name=undef;
+    verb ("found $nindex ha softs");
+    if ( $nindex == 0 ) {
+        $ha_print .= " no ha soft found" if ($ha_state_n ==0);
+        $ha_state_n=2;
+    } else {
+        my $ha_soft_name=undef;
 
     for (my $i=0;$i<$nindex;$i++) {
-
-      $key=$ha_tables . $ha_tables_name . "." . $index[$i] . ".0";
-      $ha_soft_name= $$resultat{$key};
-
-      $key=$ha_tables . $ha_tables_state . "." . $index[$i] . ".0";
-      if (($status{$ha_soft_name} = $$resultat{$key}) ne "OK") {
-	    $key=$ha_tables . $ha_tables_prbdesc . "." . $index[$i] . ".0";
-	    $status{$ha_soft_name} = $$resultat{$key};
-	    $ha_print .= $ha_soft_name . ":" . $status{$ha_soft_name} . " ";
-	    $ha_state_n=2
-      }
-      verb ("$ha_soft_name : $status{$ha_soft_name}");
+        $key=$ha_tables . $ha_tables_name . "." . $index[$i] . ".0";
+        $ha_soft_name= $$resultat{$key};
+        $key=$ha_tables . $ha_tables_state . "." . $index[$i] . ".0";
+        if (($status{$ha_soft_name} = $$resultat{$key}) ne "OK") {
+            $key=$ha_tables . $ha_tables_prbdesc . "." . $index[$i] . ".0";
+            $status{$ha_soft_name} = $$resultat{$key};
+            $ha_print .= $ha_soft_name . ":" . $status{$ha_soft_name} . " ";
+            $ha_state_n=2
+        }
+        verb ("$ha_soft_name : $status{$ha_soft_name}");
     }
-  }
+    }
 
-  if ($ha_state_n == 0) {
-    $ha_print = "HA : OK";
-  } else {
-    $ha_print = "HA : " . $ha_print;
-  }
-
+    if ($ha_state_n == 0) {
+        $ha_print = "HA : OK";
+    } else {
+        $ha_print = "HA : " . $ha_print;
+    }
 }
-
-$session->close;
 
 ########## print results and exit
 
@@ -500,22 +390,21 @@ if (defined ($o_mgmt)) { $f_print = (defined ($f_print)) ? $f_print . " / ". $mg
 my $exit_status=undef;
 $f_print .= " / CPFW Status : ";
 if (($ha_state_n+$svn_state+$fw_state+$mgmt_state) == 0 ) {
-  $f_print .= "OK";
-  $exit_status= $ERRORS{"OK"};
+    $f_print .= "OK";
+    $exit_status= $ERRORS{"OK"};
 } else {
-  if (($fw_state==1) || ($ha_state_n==1) || ($svn_state==1) || ($mgmt_state==1)) {
-    $f_print .= "WARNING";
-    $exit_status= $ERRORS{"WARNING"};
-  } else {
-    $f_print .= "CRITICAL";
-    $exit_status=$ERRORS{"CRITICAL"};
-  }
+    if (($fw_state==1) || ($ha_state_n==1) || ($svn_state==1) || ($mgmt_state==1)) {
+        $f_print .= "WARNING";
+        $exit_status= $ERRORS{"WARNING"};
+    } else {
+        $f_print .= "CRITICAL";
+        $exit_status=$ERRORS{"CRITICAL"};
+    }
 }
 
 if (defined($o_perf) && defined ($perf_conn)) {
-  $f_print .= " | fw_connexions=" . $perf_conn;
+    $f_print .= " | fw_connexions=" . $perf_conn;
 }
 
 print "$f_print\n";
 exit $exit_status;
-
