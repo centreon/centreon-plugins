@@ -21,12 +21,12 @@
 # Plugin init
 
 use strict;
-require "/usr/lib/nagios/plugins/Centreon/SNMP/Utils.pm";
+require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_n $opt_w $opt_c $opt_s);
+use vars qw($opt_V $opt_h $opt_n);
 
 # Plugin var init
 
@@ -42,6 +42,8 @@ my %OPTION = (
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
     "maxrepetitions" => undef,
     "64-bits" => undef,
+    "command-exit" => undef,
+    "no-regexp" => undef,
 );
 
 GetOptions
@@ -59,12 +61,11 @@ GetOptions
     "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
     "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
     "64-bits"                   => \$OPTION{'64-bits'},
-    "h"   => \$opt_h, "help"         => \$opt_h,
-    "V"   => \$opt_V, "version"      => \$opt_V,
-    "s"   => \$opt_s, "show"         => \$opt_s,
-    "n=s"   => \$opt_n, "name=s"         => \$opt_n,
-    "w=s" => \$opt_w, "warning=s"    => \$opt_w,
-    "c=s" => \$opt_c, "critical=s"   => \$opt_c);
+    "command-exit"              => \$OPTION{'command-exit'},
+    "no-regexp"                 => \$OPTION{'no-regexp'},
+    "h"     => \$opt_h, "help"      => \$opt_h,
+    "V"     => \$opt_V, "version"   => \$opt_V,
+    "n=s"   => \$opt_n, "name=s"    => \$opt_n);
 
 
 if ($opt_V) {
@@ -77,74 +78,50 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
-
-($opt_c) || ($opt_c = shift) || ($opt_c = 95);
-my $critical = $1 if ($opt_c =~ /([0-9]+)/);
-
-($opt_w) || ($opt_w = shift) || ($opt_w = 80);
-my $warning = $1 if ($opt_w =~ /([0-9]+)/);
-if ($critical <= $warning){
-    print "(--crit) must be superior to (--warn)";
-    print_usage();
-    exit $ERRORS{'OK'};
+if (!defined($opt_n) || $opt_n eq '') {
+    print "Option -n (--name) needed\n";
+    exit $ERRORS{'UNKNOWN'};
 }
 
-# Plugin snmp requests   
+my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
 
+# Plugin snmp requests   
+my $OID_ExecResult = ".1.3.6.1.4.1.2021.8.1.100";
 my $OID_ExecDescr = ".1.3.6.1.4.1.2021.8.1.2";
 my $OID_ExecOutput = ".1.3.6.1.4.1.2021.8.1.101";
 
 # create a SNMP session
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
-my $scriptname = "";
+my $scriptname;
 
-# getting partition using its name instead of its oid index
-
-if ($opt_n) {
-    my $result = Centreon::SNMP::Utils::get_snmp_table($OID_ExecDescr, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
-    foreach my $key ( oid_lex_sort(keys %$result)) {
-        if ($result->{$key} =~ m/$opt_n/) {
-            my @oid_list = split (/\./,$key);
-            $scriptname = pop (@oid_list) ;
+my $result = Centreon::SNMP::Utils::get_snmp_table($OID_ExecDescr, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
+foreach my $key ( oid_lex_sort(keys %$result)) {
+    if (defined($OPTION{'no-regexp'})) {
+        if ($result->{$key} eq $opt_n) {
+            my @oid_list = split(/\./, $key);
+            $scriptname = pop(@oid_list);
         }
+    } elsif ($result->{$key} =~ /$opt_n/) {
+        my @oid_list = split(/\./, $key);
+        $scriptname = pop(@oid_list);
     }
 }
 
-my $result = Centreon::SNMP::Utils::get_snmp_leef([$OID_ExecDescr.".".$scriptname, $OID_ExecOutput.".".$scriptname], $session, $ERRORS{'UNKNOWN'});
+if (!defined($scriptname)) {
+    print "Can't find a command name '$opt_n'\n";
+    exit $ERRORS{'UNKNOWN'};
+}
 
-my $ExecDescr  =  $result->{$OID_ExecDescr.".".$scriptname };
+my $result = Centreon::SNMP::Utils::get_snmp_leef([$OID_ExecOutput.".".$scriptname, $OID_ExecResult.".".$scriptname], $session, $ERRORS{'UNKNOWN'});
 my $ExecOutput  =  $result->{$OID_ExecOutput.".".$scriptname };
 
-print "|" . $ExecOutput . "\n";
+print $ExecOutput . "\n";
 
-my $return = 5;
-
-if (!defined($opt_w) && !defined($opt_c)){
-    $ExecOutput =~ /([0-9]*)/;
-    if ($1 eq 1){
-        print "OK : Process runnable \n";
-        $return = 0; 
-    } else {
-        print "CRITICAL : Process runnable \n";
-        $return = 2;
-    }
-} else {
-    if ($ExecOutput =~ /([0-9]*)/){
-        if ($1 >= $opt_w && $1 < $opt_c){
-            print "OK : $1 Process runnable \n";
-            $return = 1;
-        } elsif ($1 > $opt_c) {
-            print "WARNING : $1 Process runnable \n";
-            $return = 2;
-        } elsif ($1 < $opt_w) {
-            print "CRITICAL : Process runnable \n";
-            $return = 0;
-        }
-    }
+if (defined($OPTION{'command-exit'})) {
+    exit($result->{$OID_ExecResult . "." . $scriptname});
 }
-exit($return);
+exit($ERRORS{'OK'});
 
 sub print_usage () {
     print "\nUsage:\n";
@@ -165,13 +142,11 @@ sub print_usage () {
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
-    print "   -n (--name)       Allows to use disk name with option -d instead of disk oid index\n";
-    print "                     (ex: -d \"C:\" -n, -d \"E:\" -n, -d \"Swap Memory\" -n, -d \"Real Memory\" -n\n";
-    print "                     (choose an unique expression for each disk)\n";
-    print "   -w (--warn)       Signal strength at which a warning message will be generated\n";
-    print "                     (default 80)\n";
-    print "   -c (--crit)       Signal strength at which a critical message will be generated\n";
-    print "                     (default 95)\n";
+    print "   -n (--name)       SNMP Command name to call\n";
+    print "                     Example in snmpd.conf: exec echotest /bin/echo hello world\n";
+    print "                     So we specify: -n 'echotest'\n";
+    print "   --command-exit    Use command exit code\n";
+    print "   --no-regexp       Don't use regexp to check command name\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
 
