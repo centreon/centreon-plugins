@@ -68,6 +68,7 @@ my %OPTION = (
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
     "maxrepetitions" => undef,
     "64-bits" => undef,
+    "disable-swap" => undef
 );
 
 Getopt::Long::Configure('bundling');
@@ -86,11 +87,12 @@ GetOptions
     "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
     "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
     "64-bits"                   => \$OPTION{'64-bits'},
-    "h"   => \$opt_h, "help"         => \$opt_h,
-    "V"   => \$opt_V, "version"      => \$opt_V,
-    "w=s" => \$opt_w, "warning=s"    => \$opt_w,
-    "c=s" => \$opt_c, "critical=s"   => \$opt_c,
-    "s=s" => \$opt_s, "swap=s"       => \$opt_s);
+    "S"     => \$OPTION{'disable-swap'},
+    "h"     => \$opt_h, "help"         => \$opt_h,
+    "V"     => \$opt_V, "version"      => \$opt_V,
+    "w=s"   => \$opt_w, "warning=s"    => \$opt_w,
+    "c=s"   => \$opt_c, "critical=s"   => \$opt_c,
+    "s=s"   => \$opt_s, "swap=s"       => \$opt_s);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.2 $');
@@ -198,8 +200,14 @@ if (defined $indexC > 0) {
 
 my $swap_size = $total_mem->{$OID_Swap_storage_size} * $alloc_units->{$OID_Swap_storage_allocationUnits};
 my $realM_size = $total_mem->{$OID_RealM_storage_size} * $alloc_units->{$OID_RealM_storage_allocationUnits};
-my $total_memory_used = $swap_used + $realM_used - $cache_used;
-my $total_memory_size = $swap_size + $realM_size;
+my ($total_memory_used, $total_memory_size);
+if (defined($OPTION{'disable-swap'})) {
+    $total_memory_used = $realM_used - $cache_used;
+    $total_memory_size = $realM_size;
+} else {
+    $total_memory_used = $swap_used + $realM_used - $cache_used;
+    $total_memory_size = $swap_size + $realM_size;
+}
 
 # percentage of total, physical and swap  memory used
 if ($swap_size eq "0"){
@@ -256,7 +264,8 @@ sub print_usage () {
     print "   -h (--help)       usage help\n";
     print "   -c (--critical)   percentage of memory used at which a critical message will be generated\n";
     print "   -w (--warning)    percentage of memory used at which a warning message will be generated\n";
-    print "   -s (--swap)       limit of swap memory can reach before the service turns critical, while phyical memory is near 100%\n";    
+    print "   -s (--swap)       limit of swap memory can reach before the service turns critical, while phyical memory is near 100%\n";
+    print "   -S                Do not add swap size in total memory size, perfdata will show ram size corresponding physical size installed\n";    
 }
 
 sub print_help () {
