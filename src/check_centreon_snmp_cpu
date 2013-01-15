@@ -111,26 +111,7 @@ $name =~ s/\.pl.*//g;
 my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
-sub get_netsnmp_version ($){
-    my $sess = $_[0];
-    my $OID_VERSION = "1.3.6.1.2.1.25.6.3.1.2";
-    
-    my $result = Centreon::SNMP::Utils::get_snmp_table($OID_VERSION, $session, $ERRORS{'UNKNOWN'}, \%OPTION, " Error getting SNMP version.");
-    while ( my ($key, $value) = each(%$result) ) {
-        if ($value =~ m/net-snmp-5.3.*/) {
-            return "NetSNMP-5.3"
-        }
-    }
-    return "Other";
-}
-
-my $OID_CPU = "";
-my $snmpver = get_netsnmp_version($session);
-if ( "$snmpver" eq "NetSNMP-5.3" ) {
-    $OID_CPU = ".1.3.6.1.4.1.2021.11.9";
-} else {
-    $OID_CPU = ".1.3.6.1.2.1.25.3.3.1.2";
-}
+my $OID_CPU  = ".1.3.6.1.2.1.25.3.3.1.2";
 
 # Get all datas
 my $result = Centreon::SNMP::Utils::get_snmp_table($OID_CPU, $session, $ERRORS{'UNKNOWN'}, \%OPTION, " Error getting CPU percentage.");
