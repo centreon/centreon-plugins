@@ -107,24 +107,26 @@ if ($opt_h) {
     exit $ERRORS{'OK'};
 }
 
-if (!defined($opt_d)) {
-    print "Option -d (--disk) needed\n";
-    exit $ERRORS{'UNKNOWN'};
-}
-if (defined($opt_n) && !defined($opt_d)) {
-    print "Option -n (--name) need option -d (--disk)\n";
-    exit $ERRORS{'UNKNOWN'};
+my $partition = 0;
+if (!defined($opt_s)) {
+    if (!defined($opt_d)) {
+        print "Option -d (--disk) needed\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+    if ($opt_d =~ /([0-9]+)/ && !defined($opt_n)) {
+        $partition = $1;
+    } elsif (!$opt_n){
+        print "Unknown -d: number expected... try another disk - number\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+    if (defined($opt_n) && !defined($opt_d)) {
+        print "Option -n (--name) need option -d (--disk)\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
 }
 
 $opt_a = 3 if (!$opt_a);
 
-my $partition = 0;
-if ($opt_d =~ /([0-9]+)/ && !defined($opt_n)) {
-    $partition = $1;
-} elsif (!$opt_n){
-    print "Unknown -d: number expected... try another disk - number\n";
-    exit $ERRORS{'UNKNOWN'};
-}
 if (!$opt_c) {
     $opt_c = 95;
 }
