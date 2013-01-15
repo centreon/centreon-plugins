@@ -356,7 +356,7 @@ foreach my $key ( keys %$resultat) {
 }
 
 if ( $num_int == 0) {
-    print "No process ",(defined ($o_noreg)) ? "named " : "matching ", $o_descr, " found : CRITICAL\n";
+    print "No process ",(defined ($o_noreg)) ? "named " : "matching ", join(" or ",split(/\|/,$o_descr)), " found : CRITICAL\n";
     exit $ERRORS{"CRITICAL"};
 }
 
@@ -501,7 +501,7 @@ if (defined ($o_cpu) ) {
 }
 
 
-print $num_int_ok, " process ", (defined ($o_noreg)) ? "named " : "matching ", $o_descr, " ";
+print $num_int_ok, " process ", (defined ($o_noreg)) ? "named " : "matching ", join(" or ",split(/\|/,$o_descr)), " ";
 
 #### Check for min and max number of process
 if ( $num_int_ok <= $o_critL[0] ) {
