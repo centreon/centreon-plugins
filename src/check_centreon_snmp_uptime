@@ -159,7 +159,7 @@ sub print_usage () {
     print "   -k (--key)        snmp V3 key\n";
     print "   -u (--username)   snmp V3 username \n";
     print "   -p (--password)   snmp V3 password\n";
-    print "   --authprotocol    protocol MD5/SHA1  (v3)\n";
+    print "   --authprotocol    protocol MD5/SHA  (v3)\n";
     print "   --privprotocol    encryption system (DES/AES)(v3) \n";
     print "   --privpassword    passphrase (v3) \n";
     print "   --64-bits         Use 64 bits OID\n";
