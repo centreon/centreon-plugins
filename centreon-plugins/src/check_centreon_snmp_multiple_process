@@ -44,7 +44,7 @@ require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_d $opt_h $opt_n $opt_p $result @result %process_list);
+use vars qw($opt_V $opt_d $opt_h $opt_p $result @result %process_list);
 
 my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
 
@@ -87,7 +87,6 @@ GetOptions
      "h"    => \$opt_h, "help"      => \$opt_h,
      "V"    => \$opt_V, "version"   => \$opt_V,
      "p=s"  => \$opt_p, "process=s" => \$opt_p,
-     "n"    => \$opt_n, "number"    => \$opt_n,
      "d"    => \$opt_d, "debug"     => \$opt_d);
 
 if ($opt_V) {
@@ -214,7 +213,6 @@ sub print_usage () {
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
-    print "   -n (--number)     Return the number of current running processes.\n";
     print "   -p (--process)    Set the process name ex: by default smbd\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
