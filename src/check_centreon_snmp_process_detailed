@@ -506,28 +506,23 @@ print $num_int_ok, " process ", (defined ($o_noreg)) ? "named " : "matching ", $
 #### Check for min and max number of process
 if ( $num_int_ok <= $o_critL[0] ) {
     print "(<= ",$o_critL[0]," : CRITICAL)";
-    $metrics .= " nbProcess=$num_int_ok";
     $final_status=2;
 } elsif ( $num_int_ok <= $o_warnL[0] ) {
     print "(<= ",$o_warnL[0]," : WARNING)";
-    $metrics .= " nbProcess=$num_int_ok";
     $final_status=($final_status==2)?2:1;
 } else {
-    $metrics .= " nbProcess=$num_int_ok";
     print "(> ",$o_warnL[0],")";
 }
 if (defined($o_critL[1]) && ($num_int_ok > $o_critL[1])) {
     print " (> ",$o_critL[1]," : CRITICAL)";
-    $metrics .= " nbProcess=$num_int_ok";
     $final_status=2;
 } elsif (defined($o_warnL[1]) && ($num_int_ok > $o_warnL[1])) {
     print " (> ",$o_warnL[1]," : WARNING)";
-    $metrics .= " nbProcess=$num_int_ok";
     $final_status=($final_status==2)?2:1;
 } elsif (defined($o_warnL[1])) {
-    $metrics .= " nbProcess=$num_int_ok";
     print " (<= ",$o_warnL[1],"):OK";
 }
+$metrics .= " nbProcess=$num_int_ok";
 
 print $memory_print,$cpu_print,$metrics,"\n";
 
