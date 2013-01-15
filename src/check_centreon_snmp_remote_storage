@@ -412,7 +412,7 @@ sub print_usage () {
     print "                        2 for SNMP v2c\n";
     print "                        3 for SNMP v3\n";
     print "   -P (--snmp-port)  SNMP port (default: 161)\n";
-    print "   -k (--key)        snmp V3 key\n";
+    print "   -k (--authkey)    snmp V3 key\n";
     print "   -u (--username)   snmp V3 username \n";
     print "   -p (--password)   snmp V3 password\n";
     print "   --authprotocol    protocol MD5/SHA  (v3)\n";
