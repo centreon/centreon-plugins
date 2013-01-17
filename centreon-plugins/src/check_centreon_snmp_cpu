@@ -139,7 +139,7 @@ if ($cpu >= $opt_c) {
     $status = "WARNING";
 }
 
-my $str = "CPU utilization percentage : ".$cpu."%|avg=".$cpu."%";
+my $str = "CPU utilization percentage : ".$cpu."%|avg=".$cpu."%;$opt_w;$opt_c;0;100";
 if ($opt_l == 0) {
     for ($i = 0; defined($cpulist[$i]); $i++){
         $str .= " cpu$i=".$cpulist[$i]."%";
