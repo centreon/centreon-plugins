@@ -2,6 +2,7 @@
 
 
 BEGIN {
+	$ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "Net::SSL";
 	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 	$ENV{ESX_SYSLOGD_LOAD} = 0;
 	eval 'require Unix::Syslog;';
@@ -60,6 +61,7 @@ require $libpath . '/command-statushost.pm';
 require $libpath . '/command-swaphost.pm';
 require $libpath . '/command-swapvm.pm';
 require $libpath . '/command-toolsvm.pm';
+require $libpath . '/command-uptimehost.pm';
 
 
 our $VERSION = "1.3";
@@ -109,6 +111,7 @@ our %checks_descr = (
 			"memhost" => {'arg' => \&memhost_check_args, 'compute' => \&memhost_compute_args, 'exec' => \&memhost_do},
 			"swaphost" => {'arg' => \&swaphost_check_args, 'compute' => \&swaphost_compute_args, 'exec' => \&swaphost_do},
 			"countvmhost" => {'arg' => \&countvmhost_check_args, 'compute' => \&countvmhost_compute_args, 'exec' => \&countvmhost_do},
+			"uptimehost" => {'arg' => \&uptimehost_check_args, 'compute' => \&uptimehost_compute_args, 'exec' => \&uptimehost_do},
 			"cpuvm" => {'arg' => \&cpuvm_check_args, 'compute' => \&cpuvm_compute_args, 'exec' => \&cpuvm_do},
 			"toolsvm" => {'arg' => \&toolsvm_check_args, 'compute' => \&toolsvm_compute_args, 'exec' => \&toolsvm_do},
 			"snapshotvm" => {'arg' => \&snapshotvm_check_args, 'compute' => \&snapshotvm_compute_args, 'exec' => \&snapshotvm_do},

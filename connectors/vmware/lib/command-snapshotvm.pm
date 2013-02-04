@@ -47,6 +47,12 @@ sub snapshotvm_do {
 	
 	foreach my $snapshot (@{$$result[0]->{'snapshot.rootSnapshotList'}}) {
 		if ($older != -1) {
+			if ($module_date_parse_loaded == 0) {
+				my $status |= $MYERRORS_MASK{'UNKNOWN'};
+				print_response($ERRORS{$MYERRORS{$status}} . "|Need to install DateTime::Format::ISO8601 Perl Module.\n");
+				return ;
+			}
+
 			# 2012-09-21T14:16:17.540469Z
 			my $create_time = DateTime::Format::ISO8601->parse_datetime($snapshot->createTime);
 			if (time() - $create_time->epoch > $older) {

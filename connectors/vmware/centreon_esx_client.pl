@@ -129,6 +129,9 @@ sub print_usage () {
 	print "   -w (--warning)    Warning Threshold (default none)\n";
 	print "   -c (--critical)   Critical Threshold (default none)\n";
 	print "\n";
+	print "'uptimehost':\n";
+	print "   -e (--esx-host)   Esx Host to check (required)\n";
+	print "\n";
 	print "'cpuvm':\n";
 	print "   --vm              VM to check (required)\n";
 	print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
@@ -407,6 +410,19 @@ sub countvmhost_get_str {
 	return "countvmhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
 }
 
+sub uptimehost_check_arg {
+	if (!defined($OPTION{'esx-host'})) {
+		print "Option --esx-host is required\n";
+		print_usage();
+		exit $ERRORS{'UNKNOWN'};
+	}
+	return 0;
+}
+
+sub uptimehost_get_str {
+	return "uptimehost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+}
+
 sub cpuvm_check_arg {
 	if (!defined($OPTION{'vm'})) {
 		print "Option --vm is required\n";
@@ -591,7 +607,7 @@ if (!defined($OPTION{'usage'})) {
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
 	print "Usage value is unknown\n";
 	print_usage();
 	exit $ERRORS{'UNKNOWN'};
