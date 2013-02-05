@@ -107,7 +107,7 @@ if (defined($credstore_use) && defined($credstore_file) &&
 	require VMware::VICredStore;
 
 	if (VMware::VICredStore::init(filename => $credstore_file) == 0) {
-		writeLogFile("Credstore init failed: $@\n");
+		writeLogFile(LOG_ESXD_ERROR, "Credstore init failed: $@\n");
 		exit(1);
 	}
 
@@ -117,7 +117,7 @@ if (defined($credstore_use) && defined($credstore_file) &&
 	foreach (keys %vsphere_server) {
 		my $lpassword = VMware::VICredStore::get_password(server => $_, username => $vsphere_server{$_}->{'username'});
 		if (!defined($lpassword)) {
-			writeLogFile("Can't get password for couple host='" . $_ . "', username='" . $vsphere_server{$_}->{'username'} . "' : $@\n");
+			writeLogFile(LOG_ESXD_ERROR, "Can't get password for couple host='" . $_ . "', username='" . $vsphere_server{$_}->{'username'} . "' : $@\n");
 			exit(1);
 		}
 		$vsphere_server{$_}->{'password'} = $lpassword;
