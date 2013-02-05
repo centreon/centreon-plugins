@@ -8,6 +8,9 @@ our %vsphere_server = ('default' => {'url' => 'https://XXXXXX/sdk',
                                      'username' => 'XXXXX',
                                      'password' => 'XXXXXX'}
                       );
+# Set to '1' if you use credstore file. Don't have to specify password.
+our $credstore_use = 0;
+our $credstore_file = "/root/.vmware/credstore/vicredentials.xml";
 our $TIMEOUT_VSPHERE = 60;
 our $TIMEOUT = 60;
 our $TIMEOUT_KILL = 30;

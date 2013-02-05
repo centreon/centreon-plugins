@@ -41,7 +41,7 @@ sub memvm_do {
 		return ;
 	}
 
-	$memory_size = $$result[0]->{'summary.config.memorySizeMB'} * 1024 * 1024;
+	my $memory_size = $$result[0]->{'summary.config.memorySizeMB'} * 1024 * 1024;
 
 	my $values = generic_performance_values_historic($$result[0], 
 						[{'label' => 'mem.active.average', 'instances' => ['']},
@@ -50,8 +50,6 @@ sub memvm_do {
 						 {'label' => 'mem.consumed.average', 'instances' => ['']},
 						 {'label' => 'mem.shared.average', 'instances' => ['']}],
 						$perfcounter_speriod);
-
-	writeLogFile(1, Data::Dumper::Dumper($values));
 
 	my $mem_consumed = simplify_number(convert_number($values->{$perfcounter_cache{'mem.consumed.average'}->{'key'} . ":"}[0]));
 	my $mem_active = simplify_number(convert_number($values->{$perfcounter_cache{'mem.active.average'}->{'key'} . ":"}[0]));
