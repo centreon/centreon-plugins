@@ -61,7 +61,7 @@ sub cpuvm_do {
 		$status |= $MYERRORS_MASK{'CRITICAL'};
 	}
 
-	$output = "Total Average CPU usage '$total_cpu_average%', Total Average CPU '" . $total_cpu_mhz_average . "MHz' on last " . ($perfcounter_speriod / 60) . "min | cpu_total=$total_cpu_average%;$warn;$crit;0;100 cpu_total_MHz=" . $total_cpu_mhz_average . "MHz";
+	$output = "Total Average CPU usage '$total_cpu_average%', Total Average CPU '" . $total_cpu_mhz_average . "MHz' on last " . int($perfcounter_speriod / 60) . "min | cpu_total=$total_cpu_average%;$warn;$crit;0;100 cpu_total_MHz=" . $total_cpu_mhz_average . "MHz";
 
 	foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
 			       my ($cidb, $cib) = split /:/, $b;

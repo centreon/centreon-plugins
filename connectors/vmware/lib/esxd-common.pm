@@ -116,16 +116,25 @@ sub generic_performance_values_historic {
 	eval {
 		my @perf_metric_ids = get_perf_metric_ids($perfs);
 
-		my (@t) = gmtime(time() - $interval);
-		my $start = sprintf("%04d-%02d-%02dT%02d:%02d:00Z",
-			(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1]);
- 		my $perf_query_spec = PerfQuerySpec->new(entity => $view,
-					 metricId => @perf_metric_ids,
-					 format => 'normal',
-					 intervalId => $interval,
-					 startTime => $start
-					);
-					#maxSample => 1);
+		my $perf_query_spec;
+		if ($interval == 20) {
+			$perf_query_spec = PerfQuerySpec->new(entity => $view,
+							      metricId => @perf_metric_ids,
+							      format => 'normal',
+							      intervalId => 20,
+							      maxSample => 1);
+		} else {
+			my (@t) = gmtime(time() - $interval);
+			my $start = sprintf("%04d-%02d-%02dT%02d:%02d:00Z",
+				(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1]);
+ 			$perf_query_spec = PerfQuerySpec->new(entity => $view,
+						 metricId => @perf_metric_ids,
+						 format => 'normal',
+						 intervalId => $interval,
+						 startTime => $start
+						);
+						#maxSample => 1);
+		}
 		my $perfdata = $perfmanager_view->QueryPerf(querySpec => $perf_query_spec);
 		foreach (@{$$perfdata[0]->value}) {
 			$results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
@@ -153,6 +162,11 @@ sub cache_perf_counters {
 			if ($perfcounter_speriod == -1 || $perfcounter_speriod > $_->samplingPeriod) {
 				$perfcounter_speriod = $_->samplingPeriod;
 			}
+		}
+
+		# Put refresh = 20 (for ESX check)
+		if ($perfcounter_speriod == -1) {
+			$perfcounter_speriod = 20;
 		}
 	};
 	if ($@) {

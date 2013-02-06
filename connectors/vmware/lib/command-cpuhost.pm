@@ -59,7 +59,7 @@ sub cpuhost_do {
 		$status |= $MYERRORS_MASK{'CRITICAL'};
 	}
 
-	$output = "Total Average CPU usage '$total_cpu_average%' on last " . ($perfcounter_speriod / 60) . "min | cpu_total=$total_cpu_average%;$warn;$crit;0;100";
+	$output = "Total Average CPU usage '$total_cpu_average%' on last " . int($perfcounter_speriod / 60) . "min | cpu_total=$total_cpu_average%;$warn;$crit;0;100";
 
 	foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
 			       my ($cidb, $cib) = split /:/, $b;
