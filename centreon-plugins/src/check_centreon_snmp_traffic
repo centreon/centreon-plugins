@@ -71,6 +71,9 @@ my %OPTION = (
     "disable-warn-state" => undef
 );
 
+# Catch UNKNOWN From GetOptions (like -i without value)
+$SIG{'__WARN__'} = sub { print $_[0]; exit($ERRORS{'UNKNOWN'}); };
+
 Getopt::Long::Configure('bundling');
 GetOptions
     (
@@ -123,13 +126,13 @@ my ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOW
 ######
 ### Others
 ##
-if ($opt_n && !$opt_i) {
+if (defined($opt_n) && !defined($opt_i)) {
     print "Option -n (--name) need option -i (--interface)\n";
     exit $ERRORS{'UNKNOWN'};
 }
 
-if (!$opt_i) {
-    $opt_i = 2;
+if (!defined($opt_i)) {
+    $opt_i = 1;
 }
 
 if (!defined($opt_a)) {
@@ -146,9 +149,9 @@ if ($opt_w && $opt_w =~ /[0-9]+/) {
 }
 
 my $interface;
-if ($opt_i =~ /^([0-9]+)$/ && !$opt_n){
+if ($opt_i =~ /^([0-9]+)$/ && !defined($opt_n)) {
     $interface = $1;
-} elsif (!$opt_n) {
+} elsif (!defined($opt_n)) {
     print "Unknown -i number expected... or it doesn't exist, try another interface - number\n";
     exit $ERRORS{'UNKNOWN'};
 }
