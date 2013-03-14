@@ -47,7 +47,7 @@ use vars qw($mysql_user $mysql_passwd $mysql_host $mysql_database_oreon $mysql_d
 
 my $PROGNAME = $0;
 my $VERSION = "2.4";
-my $MODIF_DATE = "26/11/2011";
+my $MODIF_DATE = "03-14-2013";
 
 my %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3);
 my %DSTYPE = ( "0" => "g", "1" => "c", "2" => "d", "3" => "a");
@@ -55,21 +55,28 @@ my %DSTYPE = ( "0" => "g", "1" => "c", "2" => "d", "3" => "a");
 require "@CENTREON_ETC@/conf.pm";
 my $dbh  = DBI->connect("DBI:mysql:database=$mysql_database_oreon;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
 my $db_centstorage  = DBI->connect("DBI:mysql:database=$mysql_database_ods;host=$mysql_host","$mysql_user", "$mysql_passwd",{'RaiseError' => 1});
-my $db_broker;
 
-my $DBRESULT = $dbh->prepare("SELECT * FROM `cfg_ndo2db`");
-if (!$DBRESULT->execute) {
-	die "Error:" . $dbh->errstr . "\n";
-}
+my $row;
 my $ndo_prefix;
-my $row = $DBRESULT->fetchrow_hashref();
-if (defined($row)) {	
-	$db_broker = DBI->connect("DBI:mysql:database=".$row->{'db_name'}.";host=".$row->{'db_host'}.":".$row->{'db_port'}, $row->{'db_user'}, $row->{'db_pass'}, {'RaiseError' => 1});
-	$ndo_prefix = $row->{'db_prefix'};
-}
-else {
-	print "Could not find broker connection info!\n";
-    exit $ERRORS{'UNKNOWN'};
+my $db_broker;
+my $DBRESULT;
+
+sub get_db_layer();
+my $db_layer = get_db_layer();
+
+if ($db_layer eq "ndo") {
+    $DBRESULT = $dbh->prepare("SELECT * FROM `cfg_ndo2db`");
+    if (!$DBRESULT->execute) {
+        die "Error:" . $dbh->errstr . "\n";
+    }
+    $row = $DBRESULT->fetchrow_hashref();
+    if (defined($row)) {
+        $db_broker = DBI->connect("DBI:mysql:database=".$row->{'db_name'}.";host=".$row->{'db_host'}.":".$row->{'db_port'}, $row->{'db_user'}, $row->{'db_pass'}, {'RaiseError' => 1});
+        $ndo_prefix = $row->{'db_prefix'};
+    } else {
+        print "Could not find broker connection info!\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
 }
 
 my @metric_value_tab;
@@ -410,7 +417,6 @@ $metric_select = $row->{'metric'};
 $display = $row->{'meta_display'};
 
 my $selection_mode = $row->{'meta_select_mode'};
-my $db_layer = get_db_layer();
 
 if ($selection_mode eq '2') {    
     if ($db_layer eq "broker") {
