@@ -117,21 +117,29 @@ sub generic_performance_values_historic {
 		my @perf_metric_ids = get_perf_metric_ids($perfs);
 
 		my $perf_query_spec;
+        my $tstamp = time();
+		my (@t) = gmtime($tstamp - $interval);
+		my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+				(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        (@t) = gmtime($tstamp);
+        my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+				(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        
 		if ($interval == 20) {
 			$perf_query_spec = PerfQuerySpec->new(entity => $view,
 							      metricId => @perf_metric_ids,
 							      format => 'normal',
 							      intervalId => 20,
+                                  startTime => $startTime,
+                                  endTime => $endTime,
 							      maxSample => 1);
 		} else {
-			my (@t) = gmtime(time() - $interval);
-			my $start = sprintf("%04d-%02d-%02dT%02d:%02d:00Z",
-				(1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1]);
  			$perf_query_spec = PerfQuerySpec->new(entity => $view,
 						 metricId => @perf_metric_ids,
 						 format => 'normal',
 						 intervalId => $interval,
-						 startTime => $start
+						 startTime => $startTime,
+                         endTime => $endTime
 						);
 						#maxSample => 1);
 		}
