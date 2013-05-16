@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; Centreon ESXD 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Centreon ESXD 1.0.0 documentation" href="../index.html" />
+    <link rel="next" title="Exploitation" href="../exploitation/index.html" />
+    <link rel="prev" title="Welcome to Centreon ESXD’s documentation!" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../exploitation/index.html" title="Exploitation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to Centreon ESXD’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Centreon ESXD 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pre-requis">
+<h2>Pré-Requis<a class="headerlink" href="#pre-requis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="preconisations-logicielles">
+<h3>Préconisations logicielles<a class="headerlink" href="#preconisations-logicielles" title="Permalink to this headline">¶</a></h3>
+<p>Le connecteur &#8220;centreon-esxd&#8221; est testé et validé sur des environnements Linux.
+L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mais non présenté dans ce document (Solaris, Windows, ...).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="51%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Logiciels</th>
+<th class="head">Version minimum</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>VMWare SDK Perl</td>
+<td>5.0</td>
+</tr>
+<tr class="row-odd"><td>Perl</td>
+<td>5.8</td>
+</tr>
+<tr class="row-even"><td>centreon-esxd</td>
+<td>1.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="preconisations-materielles">
+<h3>Préconisations matérielles<a class="headerlink" href="#preconisations-materielles" title="Permalink to this headline">¶</a></h3>
+<p>Le matériel nécessaire dépend du nombre de demandes de vérifications. Par défaut, le connecteur n&#8217;effectue aucunes vérifications. Les ressources minimales sont de&nbsp;:</p>
+<ul class="simple">
+<li>mémoire vive&nbsp;: 512 Mo minimum&nbsp;(Peut sensiblement augmenter en fonction du nombre de contrôle).</li>
+<li>CPU&nbsp;: même pré-requis que pour le serveur de collecte.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation-de-centreon-esxd-environnement-centos-rhel-5">
+<h2>Installation de centreon-esxd - Environnement centos/rhel 5<a class="headerlink" href="#installation-de-centreon-esxd-environnement-centos-rhel-5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="installation-du-sdk-perl-vmware">
+<h3>Installation du SDK Perl VMWare<a class="headerlink" href="#installation-du-sdk-perl-vmware" title="Permalink to this headline">¶</a></h3>
+<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l&#8217;installer. Pour cela nous allons commencer par installer CPAN qui est le nom d&#8217;un module Perl qui rend aisés le téléchargement, l&#8217;installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.</p>
+<p>Installer les pré-requis CPAN:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel</span>
+<span class="n">root</span> <span class="c"># yum install perl-XML-LibXML perl-Crypt-SSLeay</span>
+
+<span class="n">root</span> <span class="c"># cpan install Class::MethodMaker</span>
+<span class="n">root</span> <span class="c"># cpan install LWP</span>
+<span class="n">root</span> <span class="c"># cpan install Net::SSLeay</span>
+<span class="n">root</span> <span class="c"># cpan install LWP::Protocol::https</span>
+<span class="n">root</span> <span class="c"># cpan install SOAP::Lite</span>
+
+<span class="n">root</span> <span class="c"># wget http://search.cpan.org/CPAN/authors/id/J/JN/JNH/UUID-0.04.tar.gz</span>
+<span class="n">root</span> <span class="c"># tar zxvf UUID-0.04.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd UUID-0.04</span>
+<span class="n">root</span> <span class="c"># perl Makefile.PL</span>
+<span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
+</pre></div>
+</div>
+<p>Nous avons notre environnement prêt pour l&#8217;installation du SDK VMWare.</p>
+<p>Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>).</p>
+<p>Installer le SDK Perl VMWare:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd vmware-vsphere-cli-distrib</span>
+<span class="n">root</span> <span class="c"># perl Makefile.pl</span>
+<span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installation-de-modules-complementaires">
+<h3>Installation de modules complémentaires<a class="headerlink" href="#installation-de-modules-complementaires" title="Permalink to this headline">¶</a></h3>
+<p>Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités&nbsp;du centreon_esxd :</p>
+<p>Pour envoyer les logs au daemon «&nbsp;syslog&nbsp;», il est nécessaire d&#8217;installer le module «&nbsp;Unix::Syslog »:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install Unix::Syslog</span>
+</pre></div>
+</div>
+<p>Pour vérifier la date des snapshots d&#8217;une machine virtuelle, il est nécessaire d&#8217;installer le module «&nbsp;DateTime::Format::ISO8601&nbsp;» (&nbsp;<strong>ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement «&nbsp;Perl&nbsp;». Cette mise à jour est très risqué</strong> ):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install DateTime</span>
+<span class="n">root</span> <span class="c"># cpan install DateTime::Format::ISO8601</span>
+<span class="n">root</span> <span class="c"># o conf make /usr/bin/make</span>
+<span class="n">root</span> <span class="c"># o conf commit</span>
+</pre></div>
+</div>
+<p>Ensuite redémarrer votre système.</p>
+</div>
+<div class="section" id="installation-de-centreon-esxd">
+<h3>Installation de centreon-esxd<a class="headerlink" href="#installation-de-centreon-esxd" title="Permalink to this headline">¶</a></h3>
+<p>Télécharger l&#8217;archive de «&nbsp;centreon-esxd&nbsp;».</p>
+<p>Installer les fichiers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf centreon-esxd-1.X.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd centreon-esxd-1.X</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd /usr/bin/</span>
+
+<span class="n">root</span> <span class="c"># mkdir -p /etc/centreon</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd-conf.pm /etc/centreon/centreon_esxd.pm</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd-init /etc/init.d/centreon_esxd</span>
+
+<span class="n">root</span> <span class="c"># mkdir -p /usr/share/centreon/lib/centreon-esxd</span>
+<span class="n">root</span> <span class="c"># cp lib/* /usr/share/centreon/lib/centreon-esxd/</span>
+</pre></div>
+</div>
+<p>Activer le daemon «&nbsp;centreon-esxd&nbsp;» au démarrage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># chkconfig --level 2345 centreon_esxd on</span>
+</pre></div>
+</div>
+<p><em>Le plugin «&nbsp;nagios&nbsp;» correspond au fichier «&nbsp;centreon_esx_client.pl&nbsp;».</em></p>
+</div>
+</div>
+<div class="section" id="installation-de-centreon-esxd-environnement-centos-rhel-6">
+<h2>Installation de centreon-esxd - Environnement centos/rhel 6<a class="headerlink" href="#installation-de-centreon-esxd-environnement-centos-rhel-6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Installation du sdk Perl VMWare<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement.</p>
+<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l&#8217;installer. Pour cela nous allons commencer par installer CPAN qui est le nom d&#8217;un module Perl qui rend aisés le téléchargement, l&#8217;installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.</p>
+<p>Installer les pré-requis CPAN:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel perl-CPAN libuuid-devel</span>
+<span class="n">root</span> <span class="c"># yum install perl-XML-LibXML perl-Crypt-SSLeay perl-Class-MethodMaker perl-SOAP-Lite</span>
+
+<span class="n">root</span> <span class="c"># cpan install Test::More</span>
+<span class="n">root</span> <span class="c"># cpan install LWP</span>
+<span class="n">root</span> <span class="c"># cpan install Net::SSLeay</span>
+<span class="n">root</span> <span class="c"># cpan install LWP::Protocol::https</span>
+
+<span class="n">root</span> <span class="c"># wget http://search.cpan.org/CPAN/authors/id/J/JN/JNH/UUID-0.04.tar.gz</span>
+<span class="n">root</span> <span class="c"># tar zxvf UUID-0.04.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd UUID-0.04</span>
+<span class="n">root</span> <span class="c"># perl Makefile.PL</span>
+<span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
+</pre></div>
+</div>
+<p>Nous avons notre environnement prêt pour l&#8217;installation du SDK VMWare.</p>
+<p>Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>)</p>
+<p>Installer le SDK Perl VMWare:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd vmware-vsphere-cli-distrib</span>
+<span class="n">root</span> <span class="c"># perl Makefile.pl</span>
+<span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>Installation de modules complémentaires<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités&nbsp;du centreon_esxd :</p>
+<p>Pour envoyer les logs au daemon «&nbsp;syslog&nbsp;», il est nécessaire d&#8217;installer le module «&nbsp;Unix::Syslog »:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install Unix::Syslog</span>
+</pre></div>
+</div>
+<p>Pour vérifier la date des snapshots d&#8217;une machine virtuelle, il est nécessaire d&#8217;installer le module «&nbsp;DateTime::Format::ISO8601&nbsp;» (&nbsp;<strong>ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement «&nbsp;Perl&nbsp;». Cette mise à jour est très risqué</strong> ):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install DateTime</span>
+<span class="n">root</span> <span class="c"># cpan install DateTime::Format::ISO8601</span>
+<span class="n">root</span> <span class="c"># o conf make /usr/bin/make</span>
+<span class="n">root</span> <span class="c"># o conf commit</span>
+</pre></div>
+</div>
+<p>Ensuite redémarrer votre système.</p>
+</div>
+<div class="section" id="id4">
+<h3>Installation de centreon-esxd<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Télécharger l&#8217;archive de «&nbsp;centreon-esxd&nbsp;».</p>
+<p>Installer les fichiers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf centreon-esxd-1.X.tar.gz</span>
+<span class="n">root</span> <span class="c"># cd centreon-esxd-1.X</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd /usr/bin/</span>
+
+<span class="n">root</span> <span class="c"># mkdir -p /etc/centreon</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd-conf.pm /etc/centreon/centreon_esxd.pm</span>
+<span class="n">root</span> <span class="c"># cp centreon_esxd-init /etc/init.d/centreon_esxd</span>
+
+<span class="n">root</span> <span class="c"># mkdir -p /usr/share/centreon/lib/centreon-esxd</span>
+<span class="n">root</span> <span class="c"># cp lib/* /usr/share/centreon/lib/centreon-esxd/</span>
+</pre></div>
+</div>
+<p>Activer le daemon «&nbsp;centreon-esxd&nbsp;» au démarrage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># chkconfig --level 2345 centreon_esxd on</span>
+</pre></div>
+</div>
+<p><em>Le plugin «&nbsp;nagios&nbsp;» correspond au fichier «&nbsp;centreon_esx_client.pl&nbsp;».</em></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#pre-requis">Pré-Requis</a><ul>
+<li><a class="reference internal" href="#preconisations-logicielles">Préconisations logicielles</a></li>
+<li><a class="reference internal" href="#preconisations-materielles">Préconisations matérielles</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-de-centreon-esxd-environnement-centos-rhel-5">Installation de centreon-esxd - Environnement centos/rhel 5</a><ul>
+<li><a class="reference internal" href="#installation-du-sdk-perl-vmware">Installation du SDK Perl VMWare</a></li>
+<li><a class="reference internal" href="#installation-de-modules-complementaires">Installation de modules complémentaires</a></li>
+<li><a class="reference internal" href="#installation-de-centreon-esxd">Installation de centreon-esxd</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-de-centreon-esxd-environnement-centos-rhel-6">Installation de centreon-esxd - Environnement centos/rhel 6</a><ul>
+<li><a class="reference internal" href="#id1">Installation du sdk Perl VMWare</a></li>
+<li><a class="reference internal" href="#id3">Installation de modules complémentaires</a></li>
+<li><a class="reference internal" href="#id4">Installation de centreon-esxd</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Welcome to Centreon ESXD&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../exploitation/index.html"
+                        title="next chapter">Exploitation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/installation/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../exploitation/index.html" title="Exploitation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to Centreon ESXD’s documentation!"
+             >previous</a> |</li>
+        <li><a href="../index.html">Centreon ESXD 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Merethis.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
