@@ -3,7 +3,7 @@ Installation
 ============
 
 Prerequisites
-==========
+=============
 
 Software Recommandations 
 ````````````````````````
@@ -34,10 +34,10 @@ Centreon-esxd Installation - centos/rhel 5 systems
 SDK Perl VMWare Installation
 ````````````````````````````
 
-Le connecteur « centreon-esxd » utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l'installer. Pour cela nous allons commencer par installer CPAN qui est le nom d'un module Perl qui rend aisés le téléchargement, l'installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.
+The "centreon-esxd" connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it's the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.
 
 
-Installer les pré-requis CPAN::
+Install CPAN prerequisites ::
 
   root # yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel
   root # yum install perl-XML-LibXML perl-Crypt-SSLeay 
@@ -112,9 +112,9 @@ Centreon-esxd Installation - centos/rhel 6 systems
 SDK Perl VMWare Installation
 `````````````````````````````
 
-Le connecteur « centreon-esxd » utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l'installer. Pour cela nous allons commencer par installer CPAN qui est le nom d'un module Perl qui rend aisés le téléchargement, l'installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.
+The "centreon-esxd" connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it's the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.
 
-Installer les pré-requis CPAN::
+Install CPAN prerequisites ::
   
   root # yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel perl-CPAN libuuid-devel
   root # yum install perl-XML-LibXML perl-Crypt-SSLeay perl-Class-MethodMaker perl-SOAP-Lite

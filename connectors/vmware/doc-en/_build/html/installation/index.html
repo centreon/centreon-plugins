@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -51,20 +53,20 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="pre-requis">
-<h2>Pré-Requis<a class="headerlink" href="#pre-requis" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="preconisations-logicielles">
-<h3>Préconisations logicielles<a class="headerlink" href="#preconisations-logicielles" title="Permalink to this headline">¶</a></h3>
-<p>Le connecteur &#8220;centreon-esxd&#8221; est testé et validé sur des environnements Linux.
-L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mais non présenté dans ce document (Solaris, Windows, ...).</p>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="software-recommandations">
+<h3>Software Recommandations<a class="headerlink" href="#software-recommandations" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;centreon-esxd&#8221; connector has been tested on linux systems.
+Installation on other system is possible but is outside the scope of this document.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="49%" />
 <col width="51%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">Logiciels</th>
-<th class="head">Version minimum</th>
+<tr class="row-odd"><th class="head">Software</th>
+<th class="head">Minimal Version</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -80,21 +82,21 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 </tbody>
 </table>
 </div>
-<div class="section" id="preconisations-materielles">
-<h3>Préconisations matérielles<a class="headerlink" href="#preconisations-materielles" title="Permalink to this headline">¶</a></h3>
-<p>Le matériel nécessaire dépend du nombre de demandes de vérifications. Par défaut, le connecteur n&#8217;effectue aucunes vérifications. Les ressources minimales sont de&nbsp;:</p>
+<div class="section" id="hardware-recommandations">
+<h3>Hardware Recommandations<a class="headerlink" href="#hardware-recommandations" title="Permalink to this headline">¶</a></h3>
+<p>Hardware prerequisites will vary depending on the number of monitored hosts. Without configured, no checks are done. Minimal used ressources are :</p>
 <ul class="simple">
-<li>mémoire vive&nbsp;: 512 Mo minimum&nbsp;(Peut sensiblement augmenter en fonction du nombre de contrôle).</li>
-<li>CPU&nbsp;: même pré-requis que pour le serveur de collecte.</li>
+<li>RAM : 512 Mo (May slightly increase with the number of checks).</li>
+<li>CPU : same as poller server.</li>
 </ul>
 </div>
 </div>
-<div class="section" id="installation-de-centreon-esxd-environnement-centos-rhel-5">
-<h2>Installation de centreon-esxd - Environnement centos/rhel 5<a class="headerlink" href="#installation-de-centreon-esxd-environnement-centos-rhel-5" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="installation-du-sdk-perl-vmware">
-<h3>Installation du SDK Perl VMWare<a class="headerlink" href="#installation-du-sdk-perl-vmware" title="Permalink to this headline">¶</a></h3>
-<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l&#8217;installer. Pour cela nous allons commencer par installer CPAN qui est le nom d&#8217;un module Perl qui rend aisés le téléchargement, l&#8217;installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.</p>
-<p>Installer les pré-requis CPAN:</p>
+<div class="section" id="centreon-esxd-installation-centos-rhel-5-systems">
+<h2>Centreon-esxd Installation - centos/rhel 5 systems<a class="headerlink" href="#centreon-esxd-installation-centos-rhel-5-systems" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sdk-perl-vmware-installation">
+<h3>SDK Perl VMWare Installation<a class="headerlink" href="#sdk-perl-vmware-installation" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;centreon-esxd&#8221; connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it&#8217;s the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.</p>
+<p>Install CPAN prerequisites</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel</span>
 <span class="n">root</span> <span class="c"># yum install perl-XML-LibXML perl-Crypt-SSLeay</span>
 
@@ -111,9 +113,9 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 <span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
 </pre></div>
 </div>
-<p>Nous avons notre environnement prêt pour l&#8217;installation du SDK VMWare.</p>
-<p>Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>).</p>
-<p>Installer le SDK Perl VMWare:</p>
+<p>All SDK prerequisites are installed.</p>
+<p>Download the last version on the VMWare website (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>) (choose the file correponding to your architecture)</p>
+<p>Install VMWare Perl SDK:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz</span>
 <span class="n">root</span> <span class="c"># cd vmware-vsphere-cli-distrib</span>
 <span class="n">root</span> <span class="c"># perl Makefile.pl</span>
@@ -121,26 +123,25 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 </pre></div>
 </div>
 </div>
-<div class="section" id="installation-de-modules-complementaires">
-<h3>Installation de modules complémentaires<a class="headerlink" href="#installation-de-modules-complementaires" title="Permalink to this headline">¶</a></h3>
-<p>Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités&nbsp;du centreon_esxd :</p>
-<p>Pour envoyer les logs au daemon «&nbsp;syslog&nbsp;», il est nécessaire d&#8217;installer le module «&nbsp;Unix::Syslog »:</p>
+<div class="section" id="addtionnal-modules-installation">
+<h3>Addtionnal Modules Installation<a class="headerlink" href="#addtionnal-modules-installation" title="Permalink to this headline">¶</a></h3>
+<p>Some features require additionnal prerequisites.</p>
+<p>To send data to a syslog daemon, the &#8221; Unix::Syslog&#8221; must be installed</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install Unix::Syslog</span>
 </pre></div>
 </div>
-<p>Pour vérifier la date des snapshots d&#8217;une machine virtuelle, il est nécessaire d&#8217;installer le module «&nbsp;DateTime::Format::ISO8601&nbsp;» (&nbsp;<strong>ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement «&nbsp;Perl&nbsp;». Cette mise à jour est très risqué</strong> ):</p>
+<p>To check a virtual server snapshots date, the &#8220;DateTime::Format::ISO8601&#8221; is required (<strong>be advise that this module has a lot of CPAN dependencies and may need a full Perl update. This update is hazardous</strong>)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install DateTime</span>
 <span class="n">root</span> <span class="c"># cpan install DateTime::Format::ISO8601</span>
 <span class="n">root</span> <span class="c"># o conf make /usr/bin/make</span>
 <span class="n">root</span> <span class="c"># o conf commit</span>
 </pre></div>
 </div>
-<p>Ensuite redémarrer votre système.</p>
+<p>Reboot your system to complete.</p>
 </div>
-<div class="section" id="installation-de-centreon-esxd">
-<h3>Installation de centreon-esxd<a class="headerlink" href="#installation-de-centreon-esxd" title="Permalink to this headline">¶</a></h3>
-<p>Télécharger l&#8217;archive de «&nbsp;centreon-esxd&nbsp;».</p>
-<p>Installer les fichiers:</p>
+<div class="section" id="centreon-esxd-installation">
+<h3>centreon-esxd Installation<a class="headerlink" href="#centreon-esxd-installation" title="Permalink to this headline">¶</a></h3>
+<p>Download « centreon-esxd » archive, then install</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf centreon-esxd-1.X.tar.gz</span>
 <span class="n">root</span> <span class="c"># cd centreon-esxd-1.X</span>
 <span class="n">root</span> <span class="c"># cp centreon_esxd /usr/bin/</span>
@@ -153,20 +154,19 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 <span class="n">root</span> <span class="c"># cp lib/* /usr/share/centreon/lib/centreon-esxd/</span>
 </pre></div>
 </div>
-<p>Activer le daemon «&nbsp;centreon-esxd&nbsp;» au démarrage:</p>
+<p>Configure &#8220;centreon-esxd&#8221; daemon to start at boot</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># chkconfig --level 2345 centreon_esxd on</span>
 </pre></div>
 </div>
-<p><em>Le plugin «&nbsp;nagios&nbsp;» correspond au fichier «&nbsp;centreon_esx_client.pl&nbsp;».</em></p>
+<p><em>&#8220;centreon_esx_client.pl&#8221; is the corresponding nagios plugin.</em></p>
 </div>
 </div>
-<div class="section" id="installation-de-centreon-esxd-environnement-centos-rhel-6">
-<h2>Installation de centreon-esxd - Environnement centos/rhel 6<a class="headerlink" href="#installation-de-centreon-esxd-environnement-centos-rhel-6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="centreon-esxd-installation-centos-rhel-6-systems">
+<h2>Centreon-esxd Installation - centos/rhel 6 systems<a class="headerlink" href="#centreon-esxd-installation-centos-rhel-6-systems" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="id1">
-<h3>Installation du sdk Perl VMWare<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement.</p>
-<p>Le connecteur «&nbsp;centreon-esxd&nbsp;» utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l&#8217;installer. Pour cela nous allons commencer par installer CPAN qui est le nom d&#8217;un module Perl qui rend aisés le téléchargement, l&#8217;installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.</p>
-<p>Installer les pré-requis CPAN:</p>
+<h3>SDK Perl VMWare Installation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The &#8220;centreon-esxd&#8221; connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it&#8217;s the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.</p>
+<p>Install CPAN prerequisites</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel perl-CPAN libuuid-devel</span>
 <span class="n">root</span> <span class="c"># yum install perl-XML-LibXML perl-Crypt-SSLeay perl-Class-MethodMaker perl-SOAP-Lite</span>
 
@@ -182,9 +182,9 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 <span class="n">root</span> <span class="c"># make &amp;&amp; make install</span>
 </pre></div>
 </div>
-<p>Nous avons notre environnement prêt pour l&#8217;installation du SDK VMWare.</p>
-<p>Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>)</p>
-<p>Installer le SDK Perl VMWare:</p>
+<p>All SDK prerequisites are installed.</p>
+<p>Download the last version on the VMWare website (<a class="reference external" href="http://www.vmware.com/support/developer/viperltoolkit/">SDK VMWare</a>) (choose the file correponding to your architecture)</p>
+<p>Install VMWare Perl SDK:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz</span>
 <span class="n">root</span> <span class="c"># cd vmware-vsphere-cli-distrib</span>
 <span class="n">root</span> <span class="c"># perl Makefile.pl</span>
@@ -193,25 +193,24 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 </div>
 </div>
 <div class="section" id="id3">
-<h3>Installation de modules complémentaires<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités&nbsp;du centreon_esxd :</p>
-<p>Pour envoyer les logs au daemon «&nbsp;syslog&nbsp;», il est nécessaire d&#8217;installer le module «&nbsp;Unix::Syslog »:</p>
+<h3>Addtionnal Modules Installation<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Some features require additionnal prerequisites.</p>
+<p>To send data to a syslog daemon, the &#8221; Unix::Syslog&#8221; must be installed</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install Unix::Syslog</span>
 </pre></div>
 </div>
-<p>Pour vérifier la date des snapshots d&#8217;une machine virtuelle, il est nécessaire d&#8217;installer le module «&nbsp;DateTime::Format::ISO8601&nbsp;» (&nbsp;<strong>ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement «&nbsp;Perl&nbsp;». Cette mise à jour est très risqué</strong> ):</p>
+<p>To check a virtual server snapshots date, the &#8220;DateTime::Format::ISO8601&#8221; is required (<strong>be advise that this module has a lot of CPAN dependencies and may need a full Perl update. This update is hazardous</strong>)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># cpan install DateTime</span>
 <span class="n">root</span> <span class="c"># cpan install DateTime::Format::ISO8601</span>
 <span class="n">root</span> <span class="c"># o conf make /usr/bin/make</span>
 <span class="n">root</span> <span class="c"># o conf commit</span>
 </pre></div>
 </div>
-<p>Ensuite redémarrer votre système.</p>
+<p>Reboot your system to complete.</p>
 </div>
 <div class="section" id="id4">
-<h3>Installation de centreon-esxd<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p>Télécharger l&#8217;archive de «&nbsp;centreon-esxd&nbsp;».</p>
-<p>Installer les fichiers:</p>
+<h3>centreon-esxd Installation<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Download « centreon-esxd » archive, then install</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># tar zxvf centreon-esxd-1.X.tar.gz</span>
 <span class="n">root</span> <span class="c"># cd centreon-esxd-1.X</span>
 <span class="n">root</span> <span class="c"># cp centreon_esxd /usr/bin/</span>
@@ -224,11 +223,11 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
 <span class="n">root</span> <span class="c"># cp lib/* /usr/share/centreon/lib/centreon-esxd/</span>
 </pre></div>
 </div>
-<p>Activer le daemon «&nbsp;centreon-esxd&nbsp;» au démarrage:</p>
+<p>Configure &#8220;centreon-esxd&#8221; daemon to start at boot</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">root</span> <span class="c"># chkconfig --level 2345 centreon_esxd on</span>
 </pre></div>
 </div>
-<p><em>Le plugin «&nbsp;nagios&nbsp;» correspond au fichier «&nbsp;centreon_esx_client.pl&nbsp;».</em></p>
+<p><em>&#8220;centreon_esx_client.pl&#8221; is the corresponding nagios plugin.</em></p>
 </div>
 </div>
 </div>
@@ -242,21 +241,21 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#pre-requis">Pré-Requis</a><ul>
-<li><a class="reference internal" href="#preconisations-logicielles">Préconisations logicielles</a></li>
-<li><a class="reference internal" href="#preconisations-materielles">Préconisations matérielles</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#software-recommandations">Software Recommandations</a></li>
+<li><a class="reference internal" href="#hardware-recommandations">Hardware Recommandations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installation-de-centreon-esxd-environnement-centos-rhel-5">Installation de centreon-esxd - Environnement centos/rhel 5</a><ul>
-<li><a class="reference internal" href="#installation-du-sdk-perl-vmware">Installation du SDK Perl VMWare</a></li>
-<li><a class="reference internal" href="#installation-de-modules-complementaires">Installation de modules complémentaires</a></li>
-<li><a class="reference internal" href="#installation-de-centreon-esxd">Installation de centreon-esxd</a></li>
+<li><a class="reference internal" href="#centreon-esxd-installation-centos-rhel-5-systems">Centreon-esxd Installation - centos/rhel 5 systems</a><ul>
+<li><a class="reference internal" href="#sdk-perl-vmware-installation">SDK Perl VMWare Installation</a></li>
+<li><a class="reference internal" href="#addtionnal-modules-installation">Addtionnal Modules Installation</a></li>
+<li><a class="reference internal" href="#centreon-esxd-installation">centreon-esxd Installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installation-de-centreon-esxd-environnement-centos-rhel-6">Installation de centreon-esxd - Environnement centos/rhel 6</a><ul>
-<li><a class="reference internal" href="#id1">Installation du sdk Perl VMWare</a></li>
-<li><a class="reference internal" href="#id3">Installation de modules complémentaires</a></li>
-<li><a class="reference internal" href="#id4">Installation de centreon-esxd</a></li>
+<li><a class="reference internal" href="#centreon-esxd-installation-centos-rhel-6-systems">Centreon-esxd Installation - centos/rhel 6 systems</a><ul>
+<li><a class="reference internal" href="#id1">SDK Perl VMWare Installation</a></li>
+<li><a class="reference internal" href="#id3">Addtionnal Modules Installation</a></li>
+<li><a class="reference internal" href="#id4">centreon-esxd Installation</a></li>
 </ul>
 </li>
 </ul>
@@ -308,7 +307,7 @@ L&#8217;installation sur d&#8217;autres environnements n&#8217;est pas exclu mai
     </div>
     <div class="footer">
         &copy; Copyright 2013, Merethis.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

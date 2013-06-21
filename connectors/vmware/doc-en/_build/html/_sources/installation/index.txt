@@ -2,42 +2,42 @@
 Installation
 ============
 
-Pré-Requis
-==========
+Prerequisites
+=============
 
-Préconisations logicielles
-``````````````````````````
+Software Recommandations 
+````````````````````````
 
-Le connecteur "centreon-esxd" est testé et validé sur des environnements Linux. 
-L'installation sur d'autres environnements n'est pas exclu mais non présenté dans ce document (Solaris, Windows, ...).
+The "centreon-esxd" connector has been tested on linux systems.
+Installation on other system is possible but is outside the scope of this document.
 
 ====================    =====================
-Logiciels               Version minimum
+Software                Minimal Version
 ====================    =====================
 VMWare SDK Perl              5.0
 Perl    		     5.8
 centreon-esxd                1.3
 ====================    =====================
 
-Préconisations matérielles
-``````````````````````````
+Hardware Recommandations
+````````````````````````
 
-Le matériel nécessaire dépend du nombre de demandes de vérifications. Par défaut, le connecteur n'effectue aucunes vérifications. Les ressources minimales sont de :
+Hardware prerequisites will vary depending on the number of monitored hosts. Without configured, no checks are done. Minimal used ressources are :
 
-* mémoire vive : 512 Mo minimum (Peut sensiblement augmenter en fonction du nombre de contrôle).
+* RAM : 512 Mo (May slightly increase with the number of checks).
 
-* CPU : même pré-requis que pour le serveur de collecte.
+* CPU : same as poller server.
 
-Installation de centreon-esxd - Environnement centos/rhel 5
-===========================================================
+Centreon-esxd Installation - centos/rhel 5 systems
+==================================================
 
-Installation du SDK Perl VMWare
-```````````````````````````````
+SDK Perl VMWare Installation
+````````````````````````````
 
-Le connecteur « centreon-esxd » utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l'installer. Pour cela nous allons commencer par installer CPAN qui est le nom d'un module Perl qui rend aisés le téléchargement, l'installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.
+The "centreon-esxd" connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it's the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.
 
 
-Installer les pré-requis CPAN::
+Install CPAN prerequisites ::
 
   root # yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel
   root # yum install perl-XML-LibXML perl-Crypt-SSLeay 
@@ -54,41 +54,39 @@ Installer les pré-requis CPAN::
   root # perl Makefile.PL
   root # make && make install
 
-Nous avons notre environnement prêt pour l'installation du SDK VMWare.
+All SDK prerequisites are installed.
 
-Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (`SDK VMWare <http://www.vmware.com/support/developer/viperltoolkit/>`_).
+Download the last version on the VMWare website (`SDK VMWare <http://www.vmware.com/support/developer/viperltoolkit/>`_) (choose the file correponding to your architecture)
 
-Installer le SDK Perl VMWare::
+Install VMWare Perl SDK::
  
   root # tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz
   root # cd vmware-vsphere-cli-distrib
   root # perl Makefile.pl
   root # make && make install
 
-Installation de modules complémentaires
-```````````````````````````````````````
+Addtionnal Modules Installation
+```````````````````````````````
 
-Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités du centreon_esxd : 
+Some features require additionnal prerequisites.
 
-Pour envoyer les logs au daemon « syslog », il est nécessaire d'installer le module « Unix::Syslog »::
+To send data to a syslog daemon, the " Unix::Syslog" must be installed ::
   
   root # cpan install Unix::Syslog
 
-Pour vérifier la date des snapshots d'une machine virtuelle, il est nécessaire d'installer le module « DateTime::Format::ISO8601 » ( **ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement « Perl ». Cette mise à jour est très risqué** )::
+To check a virtual server snapshots date, the "DateTime::Format::ISO8601" is required (**be advise that this module has a lot of CPAN dependencies and may need a full Perl update. This update is hazardous**) ::
 
   root # cpan install DateTime  
   root # cpan install DateTime::Format::ISO8601
   root # o conf make /usr/bin/make
   root # o conf commit
 
-Ensuite redémarrer votre système. 
+Reboot your system to complete.
 
-Installation de centreon-esxd
-`````````````````````````````
+centreon-esxd Installation
+``````````````````````````
 
-Télécharger l'archive de « centreon-esxd ».
-
-Installer les fichiers::
+Download « centreon-esxd » archive, then install ::
   
   root # tar zxvf centreon-esxd-1.X.tar.gz
   root # cd centreon-esxd-1.X
@@ -101,24 +99,22 @@ Installer les fichiers::
   root # mkdir -p /usr/share/centreon/lib/centreon-esxd
   root # cp lib/* /usr/share/centreon/lib/centreon-esxd/
 
-Activer le daemon « centreon-esxd » au démarrage::
+Configure "centreon-esxd" daemon to start at boot ::
   
   root # chkconfig --level 2345 centreon_esxd on
 
 
-*Le plugin « nagios » correspond au fichier « centreon_esx_client.pl ».*
+*"centreon_esx_client.pl" is the corresponding nagios plugin.*
 
-Installation de centreon-esxd - Environnement centos/rhel 6
-===========================================================
+Centreon-esxd Installation - centos/rhel 6 systems
+==================================================
 
-Installation du sdk Perl VMWare
-```````````````````````````````
+SDK Perl VMWare Installation
+`````````````````````````````
 
-Le connecteur « centreon-esxd » utilise le SDK Perl VMWare pour son fonctionnement.
+The "centreon-esxd" connector uses SDK Perl VMWare for its operation. So we install it. To do this, we begin by install CPAN, it's the name of a Perl module who improves the download, the installation, the upgrade and the maintenance of others Perl modules who are archived on the CPAN.
 
-Le connecteur « centreon-esxd » utilise le SDK Perl VMWare pour son fonctionnement. Nous allons donc l'installer. Pour cela nous allons commencer par installer CPAN qui est le nom d'un module Perl qui rend aisés le téléchargement, l'installation, la mise à jour et la maintenance des autres modules Perl qui sont archivés sur le CPAN.
-
-Installer les pré-requis CPAN::
+Install CPAN prerequisites ::
   
   root # yum install gcc make unzip wget expat-devel e2fsprogs-devel openssl-devel perl-CPAN libuuid-devel
   root # yum install perl-XML-LibXML perl-Crypt-SSLeay perl-Class-MethodMaker perl-SOAP-Lite
@@ -134,41 +130,39 @@ Installer les pré-requis CPAN::
   root # perl Makefile.PL
   root # make && make install
 
-Nous avons notre environnement prêt pour l'installation du SDK VMWare.
+All SDK prerequisites are installed.
 
-Télécharger la dernière version, correspondant à votre architecture 32/64 bits, sur le site officiel de VMWare (`SDK VMWare <http://www.vmware.com/support/developer/viperltoolkit/>`_)
+Download the last version on the VMWare website (`SDK VMWare <http://www.vmware.com/support/developer/viperltoolkit/>`_) (choose the file correponding to your architecture)
 
-Installer le SDK Perl VMWare::
+Install VMWare Perl SDK::
 
   root # tar zxvf VMware-vSphere-Perl-SDK-5.1.0-780721.x86_64.tar.gz
   root # cd vmware-vsphere-cli-distrib
   root # perl Makefile.pl
   root # make && make install
 
-Installation de modules complémentaires
-```````````````````````````````````````
+Addtionnal Modules Installation
+```````````````````````````````
 
-Certains modules complémentaires Perl peuvent être installés si vous souhaitez utiliser certaines fonctionnalités du centreon_esxd :
+Some features require additionnal prerequisites.
 
-Pour envoyer les logs au daemon « syslog », il est nécessaire d'installer le module « Unix::Syslog »::
+To send data to a syslog daemon, the " Unix::Syslog" must be installed ::
   
   root # cpan install Unix::Syslog
 
-Pour vérifier la date des snapshots d'une machine virtuelle, il est nécessaire d'installer le module « DateTime::Format::ISO8601 » ( **ce module installe beaucoup de modules CPAN et est difficilement installable sans mettre à jour globalement « Perl ». Cette mise à jour est très risqué** )::
+To check a virtual server snapshots date, the "DateTime::Format::ISO8601" is required (**be advise that this module has a lot of CPAN dependencies and may need a full Perl update. This update is hazardous**) ::
 
   root # cpan install DateTime
   root # cpan install DateTime::Format::ISO8601
   root # o conf make /usr/bin/make
   root # o conf commit
 
-Ensuite redémarrer votre système.
+Reboot your system to complete.
 
-Installation de centreon-esxd
-`````````````````````````````
+centreon-esxd Installation
+``````````````````````````
 
-Télécharger l'archive de « centreon-esxd ».
-
-Installer les fichiers::
+Download « centreon-esxd » archive, then install ::
   
   root # tar zxvf centreon-esxd-1.X.tar.gz
   root # cd centreon-esxd-1.X
@@ -181,11 +175,10 @@ Installer les fichiers::
   root # mkdir -p /usr/share/centreon/lib/centreon-esxd
   root # cp lib/* /usr/share/centreon/lib/centreon-esxd/
 
-Activer le daemon « centreon-esxd » au démarrage::
+Configure "centreon-esxd" daemon to start at boot ::
   
   root # chkconfig --level 2345 centreon_esxd on
 
 
-*Le plugin « nagios » correspond au fichier « centreon_esx_client.pl ».*
-
+*"centreon_esx_client.pl" is the corresponding nagios plugin.*
 
