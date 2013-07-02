@@ -67,6 +67,8 @@ sub new {
             timeout_kill => 30,
             refresh_keeper_session => 15,
             port => 5700,
+            datastore_state_error => 'UNKNOWN',
+            vm_state_error => 'UNKNOWN',
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
                 #              'username' => 'XXXXX',

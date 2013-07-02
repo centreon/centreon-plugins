@@ -231,6 +231,39 @@ sub get_entities_host {
     return $entity_views;
 }
 
+sub datastore_state {
+    my ($obj_esxd, $ds, $accessible) = @_;
+    
+    if ($accessible !~ /^true|1$/) {
+        my $output = "Datastore '" . $ds . "' not accessible. Can be disconnected.";
+        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{datastore_state_error});
+        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        return 0;
+    }
+    
+    return 1;
+}
+
+sub vm_state {
+    my ($obj_esxd, $vm, $connection_state, $power_state) = @_;
+    
+    if ($connection_state !~ /^connected$/i) {
+        my $output = "VM '" . $vm . "' not connected. Current Connection State: '$connection_state'.";
+        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{vm_state_error});
+        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        return 0;
+    }
+    
+    if ($power_state !~ /^poweredOn$/i) {
+        my $output = "VM '" . $vm . "' not running. Current Power State: '$power_state'.";
+        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{vm_state_error});
+        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        return 0;
+    }
+    
+    return 1;
+}
+
 sub stats_info {
     my ($obj_esxd, $rh, $current_fileno, $args) = @_;
     my $output;

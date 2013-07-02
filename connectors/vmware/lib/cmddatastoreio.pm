@@ -61,11 +61,13 @@ sub run {
     }
 
     my %filters = ('summary.name' => $self->{ds});
-    my @properties = ('summary.name');
+    my @properties = ('summary.name', 'summary.accessible');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::datastore_state($self->{obj_esxd}, $self->{ds}, $$result[0]->{'summary.accessible'}) == 0);
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $$result[0], 

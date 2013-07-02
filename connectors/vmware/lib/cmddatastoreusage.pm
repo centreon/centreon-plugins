@@ -61,28 +61,26 @@ sub run {
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::datastore_state($self->{obj_esxd}, $self->{ds}, $$result[0]->summary->accessible) == 0);
 
     my $status = 0; # OK
     my $output = "";
-    if ($$result[0]->summary->accessible == 1) {
-        my $dsName = $$result[0]->summary->name;
-        my $capacity = $$result[0]->summary->capacity;
-        my $free = $$result[0]->summary->freeSpace;
-        my $pct = ($capacity - $free) / $capacity * 100;
-
-        my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
-        my $sizeD = $capacity / 1024 / 1024 / 1024;
     
-        $output = "Datastore $dsName - used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %) |used=".($capacity - $free)."o;;;0;".$capacity." size=".$capacity."o\n";
-        if ($pct >= $self->{warn}) {
-            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-        }
-        if ($pct > $self->{crit}) {
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        }
-    } else {
-        $output = "Datastore '" . $self->{ds} . "' summary not accessible.";
-        $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+    my $dsName = $$result[0]->summary->name;
+    my $capacity = $$result[0]->summary->capacity;
+    my $free = $$result[0]->summary->freeSpace;
+    my $pct = ($capacity - $free) / $capacity * 100;
+
+    my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
+    my $sizeD = $capacity / 1024 / 1024 / 1024;
+
+    $output = "Datastore $dsName - used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %) |used=".($capacity - $free)."o;;;0;".$capacity." size=".$capacity."o\n";
+    if ($pct >= $self->{warn}) {
+        $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+    }
+    if ($pct > $self->{crit}) {
+        $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
     }
     $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }

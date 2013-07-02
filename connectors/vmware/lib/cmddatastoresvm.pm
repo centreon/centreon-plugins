@@ -61,11 +61,15 @@ sub run {
     }
 
     my %filters = ('name' => $self->{lvm});
-    my @properties = ('datastore');
+    my @properties = ('datastore', 'runtime.connectionState', 'runtime.powerState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::vm_state($self->{obj_esxd}, $self->{lvm}, 
+                                                $$result[0]->{'runtime.connectionState'}->val,
+                                                $$result[0]->{'runtime.powerState'}->val) == 0);
 
     my @ds_array = ();
     foreach my $entity_view (@$result) {
