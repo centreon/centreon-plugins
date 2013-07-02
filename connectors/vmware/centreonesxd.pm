@@ -41,6 +41,7 @@ my @load_modules = ('centreon::esxd::cmdcountvmhost',
                     'centreon::esxd::cmdstatushost',
                     'centreon::esxd::cmdswaphost',
                     'centreon::esxd::cmdswapvm',
+                    'centreon::esxd::cmdthinprovisioningvm',
                     'centreon::esxd::cmdtoolsvm',
                     'centreon::esxd::cmduptimehost'
                     );

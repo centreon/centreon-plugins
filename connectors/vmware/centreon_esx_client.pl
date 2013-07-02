@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.3";
+my $VERSION = "1.4";
 my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3, 'DEPENDENT' => 4);
 my $socket;
 
@@ -24,7 +24,8 @@ my %OPTION = (
     "datastore" => undef,
     "nic" => undef,
     "warning" => undef,
-    "critical" => undef
+    "critical" => undef,
+    "on" => undef,
 );
 
 Getopt::Long::Configure('bundling');
@@ -48,6 +49,8 @@ GetOptions(
     "older=i"                   => \$OPTION{'older'},
     "warn"                      => \$OPTION{'warn'},
     "crit"                      => \$OPTION{'crit'},
+    
+    "on"                        => \$OPTION{'on'},
 
     "w|warning=i"               => \$OPTION{'warning'},
     "c|critical=i"              => \$OPTION{'critical'},
@@ -161,6 +164,12 @@ sub print_usage () {
     print "   -w (--warning)    Warning Threshold in MB/s (default 0.8)\n";
     print "   -c (--critical)   Critical Threshold in MB/s (default 1)\n";
     print "\n";
+    print "'thinprovisioningvm':\n";
+    print "   --vm              VM to check (required)\n";
+    print "   --on              Warn or critical if thinprovisioning set\n";
+    print "   --crit            Critical\n";
+    print "   --warn            Warn\n";
+    print "\n";
     print "'listhost':\n";
     print "   None\n";
     print "\n";
@@ -180,7 +189,7 @@ sub print_usage () {
 
 sub print_help () {
     print "##############################################\n";
-    print "#    Copyright (c) 2005-2012 Centreon        #\n";
+    print "#    Copyright (c) 2005-2013 Centreon        #\n";
     print "#    Bugs to http://redmine.merethis.net/    #\n";
     print "##############################################\n";
     print "\n";
@@ -482,11 +491,11 @@ sub snapshotvm_get_str {
 }
 
 sub datastoresvm_check_arg {
-        if (!defined($OPTION{'vm'})) {
-                print "Option --vm is required\n";
-                print_usage();
-                exit $ERRORS{'UNKNOWN'};
-        }
+    if (!defined($OPTION{'vm'})) {
+        print "Option --vm is required\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+    }
     if (!defined($OPTION{'warning'})) {
         $OPTION{'warning'} = '';
     }
@@ -536,6 +545,34 @@ sub swapvm_check_arg {
 
 sub swapvm_get_str {
     return "swapvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+}
+
+sub thinprovisioningvm_check_arg {
+    if (!defined($OPTION{'vm'})) {
+        print "Option --vm is required\n";
+        print_usage();
+        exit $ERRORS{'UNKNOWN'};
+    }
+    if (!defined($OPTION{'on'})) {
+        $OPTION{'on'} = 0;
+    } else {
+        $OPTION{'on'} = 1;
+    }
+    if (!defined($OPTION{'warn'})) {
+        $OPTION{'warn'} = 0;
+    } else {
+        $OPTION{'warn'} = 1;
+    }
+    if (!defined($OPTION{'crit'})) {
+        $OPTION{'crit'} = 0;
+    } else {
+        $OPTION{'crit'} = 1;
+    }
+    return 0;
+}
+
+sub thinprovisioningvm_get_str {
+    return "thinprovisioningvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'on'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};
 }
 
 
@@ -607,7 +644,7 @@ if (!defined($OPTION{'usage'})) {
     print_usage();
     exit $ERRORS{'UNKNOWN'};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
     print "Usage value is unknown\n";
     print_usage();
     exit $ERRORS{'UNKNOWN'};
