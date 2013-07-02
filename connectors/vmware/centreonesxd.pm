@@ -14,13 +14,36 @@ use centreon::script;
 use centreon::esxd::common;
 
 BEGIN {
-	$ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
+    $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 }
 
 use base qw(centreon::script);
 use vars qw(%centreonesxd_config);
 
 my %handlers = ('TERM' => {}, 'HUP' => {}, 'CHLD' => {});
+my @load_modules = ('centreon::esxd::cmdcountvmhost',
+                    'centreon::esxd::cmdcpuhost',
+                    'centreon::esxd::cmdcpuvm',
+                    'centreon::esxd::cmddatastoreio',
+                    'centreon::esxd::cmddatastoreshost',
+                    'centreon::esxd::cmddatastoresvm',
+                    'centreon::esxd::cmddatastoreusage',
+                    'centreon::esxd::cmdgetmap',
+                    'centreon::esxd::cmdhealthhost',
+                    'centreon::esxd::cmdlistdatastore',
+                    'centreon::esxd::cmdlisthost',
+                    'centreon::esxd::cmdlistnichost',
+                    'centreon::esxd::cmdmemhost',
+                    'centreon::esxd::cmdmaintenancehost',
+                    'centreon::esxd::cmdmemvm',
+                    'centreon::esxd::cmdnethost',
+                    'centreon::esxd::cmdsnapshotvm',
+                    'centreon::esxd::cmdstatushost',
+                    'centreon::esxd::cmdswaphost',
+                    'centreon::esxd::cmdswapvm',
+                    'centreon::esxd::cmdtoolsvm',
+                    'centreon::esxd::cmduptimehost'
+                    );
 
 sub new {
     my $class = shift;
@@ -77,6 +100,7 @@ sub new {
     $self->{whoaim} = undef; # to know which vsphere to connect
     $self->{filenos} = {};
     $self->{module_date_parse_loaded} = 0;
+    $self->{modules_registry} = {};
 
     return $self;
 }
@@ -98,6 +122,9 @@ sub init {
     }
 
     $self->{centreonesxd_config} = {%{$self->{centreonesxd_default_config}}, %centreonesxd_config};
+
+    ##### Load modules
+    $self->load_module(@load_modules);
 
     ##### credstore check #####
     if (defined($self->{credstore_use}) && defined($self->{credstore_file}) &&
@@ -127,10 +154,10 @@ sub init {
         }
     }
     
-    eval 'require DateTime::Format::ISO8601';
+    eval 'require Date::Parse';
     if (!$@) {
         $self->{module_date_parse_loaded} = 1;
-        require DateTime::Format::ISO8601;
+        require Date::Parse;
     }
 
     $self->set_signal_handlers;
@@ -166,9 +193,9 @@ sub class_handle_CHLD {
 }
 
 sub handle_TERM {
-	my $self = shift;
+    my $self = shift;
     $self->{logger}->writeLogInfo("$$ Receiving order to stop...");
-	$self->{stop} = 1;
+    $self->{stop} = 1;
 }
 
 sub handle_HUP {
@@ -179,200 +206,212 @@ sub handle_HUP {
 
 sub handle_CHLD {
     my $self = shift;
-	my $child_pid;
+    my $child_pid;
 
-	while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
-		$self->{return_child}{$child_pid} = {'status' => 1, 'rtime' => time()};
-	}
-	$SIG{CHLD} = \&class_handle_CHLD;
+    while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
+        $self->{return_child}{$child_pid} = {'status' => 1, 'rtime' => time()};
+    }
+    $SIG{CHLD} = \&class_handle_CHLD;
 }
 
 sub print_response {
     my $self = shift;
 
-	print $self->{global_id} . "|" . $_[0];
+    print $self->{global_id} . "|" . $_[0];
+}
+
+sub load_module {
+    my $self = shift;
+
+    for (@_) {
+        (my $file = "$_.pm") =~ s{::}{/}g;
+        require $file;
+        my $obj = $_->new($self->{logger}, $self);
+        $self->{modules_registry}->{$obj->getCommandName()} = $obj;
+    }    
 }
 
 sub verify_child {
     my $self = shift;
-	my $progress = 0;
-	my $handle_writer_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'writer_one'}};
+    my $progress = 0;
+    my $handle_writer_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'writer_one'}};
 
-	# Verify process
-	foreach (keys %{$self->{child_proc}}) {
-		# Check ctime
-		if (time() - $self->{child_proc}->{$_}->{'ctime'} > $self->{centreonesxd_config}->{timeout}) {
-			my $handle = ${$self->{child_proc}->{$_}->{'reading'}};
-			print $handle_writer_pipe "$_|-1|Timeout Process.\n";
-			kill('INT', $self->{child_proc}->{$_}->{'pid'});
-			$self->{read_select}->remove($handle);
-			close $handle;
-			delete $self->{child_proc}->{$_};
-		} else {
-			$progress++;
-		}
-	}
-	# Clean old hash CHILD (security)
-	foreach (keys %{$self->{return_child}}) {
-		if (time() - $self->{return_child}->{$_}->{'rtime'} > 600) {
-			$self->{logger}->writeLogInfo("Clean Old return_child list = " . $_);
-			delete $self->{return_child}->{$_};
-		}
-	}
+    # Verify process
+    foreach (keys %{$self->{child_proc}}) {
+        # Check ctime
+        if (time() - $self->{child_proc}->{$_}->{'ctime'} > $self->{centreonesxd_config}->{timeout}) {
+            my $handle = ${$self->{child_proc}->{$_}->{'reading'}};
+            print $handle_writer_pipe "$_|-1|Timeout Process.\n";
+            kill('INT', $self->{child_proc}->{$_}->{'pid'});
+            $self->{read_select}->remove($handle);
+            close $handle;
+            delete $self->{child_proc}->{$_};
+        } else {
+            $progress++;
+        }
+    }
+    # Clean old hash CHILD (security)
+    foreach (keys %{$self->{return_child}}) {
+        if (time() - $self->{return_child}->{$_}->{'rtime'} > 600) {
+            $self->{logger}->writeLogInfo("Clean Old return_child list = " . $_);
+            delete $self->{return_child}->{$_};
+        }
+    }
 
-	return $progress;
+    return $progress;
 }
 
 sub vsphere_handler {
     my $self = shift;
-	my $timeout_process;
+    my $timeout_process;
 
-	my $handle_reader_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'reader_two'}};
-	my $fileno_reader = fileno($handle_reader_pipe);
-	my $handle_writer_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'writer_one'}};
-	$self->{read_select} = new IO::Select();
-	$self->{read_select}->add($handle_reader_pipe);
-	while (1) {
-		my $progress = $self->verify_child();
+    my $handle_reader_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'reader_two'}};
+    my $fileno_reader = fileno($handle_reader_pipe);
+    my $handle_writer_pipe = ${$self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'writer_one'}};
+    $self->{read_select} = new IO::Select();
+    $self->{read_select}->add($handle_reader_pipe);
+    while (1) {
+        my $progress = $self->verify_child();
 
-		#####
-		# Manage ending
-		#####
-		if ($self->{stop} && $timeout_process > $self->{centreonesxd_config}->{timeout_kill}) {
-			$self->{logger}->writeLogError("'" . $self->{whoaim} . "' Kill child not gently.");
-			foreach (keys %{$self->{child_proc}}) {
-				kill('INT', $self->{child_proc}->{$_}->{'pid'});
-			}
-			$progress = 0;
-		}
-		if ($self->{stop} && !$progress) {
-			if ($self->{vsphere_connected}) {
-				eval {
-					$self->{session1}->logout();
-				};
-			}
-			print $handle_writer_pipe "STOPPED|$self->{whoaim}\n";
-			exit (0);
-		}
+        #####
+        # Manage ending
+        #####
+        if ($self->{stop} && $timeout_process > $self->{centreonesxd_config}->{timeout_kill}) {
+            $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Kill child not gently.");
+            foreach (keys %{$self->{child_proc}}) {
+                kill('INT', $self->{child_proc}->{$_}->{'pid'});
+            }
+            $progress = 0;
+        }
+        if ($self->{stop} && !$progress) {
+            if ($self->{vsphere_connected}) {
+                eval {
+                    $self->{session1}->logout();
+                };
+            }
+            print $handle_writer_pipe "STOPPED|$self->{whoaim}\n";
+            exit (0);
+        }
 
-		###
-		# Manage vpshere connection
-		###
-		if (defined($self->{last_time_vsphere}) && defined($self->{last_time_check}) && $self->{last_time_vsphere} < $self->{last_time_check}) {
-			$self->{logger}->writeLogError("'" . $self->{whoaim} . "' Disconnect");
-			$self->{vsphere_connected} = 0;
-			eval {
-				$self->{session1}->logout();
-			};
-		}
-		if ($self->{vsphere_connected} == 0) {
-			if (!centreon::esxd::common::connect_vsphere($self->{logger},
+        ###
+        # Manage vpshere connection
+        ###
+        if (defined($self->{last_time_vsphere}) && defined($self->{last_time_check}) && $self->{last_time_vsphere} < $self->{last_time_check}) {
+            $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Disconnect");
+            $self->{vsphere_connected} = 0;
+            eval {
+                $self->{session1}->logout();
+            };
+        }
+        if ($self->{vsphere_connected} == 0) {
+            if (!centreon::esxd::common::connect_vsphere($self->{logger},
                                                          $self->{whoaim},
                                                          $self->{centreonesxd_config}->{timeout_vsphere},
                                                          \$self->{session1},
                                                          $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'url'}, 
                                                          $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'username'},
                                                          $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{'password'})) {
-				$self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Vsphere connection ok");
-				$self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache in progress");
-				if (!centreon::esxd::common::cache_perf_counters($self)) {
-					$self->{last_time_vsphere} = time();
-					$self->{keeper_session_time} = time();
-					$self->{vsphere_connected} = 1;
-					$self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache done");
-				}
-			}
-		}
+                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Vsphere connection ok");
+                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache in progress");
+                if (!centreon::esxd::common::cache_perf_counters($self)) {
+                    $self->{last_time_vsphere} = time();
+                    $self->{keeper_session_time} = time();
+                    $self->{vsphere_connected} = 1;
+                    $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache done");
+                }
+            }
+        }
 
-		###
-		# Manage session time
-		###
-		if (defined($self->{keeper_session_time}) && (time() - $self->{keeper_session_time}) > ($self->{centreonesxd_config}->{refresh_keeper_session} * 60)) {
-			my $stime;
+        ###
+        # Manage session time
+        ###
+        if (defined($self->{keeper_session_time}) && (time() - $self->{keeper_session_time}) > ($self->{centreonesxd_config}->{refresh_keeper_session} * 60)) {
+            my $stime;
 
-			eval {
-				$stime = $self->{session1}->get_service_instance()->CurrentTime();
-				$self->{keeper_session_time} = time();
-			};
-			if ($@) {
-				$self->{logger}->writeLogError("$@");
-				$self->{logger}->writeLogError("'" . $self->{whoaim} . "' Ask a new connection");
-				# Ask a new connection
-				$self->{last_time_check} = time();
-			} else {
-				$self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
-			}
-		}
+            eval {
+                $stime = $self->{session1}->get_service_instance()->CurrentTime();
+                $self->{keeper_session_time} = time();
+            };
+            if ($@) {
+                $self->{logger}->writeLogError("$@");
+                $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Ask a new connection");
+                # Ask a new connection
+                $self->{last_time_check} = time();
+            } else {
+                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
+            }
+        }
 
-		my $data_element;
-		my @rh_set;
-		if ($self->{vsphere_connected} == 0) {
-			sleep(5);
-		}
-		if ($self->{stop} == 0) {
-			@rh_set = $self->{read_select}->can_read(30);
-		} else {
-			sleep(1);
-			$timeout_process++;
-			@rh_set = $self->{read_select}->can_read(0);
-		}
-		foreach my $rh (@rh_set) {
-			if (fileno($rh) == $fileno_reader && !$self->{stop}) {
-				$data_element = <$rh>;
-				chomp $data_element;
-				if ($data_element =~ /^STOP$/) {
-					$self->{stop} = 1;
-					$timeout_process = 0;
-					next;
-				}
+        my $data_element;
+        my @rh_set;
+        if ($self->{vsphere_connected} == 0) {
+            sleep(5);
+        }
+        if ($self->{stop} == 0) {
+            @rh_set = $self->{read_select}->can_read(30);
+        } else {
+            sleep(1);
+            $timeout_process++;
+            @rh_set = $self->{read_select}->can_read(0);
+        }
+        foreach my $rh (@rh_set) {
+            if (fileno($rh) == $fileno_reader && !$self->{stop}) {
+                $data_element = <$rh>;
+                chomp $data_element;
+                if ($data_element =~ /^STOP$/) {
+                    $self->{stop} = 1;
+                    $timeout_process = 0;
+                    next;
+                }
 
-				my ($id) = split(/\|/, $data_element);
-				if ($self->{vsphere_connected}) {
-					$self->{logger}->writeLogInfo("vpshere '" . $self->{whoaim} . "' handler asking: $data_element");
-					$self->{child_proc}->{$id} = {'ctime' => time()};
-				
-					my $reader;
-					my $writer;
-					pipe($reader, $writer);
-					$writer->autoflush(1);
+                my ($id) = split(/\|/, $data_element);
+                if ($self->{vsphere_connected}) {
+                    $self->{logger}->writeLogInfo("vpshere '" . $self->{whoaim} . "' handler asking: $data_element");
+                    $self->{child_proc}->{$id} = {'ctime' => time()};
+                
+                    my $reader;
+                    my $writer;
+                    pipe($reader, $writer);
+                    $writer->autoflush(1);
 
-					$self->{read_select}->add($reader);
-					$self->{child_proc}->{$id}->{'reading'} = \*$reader;
-					$self->{child_proc}->{$id}->{'pid'} = fork;
-					if (!$self->{child_proc}->{$id}->{'pid'}) {
-						# Child	
-						close $reader;
-						open STDOUT, '>&', $writer;
-						# Can't print on stdout
-						$self->{logger}->{log_mode} = 1 if ($self->{logger}->{log_mode} == 0);
-						my ($id, $name, @args) = split /\|/, $data_element;
-						$self->{global_id} = $id;
-						#####$checks_descr{$name}->{'exec'}($checks_descr{$name}->{'compute'}(@args));
-						exit(0);
-					} else {
-						# Parent
-						close $writer;
-					}
-				} else {
-					print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
-				}
-			} else {
-				# Read pipe
-				my $output = <$rh>;
-				$self->{read_select}->remove($rh);
-				close $rh;
-				$output =~ s/^(.*?)\|//;
-				my $lid = $1;
-				if ($output =~ /^-1/) {
-					$self->{last_time_check} = $self->{child_proc}->{$lid}->{'ctime'};
-				}
-				chomp $output;
-				print $handle_writer_pipe "$lid|$output\n";
-				delete $self->{return_child}->{$self->{child_proc}->{$lid}->{'pid'}};
-				delete $self->{child_proc}->{$lid};
-			}
-		}	
-	}
+                    $self->{read_select}->add($reader);
+                    $self->{child_proc}->{$id}->{'reading'} = \*$reader;
+                    $self->{child_proc}->{$id}->{'pid'} = fork;
+                    if (!$self->{child_proc}->{$id}->{'pid'}) {
+                        # Child    
+                        close $reader;
+                        open STDOUT, '>&', $writer;
+                        # Can't print on stdout
+                        $self->{logger}->{log_mode} = 1 if ($self->{logger}->{log_mode} == 0);
+                        my ($id, $name, @args) = split /\|/, $data_element;
+                        $self->{global_id} = $id;
+                        $self->{modules_registry}->{$name}->initArgs(@args);
+                        $self->{modules_registry}->{$name}->run();
+                        exit(0);
+                    } else {
+                        # Parent
+                        close $writer;
+                    }
+                } else {
+                    print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
+                }
+            } else {
+                # Read pipe
+                my $output = <$rh>;
+                $self->{read_select}->remove($rh);
+                close $rh;
+                $output =~ s/^(.*?)\|//;
+                my $lid = $1;
+                if ($output =~ /^-1/) {
+                    $self->{last_time_check} = $self->{child_proc}->{$lid}->{'ctime'};
+                }
+                chomp $output;
+                print $handle_writer_pipe "$lid|$output\n";
+                delete $self->{return_child}->{$self->{child_proc}->{$lid}->{'pid'}};
+                delete $self->{child_proc}->{$lid};
+            }
+        }    
+    }
 }
 
 sub run {
@@ -492,17 +531,17 @@ sub run {
                     my ($name, $vsphere_name, @args) = split /\|/, $line;
                     
                     if ($name eq 'stats') {
-                        centreon::esxd::common::stats_info($rh, $current_fileno, \@args);
+                        centreon::esxd::common::stats_info($self, $rh, $current_fileno, \@args);
                         next;
                     }
-                    #if (!defined($checks_descr{$name})) {
-                    #    centreon::esxd::common::response_client1($self, $rh, $current_fileno, "3|Unknown method name '$name'\n");
-                    #    next;
-                    #}
-                    #if ($checks_descr{$name}->{'arg'}(@args)) {
-                    #    centreon::esxd::common::response_client1($self, $rh, $current_fileno, "3|Params error '$name'\n");
-                    #    next;
-                    #}
+                    if (!defined($self->{modules_registry}->{$name})) {
+                        centreon::esxd::common::response_client1($self, $rh, $current_fileno, "3|Unknown method name '$name'\n");
+                        next;
+                    }
+                    if ($self->{modules_registry}->{$name}->checkArgs(@args)) {
+                        centreon::esxd::common::response_client1($self, $rh, $current_fileno, "3|Params error '$name'\n");
+                        next;
+                    }
 
                     $vsphere_name = 'default' if (!defined($vsphere_name) || $vsphere_name eq '');
                     if (!defined($self->{centreonesxd_config}->{vsphere_server}->{$vsphere_name})) {
