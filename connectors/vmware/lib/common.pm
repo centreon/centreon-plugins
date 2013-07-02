@@ -95,6 +95,49 @@ sub get_views {
     return $results;
 }
 
+sub get_view {
+    my $obj_esxd = shift;
+    my $results;
+
+    eval {
+        $results = $obj_esxd->{session1}->get_view(mo_ref => $_[0], properties => $_[1]);
+    };
+    if ($@) {
+        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
+        my $lerror = $@;
+        $lerror =~ s/\n/ /g;
+        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        return undef;
+    }
+    return $results;
+}
+
+sub search_in_datastore {
+    my $obj_esxd = shift;
+    my ($ds_browse, $ds_name, $query) = @_;
+    my $result;
+    
+    my $files = FileQueryFlags->new(fileSize => 1,
+                                    fileType => 1,
+                                    modification => 1,
+                                    fileOwner => 1
+                                    );
+    my $hostdb_search_spec = HostDatastoreBrowserSearchSpec->new(details => $files,
+                                                                 query => $query);
+    eval {
+        $result = $ds_browse->SearchDatastoreSubFolders(datastorePath=> $ds_name,
+                                        searchSpec=>$hostdb_search_spec);
+    };
+    if ($@) {
+        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
+        my $lerror = $@;
+        $lerror =~ s/\n/ /g;
+        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        return undef;
+    }
+    return $result;
+}
+
 sub get_perf_metric_ids {
     my $obj_esxd = shift;
     my $perf_names = $_[0];
