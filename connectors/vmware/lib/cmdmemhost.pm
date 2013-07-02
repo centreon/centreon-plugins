@@ -61,11 +61,14 @@ sub run {
     }
 
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('summary.hardware.memorySize');
+    my @properties = ('summary.hardware.memorySize', 'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
+                                                $$result[0]->{'runtime.connectionState'}->val) == 0);
 
     my $memory_size = $$result[0]->{'summary.hardware.memorySize'};
 

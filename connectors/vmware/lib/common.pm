@@ -264,6 +264,19 @@ sub vm_state {
     return 1;
 }
 
+sub host_state {
+    my ($obj_esxd, $host, $connection_state) = @_;
+    
+    if ($connection_state !~ /^connected$/i) {
+        my $output = "Host '" . $host . "' not connected. Current Connection State: '$connection_state'.";
+        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{host_state_error});
+        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        return 0;
+    }
+    
+    return 1;
+}
+
 sub stats_info {
     my ($obj_esxd, $rh, $current_fileno, $args) = @_;
     my $output;

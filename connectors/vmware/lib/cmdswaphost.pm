@@ -61,11 +61,14 @@ sub run {
     }
 
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('name');
+    my @properties = ('name', 'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
+                                                $$result[0]->{'runtime.connectionState'}->val) == 0);
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $$result[0], 

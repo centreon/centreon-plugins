@@ -47,15 +47,18 @@ sub run {
     }
     
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('runtime.bootTime');
+    my @properties = ('runtime.bootTime', 'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
+    
+    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
+                                                $$result[0]->{'runtime.connectionState'}->val) == 0);
 
     my $create_time = Date::Parse::str2time($$result[0]->{'runtime.bootTime'});
     if (!defined($create_time)) {
-        $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
+        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
         $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't Parse date '" . $$result[0]->{'runtime.bootTime'} . "'.\n");
         return ;
     }

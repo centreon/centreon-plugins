@@ -69,6 +69,7 @@ sub new {
             port => 5700,
             datastore_state_error => 'UNKNOWN',
             vm_state_error => 'UNKNOWN',
+            host_state_error => 'UNKNOWN',
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
                 #              'username' => 'XXXXX',
