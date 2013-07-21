@@ -517,7 +517,7 @@ sub run {
                 }
                 my @results = split(/\|/, $data_element);
                 my ($id, $counter) = split(/\./, $results[0]);
-                if (!defined($self->{sockets}->{$id}) || $self->{counter} != $self->{sockets}->{$id}->{'counter'}) {
+                if (!defined($self->{sockets}->{$id}) || $counter != $self->{sockets}->{$id}->{'counter'}) {
                     $self->{logger}->writeLogInfo("Too much time to get response.");
                     next;
                 }

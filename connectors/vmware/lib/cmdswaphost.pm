@@ -75,6 +75,7 @@ sub run {
                         [{'label' => 'mem.swapinRate.average', 'instances' => ['']},
                          {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     my $swap_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0]));
     my $swap_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0]));

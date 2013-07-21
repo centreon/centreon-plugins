@@ -78,6 +78,7 @@ sub run {
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances},
                          {'label' => 'cpu.usagemhz.average', 'instances' => \@instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     my $status = 0; # OK
     my $output = '';

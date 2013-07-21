@@ -1,10 +1,10 @@
 
-$centreonesxd_config = {
+%centreonesxd_config = (
         vsphere_server => {
                         'default' => {'url' => 'https://vcenter/sdk',
-                                     'username' => 'qgarnier@merethis.net',
+                                     'username' => 'XXXXXX',
                                      'password' => 'XXXXXX'}
                         }
-};
+);
 
 1;

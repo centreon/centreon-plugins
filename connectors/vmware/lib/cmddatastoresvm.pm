@@ -108,6 +108,7 @@ sub run {
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     foreach (keys %$values) {
         my ($id, $disk_name) = split(/:/);

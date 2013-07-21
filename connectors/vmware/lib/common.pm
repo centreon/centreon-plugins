@@ -32,6 +32,19 @@ sub response_client1 {
     close $rh;
 }
 
+sub vmware_error {
+    my ($obj_esxd, $lerror) = @_;
+
+    $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $lerror");
+    $lerror =~ s/\n/ /g;
+    if ($lerror =~ /NoPermissionFault/i) {
+        $obj_esxd->print_response("-2|Error: Not enough permissions\n");
+    } else {
+        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+    }
+    return undef;
+}
+
 sub connect_vsphere {
     my ($logger, $whoaim, $timeout_vsphere, $session1, $service_url, $username, $password) = @_;
     $logger->writeLogInfo("'$whoaim' Vsphere connection in progress");
@@ -86,10 +99,7 @@ sub get_views {
         $results = $obj_esxd->{session1}->get_views(mo_ref_array => $_[0], properties => $_[1]);
     };
     if ($@) {
-        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
-        my $lerror = $@;
-        $lerror =~ s/\n/ /g;
-        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        vmware_error($obj_esxd, $@);
         return undef;
     }
     return $results;
@@ -103,10 +113,7 @@ sub get_view {
         $results = $obj_esxd->{session1}->get_view(mo_ref => $_[0], properties => $_[1]);
     };
     if ($@) {
-        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
-        my $lerror = $@;
-        $lerror =~ s/\n/ /g;
-        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        vmware_error($obj_esxd, $@);
         return undef;
     }
     return $results;
@@ -129,10 +136,7 @@ sub search_in_datastore {
                                         searchSpec=>$hostdb_search_spec);
     };
     if ($@) {
-        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
-        my $lerror = $@;
-        $lerror =~ s/\n/ /g;
-        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        vmware_error($obj_esxd, $@);
         return undef;
     }
     return $result;
@@ -141,20 +145,22 @@ sub search_in_datastore {
 sub get_perf_metric_ids {
     my $obj_esxd = shift;
     my $perf_names = $_[0];
-    my @filtered_list;
+    my $filtered_list = [];
    
     foreach (@$perf_names) {
         if (defined($obj_esxd->{perfcounter_cache}->{$_->{'label'}})) {
             foreach my $instance (@{$_->{'instances'}}) {
                 my $metric = PerfMetricId->new(counterId => $obj_esxd->{perfcounter_cache}->{$_->{'label'}}{'key'},
                                    instance => $instance);
-                push @filtered_list, $metric;
+                push @$filtered_list, $metric;
             }
         } else {
             $obj_esxd->{logger}->writeLogError("Metric '" . $_->{'label'} . "' unavailable.");
+            $obj_esxd->print_response("-3|Error: Counter doesn't exist. VMware version can be too old.\n");
+            return undef;
         }
     }
-    return \@filtered_list;
+    return $filtered_list;
 }
 
 sub generic_performance_values_historic {
@@ -163,7 +169,8 @@ sub generic_performance_values_historic {
     my %results;
 
     eval {
-        my @perf_metric_ids = get_perf_metric_ids($obj_esxd, $perfs);
+        my $perf_metric_ids = get_perf_metric_ids($obj_esxd, $perfs);
+        return undef if (!defined($perf_metric_ids));
 
         my $perf_query_spec;
         my $tstamp = time();
@@ -174,9 +181,10 @@ sub generic_performance_values_historic {
         my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
                 (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
         
+   #     $obj_esxd->{logger}->writeLogError(@perf_metric_ids);
         if ($interval == 20) {
             $perf_query_spec = PerfQuerySpec->new(entity => $view,
-                                  metricId => @perf_metric_ids,
+                                  metricId => $perf_metric_ids,
                                   format => 'normal',
                                   intervalId => 20,
                                   startTime => $startTime,
@@ -184,7 +192,7 @@ sub generic_performance_values_historic {
                                   maxSample => 1);
         } else {
             $perf_query_spec = PerfQuerySpec->new(entity => $view,
-                         metricId => @perf_metric_ids,
+                         metricId => $perf_metric_ids,
                          format => 'normal',
                          intervalId => $interval,
                          startTime => $startTime,
@@ -193,8 +201,16 @@ sub generic_performance_values_historic {
                         #maxSample => 1);
         }
         my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => $perf_query_spec);
+        if (!$$perfdata[0]) {
+            $obj_esxd->print_response("-3|Error: Cannot get value for couters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+            return undef;
+        }
         foreach (@{$$perfdata[0]->value}) {
             $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+            if (!defined($_->value)) {
+                $obj_esxd->print_response("-3|Error: Cannot get value for couters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+                return undef;
+            }
         }
     };
     if ($@) {
@@ -248,10 +264,7 @@ sub get_entities_host {
             $entity_views = $obj_esxd->{session1}->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
         };
         if ($@) {
-            $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
-            my $lerror = $@;
-            $lerror =~ s/\n/ /g;
-            $obj_esxd->print_response("-1|Error: " . Data::Dumper::Dumper($lerror) . "\n");
+            vmware_error($obj_esxd, $@);
             return undef;
         }
     }
@@ -272,6 +285,14 @@ sub get_entities_host {
     #    return undef;
     #}
     return $entity_views;
+}
+
+sub performance_errors {
+    my ($obj_esxd, $values) = @_;
+
+    # Error counter not available or orther from function
+    return 1 if (!defined($values) || scalar(keys(%$values)) <= 0);
+    return 0;
 }
 
 sub datastore_state {

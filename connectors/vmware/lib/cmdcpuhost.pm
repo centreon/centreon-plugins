@@ -64,9 +64,7 @@ sub run {
     my %filters = ('name' => $self->{lhost});
     my @properties = ('name', 'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
+    return if (!defined($result));
 
     return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
                                                 $$result[0]->{'runtime.connectionState'}->val) == 0);
@@ -77,7 +75,8 @@ sub run {
                         $$result[0], 
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});
-
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    
     my $status = 0; # OK
     my $output = '';
     my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));

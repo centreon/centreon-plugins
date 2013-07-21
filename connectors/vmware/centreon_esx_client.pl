@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.4";
+my $VERSION = "1.4.1";
 my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3, 'DEPENDENT' => 4);
 my $socket;
 
@@ -702,7 +702,7 @@ my $status_return = $1;
 $return =~ s/^(-?[0-9]*?)\|//;
 print $return . "\n";
 
-if ($status_return == -1) {
+if ($status_return < 0) {
     $status_return = 3;
 }
 exit $status_return;

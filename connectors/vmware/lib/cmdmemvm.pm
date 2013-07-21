@@ -81,6 +81,7 @@ sub run {
                          {'label' => 'mem.consumed.average', 'instances' => ['']},
                          {'label' => 'mem.shared.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     my $mem_consumed = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"}[0]));
     my $mem_active = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.active.average'}->{'key'} . ":"}[0]));

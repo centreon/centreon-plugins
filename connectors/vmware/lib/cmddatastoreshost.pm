@@ -100,6 +100,7 @@ sub run {
                         [{'label' => 'datastore.totalReadLatency.average', 'instances' => ['*']},
                         {'label' => 'datastore.totalWriteLatency.average', 'instances' => ['*']}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     my $status = 0; # OK
     my $output = '';

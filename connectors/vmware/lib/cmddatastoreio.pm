@@ -74,6 +74,7 @@ sub run {
                         [{'label' => 'datastore.read.average', 'instances' => ['']},
                          {'label' => 'datastore.write.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});
+    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
     my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.read.average'}->{'key'} . ":"}[0]));    
     my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.write.average'}->{'key'} . ":"}[0]));
