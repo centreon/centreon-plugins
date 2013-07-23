@@ -13,6 +13,7 @@
   
 binary=/usr/bin/centreon_esxd
 servicename=$(basename "$0")
+options=""
 user=root
 timeout=60
 
@@ -45,9 +46,9 @@ start() {
         fi
 
 	if [ "$(id -u -n)" = "$user" ] ; then
-		daemon ''$binary' "'$config_file'" > /dev/null 2>&1 &'
+		daemon ''$binary' '$options' > /dev/null 2>&1 &'
 	else
-		daemon --user $user ''$binary' "'$config_file'" > /dev/null 2>&1 &'
+		daemon --user $user ''$binary' '$options' > /dev/null 2>&1 &'
 	fi
 	pid=$(pidofproc $binary)
 	RETVAL=$?
