@@ -218,6 +218,7 @@ if (defined($TIMEOUT)) {
 
 # Connect to host
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
+$session->translate(Net::SNMP->TRANSLATE_OCTET_STRING);
 
 # Look for process in name or path name table
 my $resultat = Centreon::SNMP::Utils::get_snmp_table($win_serv_name, $session, $ERRORS{'UNKNOWN'}, \%OPTION);
