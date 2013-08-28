@@ -19,7 +19,6 @@ require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
-#my $TIMEOUT = 15;
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 
 my %OPTION = (
@@ -27,7 +26,7 @@ my %OPTION = (
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 my $session_params;
@@ -82,7 +81,6 @@ my $o_noreg=	undef;		# Do not use Regexp for name
 my $o_sum=	undef;		# add all storage before testing
 my $o_index=	undef;		# Parse index instead of description
 my $o_negate=	undef;		# Negate the regexp if set
-my $o_timeout=  5;            	# Default 5s Timeout
 my $o_perf=	undef;		# Output performance data
 my $o_short=	undef;	# Short output parameters
 my @o_shortL=	undef;		# output type,where,cut
@@ -106,12 +104,6 @@ sub is_pattern_valid { # Test for things like "<I\s*[^>" or "+5-i"
     if (!defined($pat)) { $pat=" ";} # Just to get rid of compilation time warnings
     return eval { "" =~ /$pat/; 1 } || 0;
 }
-
-# Get the alarm signal (just in case snmp timout screws up)
-$SIG{'ALRM'} = sub {
-    print ("ERROR: General time-out (Alarm signal)\n");
-    exit $ERRORS{"UNKNOWN"};
-};
 
 sub isnnum { # Return true if arg is not a number
     my $num = shift;
@@ -229,12 +221,12 @@ sub check_options {
         "privkey=s"                 => \$OPTION{'snmp-priv-key'},
         "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
         "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "t|timeout|snmp-timeout=i"  => \$OPTION{'snmptimeout'},
         "64-bits"                   => \$OPTION{'64-bits'},
 		'v'     => \$o_verb,		'verbose'	=> \$o_verb,
         'h'     => \$o_help,    	'help'        	=> \$o_help,
         'c:s'   => \$o_crit,    	'critical:s'	=> \$o_crit,
         'w:s'   => \$o_warn,    	'warn:s'	=> \$o_warn,
-        't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
         'm:s'   => \$o_descr,		'name:s'	=> \$o_descr,
         'T:s'	=> \$o_type,		'type:s'	=> \$o_type,
         'r'     => \$o_noreg,           'noregexp'      => \$o_noreg,
@@ -301,15 +293,6 @@ sub check_options {
 ########## MAIN #######
 
 check_options();
-
-# Check gobal timeout
-if (defined($TIMEOUT)) {
-    verb("Alarm at $TIMEOUT");
-    alarm($TIMEOUT);
-} else {
-    verb("no timeout defined : $o_timeout + 10");
-    alarm ($o_timeout+10);
-}
 
 # Connect to host
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);

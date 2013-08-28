@@ -40,7 +40,7 @@ my %OPTION = (
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
     "command-exit" => undef,
     "no-regexp" => undef,
@@ -59,6 +59,7 @@ GetOptions
     "privpassword=s"            => \$OPTION{'snmp-priv-password'},
     "privkey=s"                 => \$OPTION{'snmp-priv-key'},
     "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
+    "snmp-timeout=i"            => \$OPTION{'snmptimeout'},
     "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
     "64-bits"                   => \$OPTION{'64-bits'},
     "command-exit"              => \$OPTION{'command-exit'},
@@ -142,6 +143,7 @@ sub print_usage () {
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
+    print "   --snmp-timeout    SNMP Timeout\n";
     print "   -n (--name)       SNMP Command name to call\n";
     print "                     Example in snmpd.conf: exec echotest /bin/echo hello world\n";
     print "                     So we specify: -n 'echotest'\n";

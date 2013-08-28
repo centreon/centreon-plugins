@@ -66,7 +66,7 @@ sub check_snmp_options {
     my ($exit_status, $OPTION) = @_;
     my %session_params;
 
-    if (!defined($OPTION->{'host'})) {
+    if (!defined($OPTION->{host})) {
         print "Missing parameter -H (--host).\n";
         exit $exit_status;
     }
@@ -78,7 +78,7 @@ sub check_snmp_options {
     }
 
     if ($OPTION->{'snmp-version'} eq "3") {
-        %session_params = (-hostname => $OPTION->{'host'}, -version => $OPTION->{'snmp-version'}, -port => $OPTION->{'snmp-port'});
+        %session_params = (-hostname => $OPTION->{host}, -version => $OPTION->{'snmp-version'}, -port => $OPTION->{'snmp-port'});
 
         if (defined($OPTION->{'snmp-auth-password'}) && defined($OPTION->{'snmp-auth-key'})) {
             print "Only option -k (--authkey) or -p (--password) is needed for snmp v3\n";
@@ -140,6 +140,10 @@ sub check_snmp_options {
             exit($exit_status);
         }
         require bigint;
+    }
+    
+    if (defined($OPTION->{snmptimeout}) && $OPTION->{snmptimeout} =~ /^[0-9]+$/) {
+        $session_params{-timeout} = $OPTION->{snmptimeout};
     }
 
     return (\%session_params);

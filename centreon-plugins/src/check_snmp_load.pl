@@ -16,8 +16,6 @@ use Getopt::Long;
 require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 # Nagios specific
-
-my $TIMEOUT = 15;
 my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 
 # SNMP Datas
@@ -26,7 +24,7 @@ my %OPTION = (
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 my $session_params;
@@ -110,7 +108,6 @@ my $o_warn=	undef;		# warning level
 my @o_warnL=	undef;		# warning levels for Linux Load or Cisco CPU
 my $o_crit=	undef;		# critical level
 my @o_critL=	undef;		# critical level for Linux Load or Cisco CPU
-my $o_timeout=  undef; 		# Timeout (Default 5)
 my $o_perf=     undef;          # Output performance data
 
 # functions
@@ -195,11 +192,11 @@ sub check_options {
         "privkey=s"                 => \$OPTION{'snmp-priv-key'},
         "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
         "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "t|timeout|snmp-timeout=i"  => \$OPTION{'snmptimeout'},
         "64-bits"                   => \$OPTION{'64-bits'},
 
         'v'     => \$o_verb,		'verbose'	=> \$o_verb,
         'h'     => \$o_help,    	'help'        	=> \$o_help,
-        't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
         'V'     => \$o_version,		'version'	=> \$o_version,
         'c:s'   => \$o_crit,            'critical:s'    => \$o_crit,
         'w:s'   => \$o_warn,            'warn:s'        => \$o_warn,
@@ -213,10 +210,6 @@ sub check_options {
     foreach (@valid_types) { if ($_ eq $o_check_type) {$T_option_valid=1} };
     if ( $T_option_valid == 0 ) 
        {print "Invalid check type (-T)!\n"; print_usage(); exit $ERRORS{"UNKNOWN"}}
-    # Basic checks
-	if (defined($o_timeout) && (isnnum($o_timeout) || ($o_timeout < 2) || ($o_timeout > 60))) 
-	  { print "Timeout must be >1 and <60 !\n"; print_usage(); exit $ERRORS{"UNKNOWN"}}
-	if (!defined($o_timeout)) {$o_timeout=5;}
     if (defined ($o_help) ) { help(); exit $ERRORS{"UNKNOWN"}};
     if (defined($o_version)) { p_version(); exit $ERRORS{"UNKNOWN"}};
     # Check warnings and critical
@@ -252,20 +245,6 @@ sub check_options {
 ########## MAIN #######
 
 check_options();
-
-# Check gobal timeout if snmp screws up
-if (defined($TIMEOUT)) {
-    verb("Alarm at $TIMEOUT + 5");
-    alarm($TIMEOUT+5);
-} else {
-    verb("no global timeout defined : $o_timeout + 10");
-    alarm ($o_timeout+10);
-}
-
-$SIG{'ALRM'} = sub {
-    print "No answer from host\n";
-    exit $ERRORS{"UNKNOWN"};
-};
 
 # Connect to host
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
