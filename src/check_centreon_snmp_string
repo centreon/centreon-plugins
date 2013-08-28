@@ -50,7 +50,7 @@ my %OPTION = ("host" => undef,
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161,
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
     'help' => undef, 
     'output' => 'The value is %f');
@@ -75,6 +75,7 @@ GetOptions
     "privkey=s"                         => \$OPTION{'snmp-priv-key'},
     "privprotocol=s"                    => \$OPTION{'snmp-priv-protocol'},
     "maxrepetitions=s"                  => \$OPTION{'maxrepetitions'},
+    "snmp-timeout=i"                    => \$OPTION{'snmptimeout'},
     "64-bits"                           => \$OPTION{'64-bits'},
     "h"         => \$OPTION{'help'},            "help"              => \$OPTION{'help'},
     "V"         => \$OPTION{'pluginversion'},   "version"           => \$OPTION{'pluginversion'},
@@ -221,14 +222,14 @@ sub print_usage () {
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
-
-    print "   -o (--oid)        \t OID to check\n";
-    print "   -W (--warning_table)    \t Personal warning threshold : -W warningstate... \n";
-    print "   -T (--critical_table)    \t Personal critical threshold : -T criticalstate1,criticalstate2... \n";
-    print "   -O (--ok_table)    \t Personal ok threshold : -O okstate1,okstate2... \n";
-    print "   -f (--output)  \t Output format (ex : -f \"My metric's percentage value = %f %%\" \n";
-    print "   -V (--version)  \t Plugin version\n";
-    print "   -h (--help)      \t usage help\n";
+    print "   --snmp-timeout    SNMP Timeout\n";
+    print "   -o (--oid)                OID to check\n";
+    print "   -W (--warning_table)      Personal warning threshold : -W warningstate... \n";
+    print "   -T (--critical_table)     Personal critical threshold : -T criticalstate1,criticalstate2... \n";
+    print "   -O (--ok_table)           Personal ok threshold : -O okstate1,okstate2... \n";
+    print "   -f (--output)             Output format (ex : -f \"My metric's percentage value = %f %%\" \n";
+    print "   -V (--version)            Plugin version\n";
+    print "   -h (--help)               usage help\n";
 }
 
 sub print_help () {

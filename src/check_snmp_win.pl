@@ -18,14 +18,13 @@ require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use lib "@NAGIOS_PLUGINS@";
 use utils qw(%ERRORS $TIMEOUT);
-#my $TIMEOUT = 5;
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 my %OPTION = (
     "host" => undef,
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 my $session_params;
@@ -65,7 +64,6 @@ my $o_help=	undef; 		# wan't some help ?
 my $o_verb=	undef;		# verbose mode
 my $o_version=   undef;         # print version
 my $o_noreg=	undef;		# Do not use Regexp for name
-my $o_timeout=  5;            	# Default 5s Timeout
 
 # functions
 
@@ -86,12 +84,6 @@ sub is_pattern_valid { # Test for things like "<I\s*[^>" or "+5-i"
     if (!defined($pat)) { $pat=" ";} # Just to get rid of compilation time warnings
     return eval { "" =~ /$pat/; 1 } || 0;
 }
-
-# Get the alarm signal (just in case snmp timout screws up)
-$SIG{'ALRM'} = sub {
-    print ("ERROR: Alarm signal (Nagios time-out)\n");
-    exit $ERRORS{"UNKNOWN"};
-};
 
 sub help {
    print "\nSNMP Windows Monitor for Nagios version ",$Version,"\n";
@@ -171,10 +163,10 @@ sub check_options {
         "privkey=s"                 => \$OPTION{'snmp-priv-key'},
         "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
         "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "t|timeout|snmp-timeout=i"  => \$OPTION{'snmptimeout'},
         "64-bits"                   => \$OPTION{'64-bits'},
         'v'     => \$o_verb,		'verbose'	=> \$o_verb,
         'h'     => \$o_help,    	'help'        	=> \$o_help,
-        't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
         'n:s'   => \$o_descr,		'name:s'	=> \$o_descr,
         'r'     => \$o_noreg,           'noregexp'      => \$o_noreg,
         'T:s'   => \$o_type,           	'type:s'      	=> \$o_type,
@@ -206,15 +198,6 @@ sub check_options {
 ########## MAIN #######
 
 check_options();
-
-# Check gobal timeout if snmp screws up
-if (defined($TIMEOUT)) {
-    verb("Alarm at $TIMEOUT");
-    alarm($TIMEOUT);
-} else {
-    verb("no timeout defined : $o_timeout + 10");
-    alarm ($o_timeout+10);
-}
 
 # Connect to host
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);

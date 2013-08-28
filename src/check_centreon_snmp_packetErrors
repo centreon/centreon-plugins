@@ -64,7 +64,7 @@ my %OPTION = (
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 
@@ -83,6 +83,7 @@ GetOptions
     "privkey=s"                 => \$OPTION{'snmp-priv-key'},
     "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
     "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+    "snmp-timeout=i"            => \$OPTION{'snmptimeout'},
     "64-bits"                   => \$OPTION{'64-bits'},
 
     "h"   => \$opt_h, "help"         => \$opt_h,
@@ -245,6 +246,7 @@ sub print_usage () {
     print "   --64-bits         Use 64 bits OID\n";
     print "   --maxrepetitions  To use when you have the error: 'Message size exceeded buffer maxMsgSize'\n";
     print "                     Work only with SNMP v2c and v3 (Example: --maxrepetitions=1)\n";
+    print "   --snmp-timeout    SNMP Timeout\n";
     print "   -w (--warn)       Signal strength at which a warning message will be generated\n";
     print "                     (default 80)\n";
     print "   -c (--crit)       Signal strength at which a critical message will be generated\n";

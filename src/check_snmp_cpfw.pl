@@ -19,15 +19,15 @@ use Getopt::Long;
 require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use lib "@NAGIOS_PLUGINS@";
-use utils qw(%ERRORS $TIMEOUT);
-#my $TIMEOUT = 15;
+use utils qw(%ERRORS);
+
 #my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 my %OPTION = (
     "host" => undef,
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 my $session_params;
@@ -145,7 +145,7 @@ sub help {
 -P, --port=PORT
    SNMP port (Default 161)
 -t, --timeout=INTEGER
-   timeout for SNMP (Default: Nagios default)
+   timeout for SNMP (Default: 5s)
 -V, --version
    prints version number
 -g (--rrdgraph)   Create a rrd base if necessary and add datas into this one
@@ -172,10 +172,10 @@ sub check_options {
         "privkey=s"                 => \$OPTION{'snmp-priv-key'},
         "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
         "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "t|timeout|snmp-timeout=i"  => \$OPTION{'snmptimeout'},
         "64-bits"                   => \$OPTION{'64-bits'},
         'v'     => \$o_verb,    'verbose'       => \$o_verb,
         'h'     => \$o_help,    'help'          => \$o_help,
-        't:i'   => \$TIMEOUT,   'timeout:i'     => \$TIMEOUT,
         'V'     => \$o_version, 'version'       => \$o_version,
         's'     => \$o_svn,     'svn'           => \$o_svn,
         'w'     => \$o_fw,      'fw'            => \$o_fw,
@@ -219,8 +219,6 @@ sub check_options {
 
 check_options();
 
-# Check gobal timeout if snmp screws up
-alarm($TIMEOUT+15);
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
 ########### Global checks #################

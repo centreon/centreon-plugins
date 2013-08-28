@@ -23,8 +23,6 @@ my $file_history=200;   # number of data to keep in files.
 my $delta_of_time_to_make_average=300;  # 5minutes by default
 
 # Nagios specific
-
-my $TIMEOUT = 15;
 my %ERRORS=('OK'=>0,'WARNING'=>1,'CRITICAL'=>2,'UNKNOWN'=>3,'DEPENDENT'=>4);
 
 my %OPTION = (
@@ -32,7 +30,7 @@ my %OPTION = (
     "snmp-community" => "public", "snmp-version" => 1, "snmp-port" => 161, 
     "snmp-auth-key" => undef, "snmp-auth-user" => undef, "snmp-auth-password" => undef, "snmp-auth-protocol" => "MD5",
     "snmp-priv-key" => undef, "snmp-priv-password" => undef, "snmp-priv-protocol" => "DES",
-    "maxrepetitions" => undef,
+    "maxrepetitions" => undef, "snmptimeout" => undef,
     "64-bits" => undef,
 );
 my $session_params;
@@ -62,7 +60,6 @@ my $o_inverse=	undef;		# checks max instead of min number of process
 my $o_get_all=	undef;		# get all tables at once
 my $o_param=	undef;		# Add process parameters for selection 
 my $o_perf=	undef;		# Add performance output
-my $o_timeout=  5;            	# Default 5s Timeout
 # Memory & CPU
 my $o_mem=	undef;		# checks memory (max)
 my @o_memL=	undef;		# warn and crit level for mem
@@ -84,12 +81,6 @@ sub isnotnum { # Return true if arg is not a number
   if ( $num =~ /^-?(\d+\.?\d*)|(^\.\d+)$/ ) { return 0 ;}
   return 1;
 }
-
-# Get the alarm signal (just in case snmp timout screws up)
-$SIG{'ALRM'} = sub {
-     print ("ERROR: Alarm signal (Nagios time-out)\n");
-     exit $ERRORS{"UNKNOWN"};
-};
 
 sub read_file { 
     # Input : File, items_number
@@ -213,7 +204,7 @@ sub verb { my $t=shift; print $t,"\n" if defined($o_verb) ; }
 sub check_options {
     Getopt::Long::Configure ("bundling");
     GetOptions(
-         "H|hostname|host=s"         => \$OPTION{'host'},
+        "H|hostname|host=s"         => \$OPTION{'host'},
         "C|community=s"             => \$OPTION{'snmp-community'},
         "snmp|snmp-version=s"       => \$OPTION{'snmp-version'},
         "p|port|P|snmpport|snmp-port=i"    => \$OPTION{'snmp-port'},
@@ -225,13 +216,13 @@ sub check_options {
         "privkey=s"                 => \$OPTION{'snmp-priv-key'},
         "privprotocol=s"            => \$OPTION{'snmp-priv-protocol'},
         "maxrepetitions=s"          => \$OPTION{'maxrepetitions'},
+        "t|timeout|snmp-timeout=i"  => \$OPTION{'snmptimeout'},
         "64-bits"                   => \$OPTION{'64-bits'},
 
    	'v'	=> \$o_verb,		'verbose'	=> \$o_verb,
         'h'     => \$o_help,    	'help'        	=> \$o_help,
 	'c:s'   => \$o_crit,    	'critical:s'	=> \$o_crit,
         'w:s'   => \$o_warn,    	'warn:s'	=> \$o_warn,
-		't:i'   => \$o_timeout,       	'timeout:i'     => \$o_timeout,
         'n:s'   => \$o_descr,		'name:s'	=> \$o_descr,
         'r'     => \$o_noreg,           'noregexp'      => \$o_noreg,
         'f'     => \$o_path,           	'fullpath'      => \$o_path,
@@ -248,9 +239,6 @@ sub check_options {
     if (defined($o_version)) { p_version(); exit $ERRORS{"UNKNOWN"}};
     # check snmp information
     ($session_params) = Centreon::SNMP::Utils::check_snmp_options($ERRORS{'UNKNOWN'}, \%OPTION);
-	if (defined($o_timeout) && (isnotnum($o_timeout) || ($o_timeout < 2) || ($o_timeout > 60))) 
-	  { print "Timeout must be >1 and <60 !\n"; print_usage(); exit $ERRORS{"UNKNOWN"}}
-	if (!defined($o_timeout)) {$o_timeout=5;}
     # Check compulsory attributes
     if ( ! defined($o_descr) ) { print_usage(); exit $ERRORS{"UNKNOWN"}};
     @o_warnL=split(/,/,$o_warn);
@@ -297,15 +285,6 @@ sub check_options {
 ########## MAIN #######
 
 check_options();
-
-# Check gobal timeout if snmp screws up
-if (defined($TIMEOUT)) {
-    verb("Alarm at $TIMEOUT");
-    alarm($TIMEOUT);
-} else {
-    verb("no timeout defined : $o_timeout + 10");
-    alarm ($o_timeout+10);
-}
 
 my $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
