@@ -181,7 +181,6 @@ sub generic_performance_values_historic {
         my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
                 (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
         
-   #     $obj_esxd->{logger}->writeLogError(@perf_metric_ids);
         if ($interval == 20) {
             $perf_query_spec = PerfQuerySpec->new(entity => $view,
                                   metricId => $perf_metric_ids,

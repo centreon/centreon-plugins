@@ -13,11 +13,13 @@
   
 binary=/usr/bin/centreon_esxd
 servicename=$(basename "$0")
-options=""
+OPTIONS=""
 user=root
 timeout=60
 
 pidfile=/var/run/centreon_esxd.pid
+
+[ -e /etc/sysconfig/$servicename ] && . /etc/sysconfig/$servicename
 
 # Check if we can find the binary.
 if [ ! -x $binary ]; then
@@ -46,9 +48,9 @@ start() {
         fi
 
 	if [ "$(id -u -n)" = "$user" ] ; then
-		daemon ''$binary' '$options' > /dev/null 2>&1 &'
+		daemon ''$binary' '$OPTIONS' > /dev/null 2>&1 &'
 	else
-		daemon --user $user ''$binary' '$options' > /dev/null 2>&1 &'
+		daemon --user $user ''$binary' '$OPTIONS' > /dev/null 2>&1 &'
 	fi
 	pid=$(pidofproc $binary)
 	RETVAL=$?

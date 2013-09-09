@@ -1,0 +1,2 @@
+# centreon_esxd command line options
+OPTIONS="--logfile=/var/log/centreon/centreon_esxd.log --severity=error"
