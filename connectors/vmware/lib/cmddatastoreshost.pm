@@ -50,19 +50,15 @@ sub initArgs {
     $self->{lhost} = $_[0];
     $self->{warn} = (defined($_[1]) ? $_[1] : '');
     $self->{crit} = (defined($_[2]) ? $_[2] : '');
-    $self->{filter_ds} = (defined($_[3]) ? $_[3] : '');
+    $self->{ds} = (defined($_[3]) ? $_[3] : '');
+    $self->{filter} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
 }
 
 sub run {
     my $self = shift;
 
-    my %valid_ds = ();
     my $filter_ok = 0;
-    if ($self->{filter_ds} ne '') {
-        foreach (split /,/, $self->{filter_ds}) {
-            $valid_ds{$_} = 1;
-        }
-    }
+
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
         my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
         $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
@@ -111,8 +107,12 @@ sub run {
     my $output_critical_append = '';
     my $perfdata = '';
     foreach (keys %uuid_list) {
-        if ($self->{filter_ds} ne '' and !defined($valid_ds{$uuid_list{$_}})) {
-            next;
+        if ($self->{ds} ne '') {
+            if ($self->{filter} == 0 && $uuid_list{$_} !~ /^\Q$self->{ds}\E$/) {
+                next;
+            } elsif ($self->{filter} == 1 && $uuid_list{$_} !~ /$self->{ds}/) {
+                next;
+            }
         }
         if (defined($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}) and
             defined($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $_})) {
@@ -142,9 +142,9 @@ sub run {
         }
     }
 
-    if ($self->{filter_ds} ne '' and $filter_ok == 0) {
+    if ($self->{ds} ne '' and $filter_ok == 0) {
         $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status). "|Datastore names in filter are unknown.\n");
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status). "|Can't get a datastore with the filter '$self->{ds}'.\n");
         return ;
     }
     if ($output_critical ne "") {

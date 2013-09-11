@@ -29,7 +29,7 @@ my %OPTION = (
     on => undef,
     units => undef,
     free => undef,
-    filter => undef
+    filter => undef,
 );
 
 Getopt::Long::Configure('bundling');
@@ -50,6 +50,7 @@ GetOptions(
     "units=s"                   => \$OPTION{units},
     "light-perfdata"            => \$OPTION{'light-perfdata'},
     "datastore=s"               => \$OPTION{datastore},
+    
     "nic=s"                     => \$OPTION{nic},
 
     "older=i"                   => \$OPTION{older},
@@ -144,7 +145,8 @@ sub print_usage () {
     print "   -e (--esx-host)   Esx Host to check (required)\n";
     print "   -w (--warning)    Warning Threshold in ms (latency) (default none)\n";
     print "   -c (--critical)   Critical Threshold in ms (latency) (default none)\n";
-    print "   --filter-datastores   Datastores to verify (separated by coma)\n";
+    print "   --datastore       Datastores to check (can use a regexp with --filter)\n";
+    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "\n";
     print "'countvmhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -398,15 +400,20 @@ sub datastoreshost_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = '';
     }
-    if (!defined($OPTION{'filter-datastores'})) {
-        $OPTION{'filter-datastores'} = '';
+    if (!defined($OPTION{datastore})) {
+        $OPTION{datastore} = '';
+    }
+    if (defined($OPTION{filter})) {
+        $OPTION{filter} = 1;
+    } else {
+        $OPTION{filter} = 0;
     }
     return 0;
 }
 
 sub datastoreshost_get_str {
      return join($separatorin, 
-                ('datastoreshost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical} , $OPTION{'filter-datastores'}));
+                ('datastoreshost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical} , $OPTION{datastore}, $OPTION{filter}));
 }
 
 sub memhost_check_arg {
