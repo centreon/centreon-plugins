@@ -130,6 +130,7 @@ sub print_usage () {
     print "   --nic             Physical nic name to check (required)\n";
     print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
     print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+    print "   --filter          Use regexp for --nic option (can check multiple nics at once)\n";
     print "\n";
     print "'memhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -473,12 +474,17 @@ sub nethost_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = 90;
     }
+    if (defined($OPTION{filter})) {
+        $OPTION{filter} = 1;
+    } else {
+        $OPTION{filter} = 0;
+    }
     return 0;
 }
 
 sub nethost_get_str {
     return join($separatorin, 
-               ('nethost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{nic}, $OPTION{warning}, $OPTION{critical}));
+               ('nethost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{nic}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub countvmhost_check_arg {

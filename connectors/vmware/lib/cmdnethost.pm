@@ -52,8 +52,9 @@ sub initArgs {
     my $self = shift;
     $self->{lhost} = $_[0];
     $self->{pnic} = $_[1];
-    $self->{warn} = (defined($_[2]) ? $_[2] : 80);
-    $self->{crit} = (defined($_[3]) ? $_[3] : 90);
+    $self->{filter} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
+    $self->{warn} = (defined($_[3]) ? $_[3] : 80);
+    $self->{crit} = (defined($_[4]) ? $_[4] : 90);
 }
 
 sub run {
