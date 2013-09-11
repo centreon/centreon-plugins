@@ -370,7 +370,7 @@ sub vsphere_handler {
                     next;
                 }
 
-                my ($id) = split(/\|/, $data_element);
+                my ($id) = split(/\Q$self->{separatorin}\E/, $data_element);
                 if ($self->{vsphere_connected}) {
                     $self->{logger}->writeLogInfo("vpshere '" . $self->{whoaim} . "' handler asking: $data_element");
                     $self->{child_proc}->{$id} = {ctime => time()};
