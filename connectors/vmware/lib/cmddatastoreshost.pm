@@ -56,7 +56,6 @@ sub initArgs {
 
 sub run {
     my $self = shift;
-
     my $filter_ok = 0;
 
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
@@ -76,25 +75,55 @@ sub run {
                                                 $$result[0]->{'runtime.connectionState'}->val) == 0);
 
     my %uuid_list = ();
-    my %disk_name = ();
+    #my %disk_name = ();
+    my $instances = [];
+    if ($self->{ds} eq '') {
+        $instances =  ['*'];
+    }
     foreach (@{$$result[0]->{'config.fileSystemVolume.mountInfo'}}) {
         if ($_->volume->isa('HostVmfsVolume')) {
+            if ($self->{ds} ne '') {
+                if ($self->{filter} == 0 && $_->volume->name !~ /^\Q$self->{ds}\E$/) {
+                    next;
+                } elsif ($self->{filter} == 1 && $_->volume->name !~ /$self->{ds}/) {
+                    next;
+                }
+            }
+            
+            $filter_ok = 1;
             $uuid_list{$_->volume->uuid} = $_->volume->name;
+            push @$instances, $_->volume->uuid;
             # Not need. We are on Datastore level (not LUN level)
             #foreach my $extent (@{$_->volume->extent}) {
             #    $disk_name{$extent->diskName} = $_->volume->name;
             #}
         }
         if ($_->volume->isa('HostNasVolume')) {
+            if ($self->{ds} ne '') {
+                if ($self->{filter} == 0 && $_->volume->name !~ /^\Q$self->{ds}\E$/) {
+                    next;
+                } elsif ($self->{filter} == 1 && $_->volume->name !~ /$self->{ds}/) {
+                    next;
+                }
+            }
+
+            $filter_ok = 1;
             $uuid_list{basename($_->mountInfo->path)} = $_->volume->name;
+            push @$instances, basename($_->mountInfo->path);
         }
+    }
+    
+    if ($self->{ds} ne '' and $filter_ok == 0) {
+        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status). "|Can't get a datastore with the filter '$self->{ds}'.\n");
+        return ;
     }
 
     # Vsphere >= 4.1
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $$result[0], 
-                        [{'label' => 'datastore.totalReadLatency.average', 'instances' => ['*']},
-                        {'label' => 'datastore.totalWriteLatency.average', 'instances' => ['*']}],
+                        [{'label' => 'datastore.totalReadLatency.average', 'instances' => $instances},
+                        {'label' => 'datastore.totalWriteLatency.average', 'instances' => $instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
@@ -107,13 +136,6 @@ sub run {
     my $output_critical_append = '';
     my $perfdata = '';
     foreach (keys %uuid_list) {
-        if ($self->{ds} ne '') {
-            if ($self->{filter} == 0 && $uuid_list{$_} !~ /^\Q$self->{ds}\E$/) {
-                next;
-            } elsif ($self->{filter} == 1 && $uuid_list{$_} !~ /$self->{ds}/) {
-                next;
-            }
-        }
         if (defined($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}) and
             defined($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $_})) {
             my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $_}[0]));
@@ -136,17 +158,11 @@ sub run {
                     "write on '" . $uuid_list{$_} . "' is $write_counter ms");
                 $status = centreon::esxd::common::errors_mask($status, 'WARNING');
             }
-            
-            $filter_ok = 1;
+
             $perfdata .= " 'trl_" . $uuid_list{$_} . "'=" . $read_counter . "ms 'twl_" . $uuid_list{$_} . "'=" . $write_counter . 'ms';
         }
     }
 
-    if ($self->{ds} ne '' and $filter_ok == 0) {
-        $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status). "|Can't get a datastore with the filter '$self->{ds}'.\n");
-        return ;
-    }
     if ($output_critical ne "") {
         $output .= $output_append . "CRITICAL - Latency counter: $output_critical";
         $output_append = ". ";
