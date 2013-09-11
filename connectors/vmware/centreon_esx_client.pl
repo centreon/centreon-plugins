@@ -16,48 +16,53 @@ sub print_usage();
 sub print_revision($$);
 
 my %OPTION = (
-    "help" => undef, "version" => undef,
+    help => undef, version => undef,
     "esxd-host" => undef, "esxd-port" => 5700,
-    "vsphere" => '',
-    "usage" => undef,
+    vsphere => '',
+    usage => undef,
     "light-perfdata" => undef,
     "esx-host" => undef,
-    "datastore" => undef,
-    "nic" => undef,
-    "warning" => undef,
-    "critical" => undef,
-    "on" => undef,
+    datastore => undef,
+    nic => undef,
+    warning => undef,
+    critical => undef,
+    on => undef,
+    units => undef,
+    free => undef,
+    filter => undef
 );
 
 Getopt::Long::Configure('bundling');
 GetOptions(
-    "h|help"                    => \$OPTION{'help'},
-    "V|version"                 => \$OPTION{'version'},
+    "h|help"                    => \$OPTION{help},
+    "V|version"                 => \$OPTION{version},
     "H|centreon-esxd-host=s"    => \$OPTION{'esxd-host'},
     "P|centreon-esxd-port=i"    => \$OPTION{'esxd-port'},
 
-    "vsphere=s"                 => \$OPTION{'vsphere'},
+    "vsphere=s"                 => \$OPTION{vsphere},
 
-    "u|usage=s"                 => \$OPTION{'usage'},
+    "u|usage=s"                 => \$OPTION{usage},
     "e|esx-host=s"              => \$OPTION{'esx-host'},
-    "vm=s"                      => \$OPTION{'vm'},
+    "vm=s"                      => \$OPTION{vm},
     
-    "filter-datastores=s"       => \$OPTION{'filter-datastores'},
+    "filter"                    => \$OPTION{filter},
+    "free"                      => \$OPTION{free},
+    "units=s"                   => \$OPTION{units},
     "light-perfdata"            => \$OPTION{'light-perfdata'},
-    "datastore=s"               => \$OPTION{'datastore'},
-    "nic=s"                     => \$OPTION{'nic'},
+    "datastore=s"               => \$OPTION{datastore},
+    "nic=s"                     => \$OPTION{nic},
 
-    "older=i"                   => \$OPTION{'older'},
-    "warn"                      => \$OPTION{'warn'},
-    "crit"                      => \$OPTION{'crit'},
+    "older=i"                   => \$OPTION{older},
+    "warn"                      => \$OPTION{warn},
+    "crit"                      => \$OPTION{crit},
     
-    "on"                        => \$OPTION{'on'},
+    "on"                        => \$OPTION{on},
 
-    "w|warning=i"               => \$OPTION{'warning'},
-    "c|critical=i"              => \$OPTION{'critical'},
+    "w|warning=i"               => \$OPTION{warning},
+    "c|critical=i"              => \$OPTION{critical},
 
-    "warning2=i"            => \$OPTION{'warning2'},
-    "critical2=i"           => \$OPTION{'critical2'},
+    "warning2=i"                => \$OPTION{warning2},
+    "critical2=i"               => \$OPTION{critical2},
 );
 
 if (defined($OPTION{version})) {
@@ -95,8 +100,11 @@ sub print_usage () {
     print "\n";
     print "'datastore-usage':\n";
     print "   --datastore       Datastore name to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
-    print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+    print "   -w (--warning)    Warning Threshold (default 80)\n";
+    print "   -c (--critical)   Critical Threshold (default 90)\n";
+    print "   --units           Threshold units: %, MB (default is MB)\n";
+    print "   --free            Threshold is for free size\n";
+    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "\n";
     print "'datastore-io':\n";
     print "   --datastore       Datastore name to check (required)\n";
@@ -272,22 +280,41 @@ sub healthhost_get_str {
 
 sub datastoreusage_check_arg {
     if (!defined($OPTION{datastore})) {
-        print "Option --datastore is required\n";
+        print "Option --datastore is required.\n";
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
+    if (defined($OPTION{filter})) {
+        $OPTION{filter} = 1;
+    } else {
+        $OPTION{filter} = 0;
+    }
+    if (defined($OPTION{free})) {
+        $OPTION{free} = 1;
+    } else {
+        $OPTION{free} = 0;
+    }
     if (!defined($OPTION{warning})) {
-        $OPTION{warning} = 80;
+        $OPTION{warning} = ($OPTION{free} == 1) ? 20 : 80;
     }
     if (!defined($OPTION{critical})) {
-        $OPTION{critical} = 90;
+        $OPTION{critical} = ($OPTION{free} == 1) ? 10 : 90;
+    }
+    if (defined($OPTION{units})) {
+        if ($OPTION{units} ne '%' && $OPTION{units} ne 'MB') {
+            print "Option --units accept '%' or 'MB'.\n";
+            print_usage();
+            exit $ERRORS{UNKNOWN};
+        }
+    } else {
+        $OPTION{units} = '';
     }
     return 0;
 }
 
 sub datastoreusage_get_str {
     return join($separatorin, 
-               ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{warning}, $OPTION{critical}));
+               ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{free}, $OPTION{units}));
 }
 
 sub datastoreio_check_arg {

@@ -23,22 +23,30 @@ sub getCommandName {
 
 sub checkArgs {
     my $self = shift;
-    my ($ds, $warn, $crit) = @_;
+    my ($ds, $filter, $warn, $crit, $free, $units) = @_;
 
     if (!defined($ds) || $ds eq "") {
-        $self->{logger}->writeLogError("ARGS error: need datastore name");
+        $self->{logger}->writeLogError("ARGS error: need datastore name.");
         return 1;
     }
     if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
+        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number.");
         return 1;
     } 
     if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
+        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number.");
         return 1;
     }
-    if (defined($warn) && defined($crit) && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
+    if (defined($warn) && defined($crit) && (!defined($free) || $free != 1) && $warn > $crit) {
+        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold.");
+        return 1;
+    }
+    if (defined($warn) && defined($crit) && defined($free) && $free == 1 && $warn < $crit) {
+        $self->{logger}->writeLogError("ARGS error: warn threshold must be higher than crit threshold.");
+        return 1;
+    }
+    if (defined($units) && ($units !~ /^(%|MB)/)) {
+        $self->{logger}->writeLogError("ARGS error: units should be '%' or 'MB'.");
         return 1;
     }
     return 0;
@@ -47,14 +55,22 @@ sub checkArgs {
 sub initArgs {
     my $self = shift;
     $self->{ds} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : 80);
-    $self->{crit} = (defined($_[2]) ? $_[2] : 90);
+    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+    $self->{free} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
+    $self->{warn} = (defined($_[2]) ? $_[2] : (($self->{free} == 1) ? 20 : 80));
+    $self->{crit} = (defined($_[3]) ? $_[3] : (($self->{free} == 1) ? 10 : 90));
+    $self->{units} = (defined($_[5])) ? $_[5] : '%';
 }
 
 sub run {
     my $self = shift;
+    my %filters = ();
 
-    my %filters = ('name' => $self->{ds});
+    if ($self->{filter} == 0) {
+        $filters{name} =  qr/^\Q$self->{ds}\E$/;
+    } else {
+        $filters{name} = qr/$self->{ds}/;
+    }
     my @properties = ('summary');
 
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
@@ -62,27 +78,95 @@ sub run {
         return ;
     }
     
-    return if (centreon::esxd::common::datastore_state($self->{obj_esxd}, $self->{ds}, $$result[0]->summary->accessible) == 0);
-
     my $status = 0; # OK
     my $output = "";
+    my $output_append = '';
+    my $output_warning = '';
+    my $output_warning_append = '';
+    my $output_critical = '';
+    my $output_critical_append = '';
+    my $output_ok_unit = '';
+    my $perfdata = '';
+    my ($warn_threshold, $crit_threshold);
+    my ($pctwarn_threshold, $pctcrit_threshold) = ($self->{warn}, $self->{crit});
     
-    my $dsName = $$result[0]->summary->name;
-    my $capacity = $$result[0]->summary->capacity;
-    my $free = $$result[0]->summary->freeSpace;
-    my $pct = ($capacity - $free) / $capacity * 100;
-
-    my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
-    my $sizeD = $capacity / 1024 / 1024 / 1024;
-
-    $output = "Datastore $dsName - used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %) |used=".($capacity - $free)."o;;;0;".$capacity." size=".$capacity."o\n";
-    if ($pct >= $self->{warn}) {
-        $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+    if ($self->{units} eq '%' && $self->{free} == 1) {
+        $pctwarn_threshold = 100 - $self->{warn};
+        $pctcrit_threshold = 100 - $self->{crit};
     }
-    if ($pct > $self->{crit}) {
-        $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+    
+    foreach my $ds (@$result) {
+        if (!centreon::esxd::common::is_accessible($ds->summary->accessible)) {
+            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        "'" . $ds->summary->name . "' not accessible. Can be disconnected.");
+            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+            next;
+        }
+
+        my $dsName = $ds->summary->name;
+        my $capacity = $ds->summary->capacity;
+        my $free = $ds->summary->freeSpace;
+        
+        
+        if ($self->{units} eq 'MB' && $self->{free} == 1) {
+            $warn_threshold = $capacity - ($self->{warn} * 1024 * 1024);
+            $crit_threshold = $capacity - ($self->{crit} * 1024 * 1024);
+        } elsif ($self->{units} eq 'MB' && $self->{free} == 0) {
+            $warn_threshold = $self->{warn} * 1024 * 1024;
+            $crit_threshold = $self->{crit} * 1024 * 1024;
+        } else {
+            $warn_threshold = ($capacity * $pctwarn_threshold) / 100;
+            $crit_threshold = ($capacity * $pctcrit_threshold) / 100; 
+        }
+        
+        my $pct = ($capacity - $free) / $capacity * 100;
+
+        my $usedD = ($capacity - $free) / 1024 / 1024 / 1024;
+        my $sizeD = $capacity / 1024 / 1024 / 1024;
+
+        $output_ok_unit = "Datastore $dsName - used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %)";
+        
+        if ($self->{units} eq '%' && $pct >= $pctcrit_threshold) {
+            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        "'$dsName' used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %)");
+            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+        } elsif ($self->{units} eq '%' && $pct >= $pctwarn_threshold) {
+            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        "'$dsName' used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %)");
+            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+        } elsif ($self->{units} eq 'MB' && ($capacity - $free) >= $crit_threshold) {
+            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        "'$dsName' used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %)");
+            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+        } elsif ($self->{units} eq 'MB' && ($capacity - $free) >= $warn_threshold) {
+            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        "'$dsName' used ".sprintf("%.2f", $usedD)." Go / ".sprintf("%.2f", $sizeD)." Go (".sprintf("%.2f", $pct)." %)");
+            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+        }
+
+        if ($self->{filter} == 1) {
+            $perfdata .= " 'used_" . $dsName . "'=".($capacity - $free)."o;" . $warn_threshold . ";" . $crit_threshold . ";0;" . $capacity;
+        } else {
+            $perfdata .= " used=".($capacity - $free)."o;" . $warn_threshold . ";" . $crit_threshold . ";0;" . $capacity;
+        }
     }
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
+    
+    if ($output_critical ne "") {
+        $output .= $output_append . "CRITICAL - Datastore(s): $output_critical";
+        $output_append = ". ";
+    }
+    if ($output_warning ne "") {
+        $output .= $output_append . "WARNING - Datastore(s): $output_warning";
+    }
+    if ($status == 0) {
+        if ($self->{filter} == 1) {
+            $output = "All Datastore usages are ok";
+        } else {
+            $output = $output_ok_unit;
+        }
+    }
+    
+    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
 }
 
 1;

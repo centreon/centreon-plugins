@@ -294,6 +294,15 @@ sub performance_errors {
     return 0;
 }
 
+sub is_accessible {
+    my ($accessible) = @_;
+     
+    if ($accessible !~ /^true|1$/) {
+        return 0;
+    }
+    return 1;
+}
+
 sub datastore_state {
     my ($obj_esxd, $ds, $accessible) = @_;
     
