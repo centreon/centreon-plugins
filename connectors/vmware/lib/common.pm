@@ -200,14 +200,14 @@ sub generic_performance_values_historic {
                         #maxSample => 1);
         }
         my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => $perf_query_spec);
-        if (!$$perfdata[0]) {
-            $obj_esxd->print_response("-3|Error: Cannot get value for couters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+        if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
+            $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe you have call a wrong instance.\n");
             return undef;
         }
         foreach (@{$$perfdata[0]->value}) {
             $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
             if (!defined($_->value)) {
-                $obj_esxd->print_response("-3|Error: Cannot get value for couters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+                $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also).\n");
                 return undef;
             }
         }
@@ -289,7 +289,7 @@ sub get_entities_host {
 sub performance_errors {
     my ($obj_esxd, $values) = @_;
 
-    # Error counter not available or orther from function
+    # Error counter not available or other from function
     return 1 if (!defined($values) || scalar(keys(%$values)) <= 0);
     return 0;
 }

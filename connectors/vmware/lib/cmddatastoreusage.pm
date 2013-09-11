@@ -107,7 +107,6 @@ sub run {
         my $capacity = $ds->summary->capacity;
         my $free = $ds->summary->freeSpace;
         
-        
         if ($self->{units} eq 'MB' && $self->{free} == 1) {
             $warn_threshold = $capacity - ($self->{warn} * 1024 * 1024);
             $crit_threshold = $capacity - ($self->{crit} * 1024 * 1024);
