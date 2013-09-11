@@ -6,9 +6,10 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.4.1";
-my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3, 'DEPENDENT' => 4);
+my $VERSION = "1.5.0";
+my %ERRORS = (OK => 0, WARNING => 1, CRITICAL => 2, UNKNOWN => 3, DEPENDENT => 4);
 my $socket;
+my $separatorin = '~';
 
 sub print_help();
 sub print_usage();
@@ -59,14 +60,14 @@ GetOptions(
     "critical2=i"           => \$OPTION{'critical2'},
 );
 
-if (defined($OPTION{'version'})) {
+if (defined($OPTION{version})) {
     print_revision($PROGNAME, $VERSION);
-    exit $ERRORS{'OK'};
+    exit $ERRORS{OK};
 }
 
-if (defined($OPTION{'help'})) {
+if (defined($OPTION{help})) {
     print_help();
-    exit $ERRORS{'OK'};
+    exit $ERRORS{OK};
 }
 
 #############
@@ -218,7 +219,7 @@ sub myconnect {
                      PeerAddr => $OPTION{'esxd-host'},
                      PeerPort => $OPTION{'esxd-port'}))) {
         print "Cannot connect to on '$OPTION{'esxd-host'}': $!\n";
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     $socket->autoflush(1);
 }
@@ -231,116 +232,121 @@ sub maintenancehost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub maintenancehost_get_str {
-    return "maintenancehost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('maintenancehost', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub statushost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub statushost_get_str {
-    return "statushost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('statushost', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub healthhost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub healthhost_get_str {
-    return "healthhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('healthhost', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub datastoreusage_check_arg {
-    if (!defined($OPTION{'datastore'})) {
+    if (!defined($OPTION{datastore})) {
         print "Option --datastore is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     return 0;
 }
 
 sub datastoreusage_get_str {
-    return "datastore-usage|" . $OPTION{'vsphere'} . "|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub datastoreio_check_arg {
     if (!defined($OPTION{'datastore'})) {
         print "Option --datastore is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = '';
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = '';
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
     }
     return 0;
 }
 
 sub datastoreio_get_str {
-    return "datastore-io|" . $OPTION{'vsphere'} . "|" . $OPTION{'datastore'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('datastore-io', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub datastoresnapshots_check_arg {
-    if (!defined($OPTION{'datastore'})) {
+    if (!defined($OPTION{datastore})) {
         print "Option --datastore is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = '';
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = '';
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
     }
-    if (!defined($OPTION{'warning2'})) {
-        $OPTION{'warning2'} = '';
+    if (!defined($OPTION{warning2})) {
+        $OPTION{warning2} = '';
     }
-    if (!defined($OPTION{'critical2'})) {
-        $OPTION{'critical2'} = '';
+    if (!defined($OPTION{critical2})) {
+        $OPTION{critical2} = '';
     }
     return 0;
 }
 
 sub datastoresnapshots_get_str {
-    return "datastore-snapshots|" . $OPTION{'vsphere'} . "|" . $OPTION{'datastore'} 
-       . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'} . "|" . $OPTION{'warning2'} . "|" . $OPTION{'critical2'};
+     return join($separatorin, 
+               ('datastore-snapshots', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{warning}, $OPTION{critical}, $OPTION{warning2}, $OPTION{critical2}));
 }
 
 sub cpuhost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     if (!defined($OPTION{'light-perfdata'})) {
         $OPTION{'light-perfdata'} = 0;
@@ -349,20 +355,21 @@ sub cpuhost_check_arg {
 }
 
 sub cpuhost_get_str {
-    return "cpuhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'} . "|" . $OPTION{'light-perfdata'};
+    return join($separatorin, 
+               ('cpuhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}, $OPTION{'light-perfdata'}));
 }
 
 sub datastoreshost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = '';
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = '';
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
     }
     if (!defined($OPTION{'filter-datastores'})) {
         $OPTION{'filter-datastores'} = '';
@@ -371,244 +378,257 @@ sub datastoreshost_check_arg {
 }
 
 sub datastoreshost_get_str {
-    return "datastoreshost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'} . "|" . $OPTION{'filter-datastores'};
+     return join($separatorin, 
+                ('datastoreshost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical} , $OPTION{'filter-datastores'}));
 }
 
 sub memhost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     return 0;
 }
 
 sub memhost_get_str {
-    return "memhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+                ('memhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub swaphost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 0.8;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 0.8;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 1;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 1;
     }
     return 0;
 }
 
 sub swaphost_get_str {
-    return "swaphost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+                ('swaphost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub nethost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'nic'})) {
+    if (!defined($OPTION{nic})) {
         print "Option --nic is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     return 0;
 }
 
 sub nethost_get_str {
-    return "nethost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'nic'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('nethost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{nic}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub countvmhost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = '';
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = '';
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
     }
     return 0;
 }
 
 sub countvmhost_get_str {
-    return "countvmhost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('countvmhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub uptimehost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub uptimehost_get_str {
-    return "uptimehost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('uptimehost', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub cpuvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     return 0;
 }
 
 sub cpuvm_get_str {
-    return "cpuvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('cpuvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub toolsvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub toolsvm_get_str {
-    return "toolsvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'};
+    return join($separatorin, 
+               ('toolsvm', $OPTION{vsphere}, $OPTION{vm}));
 }
 
 sub snapshotvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'older'})) {
-        $OPTION{'older'} = '';
+    if (!defined($OPTION{older})) {
+        $OPTION{older} = '';
     }
-    if (!defined($OPTION{'warn'})) {
-        $OPTION{'warn'} = 0;
+    if (!defined($OPTION{warn})) {
+        $OPTION{warn} = 0;
     } else {
-        $OPTION{'warn'} = 1;
+        $OPTION{warn} = 1;
     }
-    if (!defined($OPTION{'crit'})) {
-        $OPTION{'crit'} = 0;
+    if (!defined($OPTION{crit})) {
+        $OPTION{crit} = 0;
     } else {
-        $OPTION{'crit'} = 1;
+        $OPTION{crit} = 1;
     }
     return 0;
 }
 
 sub snapshotvm_get_str {
-    return "snapshotvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'older'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};
+    return join($separatorin, 
+               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{older}, $OPTION{warn}, $OPTION{crit}));
 }
 
 sub datastoresvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = '';
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = '';
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
     }
     return 0;
 }
 
 sub datastoresvm_get_str {
-    return "datastoresvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('datastoresvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub memvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 80;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 80;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 90;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 90;
     }
     return 0;
 }
 
 sub memvm_get_str {
-    return "memvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('memvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub swapvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = 0.8;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 0.8;
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = 1;
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 1;
     }
     return 0;
 }
 
 sub swapvm_get_str {
-    return "swapvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('swapvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub thinprovisioningvm_check_arg {
-    if (!defined($OPTION{'vm'})) {
+    if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{'on'})) {
-        $OPTION{'on'} = 0;
+    if (!defined($OPTION{on})) {
+        $OPTION{on} = 0;
     } else {
-        $OPTION{'on'} = 1;
+        $OPTION{on} = 1;
     }
-    if (!defined($OPTION{'warn'})) {
-        $OPTION{'warn'} = 0;
+    if (!defined($OPTION{warn})) {
+        $OPTION{warn} = 0;
     } else {
-        $OPTION{'warn'} = 1;
+        $OPTION{warn} = 1;
     }
-    if (!defined($OPTION{'crit'})) {
-        $OPTION{'crit'} = 0;
+    if (!defined($OPTION{crit})) {
+        $OPTION{crit} = 0;
     } else {
-        $OPTION{'crit'} = 1;
+        $OPTION{crit} = 1;
     }
     return 0;
 }
 
 sub thinprovisioningvm_get_str {
-    return "thinprovisioningvm|" . $OPTION{'vsphere'} . "|" . $OPTION{'vm'} . "|" . $OPTION{'on'} . "|" . $OPTION{'warn'} . "|" . $OPTION{'crit'};
+    return join($separatorin, 
+               ('thinprovisioningvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{on}, $OPTION{warn}, $OPTION{crit}));
 }
 
 
@@ -617,7 +637,8 @@ sub listhost_check_arg {
 }
 
 sub listhost_get_str {
-    return "listhost|" . $OPTION{'vsphere'};
+    return join($separatorin, 
+               ('listhost', $OPTION{vsphere}));
 }
 
 sub listdatastore_check_arg {
@@ -625,20 +646,22 @@ sub listdatastore_check_arg {
 }
 
 sub listdatastore_get_str {
-    return "listdatastore|" . $OPTION{'vsphere'};
+    return join($separatorin, 
+               ('listdatastore', $OPTION{vsphere}));
 }
 
 sub listnichost_check_arg {
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
-        exit $ERRORS{'UNKNOWN'};
+        exit $ERRORS{UNKNOWN};
     }
     return 0;
 }
 
 sub listnichost_get_str {
-    return "listnichost|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('listnichost', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub getmap_check_arg {
@@ -649,21 +672,23 @@ sub getmap_check_arg {
 }
 
 sub getmap_get_str {
-    return "getmap|" . $OPTION{'vsphere'} . "|" . $OPTION{'esx-host'};
+    return join($separatorin, 
+               ('getmap', $OPTION{vsphere}, $OPTION{'esx-host'}));
 }
 
 sub stats_check_arg {
-    if (!defined($OPTION{'warning'})) {
-        $OPTION{'warning'} = "";
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = "";
     }
-    if (!defined($OPTION{'critical'})) {
-        $OPTION{'critical'} = "";
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = "";
     }
     return 0;
 }
 
 sub stats_get_str {
-    return "stats||" . $OPTION{'warning'} . "|" . $OPTION{'critical'};
+    return join($separatorin, 
+               ('stats', $OPTION{warning}, $OPTION{critical}));
 }
 
 #################
@@ -672,18 +697,18 @@ sub stats_get_str {
 if (!defined($OPTION{'esxd-host'})) {
     print "Option -H (--esxd-host) is required\n";
     print_usage();
-    exit $ERRORS{'UNKNOWN'};
+    exit $ERRORS{UNKNOWN};
 }
 
-if (!defined($OPTION{'usage'})) {
+if (!defined($OPTION{usage})) {
     print "Option -u (--usage) is required\n";
     print_usage();
-    exit $ERRORS{'UNKNOWN'};
+    exit $ERRORS{UNKNOWN};
 }
-if ($OPTION{'usage'} !~ /^(healthhost|datastore-usage|datastore-io|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{usage} !~ /^(healthhost|datastore-usage|datastore-io|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
     print "Usage value is unknown\n";
     print_usage();
-    exit $ERRORS{'UNKNOWN'};
+    exit $ERRORS{UNKNOWN};
 }
 
 $OPTION{'usage'} =~ s/-//g;
