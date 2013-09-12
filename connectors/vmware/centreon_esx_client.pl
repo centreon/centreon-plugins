@@ -61,11 +61,11 @@ GetOptions(
     
     "on"                        => \$OPTION{on},
 
-    "w|warning=i"               => \$OPTION{warning},
-    "c|critical=i"              => \$OPTION{critical},
+    "w|warning=f"               => \$OPTION{warning},
+    "c|critical=f"              => \$OPTION{critical},
 
-    "warning2=i"                => \$OPTION{warning2},
-    "critical2=i"               => \$OPTION{critical2},
+    "warning2=f"                => \$OPTION{warning2},
+    "critical2=f"               => \$OPTION{critical2},
 );
 
 if (defined($OPTION{version})) {
@@ -163,8 +163,10 @@ sub print_usage () {
     print "\n";
     print "'cpuvm':\n";
     print "   --vm              VM to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
-    print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+    print "   -w (--warning)    Warning Threshold in percent for cpu average (default 80)\n";
+    print "   -c (--critical)   Critical Threshold in percent for cpu average (default 90)\n";
+    print "   --warning2        Warning Threshold in percent for cpu ready (default 5)\n";
+    print "   --critical2       Critical Threshold in percent for cpu ready (default 10)\n";
     print "\n";
     print "'toolsvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -547,12 +549,18 @@ sub cpuvm_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = 90;
     }
+    if (!defined($OPTION{warning2})) {
+        $OPTION{warning2} = 5;
+    }
+    if (!defined($OPTION{critical2})) {
+        $OPTION{critical2} = 10;
+    }
     return 0;
 }
 
 sub cpuvm_get_str {
     return join($separatorin, 
-               ('cpuvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}));
+               ('cpuvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{warning}, $OPTION{critical}, $OPTION{warning2}, $OPTION{critical2}));
 }
 
 sub toolsvm_check_arg {
