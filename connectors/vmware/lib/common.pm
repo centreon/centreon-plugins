@@ -164,10 +164,14 @@ sub get_perf_metric_ids {
 }
 
 sub generic_performance_values_historic {
-    my ($obj_esxd, $view, $perfs, $interval) = @_;
+    my ($obj_esxd, $view, $perfs, $interval, $skip_undef_counter) = @_;
     my $counter = 0;
     my %results;
-
+    
+    if (!defined($skip_undef_counter)) {
+        
+    }
+    
     eval {
         my $perf_metric_ids = get_perf_metric_ids($obj_esxd, $perfs);
         return undef if (!defined($perf_metric_ids));
@@ -205,11 +209,14 @@ sub generic_performance_values_historic {
             return undef;
         }
         foreach (@{$$perfdata[0]->value}) {
-            $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
-            if (!defined($_->value)) {
+            if (defined($skip_undef_counter) && $skip_undef_counter == 1 && !defined($_->value)) {
+                results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
+                next;
+            } elsif (!defined($_->value)) {
                 $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also).\n");
                 return undef;
             }
+            $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
         }
     };
     if ($@) {
@@ -358,7 +365,7 @@ sub stats_info {
     $$args[1] = '' if (!defined($$args[1]));
     
     my $num_connection = scalar(keys(%{$obj_esxd->{sockets}}));
-    $output = "'$num_connection' total client connections | connection=$num_connection;$$args[0];$$args[1] requests=" . $obj_esxd->{counter};
+    $output = "'$num_connection' total client connections | connection=$num_connection;$$args[0];$$args[1];0; requests=" . $obj_esxd->{counter};
     if ($$args[1] ne '' and $num_connection >= $$args[1]) {
         $status = errors_mask($status, 'CRITICAL');
     } elsif ($$args[0] ne '' and $num_connection >= $$args[0]) {

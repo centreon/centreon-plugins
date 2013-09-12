@@ -29,6 +29,7 @@ my %OPTION = (
     on => undef,
     units => undef,
     free => undef,
+    skip_errors => undef,
     filter => undef,
 );
 
@@ -47,6 +48,7 @@ GetOptions(
     
     "filter"                    => \$OPTION{filter},
     "free"                      => \$OPTION{free},
+    "skip-errors"               => \$OPTION{skip_errors},
     "units=s"                   => \$OPTION{units},
     "light-perfdata"            => \$OPTION{'light-perfdata'},
     "datastore=s"               => \$OPTION{datastore},
@@ -106,6 +108,7 @@ sub print_usage () {
     print "   --units           Threshold units: %, MB (default is MB)\n";
     print "   --free            Threshold is for free size\n";
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
+    print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
     print "\n";
     print "'datastore-io':\n";
     print "   --datastore       Datastore name to check (required)\n";
@@ -131,6 +134,7 @@ sub print_usage () {
     print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
     print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
     print "   --filter          Use regexp for --nic option (can check multiple nics at once)\n";
+    print "   --skip-errors     Status OK if some nic are down (when you checks multiples)\n";
     print "\n";
     print "'memhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -297,6 +301,11 @@ sub datastoreusage_check_arg {
     } else {
         $OPTION{free} = 0;
     }
+    if (defined($OPTION{skip_errors})) {
+        $OPTION{skip_errors} = 1;
+    } else {
+        $OPTION{skip_errors} = 0;
+    }
     if (!defined($OPTION{warning})) {
         $OPTION{warning} = ($OPTION{free} == 1) ? 20 : 80;
     }
@@ -310,14 +319,14 @@ sub datastoreusage_check_arg {
             exit $ERRORS{UNKNOWN};
         }
     } else {
-        $OPTION{units} = '';
+        $OPTION{units} = '%';
     }
     return 0;
 }
 
 sub datastoreusage_get_str {
     return join($separatorin, 
-               ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{free}, $OPTION{units}));
+               ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{free}, $OPTION{units}, $OPTION{skip_errors}));
 }
 
 sub datastoreio_check_arg {
@@ -479,12 +488,17 @@ sub nethost_check_arg {
     } else {
         $OPTION{filter} = 0;
     }
+    if (defined($OPTION{skip_errors})) {
+        $OPTION{skip_errors} = 1;
+    } else {
+        $OPTION{skip_errors} = 0;
+    }
     return 0;
 }
 
 sub nethost_get_str {
     return join($separatorin, 
-               ('nethost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{nic}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}));
+               ('nethost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{nic}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{skip_errors}));
 }
 
 sub countvmhost_check_arg {

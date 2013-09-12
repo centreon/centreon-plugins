@@ -60,6 +60,7 @@ sub initArgs {
     $self->{warn} = (defined($_[2]) ? $_[2] : (($self->{free} == 1) ? 20 : 80));
     $self->{crit} = (defined($_[3]) ? $_[3] : (($self->{free} == 1) ? 10 : 90));
     $self->{units} = (defined($_[5])) ? $_[5] : '%';
+    $self->{skip_errors} = (defined($_[6]) && $_[6] == 1) ? 1 : 0;
 }
 
 sub run {
@@ -85,6 +86,8 @@ sub run {
     my $output_warning_append = '';
     my $output_critical = '';
     my $output_critical_append = '';
+    my $output_unknown = '';
+    my $output_unknown_append = '';
     my $output_ok_unit = '';
     my $perfdata = '';
     my ($warn_threshold, $crit_threshold);
@@ -97,9 +100,11 @@ sub run {
     
     foreach my $ds (@$result) {
         if (!centreon::esxd::common::is_accessible($ds->summary->accessible)) {
-            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                        "'" . $ds->summary->name . "' not accessible. Can be disconnected.");
-            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
+                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+            }
+            centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+                        "'" . $ds->summary->name . "' not accessible. Can be disconnected");
             next;
         }
 
@@ -150,6 +155,10 @@ sub run {
         }
     }
     
+    if ($output_unknown ne "") {
+        $output .= $output_append . "UNKNOWN - $output_unknown";
+        $output_append = ". ";
+    }
     if ($output_critical ne "") {
         $output .= $output_append . "CRITICAL - Datastore(s): $output_critical";
         $output_append = ". ";
@@ -159,9 +168,9 @@ sub run {
     }
     if ($status == 0) {
         if ($self->{filter} == 1) {
-            $output = "All Datastore usages are ok";
+            $output .= $output_append . "All Datastore usages are ok";
         } else {
-            $output = $output_ok_unit;
+            $output .= $output_append . $output_ok_unit;
         }
     }
     
