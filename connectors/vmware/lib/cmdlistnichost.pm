@@ -35,12 +35,19 @@ sub checkArgs {
 sub initArgs {
     my $self = shift;
     $self->{lhost} = $_[0];
+    $self->{xml} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+    $self->{show_attributes} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
 }
 
 sub run {
     my $self = shift;
     my %nic_in_vswitch = ();
 
+    if ($self->{show_attributes} == 1) {
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status(0) . "|<data><element>name</element></data>\n");
+        return ;
+    }
+    
     my %filters = ('name' => $self->{lhost});
     my @properties = ('config.network.pnic', 'config.network.vswitch');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
@@ -62,22 +69,30 @@ sub run {
     my $output_up_append = "";
     my $output_down_append = "";
     my $output_down_no_vswitch_append = "";
+    my $xml_output = '<data>';
     foreach (@{$$result[0]->{'config.network.pnic'}}) {
         if (defined($_->linkSpeed)) {
             $output_up .= $output_up_append . "'" . $_->device . "'";
             $output_up_append = ', ';
+            $xml_output .= '<element name="' . $_->device . '" />';
         } else {
             if (defined($nic_in_vswitch{$_->key})) {
                 $output_down .= $output_down_append . "'" . $_->device . "'";
                 $output_down_append = ', ';
+                $xml_output .= '<element name="' . $_->device . '" />';
             } else {
                 $output_down_no_vswitch .= $output_down_no_vswitch_append . "'" . $_->device . "'";
                 $output_down_no_vswitch_append = ', ';
             }
         }
     }
+    $xml_output .= '</data>';
 
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output_up. $output_down. $output_down_no_vswitch.\n");
+    if ($self->{xml} == 1) {
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$xml_output\n");
+    } else {
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output_up. $output_down. $output_down_no_vswitch.\n");
+    }
 }
 
 1;

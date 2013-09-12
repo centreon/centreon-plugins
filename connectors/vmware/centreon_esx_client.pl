@@ -31,6 +31,10 @@ my %OPTION = (
     free => undef,
     skip_errors => undef,
     filter => undef,
+    
+    # For Autodisco
+    xml => undef,
+    show_attributes => undef,
 );
 
 Getopt::Long::Configure('bundling');
@@ -66,6 +70,9 @@ GetOptions(
 
     "warning2=f"                => \$OPTION{warning2},
     "critical2=f"               => \$OPTION{critical2},
+    
+    "xml"                       => \$OPTION{xml},
+    "show-attributes"           => \$OPTION{show_attributes},
 );
 
 if (defined($OPTION{version})) {
@@ -202,10 +209,13 @@ sub print_usage () {
     print "   None\n";
     print "\n";
     print "'listdatastore':\n";
-    print "   None\n";
+    print "   --xml             centreon-autodiscovery xml format\n";
+    print "   --show-attributes centreon-autodiscovery attributes xml display\n";
     print "\n";
     print "'listnichost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
+    print "   --xml             centreon-autodiscovery xml format\n";
+    print "   --show-attributes centreon-autodiscovery attributes xml display\n";
     print "\n";
     print "'getmap':\n";
     print "   -e (--esx-host)   Esx Host to check\n";
@@ -704,12 +714,22 @@ sub listhost_get_str {
 }
 
 sub listdatastore_check_arg {
+    if (!defined($OPTION{xml})) {
+        $OPTION{xml} = 0;
+    } else {
+        $OPTION{xml} = 1;
+    }
+    if (!defined($OPTION{show_attributes})) {
+        $OPTION{show_attributes} = 0;
+    } else {
+        $OPTION{show_attributes} = 1;
+    }
     return 0;
 }
 
 sub listdatastore_get_str {
     return join($separatorin, 
-               ('listdatastore', $OPTION{vsphere}));
+               ('listdatastore', $OPTION{vsphere}, $OPTION{xml}, $OPTION{show_attributes}));
 }
 
 sub listnichost_check_arg {
@@ -718,12 +738,22 @@ sub listnichost_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
+    if (!defined($OPTION{xml})) {
+        $OPTION{xml} = 0;
+    } else {
+        $OPTION{xml} = 1;
+    }
+    if (!defined($OPTION{show_attributes})) {
+        $OPTION{show_attributes} = 0;
+    } else {
+        $OPTION{show_attributes} = 1;
+    }
     return 0;
 }
 
 sub listnichost_get_str {
     return join($separatorin, 
-               ('listnichost', $OPTION{vsphere}, $OPTION{'esx-host'}));
+               ('listnichost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{xml}, $OPTION{show_attributes}));
 }
 
 sub getmap_check_arg {
