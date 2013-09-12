@@ -184,6 +184,12 @@ sub print_usage () {
     print "   --warning         Warning threshold in seconds (default: 3 days)\n";
     print "   --critical        Critical threshold in seconds (default: 5 days)\n";
     print "\n";
+    print "'limitvm':\n";
+    print "   --vm              VM to check (required)\n";
+    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --warn            Warning threshold if set (default)\n";
+    print "   --crit            Critical threshold if set\n";
+    print "\n";
     print "'datastoresvm':\n";
     print "   --vm              VM to check (required)\n";
     print "   -w (--warning)    Warning Threshold in IOPS (default none)\n";
@@ -612,6 +618,35 @@ sub snapshotvm_get_str {
                ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}));
 }
 
+sub limitvm_check_arg {
+    if (!defined($OPTION{vm})) {
+        print "Option --vm is required\n";
+        print_usage();
+        exit $ERRORS{UNKNOWN};
+    }
+    if (defined($OPTION{filter})) {
+        $OPTION{filter} = 1;
+    } else {
+        $OPTION{filter} = 0;
+    }
+    if ((!defined($OPTION{warn}) && !defined($OPTION{crit})) || defined($OPTION{warn})) {
+        $OPTION{warn} = 1;
+    } else {
+        $OPTION{warn} = 0;
+    }
+    if (!defined($OPTION{crit})) {
+        $OPTION{crit} = 0;
+    } else {
+        $OPTION{crit} = 1;
+    }
+    return 0;
+}
+
+sub limitvm_get_str {
+    return join($separatorin, 
+               ('limitvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warn}, $OPTION{crit}));
+}
+
 sub datastoresvm_check_arg {
     if (!defined($OPTION{vm})) {
         print "Option --vm is required\n";
@@ -794,7 +829,7 @@ if (!defined($OPTION{usage})) {
     print_usage();
     exit $ERRORS{UNKNOWN};
 }
-if ($OPTION{usage} !~ /^(healthhost|datastore-usage|datastore-io|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{usage} !~ /^(healthhost|datastore-usage|datastore-io|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|limitvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
     print "Usage value is unknown\n";
     print_usage();
     exit $ERRORS{UNKNOWN};

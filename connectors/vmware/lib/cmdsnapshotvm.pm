@@ -122,7 +122,7 @@ sub run {
         $output_append = ". ";
     }
     if ($output_warning ne "") {
-        $output .= $output_append . "CRITICAL - Snapshots for VM older than " . ($self->{warning} / 86400) . " days: $output_warning";
+        $output .= $output_append . "WARNING - Snapshots for VM older than " . ($self->{warning} / 86400) . " days: $output_warning";
     }
     if ($status == 0) {
         if ($self->{filter} == 1) {
