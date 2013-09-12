@@ -180,9 +180,9 @@ sub print_usage () {
     print "\n";
     print "'snapshotvm':\n";
     print "   --vm              VM to check (required)\n";
-    print "   --older           If older than ms\n";
-    print "   --crit            Critical if: there is a snasphot, or a snapshot is older than (--older)\n";
-    print "   --warn            Warn if: there is a snasphot, or a snapshot is older than (--older)\n";
+    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --warning         Warning threshold in seconds (default: 3 days)\n";
+    print "   --critical        Critical threshold in seconds (default: 5 days)\n";
     print "\n";
     print "'datastoresvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -593,25 +593,23 @@ sub snapshotvm_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{older})) {
-        $OPTION{older} = '';
-    }
-    if (!defined($OPTION{warn})) {
-        $OPTION{warn} = 0;
+    if (defined($OPTION{filter})) {
+        $OPTION{filter} = 1;
     } else {
-        $OPTION{warn} = 1;
+        $OPTION{filter} = 0;
     }
-    if (!defined($OPTION{crit})) {
-        $OPTION{crit} = 0;
-    } else {
-        $OPTION{crit} = 1;
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = 86400 * 3;
+    }
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = 86400 * 5;
     }
     return 0;
 }
 
 sub snapshotvm_get_str {
     return join($separatorin, 
-               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{older}, $OPTION{warn}, $OPTION{crit}));
+               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}));
 }
 
 sub datastoresvm_check_arg {
@@ -702,7 +700,6 @@ sub thinprovisioningvm_get_str {
     return join($separatorin, 
                ('thinprovisioningvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{on}, $OPTION{warn}, $OPTION{crit}));
 }
-
 
 sub listhost_check_arg {
     return 0;
