@@ -44,7 +44,7 @@ require "@NAGIOS_PLUGINS@/Centreon/SNMP/Utils.pm";
 
 use vars qw($PROGNAME);
 use Getopt::Long;
-use vars qw($opt_V $opt_h $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S);
+use vars qw($opt_V $opt_h $opt_i $opt_n $opt_w $opt_c $opt_s $opt_T $opt_a $opt_r $opt_S $opt_o);
 
 my $centplugins_path = "@CENTPLUGINS_TMP@";
 my %ERRORS = ('OK' => 0, 'WARNING' => 1, 'CRITICAL' => 2, 'UNKNOWN' => 3);
@@ -69,6 +69,12 @@ my %OPTION = (
     "64-bits" => undef, "snmptimeout" => undef,
 
     "disable-warn-state" => undef
+);
+
+my %supported_oids = (
+    ifDescr => "IF_DESC",
+    ifAlias => "IF_ALIAS",
+    ifName => "IF_NAME"
 );
 
 # Catch UNKNOWN From GetOptions (like -i without value)
@@ -101,8 +107,10 @@ GetOptions
     "w=s" => \$opt_w, "warning=s"   => \$opt_w,
     "c=s" => \$opt_c, "critical=s"  => \$opt_c,
     "T=s" => \$opt_T, "r"           => \$opt_r,
-    "S" => \$opt_S,
-    "a=i" => \$opt_a, "cache=s"     => \$opt_a);
+    "S"   => \$opt_S,
+    "a=i" => \$opt_a, "cache=s"     => \$opt_a,
+    "o=s" => \$opt_o, "oid=s"       => \$opt_o
+);
 
 if ($opt_V) {
     print_revision($PROGNAME,'$Revision: 1.3 $');
@@ -140,6 +148,15 @@ if (!defined($opt_a)) {
     $opt_a = 3;
 }
 
+if (defined $opt_o) {
+    if (!exists $supported_oids{$opt_o}) {
+        print "Unsupported oid\n";
+        exit $ERRORS{UNKNOWN};
+    }
+} else {
+    $opt_o = 'ifDescr';
+}
+
 my $critical = 95;
 if ($opt_c && $opt_c =~ /[0-9]+/) {
     $critical = $opt_c;
@@ -169,7 +186,7 @@ if ($critical <= $warning){
 
 $session = Centreon::SNMP::Utils::connection($ERRORS{'UNKNOWN'}, $session_params);
 
-my $OID_DESC = $centreon{MIB2}{IF_DESC};
+my $OID_DESC = $centreon{MIB2}{$supported_oids{$opt_o}};
 my $OID_OPERSTATUS = $centreon{MIB2}{IF_OPERSTATUS};
 my @operstatus = ("up","down","testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
 
@@ -559,6 +576,7 @@ sub print_usage () {
     print "   --snmp-timeout    SNMP Timeout\n";
     print "   -s (--show)          Describes all interfaces number (debug mode)\n";
     print "   -i (--interface)     Set the interface number (2 by default)\n";
+    print "   -o (--oid)           Specify the OID used to retrieve the interface (ifDescr/ifAlias/ifName)\n";
     print "   -n (--name)          Allows to use interface name with option -i instead of interface oid index\n";
     print "                        (ex: -i \"eth0\" -n, -i \"VMware Virtual Ethernet Adapter for VMnet8\" -n\n";
     print "                        (choose an unique expression for each interface)\n";
