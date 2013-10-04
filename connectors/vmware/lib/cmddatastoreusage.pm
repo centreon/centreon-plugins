@@ -102,11 +102,14 @@ sub run {
         if (!centreon::esxd::common::is_accessible($ds->summary->accessible)) {
             if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
                 $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+                                                    "'" . $ds->summary->name . "' not accessible. Can be disconnected");
             }
-            centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                        "'" . $ds->summary->name . "' not accessible. Can be disconnected");
             next;
         }
+        
+        # capacity 0...
+        next if ($ds->summary->capacity <= 0);
 
         my $dsName = $ds->summary->name;
         my $capacity = $ds->summary->capacity;

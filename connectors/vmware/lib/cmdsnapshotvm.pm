@@ -50,6 +50,7 @@ sub initArgs {
     $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
     $self->{warning} = ((defined($_[2]) and $_[2] ne '') ? $_[2] : 86400 * 3);
     $self->{critical} = ((defined($_[3]) and $_[3] ne '') ? $_[3] : 86400 * 5);
+    $self->{consolidate} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
 }
 
 sub run {
@@ -68,7 +69,12 @@ sub run {
     } else {
         $filters{name} = qr/$self->{lvm}/;
     }
-    my @properties = ('snapshot.rootSnapshotList', 'name');
+    my @properties;
+    push @properties, 'snapshot.rootSnapshotList', 'name';
+    if ($self->{consolidate} == 1) {
+        push @properties, 'runtime.consolidationNeeded';
+    }
+
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     if (!defined($result)) {
         return ;
@@ -84,8 +90,16 @@ sub run {
     my $output_unknown = '';
     my $output_unknown_append = '';
     my $output_ok_unit = 'Snapshot(s) OK';
+    my $consolidate_vms = '';
+    my $consolidate_vms_append = '';
     
     foreach my $virtual (@$result) {
+        if ($self->{consolidate} == 1 && defined($virtual->{'runtime.consolidationNeeded'}) && ($virtual->{'runtime.consolidationNeeded'} == 1 || $virtual->{'runtime.consolidationNeeded'} =~ /^true$/i)) {
+            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+            $consolidate_vms .= $consolidate_vms_append . '[' . $virtual->{'name'} . ']';
+            $consolidate_vms_append = ', ';
+        }
+
         if (!defined($virtual->{'snapshot.rootSnapshotList'})) {
             next;
         }
@@ -96,7 +110,7 @@ sub run {
             if (!defined($create_time)) {
                 $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
                 centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                        "Can't Parse date '" . $snapshot->createTime . "' for vm '" . $virtual->{'name'} . "'");
+                        "Can't Parse date '" . $snapshot->createTime . "' for vm [" . $virtual->{'name'} . "]");
                 next;
             }
             if (time() - $create_time >= $self->{critical}) {
@@ -115,6 +129,10 @@ sub run {
     
     if ($output_unknown ne "") {
         $output .= $output_append . "UNKNOWN - $output_unknown";
+        $output_append = ". ";
+    }
+    if ($consolidate_vms ne "") {
+        $output .= $output_append . "CRITICAL - VMs need consolidation : " . $consolidate_vms;
         $output_append = ". ";
     }
     if ($output_critical ne "") {

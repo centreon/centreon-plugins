@@ -31,6 +31,9 @@ my %OPTION = (
     free => undef,
     skip_errors => undef,
     filter => undef,
+
+    consolidation => undef,
+    check_disk_limit => undef,
     
     # For Autodisco
     xml => undef,
@@ -64,12 +67,14 @@ GetOptions(
     "crit"                      => \$OPTION{crit},
     
     "on"                        => \$OPTION{on},
+    "check-consolidation"       => \$OPTION{consolidation},
+    "check-disk"                => \$OPTION{check_disk_limit},
 
-    "w|warning=f"               => \$OPTION{warning},
-    "c|critical=f"              => \$OPTION{critical},
+    "w|warning:f"               => \$OPTION{warning},
+    "c|critical:f"              => \$OPTION{critical},
 
-    "warning2=f"                => \$OPTION{warning2},
-    "critical2=f"               => \$OPTION{critical2},
+    "warning2:f"                => \$OPTION{warning2},
+    "critical2:f"               => \$OPTION{critical2},
     
     "xml"                       => \$OPTION{xml},
     "show-attributes"           => \$OPTION{show_attributes},
@@ -128,6 +133,8 @@ sub print_usage () {
     print "   -c (--critical)   Critical Threshold in bytes for all snapshots (default none)\n";
     print "   --warning2        Warning Threshold in bytes for one snapshot (default none)\n";
     print "   --critical2       Critical Threshold in bytes for one snapshot (default none)\n";
+    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
+    print "   --skip-errors     Status OK if not enough permissions or others errors (when you checks multiples)\n";
     print "\n";
     print "'cpuhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -179,16 +186,18 @@ sub print_usage () {
     print "   --vm              VM to check (required)\n";
     print "\n";
     print "'snapshotvm':\n";
-    print "   --vm              VM to check (required)\n";
-    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
-    print "   --warning         Warning threshold in seconds (default: 3 days)\n";
-    print "   --critical        Critical threshold in seconds (default: 5 days)\n";
+    print "   --vm                   VM to check (required)\n";
+    print "   --filter               Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --warning              Warning threshold in seconds (default: 3 days)\n";
+    print "   --critical             Critical threshold in seconds (default: 5 days)\n";
+    print "   --check-consolidation  Check if VM needs consolidation (since vsphere 5.0)\n";
     print "\n";
     print "'limitvm':\n";
-    print "   --vm              VM to check (required)\n";
-    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
-    print "   --warn            Warning threshold if set (default)\n";
-    print "   --crit            Critical threshold if set\n";
+    print "   --vm                  VM to check (required)\n";
+    print "   --filter              Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --warn                Warning threshold if set (default)\n";
+    print "   --crit                Critical threshold if set\n";
+    print "   --check-disk          Check Disk limits (since vsphere 5.0)\n";
     print "\n";
     print "'datastoresvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -242,9 +251,9 @@ sub print_help () {
 }
 
 sub print_revision($$) {
-        my $commandName = shift;
-        my $pluginRevision = shift;
-        print "$commandName v$pluginRevision (centreon-esxd)\n";
+    my $commandName = shift;
+    my $pluginRevision = shift;
+    print "$commandName v$pluginRevision (centreon-esxd)\n";
 }
 
 sub myconnect {
@@ -309,21 +318,9 @@ sub datastoreusage_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (defined($OPTION{filter})) {
-        $OPTION{filter} = 1;
-    } else {
-        $OPTION{filter} = 0;
-    }
-    if (defined($OPTION{free})) {
-        $OPTION{free} = 1;
-    } else {
-        $OPTION{free} = 0;
-    }
-    if (defined($OPTION{skip_errors})) {
-        $OPTION{skip_errors} = 1;
-    } else {
-        $OPTION{skip_errors} = 0;
-    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{free} = (defined($OPTION{free}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     if (!defined($OPTION{warning})) {
         $OPTION{warning} = ($OPTION{free} == 1) ? 20 : 80;
     }
@@ -385,12 +382,14 @@ sub datastoresnapshots_check_arg {
     if (!defined($OPTION{critical2})) {
         $OPTION{critical2} = '';
     }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     return 0;
 }
 
 sub datastoresnapshots_get_str {
      return join($separatorin, 
-               ('datastore-snapshots', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{warning}, $OPTION{critical}, $OPTION{warning2}, $OPTION{critical2}));
+               ('datastore-snapshots', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{warning2}, $OPTION{critical2}, $OPTION{skip_errors}));
 }
 
 sub cpuhost_check_arg {
@@ -431,11 +430,7 @@ sub datastoreshost_check_arg {
     if (!defined($OPTION{datastore})) {
         $OPTION{datastore} = '';
     }
-    if (defined($OPTION{filter})) {
-        $OPTION{filter} = 1;
-    } else {
-        $OPTION{filter} = 0;
-    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
     return 0;
 }
 
@@ -501,16 +496,8 @@ sub nethost_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = 90;
     }
-    if (defined($OPTION{filter})) {
-        $OPTION{filter} = 1;
-    } else {
-        $OPTION{filter} = 0;
-    }
-    if (defined($OPTION{skip_errors})) {
-        $OPTION{skip_errors} = 1;
-    } else {
-        $OPTION{skip_errors} = 0;
-    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     return 0;
 }
 
@@ -599,11 +586,8 @@ sub snapshotvm_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (defined($OPTION{filter})) {
-        $OPTION{filter} = 1;
-    } else {
-        $OPTION{filter} = 0;
-    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{consolidation} = (defined($OPTION{consolidation}) ? 1 : 0);
     if (!defined($OPTION{warning})) {
         $OPTION{warning} = 86400 * 3;
     }
@@ -615,7 +599,7 @@ sub snapshotvm_check_arg {
 
 sub snapshotvm_get_str {
     return join($separatorin, 
-               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}));
+               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{consolidation}));
 }
 
 sub limitvm_check_arg {
@@ -624,27 +608,20 @@ sub limitvm_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (defined($OPTION{filter})) {
-        $OPTION{filter} = 1;
-    } else {
-        $OPTION{filter} = 0;
-    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
     if ((!defined($OPTION{warn}) && !defined($OPTION{crit})) || defined($OPTION{warn})) {
         $OPTION{warn} = 1;
     } else {
         $OPTION{warn} = 0;
     }
-    if (!defined($OPTION{crit})) {
-        $OPTION{crit} = 0;
-    } else {
-        $OPTION{crit} = 1;
-    }
+    $OPTION{crit} = (defined($OPTION{crit}) ? 1 : 0);
+    $OPTION{check_disk_limit} = (defined($OPTION{check_disk_limit}) ? 1 : 0);
     return 0;
 }
 
 sub limitvm_get_str {
     return join($separatorin, 
-               ('limitvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warn}, $OPTION{crit}));
+               ('limitvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warn}, $OPTION{crit}, $OPTION{check_disk_limit}));
 }
 
 sub datastoresvm_check_arg {
@@ -713,21 +690,9 @@ sub thinprovisioningvm_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{on})) {
-        $OPTION{on} = 0;
-    } else {
-        $OPTION{on} = 1;
-    }
-    if (!defined($OPTION{warn})) {
-        $OPTION{warn} = 0;
-    } else {
-        $OPTION{warn} = 1;
-    }
-    if (!defined($OPTION{crit})) {
-        $OPTION{crit} = 0;
-    } else {
-        $OPTION{crit} = 1;
-    }
+    $OPTION{on} = (defined($OPTION{on}) ? 1 : 0);
+    $OPTION{warn} = (defined($OPTION{warn}) ? 1 : 0);
+    $OPTION{crit} = (defined($OPTION{crit}) ? 1 : 0);
     return 0;
 }
 
@@ -746,16 +711,8 @@ sub listhost_get_str {
 }
 
 sub listdatastore_check_arg {
-    if (!defined($OPTION{xml})) {
-        $OPTION{xml} = 0;
-    } else {
-        $OPTION{xml} = 1;
-    }
-    if (!defined($OPTION{show_attributes})) {
-        $OPTION{show_attributes} = 0;
-    } else {
-        $OPTION{show_attributes} = 1;
-    }
+    $OPTION{xml} = (defined($OPTION{xml}) ? 1 : 0);
+    $OPTION{show_attributes} = (defined($OPTION{show_attributes}) ? 1 : 0);
     return 0;
 }
 
@@ -770,16 +727,8 @@ sub listnichost_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
-    if (!defined($OPTION{xml})) {
-        $OPTION{xml} = 0;
-    } else {
-        $OPTION{xml} = 1;
-    }
-    if (!defined($OPTION{show_attributes})) {
-        $OPTION{show_attributes} = 0;
-    } else {
-        $OPTION{show_attributes} = 1;
-    }
+    $OPTION{xml} = (defined($OPTION{xml}) ? 1 : 0);
+    $OPTION{show_attributes} = (defined($OPTION{show_attributes}) ? 1 : 0);
     return 0;
 }
 

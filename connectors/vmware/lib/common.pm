@@ -121,7 +121,7 @@ sub get_view {
 
 sub search_in_datastore {
     my $obj_esxd = shift;
-    my ($ds_browse, $ds_name, $query) = @_;
+    my ($ds_browse, $ds_name, $query, $return) = @_;
     my $result;
     
     my $files = FileQueryFlags->new(fileSize => 1,
@@ -136,6 +136,7 @@ sub search_in_datastore {
                                         searchSpec=>$hostdb_search_spec);
     };
     if ($@) {
+        return (undef, $@) if (defined($return) && $return == 1);
         vmware_error($obj_esxd, $@);
         return undef;
     }

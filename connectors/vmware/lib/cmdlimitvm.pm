@@ -38,6 +38,7 @@ sub initArgs {
     $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
     $self->{warn} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
     $self->{crit} = (defined($_[3]) && $_[3] == 1) ? 1 : 0;
+    $self->{disk} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
     if ($self->{warn} == 0 && $self->{crit} == 0) {
         $self->{warn} = 1;
     }
@@ -53,7 +54,12 @@ sub run {
     } else {
         $filters{name} = qr/$self->{lvm}/;
     }
-    my @properties = ('name', 'config.hardware.device', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit');
+    my @properties;
+    push @properties, 'name', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit';
+    if ($self->{disk} == 1) {
+         push @properties, 'config.hardware.device';
+    }
+
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     if (!defined($result)) {
         return ;
@@ -92,18 +98,20 @@ sub run {
         }
         
         # Disk
-        foreach my $device (@{$virtual->{'config.hardware.device'}}) {
-            if ($device->isa('VirtualDisk')) {
-                if ($self->{crit} == 1 && defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                    $limit_set_crit .= "/DISK"
-                } elsif ($self->{warn} == 1 && defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                    $limit_set_warn .= "/DISK"
+        if ($self->{disk} == 1) {
+            foreach my $device (@{$virtual->{'config.hardware.device'}}) {
+                if ($device->isa('VirtualDisk')) {
+                   if ($self->{crit} == 1 && defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
+                       $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                       $limit_set_crit .= "/DISK"
+                   } elsif ($self->{warn} == 1 && defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
+                       $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                       $limit_set_warn .= "/DISK"
+                   }
                 }
             }
         }
-        
+
         # Set
         if ($limit_set_crit ne '') {
              centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
