@@ -39,6 +39,7 @@ sub initArgs {
     $self->{warn} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
     $self->{crit} = (defined($_[3]) && $_[3] == 1) ? 1 : 0;
     $self->{disk} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
+    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
     if ($self->{warn} == 0 && $self->{crit} == 0) {
         $self->{warn} = 1;
     }
@@ -55,7 +56,7 @@ sub run {
         $filters{name} = qr/$self->{lvm}/;
     }
     my @properties;
-    push @properties, 'name', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit';
+    push @properties, 'name', 'runtime.connectionState', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit';
     if ($self->{disk} == 1) {
          push @properties, 'config.hardware.device';
     }
@@ -76,6 +77,15 @@ sub run {
     my $output_unknown_append = '';
     
     foreach my $virtual (@$result) {
+        if (!centreon::esxd::common::is_connected($virtual->{'runtime.connectionState'}->val)) {
+            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
+                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+                                                    "'" . $virtual->{name} . "' not connected");
+            }
+            next;
+        }
+    
         my $limit_set_warn = '';
         my $limit_set_crit = '';
 
@@ -115,10 +125,10 @@ sub run {
         # Set
         if ($limit_set_crit ne '') {
              centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                    "[" . $virtual->{'name'}. "]$limit_set_crit");
+                    "[" . $virtual->{name}. "]$limit_set_crit");
         } elsif ($limit_set_warn ne '') {
             centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                    "[" . $virtual->{'name'}. "]$limit_set_warn");
+                    "[" . $virtual->{name}. "]$limit_set_warn");
         }
         
     }

@@ -58,9 +58,9 @@ sub connect_vsphere {
         alarm(0);
     };
     if($@) {
-        $logger->writeLogError("'$whoaim' No response from VirtualCentre server") if($@ =~ /TIMEOUT/);
+        $logger->writeLogError("'$whoaim' No response from VirtualCenter server") if($@ =~ /TIMEOUT/);
         $logger->writeLogError("'$whoaim' You need to upgrade HTTP::Message!") if($@ =~ /HTTP::Message/);
-        $logger->writeLogError("'$whoaim' Login to VirtualCentre server failed: $@");
+        $logger->writeLogError("'$whoaim' Login to VirtualCenter server failed: $@");
         return 1;
     }
 #    eval {
@@ -306,6 +306,24 @@ sub is_accessible {
     my ($accessible) = @_;
      
     if ($accessible !~ /^true|1$/) {
+        return 0;
+    }
+    return 1;
+}
+
+sub is_connected {
+    my ($connection_state) = @_;
+     
+    if ($connection_state !~ /^connected$/i) {
+        return 0;
+    }
+    return 1;
+}
+
+sub is_running {
+    my ($power_state) = @_;
+    
+    if ($power_state !~ /^poweredOn$/i) {
         return 0;
     }
     return 1;

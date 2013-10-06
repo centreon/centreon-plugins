@@ -30,6 +30,7 @@ my %OPTION = (
     units => undef,
     free => undef,
     skip_errors => undef,
+    skip_not_running => undef,
     filter => undef,
 
     consolidation => undef,
@@ -53,9 +54,11 @@ GetOptions(
     "e|esx-host=s"              => \$OPTION{'esx-host'},
     "vm=s"                      => \$OPTION{vm},
     
+    "skip-errors"               => \$OPTION{skip_errors},
+    "skip-not-running"          => \$OPTION{skip_not_running},
+    
     "filter"                    => \$OPTION{filter},
     "free"                      => \$OPTION{free},
-    "skip-errors"               => \$OPTION{skip_errors},
     "units=s"                   => \$OPTION{units},
     "light-perfdata"            => \$OPTION{'light-perfdata'},
     "datastore=s"               => \$OPTION{datastore},
@@ -99,10 +102,10 @@ sub print_usage () {
     print $PROGNAME."\n";
     print "   -V (--version)    Plugin version\n";
     print "   -h (--help)       usage help\n";
-    print "   -H              centreon-esxd Host (required)\n";
-    print "   -P              centreon-esxd Port (default 5700)\n";
-    print "   --vsphere        vsphere name (default: none)\n";
-    print "   -u (--usage)        What to check. The list and args (required)\n";
+    print "   -H                centreon-esxd Host (required)\n";
+    print "   -P                centreon-esxd Port (default 5700)\n";
+    print "   --vsphere         vsphere name (default: none)\n";
+    print "   -u (--usage)       What to check. The list and args (required)\n";
     print "\n";
     print "'healthhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -184,6 +187,8 @@ sub print_usage () {
     print "\n";
     print "'toolsvm':\n";
     print "   --vm              VM to check (required)\n";
+    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
     print "\n";
     print "'snapshotvm':\n";
     print "   --vm                   VM to check (required)\n";
@@ -191,13 +196,16 @@ sub print_usage () {
     print "   --warning              Warning threshold in seconds (default: 3 days)\n";
     print "   --critical             Critical threshold in seconds (default: 5 days)\n";
     print "   --check-consolidation  Check if VM needs consolidation (since vsphere 5.0)\n";
+    print "   --skip-errors          Status OK if vms are disconnected (when you checks multiples)\n";
+    print "   --skip-not-running     Skip snapshots from vms not running\n";
     print "\n";
     print "'limitvm':\n";
-    print "   --vm                  VM to check (required)\n";
-    print "   --filter              Use regexp for --vm option (can check multiples vm at once)\n";
-    print "   --warn                Warning threshold if set (default)\n";
-    print "   --crit                Critical threshold if set\n";
-    print "   --check-disk          Check Disk limits (since vsphere 5.0)\n";
+    print "   --vm              VM to check (required)\n";
+    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --warn            Warning threshold if set (default)\n";
+    print "   --crit            Critical threshold if set\n";
+    print "   --check-disk      Check Disk limits (since vsphere 5.0)\n";
+    print "   --skip-errors     Status OK if vms are disconencted (when you checks multiples)\n";
     print "\n";
     print "'datastoresvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -216,9 +224,11 @@ sub print_usage () {
     print "\n";
     print "'thinprovisioningvm':\n";
     print "   --vm              VM to check (required)\n";
+    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
     print "   --on              Warn or critical if thinprovisioning set\n";
     print "   --crit            Critical\n";
     print "   --warn            Warn\n";
+    print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
     print "\n";
     print "'listhost':\n";
     print "   None\n";
@@ -572,12 +582,14 @@ sub toolsvm_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     return 0;
 }
 
 sub toolsvm_get_str {
     return join($separatorin, 
-               ('toolsvm', $OPTION{vsphere}, $OPTION{vm}));
+               ('toolsvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{skip_errors}));
 }
 
 sub snapshotvm_check_arg {
@@ -588,6 +600,8 @@ sub snapshotvm_check_arg {
     }
     $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
     $OPTION{consolidation} = (defined($OPTION{consolidation}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
+    $OPTION{skip_not_running} = (defined($OPTION{skip_not_running}) ? 1 : 0);
     if (!defined($OPTION{warning})) {
         $OPTION{warning} = 86400 * 3;
     }
@@ -599,7 +613,7 @@ sub snapshotvm_check_arg {
 
 sub snapshotvm_get_str {
     return join($separatorin, 
-               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{consolidation}));
+               ('snapshotvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{consolidation}, $OPTION{skip_errors}, $OPTION{skip_not_running}));
 }
 
 sub limitvm_check_arg {
@@ -609,6 +623,7 @@ sub limitvm_check_arg {
         exit $ERRORS{UNKNOWN};
     }
     $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     if ((!defined($OPTION{warn}) && !defined($OPTION{crit})) || defined($OPTION{warn})) {
         $OPTION{warn} = 1;
     } else {
@@ -621,7 +636,7 @@ sub limitvm_check_arg {
 
 sub limitvm_get_str {
     return join($separatorin, 
-               ('limitvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warn}, $OPTION{crit}, $OPTION{check_disk_limit}));
+               ('limitvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{warn}, $OPTION{crit}, $OPTION{check_disk_limit}, $OPTION{skip_errors}));
 }
 
 sub datastoresvm_check_arg {
@@ -693,12 +708,14 @@ sub thinprovisioningvm_check_arg {
     $OPTION{on} = (defined($OPTION{on}) ? 1 : 0);
     $OPTION{warn} = (defined($OPTION{warn}) ? 1 : 0);
     $OPTION{crit} = (defined($OPTION{crit}) ? 1 : 0);
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     return 0;
 }
 
 sub thinprovisioningvm_get_str {
     return join($separatorin, 
-               ('thinprovisioningvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{on}, $OPTION{warn}, $OPTION{crit}));
+               ('thinprovisioningvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{on}, $OPTION{warn}, $OPTION{crit}, $OPTION{skip_errors}));
 }
 
 sub listhost_check_arg {

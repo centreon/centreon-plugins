@@ -51,6 +51,8 @@ sub initArgs {
     $self->{warning} = ((defined($_[2]) and $_[2] ne '') ? $_[2] : 86400 * 3);
     $self->{critical} = ((defined($_[3]) and $_[3] ne '') ? $_[3] : 86400 * 5);
     $self->{consolidate} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
+    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
+    $self->{skip_not_running} = (defined($_[6]) && $_[6] == 1) ? 1 : 0;
 }
 
 sub run {
@@ -70,7 +72,7 @@ sub run {
         $filters{name} = qr/$self->{lvm}/;
     }
     my @properties;
-    push @properties, 'snapshot.rootSnapshotList', 'name';
+    push @properties, 'snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState';
     if ($self->{consolidate} == 1) {
         push @properties, 'runtime.consolidationNeeded';
     }
@@ -94,6 +96,20 @@ sub run {
     my $consolidate_vms_append = '';
     
     foreach my $virtual (@$result) {
+        if (!centreon::esxd::common::is_connected($virtual->{'runtime.connectionState'}->val)) {
+            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
+                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+                                                    "'" . $virtual->{name} . "' not connected");
+            }
+            next;
+        }
+        
+        if ($self->{skip_not_running} == 1 && 
+            !centreon::esxd::common::is_running($virtual->{'runtime.powerState'}->val)) {
+            next;
+        }
+    
         if ($self->{consolidate} == 1 && defined($virtual->{'runtime.consolidationNeeded'}) && ($virtual->{'runtime.consolidationNeeded'} == 1 || $virtual->{'runtime.consolidationNeeded'} =~ /^true$/i)) {
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
             $consolidate_vms .= $consolidate_vms_append . '[' . $virtual->{'name'} . ']';
