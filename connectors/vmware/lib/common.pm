@@ -165,19 +165,15 @@ sub get_perf_metric_ids {
 }
 
 sub generic_performance_values_historic {
-    my ($obj_esxd, $view, $perfs, $interval, $skip_undef_counter) = @_;
+    my ($obj_esxd, $views, $perfs, $interval, $skip_undef_counter, $multiples) = @_;
     my $counter = 0;
     my %results;
-    
-    if (!defined($skip_undef_counter)) {
-        
-    }
     
     eval {
         my $perf_metric_ids = get_perf_metric_ids($obj_esxd, $perfs);
         return undef if (!defined($perf_metric_ids));
 
-        my $perf_query_spec;
+        my @perf_query_spec;
         my $tstamp = time();
         my (@t) = gmtime($tstamp - $interval);
         my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
@@ -186,38 +182,48 @@ sub generic_performance_values_historic {
         my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
                 (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
         
-        if ($interval == 20) {
-            $perf_query_spec = PerfQuerySpec->new(entity => $view,
-                                  metricId => $perf_metric_ids,
-                                  format => 'normal',
-                                  intervalId => 20,
-                                  startTime => $startTime,
-                                  endTime => $endTime,
-                                  maxSample => 1);
-        } else {
-            $perf_query_spec = PerfQuerySpec->new(entity => $view,
-                         metricId => $perf_metric_ids,
-                         format => 'normal',
-                         intervalId => $interval,
-                         startTime => $startTime,
-                         endTime => $endTime
-                        );
-                        #maxSample => 1);
+        foreach (@$views) {
+            if ($interval == 20) {
+                push @perf_query_spec, PerfQuerySpec->new(entity => $_,
+                                        metricId => $perf_metric_ids,
+                                        format => 'normal',
+                                        intervalId => 20,
+                                        startTime => $startTime,
+                                        endTime => $endTime,
+                                        maxSample => 1);
+            } else {
+                push @perf_query_spec, PerfQuerySpec->new(entity => $_,
+                                        metricId => $perf_metric_ids,
+                                        format => 'normal',
+                                        intervalId => $interval,
+                                        startTime => $startTime,
+                                        endTime => $endTime
+                                        );
+                                        #maxSample => 1);
+            }
         }
-        my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => $perf_query_spec);
+        my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
+
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe you have call a wrong instance.\n");
             return undef;
         }
-        foreach (@{$$perfdata[0]->value}) {
-            if (defined($skip_undef_counter) && $skip_undef_counter == 1 && !defined($_->value)) {
-                results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
-                next;
-            } elsif (!defined($_->value)) {
-                $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also).\n");
-                return undef;
+        foreach my $val (@$perfdata) {
+            foreach (@{$val->{value}}) {
+                if (defined($skip_undef_counter) && $skip_undef_counter == 1 && !defined($_->value)) {
+                    $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
+                    next;
+                } elsif (!defined($_->value)) {
+                    $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+                    return undef;
+                }
+                
+                if (defined($multiples) && $multiples == 1) {
+                    $results{$val->{entity}->{value} . ":" . $_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                } else {
+                    $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                }
             }
-            $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
         }
     };
     if ($@) {

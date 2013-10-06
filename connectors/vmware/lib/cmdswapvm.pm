@@ -72,7 +72,7 @@ sub run {
                                                 $$result[0]->{'runtime.powerState'}->val) == 0);
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'mem.swapinRate.average', 'instances' => ['']},
                          {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});

@@ -88,7 +88,7 @@ sub run {
     my @instances = ('*');
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances},
                          {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
                          {'label' => 'cpu.ready.summation', 'instances' => \@instances}],

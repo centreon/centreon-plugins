@@ -122,7 +122,7 @@ sub run {
     # Vsphere >= 4.1
     # You get counters even if datastore is disconnect...
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'datastore.totalReadLatency.average', 'instances' => $instances},
                         {'label' => 'datastore.totalWriteLatency.average', 'instances' => $instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});

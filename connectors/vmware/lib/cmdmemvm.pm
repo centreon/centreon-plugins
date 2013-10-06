@@ -74,7 +74,7 @@ sub run {
     my $memory_size = $$result[0]->{'summary.config.memorySizeMB'} * 1024 * 1024;
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'mem.active.average', 'instances' => ['']},
                          {'label' => 'mem.overhead.average', 'instances' => ['']},
                          {'label' => 'mem.vmmemctl.average', 'instances' => ['']},

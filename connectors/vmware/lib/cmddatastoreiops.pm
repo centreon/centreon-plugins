@@ -1,5 +1,5 @@
 
-package centreon::esxd::cmddatastoresvm;
+package centreon::esxd::cmddatastoreiops;
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ sub new {
     my $self  = {};
     $self->{logger} = shift;
     $self->{obj_esxd} = shift;
-    $self->{commandName} = 'datastoresvm';
+    $self->{commandName} = 'datastore-iops';
     
     bless $self, $class;
     return $self;
@@ -23,10 +23,10 @@ sub getCommandName {
 
 sub checkArgs {
     my $self = shift;
-    my ($lvm, $warn, $crit) = @_;
+    my ($ds, $warn, $crit) = @_;
 
-    if (!defined($lvm) || $lvm eq "") {
-        $self->{logger}->writeLogError("ARGS error: need vm name");
+    if (!defined($ds) || $ds eq "") {
+        $self->{logger}->writeLogError("ARGS error: need datastore name");
         return 1;
     }
     if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
@@ -46,9 +46,11 @@ sub checkArgs {
 
 sub initArgs {
     my $self = shift;
-    $self->{lvm} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : '');
-    $self->{crit} = (defined($_[2]) ? $_[2] : '');
+    $self->{ds} = $_[0];
+    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+    $self->{warn} = (defined($_[2]) ? $_[2] : '');
+    $self->{crit} = (defined($_[3]) ? $_[3] : '');
+    $self->{skip_errors} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
 }
 
 sub run {
@@ -60,33 +62,23 @@ sub run {
         return ;
     }
 
-    my %filters = ('name' => $self->{lvm});
-    my @properties = ('datastore', 'runtime.connectionState', 'runtime.powerState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
+    my %filters = ();
+    if ($self->{filter} == 0) {
+        $filters{name} =  qr/^\Q$self->{ds}\E$/;
+    } else {
+        $filters{name} = qr/$self->{ds}/;
+    }
+
+    my @properties = ('summary.accessible', 'summary.name', 'vm', 'info');
+    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
     
-    return if (centreon::esxd::common::vm_state($self->{obj_esxd}, $self->{lvm}, 
-                                                $$result[0]->{'runtime.connectionState'}->val,
-                                                $$result[0]->{'runtime.powerState'}->val) == 0);
-
-    my @ds_array = ();
-    foreach my $entity_view (@$result) {
-        if (defined $entity_view->datastore) {
-                @ds_array = (@ds_array, @{$entity_view->datastore});
-        }
-    }
-    @properties = ('info');
-    my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@ds_array, \@properties);
-    if (!defined($result2)) {
-        return ;
-    }
-
     #my %uuid_list = ();
     my %disk_name = ();
     my %datastore_lun = ();
-    foreach (@$result2) {
+    foreach (@$result) {
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
             # Not need. We are on Datastore level (not LUN level)
@@ -102,14 +94,46 @@ sub run {
         #}
     }
 
+    use Data::Dumper;
+    
+    my @vm_array = ();
+    my %added_vm = ();
+    foreach my $entity_view (@$result) {
+        if (defined($entity_view->vm)) {
+            foreach (@{$entity_view->vm}) {
+                next if (defined($added_vm{$_->{value}}));
+                push @vm_array, $_;
+                $added_vm{$_->{value}} = 1;
+            }
+        }
+    }
+
+    @properties = ('name', 'runtime.connectionState');
+    my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
+    if (!defined($result2)) {
+        return ;
+    }
+    
+    my %ref_ids_vm = ();
+    foreach (@$result2) {
+        $ref_ids_vm{$_->{mo_ref}->{value}} = $_->{name};
+    }
+    
+    print STDERR Data::Dumper::Dumper(%ref_ids_vm);
+
     # Vsphere >= 4.1
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $result, 
+                        $result2, 
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{obj_esxd}->{perfcounter_speriod});
+                        $self->{obj_esxd}->{perfcounter_speriod}, 1, 1);
+    print STDERR Data::Dumper::Dumper($values); 
+    return ;                    
+    
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
+    
+    
     foreach (keys %$values) {
         my ($id, $disk_name) = split(/:/);
         $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $values->{$_}[0];

@@ -125,6 +125,13 @@ sub print_usage () {
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
     print "\n";
+    print "'datastore-iops':\n";
+    print "   --datastore       Datastore name to check (required)\n";
+    print "   -w (--warning)    Warning Threshold (default none)\n";
+    print "   -c (--critical)   Critical Threshold (default none)\n";
+    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
+    print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
+    print "\n";
     print "'datastore-io':\n";
     print "   --datastore       Datastore name to check (required)\n";
     print "   -w (--warning)    Warning Threshold in kBps (default none)\n";
@@ -354,8 +361,30 @@ sub datastoreusage_get_str {
                ('datastore-usage', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{free}, $OPTION{units}, $OPTION{skip_errors}));
 }
 
+sub datastoreiops_check_arg {
+    if (!defined($OPTION{datastore})) {
+        print "Option --datastore is required\n";
+        print_usage();
+        exit $ERRORS{UNKNOWN};
+    }
+    if (!defined($OPTION{warning})) {
+        $OPTION{warning} = '';
+    }
+    if (!defined($OPTION{critical})) {
+        $OPTION{critical} = '';
+    }
+    $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
+    $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
+    return 0;
+}
+
+sub datastoreiops_get_str {
+    return join($separatorin, 
+               ('datastore-iops', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{skip_errors}));
+}
+
 sub datastoreio_check_arg {
-    if (!defined($OPTION{'datastore'})) {
+    if (!defined($OPTION{datastore})) {
         print "Option --datastore is required\n";
         print_usage();
         exit $ERRORS{UNKNOWN};
@@ -795,7 +824,7 @@ if (!defined($OPTION{usage})) {
     print_usage();
     exit $ERRORS{UNKNOWN};
 }
-if ($OPTION{usage} !~ /^(healthhost|datastore-usage|datastore-io|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|limitvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
+if ($OPTION{usage} !~ /^(healthhost|datastore-usage|datastore-io|datastore-iops|datastore-snapshots|maintenancehost|statushost|cpuhost|datastoreshost|nethost|memhost|swaphost|countvmhost|uptimehost|cpuvm|toolsvm|snapshotvm|limitvm|datastoresvm|memvm|swapvm|thinprovisioningvm|listhost|listdatastore|listnichost|getmap|stats)$/) {
     print "Usage value is unknown\n";
     print_usage();
     exit $ERRORS{UNKNOWN};

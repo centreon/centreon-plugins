@@ -73,7 +73,7 @@ sub run {
     my $memory_size = $$result[0]->{'summary.hardware.memorySize'};
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'mem.consumed.average', 'instances' => ['']},
                          {'label' => 'mem.overhead.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});

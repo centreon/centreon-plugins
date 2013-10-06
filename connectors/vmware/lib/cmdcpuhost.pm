@@ -72,7 +72,7 @@ sub run {
     my @instances = ('*');
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);

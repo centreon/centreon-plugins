@@ -70,7 +70,7 @@ sub run {
     return if (centreon::esxd::common::datastore_state($self->{obj_esxd}, $self->{ds}, $$result[0]->{'summary.accessible'}) == 0);
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'datastore.read.average', 'instances' => ['']},
                          {'label' => 'datastore.write.average', 'instances' => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod});

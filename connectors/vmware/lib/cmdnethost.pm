@@ -122,7 +122,7 @@ sub run {
 
 
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $$result[0], 
+                        $result, 
                         [{'label' => 'net.received.average', 'instances' => $instances},
                          {'label' => 'net.transmitted.average', 'instances' => $instances}],
                         $self->{obj_esxd}->{perfcounter_speriod});
