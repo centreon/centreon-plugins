@@ -35,6 +35,7 @@ my %OPTION = (
 
     consolidation => undef,
     check_disk_limit => undef,
+    details_value => undef,
     
     # For Autodisco
     xml => undef,
@@ -73,11 +74,13 @@ GetOptions(
     "check-consolidation"       => \$OPTION{consolidation},
     "check-disk"                => \$OPTION{check_disk_limit},
 
-    "w|warning:f"               => \$OPTION{warning},
-    "c|critical:f"              => \$OPTION{critical},
+    "w|warning:s"               => \$OPTION{warning},
+    "c|critical:s"              => \$OPTION{critical},
 
-    "warning2:f"                => \$OPTION{warning2},
-    "critical2:f"               => \$OPTION{critical2},
+    "warning2:s"                => \$OPTION{warning2},
+    "critical2:s"               => \$OPTION{critical2},
+    
+    "details-value:s"           => \$OPTION{details_value},
     
     "xml"                       => \$OPTION{xml},
     "show-attributes"           => \$OPTION{show_attributes},
@@ -131,6 +134,7 @@ sub print_usage () {
     print "   -c (--critical)   Critical Threshold (default none)\n";
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
+    print "   --details-value   Only display VMs with iops higher than the following value (permits to see VMs with high values) (default 50)\n";
     print "\n";
     print "'datastore-io':\n";
     print "   --datastore       Datastore name to check (required)\n";
@@ -373,6 +377,9 @@ sub datastoreiops_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = '';
     }
+    if (!defined($OPTION{details_value})) {
+        $OPTION{details_value} = 50;
+    }
     $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
     $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
     return 0;
@@ -380,7 +387,7 @@ sub datastoreiops_check_arg {
 
 sub datastoreiops_get_str {
     return join($separatorin, 
-               ('datastore-iops', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{skip_errors}));
+               ('datastore-iops', $OPTION{vsphere}, $OPTION{datastore}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical}, $OPTION{details_value}, $OPTION{skip_errors}));
 }
 
 sub datastoreio_check_arg {
@@ -475,7 +482,7 @@ sub datastoreshost_check_arg {
 
 sub datastoreshost_get_str {
      return join($separatorin, 
-                ('datastoreshost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical} , $OPTION{datastore}, $OPTION{filter}));
+                ('datastoreshost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{filter}, $OPTION{warning}, $OPTION{critical} , $OPTION{datastore}));
 }
 
 sub memhost_check_arg {

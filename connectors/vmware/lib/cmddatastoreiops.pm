@@ -23,10 +23,14 @@ sub getCommandName {
 
 sub checkArgs {
     my $self = shift;
-    my ($ds, $warn, $crit) = @_;
+    my ($ds, $filter, $warn, $crit, $details_value) = @_;
 
     if (!defined($ds) || $ds eq "") {
         $self->{logger}->writeLogError("ARGS error: need datastore name");
+        return 1;
+    }
+    if (defined($details_value) && $details_value ne "" && $details_value !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+        $self->{logger}->writeLogError("ARGS error: details-value must be a positive number");
         return 1;
     }
     if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
@@ -50,14 +54,26 @@ sub initArgs {
     $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
     $self->{warn} = (defined($_[2]) ? $_[2] : '');
     $self->{crit} = (defined($_[3]) ? $_[3] : '');
-    $self->{skip_errors} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
+    $self->{details_value} = (defined($_[4]) ? $_[4] : 50);
+    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
 }
 
 sub run {
     my $self = shift;
 
+    my $status = 0; # OK
+    my $output = '';
+    my $output_append = '';
+    my $output_warning = '';
+    my $output_warning_append = '';
+    my $output_critical = '';
+    my $output_critical_append = '';
+    my $output_unknown = '';
+    my $output_unknown_append = '';
+    my $perfdata = '';
+
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
+        $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
         $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
         return ;
     }
@@ -79,6 +95,15 @@ sub run {
     my %disk_name = ();
     my %datastore_lun = ();
     foreach (@$result) {
+        if (!centreon::esxd::common::is_accessible($_->{'summary.accessible'})) {
+            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
+                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
+                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+                                                    "'" . $_->{'summary.name'} . "' not accessible. Can be disconnected");
+            }
+            next;
+        }
+    
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
             # Not need. We are on Datastore level (not LUN level)
@@ -93,8 +118,6 @@ sub run {
             # Zero disk Info
         #}
     }
-
-    use Data::Dumper;
     
     my @vm_array = ();
     my %added_vm = ();
@@ -108,82 +131,103 @@ sub run {
         }
     }
 
-    @properties = ('name', 'runtime.connectionState');
+    @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
     if (!defined($result2)) {
         return ;
     }
     
+    # Remove disconnected or not running vm
     my %ref_ids_vm = ();
-    foreach (@$result2) {
-        $ref_ids_vm{$_->{mo_ref}->{value}} = $_->{name};
+    for(my $i = $#{$result2}; $i >= 0; --$i) {
+        if (!centreon::esxd::common::is_connected(${$result2}[$i]->{'runtime.connectionState'}->val) || 
+            !centreon::esxd::common::is_running(${$result2}[$i]->{'runtime.powerState'}->val)) {
+            splice @$result2, $i, 1;
+            next;
+        }
+        $ref_ids_vm{${$result2}[$i]->{mo_ref}->{value}} = ${$result2}[$i]->{name};
     }
-    
-    print STDERR Data::Dumper::Dumper(%ref_ids_vm);
 
     # Vsphere >= 4.1
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $result2, 
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{obj_esxd}->{perfcounter_speriod}, 1, 1);
-    print STDERR Data::Dumper::Dumper($values); 
-    return ;                    
+                        $self->{obj_esxd}->{perfcounter_speriod}, 1, 1);                  
     
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
-    
-    
     foreach (keys %$values) {
-        my ($id, $disk_name) = split(/:/);
-        $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $values->{$_}[0];
+        my ($vm_id, $id, $disk_name) = split(/:/);
+        my $tmp_value = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$_}[0] /  $self->{obj_esxd}->{perfcounter_speriod}));
+        $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
+        if (!defined($datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}})) {
+            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} = $tmp_value;
+        } else {
+            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
+        }
     }
-
-    my $status = 0; # OK
-    my $output = '';
-    my $output_append = '';
-    my $output_warning = '';
-    my $output_warning_append = '';
-    my $output_critical = '';
-    my $output_critical_append = '';
-    my $perfdata = '';
+    
     foreach (keys %datastore_lun) {
-        my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $self->{obj_esxd}->{perfcounter_speriod}));
-        my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $self->{obj_esxd}->{perfcounter_speriod}));
-
-        if (defined($self->{crit}) && $self->{crit} ne "" && ($read_counter >= $self->{crit})) {
+        my $total_read_counter = $datastore_lun{$_}{'disk.numberRead.summation'};
+        my $total_write_counter = $datastore_lun{$_}{'disk.numberWrite.summation'};
+        
+        if (defined($self->{crit}) && $self->{crit} ne "" && ($total_read_counter >= $self->{crit})) {
             centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "read on '" . $_ . "' is $read_counter ms");
+                "'$total_read_counter' read iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberRead.summation', $datastore_lun{$_}, \%ref_ids_vm));
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($read_counter >= $self->{warn})) {
+        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($total_read_counter >= $self->{warn})) {
             centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "read on '" . $_ . "' is $read_counter ms");
+                "'$total_read_counter' read on '" . $_ . "'" . $self->vm_iops_details('disk.numberRead.summation', $datastore_lun{$_}, \%ref_ids_vm));
             $status = centreon::esxd::common::errors_mask($status, 'WARNING');
         }
-        if (defined($self->{crit}) && $self->{crit} ne "" && ($write_counter >= $self->{crit})) {
+        if (defined($self->{crit}) && $self->{crit} ne "" && ($total_write_counter >= $self->{crit})) {
             centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "write on '" . $_ . "' is $write_counter ms");
+                "'$total_write_counter' write iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberWrite.summation', $datastore_lun{$_}, \%ref_ids_vm));
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($write_counter >= $self->{warn})) {
+        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($total_write_counter >= $self->{warn})) {
             centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "write on '" . $_ . "' is $write_counter ms");
+                "'$total_write_counter' write iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberWrite.summation', $datastore_lun{$_}, \%ref_ids_vm));
             $status = centreon::esxd::common::errors_mask($status, 'WARNING');
         }
-            
-        $perfdata .= " 'riops_" . $_ . "'=" . $read_counter . "iops 'wiops_" . $_ . "'=" . $write_counter . 'iops';
+        
+        if ($self->{filter} == 1) {
+            $perfdata .= " 'riops_" . $_ . "'=" . $total_read_counter . "iops;$self->{warn};$self->{crit};0; 'wiops_" . $_ . "'=" . $total_write_counter . "iops;$self->{warn};$self->{crit};0;";
+        } else {
+            $perfdata .= " 'riops=" . $total_read_counter . "iops;$self->{warn};$self->{crit};0; wiops=" . $total_write_counter . "iops;$self->{warn};$self->{crit};0;";
+        }
     }
 
+    if ($output_unknown ne "") {
+        $output .= $output_append . "UNKNOWN - $output_unknown";
+        $output_append = ". ";
+    }
     if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - Datastore IOPS counter: $output_critical";
+        $output .= $output_append . "CRITICAL - $output_critical";
         $output_append = ". ";
     }
     if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - Datastore IOPS counter: $output_warning";
+        $output .= $output_append . "WARNING - $output_warning";
     }
     if ($status == 0) {
         $output = "All Datastore IOPS counters are ok";
     }
     $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
+}
+
+sub vm_iops_details {
+    my ($self, $label, $ds_details, $ref_ids_vm) = @_;
+    my $details = '';
+    
+    foreach my $value (keys %$ds_details) {
+        # Dont need to display vm with iops < 1
+        if ($value =~ /^vm.*?$label$/ && $ds_details->{$value} >= $self->{details_value}) {
+            my ($vm_ids) = split(/_/, $value);
+            $details .= " ['" . $ref_ids_vm->{$vm_ids} . "' " . $ds_details->{$value} . ']';
+        }
+    }
+    
+    return $details;
 }
 
 1;

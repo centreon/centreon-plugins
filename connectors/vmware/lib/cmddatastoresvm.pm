@@ -129,20 +129,20 @@ sub run {
 
         if (defined($self->{crit}) && $self->{crit} ne "" && ($read_counter >= $self->{crit})) {
             centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "read on '" . $_ . "' is $read_counter ms");
+                "read iops on '" . $_ . "' is $read_counter");
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
         } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($read_counter >= $self->{warn})) {
             centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "read on '" . $_ . "' is $read_counter ms");
+                "read iops on '" . $_ . "' is $read_counter");
             $status = centreon::esxd::common::errors_mask($status, 'WARNING');
         }
         if (defined($self->{crit}) && $self->{crit} ne "" && ($write_counter >= $self->{crit})) {
             centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "write on '" . $_ . "' is $write_counter ms");
+                "write iops on '" . $_ . "' is $write_counter");
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
         } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($write_counter >= $self->{warn})) {
             centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "write on '" . $_ . "' is $write_counter ms");
+                "write iops '" . $_ . "' is $write_counter");
             $status = centreon::esxd::common::errors_mask($status, 'WARNING');
         }
             
@@ -150,11 +150,11 @@ sub run {
     }
 
     if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - Datastore IOPS counter: $output_critical";
+        $output .= $output_append . "CRITICAL - $output_critical";
         $output_append = ". ";
     }
     if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - Datastore IOPS counter: $output_warning";
+        $output .= $output_append . "WARNING - $output_warning";
     }
     if ($status == 0) {
         $output = "All Datastore IOPS counters are ok";

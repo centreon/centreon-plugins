@@ -24,7 +24,7 @@ sub getCommandName {
 
 sub checkArgs {
     my $self = shift;
-    my ($lhost, $warn, $crit) = @_;
+    my ($lhost, $filter, $warn, $crit) = @_;
 
     if (!defined($lhost) || $lhost eq "") {
         $self->{logger}->writeLogError("ARGS error: need host name");
@@ -48,10 +48,10 @@ sub checkArgs {
 sub initArgs {
     my $self = shift;
     $self->{lhost} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : '');
-    $self->{crit} = (defined($_[2]) ? $_[2] : '');
-    $self->{ds} = (defined($_[3]) ? $_[3] : '');
-    $self->{filter} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
+    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+    $self->{warn} = (defined($_[2]) ? $_[2] : '');
+    $self->{crit} = (defined($_[3]) ? $_[3] : '');
+    $self->{ds} = (defined($_[4]) ? $_[4] : '');
 }
 
 sub run {
