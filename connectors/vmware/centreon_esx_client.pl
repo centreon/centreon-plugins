@@ -183,8 +183,10 @@ sub print_usage () {
     print "\n";
     print "'countvmhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   -w (--warning)    Warning Threshold (default none)\n";
-    print "   -c (--critical)   Critical Threshold (default none)\n";
+    print "   -w (--warning)    Warning Threshold if more VMs on (default none)\n";
+    print "   -c (--critical)   Critical Threshold if more VMs on (default none)\n";
+    print "   --warning2        Warning Threshold if more VMs not on (default none)\n";
+    print "   --critical2       Critical Threshold if more VMs not on (default none)\n";
     print "\n";
     print "'uptimehost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -564,12 +566,18 @@ sub countvmhost_check_arg {
     if (!defined($OPTION{critical})) {
         $OPTION{critical} = '';
     }
+    if (!defined($OPTION{warning2})) {
+        $OPTION{warning2} = '';
+    }
+    if (!defined($OPTION{critical2})) {
+        $OPTION{critical2} = '';
+    }
     return 0;
 }
 
 sub countvmhost_get_str {
     return join($separatorin, 
-               ('countvmhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}));
+               ('countvmhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{warning}, $OPTION{critical}, $OPTION{warning2}, $OPTION{critical2}));
 }
 
 sub uptimehost_check_arg {

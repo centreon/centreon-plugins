@@ -94,6 +94,7 @@ sub run {
     my $output_ok_unit = 'Snapshot(s) OK';
     my $consolidate_vms = '';
     my $consolidate_vms_append = '';
+    my ($num_warning, $num_critical) = (0, 0);
     
     foreach my $virtual (@$result) {
         if (!centreon::esxd::common::is_connected($virtual->{'runtime.connectionState'}->val)) {
@@ -133,16 +134,19 @@ sub run {
                 centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
                     "[" . $virtual->{'name'}. "]");
                 $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                $num_critical++;
                 last;
             } elsif (time() - $create_time >= $self->{warning}) {
                 centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
                     "[" . $virtual->{'name'}. "]");
                 $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                $num_warning++;
                 last;
             }
         }
     }
-    
+
+    my $perfdata = 'num_warning=' . $num_warning . ' num_critical=' . $num_critical;
     if ($output_unknown ne "") {
         $output .= $output_append . "UNKNOWN - $output_unknown";
         $output_append = ". ";
@@ -166,7 +170,7 @@ sub run {
         }
     }
 
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
+    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
 }
 
 1;
