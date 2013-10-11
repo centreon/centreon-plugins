@@ -144,9 +144,9 @@ sub run {
     if ($#nic_downs >= 0) {
         if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
             $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-        }
-        centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
+			centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
                      "Link(s) '" . join("','", @nic_downs) . "' is(are) down");
+        }
     }
 
     foreach (keys %pnic_def_up) {

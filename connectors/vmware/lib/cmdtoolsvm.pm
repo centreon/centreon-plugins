@@ -99,9 +99,9 @@ sub run {
         centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
                                            "VMTools not running on VM:" . $not_running);
     }
-    if ($not_running ne '') {
+    if ($not_up2date ne '') {
         centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                                           "VMTools not up-to-date on VM:" . $not_running);
+                                           "VMTools not up-to-date on VM:" . $not_up2date);
     }
                                        
     if ($output_unknown ne "") {
