@@ -68,7 +68,7 @@ sub run {
     }
 
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('config.network.pnic', 'runtime.connectionState', 'config.network.vswitch');
+    my @properties = ('config.network.pnic', 'runtime.connectionState', 'config.network.vswitch', 'config.network.proxySwitch');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
@@ -84,9 +84,21 @@ sub run {
     my $filter_ok = 0;
     
     # Get Name from vswitch
-    foreach (@{$$result[0]->{'config.network.vswitch'}}) {
-        foreach my $keynic (@{$_->pnic}) {
-            $nic_in_vswitch{$keynic} = 1;
+    if (defined($$result[0]->{'config.network.vswitch'})) {
+        foreach (@{$$result[0]->{'config.network.vswitch'}}) {
+            next if (!defined($_->{pnic}));
+            foreach my $keynic (@{$_->{pnic}}) {
+                $nic_in_vswitch{$keynic} = 1;
+            }
+        }
+    }
+    # Get Name from proxySwitch
+    if (defined($$result[0]->{'config.network.proxySwitch'})) {
+        foreach (@{$$result[0]->{'config.network.proxySwitch'}}) {
+            next if (!defined($_->{pnic}));
+            foreach my $keynic (@{$_->{pnic}}) {
+                $nic_in_vswitch{$keynic} = 1;
+            }
         }
     }
 
@@ -111,7 +123,7 @@ sub run {
     
     if ($filter_ok == 0) {
         my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't get physical nic with filter '$self->{pnic}'. (or physical nic not in a vswitch)\n");
+        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't get physical nic with filter '$self->{pnic}'. (or physical nic not in a 'vswitch' or 'dvswitch')\n");
         return ;
     }
     if ($#${instances} == -1) {

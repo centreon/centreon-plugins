@@ -49,23 +49,35 @@ sub run {
     }
     
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('config.network.pnic', 'config.network.vswitch');
+    my @properties = ('config.network.pnic', 'config.network.vswitch', 'config.network.proxySwitch');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
     
     # Get Name from vswitch
-    foreach (@{$$result[0]->{'config.network.vswitch'}}) {
-        foreach my $keynic (@{$_->pnic}) {
-            $nic_in_vswitch{$keynic} = 1;
+    if (defined($$result[0]->{'config.network.vswitch'})) {
+        foreach (@{$$result[0]->{'config.network.vswitch'}}) {
+            next if (!defined($_->{pnic}));
+            foreach my $keynic (@{$_->{pnic}}) {
+                $nic_in_vswitch{$keynic} = 1;
+            }
+        }
+    }
+    # Get Name from proxySwitch
+    if (defined($$result[0]->{'config.network.proxySwitch'})) {
+        foreach (@{$$result[0]->{'config.network.proxySwitch'}}) {
+            next if (!defined($_->{pnic}));
+            foreach my $keynic (@{$_->{pnic}}) {
+                $nic_in_vswitch{$keynic} = 1;
+            }
         }
     }
 
     my $status = 0; # OK
     my $output_up = 'Nic Up List: ';
     my $output_down = 'Nic Down List: ';
-    my $output_down_no_vswitch = 'Nic Down List (not in vswitch): ';
+    my $output_down_no_vswitch = 'Nic Down List (not in vswitch, dvswitch): ';
     my $output_up_append = "";
     my $output_down_append = "";
     my $output_down_no_vswitch_append = "";

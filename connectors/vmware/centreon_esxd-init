@@ -19,7 +19,7 @@ timeout=60
 
 pidfile=/var/run/centreon_esxd.pid
 
-[ -e /etc/sysconfig/$servicename ] && . /etc/sysconfig/$servicename
+[ -e /etc/sysconfig/centreon_esxd ] && . /etc/sysconfig/centreon_esxd
 
 # Check if we can find the binary.
 if [ ! -x $binary ]; then
