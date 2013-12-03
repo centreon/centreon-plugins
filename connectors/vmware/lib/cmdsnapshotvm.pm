@@ -111,7 +111,7 @@ sub run {
             next;
         }
     
-        if ($self->{consolidate} == 1 && defined($virtual->{'runtime.consolidationNeeded'}) && ($virtual->{'runtime.consolidationNeeded'} == 1 || $virtual->{'runtime.consolidationNeeded'} =~ /^true$/i)) {
+        if ($self->{consolidate} == 1 && defined($virtual->{'runtime.consolidationNeeded'}) && $virtual->{'runtime.consolidationNeeded'} =~ /^true|1$/i) {
             $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
             $consolidate_vms .= $consolidate_vms_append . '[' . $virtual->{'name'} . ']';
             $consolidate_vms_append = ', ';
