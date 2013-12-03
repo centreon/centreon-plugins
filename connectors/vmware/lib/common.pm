@@ -24,12 +24,28 @@ sub get_status {
     return $ERRORS{$MYERRORS{$state}};
 }
 
+sub response_client2 {
+    my ($obj_esxd, $id, $msg) = @_;
+    
+    # Avoid croak kill. Can be happened (not often)
+    eval {
+        ${$obj_esxd->{sockets}->{$id}->{obj}}->send($msg);
+    };
+    $obj_esxd->{read_select}->remove(${$obj_esxd->{sockets}->{$id}->{obj}});
+    close ${$obj_esxd->{sockets}->{$id}->{obj}};
+    delete $obj_esxd->{sockets}->{$id};
+}
+
 sub response_client1 {
     my ($obj_esxd, $rh, $current_fileno, $msg) = @_;
-    $rh->send($msg);
-    delete $obj_esxd->{sockets}->{$current_fileno};
+
+    # Avoid croak kill. Can be happened (not often)
+    eval {
+        $rh->send($msg);
+    };
     $obj_esxd->{read_select}->remove($rh);
     close $rh;
+    delete $obj_esxd->{sockets}->{$current_fileno};
 }
 
 sub vmware_error {

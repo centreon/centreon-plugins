@@ -528,10 +528,7 @@ sub run {
 
                 $self->{logger}->writeLogInfo("response = $data_element");
                 $data_element =~ s/^.*?\|//;
-                ${$self->{sockets}->{$id}->{obj}}->send($data_element . "\n");
-                $self->{read_select}->remove(${$self->{sockets}->{$id}->{obj}});
-                close ${$self->{sockets}->{$id}->{obj}};
-                delete $self->{sockets}->{$id};
+                centreon::esxd::common::response_client2($self, $id, $data_element . "\n");
             } else {
                 # Socket
                 my $line = <$rh>;
@@ -570,10 +567,7 @@ sub run {
         foreach (keys %{$self->{sockets}}) {
             if (time() - $self->{sockets}->{$_}->{ctime} > $self->{centreonesxd_config}->{timeout}) {
                 $self->{logger}->writeLogInfo("Timeout returns.");
-                ${$self->{sockets}->{$_}->{obj}}->send("3|TIMEOUT\n");
-                $self->{read_select}->remove(${$self->{sockets}->{$_}->{obj}});
-                close ${$self->{sockets}->{$_}->{obj}};
-                delete $self->{sockets}->{$_};
+                centreon::esxd::common::response_client2($self, $_, "3|TIMEOUT\n");
             }
         }
     }
