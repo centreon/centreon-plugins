@@ -159,6 +159,12 @@ sub run {
 
     foreach (keys %$values) {
         my ($vm_id, $id, $disk_name) = split(/:/);
+        
+        # RDM Disk. We skip. Don't know how to manage it right now.
+        if (!defined($disk_name{$disk_name})) {
+            next;
+        }
+        
         my $tmp_value = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$_}[0] /  $self->{obj_esxd}->{perfcounter_speriod}));
         $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
         if (!defined($datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}})) {

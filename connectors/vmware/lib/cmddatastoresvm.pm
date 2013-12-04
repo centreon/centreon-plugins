@@ -112,6 +112,12 @@ sub run {
 
     foreach (keys %$values) {
         my ($id, $disk_name) = split(/:/);
+        
+        # RDM Disk. We skip. Don't know how to manage it right now.
+        if (!defined($disk_name{$disk_name})) {
+            next;
+        }
+        
         $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $values->{$_}[0];
     }
 
