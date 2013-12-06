@@ -773,6 +773,7 @@ sub listhost_get_str {
 sub listdatastore_check_arg {
     if (defined($OPTION{show_attributes})) {
         print "<data><element>name</element></data>\n";
+        exit(0);
     }
     $OPTION{xml} = (defined($OPTION{xml}) ? 1 : 0);
     return 0;
