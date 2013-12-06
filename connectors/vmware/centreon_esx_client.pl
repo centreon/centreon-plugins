@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.5.2";
+my $VERSION = "1.5.3";
 my %ERRORS = (OK => 0, WARNING => 1, CRITICAL => 2, UNKNOWN => 3, DEPENDENT => 4);
 my $socket;
 my $separatorin = '~';
@@ -66,7 +66,6 @@ GetOptions(
     
     "nic=s"                     => \$OPTION{nic},
 
-    "older=i"                   => \$OPTION{older},
     "warn"                      => \$OPTION{warn},
     "crit"                      => \$OPTION{crit},
     
@@ -772,30 +771,36 @@ sub listhost_get_str {
 }
 
 sub listdatastore_check_arg {
+    if (defined($OPTION{show_attributes})) {
+        print "<data><element>name</element></data>\n";
+    }
     $OPTION{xml} = (defined($OPTION{xml}) ? 1 : 0);
-    $OPTION{show_attributes} = (defined($OPTION{show_attributes}) ? 1 : 0);
     return 0;
 }
 
 sub listdatastore_get_str {
     return join($separatorin, 
-               ('listdatastore', $OPTION{vsphere}, $OPTION{xml}, $OPTION{show_attributes}));
+               ('listdatastore', $OPTION{vsphere}, $OPTION{xml}));
 }
 
 sub listnichost_check_arg {
+    if (defined($OPTION{show_attributes})) {
+        print "<data><element>name</element></data>\n";
+        exit(0);
+    }
+
     if (!defined($OPTION{'esx-host'})) {
         print "Option --esx-host is required\n";
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
     $OPTION{xml} = (defined($OPTION{xml}) ? 1 : 0);
-    $OPTION{show_attributes} = (defined($OPTION{show_attributes}) ? 1 : 0);
     return 0;
 }
 
 sub listnichost_get_str {
     return join($separatorin, 
-               ('listnichost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{xml}, $OPTION{show_attributes}));
+               ('listnichost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{xml}));
 }
 
 sub getmap_check_arg {

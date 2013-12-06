@@ -36,17 +36,11 @@ sub initArgs {
     my $self = shift;
     $self->{lhost} = $_[0];
     $self->{xml} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
-    $self->{show_attributes} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
 }
 
 sub run {
     my $self = shift;
     my %nic_in_vswitch = ();
-
-    if ($self->{show_attributes} == 1) {
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status(0) . "|<data><element>name</element></data>\n");
-        return ;
-    }
     
     my %filters = ('name' => $self->{lhost});
     my @properties = ('config.network.pnic', 'config.network.vswitch', 'config.network.proxySwitch');

@@ -20,7 +20,7 @@ BEGIN {
 use base qw(centreon::script);
 use vars qw(%centreonesxd_config);
 
-my $VERSION = "1.5.2";
+my $VERSION = "1.5.3";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 my @load_modules = ('centreon::esxd::cmdcountvmhost',
                     'centreon::esxd::cmdcpuhost',
