@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::linux::mode::swap;
+package snmp_standard::mode::swap;
 
 use base qw(centreon::plugins::mode);
 
@@ -51,8 +51,6 @@ sub new {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
                                 });
-
-    $self->{swap_memory_id} = undef;
     
     return $self;
 }
@@ -75,34 +73,13 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
+    
+    my $oid_memTotalSwap = '.1.3.6.1.4.1.2021.4.3.0'; # KB
+    my $oid_memAvailSwap = '.1.3.6.1.4.1.2021.4.4.0'; # KB
+    my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalSwap, $oid_memAvailSwap], nothing_quit => 1);
 
-    my $oid_hrStorageDescr = '.1.3.6.1.2.1.25.2.3.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_hrStorageDescr);
-    
-    foreach my $key (keys %$result) {
-        next if ($key !~ /\.([0-9]+)$/);
-        my $oid = $1;
-        if ($result->{$key} =~ /^Swap space$/i) {
-            $self->{swap_memory_id} = $oid;
-        }
-    }
-    
-    if (!defined($self->{swap_memory_id})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find swap space informations.");
-        $self->{output}->option_exit();
-    }
-    
-    my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
-    my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
-    my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
-
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
-                        instances => [$self->{swap_memory_id}]);
-    $result = $self->{snmp}->get_leef();
-
-    my $swap_used = $result->{$oid_hrStorageUsed . "." . $self->{swap_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}};
-    my $total_size = $result->{$oid_hrStorageSize . "." . $self->{swap_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}};
+    my $swap_used = $result->{$oid_memAvailSwap} * 1024;
+    my $total_size = $result->{$oid_memAvailSwap} * 1024;
     
     my $prct_used = $swap_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -133,7 +110,7 @@ __END__
 
 =head1 MODE
 
-Check Linux swap memory.
+Check swap memory (UCD-SNMP-MIB).
 
 =over 8
 
