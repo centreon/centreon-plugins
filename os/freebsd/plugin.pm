@@ -52,6 +52,7 @@ sub new {
                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          'list-storages' => 'snmp_standard::mode::liststorages',
                          'packet-errors' => 'snmp_standard::mode::packeterrors',
+                         'processcount' => 'snmp_standard::mode::processcount',
                          'storage' => 'snmp_standard::mode::storage',
                          'traffic' => 'snmp_standard::mode::traffic',
                          'uptime' => 'snmp_standard::mode::uptime',
