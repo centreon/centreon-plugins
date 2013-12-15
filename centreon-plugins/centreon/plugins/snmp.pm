@@ -591,6 +591,12 @@ sub get_hostname {
     return $host;
 }
 
+sub get_port {
+    my ($self) = @_;
+
+    return $self->{snmp_params}->{RemotePort};
+}
+
 sub oid_lex_sort {
     my $self = shift;
 

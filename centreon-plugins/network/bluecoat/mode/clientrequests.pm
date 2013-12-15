@@ -88,13 +88,14 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
     
     if ($self->{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
 
-    $self->{statefile_value}->read(statefile => 'bluecoat_' . $self->{hostname}  . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'bluecoat_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
     my $result = $self->{snmp}->get_leef(oids => ['.1.3.6.1.4.1.3417.2.11.3.1.1.1.0', 
                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.2.0',
                                                   '.1.3.6.1.4.1.3417.2.11.3.1.1.3.0',
