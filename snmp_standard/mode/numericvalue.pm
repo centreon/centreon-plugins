@@ -103,6 +103,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
 
     my $result = $self->{snmp}->get_leef(oids => [$self->{option_results}->{oid}], nothing_quit => 1);
     my $value = $result->{$self->{option_results}->{oid}};
@@ -110,7 +111,7 @@ sub run {
     if ($self->{option_results}->{oid_type} =~ /^counter$/i)  {
         my $datas = {};
 
-        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{mode} . '_' . md5_hex($self->{option_results}->{oid}));
+        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($self->{option_results}->{oid}));
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
         my $old_value = $self->{statefile_cache}->get(name => 'value');
         

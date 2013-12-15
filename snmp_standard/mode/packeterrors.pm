@@ -145,6 +145,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
 
     $self->manage_selection();
     
@@ -174,7 +175,7 @@ sub run {
     my $oid_ifOutErrors = '.1.3.6.1.2.1.2.2.1.20';
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all')));
     
     foreach (@{$self->{interface_id_selected}}) {
         $self->{snmp}->load(oids => [$oid_adminstatus . "." . $_, $oid_operstatus . "." . $_, 
@@ -384,7 +385,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
