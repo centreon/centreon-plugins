@@ -47,11 +47,6 @@ my %oids_hrStorageTable = (
     'hrfsmountpoint' => '.1.3.6.1.2.1.25.3.8.1.2',
     'hrstoragetype' => '.1.3.6.1.2.1.25.2.3.1.2',
 );
-my %storage_types_manage = (
-    '.1.3.6.1.2.1.25.2.1.4' => 'hrStorageFixedDisk',
-    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk', 
-    '.1.3.6.1.2.1.25.3.9.3' => 'hrFSBerkeleyFFS' # For Freebsd
-);
 
 sub new {
     my ($class, %options) = @_;
@@ -121,6 +116,8 @@ sub run {
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
+    my $oid_hrStorageFixedDisk = '.1.3.6.1.2.1.25.2.1.4';
+    my $oid_hrStorageNetworkDisk = '.1.3.6.1.2.1.25.2.1.10';
 
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], instances => $self->{storage_id_selected});
     my $result = $self->{snmp}->get_leef();
@@ -134,7 +131,7 @@ sub run {
     foreach (sort @{$self->{storage_id_selected}}) {
         # Skipped disks
         my $storage_type = $self->{statefile_cache}->get(name => "type_" . $_);
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || ($storage_type ne $oid_hrStorageFixedDisk && $storage_type ne $oid_hrStorageNetworkDisk));
 
         my $name_storage = $self->get_display_value(id => $_);
         $num_disk_check++;

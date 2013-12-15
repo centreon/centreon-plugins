@@ -49,12 +49,8 @@ my %oids_hrStorageTable = (
 my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
 my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
 my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
-
-my %storage_types_manage = (
-    '.1.3.6.1.2.1.25.2.1.4' => 'hrStorageFixedDisk',
-    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk', 
-    '.1.3.6.1.2.1.25.3.9.3' => 'hrFSBerkeleyFFS' # For Freebsd
-);
+my $oid_hrStorageFixedDisk = '.1.3.6.1.2.1.25.2.1.4';
+my $oid_hrStorageNetworkDisk = '.1.3.6.1.2.1.25.2.1.10';
 
 sub new {
     my ($class, %options) = @_;
@@ -108,7 +104,7 @@ sub run {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || ($storage_type ne $oid_hrStorageFixedDisk && $storage_type ne $oid_hrStorageNetworkDisk));
         
         $storage_display .= $storage_display_append . "name = $display_value [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B, id = $_]";
         $storage_display_append = ', ';
@@ -219,7 +215,7 @@ sub disco_show {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || ($storage_type ne $oid_hrStorageFixedDisk && $storage_type ne $oid_hrStorageNetworkDisk));
 
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_},
