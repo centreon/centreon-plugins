@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::linux::plugin;
+package os::freebsd::plugin;
 
 use strict;
 use warnings;
@@ -52,11 +52,11 @@ sub new {
                          'load' => 'snmp_standard::mode::loadaverage',
                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          'list-storages' => 'snmp_standard::mode::liststorages',
-                         'memory' => 'os::linux::mode::memory',
+                         'memory' => 'snmp_standard::mode::memory',
                          'packet-errors' => 'snmp_standard::mode::packeterrors',
                          'processcount' => 'snmp_standard::mode::processcount',
                          'storage' => 'snmp_standard::mode::storage',
-                         'swap' => 'os::linux::mode::swap',
+                         'swap' => 'snmp_standard::mode::swap',
                          'traffic' => 'snmp_standard::mode::traffic',
                          'uptime' => 'snmp_standard::mode::uptime',
                          );
