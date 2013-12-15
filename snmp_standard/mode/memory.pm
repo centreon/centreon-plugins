@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::linux::mode::memory;
+package snmp_standard::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -51,10 +51,6 @@ sub new {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
                                 });
-
-    $self->{cached_memory_id} = undef;
-    $self->{buffer_memory_id} = undef;
-    $self->{physical_memory_id} = undef;
     
     return $self;
 }
@@ -78,51 +74,23 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hrStorageDescr = '.1.3.6.1.2.1.25.2.3.1.3';
+    my $oid_memTotalReal = '.1.3.6.1.4.1.2021.4.5.0';
+    my $oid_memAvailReal = '.1.3.6.1.4.1.2021.4.6.0';
+    my $oid_memShared = '.1.3.6.1.4.1.2021.4.13.0';
+    my $oid_memBuffer = '.1.3.6.1.4.1.2021.4.14.0';
+    my $oid_memCached = '.1.3.6.1.4.1.2021.4.15.0';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_hrStorageDescr);
-    
-    foreach my $key (keys %$result) {
-        next if ($key !~ /\.([0-9]+)$/);
-        my $oid = $1;
-        if ($result->{$key} =~ /^Physical memory$/i) {
-            $self->{physical_memory_id} = $oid;
-        }
-        if ($result->{$key} =~ /^Cached memory$/i) {
-            $self->{cached_memory_id} = $oid;
-        }
-        if ($result->{$key} =~ /^Memory buffers$/i) {
-            $self->{buffer_memory_id} = $oid;
-        }
-    }
-    
-    if (!defined($self->{physical_memory_id})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find physical memory informations.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{cached_memory_id})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find cached memory informations.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{buffer_memory_id})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find buffer memory informations.");
-        $self->{output}->option_exit();
-    }
-    
-    my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
-    my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
-    my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalReal, $oid_memAvailReal,
+                                                  $oid_memShared, $oid_memBuffer, $oid_memCached], 
+                                          nothing_quit => 1);
 
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
-                        instances => [$self->{physical_memory_id}, $self->{cached_memory_id}, $self->{buffer_memory_id}]);
-    $result = $self->{snmp}->get_leef();
-
-    my $cached_used = $result->{$oid_hrStorageUsed . "." . $self->{cached_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{cached_memory_id}};
-    my $buffer_used = $result->{$oid_hrStorageUsed . "." . $self->{buffer_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{buffer_memory_id}};
-    my $physical_used = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
+    my $shared_used = $result->{$oid_memShared} * 1024;
+    my $cached_used = $result->{$oid_memCached} * 1024;
+    my $buffer_used = $result->{$oid_memBuffer} * 1024;
+    my $physical_used = ($result->{$oid_memTotalReal} * 1024) - ($result->{$oid_memAvailReal} * 1024);
     my $nobuf_used = $physical_used - $buffer_used - $cached_used;
     
-    my $total_size = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
+    my $total_size = $result->{$oid_memTotalReal} * 1024;
     
     my $prct_used = $nobuf_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -130,12 +98,14 @@ sub run {
     my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
     my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
     my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
+    my ($shared_value, $shared_unit) = $self->{perfdata}->change_bytes(value => $shared_used);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s",
+                                short_msg => sprintf("Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s, Shared: %s",
                                             $nobuf_value . " " . $nobuf_unit, $prct_used,
                                             $buffer_value . " " . $buffer_unit,
-                                            $cached_value . " " . $cached_unit));
+                                            $cached_value . " " . $cached_unit,
+                                            $shared_value . " " . $shared_unit));
     
     $self->{output}->perfdata_add(label => "cached",
                                   value => $cached_used,
@@ -159,7 +129,7 @@ __END__
 
 =head1 MODE
 
-Check Linux physical memory.
+Check physical memory (UCD-SNMP-MIB).
 
 =over 8
 
