@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::freebsd::plugin;
+package os::linux::plugin;
 
 use strict;
 use warnings;
