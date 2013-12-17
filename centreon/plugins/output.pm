@@ -156,7 +156,7 @@ sub perfdata_add {
 
 sub output_json {
     my ($self, %options) = @_;
-    my $force_ignore_perfdata = defined($options{force_ignore_perfdata}) ? 1 : 0;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my $json_content = {plugin => {
                                    name => $self->{plugin},
                                    mode => $self->{mode},
@@ -206,7 +206,7 @@ sub output_json {
 
 sub output_xml {
     my ($self, %options) = @_;
-    my $force_ignore_perfdata = defined($options{force_ignore_perfdata}) ? 1 : 0;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my ($child_plugin_name, $child_plugin_mode, $child_plugin_exit, $child_plugin_output, $child_plugin_perfdata); 
 
     my $root = $self->{xml_output}->createElement('plugin');
@@ -288,7 +288,7 @@ sub output_xml {
 
 sub output_txt {
     my ($self, %options) = @_;
-    my $force_ignore_perfdata = defined($options{force_ignore_perfdata}) ? 1 : 0;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
 
     if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
         $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
@@ -328,7 +328,7 @@ sub output_txt {
 sub display {
     my ($self, %options) = @_;
     my $nolabel = defined($options{nolabel}) ? 1 : 0;
-    my $force_ignore_perfdata = defined($options{force_ignore_perfdata}) ? 1 : 0;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
 
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
