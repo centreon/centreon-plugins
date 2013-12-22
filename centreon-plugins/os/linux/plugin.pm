@@ -49,7 +49,9 @@ sub new {
     %{$self->{modes}} = (
                          'cpu' => 'snmp_standard::mode::cpu',
                          'diskio' => 'snmp_standard::mode::diskio',
+                         'inodes' => 'snmp_standard::mode::inodes',
                          'load' => 'snmp_standard::mode::loadaverage',
+                         'list-diskspath' => 'snmp_standard::mode::listdiskspath',
                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          'list-storages' => 'snmp_standard::mode::liststorages',
                          'memory' => 'snmp_standard::mode::memory',
