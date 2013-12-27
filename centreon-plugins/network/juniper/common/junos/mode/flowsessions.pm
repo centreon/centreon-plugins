@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::cpuforwarding;
+package network::juniper::common::junos::mode::flowsessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -75,30 +75,43 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_jnxJsSPUMonitoringSPUIndex = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.3';
-    my $oid_jnxJsSPUMonitoringCPUUsage = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.4';
+    my $oid_jnxJsSPUMonitoringCurrentFlowSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6';
+    my $oid_jnxJsSPUMonitoringMaxFlowSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.7';
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxJsSPUMonitoringSPUIndex, nothing_quit => 1);
-    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringCPUUsage],
+    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringCurrentFlowSession, $oid_jnxJsSPUMonitoringMaxFlowSession],
                         instances => [keys %$result],
                         instance_regexp => '\.(\d+)$');
     my $result2 = $self->{snmp}->get_leef(nothing_quit => 1);
     
+    my $spu_done = 0;
     foreach my $oid (keys %$result) {        
         $oid =~ /\.(\d+)$/;
         my $instance = $1;
-        my $cpu_usage = $result2->{$oid_jnxJsSPUMonitoringCPUUsage . '.' . $instance};
+        my $flow_total = $result2->{$oid_jnxJsSPUMonitoringMaxFlowSession . '.' . $instance};
+        my $flow_used = $result2->{$oid_jnxJsSPUMonitoringCurrentFlowSession . '.' . $instance};
+        
+        next if ($flow_total == 0);
+        my $prct_used = $flow_used * 100 / $flow_total;
     
-        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_usage, 
+        $spu_done = 1;
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, 
                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("CPU '%d' average usage is: %s%%", $instance, $cpu_usage));
-        $self->{output}->perfdata_add(label => 'cpu_' . $instance, unit => '%',
-                                      value => $cpu_usage,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+                                    short_msg => sprintf("SPU '%d': %.2f%% of the flow sessions limit reached (%d of max. %d)", 
+                                        $instance, $prct_used, $flow_used, $flow_total));
+        $self->{output}->perfdata_add(label => 'sessions_' . $instance,
+                                      value => $flow_used,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $flow_total),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $flow_total),
+                                      min => 0, max => $flow_total);
     }
 
+    if ($spu_done == 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot check flow sessions usage (no total values).");
+        $self->{output}->option_exit();
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -109,7 +122,7 @@ __END__
 
 =head1 MODE
 
-Check CPU Usage of packet forwarding engine.
+Check Packet Forwarding Engine sessions usage.
 
 =over 8
 

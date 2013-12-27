@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::memoryforwarding;
+package network::juniper::common::junos::mode::cpuforwarding;
 
 use base qw(centreon::plugins::mode);
 
@@ -75,10 +75,10 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_jnxJsSPUMonitoringSPUIndex = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.3';
-    my $oid_jnxJsSPUMonitoringMemoryUsage = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.5';
+    my $oid_jnxJsSPUMonitoringCPUUsage = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.4';
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxJsSPUMonitoringSPUIndex, nothing_quit => 1);
-    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringMemoryUsage],
+    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringCPUUsage],
                         instances => [keys %$result],
                         instance_regexp => '\.(\d+)$');
     my $result2 = $self->{snmp}->get_leef(nothing_quit => 1);
@@ -86,14 +86,14 @@ sub run {
     foreach my $oid (keys %$result) {        
         $oid =~ /\.(\d+)$/;
         my $instance = $1;
-        my $mem_usage = $result2->{$oid_jnxJsSPUMonitoringMemoryUsage . '.' . $instance};
+        my $cpu_usage = $result2->{$oid_jnxJsSPUMonitoringCPUUsage . '.' . $instance};
     
-        my $exit_code = $self->{perfdata}->threshold_check(value => $mem_usage, 
+        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_usage, 
                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Memory '%d' usage is: %s%%", $instance, $mem_usage));
-        $self->{output}->perfdata_add(label => 'mem_' . $instance, unit => '%',
-                                      value => $mem_usage,
+                                    short_msg => sprintf("CPU '%d' average usage is: %s%%", $instance, $cpu_usage));
+        $self->{output}->perfdata_add(label => 'cpu_' . $instance, unit => '%',
+                                      value => $cpu_usage,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0, max => 100);
@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check Memory Usage of packet forwarding engine.
+Check CPU Usage of packet forwarding engine.
 
 =over 8
 

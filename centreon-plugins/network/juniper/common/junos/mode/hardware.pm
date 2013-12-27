@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::hardware;
+package network::juniper::common::junos::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 

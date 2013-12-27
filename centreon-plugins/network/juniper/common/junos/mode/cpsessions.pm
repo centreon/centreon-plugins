@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::flowsessions;
+package network::juniper::common::junos::mode::cpsessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -75,11 +75,11 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_jnxJsSPUMonitoringSPUIndex = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.3';
-    my $oid_jnxJsSPUMonitoringCurrentFlowSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.6';
-    my $oid_jnxJsSPUMonitoringMaxFlowSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.7';
+    my $oid_jnxJsSPUMonitoringCurrentCPSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.8';
+    my $oid_jnxJsSPUMonitoringMaxCPSession = '.1.3.6.1.4.1.2636.3.39.1.12.1.1.1.9';
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxJsSPUMonitoringSPUIndex, nothing_quit => 1);
-    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringCurrentFlowSession, $oid_jnxJsSPUMonitoringMaxFlowSession],
+    $self->{snmp}->load(oids => [$oid_jnxJsSPUMonitoringCurrentCPSession, $oid_jnxJsSPUMonitoringMaxCPSession],
                         instances => [keys %$result],
                         instance_regexp => '\.(\d+)$');
     my $result2 = $self->{snmp}->get_leef(nothing_quit => 1);
@@ -88,27 +88,27 @@ sub run {
     foreach my $oid (keys %$result) {        
         $oid =~ /\.(\d+)$/;
         my $instance = $1;
-        my $flow_total = $result2->{$oid_jnxJsSPUMonitoringMaxFlowSession . '.' . $instance};
-        my $flow_used = $result2->{$oid_jnxJsSPUMonitoringCurrentFlowSession . '.' . $instance};
+        my $cp_total = $result2->{$oid_jnxJsSPUMonitoringMaxCPSession . '.' . $instance};
+        my $cp_used = $result2->{$oid_jnxJsSPUMonitoringCurrentCPSession . '.' . $instance};
         
-        next if ($flow_total == 0);
-        my $prct_used = $flow_used * 100 / $flow_total;
+        next if ($cp_total == 0);
+        my $prct_used = $cp_used * 100 / $cp_total;
     
         $spu_done = 1;
         my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, 
                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("SPU '%d': %.2f%% of the flow sessions limit reached (%d of max. %d)", 
-                                        $instance, $prct_used, $flow_used, $flow_total));
+                                    short_msg => sprintf("SPU '%d': %.2f%% of the cp sessions limit reached (%d of max. %d)", 
+                                        $instance, $prct_used, $cp_used, $cp_total));
         $self->{output}->perfdata_add(label => 'sessions_' . $instance,
-                                      value => $flow_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $flow_total),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $flow_total),
-                                      min => 0, max => $flow_total);
+                                      value => $cp_used,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total),
+                                      min => 0, max => $cp_total);
     }
 
     if ($spu_done == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot check flow sessions usage (no total values).");
+        $self->{output}->add_option_msg(short_msg => "Cannot check cp sessions usage (no total values).");
         $self->{output}->option_exit();
     }
     
@@ -122,7 +122,7 @@ __END__
 
 =head1 MODE
 
-Check Packet Forwarding Engine sessions usage.
+Check CP ('central point') sessions usage.
 
 =over 8
 
