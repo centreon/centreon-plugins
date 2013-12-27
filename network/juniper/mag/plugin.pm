@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::srx::plugin;
+package network::juniper::mag::plugin;
 
 use strict;
 use warnings;
@@ -47,17 +47,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'             => 'network::juniper::common::junos::mode::hardware',
-                         'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-                         'cpu-forwarding'       => 'network::juniper::common::junos::mode::cpuforwarding', # packet forwarding engine
-                         'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-                         'memory-forwarding'    => 'network::juniper::common::junos::mode::memoryforwarding', # packet forwarding engine
-                         'cp-sessions'          => 'network::juniper::common::junos::mode::cpsessions', # CP = 'central point'
-                         'flow-sessions'        => 'network::juniper::common::junos::mode::flowsessions',
-                         'traffic'              => 'snmp_standard::mode::traffic',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'        => 'snmp_standard::mode::liststorages',
-                         'storage'              => 'snmp_standard::mode::storage',
+                         'cpu'                  => 'network::juniper::common::ive::mode::cpu',
+                         'disk'                 => 'network::juniper::common::ive::mode::disk',
+                         'logfile'              => 'network::juniper::common::ive::mode::logfile',
+                         'users'                => 'network::juniper::common::ive::mode::users',
+                         'memory'               => 'snmp_standard::mode::memory',
+                         'swap'                 => 'snmp_standard::mode::swap',
+                         'blade-temperature'    => 'network::juniper::mag::plugin::mode::bladetemperature',
                          );
 
     return $self;
@@ -69,6 +65,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper SRX in SNMP.
+Check Juniper MAG in SNMP.
 
 =cut

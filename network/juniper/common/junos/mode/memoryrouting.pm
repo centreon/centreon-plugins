@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::cpurouting;
+package network::juniper::common::junos::mode::memoryrouting;
 
 use base qw(centreon::plugins::mode);
 
@@ -75,10 +75,8 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_jnxOperatingDescr = '.1.3.6.1.4.1.2636.3.1.13.1.5';
-    my $oid_jnxOperatingCPU = '.1.3.6.1.4.1.2636.3.1.13.1.8';
-    my $oid_jnxOperating1MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.20';
-    my $oid_jnxOperating5MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.21';
-    my $oid_jnxOperating15MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.22';
+    my $oid_jnxOperatingBuffer = '.1.3.6.1.4.1.2636.3.1.13.1.11';
+    my $oid_jnxOperatingMemory = '.1.3.6.1.4.1.2636.3.1.13.1.15'; # MB
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
     my $routing_engine_find = 0;
@@ -96,36 +94,35 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    $self->{snmp}->load(oids => [$oid_jnxOperatingCPU, $oid_jnxOperating1MinLoadAvg, $oid_jnxOperating5MinLoadAvg, $oid_jnxOperating15MinLoadAvg],
+    $self->{snmp}->load(oids => [$oid_jnxOperatingBuffer, $oid_jnxOperatingMemory],
                         instances => [$oid_routing_engine],
                         instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
     my $result2 = $self->{snmp}->get_leef();
     
     $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
     my $instance = $1;
-    my $cpu_usage = $result2->{$oid_jnxOperatingCPU . '.' . $instance};
-    my $cpu_load1 = $result2->{$oid_jnxOperating1MinLoadAvg . '.' . $instance};
-    my $cpu_load5 = $result2->{$oid_jnxOperating5MinLoadAvg . '.' . $instance};
-    my $cpu_load15 = $result2->{$oid_jnxOperating15MinLoadAvg . '.' . $instance};
+    my $total_size = $result2->{$oid_jnxOperatingMemory . '.' . $instance} * 1024 * 1024;
+    my $prct_used = $result2->{$oid_jnxOperatingBuffer . '.' . $instance};
+    my $prct_free = 100 - $prct_used;
+    my $memory_used = $total_size * $prct_used / 100;
+    my $memory_free = $total_size - $memory_used;
+        
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
     
-    my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_usage, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU(s) average usage is: %s%%", $cpu_usage));
-    $self->{output}->perfdata_add(label => 'cpu', unit => '%',
-                                  value => $cpu_usage,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
-    $self->{output}->perfdata_add(label => 'load1',
-                                  value => $cpu_load1,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load5',
-                                  value => $cpu_load5,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load15',
-                                  value => $cpu_load15,
-                                  min => 0);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                                        $total_value . " " . $total_unit,
+                                        $used_value . " " . $used_unit, $prct_used,
+                                        $free_value . " " . $free_unit, $prct_free));
+    
+    $self->{output}->perfdata_add(label => "used",
+                                  value => $memory_used,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+                                  min => 0, max => $total_size);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -137,7 +134,7 @@ __END__
 
 =head1 MODE
 
-Check CPU Usage of routing engine.
+Check Memory Usage of routing engine.
 
 =over 8
 
