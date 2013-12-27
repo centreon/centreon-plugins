@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::mode::memoryrouting;
+package network::juniper::mag::plugin::mode::bladetemperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -74,56 +74,19 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_jnxOperatingDescr = '.1.3.6.1.4.1.2636.3.1.13.1.5';
-    my $oid_jnxOperatingBuffer = '.1.3.6.1.4.1.2636.3.1.13.1.11';
-    my $oid_jnxOperatingMemory = '.1.3.6.1.4.1.2636.3.1.13.1.15'; # MB
+    my $oid_iveTemperature = '.1.3.6.1.4.1.12532.42.0';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
-    my $routing_engine_find = 0;
-    my $oid_routing_engine;
-    foreach my $oid (keys %$result) {        
-        if ($result->{$oid} =~ /routing/i) {
-            $routing_engine_find = 1;
-            $oid_routing_engine = $oid;
-            last;
-        }
-    }
+    my $result = $self->{snmp}->get_leef(oids => [$oid_iveTemperature], nothing_quit => 1);
+    my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_iveTemperature}, 
+                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("Blade Temperautre is %.2f%% C", 
+                                    $result->{$oid_iveTemperature}));
+    $self->{output}->perfdata_add(label => 'temperature', unit => 'C',
+                                  value => sprintf("%.2f", $result->{$oid_iveTemperature}),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
     
-    if ($routing_engine_find == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find operating with 'routing' in description.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{snmp}->load(oids => [$oid_jnxOperatingBuffer, $oid_jnxOperatingMemory],
-                        instances => [$oid_routing_engine],
-                        instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
-    my $result2 = $self->{snmp}->get_leef();
-    
-    $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
-    my $instance = $1;
-    my $total_size = $result2->{$oid_jnxOperatingMemory . '.' . $instance} * 1024 * 1024;
-    my $prct_used = $result2->{$oid_jnxOperatingBuffer . '.' . $instance};
-    my $prct_free = 100 - $prct_used;
-    my $memory_used = $total_size * $prct_used / 100;
-    my $memory_free = $total_size - $memory_used;
-        
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
-    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                        $total_value . " " . $total_unit,
-                                        $used_value . " " . $used_unit, $prct_used,
-                                        $free_value . " " . $free_unit, $prct_free));
-    
-    $self->{output}->perfdata_add(label => "used",
-                                  value => $memory_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                  min => 0, max => $total_size);
-
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -134,17 +97,17 @@ __END__
 
 =head1 MODE
 
-Check Memory Usage of routing engine.
+Check temperature of MAG application blade (JUNIPER-IVE-MIB).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning in degree celsius.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical in degree celsius.
 
 =back
 
