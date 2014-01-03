@@ -38,6 +38,70 @@ package centreon::plugins::misc;
 use strict;
 use warnings;
 
+sub execute {
+    my (%options) = @_;
+    my $cmd = '';
+    my $args = [];
+    my ($lerror, $stdout, $exit_code);
+    
+    # Build command line
+    if (defined($options{options}->{remote})) {
+        my $sub_cmd;
+
+        $cmd = $options{options}->{ssh_path} . '/' if (defined($options{options}->{ssh_path}));
+        $cmd .= $options{options}->{ssh_command} if (defined($options{options}->{ssh_command}));
+        
+        foreach (@{$options{options}->{ssh_option}}) {
+            my ($lvalue, $rvalue) = split /=/;
+            push @$args, $lvalue if (defined($lvalue));
+            push @$args, $rvalue if (defined($rvalue));
+        }
+        
+        push @$args, $options{options}->{hostname};
+        
+        $sub_cmd = 'sudo ' if (defined($options{sudo}));
+        $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
+        $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
+        $sub_cmd .= $options{command_options} if (defined($options{command_options}));
+        ($lerror, $stdout, $exit_code) = backtick(
+                                                 command => $cmd,
+                                                 arguments => [@$args, $sub_cmd],
+                                                 timeout => $options{options}->{timeout},
+                                                 wait_exit => 1
+                                                 );
+    } else {
+        $cmd = 'sudo ' if (defined($options{sudo}));
+        $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
+        $cmd .= $options{command} . ' ' if (defined($options{command}));
+        $cmd .= $options{command_options} if (defined($options{command_options}));
+        
+        ($lerror, $stdout, $exit_code) = backtick(
+                                                 command => $cmd,
+                                                 timeout => $options{options}->{timeout},
+                                                 wait_exit => 1
+                                                 );
+    }
+
+    $stdout =~ s/\r//g;
+    if ($exit_code <= -1000) {
+        if ($exit_code == -1000) {
+            $options{output}->output_add(severity => 'UNKNOWN', 
+                                        short_msg => $stdout);
+        }
+        $options{output}->display();
+        $options{output}->exit();
+    }
+    if ($exit_code != 0) {
+        $stdout =~ s/\n/ - /g;
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command error: $stdout");
+        $options{output}->display();
+        $options{output}->exit();
+    }
+    
+    return $stdout;
+}
+
 sub mymodule_load {
     my (%options) = @_;
     my $file;
@@ -117,13 +181,13 @@ sub backtick {
         if ($arg{redirect_stderr} == 1) {
             open STDERR, ">&STDOUT";
         }
-        open STDERR, ">&STDOUT";
         if (scalar(@{$arg{arguments}}) <= 0) {
             exec($arg{command});
         } else {
             exec($arg{command}, @{$arg{arguments}});
         }
-        exit(0);
+        # Exec is in error. No such command maybe.
+        exit(1);
     }
 
     return (0, join("\n", @output), $return_code);
