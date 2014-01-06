@@ -60,5 +60,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check HP Proliant servers in SNMP.
+!!! It's in development. Don't use it !!!
 
 =cut
