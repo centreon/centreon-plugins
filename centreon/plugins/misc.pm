@@ -67,7 +67,8 @@ sub execute {
                                                  command => $cmd,
                                                  arguments => [@$args, $sub_cmd],
                                                  timeout => $options{options}->{timeout},
-                                                 wait_exit => 1
+                                                 wait_exit => 1,
+                                                 redirect_stderr => 1
                                                  );
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
@@ -78,7 +79,8 @@ sub execute {
         ($lerror, $stdout, $exit_code) = backtick(
                                                  command => $cmd,
                                                  timeout => $options{options}->{timeout},
-                                                 wait_exit => 1
+                                                 wait_exit => 1,
+                                                 redirect_stderr => 1
                                                  );
     }
 
