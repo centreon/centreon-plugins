@@ -33,13 +33,13 @@
 #
 ####################################################################################
 
-package database::postgres::mode::timesync;
+package database::informix::mode::listdbspaces;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,8 +49,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "exclude:s"               => { name => 'exclude', },
                                 });
 
     return $self;
@@ -59,14 +58,22 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+sub manage_selection {
+    my ($self, %options) = @_;
+    
+    $self->{sql}->connect();
+
+    $self->{sql}->query(query => q{
+SELECT name FROM sysdbspaces ORDER BY name
+});
+    $self->{list_dbspaces} = [];
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        if (defined($self->{option_results}->{exclude}) && $row->{name} !~ /$self->{option_results}->{exclude}/) {
+            next;
+        }
+        push @{$self->{list_dbspaces}}, centreon::plugins::misc::trim($row->{name});
     }
 }
 
@@ -75,31 +82,30 @@ sub run {
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
-
-    $self->{sql}->query(query => q{
-SELECT extract(epoch FROM now()) AS epok
-});
-
-    my ($result) = $self->{sql}->fetchrow_array();
-    my $ltime = Time::HiRes::time();
-    if (!defined($result)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get server time.");
-        $self->{output}->option_exit();
-    }
+    $self->manage_selection();
     
-    my $diff = $result - $ltime;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%.3fs time diff between servers", $diff));
-    $self->{output}->perfdata_add(label => 'timediff', unit => 's',
-                                  value => sprintf("%.3f", $diff),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => "List of dbspaces: " . join(', ', @{$self->{list_dbspaces}}));
 
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_disco_format(elements => ['name']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{sql} = $options{sql};
+
+    $self->manage_selection();
+    foreach (sort @{$self->{list_dbspaces}}) {
+        $self->{output}->add_disco_entry(name => $_);
+    }
 }
 
 1;
@@ -108,17 +114,13 @@ __END__
 
 =head1 MODE
 
-Compares the local system time with the time reported by Postgres
+Display dbspaces
 
 =over 8
 
-=item B<--warning>
+=item B<--exclude>
 
-Threshold warning in seconds. (use a range. it can be -0.3s or +0.3s.)
-
-=item B<--critical>
-
-Threshold critical in seconds. (use a range. it can be -0.3s or +0.3s.)
+Filter dbspaces.
 
 =back
 
