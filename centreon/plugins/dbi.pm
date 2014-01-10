@@ -78,6 +78,9 @@ sub new {
     $self->{username} = undef;
     $self->{password} = undef;
     
+    # Sometimes, we need to set ENV
+    $self->{env} = undef;
+    
     return $self;
 }
 
@@ -116,10 +119,11 @@ sub check_options {
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
+    $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify database arguments.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
     
@@ -160,6 +164,13 @@ sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
+    # Set ENV
+    if (defined($self->{env})) {
+        foreach (keys %{$self->{env}}) {
+            $ENV{$_} = $self->{env}->{$_};
+        }
+    }
+    
     $self->{instance} = DBI->connect(
         "DBI:". $self->{data_source},
         $self->{username},
@@ -243,7 +254,7 @@ dbi class
 
 =item B<--datasource>
 
-Hostname to query (required).
+Datasource (required. Depends of database server).
 
 =item B<--username>
 
