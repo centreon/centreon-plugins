@@ -51,9 +51,39 @@ my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
 my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
 
 my %storage_types_manage = (
-    '.1.3.6.1.2.1.25.2.1.4' => 'hrStorageFixedDisk',
-    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk', 
-    '.1.3.6.1.2.1.25.3.9.3' => 'hrFSBerkeleyFFS' # For Freebsd
+    '.1.3.6.1.2.1.25.2.1.1'  => 'hrStorageOther',
+    '.1.3.6.1.2.1.25.2.1.2'  => 'hrStorageRam',
+    '.1.3.6.1.2.1.25.2.1.3'  => 'hrStorageVirtualMemory',
+    '.1.3.6.1.2.1.25.2.1.4'  => 'hrStorageFixedDisk',
+    '.1.3.6.1.2.1.25.2.1.5'  => 'hrStorageRemovableDisk',
+    '.1.3.6.1.2.1.25.2.1.6'  => 'hrStorageFloppyDisk',
+    '.1.3.6.1.2.1.25.2.1.7'  => 'hrStorageCompactDisc',
+    '.1.3.6.1.2.1.25.2.1.8'  => 'hrStorageRamDisk',
+    '.1.3.6.1.2.1.25.2.1.9'  => 'hrStorageFlashMemory',
+    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk',
+    '.1.3.6.1.2.1.25.3.9.1'  => 'hrFSOther',
+    '.1.3.6.1.2.1.25.3.9.2'  => 'hrFSUnknown',
+    '.1.3.6.1.2.1.25.3.9.3'  => 'hrFSBerkeleyFFS', # For Freebsd
+    '.1.3.6.1.2.1.25.3.9.4'  => 'hrFSSys5FS',
+    '.1.3.6.1.2.1.25.3.9.5'  => 'hrFSFat',
+    '.1.3.6.1.2.1.25.3.9.6'  => 'hrFSHPFS',
+    '.1.3.6.1.2.1.25.3.9.7'  => 'hrFSHFS',
+    '.1.3.6.1.2.1.25.3.9.8'  => 'hrFSMFS',
+    '.1.3.6.1.2.1.25.3.9.9'  => 'hrFSNTFS',
+    '.1.3.6.1.2.1.25.3.9.10' => 'hrFSVNode',
+    '.1.3.6.1.2.1.25.3.9.11' => 'hrFSJournaled',
+    '.1.3.6.1.2.1.25.3.9.12' => 'hrFSiso9660',
+    '.1.3.6.1.2.1.25.3.9.13' => 'hrFSRockRidge',
+    '.1.3.6.1.2.1.25.3.9.14' => 'hrFSNFS',
+    '.1.3.6.1.2.1.25.3.9.15' => 'hrFSNetware',
+    '.1.3.6.1.2.1.25.3.9.16' => 'hrFSAFS',
+    '.1.3.6.1.2.1.25.3.9.17' => 'hrFSDFS',
+    '.1.3.6.1.2.1.25.3.9.18' => 'hrFSAppleshare',
+    '.1.3.6.1.2.1.25.3.9.19' => 'hrFSRFS',
+    '.1.3.6.1.2.1.25.3.9.20' => 'hrFSDGCFS',
+    '.1.3.6.1.2.1.25.3.9.21' => 'hrFSBFS',
+    '.1.3.6.1.2.1.25.3.9.22' => 'hrFSFAT32',
+    '.1.3.6.1.2.1.25.3.9.23' => 'hrFSLinuxExt2',
 );
 
 sub new {
@@ -72,6 +102,7 @@ sub new {
                                   "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
+                                  "filter-storage-type:s"   => { name => 'filter_storage_type', default => '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$' },
                                 });
 
     $self->{storage_id_selected} = [];
@@ -108,7 +139,8 @@ sub run {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || 
+                ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
         
         $storage_display .= $storage_display_append . "name = $display_value [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B, id = $_]";
         $storage_display_append = ', ';
@@ -219,7 +251,8 @@ sub disco_show {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || 
+                ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
 
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_},
@@ -266,6 +299,10 @@ Regexp src to transform display value. (security risk!!!)
 =item B<--display-transform-dst>
 
 Regexp dst to transform display value. (security risk!!!)
+
+=item B<--filter-storage-type>
+
+Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 
