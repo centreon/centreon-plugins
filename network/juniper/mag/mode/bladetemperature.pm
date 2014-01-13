@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::mag::plugin::mode::bladetemperature;
+package network::juniper::mag::mode::bladetemperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -80,7 +80,7 @@ sub run {
     my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_iveTemperature}, 
                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Blade Temperautre is %.2f%% C", 
+                                short_msg => sprintf("Blade Temperautre is %.2f C", 
                                     $result->{$oid_iveTemperature}));
     $self->{output}->perfdata_add(label => 'temperature', unit => 'C',
                                   value => sprintf("%.2f", $result->{$oid_iveTemperature}),
