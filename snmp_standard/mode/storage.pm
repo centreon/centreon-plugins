@@ -48,9 +48,39 @@ my %oids_hrStorageTable = (
     'hrstoragetype' => '.1.3.6.1.2.1.25.2.3.1.2',
 );
 my %storage_types_manage = (
-    '.1.3.6.1.2.1.25.2.1.4' => 'hrStorageFixedDisk',
-    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk', 
-    '.1.3.6.1.2.1.25.3.9.3' => 'hrFSBerkeleyFFS' # For Freebsd
+    '.1.3.6.1.2.1.25.2.1.1'  => 'hrStorageOther',
+    '.1.3.6.1.2.1.25.2.1.2'  => 'hrStorageRam',
+    '.1.3.6.1.2.1.25.2.1.3'  => 'hrStorageVirtualMemory',
+    '.1.3.6.1.2.1.25.2.1.4'  => 'hrStorageFixedDisk',
+    '.1.3.6.1.2.1.25.2.1.5'  => 'hrStorageRemovableDisk',
+    '.1.3.6.1.2.1.25.2.1.6'  => 'hrStorageFloppyDisk',
+    '.1.3.6.1.2.1.25.2.1.7'  => 'hrStorageCompactDisc',
+    '.1.3.6.1.2.1.25.2.1.8'  => 'hrStorageRamDisk',
+    '.1.3.6.1.2.1.25.2.1.9'  => 'hrStorageFlashMemory',
+    '.1.3.6.1.2.1.25.2.1.10' => 'hrStorageNetworkDisk',
+    '.1.3.6.1.2.1.25.3.9.1'  => 'hrFSOther',
+    '.1.3.6.1.2.1.25.3.9.2'  => 'hrFSUnknown',
+    '.1.3.6.1.2.1.25.3.9.3'  => 'hrFSBerkeleyFFS', # For Freebsd
+    '.1.3.6.1.2.1.25.3.9.4'  => 'hrFSSys5FS',
+    '.1.3.6.1.2.1.25.3.9.5'  => 'hrFSFat',
+    '.1.3.6.1.2.1.25.3.9.6'  => 'hrFSHPFS',
+    '.1.3.6.1.2.1.25.3.9.7'  => 'hrFSHFS',
+    '.1.3.6.1.2.1.25.3.9.8'  => 'hrFSMFS',
+    '.1.3.6.1.2.1.25.3.9.9'  => 'hrFSNTFS',
+    '.1.3.6.1.2.1.25.3.9.10' => 'hrFSVNode',
+    '.1.3.6.1.2.1.25.3.9.11' => 'hrFSJournaled',
+    '.1.3.6.1.2.1.25.3.9.12' => 'hrFSiso9660',
+    '.1.3.6.1.2.1.25.3.9.13' => 'hrFSRockRidge',
+    '.1.3.6.1.2.1.25.3.9.14' => 'hrFSNFS',
+    '.1.3.6.1.2.1.25.3.9.15' => 'hrFSNetware',
+    '.1.3.6.1.2.1.25.3.9.16' => 'hrFSAFS',
+    '.1.3.6.1.2.1.25.3.9.17' => 'hrFSDFS',
+    '.1.3.6.1.2.1.25.3.9.18' => 'hrFSAppleshare',
+    '.1.3.6.1.2.1.25.3.9.19' => 'hrFSRFS',
+    '.1.3.6.1.2.1.25.3.9.20' => 'hrFSDGCFS',
+    '.1.3.6.1.2.1.25.3.9.21' => 'hrFSBFS',
+    '.1.3.6.1.2.1.25.3.9.22' => 'hrFSFAT32',
+    '.1.3.6.1.2.1.25.3.9.23' => 'hrFSLinuxExt2',
 );
 
 sub new {
@@ -75,6 +105,8 @@ sub new {
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
                                   "show-cache"              => { name => 'show_cache' },
+                                  "space-reservation:s"     => { name => 'space_reservation' },
+                                  "filter-storage-type:s"   => { name => 'filter_storage_type', default => '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$' },
                                 });
 
     $self->{storage_id_selected} = [];
@@ -95,6 +127,12 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{space_reservation}) && 
+        ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
+       $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
+       $self->{output}->option_exit();
+    }
+    
     $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
     if ($self->{option_results}->{oid_filter} !~ /^(hrstoragedescr|hrfsmountpoint)$/) {
        $self->{output}->add_option_msg(short_msg => "Unsupported --oid-filter option.");
@@ -135,13 +173,17 @@ sub run {
     foreach (sort @{$self->{storage_id_selected}}) {
         # Skipped disks
         my $storage_type = $self->{statefile_cache}->get(name => "type_" . $_);
-        next if (!defined($storage_type) || (!defined($storage_types_manage{$storage_type})));
+        next if (!defined($storage_type) || 
+                ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
 
         my $name_storage = $self->get_display_value(id => $_);
         $num_disk_check++;
 
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
+        if (defined($self->{option_results}->{space_reservation})) {
+            $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);
+        }
         next if ($total_size == 0);
         my $total_used = $result->{$oid_hrStorageUsed . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         my $total_free = $total_size - $total_used;
@@ -373,6 +415,15 @@ Regexp dst to transform display value. (security risk!!!)
 =item B<--show-cache>
 
 Display cache storage datas.
+
+=item B<--space-reservation>
+
+Some filesystem has space reserved (like ext4 for root).
+The value is in percent of total (Default: none).
+
+=item B<--filter-storage-type>
+
+Filter storage types with a regexp (Default: '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$').
 
 =back
 
