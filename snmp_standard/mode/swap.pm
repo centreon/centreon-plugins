@@ -78,8 +78,8 @@ sub run {
     my $oid_memAvailSwap = '.1.3.6.1.4.1.2021.4.4.0'; # KB
     my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalSwap, $oid_memAvailSwap], nothing_quit => 1);
 
-    my $swap_used = $result->{$oid_memAvailSwap} * 1024;
-    my $total_size = $result->{$oid_memAvailSwap} * 1024;
+    my $total_size = $result->{$oid_memTotalSwap} * 1024;
+    my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
     
     my $prct_used = $swap_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
