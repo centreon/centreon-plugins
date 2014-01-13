@@ -53,7 +53,7 @@ sub new {
                          'users'                => 'network::juniper::common::ive::mode::users',
                          'memory'               => 'snmp_standard::mode::memory',
                          'swap'                 => 'snmp_standard::mode::swap',
-                         'blade-temperature'    => 'network::juniper::mag::plugin::mode::bladetemperature',
+                         'blade-temperature'    => 'network::juniper::mag::mode::bladetemperature',
                          );
 
     return $self;

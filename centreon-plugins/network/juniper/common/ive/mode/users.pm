@@ -121,16 +121,16 @@ sub run {
                                         threshold => [ { label => 'critical_cluster', 'exit_litteral' => 'critical' }, { label => 'warning_cluster', exit_litteral => 'warning' } ]);
                                         
     $self->{output}->output_add(severity => $exit1,
-                                short_msg => sprintf("Current concurrent signed-in web users connections: %d, ",
+                                short_msg => sprintf("Current concurrent signed-in web users connections: %d",
                                                      $result->{$oid_signedInWebUsers}));
     $self->{output}->output_add(severity => $exit2,
-                                short_msg => sprintf("Current concurrent meeting users connections: %d, ",
-                                                     $result->{$oid_meetingUserCount}));
+                                short_msg => sprintf("Current concurrent meeting users connections: %s",
+                                                     defined($result->{$oid_meetingUserCount}) ? $result->{$oid_meetingUserCount} : 'unknown'));
     $self->{output}->output_add(severity => $exit3,
-                                short_msg => sprintf("Current concurrent node logged users connections: %d, ",
+                                short_msg => sprintf("Current concurrent node logged users connections: %d",
                                                      $result->{$oid_iveConcurrentUsers}));
     $self->{output}->output_add(severity => $exit4,
-                                short_msg => sprintf("Current concurrent cluster logged users connections: %d, ",
+                                short_msg => sprintf("Current concurrent cluster logged users connections: %d",
                                                      $result->{$oid_clusterConcurrentUsers}));                                       
                                                      
     $self->{output}->perfdata_add(label => "web",
