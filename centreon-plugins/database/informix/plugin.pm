@@ -53,9 +53,11 @@ sub new {
                          'connection-time' => 'database::informix::mode::connectiontime',
                          'global-cache'    => 'database::informix::mode::globalcache',
                          'list-dbspaces'   => 'database::informix::mode::listdbspaces',
+                         'list-databases'  => 'database::informix::mode::listdatabases',
                          'lockoverflow'    => 'database::informix::mode::lockoverflow',
                          'dbspace-usage'   => 'database::informix::mode::dbspacesusage',
                          'sessions'        => 'database::informix::mode::sessions',
+                         'table-locks'        => 'database::informix::mode::tablelocks',
                          );
 
     return $self;
