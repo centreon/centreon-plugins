@@ -49,7 +49,7 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                  "ignore-perfdata"         => { name => 'ignore_perfdata' },
+                                  "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
                                   "output-xml"              => { name => 'output_xml' },
@@ -188,8 +188,11 @@ sub output_json {
         }
     }
 
-    if (!defined($self->{option_results}->{ignore_perfdata}) && $options{force_ignore_perfdata} == 1) {
+    if ($options{force_ignore_perfdata} == 0) {
         foreach (@{$self->{perfdatas}}) {
+            next if (defined($self->{option_results}->{filter_perfdata}) &&
+                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            
             my %values = ();
             foreach my $key (keys %$_) {
                 $values{$key} = $_->{$key};
@@ -270,8 +273,11 @@ sub output_xml {
         }
     }
 
-    if (!defined($self->{option_results}->{ignore_perfdata}) && $options{force_ignore_perfdata} == 1) {
+    if ($options{force_ignore_perfdata} == 0) {
         foreach (@{$self->{perfdatas}}) {
+            next if (defined($self->{option_results}->{filter_perfdata}) &&
+                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+        
             my ($child_perfdata);
             $child_perfdata = $self->{xml_output}->createElement("perfdata");
             $child_plugin_perfdata->addChild($child_perfdata);
@@ -307,11 +313,13 @@ sub output_txt {
         print (($options{nolabel} == 0 ? 'OK: ' : '') . $self->{global_short_concat_outputs}->{OK});
     }
 
-    if ($force_ignore_perfdata == 1 || defined($self->{option_results}->{ignore_perfdata})) {
+    if ($force_ignore_perfdata == 1) {
         print "\n";
     } else {
         print "|";
         foreach (@{$self->{perfdatas}}) {
+            next if (defined($self->{option_results}->{filter_perfdata}) &&
+                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
             print " '" . $_->{label} . "'=" . $_->{value} . $_->{unit} . ";" . $_->{warning} . ";" . $_->{critical} . ";" . $_->{min} . ";" . $_->{max} . ";";
         }
         print "\n";
@@ -625,9 +633,9 @@ Output class
 
 Display long output.
 
-=item B<--ignore-perfdata>
+=item B<--filter-perfdata>
 
-Don't display perfdata.
+Filter perfdata that match the regexp.
 
 =item B<--opt-exit>
 
