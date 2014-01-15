@@ -49,6 +49,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'checkpoints'     => 'database::informix::mode::checkpoints',
                          'connection-time' => 'database::informix::mode::connectiontime',
                          'global-cache'    => 'database::informix::mode::globalcache',
                          'list-dbspaces'   => 'database::informix::mode::listdbspaces',
