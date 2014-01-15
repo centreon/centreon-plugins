@@ -123,7 +123,7 @@ WHERE d.oid=sd.datid
         $prcts{hitratio_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
         $prcts{hitratio} = ($new_datas->{$$row[2] . '_blks_hit'} == 0) ? 100 : ($new_datas->{$$row[2] . '_blks_hit'} - $new_datas->{$$row[2] . '_blks_read'}) * 100 / $new_datas->{$$row[2] . '_blks_hit'};
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '_now' : '' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(long_msg => sprintf("Database '%s' hitratio at %.2f%%", 
                                                     $$row[2], $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
@@ -135,7 +135,7 @@ WHERE d.oid=sd.datid
                                         );
         }
         $self->{output}->perfdata_add(label => $$row[2] . '_hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
-                                      value => sprintf("%.2f", $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+                                      value => sprintf("%.2f", $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0, max => 100);
