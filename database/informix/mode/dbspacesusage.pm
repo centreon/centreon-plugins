@@ -96,7 +96,6 @@ ORDER BY dbspace
                                     short_msg => 'All dbspaces usage are ok');
     }
     
-    my $dbquery = {};
     my $count = 0;
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         my $name = centreon::plugins::misc::trim($row->{dbspace});
