@@ -127,10 +127,7 @@ WHERE name IN
         my $diff_dskreads = $new_datas->{dskreads} - $old_dskreads;
         my $diff_bufwrites = $new_datas->{bufwrites} - $old_bufwrites;
         my $diff_dskwrites = $new_datas->{dskwrites} - $old_dskwrites;
-        
-        use Data::Dumper;
-        print Data::Dumper::Dumper($new_datas);
-        
+
         # 100 * (bufreads - dskreads) / bufreads
         # 100 * (bufwrits - dskwrits) / bufwrits
         my %prcts = ();
