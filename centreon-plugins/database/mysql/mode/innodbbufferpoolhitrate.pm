@@ -116,12 +116,12 @@ sub run {
         $prcts{bufferpool_hitrate_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
         $prcts{bufferpool_hitrate} = ($new_datas->{Innodb_buffer_pool_read_requests} == 0) ? 100 : ($new_datas->{Innodb_buffer_pool_read_requests} - $new_datas->{Innodb_buffer_pool_reads}) * 100 / $new_datas->{Innodb_buffer_pool_read_requests};
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("innodb buffer pool hitrate at %.2f%%", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
         $self->{output}->perfdata_add(label => 'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
-                                      value => sprintf("%.2f", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+                                      value => sprintf("%.2f", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);

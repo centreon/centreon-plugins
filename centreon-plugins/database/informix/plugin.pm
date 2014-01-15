@@ -50,8 +50,10 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'connection-time' => 'database::informix::mode::connectiontime',
+                         'global-cache'    => 'database::informix::mode::globalcache',
                          'list-dbspaces'   => 'database::informix::mode::listdbspaces',
                          'dbspace-usage'   => 'database::informix::mode::dbspacesusage',
+                         'sessions'        => 'database::informix::mode::sessions',
                          );
 
     return $self;

@@ -116,12 +116,12 @@ sub run {
         $prcts{keycache_hitrate_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
         $prcts{keycache_hitrate} = ($new_datas->{Key_read_requests} == 0) ? 100 : ($new_datas->{Key_read_requests} - $new_datas->{Key_reads}) * 100 / $new_datas->{Key_read_requests};
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("myisam keycache hitrate at %.2f%%", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
         $self->{output}->perfdata_add(label => 'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
-                                      value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+                                      value => sprintf("%.2f", $prcts{'keycache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
