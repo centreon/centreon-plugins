@@ -51,7 +51,8 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
-                                  "filter:s"                => { name => 'filter', },
+                                  "name:s"                  => { name => 'name', },
+                                  "regexp"                  => { name => 'use_regexp' },
                                 });
 
     return $self;
@@ -90,14 +91,18 @@ ORDER BY dbspace
     
     $self->{sql}->query(query => $query);
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All dbspaces usage are ok.");
+    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All dbspaces usage are ok');
+    }
+    
     my $dbquery = {};
+    my $count = 0;
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         my $name = centreon::plugins::misc::trim($row->{dbspace});
-        if (defined($self->{option_results}->{filter}) && $name !~ /$self->{option_results}->{filter}/) {
-            next;
-        }
+        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && $name ne $self->{option_results}->{name});
+        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && $name !~ /$self->{option_results}->{name}/);
+
         my $prct_used;
         if ($row->{pages_free} == 0) {
             $prct_used = 100;
@@ -105,23 +110,32 @@ ORDER BY dbspace
             $prct_used = ($row->{pages_size} - $row->{pages_free}) * 100 / $row->{pages_size};
         }
         
+        $count++;
         $self->{output}->output_add(long_msg => sprintf("Dbspace '%s': Used: %.2f%% Free: %.2f%%",
                                                          $name, $prct_used, 100 - $prct_used));
         my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1) || 
+            (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit_code,
                                         short_msg => sprintf("Dbspace '%s': Used: %.2f%% Free: %.2f%%",
                                                              $name, $prct_used, 100 - $prct_used));
         }
         
-        $self->{output}->perfdata_add(label => 'used_' . $name, unit => '%',
+        my $extra_label = '';
+        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
+        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => '%',
                                       value => sprintf("%.2f", $prct_used),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0, max => 100);
     }
 
+    if ($count == 0) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Cannot find a dbspace (maybe the filter).");
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -144,9 +158,13 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
-=item B<--filter>
+=item B<--name>
 
-Filter dbspaces.
+Set the dbspace (empty means 'check all dbspaces').
+
+=item B<--regexp>
+
+Allows to use regexp to filter dbspaces (with option --name).
 
 =back
 
