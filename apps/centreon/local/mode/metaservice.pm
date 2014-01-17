@@ -45,6 +45,8 @@ use centreon::common::logger;
 
 use vars qw($centreon_config);
 
+my %DSTYPE = ( "0" => "g", "1" => "c", "2" => "d", "3" => "a");
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -64,7 +66,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{meta_id}) || $self->{option_results}->{meta_id} =~ /^[0-9]+$/) {
+    if (!defined($self->{option_results}->{meta_id}) || $self->{option_results}->{meta_id} !~ /^[0-9]+$/) {
         $self->{output}->add_option_msg(short_msg => "Need to specify meta-id (numeric value) option.");
         $self->{output}->option_exit();
     }
@@ -74,7 +76,7 @@ sub check_options {
 sub execute_query {
     my ($self, $db, $query) = @_;
     
-    my ($status, $stmt) = $self->{centreon_db_centreon}->query();
+    my ($status, $stmt) = $db->query($query);
     if ($status == -1) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'SQL Query error: ' . $query);
@@ -89,8 +91,8 @@ sub select_by_regexp {
     
     my $count = 0;
     my $stmt = $self->execute_query($self->{centreon_db_centstorage},
-                                    "SELECT metrics.metric_id, metrics.metric_name, metrics.current_value FROM index_data, metrics WHERE index_data.service_description LIKE " . $self->{centreon_db_centstorage}->quote($options{regexp_str})) . " AND index.id = metrics.index_id");
-    while (($row = $stmt->fetchrow_hashref())) {
+                                    "SELECT metrics.metric_id, metrics.metric_name, metrics.current_value FROM index_data, metrics WHERE index_data.service_description LIKE " . $self->{centreon_db_centstorage}->quote($options{regexp_str}) . " AND index.id = metrics.index_id");
+    while ((my $row = $stmt->fetchrow_hashref())) {
         if ($options{metric_select} eq $row->{metric_name}) {
             $self->{metric_selected}->{$row->{metric_id}} = $row->{current_value};
             $count++;
@@ -110,8 +112,8 @@ sub select_by_list {
     my $count = 0;
     my $metric_ids = {};
     my $stmt = $self->execute_query($self->{centreon_db_centreon}, "SELECT metric_id FROM `meta_service_relation` WHERE meta_id = '". $self->{option_results}->{meta_id} . "' AND activate = '1'");
-    while (($row = $stmt->fetchrow_hashref())) {
-        $metrics_ids->{$row->{metric_id}} = 1;
+    while ((my $row = $stmt->fetchrow_hashref())) {
+        $metric_ids->{$row->{metric_id}} = 1;
         $count++;
     }
     if ($count == 0) {
@@ -123,8 +125,8 @@ sub select_by_list {
     
     $count = 0;
     $stmt = $self->execute_query($self->{centreon_db_centstorage}, 
-                                 "SELECT metric_id, current_value FROM metrics WHERE metric_id IN (" . join(',' keys %{$metric_ids}) . ")");
-    while (($row = $stmt->fetchrow_hashref())) {
+                                 "SELECT metric_id, current_value FROM metrics WHERE metric_id IN (" . join(',', keys %{$metric_ids}) . ")");
+    while ((my $row = $stmt->fetchrow_hashref())) {
         $self->{metric_selected}->{$row->{metric_id}} = $row->{current_value};
         $count++;
     }
@@ -152,13 +154,11 @@ sub calculate {
         }
     } elsif ($options{calculation} eq "SOM") {
         foreach my $value (values %{$self->{metric_selected}}) {
-            $value =~ s/,/./;
             $result += $value;
         }
     } elsif ($options{calculation} eq "AVE") {
         my @values = values %{$self->{metric_selected}};
         foreach my $value (@values) {
-            $value =~ s/,/./;
             $result += $value;
         }
         my $total = scalar(@values);
@@ -196,7 +196,7 @@ sub run {
                                                                  password => $centreon_config->{db_passwd},
                                                                  force => 0,
                                                                  logger => $self->{logger});
-    my $status = $self->{centreon_db_centstorage}->connect();
+    $status = $self->{centreon_db_centstorage}->connect();
     if ($status == -1) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'Cannot connect to Centstorage Database.');
@@ -204,7 +204,7 @@ sub run {
         $self->{output}->exit();
     }
     
-    my $stmt = $self->execute_query($self->{centreon_db_centreon}, "SELECT meta_display, calcul_type, regexp_str, warning, critical, metric, meta_select_mode FROM `meta_service` WHERE meta_id = '". $self->{option_results}->{meta_id} . "' LIMIT 1");
+    my $stmt = $self->execute_query($self->{centreon_db_centreon}, "SELECT meta_display, calcul_type, regexp_str, warning, critical, metric, meta_select_mode, data_source_type FROM `meta_service` WHERE meta_id = '". $self->{option_results}->{meta_id} . "' LIMIT 1");
     my $row = $stmt->fetchrow_hashref();
     if (!defined($row)) {
         $self->{output}->output_add(severity => 'UNKNOWN',
@@ -230,6 +230,16 @@ sub run {
     } 
 
     my $result = $self->calculate(calculation => $row->{calcul_type});
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $display = defined($row->{meta_display}) ? $row->{meta_display} : $row->{calcul_type} . ' - value : %f';
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf($display, $result));
+    $self->{output}->perfdata_add(label => (defined($DSTYPE{$row->{data_source_type}}) ? $DSTYPE{$row->{data_source_type}} : 'g') . '[value]', 
+                                  value => sprintf("%02.2f", $result),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+                                  );
     
     $self->{output}->display();
     $self->{output}->exit();
