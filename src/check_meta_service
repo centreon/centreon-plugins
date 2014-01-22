@@ -52,7 +52,7 @@ my $MODIF_DATE = "07-22-2013";
 my %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3);
 my %DSTYPE = ( "0" => "g", "1" => "c", "2" => "d", "3" => "a");
 
-require "@CENTREON_ETC@/centreon-config.pm";
+require "@CENTREON_ETC@/conf.pm";
 my $dbh  = DBI->connect("DBI:mysql:database=$centreon_config->{centreon_db};host=$centreon_config->{db_host}","$centreon_config->{db_user}", "$centreon_config->{db_passwd}",{'RaiseError' => 1});
 my $db_centstorage  = DBI->connect("DBI:mysql:database=$centreon_config->{centstorage_db};host=$centreon_config->{db_host}","$centreon_config->{db_user}", "$centreon_config->{db_passwd}",{'RaiseError' => 1});
 
