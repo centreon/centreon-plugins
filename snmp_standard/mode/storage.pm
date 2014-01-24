@@ -253,12 +253,10 @@ sub reload_cache {
     $datas->{oid_display} = $self->{option_results}->{oid_display};
     $datas->{all_ids} = [];
     my $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{$self->{option_results}->{oid_filter}});
-    my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
         push @{$datas->{all_ids}}, $1;
         $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-        $last_num = $1;
     }
     
     if (scalar(keys %$datas) <= 0) {
