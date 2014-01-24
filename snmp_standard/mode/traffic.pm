@@ -299,12 +299,13 @@ sub reload_cache {
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
+    $datas->{all_ids} = [];
     my $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_filter}});
     my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
+        push @{$datas->{all_ids}}, $1;
         $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-        $last_num = $1;
     }
     
     if (scalar(keys %$datas) <= 0) {
@@ -320,7 +321,6 @@ sub reload_cache {
        }
     }
     
-    $datas->{total_interface} = $last_num;
     $self->{statefile_cache}->write(data => $datas);
 }
 
@@ -344,7 +344,7 @@ sub manage_selection {
         $self->{statefile_cache}->read();
     }
 
-    my $total_interface = $self->{statefile_cache}->get(name => 'total_interface');
+    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
         # get by ID
         push @{$self->{interface_id_selected}}, $self->{option_results}->{interface}; 
@@ -354,7 +354,7 @@ sub manage_selection {
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_interface; $i++) {
+        foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{interface})) {
