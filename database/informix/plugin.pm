@@ -49,17 +49,19 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'archivelevel0'   => 'database::informix::mode::archivelevel0',
-                         'checkpoints'     => 'database::informix::mode::checkpoints',
-                         'chunkstates'     => 'database::informix::mode::chunkstates',
-                         'connection-time' => 'database::informix::mode::connectiontime',
-                         'global-cache'    => 'database::informix::mode::globalcache',
-                         'list-dbspaces'   => 'database::informix::mode::listdbspaces',
-                         'list-databases'  => 'database::informix::mode::listdatabases',
-                         'lockoverflow'    => 'database::informix::mode::lockoverflow',
-                         'dbspace-usage'   => 'database::informix::mode::dbspacesusage',
-                         'sessions'        => 'database::informix::mode::sessions',
-                         'table-locks'     => 'database::informix::mode::tablelocks',
+                         'archivelevel0'    => 'database::informix::mode::archivelevel0',
+                         'checkpoints'      => 'database::informix::mode::checkpoints',
+                         'chunkstates'      => 'database::informix::mode::chunkstates',
+                         'connection-time'  => 'database::informix::mode::connectiontime',
+                         'global-cache'     => 'database::informix::mode::globalcache',
+                         'list-dbspaces'    => 'database::informix::mode::listdbspaces',
+                         'list-databases'   => 'database::informix::mode::listdatabases',
+                         'lockoverflow'     => 'database::informix::mode::lockoverflow',
+                         'longtxs'          => 'database::informix::mode::longtxs',
+                         'dbspace-usage'    => 'database::informix::mode::dbspacesusage',
+                         'logfile-usage'    => 'database::informix::mode::logfilesusage',
+                         'sessions'         => 'database::informix::mode::sessions',
+                         'table-locks'      => 'database::informix::mode::tablelocks',
                          );
 
     return $self;
