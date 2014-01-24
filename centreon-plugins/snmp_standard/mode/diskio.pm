@@ -207,14 +207,14 @@ sub run {
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
+    $datas->{all_ids} = [];
 
     my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
     my $result = $self->{snmp}->get_table(oid => $oid_diskIODevice);
-    my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
+        push @{$datas->{all_ids}}, $1;
         $datas->{"device_" . $1} = $result->{$key};
-        $last_num = $1;
     }
     
     if (scalar(keys %$datas) <= 0) {
@@ -222,7 +222,6 @@ sub reload_cache {
         $self->{output}->option_exit();
     }
    
-    $datas->{total_device} = $last_num;
     $self->{statefile_cache}->write(data => $datas);
 }
 
@@ -243,7 +242,7 @@ sub manage_selection {
         $self->{statefile_cache}->read();
     }
 
-    my $total_device = $self->{statefile_cache}->get(name => 'total_device');
+    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{device})) {
         # get by ID
         push @{$self->{device_id_selected}}, $self->{option_results}->{device}; 
@@ -253,7 +252,7 @@ sub manage_selection {
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_device; $i++) {
+        foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => "device_" . $i);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{device})) {

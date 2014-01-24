@@ -139,11 +139,12 @@ sub reload_cache {
     my $datas = {};
 
     my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
+    $datas->{all_ids} = [];
     my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
+        push @{$datas->{all_ids}}, $1;
         $datas->{'dskPath_' . $1} = $self->{output}->to_utf8($result->{$key});
-        $last_num = $1;
     }
     
     if (scalar(keys %$datas) <= 0) {
@@ -151,7 +152,6 @@ sub reload_cache {
         $self->{output}->option_exit();
     }
 
-    $datas->{total_diskpath} = $last_num;
     $self->{statefile_cache}->write(data => $datas);
 }
 
@@ -172,7 +172,7 @@ sub manage_selection {
             $self->{statefile_cache}->read();
     }
 
-    my $total_storage = $self->{statefile_cache}->get(name => 'total_diskpath');
+    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
         # get by ID
         push @{$self->{diskpath_id_selected}}, $self->{option_results}->{diskpath}; 
@@ -182,7 +182,7 @@ sub manage_selection {
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_storage; $i++) {
+        foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => 'dskPath_' . $i);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{diskpath})) {
