@@ -320,7 +320,7 @@ sub output_txt {
         foreach (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
-            print " '" . $_->{label} . "'=" . $_->{value} . $_->{unit} . ";" . $_->{warning} . ";" . $_->{critical} . ";" . $_->{min} . ";" . $_->{max} . ";";
+            print " '" . $_->{label} . "'=" . $_->{value} . $_->{unit} . ";" . $_->{warning} . ";" . $_->{critical} . ";" . $_->{min} . ";" . $_->{max};
         }
         print "\n";
     }

@@ -251,10 +251,12 @@ sub reload_cache {
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
+    $datas->{all_ids} = [];
     my $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{$self->{option_results}->{oid_filter}});
     my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
+        push @{$datas->{all_ids}}, $1;
         $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
         $last_num = $1;
     }
@@ -278,7 +280,6 @@ sub reload_cache {
         $datas->{"type_" . $1} = $result->{$key};
     }
 
-    $datas->{total_storage} = $last_num;
     $self->{statefile_cache}->write(data => $datas);
 }
 
@@ -302,7 +303,7 @@ sub manage_selection {
             $self->{statefile_cache}->read();
     }
 
-    my $total_storage = $self->{statefile_cache}->get(name => 'total_storage');
+    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{storage})) {
         # get by ID
         push @{$self->{storage_id_selected}}, $self->{option_results}->{storage}; 
@@ -312,7 +313,7 @@ sub manage_selection {
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_storage; $i++) {
+        foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{storage})) {
