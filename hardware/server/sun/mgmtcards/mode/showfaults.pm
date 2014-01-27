@@ -88,11 +88,9 @@ sub run {
                                                  wait_exit => 1
                                                  );
     $stdout =~ s/\r//g;
-    if ($exit_code <= -1000) {
-        if ($exit_code == -1000) {
-            $self->{output}->output_add(severity => 'UNKNOWN', 
-                                        short_msg => $stdout);
-        }
+    if ($lerror <= -1000) {
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => $stdout);
         $self->{output}->display();
         $self->{output}->exit();
     }

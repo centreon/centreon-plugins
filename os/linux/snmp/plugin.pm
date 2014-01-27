@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::linux::plugin;
+package os::linux::snmp::plugin;
 
 use strict;
 use warnings;
