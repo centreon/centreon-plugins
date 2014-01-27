@@ -47,8 +47,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'         => 'os::linux::local::mode::cpu',
-                         'cmd-return'  => 'os::linux::local::mode::cmdreturn',
+                         'cpu'          => 'os::linux::local::mode::cpu',
+                         'cmd-return'   => 'os::linux::local::mode::cmdreturn',
+                         'load'         => 'os::linux::local::mode::loadaverage',
+                         'memory'       => 'os::linux::local::mode::memory',
+                         'swap'         => 'os::linux::local::mode::swap',
                          );
 
     return $self;
