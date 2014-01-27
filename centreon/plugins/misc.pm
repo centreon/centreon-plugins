@@ -85,14 +85,17 @@ sub execute {
     }
 
     $stdout =~ s/\r//g;
-    if ($exit_code <= -1000) {
-        if ($exit_code == -1000) {
-            $options{output}->output_add(severity => 'UNKNOWN', 
-                                        short_msg => $stdout);
-        }
+    if ($lerror <= -1000) {
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => $stdout);
         $options{output}->display();
         $options{output}->exit();
     }
+    
+    if (defined($options{no_quit}) && $options{no_quit} == 1) {
+        return ($stdout, $exit_code);
+    }
+    
     if ($exit_code != 0) {
         $stdout =~ s/\n/ - /g;
         $options{output}->output_add(severity => 'UNKNOWN', 
@@ -189,7 +192,7 @@ sub backtick {
             exec($arg{command}, @{$arg{arguments}});
         }
         # Exec is in error. No such command maybe.
-        exit(1);
+        exit(127);
     }
 
     return (0, join("\n", @output), $return_code);

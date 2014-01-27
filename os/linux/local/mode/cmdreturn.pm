@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::solaris::local::mode::hwraidctl;
+package os::linux::local::mode::cmdreturn;
 
 use base qw(centreon::plugins::mode);
 
@@ -56,25 +56,35 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'raidctl' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-S 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
+                                  "command:s"         => { name => 'command' },
+                                  "command-path:s"    => { name => 'command_path' },
+                                  "command-options:s" => { name => 'command_options' },
+                                  "manage-returns:s"  => { name => 'manage_returns', default => '' },
                                 });
+    $self->{manage_returns} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warning} . "'.");
+    
+    if (!defined($self->{option_results}->{command})) {
+       $self->{output}->add_option_msg(short_msg => "Need to specify command option.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
+    
+    foreach my $entry (split(/#/, $self->{option_results}->{manage_returns})) {
+        next if (!($entry =~ /(.*?),(.*?),(.*)/));
+        next if (!$self->{output}->is_litteral_status(status => $2));
+        if ($1 ne '') {
+            $self->{manage_returns}->{$1} = {return => $2, msg => $3};
+        } else {
+            $self->{manage_returns}->{default} = {return => $2, msg => $3};
+        }
+    }
+    if ($self->{option_results}->{manage_returns} eq '' || scalar(keys %{$self->{manage_returns}}) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Need to specify manage-returns option correctly.");
        $self->{output}->option_exit();
     }
 }
@@ -82,60 +92,28 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
+                                                                options => $self->{option_results},
+                                                                sudo => $self->{option_results}->{sudo},
+                                                                command => $self->{option_results}->{command},
+                                                                command_path => $self->{option_results}->{command_path},
+                                                                command_options => $self->{option_results}->{command_options},
+                                                                no_quit => 1);
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
-
-    my $volumes_errors = 0;
-    my $disks_errors = 0;
-    my $volumes = '';
-    my $disks = '';
-    foreach (split(/\n/, $stdout)) {
-        #1 "LSI_1030"
-        #c1t2d0 2 0.2.0 0.3.0 1 OPTIMAL
-        #0.0.0 GOOD
-        #0.1.0 GOOD
-        #0.2.0 GOOD
-        #0.3.0 GOOD
-        #4 "LSI_1030"
-        
-        # For Disk
-        if (/^\s*(\S+)\s+(FAILED)$/i ) {
-            my $disk = $1;
-            
-            $disks_errors++;
-            $disks .= ' [' . $disk . '/FAILED' . ']';
-        } elsif (/^\s*(\S+).*?(DEGRADED|FAILED)$/i) {
-            $volumes_errors++;
-            $volumes .= ' [' . $1 . '/' . $2 . ']';
-        }
-    }
-
-    my ($exit_code) = check_threshold($volumes_errors, $OPTION{warning}, $OPTION{critical});
-    if ($volumes_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some volumes problems:" . $volumes));
+    
+    if (defined($self->{manage_returns}->{$exit_code})) {
+        $self->{output}->output_add(severity => $self->{manage_returns}->{$exit_code}->{return}, 
+                                    short_msg => $self->{manage_returns}->{$exit_code}->{msg});
+    } elsif (defined($self->{manage_returns}->{default})) {
+        $self->{output}->output_add(severity => $self->{manage_returns}->{default}->{return}, 
+                                    short_msg => $self->{manage_returns}->{default}->{msg});
     } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on volumes");
+        $self->{output}->output_add(severity => 'UNKNWON', 
+                                    short_msg => 'Exit code from command');
     }
     
-    ($exit_code) = $self->{perfdata}->threshold_check(value => $disks_errors, 
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if ($disks_errors > 0) {
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Some disks problems:" . $disks));
-    } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on disks");
-    }
- 
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -146,17 +124,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware Raid Status (use 'raidctl' command).
+Check command returns.
 
 =over 8
 
-=item B<--warning>
+=item B<--manage-returns>
 
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Set action according command exit code.
+Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#,UNKNOWN,Command problem
 
 =item B<--remote>
 
@@ -188,16 +163,16 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'raidctl').
-Can be changed if you have output in a file.
+Command to test (Default: none).
+You can use 'sh' to use '&&' or '||'.
 
 =item B<--command-path>
 
-Command path (Default: '/usr/sbin').
+Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-S 2>&1').
+Command options (Default: none).
 
 =back
 
