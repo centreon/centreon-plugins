@@ -184,10 +184,15 @@ sub run {
     $self->check_pnic();
     $self->check_lnic();
     
-#    $self->{output}->output_add(severity => 'OK',
-#                                short_msg => sprintf("All %d components [%d fans, %d blades, %d network connectors, %d psu, %d temperatures, %d fuses] are ok.", 
-#                                ($self->{components_fans} + $self->{components_blades} + $self->{components_nc} + $self->{components_psu} + $self->{components_temperatures} + $self->{components_fuse}), 
-#                                $self->{components_fans}, $self->{components_blades}, $self->{components_nc}, $self->{components_psu}, $self->{components_temperatures}, $self->{components_fuse}));
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %d components [%d cpus, %d power supplies, %d power converters, %d fan, %d temperatures, %d physical nics, %d logical nics] are ok - Product Name: %s, Serial: %s, Rom Version: %s", 
+                                ($self->{components_cpu} + $self->{components_psu} + $self->{components_pc} + 
+                                 $self->{components_fan} + $self->{components_temperature} + $self->{components_pnic} + 
+                                 $self->{components_lnic}), 
+                                $self->{components_cpu}, $self->{components_psu}, $self->{components_pc}, 
+                                $self->{components_fan}, $self->{components_temperature}, $self->{components_pnic},
+                                $self->{components_lnic},
+                                $self->{product_name}, $self->{serial}, $self->{romversion}));
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -197,9 +202,9 @@ sub get_system_information {
     my ($self) = @_;
     
     # In 'CPQSINFO-MIB'
-    my $oid_cpqSiSysSerialNum = "1.3.6.1.4.1.232.2.2.2.1.0";
-    my $oid_cpqSiProductName = "1.3.6.1.4.1.232.2.2.4.2.0";
-    my $oid_cpqSeSysRomVer = "1.3.6.1.4.1.232.1.2.6.1.0";
+    my $oid_cpqSiSysSerialNum = ".1.3.6.1.4.1.232.2.2.2.1.0";
+    my $oid_cpqSiProductName = ".1.3.6.1.4.1.232.2.2.4.2.0";
+    my $oid_cpqSeSysRomVer = ".1.3.6.1.4.1.232.1.2.6.1.0";
     
     my $result = $self->{snmp}->get_leef(oids => [$oid_cpqSiSysSerialNum, $oid_cpqSiProductName, $oid_cpqSeSysRomVer]);
     
@@ -219,25 +224,27 @@ sub check_cpu {
     my $oid_cpqSeCpuSlot = '.1.3.6.1.4.1.232.1.2.2.1.1.2';
     my $oid_cpqSeCpuName = '.1.3.6.1.4.1.232.1.2.2.1.1.3';
     my $oid_cpqSeCpuStatus = '.1.3.6.1.4.1.232.1.2.2.1.1.6';
+    my $oid_cpqSeCpuSocketNumber = '.1.3.6.1.4.1.232.1.2.2.1.1.9';
     
     my $result = $self->{snmp}->get_table(oid => $oid_cpqSeCpuUnitIndex);
     return if (scalar(keys %$result) <= 0);
     
     $self->{snmp}->load(oids => [$oid_cpqSeCpuSlot, $oid_cpqSeCpuName,
-                                $oid_cpqSeCpuStatus],
+                                 $oid_cpqSeCpuStatus, $oid_cpqSeCpuSocketNumber],
                         instances => [keys %$result]);
     my $result2 = $self->{snmp}->get_leef();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         $key =~ /(\d+)$/;
         my $instance = $1;
-    
+
         my $cpu_slot = $result2->{$oid_cpqSeCpuSlot . '.' . $instance};
         my $cpu_name = $result2->{$oid_cpqSeCpuName . '.' . $instance};
         my $cpu_status = $result2->{$oid_cpqSeCpuStatus . '.' . $instance};
+        my $cpu_socket_number =  $result2->{$oid_cpqSeCpuSocketNumber . '.' . $instance};
         
         $self->{components_cpu}++;
-        $self->{output}->output_add(long_msg => sprintf("cpu [slot: %s, unit: %s, name: %s] status is %s.", 
-                                    $cpu_slot, $result->{$key}, $cpu_name,
+        $self->{output}->output_add(long_msg => sprintf("cpu [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 
+                                    $cpu_slot, $result->{$key}, $cpu_name, $cpu_socket_number,
                                     ${$cpustatus{$cpu_status}}[0]));
         if (${$cpustatus{$cpu_status}}[1] ne 'OK') {
             $self->{output}->output_add(severity => ${$cpustatus{$cpu_status}}[1],
@@ -288,7 +295,7 @@ sub check_psu {
         my $psu_condition = $result->{$oid_cpqHeFltTolPowerSupplyCondition . '.' . $_};
         my $psu_status = $result->{$oid_cpqHeFltTolPowerSupplyStatus . '.' . $_};
         my $psu_redundant = $result->{$oid_cpqHeFltTolPowerSupplyRedundant . '.' . $_};
-        my $psu_redundantpartner = $result->{$oid_cpqHeFltTolPowerSupplyRedundantPartner . '.' . $_};
+        my $psu_redundantpartner = defined($result->{$oid_cpqHeFltTolPowerSupplyRedundantPartner . '.' . $_}) ? $result->{$oid_cpqHeFltTolPowerSupplyRedundantPartner . '.' . $_} : 'undefined';
         my $psu_capacityused = $result->{$oid_cpqHeFltTolPowerSupplyCapacityUsed . '.' . $_};
         my $psu_capacitymaximum = $result->{$oid_cpqHeFltTolPowerSupplyCapacityMaximum . '.' . $_};
         my $psu_voltage = $result->{$oid_cpqHeFltTolPowerSupplyMainVoltage . '.' . $_};
@@ -346,7 +353,7 @@ sub check_pc {
         my ($pc_chassis, $pc_index) = split /\./;
         my $pc_condition = $result->{$oid_cpqHePwrConvIndex . '.' . $_};
         my $pc_redundant = $result->{$oid_cpqHePwrConvRedundant . '.' . $_};
-        my $pc_redundantgroup = $result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_};
+        my $pc_redundantgroup = defined($result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_}) ? $result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_} : 'undefined';
 
         $self->{components_pc}++;
         $self->{output}->output_add(long_msg => sprintf("powerconverter %d status is %s [chassis: %s, redundance: %s, redundant group: %s].",
@@ -415,8 +422,10 @@ sub check_fan {
                                            $fan_index, ${$conditions{$fan_condition}}[0]));
         }
 
-        $self->{output}->perfdata_add(label => "fan_" . $fan_index . "_speed", unit => 'rpm',
-                                      value => $fan_currentspeed);
+        if (defined($fan_currentspeed)) {
+            $self->{output}->perfdata_add(label => "fan_" . $fan_index . "_speed", unit => 'rpm',
+                                          value => $fan_currentspeed);
+        }
     }
 }
 
