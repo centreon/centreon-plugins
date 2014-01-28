@@ -47,6 +47,10 @@ use hardware::server::hpproliant::mode::components::fan;
 use hardware::server::hpproliant::mode::components::temperature;
 use hardware::server::hpproliant::mode::components::network;
 use hardware::server::hpproliant::mode::components::ida;
+use hardware::server::hpproliant::mode::components::fca;
+use hardware::server::hpproliant::mode::components::ide;
+use hardware::server::hpproliant::mode::components::sas;
+use hardware::server::hpproliant::mode::components::scsi;
 
 sub new {
     my ($class, %options) = @_;
@@ -88,6 +92,20 @@ sub run {
     hardware::server::hpproliant::mode::components::ida::array_accelerator($self);
     hardware::server::hpproliant::mode::components::ida::logical_drive($self);
     hardware::server::hpproliant::mode::components::ida::physical_drive($self);
+    hardware::server::hpproliant::mode::components::fca::host_array_controller($self);
+    hardware::server::hpproliant::mode::components::fca::external_array_controller($self);
+    hardware::server::hpproliant::mode::components::fca::external_array_accelerator($self);
+    hardware::server::hpproliant::mode::components::fca::logical_drive($self);
+    hardware::server::hpproliant::mode::components::fca::physical_drive($self);
+    hardware::server::hpproliant::mode::components::ide::controller($self);
+    hardware::server::hpproliant::mode::components::ide::logical_drive($self);
+    hardware::server::hpproliant::mode::components::ide::physical_drive($self);
+    hardware::server::hpproliant::mode::components::sas::controller($self);
+    hardware::server::hpproliant::mode::components::sas::logical_drive($self);
+    hardware::server::hpproliant::mode::components::sas::physical_drive($self);
+    hardware::server::hpproliant::mode::components::scsi::controller($self);
+    hardware::server::hpproliant::mode::components::scsi::logical_drive($self);
+    hardware::server::hpproliant::mode::components::scsi::physical_drive($self);
     
     my $total_components = 0;
     my $display_by_component = '';
