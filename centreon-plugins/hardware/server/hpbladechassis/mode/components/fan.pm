@@ -33,72 +33,62 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::pc;
+package hardware::server::hpbladechassis::mode::components::fan;
 
 my %conditions = (
     1 => ['other', 'CRITICAL'], 
     2 => ['ok', 'OK'], 
     3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL']
+    4 => ['failed', 'CRITICAL'],
 );
 
 my %present_map = (
     1 => 'other',
     2 => 'absent',
     3 => 'present',
-);
-
-my %redundant_map = (
-    1 => 'other',
-    2 => 'not redundant',
-    3 => 'redundant',
+    4 => 'Weird!!!', # for blades it can return 4, which is NOT spesified in MIB
 );
 
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CPQHLTH-MIB.mib'
-    $self->{output}->output_add(long_msg => "Checking power converters");
-    $self->{components}->{pc} = {name => 'power converters', total => 0};
-    return if ($self->check_exclude('pc'));
+    $self->{components}->{fans} = {name => 'fans', total => 0};
+    $self->{output}->output_add(long_msg => "Checking fans");
+    return if ($self->check_exclude('fans'));
     
-    my $oid_cpqHePwrConvPresent = '.1.3.6.1.4.1.232.6.2.13.3.1.3';
-    my $oid_cpqHePwrConvIndex = '.1.3.6.1.4.1.232.6.2.13.3.1.2';
-    my $oid_cpqHePwrConvChassis = '.1.3.6.1.4.1.232.6.2.13.3.1.1';
-    my $oid_cpqHePwrConvCondition = '.1.3.6.1.4.1.232.6.2.13.3.1.8';
-    my $oid_cpqHePwrConvRedundant = '.1.3.6.1.4.1.232.6.2.13.3.1.6';
-    my $oid_cpqHePwrConvRedundantGroupId = '.1.3.6.1.4.1.232.6.2.13.3.1.7';
+    my $oid_cpqRackCommonEnclosureFanPresent = '.1.3.6.1.4.1.232.22.2.3.1.3.1.8';
+    my $oid_cpqRackCommonEnclosureFanIndex = '.1.3.6.1.4.1.232.22.2.3.1.3.1.3';
+    my $oid_cpqRackCommonEnclosureFanPartNumber = '.1.3.6.1.4.1.232.22.2.3.1.3.1.6';
+    my $oid_cpqRackCommonEnclosureFanSparePartNumber = '.1.3.6.1.4.1.232.22.2.3.1.3.1.7';
+    my $oid_cpqRackCommonEnclosureFanCondition = '.1.3.6.1.4.1.232.22.2.3.1.3.1.11';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqHePwrConvPresent);
+    my $result = $self->{snmp}->get_table(oid => $oid_cpqRackCommonEnclosureFanPresent);
     return if (scalar(keys %$result) <= 0);
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($present_map{$result->{$key}} ne 'present');
-        # Chassis + index
-        $key =~ /(\d+\.\d+)$/;
+        $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
         
         push @oids_end, $oid_end;
-        push @get_oids, $oid_cpqHePwrConvCondition . "." . $oid_end, $oid_cpqHePwrConvRedundant . "." . $oid_end,
-                $oid_cpqHePwrConvRedundantGroupId . "." . $oid_end;
+        push @get_oids, $oid_cpqRackCommonEnclosureFanIndex . "." . $oid_end, $oid_cpqRackCommonEnclosureFanPartNumber . "." . $oid_end,
+                $oid_cpqRackCommonEnclosureFanSparePartNumber . "." . $oid_end, $oid_cpqRackCommonEnclosureFanCondition . "." . $oid_end;
     }
     $result = $self->{snmp}->get_leef(oids => \@get_oids);
     foreach (@oids_end) {
-        my ($pc_chassis, $pc_index) = split /\./;
-        my $pc_condition = $result->{$oid_cpqHePwrConvIndex . '.' . $_};
-        my $pc_redundant = $result->{$oid_cpqHePwrConvRedundant . '.' . $_};
-        my $pc_redundantgroup = defined($result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_}) ? $result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_} : 'undefined';
-
-        $self->{components}->{pc}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("powerconverter %d status is %s [chassis: %s, redundance: %s, redundant group: %s].",
-                                    $pc_index, ${$conditions{$pc_condition}}[0],
-                                    $pc_chassis, $redundant_map{$pc_redundant}, $pc_redundantgroup
-                                    ));
-        if ($pc_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$pc_condition}}[1],
-                                        short_msg => sprintf("powerconverter %d status is %s",
-                                           $pc_index, ${$conditions{$pc_condition}}[0]));
+        my $fan_index = $result->{$oid_cpqRackCommonEnclosureFanIndex . '.' . $_};
+        my $fan_condition = $result->{$oid_cpqRackCommonEnclosureFanCondition . '.' . $_};
+        my $fan_part = $result->{$oid_cpqRackCommonEnclosureFanPartNumber . '.' . $_};
+        my $fan_spare = $result->{$oid_cpqRackCommonEnclosureFanSparePartNumber . '.' . $_};
+        
+        $self->{components}->{fans}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Fan %d condition is %s [part: %s, spare: %s].", 
+                                    $fan_index, ${$conditions{$fan_condition}}[0],
+                                    $fan_part, $fan_spare));
+        if ($fan_condition != 2) {
+            $self->{output}->output_add(severity =>  ${$conditions{$fan_condition}}[1],
+                                        short_msg => sprintf("Fan %d condition is %s", $fan_index, ${$conditions{$fan_condition}}[0]));
         }
     }
 }
