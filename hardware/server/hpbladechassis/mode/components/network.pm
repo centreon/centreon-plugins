@@ -33,73 +33,68 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::pc;
-
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL']
-);
+package hardware::server::hpbladechassis::mode::components::network;
 
 my %present_map = (
     1 => 'other',
     2 => 'absent',
     3 => 'present',
+    4 => 'Weird!!!', # for blades it can return 4, which is NOT spesified in MIB
 );
 
-my %redundant_map = (
-    1 => 'other',
-    2 => 'not redundant',
-    3 => 'redundant',
+my %device_type = (
+    1 => 'noconnect', 
+    2 => 'network',
+    3 => 'fibrechannel',
+    4 => 'sas',
+    5 => 'inifiband',
+    6 => 'pciexpress',
 );
 
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CPQHLTH-MIB.mib'
-    $self->{output}->output_add(long_msg => "Checking power converters");
-    $self->{components}->{pc} = {name => 'power converters', total => 0};
-    return if ($self->check_exclude('pc'));
+    $self->{components}->{network} = {name => 'network connectors', total => 0};
+    $self->{output}->output_add(long_msg => "Checking network connectors");
+    return if ($self->check_exclude('network'));
     
-    my $oid_cpqHePwrConvPresent = '.1.3.6.1.4.1.232.6.2.13.3.1.3';
-    my $oid_cpqHePwrConvIndex = '.1.3.6.1.4.1.232.6.2.13.3.1.2';
-    my $oid_cpqHePwrConvChassis = '.1.3.6.1.4.1.232.6.2.13.3.1.1';
-    my $oid_cpqHePwrConvCondition = '.1.3.6.1.4.1.232.6.2.13.3.1.8';
-    my $oid_cpqHePwrConvRedundant = '.1.3.6.1.4.1.232.6.2.13.3.1.6';
-    my $oid_cpqHePwrConvRedundantGroupId = '.1.3.6.1.4.1.232.6.2.13.3.1.7';
+    my $oid_cpqRackNetConnectorPresent = '.1.3.6.1.4.1.232.22.2.6.1.1.1.13';
+    my $oid_cpqRackNetConnectorIndex = '.1.3.6.1.4.1.232.22.2.6.1.1.1.3';
+    my $oid_cpqRackNetConnectorModel = '.1.3.6.1.4.1.232.22.2.6.1.1.1.6';
+    my $oid_cpqRackNetConnectorSerialNum = '.1.3.6.1.4.1.232.22.2.6.1.1.1.7';
+    my $oid_cpqRackNetConnectorPartNumber = '.1.3.6.1.4.1.232.22.2.6.1.1.1.8';
+    my $oid_cpqRackNetConnectorSparePartNumber = '.1.3.6.1.4.1.232.22.2.6.1.1.1.9';
+    my $oid_cpqRackNetConnectorDeviceType = '.1.3.6.1.4.1.232.22.2.6.1.1.1.17';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqHePwrConvPresent);
+    my $result = $self->{snmp}->get_table(oid => $oid_cpqRackNetConnectorPresent);
     return if (scalar(keys %$result) <= 0);
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($present_map{$result->{$key}} ne 'present');
-        # Chassis + index
-        $key =~ /(\d+\.\d+)$/;
+        $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
         
         push @oids_end, $oid_end;
-        push @get_oids, $oid_cpqHePwrConvCondition . "." . $oid_end, $oid_cpqHePwrConvRedundant . "." . $oid_end,
-                $oid_cpqHePwrConvRedundantGroupId . "." . $oid_end;
+        push @get_oids, $oid_cpqRackNetConnectorIndex . "." . $oid_end, $oid_cpqRackNetConnectorModel . "." . $oid_end,
+                $oid_cpqRackNetConnectorSerialNum . "." . $oid_end, $oid_cpqRackNetConnectorPartNumber . "." . $oid_end,
+                $oid_cpqRackNetConnectorSparePartNumber . "." . $oid_end, $oid_cpqRackNetConnectorDeviceType . "." . $oid_end;
     }
     $result = $self->{snmp}->get_leef(oids => \@get_oids);
     foreach (@oids_end) {
-        my ($pc_chassis, $pc_index) = split /\./;
-        my $pc_condition = $result->{$oid_cpqHePwrConvIndex . '.' . $_};
-        my $pc_redundant = $result->{$oid_cpqHePwrConvRedundant . '.' . $_};
-        my $pc_redundantgroup = defined($result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_}) ? $result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_} : 'undefined';
-
-        $self->{components}->{pc}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("powerconverter %d status is %s [chassis: %s, redundance: %s, redundant group: %s].",
-                                    $pc_index, ${$conditions{$pc_condition}}[0],
-                                    $pc_chassis, $redundant_map{$pc_redundant}, $pc_redundantgroup
+        my $nc_index = $result->{$oid_cpqRackNetConnectorIndex . '.' . $_};
+        my $nc_model = $result->{$oid_cpqRackNetConnectorModel . '.' . $_};
+        my $nc_serial = $result->{$oid_cpqRackNetConnectorSerialNum . '.' . $_};
+        my $nc_part = $result->{$oid_cpqRackNetConnectorPartNumber . '.' . $_};
+        my $nc_spare = $result->{$oid_cpqRackNetConnectorSparePartNumber . '.' . $_};
+        my $nc_device = $result->{$oid_cpqRackNetConnectorDeviceType . '.' . $_};
+        
+        $self->{components}->{network}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Network Connector %d (%s) type '%s' is present [serial: %s, part: %s, spare: %s].",
+                                    $nc_index, $nc_model,
+                                    $device_type{$nc_device},
+                                    $nc_serial, $nc_part, $nc_spare
                                     ));
-        if ($pc_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$pc_condition}}[1],
-                                        short_msg => sprintf("powerconverter %d status is %s",
-                                           $pc_index, ${$conditions{$pc_condition}}[0]));
-        }
     }
 }
 

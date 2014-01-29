@@ -42,6 +42,12 @@ my %conditions = (
     4 => ['failed', 'CRITICAL']
 );
 
+my %present_map = (
+    1 => 'other',
+    2 => 'absent',
+    3 => 'present',
+);
+
 my %redundant_map = (
     1 => 'other',
     2 => 'not redundant',
