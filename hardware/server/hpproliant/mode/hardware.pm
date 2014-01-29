@@ -110,7 +110,9 @@ sub run {
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
-    foreach my $comp (keys %{$self->{components}}) {
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0);
         $total_components += $self->{components}->{$comp}->{total};
         $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
