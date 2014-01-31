@@ -42,6 +42,8 @@ use warnings;
 use centreon::plugins::misc;
 use hardware::server::dell::openmanage::mode::components::fan;
 use hardware::server::dell::openmanage::mode::components::psu;
+use hardware::server::dell::openmanage::mode::components::temperature;
+use hardware::server::dell::openmanage::mode::components::globalstatus;
 
 sub new {
     my ($class, %options) = @_;
@@ -70,9 +72,11 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->get_system_information();
+    hardware::server::dell::openmanage::mode::components::globalstatus::check($self);
     hardware::server::dell::openmanage::mode::components::fan::check($self);
     hardware::server::dell::openmanage::mode::components::psu::check($self);   
- 
+    hardware::server::dell::openmanage::mode::components::temperature::check($self); 
+
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
