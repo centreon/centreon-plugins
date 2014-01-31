@@ -99,7 +99,7 @@ sub check {
                                     $temperature_Index, ${$status{$temperature_Status}}[0], $temperature_Reading2,
                                     $chassis_Index, $temperature_LocationName
                                     ));
-        if ($psu_Status != 3) {
+        if ($temperature_Status != 3) {
             $self->{output}->output_add(severity =>  ${$status{$temperature_Status}}[1],
                                         short_msg => sprintf("temperature probe %d status is %s",
                                            $temperature_Index, ${$status{$temperature_Status}}[0]));
