@@ -45,14 +45,21 @@ my %status = (
 );
 
 sub check {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
+    my ($self) = @_;
+
+    # In MIB '10892.mib'
+    $self->{output}->output_add(long_msg => "Checking global system status");
+    return if ($self->check_exclude('globalstatus'));
 
     my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.1.200.10.1.2.1';
     my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus], nothing_quit => 1);
 
-    $self->{output}->output_add(severity =>  ${$status{$result->{$oid_globalSystemStatus}}}[1],
+    $self->{output}->output_add(long_msg => sprintf("Overall global status is '%s'.",
+                                    ${$status{$result->{$oid_globalSystemStatus}}}[0]
+                                    ));    
+
+    if ($result->{$oid_globalSystemStatus} != 3) { 
+        $self->{output}->output_add(severity =>  ${$status{$result->{$oid_globalSystemStatus}}}[1],
                                 short_msg => sprintf("Overall global status is '%s'",
                                                 ${$status{$result->{$oid_globalSystemStatus}}}[0]));
     }
