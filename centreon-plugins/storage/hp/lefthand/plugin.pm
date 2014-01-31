@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::hplefthand::plugin;
+package storage::hp::lefthand::plugin;
 
 use strict;
 use warnings;
@@ -47,7 +47,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'storage::hplefthand::mode::hardware',
+                         'hardware' => 'storage::hp::lefthand::mode::hardware',
                          );
 
     return $self;
