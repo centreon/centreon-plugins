@@ -84,7 +84,7 @@ sub check {
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         /(\d+)\.(\d+)$/;
-        my ($chassis_Index, $temperaute_Index) = ($1, $2);
+        my ($chassis_Index, $temperature_Index) = ($1, $2);
         my $instance = $chassis_Index . '.' . $temperature_Index;
         
         my $temperature_Status = $result->{$_};
