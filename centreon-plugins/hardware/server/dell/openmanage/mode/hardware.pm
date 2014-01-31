@@ -40,10 +40,10 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use hardware::server::dell::openmanage::mode::components::globalstatus;
 use hardware::server::dell::openmanage::mode::components::fan;
 use hardware::server::dell::openmanage::mode::components::psu;
 use hardware::server::dell::openmanage::mode::components::temperature;
-use hardware::server::dell::openmanage::mode::components::globalstatus;
 
 sub new {
     my ($class, %options) = @_;
@@ -53,7 +53,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude"        => { name => 'exclude' },
+                                  "exclude:s"        => { name => 'exclude' },
                                 });
 
     $self->{product_name} = undef;
@@ -81,6 +81,8 @@ sub run {
     my $display_by_component = '';
     my $display_by_component_append = '';
     foreach my $comp (keys %{$self->{components}}) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0);
         $total_components += $self->{components}->{$comp}->{total};
         $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
@@ -123,13 +125,13 @@ __END__
 
 =head1 MODE
 
-Check Hardware (CPUs, Power Supplies, Power converters, Fans).
+Check Hardware (Fans, Power Supplies, Temperature Probes).
 
 =over 8
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=psu,pc).
+Exclude some parts (comma seperated list) (Example: --exclude=psu,fan).
 
 =back
 
