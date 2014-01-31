@@ -33,87 +33,76 @@
 #
 ####################################################################################
 
-package hardware::server::dell::openmanage::mode::components::psu;
+package hardware::server::dell::openmanage::mode::components::temperature;
 
 my %status = (
     1 => ['other', 'CRITICAL'], 
     2 => ['unknown', 'UNKNOWN'], 
     3 => ['ok', 'OK'], 
-    4 => ['nonCritical', 'WARNING'],
-    5 => ['critical', 'CRITICAL'],
-    6 => ['nonRecoverable', 'CRITICAL'],
+    4 => ['nonCriticalUpper', 'WARNING'],
+    5 => ['criticalUpper', 'CRITICAL'],
+    6 => ['nonRecoverableUpper', 'CRITICAL'],
+    7 => ['nonCriticalLower', 'WARNING'],
+    8 => ['criticalLower', 'CRITICAL'],
+    9 => ['nonRecoverableLower', 'CRITICAL'],
+    10 => ['failed', 'CRITICAL'],
 );
 
 my %type = (
     1 => 'other',
     2 => 'unknown',
-    3 => 'Linear',
-    4 => 'switching',
-    5 => 'Battery',
-    6 => 'UPS',
-    7 => 'Converter',
-    8 => 'Regulator',
-    9 => 'AC',
-    10 => 'DC',
-    11 => 'VRM',
+    3 => 'Ambient ESM',
+    4 => 'Discrete',
 );
 
-my %state = (
-    1 => 'present',
-    2 => 'failure',
-    4 => 'predictiveFailure',
-    8 => 'ACLost',
-    16 => 'ACLostOrOutOfRange',
-    32 => 'ACPresentButOutOfRange',
-    64 => 'configurationError',
+my %discreteReading = (
+    1 => 'good',
+    2 => 'bad',
 );
 
-my %ConfigurationErrorType = (
-    1 => 'vendorMismatch',
-    2 => 'revisionMismatch',
-    3 => 'processorMissing',
-);
 
 sub check {
     my ($self) = @_;
 
     # In MIB '10892.mib'
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'power supplies', total => 0};
-    return if ($self->check_exclude('psu'));
+    $self->{output}->output_add(long_msg => "Checking temperature probes");
+    $self->{components}->{temperature} = {name => 'temperature probes', total => 0};
+    return if ($self->check_exclude('temperature'));
    
-    my $oid_powerSupplyStatus = '.1.3.6.1.4.1.674.10892.1.600.12.1.5.1';
-    my $oid_powerSupplyType = '.1.3.6.1.4.1.674.10892.1.600.12.1.7.1';
-    my $oid_powerSupplySensorState = '.1.3.6.1.4.1.674.10892.1.600.12.1.11.1';
-    my $oid_powerSupplyConfigurationErrorType = '1.3.6.1.4.1.674.10892.1.600.12.1.12.1';
+    my $oid_temperatureProbeStatus = '.1.3.6.1.4.1.674.10892.1.700.20.1.5.1';
+    my $oid_temperatureProbeReading = '.1.3.6.1.4.1.674.10892.1.700.20.1.6.1';
+    my $oid_temperatureProbeType = '.1.3.6.1.4.1.674.10892.1.700.20.1.7.1';
+    my $oid_temperatureProbeLocationName = '.1.3.6.1.4.1.674.10892.1.700.20.1.8.1';
 
-    my $result = $self->{snmp}->get_table(oid => $oid_powerSupplyStatus);
+    my $result = $self->{snmp}->get_table(oid => $oid_temperatureProbeStatus);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_powerSupplyType, $oid_powerSupplySensorState, $oid_powerSupplyConfigurationErrorType],
+    my $result2 = $self->{snmp}->get_leef(oids => [$oid_temperatureProbeReading, $oid_temperatureProbeType, $oid_temperatureProbeLocationName],
                                           instances => [keys %$result],
                                           instance_regexp => '(\d+\.\d+)$');
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         /(\d+)\.(\d+)$/;
-        my ($chassis_Index, $psu_Index) = ($1, $2);
-        my $instance = $chassis_Index . '.' . $psu_Index;
+        my ($chassis_Index, $temperaute_Index) = ($1, $2);
+        my $instance = $chassis_Index . '.' . $temperature_Index;
         
-        my $psu_Status = $result->{$_};
-        my $psu_Type = $result2->{$oid_powerSupplyType . '.' . $instance};
-        my $psu_SensorState = $result->{$oid__powerSupplySensorState . '.' . $instance};
-        my $psu_ConfigurationErrorType = $result->{$oid__powerSupplyConfigurationErrorType . '.' . $instance};
+        my $temperature_Status = $result->{$_};
+        my $temperature_Reading = $result2->{$oid_temperatureProbeReading . '.' . $instance};
+        my $temperature_Type = $result2->{$oid_temperatureProbeType . '.' . $instance};
+        my $temperature_LocationName = $result->{$oid_temperatureProbeLocationName . '.' . $instance};
 
-        $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [chassis: %d, type: %d].",
-                                    $psu_Index, ${$status{$psu_Status}}[0], ${$state{$psu_SensorState}}[0],
-                                    $chassis_Index, ${$type{$psu_Type}}[0]
+        my $temperature_Reading2 = $temperature_Reading/10;
+
+        $self->{components}->{temperature}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("temperature probe %d status is %s, temperature is %.1f °C [chassis: %d, location: %s].",
+                                    $temperature_Index, ${$status{$temperature_Status}}[0], $temperature_Reading2,
+                                    $chassis_Index, $temperature_LocationName
                                     ));
         if ($psu_Status != 3) {
-            $self->{output}->output_add(severity =>  ${$status{$psu_Status}}[1],
-                                        short_msg => sprintf("psu %d status is %s",
-                                           $psu_Index, ${$status{$psu_Status}}[0]));
+            $self->{output}->output_add(severity =>  ${$status{$temperature_Status}}[1],
+                                        short_msg => sprintf("temperature probe %d status is %s",
+                                           $temperature_Index, ${$status{$temperature_Status}}[0]));
         }
 
     }
