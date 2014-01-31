@@ -41,7 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my %operational_status_ex = (
+my %operational_status = (
     1 => ["switch operational status is online", 'OK'], 
     2 => ["switch operational status is offline", 'WARNING'], 
     3 => ["switch operational status is testing", 'WARNING'], 
@@ -88,9 +88,9 @@ sub run {
     my $oid_swOperStatus = '.1.3.6.1.4.1.1588.2.1.1.1.1.7.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_swFirmwareVersion, $oid_swOperStatus], nothing_quit => 1);
     
-    $self->{output}->output_add(severity => ${$operational_status{$result->{$oid_swOperStatus}}}[1] . "[firmware: %s]",
-                                short_msg => sprintf(${$operational_status{$result->{$oid_swOperStatus}}}[0], 
-                                                     $result->{$oid_swOperStatus}));
+    $self->{output}->output_add(severity => ${$operational_status{$result->{$oid_swOperStatus}}}[1],
+                                short_msg => sprintf(${$operational_status{$result->{$oid_swOperStatus}}}[0]  . " [firmware: %s]", 
+                                                     $result->{$oid_swFirmwareVersion}));
 
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "All sensors are ok.");
@@ -101,7 +101,7 @@ sub run {
     my $oid_swSensorStatus = '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.3';
     my $oid_swSensorValue = '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.4';
     my $oid_swSensorInfo = '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.5';
-    $result = $self->{snmp}->get_table(oid => $oid_DeviceSensorValueEntry);
+    $result = $self->{snmp}->get_table(oid => $oid_swSensorEntry);
     
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /^$oid_swSensorIndex\.(\d+)/);

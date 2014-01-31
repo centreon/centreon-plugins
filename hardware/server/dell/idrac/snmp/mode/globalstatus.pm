@@ -74,7 +74,7 @@ sub run {
 
     my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.5.2.1.0';
     my $oid_globalStorageStatus = '.1.3.6.1.4.1.674.10892.5.2.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus], nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus, $oid_globalStorageStatus], nothing_quit => 1);
     
     $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalSystemStatus}}}[1],
                                 short_msg => sprintf("Overall global status is '%s'", 
