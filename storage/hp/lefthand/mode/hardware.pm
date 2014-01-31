@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::hplefthand::mode::hardware;
+package storage::hp::lefthand::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
