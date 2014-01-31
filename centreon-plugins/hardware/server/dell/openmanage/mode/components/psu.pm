@@ -107,7 +107,7 @@ sub check {
 
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [chassis: %d].",
-                                    $psu_Index, ${$status{$fan_Status}}[0], ${$state{$fan_State}}[0],
+                                    $psu_Index, ${$status{$psu_Status}}[0], ${$state{$psu_SensorState}}[0],
                                     $chassis_Index
                                     ));
         if ($psu_Status != 3) {
