@@ -88,7 +88,7 @@ sub check {
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        /\.(\d+)$/;
+        $key =~ /\.(\d+)$/;
         my $cpu_Index = $1;
         
         my $cpu_Status = $result->{$_};
