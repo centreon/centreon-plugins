@@ -35,6 +35,9 @@
 
 package hardware::server::dell::openmanage::mode::components::psu;
 
+use strict;
+use warnings;
+
 my %status = (
     1 => ['other', 'CRITICAL'], 
     2 => ['unknown', 'UNKNOWN'], 

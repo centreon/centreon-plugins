@@ -35,6 +35,9 @@
 
 package hardware::server::hpbladechassis::mode::components::network;
 
+use strict;
+use warnings;
+
 my %present_map = (
     1 => 'other',
     2 => 'absent',
