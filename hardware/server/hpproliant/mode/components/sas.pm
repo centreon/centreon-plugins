@@ -35,6 +35,8 @@
 
 package hardware::server::hpproliant::mode::components::sas;
 
+use strict;
+use warnings;
 use centreon::plugins::misc;
 
 # In 'CPQSCSI-MIB.mib'

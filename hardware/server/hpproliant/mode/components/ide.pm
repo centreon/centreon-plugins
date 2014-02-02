@@ -35,6 +35,8 @@
 
 package hardware::server::hpproliant::mode::components::ide;
 
+use strict;
+use warnings;
 use centreon::plugins::misc;
 
 # In 'CPQIDE-MIB.mib'

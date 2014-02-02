@@ -34,6 +34,10 @@
 ####################################################################################
 
 package hardware::server::hpproliant::mode::components::fca;
+
+use strict;
+use warnings;
+
 # In 'CPQFCA-MIB.mib'
 
 my %conditions = (

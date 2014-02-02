@@ -35,6 +35,9 @@
 
 package hardware::server::hpbladechassis::mode::components::psu;
 
+use strict;
+use warnings;
+
 my %conditions = (
     1 => ['other', 'CRITICAL'], 
     2 => ['ok', 'OK'], 

@@ -36,6 +36,9 @@
 package hardware::server::hpproliant::mode::components::scsi;
 # In 'CPQSCSI-MIB.mib'
 
+use strict;
+use warnings;
+
 my %controllerstatus_map = (
     1 => "other",
     2 => "ok",
