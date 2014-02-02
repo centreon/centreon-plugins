@@ -33,38 +33,40 @@
 #
 ####################################################################################
 
-package hardware::server::dell::openmanage::mode::components::globalstatus;
+package storage::hp::lefthand::mode::components::ro;
 
 use strict;
 use warnings;
 
-my %status = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['unknown', 'UNKNOWN'], 
-    3 => ['ok', 'OK'], 
-    4 => ['nonCritical', 'WARNING'],
-    5 => ['critical', 'CRITICAL'],
-    6 => ['nonRecoverable', 'CRITICAL'],
-);
-
 sub check {
     my ($self) = @_;
-
-    # In MIB '10892.mib'
-    $self->{output}->output_add(long_msg => "Checking global system status");
-    return if ($self->check_exclude('globalstatus'));
-
-    my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.1.200.10.1.2.1';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus], nothing_quit => 1);
-
-    $self->{output}->output_add(long_msg => sprintf("Overall global status is '%s'.",
-                                    ${$status{$result->{$oid_globalSystemStatus}}}[0]
-                                    ));    
-
-    if ($result->{$oid_globalSystemStatus} != 3) { 
-        $self->{output}->output_add(severity =>  ${$status{$result->{$oid_globalSystemStatus}}}[1],
-                                short_msg => sprintf("Overall global status is '%s'",
-                                                ${$status{$result->{$oid_globalSystemStatus}}}[0]));
+    
+    $self->{components}->{ro} = {name => 'raid os devices', total => 0};
+    $self->{output}->output_add(long_msg => "Checking raid os devices");
+    return if ($self->check_exclude('ro'));
+    
+    my $raid_os_count_oid = ".1.3.6.1.4.1.9804.3.1.1.2.4.50.0";
+    my $raid_os_name_oid = '.1.3.6.1.4.1.9804.3.1.1.2.4.51.1.2';
+    my $raid_os_state_oid = '.1.3.6.1.4.1.9804.3.1.1.2.4.51.1.90'; # != 'normal'
+    return if ($self->{global_information}->{$raid_os_count_oid} == 0);
+    
+    $self->{snmp}->load(oids => [$raid_os_name_oid, $raid_os_state_oid],
+                        begin => 1, end => $self->{global_information}->{$raid_os_count_oid});
+    my $result = $self->{snmp}->get_leef();
+    return if (scalar(keys %$result) <= 0);
+    
+    my $number_ro = $self->{global_information}->{$raid_os_count_oid};
+    for (my $i = 1; $i <= $number_ro; $i++) {
+        my $ro_name = $arg_result->{values}->{$raid_os_name_oid . "." . $i};
+        my $ro_state = $arg_result->{values}->{$raid_os_state_oid . "." . $i};
+        
+        $self->{components}->{ro}->{total}++;
+        
+        if ($ro_state !~ /normal/i) {
+            $self->{output}->output_add(severity => 'CRITICAL', 
+                                        short_msg => "Raid OS Device '" .  $ro_name . "' problem '" . $ro_state . "'");
+        }
+        $self->{output}->output_add(long_msg => "Raid OS Device '" .  $ro_name . "' state = '" . $ro_state . "'");
     }
 }
 

@@ -35,6 +35,9 @@
 
 package hardware::server::hpproliant::mode::components::cpu;
 
+use strict;
+use warnings;
+
 my %cpustatus = (
     1 => ['unknown', 'UNKNOWN'], 
     2 => ['ok', 'OK'], 

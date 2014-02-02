@@ -34,6 +34,10 @@
 ####################################################################################
 
 package hardware::server::hpproliant::mode::components::ida;
+
+use strict;
+use warnings;
+
 # In 'CPQIDA-MIB.mib'
 
 my %model_map = (

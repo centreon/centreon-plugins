@@ -35,6 +35,9 @@
 
 package hardware::server::hpproliant::mode::components::temperature;
 
+use strict;
+use warnings;
+
 my %location_map = (
     1 => "other",
     2 => "unknown",
