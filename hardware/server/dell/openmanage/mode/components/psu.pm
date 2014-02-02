@@ -96,7 +96,7 @@ sub check {
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        /(\d+)\.(\d+)$/;
+        $key =~ /(\d+)\.(\d+)$/;
         my ($chassis_Index, $psu_Index) = ($1, $2);
         my $instance = $chassis_Index . '.' . $psu_Index;
         
