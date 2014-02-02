@@ -57,6 +57,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
+                                  "component:s"      => { name => 'component', default => 'all' },
                                 });
     $self->{components} = {};
     return $self;
@@ -67,10 +68,8 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub run {
+sub global {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
 
     hardware::server::hpbladechassis::mode::components::enclosure::check($self);
     hardware::server::hpbladechassis::mode::components::manager::check($self);
@@ -80,6 +79,37 @@ sub run {
     hardware::server::hpbladechassis::mode::components::psu::check($self);
     hardware::server::hpbladechassis::mode::components::temperature::check($self);
     hardware::server::hpbladechassis::mode::components::fuse::check($self);
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    'enclosure', 'manager', 'fan', 'blade', 'network', 'psu', 'temperature', 'fuse'
+    
+    if ($self->{option_results}->{component} eq 'all') {
+        $self->global();
+    } elsif ($self->{option_results}->{component} eq 'enclosure') {
+        hardware::server::hpbladechassis::mode::components::enclosure::check($self);
+    } elsif ($self->{option_results}->{component} eq 'manager') {
+        hardware::server::hpbladechassis::mode::components::manager::check($self, force => 1);
+    } elsif ($self->{option_results}->{component} eq 'fan') {
+        hardware::server::hpbladechassis::mode::components::fan::check($self);
+    } elsif ($self->{option_results}->{component} eq 'blade') {
+        hardware::server::hpbladechassis::mode::components::blade::check($self);
+    } elsif ($self->{option_results}->{component} eq 'network') {
+        hardware::server::hpbladechassis::mode::components::network::check($self);
+    } elsif ($self->{option_results}->{component} eq 'psu') {
+        hardware::server::hpbladechassis::mode::components::psu::check($self);
+    } elsif ($self->{option_results}->{component} eq 'temperature') {
+        hardware::server::hpbladechassis::mode::components::temperature::check($self);
+    } elsif ($self->{option_results}->{component} eq 'fuse') {
+        hardware::server::hpbladechassis::mode::components::fuse::check($self);
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
     
     my $total_components = 0;
     my $display_by_component = '';
@@ -94,9 +124,10 @@ sub run {
     
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All %s components [%s] are ok.", 
-                                $total_components,
-                                $display_by_component
-                                ));
+                                                     $total_components,
+                                                     $display_by_component
+                                                    )
+                                );
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -121,6 +152,11 @@ __END__
 Check Hardware (Fans, Power Supplies, Blades, Temperatures, Fuses).
 
 =over 8
+
+=item B<--component>
+
+Which component to check (Default: 'all').
+Can be: 'enclosure', 'manager', 'fan', 'blade', 'network', 'psu', 'temperature', 'fuse'.
 
 =item B<--exclude>
 
