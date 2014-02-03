@@ -57,8 +57,8 @@ sub check {
     
     my $number_ro = $self->{global_information}->{$raid_os_count_oid};
     for (my $i = 1; $i <= $number_ro; $i++) {
-        my $ro_name = $arg_result->{values}->{$raid_os_name_oid . "." . $i};
-        my $ro_state = $arg_result->{values}->{$raid_os_state_oid . "." . $i};
+        my $ro_name = $result->{$raid_os_name_oid . "." . $i};
+        my $ro_state = $result->{$raid_os_state_oid . "." . $i};
         
         $self->{components}->{ro}->{total}++;
         
