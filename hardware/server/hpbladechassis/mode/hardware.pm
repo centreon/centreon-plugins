@@ -85,8 +85,6 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-
-    'enclosure', 'manager', 'fan', 'blade', 'network', 'psu', 'temperature', 'fuse'
     
     if ($self->{option_results}->{component} eq 'all') {
         $self->global();
