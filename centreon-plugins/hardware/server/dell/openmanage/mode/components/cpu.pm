@@ -94,7 +94,7 @@ sub check {
         $key =~ /\.(\d+)$/;
         my $cpu_Index = $1;
         
-        my $cpu_Status = $result->{$_};
+        my $cpu_Status = $result->{$key};
         my $cpu_ManufacturerName = $result2->{$oid_cpuManufacturerName . '.' . $cpu_Index};
         my $cpu_StatusState = $result2->{$oid_cpuStatusState . '.' . $cpu_Index};
         my $cpu_CurrentSpeed = $result->{$oid_cpuCurrentSpeed . '.' . $cpu_Index};

@@ -103,7 +103,7 @@ sub check {
         my ($chassis_Index, $psu_Index) = ($1, $2);
         my $instance = $chassis_Index . '.' . $psu_Index;
         
-        my $psu_Status = $result->{$_};
+        my $psu_Status = $result->{$key};
         my $psu_Type = $result2->{$oid_powerSupplyType . '.' . $instance};
         my $psu_SensorState = $result->{$oid__powerSupplySensorState . '.' . $instance};
         my $psu_ConfigurationErrorType = $result->{$oid__powerSupplyConfigurationErrorType . '.' . $instance};

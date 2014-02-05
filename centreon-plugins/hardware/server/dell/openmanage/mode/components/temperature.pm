@@ -90,7 +90,7 @@ sub check {
         my ($chassis_Index, $temperature_Index) = ($1, $2);
         my $instance = $chassis_Index . '.' . $temperature_Index;
         
-        my $temperature_Status = $result->{$_};
+        my $temperature_Status = $result->{$key};
         my $temperature_Reading = $result2->{$oid_temperatureProbeReading . '.' . $instance};
         my $temperature_Type = $result2->{$oid_temperatureProbeType . '.' . $instance};
         my $temperature_LocationName = $result->{$oid_temperatureProbeLocationName . '.' . $instance};
