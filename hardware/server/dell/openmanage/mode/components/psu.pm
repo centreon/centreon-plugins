@@ -85,17 +85,18 @@ sub check {
     $self->{components}->{psu} = {name => 'power supplies', total => 0};
     return if ($self->check_exclude('psu'));
    
-    my $oid_powerSupplyStatus = '.1.3.6.1.4.1.674.10892.1.600.12.1.5.1';
-    my $oid_powerSupplyType = '.1.3.6.1.4.1.674.10892.1.600.12.1.7.1';
-    my $oid_powerSupplySensorState = '.1.3.6.1.4.1.674.10892.1.600.12.1.11.1';
-    my $oid_powerSupplyConfigurationErrorType = '1.3.6.1.4.1.674.10892.1.600.12.1.12.1';
+    my $oid_powerSupplyStatus = '.1.3.6.1.4.1.674.10892.1.600.12.1.5';
+    my $oid_powerSupplyType = '.1.3.6.1.4.1.674.10892.1.600.12.1.7';
+    my $oid_powerSupplySensorState = '.1.3.6.1.4.1.674.10892.1.600.12.1.11';
+    my $oid_powerSupplyConfigurationErrorType = '1.3.6.1.4.1.674.10892.1.600.12.1.12';
 
     my $result = $self->{snmp}->get_table(oid => $oid_powerSupplyStatus);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_powerSupplyType, $oid_powerSupplySensorState, $oid_powerSupplyConfigurationErrorType],
+    $self->{snmp}->load(oids => [$oid_powerSupplyType, $oid_powerSupplySensorState, $oid_powerSupplyConfigurationErrorType],
                                           instances => [keys %$result],
                                           instance_regexp => '(\d+\.\d+)$');
+    my $result2 = $self->{snmp}->get_leef();
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -105,13 +106,13 @@ sub check {
         
         my $psu_Status = $result->{$key};
         my $psu_Type = $result2->{$oid_powerSupplyType . '.' . $instance};
-        my $psu_SensorState = $result->{$oid__powerSupplySensorState . '.' . $instance};
-        my $psu_ConfigurationErrorType = $result->{$oid__powerSupplyConfigurationErrorType . '.' . $instance};
+        my $psu_SensorState = $result2->{$oid_powerSupplySensorState . '.' . $instance};
+        my $psu_ConfigurationErrorType = $result2->{$oid_powerSupplyConfigurationErrorType . '.' . $instance};
 
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [chassis: %d, type: %d].",
-                                    $psu_Index, ${$status{$psu_Status}}[0], ${$state{$psu_SensorState}}[0],
-                                    $chassis_Index, ${$type{$psu_Type}}[0]
+        $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [chassis: %d, type: %s].",
+                                    $psu_Index, ${$status{$psu_Status}}[0], $state{$psu_SensorState},
+                                    $chassis_Index, $type{$psu_Type}
                                     ));
         if ($psu_Status != 3) {
             $self->{output}->output_add(severity =>  ${$status{$psu_Status}}[1],
