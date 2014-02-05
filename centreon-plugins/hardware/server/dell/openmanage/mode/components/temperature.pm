@@ -72,17 +72,18 @@ sub check {
     $self->{components}->{temperature} = {name => 'temperature probes', total => 0};
     return if ($self->check_exclude('temperature'));
    
-    my $oid_temperatureProbeStatus = '.1.3.6.1.4.1.674.10892.1.700.20.1.5.1';
-    my $oid_temperatureProbeReading = '.1.3.6.1.4.1.674.10892.1.700.20.1.6.1';
-    my $oid_temperatureProbeType = '.1.3.6.1.4.1.674.10892.1.700.20.1.7.1';
-    my $oid_temperatureProbeLocationName = '.1.3.6.1.4.1.674.10892.1.700.20.1.8.1';
+    my $oid_temperatureProbeStatus = '.1.3.6.1.4.1.674.10892.1.700.20.1.5';
+    my $oid_temperatureProbeReading = '.1.3.6.1.4.1.674.10892.1.700.20.1.6';
+    my $oid_temperatureProbeType = '.1.3.6.1.4.1.674.10892.1.700.20.1.7';
+    my $oid_temperatureProbeLocationName = '.1.3.6.1.4.1.674.10892.1.700.20.1.8';
 
     my $result = $self->{snmp}->get_table(oid => $oid_temperatureProbeStatus);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_temperatureProbeReading, $oid_temperatureProbeType, $oid_temperatureProbeLocationName],
+    $self->{snmp}->load(oids => [$oid_temperatureProbeReading, $oid_temperatureProbeType, $oid_temperatureProbeLocationName],
                                           instances => [keys %$result],
                                           instance_regexp => '(\d+\.\d+)$');
+    my $result2 = $self->{snmp}->get_leef();
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -93,7 +94,7 @@ sub check {
         my $temperature_Status = $result->{$key};
         my $temperature_Reading = $result2->{$oid_temperatureProbeReading . '.' . $instance};
         my $temperature_Type = $result2->{$oid_temperatureProbeType . '.' . $instance};
-        my $temperature_LocationName = $result->{$oid_temperatureProbeLocationName . '.' . $instance};
+        my $temperature_LocationName = $result2->{$oid_temperatureProbeLocationName . '.' . $instance};
 
         my $temperature_Reading2 = $temperature_Reading/10;
 
