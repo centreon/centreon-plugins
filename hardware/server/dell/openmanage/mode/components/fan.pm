@@ -77,7 +77,7 @@ sub check {
         my ($chassis_Index, $fan_Index) = ($1, $2);
         my $instance = $chassis_Index . '.' . $fan_Index;
         
-        my $fan_Status = $result->{$_};
+        my $fan_Status = $result->{$key};
         my $fan_Reading = $result2->{$oid_coolingDeviceReading . '.' . $instance};
         my $fan_LocationName = $result->{$oid_coolingDeviceLocationName . '.' . $instance};
 
