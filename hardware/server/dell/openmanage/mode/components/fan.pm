@@ -60,16 +60,17 @@ sub check {
     $self->{components}->{fan} = {name => 'fans', total => 0};
     return if ($self->check_exclude('fan'));
    
-    my $oid_coolingDeviceStatus = '.1.3.6.1.4.1.674.10892.1.700.12.1.5.1';
-    my $oid_coolingDeviceReading = '.1.3.6.1.4.1.674.10892.1.700.12.1.6.1';
-    my $oid_coolingDeviceLocationName = '.1.3.6.1.4.1.674.10892.1.700.12.1.8.1';
+    my $oid_coolingDeviceStatus = '.1.3.6.1.4.1.674.10892.1.700.12.1.5';
+    my $oid_coolingDeviceReading = '.1.3.6.1.4.1.674.10892.1.700.12.1.6';
+    my $oid_coolingDeviceLocationName = '.1.3.6.1.4.1.674.10892.1.700.12.1.8';
 
     my $result = $self->{snmp}->get_table(oid => $oid_coolingDeviceStatus);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_coolingDeviceReading, $oid_coolingDeviceLocationName],
+    $self->{snmp}->load(oids => [$oid_coolingDeviceReading, $oid_coolingDeviceLocationName],
                                           instances => [keys %$result],
                                           instance_regexp => '(\d+\.\d+)$');
+    my $result2 = $self->{snmp}->get_leef();
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -79,7 +80,7 @@ sub check {
         
         my $fan_Status = $result->{$key};
         my $fan_Reading = $result2->{$oid_coolingDeviceReading . '.' . $instance};
-        my $fan_LocationName = $result->{$oid_coolingDeviceLocationName . '.' . $instance};
+        my $fan_LocationName = $result2->{$oid_coolingDeviceLocationName . '.' . $instance};
 
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("fan %d status is %s, speed is %d [chassis: %d, location: %s].",
