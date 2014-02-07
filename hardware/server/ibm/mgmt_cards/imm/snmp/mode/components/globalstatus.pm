@@ -61,9 +61,6 @@ sub check {
                                     short_msg => sprintf("System health status is '%s'.", 
                                                          ${$states{$result->{$oid_systemHealthStat}}}[0]));
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;

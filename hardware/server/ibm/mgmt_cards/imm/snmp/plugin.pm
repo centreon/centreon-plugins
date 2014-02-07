@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::asa::plugin;
+package hardware::server::ibm::mgmt_cards::imm::snmp::plugin;
 
 use strict;
 use warnings;

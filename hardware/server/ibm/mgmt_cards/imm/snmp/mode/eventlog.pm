@@ -41,6 +41,14 @@ use strict;
 use warnings;
 
 use centreon::plugins::misc;
+use centreon::plugins::statefile;
+
+my %severity_map = (
+    0 => 'error',
+    1 => 'warning',
+    2 => 'information',
+    3 => 'other',
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +61,7 @@ sub new {
                                   "filter-severity:s"   => { name => 'filter_severity', default => 'error' },
                                   "filter-message:s"    => { name => 'filter_message' },
                                   "memory"              => { name => 'memory' },
+                                  "warning"             => { name => 'warning' },
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -63,7 +72,7 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+        $self->{statefile_cache}->check_options(%options);
     }
 }
 
@@ -75,14 +84,18 @@ sub run {
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
     my $datas = {};
+    my $last_time;
+    my $exit = defined($self->{option_results}->{warning}) ? 'WARNING' : 'CRITICAL';
+    my ($num_eventlog_checked, $num_errors) = (0, 0);
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => "cache_imm_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
         $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No new problems on system.");
+                                    short_msg => "No new problems detected.");
+        $last_time = $self->{statefile_cache}->get(name => 'last_time');
     } else {
         $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on system.");
+                                    short_msg => "No problems detected.");
     }
     
     #### Get OIDS
@@ -97,29 +110,47 @@ sub run {
     my $result = $self->{snmp}->get_table(oid => $oid_eventLogEntry);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_eventLogString\.(\d+)$/;
+        next if ($key !~ /^$oid_eventLogString\.(\d+)$/);
         my $instance = $1;
 
-        my $message = centreon::plugins::misc($result->{$oid_eventLogString . '.' . $instance});
+        my $message = centreon::plugins::misc::trim($result->{$oid_eventLogString . '.' . $instance});
         my $severity = $result->{$oid_eventLogSeverity . '.' . $instance};
         my $date = $result->{$oid_eventLogDate . '.' . $instance};
         my $time = $result->{$oid_eventLogTime . '.' . $instance};
         
         my $date_compare = '';
-        $date =~ {(\d+)/(\d+)/(\d+)};
+        $date =~ /(\d+)\/(\d+)\/(\d+)/;
         $date_compare = $3 . $1 . $2;
-        $time =~ {(\d+)::(\d+)::(\d+)};
-        $date_compare .= $1 . $2 . $3
+        $time =~ /(\d+):(\d+):(\d+)/;
+        $date_compare .= $1 . $2 . $3;
+        
+        if (defined($self->{option_results}->{memory})) {
+            $datas->{last_time} = $date_compare;
+            next if (defined($last_time) && $datas->{last_time} <= $last_time);
+        }
+        
+        $num_eventlog_checked++;
+        
+        next if (defined($self->{option_results}->{filter_severity}) && $self->{option_results}->{filter_severity} ne '' && $severity_map{$severity} !~ /$self->{option_results}->{filter_severity}/);
+        next if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' && $message !~ /$self->{option_results}->{filter_message}/);
+        
+        $num_errors++;
+        $self->{output}->output_add(long_msg => sprintf("%s : %s", 
+                                                         $date . ' ' . $time,
+                                                         $message
+                                                         )
+                                    );
         
         
     }
-        
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok.", 
-                                                     $total_components,
-                                                     $display_by_component
-                                                    )
-                                );
+    
+    $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
+    if ($num_errors != 0) {
+        # Message problem
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
+                                    );
+    }
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => $datas);
@@ -138,6 +169,10 @@ __END__
 Check eventlogs.
 
 =over 8
+
+=item B<--warning>
+
+Use warning return instead 'critical'.
 
 =item B<--memory>
 
