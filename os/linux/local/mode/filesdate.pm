@@ -33,14 +33,13 @@
 #
 ####################################################################################
 
-package os::solaris::local::mode::cpu;
+package os::linux::local::mode::filesdate;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -57,14 +56,17 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'kstat' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-n sys 2>&1' },
                                   "warning:s"         => { name => 'warning', },
                                   "critical:s"        => { name => 'critical', },
+                                  "separate-dirs"     => { name => 'separate_dirs', },
+                                  "max-depth:s"       => { name => 'max_depth', },
+                                  "exclude-du:s@"     => { name => 'exclude_du', },
+                                  "filter-plugin:s"   => { name => 'filter_plugin', },
+                                  "files:s"           => { name => 'files', },
+                                  "time:s"            => { name => 'time', },
                                 });
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    $self->{hostname} = undef;
+
     return $self;
 }
 
@@ -80,16 +82,36 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    
-    $self->{statefile_cache}->check_options(%options);
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
+    if (!defined($self->{option_results}->{files}) || $self->{option_results}->{files} eq '') {
+       $self->{output}->add_option_msg(short_msg => "Need to specify files option.");
+       $self->{output}->option_exit();
     }
+    
+    #### Create command_options
+    $self->{option_results}->{command} = 'du';
+    $self->{option_results}->{command_options} = '-x --time-style=+%s';
+    if (defined($self->{option_results}->{separate_dirs})) {
+        $self->{option_results}->{command_options} .= ' --separate-dirs';
+    }
+    if (defined($self->{option_results}->{max_depth})) {
+        $self->{option_results}->{command_options} .= ' --max-depth=' . $self->{option_results}->{max_depth};
+    }
+    if (defined($self->{option_results}->{time})) {
+        $self->{option_results}->{command_options} .= ' --time=' . $self->{option_results}->{time};
+    } else {
+        $self->{option_results}->{command_options} .= ' --time';
+    }
+    foreach my $exclude (@{$self->{option_results}->{exclude_du}}) {
+        $self->{option_results}->{command_options} .= " --exclude='" . $exclude . "'";
+    }
+    $self->{option_results}->{command_options} .= ' ' . $self->{option_results}->{files};
+    $self->{option_results}->{command_options} .= ' 2>&1';
 }
 
 sub run {
     my ($self, %options) = @_;
+    my $total_size = 0;
+    my $current_time = time();
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
@@ -97,66 +119,31 @@ sub run {
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
-    $self->{statefile_cache}->read(statefile => 'cache_solaris_local_' . $self->{hostname}  . '_' .  $self->{mode});
-    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-    my $datas = {};
-    $datas->{last_timestamp} = time();
     
     $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "CPUs usages are ok.");
-    my @output_cpu_instance = split("instance", $stdout);
-    shift @output_cpu_instance;
-    foreach (@output_cpu_instance) {
-        /:\s.*?(\d+)/;
-        my $cpu_number = $1;
-        /.*?cpu_ticks_idle\s.*?(\d+).*?cpu_ticks_kernel\s.*?(\d+).*?cpu_ticks_user\s.*?(\d+)/ms;
-        $datas->{'cpu_idle_' . $cpu_number} = $1;
-        $datas->{'cpu_system_' . $cpu_number} = $2;
-        $datas->{'cpu_user_' . $cpu_number} = $3;
+                                short_msg => "All file/directorie times are ok.");
+    foreach (split(/\n/, $stdout)) {
+        next if (!/(\d+)\t+(\d+)\t+(.*)/);
+        my ($size, $time, $name) = ($1, $2, centreon::plugins::misc::trim($3));
+        my $diff_time = $current_time - $time;
         
-        if (!defined($old_timestamp)) {
-            next;
-        }
-        my $old_cpu_idle = $self->{statefile_cache}->get(name => 'cpu_idle_' . $cpu_number);
-        my $old_cpu_system = $self->{statefile_cache}->get(name => 'cpu_system_' . $cpu_number);
-        my $old_cpu_user = $self->{statefile_cache}->get(name => 'cpu_user_' . $cpu_number);
-        if (!defined($old_cpu_system) || !defined($old_cpu_idle) || !defined($old_cpu_user)) {
-            next;
-        }
+        next if (defined($self->{option_results}->{filter_plugin}) && $self->{option_results}->{filter_plugin} ne '' &&
+                 $name !~ /$self->{option_results}->{filter_plugin}/);
         
-        if ($datas->{'cpu_idle_' . $cpu_number} < $old_cpu_idle) {
-            # We set 0. Has reboot.
-            $old_cpu_user = 0;
-            $old_cpu_idle = 0;
-            $old_cpu_system = 0;
-        }
-        
-        my $total_elapsed = ($datas->{'cpu_idle_' . $cpu_number} + $datas->{'cpu_user_' . $cpu_number} + $datas->{'cpu_system_' . $cpu_number}) - ($old_cpu_user + $old_cpu_idle + $old_cpu_system);
-        my $idle_elapsed = $datas->{'cpu_idle_' . $cpu_number} - $old_cpu_idle;
-        my $cpu_ratio_usetime = 100 * $idle_elapsed / $total_elapsed;
-        $cpu_ratio_usetime = 100 - $cpu_ratio_usetime;        
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_ratio_usetime, 
+        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(long_msg => sprintf("CPU %d %.2f%%", $cpu_number, $cpu_ratio_usetime));
+        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, localtime($time)));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("CPU %d %.2f%%", $cpu_number, $cpu_ratio_usetime));
+                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, localtime($time)));
         }
-        $self->{output}->perfdata_add(label => 'cpu_' . $cpu_number, unit => '%',
-                                      value => sprintf("%.2f", $cpu_ratio_usetime),
+        $self->{output}->perfdata_add(label => $name, unit => 's',
+                                      value => $diff_time,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+                                      );
     }
-
-	$self->{statefile_cache}->write(data => $datas);
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
- 
+      
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -167,17 +154,43 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (need 'kstat' command).
+Check time (modified, creation,...) of files/directories.
 
 =over 8
 
+=item B<--files>
+
+Files/Directories to check. (Shell expansion is ok)
+
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning in seconds for each files/directories (diff time).
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical in seconds for each files/directories (diff time).
+
+=item B<--separate-dirs>
+
+Do not include size of subdirectories.
+
+=item B<--max-depth>
+
+Don't check fewer levels. (can be use --separate-dirs)
+
+=item B<--time>
+
+Check another time than modified time.
+
+=item B<--exclude-du>
+
+Exclude files/directories with 'du' command. Values from exclude files/directories are not counted in parent directories.
+Shell pattern can be used.
+
+=item B<--filter-plugin>
+
+Filter files/directories in the plugin. Values from exclude files/directories are counted in parent directories!!!
+Perl Regexp can be used.
 
 =item B<--remote>
 
@@ -207,18 +220,9 @@ Timeout in seconds for the command (Default: 30).
 
 Use 'sudo' to execute the command.
 
-=item B<--command>
-
-Command to get information (Default: 'kstat').
-Can be changed if you have output in a file.
-
 =item B<--command-path>
 
 Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-n sys 2>&1').
 
 =back
 
