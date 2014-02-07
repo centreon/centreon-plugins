@@ -101,7 +101,7 @@ sub run {
     
     my ($exit_code) = $self->{perfdata}->threshold_check(value => $num_connected, 
                                                          threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if ($exit_code ne 'OK') {
+    if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("Some cards are not connected (see additionnal info for more details)"));
     }

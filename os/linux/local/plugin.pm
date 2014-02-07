@@ -49,6 +49,8 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'          => 'os::linux::local::mode::cpu',
                          'cmd-return'   => 'os::linux::local::mode::cmdreturn',
+                         'files-size'   => 'os::linux::local::mode::filessize',
+                         'files-date'   => 'os::linux::local::mode::filesdate',
                          'load'         => 'os::linux::local::mode::loadaverage',
                          'memory'       => 'os::linux::local::mode::memory',
                          'swap'         => 'os::linux::local::mode::swap',

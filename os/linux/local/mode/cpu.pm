@@ -139,10 +139,10 @@ sub run {
         my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_ratio_usetime, 
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
-        $self->{output}->output_add(long_msg => sprintf("CPU %d %.2f%%", $cpu_number, $cpu_ratio_usetime));
-        if ($exit_code ne 'OK') {
+        $self->{output}->output_add(long_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
+        if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("CPU %d %.2f%%", $cpu_number, $cpu_ratio_usetime));
+                                        short_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
         }
         $self->{output}->perfdata_add(label => 'cpu_' . $cpu_number, unit => '%',
                                       value => sprintf("%.2f", $cpu_ratio_usetime),
