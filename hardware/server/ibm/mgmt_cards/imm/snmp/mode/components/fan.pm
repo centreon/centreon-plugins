@@ -54,11 +54,11 @@ sub check {
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fanDescr\.(\d+)$/;
+        next if ($key !~ /^$oid_fanDescr\.(\d+)$/);
         my $instance = $1;
     
-        my $fan_descr = centreon::plugins::misc($result->{$oid_fanDescr . '.' . $instance});
-        my $fan_speed = centreon::plugins::misc($result->{$oid_fanSpeed . '.' . $instance});
+        my $fan_descr = centreon::plugins::misc::trim($result->{$oid_fanDescr . '.' . $instance});
+        my $fan_speed = centreon::plugins::misc::trim($result->{$oid_fanSpeed . '.' . $instance});
 
         $self->{components}->{fans}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' speed is %s.", 

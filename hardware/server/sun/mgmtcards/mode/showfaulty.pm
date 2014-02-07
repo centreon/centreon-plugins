@@ -79,7 +79,7 @@ sub check_options {
     }
     
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+        $self->{statefile_cache}->check_options(%options);
     }
 }
 

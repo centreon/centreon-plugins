@@ -58,10 +58,10 @@ sub check {
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_tempDescr\.(\d+)$/;
+        next if ($key !~ /^$oid_tempDescr\.(\d+)$/);
         my $instance = $1;
     
-        my $temp_descr = centreon::plugins::misc($result->{$oid_tempDescr . '.' . $instance});
+        my $temp_descr = centreon::plugins::misc::trim($result->{$oid_tempDescr . '.' . $instance});
         my $temp_value = $result->{$oid_tempReading . '.' . $instance};
         my $temp_crit_high = $result->{$oid_tempCritLimitHigh . '.' . $instance};
         my $temp_warn_high = $result->{$oid_tempNonCritLimitHigh . '.' . $instance};

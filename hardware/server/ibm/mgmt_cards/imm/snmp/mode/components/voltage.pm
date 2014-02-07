@@ -46,7 +46,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking voltages");
     return if ($self->check_exclude('voltages'));
     
-    my $oid_voltEntry = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1';
+    my $oid_voltEntry = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1';
     my $oid_voltDescr = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.2';
     my $oid_voltReading = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.3';
     my $oid_voltCritLimitHigh = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.6';
@@ -58,10 +58,10 @@ sub check {
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_voltDescr\.(\d+)$/;
+        next if ($key !~ /^$oid_voltDescr\.(\d+)$/);
         my $instance = $1;
     
-        my $volt_descr = centreon::plugins::misc($result->{$oid_voltDescr . '.' . $instance});
+        my $volt_descr = centreon::plugins::misc::trim($result->{$oid_voltDescr . '.' . $instance});
         my $volt_value = $result->{$oid_voltReading . '.' . $instance};
         my $volt_crit_high = $result->{$oid_voltCritLimitHigh . '.' . $instance};
         my $volt_warn_high = $result->{$oid_voltNonCritLimitHigh . '.' . $instance};
@@ -69,14 +69,16 @@ sub check {
         my $volt_warn_low = $result->{$oid_voltNonCritLimitLow . '.' . $instance};
         
         my $warn_threshold = '';
-        $warn_threshold = $volt_warn_low . ':' . $volt_warn_high;
+        $warn_threshold = $volt_warn_low . ':' if ($volt_warn_low != 0);
+        $warn_threshold .= $volt_warn_high if ($volt_warn_high != 0);
         my $crit_threshold = '';
-        $crit_threshold = $volt_crit_low . ':' . $volt_crit_high;
+        $crit_threshold = $volt_crit_low . ':' if ($volt_crit_low != 0);
+        $crit_threshold .= $volt_crit_high if ($volt_crit_high != 0);
         
         $self->{perfdata}->threshold_validate(label => 'warning_' . $instance, value => $warn_threshold);
         $self->{perfdata}->threshold_validate(label => 'critical_' . $instance, value => $crit_threshold);
         
-        my $exit = $self->{perfdata}->threshold_check(value => $temp_value, threshold => [ { label => 'critical_' . $instance, 'exit_litteral' => 'critical' }, { label => 'warning_' . $instance, exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $volt_value, threshold => [ { label => 'critical_' . $instance, 'exit_litteral' => 'critical' }, { label => 'warning_' . $instance, exit_litteral => 'warning' } ]);
         
         $self->{components}->{temperatures}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Voltage '%s' value is %s.", 
