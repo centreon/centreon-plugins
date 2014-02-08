@@ -99,10 +99,7 @@ sub new {
 
 sub connect {
     my ($self, %options) = @_;
-    # $options{exit_value} = integer
     
-    my ($exit_value) = defined($options{exit_value}) ? $options{exit_value} : $self->{global_exit_value};
-
     $self->{snmp_params}->{RetryNoSuch} = $self->{RetryNoSuch};
     $self->{snmp_params}->{UseNumeric} = $self->{UseNumeric};
 
@@ -113,8 +110,8 @@ sub connect {
     
     $self->{session} = new SNMP::Session(%{$self->{snmp_params}});
     if ($self->{session}->{ErrorNum}) {
-        $self->{output}->add_option_msg(short_msg => 'UNKNOWN: SNMP Session : ' . $self->{session}->{ErrorStr});
-        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+        $self->{output}->add_option_msg(short_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 }
 
@@ -169,7 +166,7 @@ sub get_leef {
                 return undef;
             }
             $self->{output}->add_option_msg(short_msg => 'Need to specify OIDs');
-            $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
         }
         push @{$options{oids}}, @{$self->{oids_loaded}};
         @{$self->{oids_loaded}} = ();
@@ -259,7 +256,7 @@ sub get_leef {
             
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
-                $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
             }
             
             $self->set_error(error_status => -1, error_msg => $msg);
@@ -283,7 +280,7 @@ sub get_leef {
     
     if ($nothing_quit == 1 && $total == 0) {
         $self->{output}->add_option_msg(short_msg => "SNMP GET Request : Cant get a single value.");
-        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
     
     return $results;
@@ -324,7 +321,7 @@ sub get_table {
             return undef;
         }
         $self->{output}->add_option_msg(short_msg => "Method 'get_table': Wrong OID '" . $options{oid} . "'.");
-        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
     
     my $main_indice = $1 . "." . $2;
@@ -362,7 +359,7 @@ sub get_table {
         
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
-                $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
             }
             
             $self->set_error(error_status => -1, error_msg => $msg);
@@ -392,7 +389,7 @@ sub get_table {
     
     if ($nothing_quit == 1 && scalar(keys %$results) == 0) {
         $self->{output}->add_option_msg(short_msg => "SNMP Table Request: Cant get a single value.");
-        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
     
     return $results;
@@ -426,7 +423,7 @@ sub set {
         
         if ($dont_quit == 0) {
             $self->{output}->add_option_msg(short_msg => $msg);
-            $self->{output}->option_exit(exit_litteral => $self->{option_results}->{snmp_errors_exit});
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
         }
         
         $self->set_error(error_status => -1, error_msg => $msg);
