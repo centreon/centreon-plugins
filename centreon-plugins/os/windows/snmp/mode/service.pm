@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::windows::mode::service;
+package os::windows::snmp::mode::service;
 
 use base qw(centreon::plugins::mode);
 
