@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::windows::mode::memory;
+package os::windows::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 

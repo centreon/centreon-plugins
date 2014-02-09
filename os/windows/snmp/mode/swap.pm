@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::windows::mode::swap;
+package os::windows::snmp::mode::swap;
 
 use base qw(centreon::plugins::mode);
 
