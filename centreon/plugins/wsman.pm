@@ -101,7 +101,7 @@ sub connect {
         $self->{output}->option_exit(exit_litteral => 'unknown');
     }
     
-    openwsman::set_debug(1) if (defined($self->{wsman_params}->{wsman_debug});
+    openwsman::set_debug(1) if (defined($self->{wsman_params}->{wsman_debug}));
     $self->{client} = new openwsman::Client::($self->{wsman_params}->{host}, $self->{wsman_params}->{wsman_port}, 
                                               $self->{wsman_params}->{wsman_path}, $self->{wsman_params}->{wsman_scheme},
                                               $self->{wsman_params}->{wsman_username}, $self->{wsman_params}->{wsman_password});
@@ -125,7 +125,7 @@ sub request {
     # $options{nothing_quit} = integer
     # $options{dont_quit} = integer
     # $options{uri} = string
-    # $options{wql_fitler} = string
+    # $options{wql_filter} = string
     # $options{result_type} = string ('array' or 'hash' with a key)
     # $options{hash_key} = string
     
@@ -136,7 +136,7 @@ sub request {
     
     ######
     # Check options
-    if (!defined($options{uri}) || !defined($options{wql_fitler})) {
+    if (!defined($options{uri}) || !defined($options{wql_filter})) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify wql_filter and uri options');
         $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
     }
@@ -167,7 +167,7 @@ sub request {
         $self->{output}->add_option_msg(short_msg => 'Could not create filter.');
         $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
     }
-    $filter->wql($options{wql_fitler});
+    $filter->wql($options{wql_filter});
     
     my $result = $self->{client}->enumerate($client_options, $filter, $options{uri});
     unless($result && $result->is_fault eq 0) {
@@ -183,7 +183,7 @@ sub request {
 
     ######
     # Fetch values
-    my ($array_return, $hash_return)
+    my ($array_return, $hash_return);
     
     $array_return = [] if ($result_type eq 'array');
     $hash_return = {} if ($result_type eq 'hash');
@@ -318,9 +318,9 @@ wsman class
 
 =head1 WSMAN OPTIONS
 
-=over 8
-
 Need at least openwsman-perl version >= 2.3.0
+
+=over 8
 
 =item B<--hostname>
 

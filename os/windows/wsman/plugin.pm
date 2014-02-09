@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,11 +33,11 @@
 #
 ####################################################################################
 
-package os::windows::snmp::plugin;
+package os::windows::wsman::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_wsman);
 
 sub new {
     my ($class, %options) = @_;
@@ -47,17 +47,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu' => 'snmp_standard::mode::cpu',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'list-storages' => 'snmp_standard::mode::liststorages',
-                         'memory' => 'os::windows::snmp::mode::memory',
-                         'packet-errors' => 'snmp_standard::mode::packeterrors',
-                         'processcount' => 'snmp_standard::mode::processcount',
-                         'service' => 'os::windows::snmp::mode::service',
-                         'storage' => 'snmp_standard::mode::storage',
-                         'swap' => 'os::windows::snmp::mode::swap',
-                         'traffic' => 'snmp_standard::mode::traffic',
-                         'uptime' => 'snmp_standard::mode::uptime',
+                         'list-services' => 'os::windows::wsman::mode::listservices',
                          );
 
     return $self;
@@ -69,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Windows operating systems in SNMP.
+Check Windows operating systems through "WinRM" (ws-management protocol).
 
 =cut
