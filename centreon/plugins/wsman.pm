@@ -143,43 +143,21 @@ sub request {
     
     ######
     # ClientOptions object
-    my $client_options = new openwsman::ClientOptions::();
-    if (!defined($client_options)) {
-        if ($dont_quit == 1) {
-            $self->set_error(error_status => -1, error_msg => 'Could not create client options handler');
-            return undef;
-        }
-        $self->{output}->add_option_msg(short_msg => 'Could not create client options handler');
-        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
-    }
+    my $client_options = new openwsman::ClientOptions::() 
+                                            or $self->internal_exit(msg => 'Could not create client options handler');
+
     # Optimization
     $client_options->set_flags($openwsman::FLAG_ENUMERATION_OPTIMIZATION);
     $client_options->set_max_elements(999);
     
     ######
     # Filter/Enumerate
-    my $filter = new openwsman::Filter::();
-    if (!defined($filter)) {
-        if ($dont_quit == 1) {
-            $self->set_error(error_status => -1, error_msg => 'Could not create filter');
-            return undef;
-        }
-        $self->{output}->add_option_msg(short_msg => 'Could not create filter.');
-        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
-    }
+    my $filter = new openwsman::Filter::()
+                                        or $self->internal_exit(msg => 'Could not create filter');
     $filter->wql($options{wql_filter});
     
     my $result = $self->{client}->enumerate($client_options, $filter, $options{uri});
-    unless($result && $result->is_fault eq 0) {
-        my $fault_string = $self->{client}->fault_string();
-        my $msg = 'Could not enumerate instances: ' . ((defined($fault_string)) ? $fault_string : 'use debug option to have details');
-        if ($dont_quit == 1) {
-            $self->set_error(error_status => -1, error_msg => $msg );
-            return undef;
-        }
-        $self->{output}->add_option_msg(short_msg => $msg);
-        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
-    }
+    return undef if ($self->handle_dialog_fault(result => $result, msg => 'Could not enumerate instances: ', dont_quit => $dont_quit));
 
     ######
     # Fetch values
@@ -268,6 +246,32 @@ sub check_options {
     $self->{wsman_params}->{wsman_proxy_username} = $options{option_results}->{wsman_proxy_username};
     $self->{wsman_params}->{wsman_proxy_password} = $options{option_results}->{wsman_proxy_password};
     $self->{wsman_params}->{wsman_debug} = $options{option_results}->{wsman_debug};
+}
+
+sub handle_dialog_fault {
+    my ($self, %options) = @_;
+    my $result = $options{result};
+    my $msg = $options{msg};
+    
+    unless($result && $result->is_fault eq 0) {
+        my $fault_string = $self->{client}->fault_string();
+        my $msg = 'Could not enumerate instances: ' . ((defined($fault_string)) ? $fault_string : 'use debug option to have details');
+        if ($options{dont_quit} == 1) {
+            $self->set_error(error_status => -1, error_msg => $msg);
+            return 1;
+        }
+        $self->{output}->add_option_msg(short_msg => $msg);
+        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
+    }
+    
+    return 0;
+}
+
+sub internal_exit {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_option_msg(short_msg => $options{msg});
+    $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
 }
 
 sub set_error {
