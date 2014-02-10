@@ -125,6 +125,10 @@ sub run {
             $self->{output}->exit();
         }
         
+        # Reboot or counter goes back
+        if ($old_value > $value) {
+            $old_value = 0;
+        }
         $value = $value - $old_value;
         if (defined($self->{option_results}->{counter_per_seconds})) {
             my $delta_time = $datas->{timestamp} - $old_timestamp;
