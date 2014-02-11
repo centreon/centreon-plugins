@@ -75,6 +75,8 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
        $self->{output}->option_exit(); 
     }
+    $self->{option_results}->{oid} .= '.' if ($self->{option_results}->{oid} !~ /^\./);
+    
     if ($self->{option_results}->{oid_type} !~ /^gauge|counter$/i) {
        $self->{output}->add_option_msg(short_msg => "Wrong --oid-type argument '" . $self->{option_results}->{oid_type} . "' ('gauge' or 'counter').");
        $self->{output}->option_exit();

@@ -110,6 +110,11 @@ sub connect {
         $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
     }
     
+    if ($self->{wsman_params}->{wsman_scheme} eq 'https') {
+        # Dont verify
+        $client->transport()->set_verify_peer(0);
+    }
+    
     $self->{client}->transport()->set_auth_method($auth_method_map{$self->{wsman_params}->{wsman_auth_method}});
     $self->{client}->transport()->set_timeout($self->{wsman_params}->{wsman_timeout});
     if (defined($self->{wsman_params}->{wsman_proxy_url})) {
