@@ -84,7 +84,7 @@ sub run {
                                                   $oid_memShared, $oid_memBuffer, $oid_memCached], 
                                           nothing_quit => 1);
 
-    my $shared_used = $result->{$oid_memShared} * 1024;
+    my $shared_used = defined($result->{$oid_memShared}) ? $result->{$oid_memShared} * 1024 : 0;
     my $cached_used = $result->{$oid_memCached} * 1024;
     my $buffer_used = $result->{$oid_memBuffer} * 1024;
     my $physical_used = ($result->{$oid_memTotalReal} * 1024) - ($result->{$oid_memAvailReal} * 1024);
