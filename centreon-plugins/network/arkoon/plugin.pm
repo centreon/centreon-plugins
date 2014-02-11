@@ -49,6 +49,9 @@ sub new {
     %{$self->{modes}} = (
                          'load' => 'snmp_standard::mode::loadaverage',
                          'memory' => 'snmp_standard::mode::memory',
+                         'swap' => 'snmp_standard::mode::swap',
+                         'inodes' => 'snmp_standard::mode::inodes',
+                         'processcount' => 'snmp_standard::mode::processcount',
                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          'packet-errors' => 'snmp_standard::mode::packeterrors',
                          'traffic' => 'snmp_standard::mode::traffic',
