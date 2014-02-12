@@ -89,7 +89,7 @@ sub run {
     foreach my $name (sort(keys %{$self->{result}})) {
 
         $services_display .= $services_display_append . 'name = ' . $name  . 
-                                '[DisplayName = ' . $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}) . ',' . 
+                                ' [DisplayName = ' . $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}) . ',' . 
                                  'StartMode = ' . $self->{result}->{$name}->{StartMode} . ',' .
                                  'State = ' . $self->{result}->{$name}->{State} .
                                 ']';

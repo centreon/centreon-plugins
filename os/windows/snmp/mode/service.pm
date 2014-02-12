@@ -103,7 +103,7 @@ sub run {
     
     my %services_match = ();
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All service states is ok');
+                                short_msg => 'All service states are ok');
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($oid !~ /^$oid_svSvcName/);
         $oid =~ /^$oid_svSvcName\.([0-9\.]+)$/;

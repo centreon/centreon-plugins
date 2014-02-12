@@ -330,21 +330,12 @@ sub request {
     
     $array_return = [] if ($result_type eq 'array');
     $hash_return = {} if ($result_type eq 'hash');
-    my $context = $result->context();
+    my $context;
     my $total = 0;
 
-    while ($context) {
-        # Pull from local server.
-        # (options, filter, resource uri, enum context)
-
-        $result = $self->{client}->pull($client_options, $filter, $options{uri}, $context);
-        next unless($result);
-
-        # Get nodes.
-        # soap body -> PullResponse -> items
-        my $nodes = $result->body()->find($openwsman::XML_NS_ENUMERATION, "Items");
-        next unless($nodes);
-
+    while (1) {
+        my $nodes = $result->body()->find(undef, "Items");
+        
         # Get items.
         my $items;
         for (my $cnt = 0; ($cnt<$nodes->size()); $cnt++) {
@@ -356,7 +347,12 @@ sub request {
             push @{$array_return}, $row_return if ($result_type eq 'array');
             $hash_return->{$row_return->{$options{hash_key}}} = $row_return if ($result_type eq 'hash');
         }
-        $context = $result->context();
+        
+        $context = $result->context()
+                                or last;
+        $result = $self->{client}->pull($client_options, $filter, $options{uri}, $context)
+                                or last;
+
     }
 
     # Release context.
