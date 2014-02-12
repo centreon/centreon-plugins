@@ -201,65 +201,83 @@ sub execute_winshell_commands {
         $node = $data->root()->add($namespace, 'DesiredStream', 'stdout stderr')
                                                 or $self->internal_exit(msg => 'Could not create XmlDoc');
         $node->attr_add(undef, 'CommandId', $command_id);
-        $result = $self->{client}->invoke($client_options, $uri, 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive',
-                                          $data);
-        return undef if ($self->handle_dialog_fault(result => $result, msg => 'Invoke failed: ', dont_quit => $dont_quit));
-        my $response = $result->root()->find($namespace, 'ReceiveResponse')
-                                                or $self->internal_exit(msg => 'No ReceiveResponse');
-        ######
-        # Parsing Reponse
-        for (my $cnt = 0; $cnt < $response->size(); $cnt++) {
-            my $node = $response->get($cnt);
-            my $node_command = $node->attr_find(undef, 'CommandId')
-                                                or $self->internal_exit(msg => 'No CommandId in ReceiveResponse');
-            if ($node_command->value() ne $command_id) {
-                $self->internal_exit(msg => 'Wrong CommandId in ReceiveResponse node');
-            }
+        
+        my $timeout_global = 30; #seconds
+        my $wait_timeout_done = 0;
+        my $loop_out = 1;
+        my ($current_stdout, $current_stderr) = ('', '');
+        
+        while ($loop_out == 1 && $wait_timeout_done < $timeout_global) {
             
-            if ($node->name() eq 'Stream') {
-                my $node_tmp = $node->attr_find(undef, 'Name');
-                if (!defined($node_tmp)) {
-                    next;
+        
+            $result = $self->{client}->invoke($client_options, $uri, 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Receive',
+                                            $data);
+            return undef if ($self->handle_dialog_fault(result => $result, msg => 'Invoke failed: ', dont_quit => $dont_quit));
+            my $response = $result->root()->find($namespace, 'ReceiveResponse')
+                                                    or $self->internal_exit(msg => 'No ReceiveResponse');
+            ######
+            # Parsing Reponse
+            for (my $cnt = 0; $cnt < $response->size(); $cnt++) {
+                my $node = $response->get($cnt);
+                my $node_command = $node->attr_find(undef, 'CommandId')
+                                                    or $self->internal_exit(msg => 'No CommandId in ReceiveResponse');
+                if ($node_command->value() ne $command_id) {
+                    $self->internal_exit(msg => 'Wrong CommandId in ReceiveResponse node');
                 }
-                my $stream_type = $node_tmp->value();
-                my $output = decode_base64($node->text());
-                next if (!defined($output) || $output eq '');
-
-                if ($stream_type eq 'stderr') {
-                    $command_result->{$command->{label}}->{stderr} = '' if (!defined($command_result->{$command->{label}}->{stderr}));
-                    $command_result->{$command->{label}}->{stderr} .= $output;
-                }
-                if ($stream_type eq 'stdout') {
-                    $command_result->{$command->{label}}->{stdout} = '' if (!defined($command_result->{$command->{label}}->{stdout}));
-                    $command_result->{$command->{label}}->{stdout} .= $output;
-                }
-            }
-            if ($node->name() eq 'CommandState') {
-                my $node_tmp = $node->attr_find(undef, 'State');
-                if (!defined($node_tmp)) {
-                    next;
-                }
-                my $state = $node_tmp->value();
-                if ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done') {
-                    my $exit_code = $node->find(undef, 'ExitCode');
-                    if (defined($exit_code)) {
-                        $command_result->{$command->{label}}->{exit_code} = $exit_code->text();
-                    } else {
-                        $self->internal_exit(msg => "No exit code for 'done' command");
+                
+                if ($node->name() eq 'Stream') {
+                    my $node_tmp = $node->attr_find(undef, 'Name');
+                    if (!defined($node_tmp)) {
+                        next;
                     }
-                } elsif ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Running') {
-                    # mmmm should put an error
-                    return undef if ($self->handle_dialog_fault(result => $result, msg => 'Command still running...', dont_quit => $dont_quit));
-                } elsif ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Pending') {
-                   # no-op
-                   # WinRM 1.1 sends this with ExitCode:0
-                } else {
-                    # unknown
-                    $self->internal_exit(msg => 'Unknown command state: ' . $state);
+                    my $stream_type = $node_tmp->value();
+                    my $output = decode_base64($node->text());
+                    next if (!defined($output) || $output eq '');
+
+                    if ($stream_type eq 'stderr') {
+                        $current_stderr .= $output;
+                    }
+                    if ($stream_type eq 'stdout') {
+                        $current_stdout .= $output;
+                    }
                 }
+                if ($node->name() eq 'CommandState') {
+                    my $node_tmp = $node->attr_find(undef, 'State');
+                    if (!defined($node_tmp)) {
+                        next;
+                    }
+                    my $state = $node_tmp->value();
+                    if ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done') {
+                        my $exit_code = $node->find(undef, 'ExitCode');
+                        if (defined($exit_code)) {
+                            $command_result->{$command->{label}}->{exit_code} = $exit_code->text();
+                        } else {
+                            $self->internal_exit(msg => "No exit code for 'done' command");
+                        }
+                        $loop_out = 0;
+                    } elsif ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Running') {
+                        # we wait
+                        $wait_timeout_done += 3;
+                        sleep 3;
+                    } elsif ($state eq 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Pending') {
+                       # no-op
+                       # WinRM 1.1 sends this with ExitCode:0
+                       $loop_out = 0;
+                    } else {
+                        # unknown
+                        $self->internal_exit(msg => 'Unknown command state: ' . $state);
+                    }
+                }
+                
             }
             
         }
+        
+        $current_stderr =~ s/\r//mg;
+        $current_stdout =~ s/\r//mg;
+        
+        $command_result->{$command->{label}}->{stderr} = $current_stderr if ($current_stderr ne '');
+        $command_result->{$command->{label}}->{stdout} = $current_stdout if ($current_stdout ne '');
         
         #
         # terminate shell command
