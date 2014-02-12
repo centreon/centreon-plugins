@@ -47,7 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-services' => 'os::windows::wsman::mode::listservices',
+                         'list-services'    => 'os::windows::wsman::mode::listservices',
+                         'service'          => 'os::windows::wsman::mode::service',
                          );
 
     return $self;
