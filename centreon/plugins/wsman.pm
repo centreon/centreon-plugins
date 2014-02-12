@@ -129,6 +129,7 @@ sub connect {
 
 sub execute_winshell_commands {
     my ($self, %options) = @_;
+    # $options{keep_open} = integer
     # $options{commands} = ref array of hash ([{label => 'myipconfig', value => 'ipconfig /all' }])
 
     my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
@@ -136,34 +137,37 @@ sub execute_winshell_commands {
     
     my $uri = 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/cmd';
     my $namespace = 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell';
-    $self->{shell_id} = undef;
-    my ($command_id);
     my $command_result = {};
+    my ($command_id, $client_options, $data, $result, $node);
     
     # Init result
     foreach my $command (@{$options{commands}}) {
         $command_result->{$command->{label}} = {stdout => undef, stderr => undef, exit_code => undef};
     }
     
-    ######
-    # Start Shell
-    my $client_options = new openwsman::ClientOptions::() 
-                                            or $self->internal_exit(msg => 'Could not create client options handler');
-    $client_options->set_timeout(30 * 1000); # 30sec
-    $client_options->add_selector('Name', 'Themes');
-    $client_options->add_option('WINRS_NOPROFILE', 'FALSE');
-    $client_options->add_option('WINRS_CODEPAGE', '437'); # utf-8
+    if (!defined($self->{shell_id})) { 
+        $self->{shell_id} = undef;
     
-    my $data = new openwsman::XmlDoc::('Shell', $namespace)
+        ######
+        # Start Shell
+        $client_options = new openwsman::ClientOptions::() 
+                                            or $self->internal_exit(msg => 'Could not create client options handler');
+        $client_options->set_timeout(30 * 1000); # 30sec
+        $client_options->add_selector('Name', 'Themes');
+        $client_options->add_option('WINRS_NOPROFILE', 'FALSE');
+        $client_options->add_option('WINRS_CODEPAGE', '437'); # utf-8
+    
+        $data = new openwsman::XmlDoc::('Shell', $namespace)
                                             or $self->internal_exit(msg => 'Could not create XmlDoc');
-    $data->root()->add($namespace, 'InputStreams', 'stdin');
-    $data->root()->add($namespace, 'OutputStreams', 'stdout stderr');
+        $data->root()->add($namespace, 'InputStreams', 'stdin');
+        $data->root()->add($namespace, 'OutputStreams', 'stdout stderr');
 
-    my $result = $self->{client}->create($client_options, $uri, $data->string(), length($data->string()), "utf-8");
-    return undef if ($self->handle_dialog_fault(result => $result, msg => 'Create failed: ', dont_quit => $dont_quit));
-    my $node = $result->root()->find(undef, 'Selector')
+        $result = $self->{client}->create($client_options, $uri, $data->string(), length($data->string()), "utf-8");
+        return undef if ($self->handle_dialog_fault(result => $result, msg => 'Create failed: ', dont_quit => $dont_quit));
+        $node = $result->root()->find(undef, 'Selector')
                                             or $self->internal_exit(msg => 'No shell id returned');
-    $self->{shell_id} = $node->text();
+        $self->{shell_id} = $node->text();
+    }
     
     foreach my $command (@{$options{commands}}) {
         #######
@@ -272,7 +276,7 @@ sub execute_winshell_commands {
     }
     
     # Delete Shell resource
-    if (defined($self->{shell_id})) {
+    if (defined($self->{shell_id}) && !(defined($options{keep_open}) && $options{keep_open} == 1)) {
         my $client_options = new openwsman::ClientOptions::()
             or die print "[ERROR] Could not create client options handler.\n";
         $client_options->set_timeout(30 * 1000); # 30sec
