@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<dcdiag language="en">
+		<messages>
+			<ok>passed test\s+(.*)</ok>
+			<warning>warning test\s+(.*)</warning>
+			<critical>failed test\s+(.*)</critical>
+		</messages>
+	</dcdiag>
+</root>

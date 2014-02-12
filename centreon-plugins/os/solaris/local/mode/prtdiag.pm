@@ -75,7 +75,7 @@ sub check_options {
     if (defined($self->{option_results}->{config_file})) {
         $self->{config_file} = $self->{option_results}->{config_file};
     } else {
-        $self->{config_file} = dirname(__FILE__) . '/../prtdiag.conf';
+        $self->{config_file} = dirname(__FILE__) . '/../conf/prtdiag.conf';
     }
 }
 
