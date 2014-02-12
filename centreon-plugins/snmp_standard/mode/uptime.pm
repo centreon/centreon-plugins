@@ -52,6 +52,7 @@ sub new {
                                   "warning:s"          => { name => 'warning', },
                                   "critical:s"         => { name => 'critical', },
                                   "seconds"            => { name => 'seconds', },
+                                  "force-oid:s"        => { name => 'force_oid', },
                                 });
 
     return $self;
@@ -76,20 +77,35 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
+    # To be used first for OS
     my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime ]);
+    # For network equipment or others
+    my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
+    my ($result, $value);
     
-    my $exit_code = $self->{perfdata}->threshold_check(value => floor($result->{$oid_hrSystemUptime} / 100), 
+    if (defined($self->{option_results}->{force_oid})) {
+        $result = $self->{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
+        $value = $result->{$self->{option_results}->{force_oid}};
+    } else {
+        $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
+        if (defined($result->{$oid_hrSystemUptime})) {
+            $value = $result->{$oid_hrSystemUptime};
+        } else {
+            $value = $result->{$oid_sysUpTime};
+        }
+    }
+    
+    my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / 100), 
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
     $self->{output}->perfdata_add(label => 'uptime',
-                                  value => floor($result->{$oid_hrSystemUptime} / 100),
+                                  value => floor($value / 100),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("System uptime is: %s", 
-                                    defined($self->{option_results}->{seconds}) ? floor($result->{$oid_hrSystemUptime} / 100) . " seconds" : floor($result->{$oid_hrSystemUptime} / 86400 / 100) . " days" ));
+                                    defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($result->{$value / 86400 / 100) . " days" ));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -116,6 +132,10 @@ Threshold critical in seconds.
 =item B<--seconds>
 
 Display uptime in seconds.
+
+=item B<--force-oid>
+
+Can choose your oid (numeric format only).
 
 =back
 
