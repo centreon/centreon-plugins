@@ -92,11 +92,6 @@ sub check {
                                         short_msg => sprintf("fan %d status is %s",
                                            $fan_Index, ${$status{$fan_Status}}[0]));
         }
-
-        if (defined($fan_Reading)) {
-            $self->{output}->perfdata_add(label => "fan_" . $fan_Index . "_speed", unit => 'rpm',
-                                          value => $fan_Reading);
-        }
     }
 }
 
