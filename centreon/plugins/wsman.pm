@@ -364,7 +364,7 @@ sub request {
         
         # Get items.
         my $items;
-        for (my $cnt = 0; ($cnt<$nodes->size()); $cnt++) {
+        for (my $cnt = 0; defined($nodes) && ($cnt<$nodes->size()); $cnt++) {
             my $row_return = {};
             for (my $cnt2 = 0; ($cnt2<$nodes->get($cnt)->size()); $cnt2++) {
                 $row_return->{$nodes->get($cnt)->get($cnt2)->name()} = $nodes->get($cnt)->get($cnt2)->text();
