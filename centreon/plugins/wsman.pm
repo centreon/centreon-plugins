@@ -273,6 +273,10 @@ sub execute_winshell_commands {
             
         }
         
+        if ($loop_out == 1) {
+            $self->internal_exit(msg => 'Command to long to execute...');
+        }
+        
         $current_stderr =~ s/\r//mg;
         $current_stdout =~ s/\r//mg;
         
