@@ -74,37 +74,39 @@ sub check {
     $self->{components}->{cpu} = {name => 'CPUs', total => 0};
     return if ($self->check_exclude('cpu'));
    
-    my $oid_cpuStatus = '.1.3.6.1.4.1.674.10892.1.1100.30.1.5.1';
-    my $oid_cpuManufacturerName = '.1.3.6.1.4.1.674.10892.1.1100.30.1.8.1';
-    my $oid_cpuStatusState = '.1.3.6.1.4.1.674.10892.1.1100.30.1.9.1';
-    my $oid_cpuCurrentSpeed = '.1.3.6.1.4.1.674.10892.1.1100.30.1.12.1';
-    my $oid_cpuBrandName = '.1.3.6.1.4.1.674.10892.1.1100.30.1.23.1';
-    my $oid_cpuChassis = '.1.3.6.1.4.1.674.10892.1.1100.32.1.1.1';
-    my $oid_cpuStatusReading = '.1.3.6.1.4.1.674.10892.1.1100.32.1.6.1';
+    my $oid_cpuStatus = '.1.3.6.1.4.1.674.10892.1.1100.30.1.5';
+    my $oid_cpuManufacturerName = '.1.3.6.1.4.1.674.10892.1.1100.30.1.8';
+    my $oid_cpuStatusState = '.1.3.6.1.4.1.674.10892.1.1100.30.1.9';
+    my $oid_cpuCurrentSpeed = '.1.3.6.1.4.1.674.10892.1.1100.30.1.12';
+    my $oid_cpuBrandName = '.1.3.6.1.4.1.674.10892.1.1100.30.1.23';
+    my $oid_cpuChassis = '.1.3.6.1.4.1.674.10892.1.1100.32.1.1';
+    my $oid_cpuStatusReading = '.1.3.6.1.4.1.674.10892.1.1100.32.1.6';
 
     my $result = $self->{snmp}->get_table(oid => $oid_cpuStatus);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_cpuManufacturerName, $oid_cpuStatusState, $oid_cpuCurrentSpeed, $oid_cpuBrandName, $oid_cpuChassis, $oid_cpuStatusReading],
-                                          instances => [keys %$result],
-                                          instance_regexp => '(\.\d+)$');
+    $self->{snmp}->load(oids => [$oid_cpuManufacturerName, $oid_cpuStatusState, $oid_cpuCurrentSpeed, $oid_cpuBrandName, $oid_cpuChassis, $oid_cpuStatusReading],
+                        instances => [keys %$result],
+                        instance_regexp => '(\d+\.\d+)$');
+    my $result2 = $self->{snmp}->get_leef();
     return if (scalar(keys %$result2) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        $key =~ /\.(\d+)$/;
-        my $cpu_Index = $1;
+        $key =~ /(\d+)\.(\d+)$/;
+        my ($chassis_Index, $cpu_Index) = ($1, $2);
+        my $instance = $chassis_Index . '.' . $cpu_Index;
         
         my $cpu_Status = $result->{$key};
-        my $cpu_ManufacturerName = $result2->{$oid_cpuManufacturerName . '.' . $cpu_Index};
-        my $cpu_StatusState = $result2->{$oid_cpuStatusState . '.' . $cpu_Index};
-        my $cpu_CurrentSpeed = $result->{$oid_cpuCurrentSpeed . '.' . $cpu_Index};
-        my $cpu_BrandName = $result2->{$oid_cpuBrandName . '.' . $cpu_Index};
-        my $cpu_Chassis = $result2->{$oid_cpuChassis . '.' . $cpu_Index};
-        my $cpu_StatusReading =  $result2->{$oid_cpuStatusReading . '.' . $cpu_Index};
+        my $cpu_ManufacturerName = $result2->{$oid_cpuManufacturerName . '.' . $instance};
+        my $cpu_StatusState = $result2->{$oid_cpuStatusState . '.' . $instance};
+        my $cpu_CurrentSpeed = $result2->{$oid_cpuCurrentSpeed . '.' . $instance};
+        my $cpu_BrandName = $result2->{$oid_cpuBrandName . '.' . $instance};
+        my $cpu_Chassis = $result2->{$oid_cpuChassis . '.' . $instance};
+        my $cpu_StatusReading =  $result2->{$oid_cpuStatusReading . '.' . $instance};
         
         $self->{components}->{cpu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("cpu %d status is %s, state is %s, current speed is %d MHz [chassis: %d, Model: %s].",
-                                    $cpu_Index, ${$status{$cpu_Status}}[0], ${$statusState{$cpu_StatusState}}[0],
+                                    $cpu_Index, ${$status{$cpu_Status}}[0], $statusState{$cpu_StatusState},
                                     $cpu_CurrentSpeed, $chassis_Index, $cpu_BrandName
                                     ));
 
