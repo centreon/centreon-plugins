@@ -81,7 +81,6 @@ sub manage_selection {
     my $query = 'SELECT Name, AutoStart FROM ApplicationPool';
     my $resultset = $wmi->ExecQuery($query);
     # AutoStart -> 1/0
-    # State -> 1=started, 2=starting, 3 = stopped, 4=stopping
 	foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $auto_start = $obj->{AutoStart};
@@ -157,6 +156,12 @@ Allows to use regexp to filter application pool name (with option --name).
 =item B<--filter-state>
 
 Filter application pool state. Regexp can be used.
+Available states are:
+- 'started',
+- 'starting',
+- 'stopped',
+- 'stopping'
+- 'unknown'
 
 =back
 
