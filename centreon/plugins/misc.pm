@@ -38,6 +38,45 @@ package centreon::plugins::misc;
 use strict;
 use warnings;
 
+# Function more simple for Windows platform
+sub windows_execute {
+    my (%options) = @_;
+    my $result = undef;
+    my $stdout = '';
+    my ($exit_code, $cmd);
+    
+    $cmd = $options{command_path} . '/' if (defined($options{command_path}));
+    $cmd .= $options{command} . ' ' if (defined($options{command}));
+    $cmd .= $options{command_options} if (defined($options{command_options}));
+    
+    eval {
+           local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
+           alarm( $options{timeout} );
+           $stdout = `$cmd`;
+           $exit_code = ($? >> 8);
+           alarm(0);
+    };
+
+    if ($@) {
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command too long to execute (timeout)...");
+        $options{output}->display();
+        $options{output}->exit();
+    }
+    chomp $stdout;
+    $stdout =~ s/\r//g;
+    
+    if ($exit_code != 0) {
+        $stdout =~ s/\n/ - /g;
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command error: $stdout");
+        $options{output}->display();
+        $options{output}->exit();
+    }
+
+    return $stdout;
+}
+
 sub execute {
     my (%options) = @_;
     my $cmd = '';
