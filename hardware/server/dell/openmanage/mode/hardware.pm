@@ -127,7 +127,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power Supplies, Temperature Probes).
+Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes).
 
 =over 8
 
