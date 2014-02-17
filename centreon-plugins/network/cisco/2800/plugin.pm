@@ -64,6 +64,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco 3750 in SNMP.
+Check Cisco 2800 series in SNMP.
 
 =cut
