@@ -55,6 +55,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
+                                  "component:s"      => { name => 'component', default => 'all' },
                                 });
 
     $self->{product_name} = undef;
@@ -67,16 +68,14 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub run {
+sub global {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
 
     $self->get_system_information();
     hardware::server::dell::openmanage::mode::components::globalstatus::check($self);
     hardware::server::dell::openmanage::mode::components::fan::check($self);
-    hardware::server::dell::openmanage::mode::components::psu::check($self);   
-    hardware::server::dell::openmanage::mode::components::temperature::check($self); 
+    hardware::server::dell::openmanage::mode::components::psu::check($self);
+    hardware::server::dell::openmanage::mode::components::temperature::check($self);
     hardware::server::dell::openmanage::mode::components::cpu::check($self);
 
     my $total_components = 0;
@@ -89,12 +88,61 @@ sub run {
         $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
-    
+
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok - Product Name: %s", 
-                                $total_components,
-                                $display_by_component,
-                                $self->{product_name}));
+                                short_msg => sprintf("All %s components [%s] are ok - Product Name: %s",
+                                                    $total_components,
+                                                    $display_by_component,
+                                                    $self->{product_name})
+                                );
+}
+
+sub component {
+    my ($self, %options) = @_;
+
+    if ($self->{option_results}->{component} eq 'globalstatus') {
+        hardware::server::dell::openmanage::mode::components::globalstatus::check($self);
+    } elsif ($self->{option_results}->{component} eq 'fan') {
+        hardware::server::dell::openmanage::mode::components::fan::check($self);
+    } elsif ($self->{option_results}->{component} eq 'psu') {
+        hardware::server::dell::openmanage::mode::components::psu::check($self);
+    } elsif ($self->{option_results}->{component} eq 'temperature') {
+        hardware::server::dell::openmanage::mode::components::temperature::check($self);
+    } elsif ($self->{option_results}->{component} eq 'cpu') {
+        hardware::server::dell::openmanage::mode::components::cpu::check($self);
+    }else {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0);
+        $total_components += $self->{components}->{$comp}->{total};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %s components [%s] are ok.",
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    if ($self->{option_results}->{component} eq 'all') {
+        $self->global();
+    } else {
+        $self->component();
+    }
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -127,9 +175,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power Supplies, Temperature Probes).
+Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes).
 
 =over 8
+
+=item B<--component>
+
+Which component to check (Default: 'all').
+Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature'.
 
 =item B<--exclude>
 
