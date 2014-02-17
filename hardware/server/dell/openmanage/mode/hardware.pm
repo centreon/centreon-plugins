@@ -44,6 +44,7 @@ use hardware::server::dell::openmanage::mode::components::globalstatus;
 use hardware::server::dell::openmanage::mode::components::fan;
 use hardware::server::dell::openmanage::mode::components::psu;
 use hardware::server::dell::openmanage::mode::components::temperature;
+use hardware::server::dell::openmanage::mode::components::cpu;
 
 sub new {
     my ($class, %options) = @_;
@@ -76,6 +77,7 @@ sub run {
     hardware::server::dell::openmanage::mode::components::fan::check($self);
     hardware::server::dell::openmanage::mode::components::psu::check($self);   
     hardware::server::dell::openmanage::mode::components::temperature::check($self); 
+    hardware::server::dell::openmanage::mode::components::cpu::check($self);
 
     my $total_components = 0;
     my $display_by_component = '';
