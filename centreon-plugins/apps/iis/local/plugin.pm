@@ -49,6 +49,7 @@ sub new {
     %{$self->{modes}} = (
                          'applicationpool-state'    => 'apps::iis::local::mode::applicationpoolstate',
                          'list-applicationpools'    => 'apps::iis::local::mode::listapplicationpools',
+                         'webservice-statistics'    => 'apps::iis::local::mode::webservicestatistics',
                          );
 
     return $self;
