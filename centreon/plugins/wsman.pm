@@ -45,7 +45,7 @@ my %auth_method_map = (
     basic           => $openwsman::BASIC_AUTH_STR,
     digest          => $openwsman::DIGEST_AUTH_STR,
     pass            => $openwsman::PASS_AUTH_STR,
-    ntml            => $openwsman::NTML_AUTH_STR,
+    ntlm            => $openwsman::NTLM_AUTH_STR,
     gssnegotiate    => $openwsman::GSSNEGOTIATE_AUTH_STR,
 );
 
@@ -414,7 +414,7 @@ sub check_options {
     $self->{wsman_params}->{wsman_scheme} = $options{option_results}->{wsman_scheme};
     
     if (!defined($options{option_results}->{wsman_auth_method}) || !defined($auth_method_map{$options{option_results}->{wsman_auth_method}})) {
-        $self->{output}->add_option_msg(short_msg => "Wrong wsman auth method parameter. Must be 'basic', 'noauth', 'digest', 'pass', 'ntml' or 'gssnegotiate'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong wsman auth method parameter. Must be 'basic', 'noauth', 'digest', 'pass', 'ntlm' or 'gssnegotiate'.");
         $self->{output}->option_exit();
     }
     $self->{wsman_params}->{wsman_auth_method} = $options{option_results}->{wsman_auth_method};
