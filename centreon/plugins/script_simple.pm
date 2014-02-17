@@ -123,7 +123,18 @@ sub init {
 sub run {
     my $self = shift;
 
-    $self->{mode}->run();
+    if ($self->{output}->is_disco_format()) {
+        $self->{mode}->disco_format();
+        $self->{output}->display_disco_format();
+        $self->{output}->exit(exit_litteral => 'ok');
+    }
+    if ($self->{output}->is_disco_show()) {
+        $self->{mode}->disco_show(snmp => $self->{snmp});
+        $self->{output}->display_disco_show();
+        $self->{output}->exit(exit_litteral => 'ok');
+    } else {
+        $self->{mode}->run();
+    }
 }
 
 sub is_mode {
