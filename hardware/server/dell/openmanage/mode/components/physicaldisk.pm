@@ -107,9 +107,9 @@ sub check {
         my $disk_ComponentStatus = $result2->{$oid_diskComponentStatus . '.' . $instance};
         
         $self->{components}->{physicaldisk}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("physical disk %s status is %s, state is %s, spare state is %s, size is %d MB [chassis: %d, index: %d].",
+        $self->{output}->output_add(long_msg => sprintf("physical disk %s status is %s, state is %s, spare state is %s, size is %d MB [index: %d].",
                                     $disk_Name, ${$componentStatus{$disk_ComponentStatus}}[0], $state{$disk_State},
-                                    $spareState{$disk_SpareState}, $disk_LengthInMB, $chassis_Index, $disk_Index
+                                    $spareState{$disk_SpareState}, $disk_LengthInMB, $disk_Index
                                     ));
 
         if ($disk_ComponentStatus != 3) {
