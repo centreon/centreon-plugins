@@ -48,6 +48,7 @@ use hardware::server::dell::openmanage::mode::components::cpu;
 use hardware::server::dell::openmanage::mode::components::cachebattery;
 use hardware::server::dell::openmanage::mode::components::memory;
 use hardware::server::dell::openmanage::mode::components::physicaldisk;
+use hardware::server::dell::openmanage::mode::components::logicaldrive;
 
 sub new {
     my ($class, %options) = @_;
@@ -83,6 +84,7 @@ sub global {
     hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
     hardware::server::dell::openmanage::mode::components::memory::check($self);
     hardware::server::dell::openmanage::mode::components::physicaldisk::check($self);
+    hardware::server::dell::openmanage::mode::components::logicaldrive::check($self);
 
     my $total_components = 0;
     my $display_by_component = '';
@@ -122,6 +124,8 @@ sub component {
         hardware::server::dell::openmanage::mode::components::memory::check($self);
     } elsif ($self->{option_results}->{component} eq 'physicaldisk') {
         hardware::server::dell::openmanage::mode::components::physicaldisk::check($self);
+    } elsif ($self->{option_results}->{component} eq 'logicaldrive') {
+        hardware::server::dell::openmanage::mode::components::logicaldrive::check($self);
     }else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
