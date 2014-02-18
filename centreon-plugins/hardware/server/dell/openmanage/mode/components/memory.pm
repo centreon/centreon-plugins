@@ -89,7 +89,7 @@ sub check {
         my $memory_deviceFailureModes = $result2->{$oid_memoryDeviceFailureModes . '.' . $instance};
        
         $self->{components}->{memory}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("memory module %d status is %s, failure mode is %s, size is %d Ko [chassis: %d, Location: %s].",
+        $self->{output}->output_add(long_msg => sprintf("memory module %d status is %s, failure mode is %s, size is %d KB [chassis: %d, Location: %s].",
                                     $memory_Index, ${$status{$memory_deviceStatus}}[0], $failureModes{$memory_deviceFailureModes},
                                     $memory_deviceSize, $chassis_Index, $memory_deviceLocationName
                                     ));
