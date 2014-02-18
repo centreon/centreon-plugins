@@ -105,9 +105,9 @@ sub check {
         my $cpu_StatusReading =  $result2->{$oid_cpuStatusReading . '.' . $instance};
         
         $self->{components}->{cpu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("cpu %d status is %s, state is %s, current speed is %d MHz [chassis: %d, Model: %s].",
+        $self->{output}->output_add(long_msg => sprintf("cpu %d status is %s, state is %s, current speed is %d MHz [model: %s].",
                                     $cpu_Index, ${$status{$cpu_Status}}[0], $statusState{$cpu_StatusState},
-                                    $cpu_CurrentSpeed, $chassis_Index, $cpu_BrandName
+                                    $cpu_CurrentSpeed, $cpu_BrandName
                                     ));
 
         if ($cpu_Status != 3) {

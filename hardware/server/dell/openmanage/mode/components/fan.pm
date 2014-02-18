@@ -83,9 +83,9 @@ sub check {
         my $fan_LocationName = $result2->{$oid_coolingDeviceLocationName . '.' . $instance};
 
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("fan %d status is %s, speed is %d [chassis: %d, location: %s].",
+        $self->{output}->output_add(long_msg => sprintf("fan %d status is %s, speed is %d RPM [location: %s].",
                                     $fan_Index, ${$status{$fan_Status}}[0], $fan_Reading,
-                                    $chassis_Index, $fan_LocationName
+                                    $fan_LocationName
                                     ));
         if ($fan_Status != 3) {
             $self->{output}->output_add(severity =>  ${$status{$fan_Status}}[1],

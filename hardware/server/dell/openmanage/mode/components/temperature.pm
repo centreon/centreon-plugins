@@ -99,9 +99,9 @@ sub check {
         my $temperature_Reading2 = $temperature_Reading/10;
 
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("temperature probe %d status is %s, temperature is %.1f °C [chassis: %d, location: %s].",
+        $self->{output}->output_add(long_msg => sprintf("temperature probe %d status is %s, temperature is %.1f °C [location: %s].",
                                     $temperature_Index, ${$status{$temperature_Status}}[0], $temperature_Reading2,
-                                    $chassis_Index, $temperature_LocationName
+                                    $temperature_LocationName
                                     ));
         if ($temperature_Status != 3) {
             $self->{output}->output_add(severity =>  ${$status{$temperature_Status}}[1],
