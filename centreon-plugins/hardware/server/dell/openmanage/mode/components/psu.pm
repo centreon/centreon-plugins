@@ -110,9 +110,9 @@ sub check {
         my $psu_ConfigurationErrorType = $result2->{$oid_powerSupplyConfigurationErrorType . '.' . $instance};
 
         $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [chassis: %d, type: %s].",
+        $self->{output}->output_add(long_msg => sprintf("psu %d status is %s, state is %s [type: %s].",
                                     $psu_Index, ${$status{$psu_Status}}[0], $state{$psu_SensorState},
-                                    $chassis_Index, $type{$psu_Type}
+                                    $type{$psu_Type}
                                     ));
         if ($psu_Status != 3) {
             $self->{output}->output_add(severity =>  ${$status{$psu_Status}}[1],
