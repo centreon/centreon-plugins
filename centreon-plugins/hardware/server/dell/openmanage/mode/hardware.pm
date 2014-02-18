@@ -46,6 +46,7 @@ use hardware::server::dell::openmanage::mode::components::psu;
 use hardware::server::dell::openmanage::mode::components::temperature;
 use hardware::server::dell::openmanage::mode::components::cpu;
 use hardware::server::dell::openmanage::mode::components::cachebattery;
+use hardware::server::dell::openmanage::mode::components::memory;
 
 sub new {
     my ($class, %options) = @_;
@@ -79,6 +80,7 @@ sub global {
     hardware::server::dell::openmanage::mode::components::temperature::check($self);
     hardware::server::dell::openmanage::mode::components::cpu::check($self);
     hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
+    hardware::server::dell::openmanage::mode::components::memory::check($self);
 
     my $total_components = 0;
     my $display_by_component = '';
@@ -114,6 +116,8 @@ sub component {
         hardware::server::dell::openmanage::mode::components::cpu::check($self);
     } elsif ($self->{option_results}->{component} eq 'cachebattery') {
         hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
+    } elsif ($self->{option_results}->{component} eq 'memory') {
+        hardware::server::dell::openmanage::mode::components::memory::check($self);
     }else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
