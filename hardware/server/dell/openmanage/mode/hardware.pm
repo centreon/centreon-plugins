@@ -45,6 +45,7 @@ use hardware::server::dell::openmanage::mode::components::fan;
 use hardware::server::dell::openmanage::mode::components::psu;
 use hardware::server::dell::openmanage::mode::components::temperature;
 use hardware::server::dell::openmanage::mode::components::cpu;
+use hardware::server::dell::openmanage::mode::components::cachebattery;
 
 sub new {
     my ($class, %options) = @_;
@@ -77,6 +78,7 @@ sub global {
     hardware::server::dell::openmanage::mode::components::psu::check($self);
     hardware::server::dell::openmanage::mode::components::temperature::check($self);
     hardware::server::dell::openmanage::mode::components::cpu::check($self);
+    hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
 
     my $total_components = 0;
     my $display_by_component = '';
@@ -110,6 +112,8 @@ sub component {
         hardware::server::dell::openmanage::mode::components::temperature::check($self);
     } elsif ($self->{option_results}->{component} eq 'cpu') {
         hardware::server::dell::openmanage::mode::components::cpu::check($self);
+    } elsif ($self->{option_results}->{component} eq 'cachebattery') {
+        hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
     }else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -175,14 +179,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes).
+Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes, Cache Batteries).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature'.
+Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery'.
 
 =item B<--exclude>
 

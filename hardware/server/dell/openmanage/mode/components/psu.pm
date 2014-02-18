@@ -88,7 +88,7 @@ sub check {
     my $oid_powerSupplyStatus = '.1.3.6.1.4.1.674.10892.1.600.12.1.5';
     my $oid_powerSupplyType = '.1.3.6.1.4.1.674.10892.1.600.12.1.7';
     my $oid_powerSupplySensorState = '.1.3.6.1.4.1.674.10892.1.600.12.1.11';
-    my $oid_powerSupplyConfigurationErrorType = '1.3.6.1.4.1.674.10892.1.600.12.1.12';
+    my $oid_powerSupplyConfigurationErrorType = '.1.3.6.1.4.1.674.10892.1.600.12.1.12';
 
     my $result = $self->{snmp}->get_table(oid => $oid_powerSupplyStatus);
     return if (scalar(keys %$result) <= 0);
