@@ -74,7 +74,7 @@ sub run {
     my $oid_fgHwSensorCount = '.1.3.6.1.4.1.12356.101.4.3.1.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_sysDescr, $oid_fgSysVersion, $oid_fgHwSensorCount], nothing_quit => 1);
     
-    $self->{output}->output_add(long_msg => sprintf("[System: %s] [Firmware: %s]", $result->{$oid_sysDescr}, $result->{$oid_fgSysVersion});
+    $self->{output}->output_add(long_msg => sprintf("[System: %s] [Firmware: %s]", $result->{$oid_sysDescr}, $result->{$oid_fgSysVersion}));
     if ($result->{$oid_fgHwSensorCount} == 0) {
         $self->{output}->add_option_msg(short_msg => "No hardware sensors available.");
         $self->{output}->option_exit();
