@@ -76,8 +76,10 @@ sub run {
     
     $self->{output}->output_add(long_msg => sprintf("[System: %s] [Firmware: %s]", $result->{$oid_sysDescr}, $result->{$oid_fgSysVersion}));
     if ($result->{$oid_fgHwSensorCount} == 0) {
-        $self->{output}->add_option_msg(short_msg => "No hardware sensors available.");
-        $self->{output}->option_exit();
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "No hardware sensors available.");
+        $self->{output}->display();
+        $self->{output}->exit();
     }
     
     $self->{output}->output_add(severity => 'OK', 
