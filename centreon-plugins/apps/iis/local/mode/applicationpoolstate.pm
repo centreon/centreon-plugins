@@ -186,8 +186,6 @@ sub check {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{wsman} = wsman object
-    $self->{wsman} = $options{wsman};
     
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All application pools are ok');
