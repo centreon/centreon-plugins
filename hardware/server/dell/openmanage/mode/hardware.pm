@@ -50,6 +50,7 @@ use hardware::server::dell::openmanage::mode::components::memory;
 use hardware::server::dell::openmanage::mode::components::physicaldisk;
 use hardware::server::dell::openmanage::mode::components::logicaldrive;
 use hardware::server::dell::openmanage::mode::components::esmlog;
+use hardware::server::dell::openmanage::mode::components::battery;
 
 sub new {
     my ($class, %options) = @_;
@@ -87,6 +88,7 @@ sub global {
     hardware::server::dell::openmanage::mode::components::physicaldisk::check($self);
     hardware::server::dell::openmanage::mode::components::logicaldrive::check($self);
     hardware::server::dell::openmanage::mode::components::esmlog::check($self);
+    hardware::server::dell::openmanage::mode::components::battery::check($self);
 
     my $total_components = 0;
     my $display_by_component = '';
@@ -130,6 +132,8 @@ sub component {
         hardware::server::dell::openmanage::mode::components::logicaldrive::check($self);
     } elsif ($self->{option_results}->{component} eq 'esmlog') {
         hardware::server::dell::openmanage::mode::components::esmlog::check($self);
+    } elsif ($self->{option_results}->{component} eq 'battery') {
+        hardware::server::dell::openmanage::mode::components::battery::check($self);
     }else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -202,7 +206,7 @@ Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes, C
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery'.
+Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery', 'physicaldisk', 'logicaldrive', 'battery'.
 
 =item B<--exclude>
 
