@@ -142,6 +142,13 @@ sub component {
         hardware::server::dell::openmanage::mode::components::controller::check($self);
     } elsif ($self->{option_results}->{component} eq 'connector') {
         hardware::server::dell::openmanage::mode::components::connector::check($self);
+    } elsif ($self->{option_results}->{component} eq 'storage') {
+        hardware::server::dell::openmanage::mode::components::physicaldisk::check($self);
+        hardware::server::dell::openmanage::mode::components::logicaldrive::check($self);
+        hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
+        hardware::server::dell::openmanage::mode::components::controller::check($self);
+        hardware::server::dell::openmanage::mode::components::connector::check($self);
+        hardware::server::dell::openmanage::mode::components::cachebattery::check($self);
     }else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -207,14 +214,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature Probes, Cache Batteries).
+Check Hardware (Global status, Fans, CPUs, Power Supplies, Temperature, Storage).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery', 'physicaldisk', 'logicaldrive', 'battery', 'controller', connector.
+Can be: 'globalstatus', 'fan', 'cpu', 'psu', 'temperature', 'cachebattery', 'physicaldisk', 'logicaldrive', 'battery', 'controller', 'connector', 'storage'.
 
 =item B<--exclude>
 

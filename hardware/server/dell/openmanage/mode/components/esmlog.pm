@@ -52,11 +52,13 @@ sub check {
 
     # In MIB '10892.mib'
     $self->{output}->output_add(long_msg => "Checking ESM log filling");
+    $self->{components}->{esmlog} = {name => 'ESM log', total => 0};
     return if ($self->check_exclude('esmlog'));
 
     my $oid_eventLogStatus = '.1.3.6.1.4.1.674.10892.1.200.10.1.41.1';
     my $result = $self->{snmp}->get_leef(oids => [$oid_eventLogStatus], nothing_quit => 1);
 
+    $self->{components}->{esmlog}->{total}++;
     $self->{output}->output_add(long_msg => sprintf("ESM log status is '%s'.",
                                     ${$status{$result->{$oid_eventLogStatus}}}[0]
                                     ));    
