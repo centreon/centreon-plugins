@@ -42,23 +42,19 @@ use warnings;
 use Win32::OLE;
 use File::Spec;
 use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
-# Win32_PerfRawData_W3SVC_WebService
-#  By default: 
-#    Name
-#    TotalAnonymousUsers
-#    TotalConnectionAttemptsAllInstances
-#    TotalGetRequests
-#    TotalPostRequests
-
-# Optional:
-#    TotalBytesReceived
-#    TotalBytesSent
-#    TotalFilesReceived
-#    TotalFilesSent
-#    
-
-# You can ignore some perfs. Or you can add some counters with --add-counters=""
+# 1 means by default
+my $counters = {
+    TotalAnonymousUsers => { selected => 1, unit => 'users/s'},
+    TotalConnectionAttemptsAllInstances => { selected => 1, unit => 'con/s'},
+    TotalGetRequests => { selected => 1, unit => 'requests/s'},
+    TotalPostRequests => { selected => 1, unit => 'requests/s'},
+    TotalBytesReceived => { selected => 0, unit => 'b/s'},
+    TotalBytesSent => { selected => 0, unit => 'b/s'},
+    TotalFilesReceived => { selected => 0, unit => 'files/s'},
+    TotalFilesSent => { selected => 0, unit => 'files/s'}
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -66,17 +62,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
+    foreach my $name (keys %$counters) {
+        $options{options}->add_options(arguments =>
+                                { 
+                                  "warning-" . $name . ":s" => { name => 'warning_' . $name, },
+                                  "critical-" . $name . ":s" => { name => 'critical_' . $name, },
+                                });
+    }
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning"             => { name => 'warning', },
-                                  "critical"            => { name => 'critical', },
-                                  "pools:s"             => { name => 'pools', },
-                                  "auto"                => { name => 'auto', },
-                                  "exclude:s"           => { name => 'exclude', },
+                                  "name:s"              => { name => 'name', },
+                                  "regexp"              => { name => 'use_regexp' },
+                                  "add-counters:s"      => { name => 'add_counters', },
                                 });
-    $self->{pools_rules} = {};
-    $self->{wql_filter} = '';
-    $self->{threshold} = 'CRITICAL';
+    $self->{result} = {};
+    $self->{new_datas} = {};
+    $self->{wql_names} = '';
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -84,132 +86,156 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    # Get tempdir for windows
-    File::Spec->tmpdir();
-
-    if (!defined($self->{option_results}->{pools}) && !defined($self->{option_results}->{auto})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify at least '--pools' or '--auto' option.");
-       $self->{output}->option_exit();
-    }
-    
-    if (defined($self->{option_results}->{pools})) {
-        my $append = '';
-        foreach my $rule (split /,/, $self->{option_results}->{pools}) {
-            if ($rule !~ /^([^\!=]*)(\!=|=){0,1}(.*){0,1}/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong rule in --pools option: " . $rule);
-                $self->{output}->option_exit();
-            }
-            if (!defined($1) || $1 eq '') {
-                $self->{output}->add_option_msg(short_msg => "Need pool name for rule: " . $rule);
-                $self->{output}->option_exit();
-            }
-            
-            my $poolname = $1;
-            my $operator = defined($2) && $2 ne '' ? $2 : '!=';
-            my $state = defined($3) && $3 ne '' ? lc($3) : 'started';
-            
-            if ($operator !~ /^(=|\!=)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong operator for rule: " . $rule . ". Should be '=' or '!='.");
-                $self->{output}->option_exit();
-            }
-            
-            if ($state !~ /^(started|starting|stopped|stopping|unknown)$/i) {
-                $self->{output}->add_option_msg(short_msg => "Wrong state for rule: " . $rule . ". See help for available state.");
-                $self->{output}->option_exit();
-            }
-            
-            $self->{service_rules}->{$poolname} = {operator => $operator, state => $state};
-            $self->{wql_filter} .= $append . "Name = '" . $poolname  . "'";
-            $append = ' Or ';
+    foreach my $name (keys %$counters) {
+        if (($self->{perfdata}->threshold_validate(label => 'warning_' . $name, value => $self->{option_results}->{'warning_' . $name})) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong warning-$name threshold '" . $self->{option_results}->{'warning_' . $name} . "'.");
+            $self->{output}->option_exit();
         }
-        
-        if ($self->{wql_filter} eq '') {
-            $self->{output}->add_option_msg(short_msg => "Need to specify one rule for --pools option.");
+        if (($self->{perfdata}->threshold_validate(label => 'critical_' . $name, value => $self->{option_results}->{'critical_' . $name})) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong critical-$name threshold '" . $self->{option_results}->{'critical_' . $name} . "'.");
             $self->{output}->option_exit();
         }
     }
-        
-    $self->{threshold} = 'WARNING' if (defined($self->{option_results}->{warning}));
-    $self->{threshold} = 'CRITICAL' if (defined($self->{option_results}->{critical}));
+    
+    if (defined($self->{option_results}->{add_counters})) {
+        foreach my $counter (split /,/, $self->{option_results}->{add_counters}) {
+            next if ($counter eq '');
+            if (!defined($counters->{$counter})) {
+                $self->{output}->add_option_msg(short_msg => "Counter '$counter' unknown.");
+                $self->{output}->option_exit();
+            }
+            $counters->{$counter}->{selected} = 1;
+        }
+    }
+    
+    $self->{wql_names} = 'Name';
+    foreach my $name (keys %$counters) {
+        $self->{wql_names} .= ', ' . $name;
+    }
+    
+    $self->{statefile_value}->check_options(%options);
 }
 
-sub check_auto {
+sub get_counters {
     my ($self, %options) = @_;
     
-    my $wmi = Win32::OLE->GetObject('winmgmts:root\WebAdministration');
+    my $wmi = Win32::OLE->GetObject('winmgmts:root\cimv2');
     if (!defined($wmi)) {
         $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
         $self->{output}->option_exit();
     }
-    my $query = "Select Name, AutoStart From ApplicationPool";
+    my $query = 'Select ' . $self->{wql_names} . ' From Win32_PerfRawData_W3SVC_WebService';
     my $resultset = $wmi->ExecQuery($query);
     foreach my $obj (in $resultset) {
-        my $name = $obj->{Name};
-        my $state = $obj->GetState();
+        my $site_name = $obj->{Name};
         
-        # Not an Auto service
-        next if ($obj->{AutoStart} == 0);
-
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $name =~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping pool '" . $name . "'");
-            next;
+        if (defined($self->{option_results}->{name})) {
+            next if (defined($self->{option_results}->{use_regexp}) && $site_name !~ /$self->{option_results}->{name}/);
+            next if (!defined($self->{option_results}->{use_regexp}) && $site_name ne $self->{option_results}->{name});
         }
-    
-        $self->{output}->output_add(long_msg => "Pool '" . $name . "' state: " . $state_map{$state});
-        if ($state_map{$state} !~ /^starting$/i) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $name . "' is " . $state_map{$state});
+        
+        $self->{result}->{$site_name} = {};
+        foreach my $name (keys %$counters) {
+            next if ($counters->{$name}->{selected} == 0);
+            $self->{new_datas}->{$site_name . '_' . $name} = $obj->{$name};
+            $self->{result}->{$site_name}->{$name} = { old_value => undef, current_value => $obj->{$name} };
         }
+    }
+ 
+    if (scalar(keys %{$self->{result}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No site found");
+        $self->{output}->option_exit();
     }
 }
 
 sub check {
     my ($self, %options) = @_;
     
-    my $result = {};
-    my $wmi = Win32::OLE->GetObject('winmgmts:root\WebAdministration');
-    if (!defined($wmi)) {
-        $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
-        $self->{output}->option_exit();
+    $self->{statefile_value}->read(statefile => "iis_" . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{new_datas}->{last_timestamp} = time();
+    my $old_timestamp;
+    $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+
+    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All sites are ok');
     }
-    my $query = 'Select Name From ApplicationPool Where ' . $self->{wql_filter};
-    my $resultset = $wmi->ExecQuery($query);
-    foreach my $obj (in $resultset) {
-        $result->{$obj->{Name}} = {state => $obj->GetState()};
-    }
- 
-    foreach my $name (sort(keys %{$self->{service_rules}})) {
-        if (!defined($result->{$name})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Pool '" . $name . "' not found");
-            next;
+    
+    foreach my $site_name (keys %{$self->{result}}) {
+        
+        next if (!defined($old_timestamp));
+        
+        my $time_delta = $self->{new_datas}->{last_timestamp} - $old_timestamp;
+        if ($time_delta <= 0) {
+            # At least one second. two fast calls ;)
+            $time_delta = 1;
         }
         
-        $self->{output}->output_add(long_msg => "Pool '" . $name . "' state: " . $state_map{$result->{$name}->{state}});
-        if ($self->{service_rules}->{$name}->{operator} eq '=' && 
-            $state_map{$result->{$name}->{state}} eq $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Pool '" . $name . "' is " . $state_map{$result->{$name}->{state}});
-        } elsif ($self->{service_rules}->{$name}->{operator} eq '!=' && 
-                 $state_map{$result->{$name}->{state}} ne $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $name . "' is " . $state_map{$result->{$name}->{state}});
+        my $exits = [];
+        my $str_display = "Site '" . $site_name . "': ";
+        my $str_display_append = '';
+        
+        foreach my $name (keys %$counters) {
+            next if ($counters->{$name}->{selected} == 0);
+            $self->{result}->{$site_name}->{$name}->{old_value} = $self->{statefile_value}->get(name => $site_name . '_' . $name);
+            if (!defined($self->{result}->{$site_name}->{$name}->{old_value})) {
+                next;
+            }
+            if ($self->{result}->{$site_name}->{$name}->{current_value} < $self->{result}->{$site_name}->{$name}->{old_value}) {
+                # We set 0. Has reboot.
+                $self->{result}->{$site_name}->{$name}->{old_value} = 0;
+            }
+            
+            my $value_per_seconds = ($self->{result}->{$site_name}->{$name}->{current_value} - $self->{result}->{$site_name}->{$name}->{old_value}) / $time_delta;
+            push @$exits, $self->{perfdata}->threshold_check(value => $value_per_seconds, 
+                                                             threshold => [ { label => 'critical_' . $name, exit_litteral => 'critical' }, 
+                                                                            { label => 'warning_' . $name, exit_litteral => 'warning' } ]);
+            my $value_display;
+            if (defined($counters->{$name}->{unit}) && $counters->{$name}->{unit} eq 'b/s') {
+                my ($trans_value, $trans_unit) = $self->{perfdata}->change_bytes(value => $value_per_seconds, network => 1);
+                $value_display = $trans_value . ' ' . $trans_unit;
+            } else {
+                $value_display = sprintf("%.2f", $value_per_seconds);
+            }
+            $str_display .= $str_display_append . sprintf("%s %s /sec", $name, $value_display);
+            $str_display_append = ', ';
+            
+            my $extra_label = '';
+            $extra_label = '_' . $site_name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
+            $self->{output}->perfdata_add(label => $name . $extra_label, unit => $counters->{$name}->{unit},
+                                          value => sprintf("%.2f", $value_per_seconds),
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $name),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $name),
+                                          min => 0);
         }
+        
+        print "===la==\n";
+        
+        # No values computing.
+        next if (scalar(@$exits) == 0);
+        
+        print "====ici===\n";
+        
+        my $exit = $self->{output}->get_most_critical(status => $exits);
+        $self->{output}->output_add(long_msg => $str_display);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => $str_display);
+        }
+    }
+    
+    $self->{statefile_value}->write(data => $self->{new_datas});    
+    if (!defined($old_timestamp)) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{wsman} = wsman object
-    $self->{wsman} = $options{wsman};
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All application pools are ok');
-    if (defined($self->{option_results}->{auto})) {
-        $self->check_auto();
-    } else {
-        $self->check();
-    }
+
+    $self->get_counters();
+    $self->check();
    
     $self->{output}->display();
     $self->{output}->exit();
@@ -221,36 +247,34 @@ __END__
 
 =head1 MODE
 
-Check IIS Application Pools State.
+Check IIS Site Statistics.
+Available counters are: TotalAnonymousUsers, TotalConnectionAttemptsAllInstances, TotalGetRequests, TotalPostRequests, TotalBytesReceived, TotalBytesSent, TotalFilesReceived, TotalFilesSent
+
+Counters are per seconds.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-COUNTER>
 
-Return warning.
+Warning threshold for counters.
 
-=item B<--critical>
+=item B<--critical-COUNTER>
 
-Return critical.
+Critical threshold for counters.
 
-=item B<--pools>
+=item B<--name>
 
-Application Pool to monitor.
-Syntax: [pool_name[[=|!=]state]],...
-Available states are:
-- 'started',
-- 'starting',
-- 'stopped',
-- 'stopping'
-- 'unknown'
+Set the site name.
 
-=item B<--auto>
+=item B<--regexp>
 
-Return threshold for auto start pools not starting.
+Allows to use regexp to filter site name (with option --name).
 
-=item B<--exclude>
+=item B<--add-counters>
 
-Exclude some pool for --auto option (Can be a regexp).
+Can add the following counters (not by default): TotalBytesReceived, TotalBytesSent, TotalFilesReceived, TotalFilesSent
+
+Counters are separated by comas.
 
 =back
 
