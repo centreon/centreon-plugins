@@ -530,8 +530,8 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Missing parameter authenticate protocol.");
             $self->{output}->option_exit();
         }
-        $options{option_results}->{snmp_auth_protocol} = lc($options{option_results}->{snmp_auth_protocol});
-        if ($options{option_results}->{snmp_auth_protocol} ne "md5" && $options{option_results}->{snmp_auth_protocol} ne "sha") {
+        $options{option_results}->{snmp_auth_protocol} = uc($options{option_results}->{snmp_auth_protocol});
+        if ($options{option_results}->{snmp_auth_protocol} ne "MD5" && $options{option_results}->{snmp_auth_protocol} ne "SHA") {
             $self->{output}->add_option_msg(short_msg => "Wrong authentication protocol. Must be MD5 or SHA.");
             $self->{output}->option_exit();
         }
@@ -546,8 +546,8 @@ sub check_options {
         }
         
         if (defined($options{option_results}->{snmp_priv_protocol})) {
-            $options{option_results}->{snmp_priv_protocol} = lc($options{option_results}->{snmp_priv_protocol});
-            if ($options{option_results}->{snmp_priv_protocol} ne 'des' && $options{option_results}->{snmp_priv_protocol} ne 'aes') {
+            $options{option_results}->{snmp_priv_protocol} = uc($options{option_results}->{snmp_priv_protocol});
+            if ($options{option_results}->{snmp_priv_protocol} ne 'DES' && $options{option_results}->{snmp_priv_protocol} ne 'AES') {
                 $self->{output}->add_option_msg(short_msg => "Wrong privacy protocol. Must be DES or AES.");
                 $self->{output}->option_exit();
             }
