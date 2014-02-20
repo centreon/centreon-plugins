@@ -2,9 +2,18 @@
 <root>
 	<dcdiag language="en">
 		<messages>
-			<ok>passed test\s+(.*)</ok>
-			<warning>warning test\s+(.*)</warning>
-			<critical>failed test\s+(.*)</critical>
+			<global>Starting test.*?:\s+(.*?)\n.*?(passed|warning|failed)</global>
+			<ok>passed</ok>
+			<warning>warning</warning>
+			<critical>failed</critical>
+		</messages>
+	</dcdiag>
+	<dcdiag language="fr">
+		<messages>
+			<global>D.marrage du test.*?:\s+(.*?)\n.*?(a r.ussi|a .chou.|warning)</global>
+			<ok>a r.ussi</ok>
+			<warning>warning</warning>
+			<critical>a .chou.</critical>
 		</messages>
 	</dcdiag>
 </root>
