@@ -100,6 +100,9 @@ sub read {
     } elsif (! -w $self->{statefile_dir} . "/" . $self->{statefile}) {
         $self->{output}->add_option_msg(short_msg => "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on file.");
         $self->{output}->option_exit();
+    } elsif (! -s $self->{statefile_dir} . "/" . $self->{statefile}) {
+        # Empty file. Not a problem. Maybe plugin not manage not values
+        return 0;
     }
     
     unless (my $return = do $self->{statefile_dir} . "/" . $self->{statefile}) {
