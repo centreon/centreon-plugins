@@ -85,8 +85,8 @@ SELECT  name dbspace,
         sum(nfree) pages_free       -- sum of all chunks free pages
 FROM    sysdbspaces d, syschunks c
 WHERE   d.dbsnum = c.dbsnum
-GROUP BY dbspace
-ORDER BY dbspace
+GROUP BY d.name
+ORDER BY d.name
 };
     
     $self->{sql}->query(query => $query);
