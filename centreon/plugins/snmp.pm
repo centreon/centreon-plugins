@@ -109,6 +109,10 @@ sub connect {
     }
     
     $self->{session} = new SNMP::Session(%{$self->{snmp_params}});
+    if (!defined($self->{session})) {
+        $self->{output}->add_option_msg(short_msg => 'SNMP Session : unable to create');
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
     if ($self->{session}->{ErrorNum}) {
         $self->{output}->add_option_msg(short_msg => 'SNMP Session : ' . $self->{session}->{ErrorStr});
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
