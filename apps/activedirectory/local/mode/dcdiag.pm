@@ -61,7 +61,7 @@ sub new {
     $self->{os_is2008} = 0;
     $self->{os_is2012} = 0;
     
-    $self->{msg} = {ok => undef, warning => undef, critical => undef};
+    $self->{msg} = {global => undef, ok => undef, warning => undef, critical => undef};
     return $self;
 }
 
@@ -163,19 +163,21 @@ sub dcdiag {
                                                           command_options => undef);
     
     my $match = 0;
-    foreach my $line (split /\n/, $stdout) {
-        if ($line =~ /$self->{msg}->{ok}/) {
+    while ($stdout =~ /$self->{msg}->{global}/imsg) {
+        my ($test_name, $pattern) = ($1, lc($2));
+		    
+        if ($pattern =~ /$self->{msg}->{ok}/i) {
             $match = 1;
             $self->{output}->output_add(severity => 'OK',
-                                        short_msg => $1);
-        } elsif ($line =~ /$self->{msg}->{critical}/) {
+                                        short_msg => $test_name);
+        } elsif ($pattern =~ /$self->{msg}->{critical}/i) {
             $match = 1;
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => 'test ' . $1);
-        } elsif ($line =~ /$self->{msg}->{warning}/) {
+                                        short_msg => 'test ' . $test_name);
+        } elsif ($pattern =~ /$self->{msg}->{warning}/i) {
             $match = 1;
             $self->{output}->output_add(severity => 'WARNING',
-                                        short_msg => 'test ' . $1);
+                                        short_msg => 'test ' . $test_name);
         }
     }
     
