@@ -209,12 +209,8 @@ sub check {
                                           min => 0);
         }
         
-        print "===la==\n";
-        
         # No values computing.
         next if (scalar(@$exits) == 0);
-        
-        print "====ici===\n";
         
         my $exit = $self->{output}->get_most_critical(status => $exits);
         $self->{output}->output_add(long_msg => $str_display);
