@@ -142,7 +142,7 @@ sub check_auto {
         }
     
         $self->{output}->output_add(long_msg => "Pool '" . $name . "' state: " . $state_map{$state});
-        if ($state_map{$state} !~ /^starting$/i) {
+        if ($state_map{$state} !~ /^started$/i) {
             $self->{output}->output_add(severity => $self->{threshold},
                                         short_msg => "Service '" . $name . "' is " . $state_map{$state});
         }
