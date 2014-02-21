@@ -37,6 +37,8 @@ package centreon::plugins::statefile;
 use Data::Dumper;
 use vars qw($datas);
 
+my $default_dir = '/var/lib/centreon/centplugins';
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -46,7 +48,8 @@ sub new {
         $options{options}->add_options(arguments =>
                                 {
                                   "memcached:s"         => { name => 'memcached' },
-                                  "statefile-dir:s"     => { name => 'statefile_dir', default => '/var/lib/centreon/centplugins' },
+                                  "statefile-dir:s"       => { name => 'statefile_dir', default => $default_dir },
+                                  "statefile-concat-cwd"  => { name => 'statefile_concat_cwd' },
                                 });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
@@ -69,6 +72,10 @@ sub check_options {
         Memcached::libmemcached::memcached_server_add($self->{memcached}, $options{option_results}->{memcached});
     }
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
+    if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
+        require Cwd;
+        $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
+    }
 }
 
 sub read {
@@ -178,6 +185,11 @@ Memcached server to use (only one server).
 =item B<--statefile-dir>
 
 Directory for statefile (Default: '/var/lib/centreon/centplugins').
+
+=item B<--statefile-concat-cwd>
+
+Concat current working directory with option '--statefile-dir'.
+Useful on Windows when plugin is compiled.
 
 =back
 
