@@ -183,7 +183,7 @@ __END__
 =head1 MODE
 
 List disk path (UCD-SNMP-MIB).
-Need to enable "includeAllDisk 10%" on snmpd.conf.
+Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
