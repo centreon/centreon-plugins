@@ -41,6 +41,8 @@ use strict;
 use warnings;
 
 my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
+my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11';
+my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12';
 
 sub new {
     my ($class, %options) = @_;
@@ -56,6 +58,7 @@ sub new {
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
+                                  "skip-total-size-zero"    => { name => 'skip_total_size_zero' },
                                 });
 
     $self->{diskpath_id_selected} = [];
@@ -74,10 +77,15 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
+    my $result = $self->get_additional_information();
     
     my $diskpath_display = '';
     my $diskpath_display_append = '';
     foreach (sort @{$self->{diskpath_id_selected}}) {
+        if (defined($result)) {
+            my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_});
+            next if ($total_size == 0);
+        }
         my $display_value = $self->get_display_value(id => $_);
         
         $diskpath_display .= $diskpath_display_append . "name = $display_value [id = $_]";
@@ -88,6 +96,18 @@ sub run {
                                 short_msg => 'List disk path: ' . $diskpath_display);
     $self->{output}->display(nolabel => 1);
     $self->{output}->exit();
+}
+
+sub get_additional_information {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{option_results}->{skip_total_size_zero})) {
+        return undef;
+    }
+    my $oids = [$oid_dskTotalLow, $oid_dskTotalHigh];
+    
+    $self->{snmp}->load(oids => $oids, instances => $self->{diskpath_id_selected});
+    return $self->{snmp}->get_leef();
 }
 
 sub get_display_value {
@@ -168,7 +188,12 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
+    my $result = $self->get_additional_information();
     foreach (sort @{$self->{diskpath_id_selected}}) {
+        if (defined($result)) {
+            my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_});
+            next if ($total_size == 0);
+        }
         my $display_value = $self->get_display_value(id => $_);
 
         $self->{output}->add_disco_entry(name => $display_value,
@@ -210,6 +235,10 @@ Regexp src to transform display value. (security risk!!!)
 =item B<--display-transform-dst>
 
 Regexp dst to transform display value. (security risk!!!)
+
+=item B<--skip-total-size-zero>
+
+Filter partitions with total size equals 0.
 
 =back
 
