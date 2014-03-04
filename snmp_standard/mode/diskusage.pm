@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package snmp_standard::mode::inodes;
+package snmp_standard::mode::diskusage;
 
 use base qw(centreon::plugins::mode);
 
@@ -42,7 +42,10 @@ use warnings;
 use centreon::plugins::statefile;
 
 my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
-my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
+my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11'; # in kB
+my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
+my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
+my $oid_dskUsedHigh = '.1.3.6.1.4.1.2021.9.1.16'; # in kB
 
 sub new {
     my ($class, %options) = @_;
@@ -54,13 +57,14 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "units:s"                 => { name => 'units', default => '%' },
+                                  "free"                    => { name => 'free' },
                                   "reload-cache-time:s"     => { name => 'reload_cache_time' },
-                                  "name"                    => { name => 'use_name' },
                                   "diskpath:s"              => { name => 'diskpath' },
+                                  "name"                    => { name => 'use_name' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
+                                  "space-reservation:s"     => { name => 'space_reservation' },
                                   "show-cache"              => { name => 'show_cache' },
                                 });
 
@@ -82,6 +86,11 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{space_reservation}) && 
+        ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
+       $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
+       $self->{output}->option_exit();
+    }
     
     $self->{statefile_cache}->check_options(%options);
 }
@@ -90,45 +99,90 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
+    $self->{hostname} = $self->{snmp}->get_hostname();
 
     $self->manage_selection();
-
-    $self->{snmp}->load(oids => [$oid_dskPercentNode], instances => $self->{diskpath_id_selected});
+    $self->{snmp}->load(oids => [$oid_dskTotalLow, $oid_dskTotalHigh,
+                                 $oid_dskUsedLow, $oid_dskUsedHigh], instances => $self->{diskpath_id_selected});
     my $result = $self->{snmp}->get_leef(nothing_quit => 1);
 
-    if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All inodes partitions are ok.');
-    }
+    
 
+    my $num_disk_check = 0;
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        my $prct_used = $result->{$oid_dskPercentNode . '.' . $_};
+        # in bytes hrStorageAllocationUnits
+        my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
+        if (defined($self->{option_results}->{space_reservation})) {
+            $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);
+        }
+        if ($total_size == 0) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping partition '%s' (total size is 0)", $name_diskpath));
+            next;
+        }
+
+        $num_disk_check++;
+        my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
+        my $total_free = $total_size - $total_used;
+        my $prct_used = $total_used * 100 / $total_size;
         my $prct_free = 100 - $prct_used;
 
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my ($exit, $threshold_value);
 
-        $self->{output}->output_add(long_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name_diskpath, $prct_used, $prct_free));
+        $threshold_value = $total_used;
+        $threshold_value = $total_free if (defined($self->{option_results}->{free}));
+        if ($self->{option_results}->{units} eq '%') {
+            $threshold_value = $prct_used;
+            $threshold_value = $prct_free if (defined($self->{option_results}->{free}));
+        } 
+        $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+        my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+        my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
+        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $total_used));
+
+        $self->{output}->output_add(long_msg => sprintf("Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_diskpath,
+                                            $total_size_value . " " . $total_size_unit,
+                                            $total_used_value . " " . $total_used_unit, $prct_used,
+                                            $total_free_value . " " . $total_free_unit, $prct_free));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{diskpath}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name_diskpath, $prct_used, $prct_free));
+                                        short_msg => sprintf("Partition '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_diskpath,
+                                            $total_size_value . " " . $total_size_unit,
+                                            $total_used_value . " " . $total_used_unit, $prct_used,
+                                            $total_free_value . " " . $total_free_unit, $prct_free));
         }    
 
         my $label = 'used';
+        my $value_perf = $total_used;
+        if (defined($self->{option_results}->{free})) {
+            $label = 'free';
+            $value_perf = $total_free;
+        }
         my $extra_label = '';
         $extra_label = '_' . $name_diskpath if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => '%',
-                                      value => $prct_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        my %total_options = ();
+        if ($self->{option_results}->{units} eq '%') {
+            $total_options{total} = $total_size;
+            $total_options{cast_int} = 1; 
+        }
+        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
+                                      value => $value_perf,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
+                                      min => 0, max => $total_size);
     }
 
+    if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All partitions are ok.');
+    } elsif ($num_disk_check == 0) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'No usage for partition.');
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -227,18 +281,26 @@ __END__
 
 =head1 MODE
 
-Check Inodes space usage on partitions.
+Check usage on partitions (UCD-SNMP-MIB).
 Need to enable "includeAllDisk 10%" on snmpd.conf.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical.
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
+
+=item B<--free>
+
+Thresholds are on free space left.
 
 =item B<--diskpath>
 
@@ -271,6 +333,11 @@ Regexp dst to transform display value. (security risk!!!)
 =item B<--show-cache>
 
 Display cache storage datas.
+
+=item B<--space-reservation>
+
+Some filesystem has space reserved (like ext4 for root).
+The value is in percent of total (Default: none).
 
 =back
 
