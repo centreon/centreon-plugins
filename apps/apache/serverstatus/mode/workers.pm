@@ -41,6 +41,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use LWP::UserAgent;
+use apps::apache::serverstatus::mode::libconnect;
 
 sub new {
     my ($class, %options) = @_;
@@ -85,66 +86,70 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http','https'], timeout => $self->{option_results}->{timeout});
-    
-    my $response = '';
-    
-    if ($self->{option_results}->{proto} eq "https") {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['https'], $self->{option_results}->{proxyurl});
-        }
-        if (!defined $self->{option_results}->{port}) {
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.'/server-status');
-        } else  {
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
-    } else {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['http'], $self->{option_results}->{proxyurl});
-        }
-        if (!defined $self->{option_results}->{port}) {
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.'/server-status');
-        } else  {
-            $response = $ua->get('http://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
-    }
-
-    if ($response->is_success) {   
-        my $BusyWorkers;
-        my $IdleWorkers;
-        my $webcontent=$response->content;
-        my @webcontentarr = split("\n", $webcontent);
-        my $i = 0;
-        my $prct_busy=0;
-
-        while ($i < @webcontentarr) {
-            if ($webcontentarr[$i] =~ /(\d+)\s+requests\s+currently\s+being\s+processed,\s+(\d+)\s+idle\s+....ers/) {
-                ($BusyWorkers, $IdleWorkers) = ($webcontentarr[$i] =~ /(\d+)\s+requests\s+currently\s+being\s+processed,\s+(\d+)\s+idle\s+....ers/);
-            }
-            $i++;
-        }
         
-        $prct_busy = $BusyWorkers / ($BusyWorkers + $IdleWorkers) * 100;
+    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self);
+    my @webcontentarr = split("\n", $webcontent);
+    my $i = 0;
+    my $ScoreBoard = "";
+    my $PosPreBegin = undef;
+    my $PosPreEnd = undef;
+    my $BusyWorkers;
+    my $IdleWorkers;
+    my $prct_busy;    
     
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_busy,
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Busy workers: %d Idle workers: %d ( %d %% )", $BusyWorkers, $IdleWorkers, $prct_busy));
-        $self->{output}->perfdata_add(label => "idle_workers",
-                                      value => $IdleWorkers);
-        $self->{output}->perfdata_add(label => "busy_workers",
-                                      value => $BusyWorkers,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-    } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => $response->status_line);
+    while ($i < @webcontentarr) {
+        if ($webcontentarr[$i] =~ /(\d+)\s+requests\s+currently\s+being\s+processed,\s+(\d+)\s+idle\s+....ers/) {
+            ($BusyWorkers, $IdleWorkers) = ($webcontentarr[$i] =~ /(\d+)\s+requests\s+currently\s+being\s+processed,\s+(\d+)\s+idle\s+....ers/);
+        }
+            $i++;
     }
+
+    $i = 0;
+
+    while (($i < @webcontentarr) && ((!defined($PosPreBegin)) || (!defined($PosPreEnd)))) {
+        if (!defined($PosPreBegin)) {
+            if ( $webcontentarr[$i] =~ m/<pre>/i ) {
+                $PosPreBegin = $i;
+            }
+        }
+        if (defined($PosPreBegin)) {
+            if ( $webcontentarr[$i] =~ m/<\/pre>/i ) {
+                $PosPreEnd = $i;
+            }
+        }
+        $i++;
+    }
+    
+    for ($i = $PosPreBegin; $i <= $PosPreEnd; $i++) {
+        $ScoreBoard = $ScoreBoard . $webcontentarr[$i];
+    }
+
+    $ScoreBoard =~ s/^.*<[Pp][Rr][Ee]>//;
+    $ScoreBoard =~ s/<\/[Pp][Rr][Ee].*>//;
+
+    my $srvLimit = length($ScoreBoard);
+	
+    $prct_busy = $BusyWorkers / $srvLimit * 100;
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_busy,
+                                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Busy workers: %d Idle workers: %d ( %d %% )", $BusyWorkers, $IdleWorkers, $prct_busy));
+    $self->{output}->perfdata_add(label => "idle_workers",
+                                  value => $IdleWorkers,
+				  min => 0,
+                                  max => $srvLimit);
+    $self->{output}->perfdata_add(label => "busy_workers",
+                                  value => $BusyWorkers,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+				  min => 0,
+                                  max => $srvLimit);
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
+
 
 1;
 
@@ -153,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer Workers and Open Slots
+Check Apache WebServer busy processes. Graph Busy and Idle. Compute percentage over ServerLimit apache config file directive.
 
 =over 8
 

@@ -40,8 +40,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use LWP::UserAgent;
 use Time::HiRes qw(gettimeofday tv_interval);
+use apps::apache::serverstatus::mode::libconnect;
 
 sub new {
     my ($class, %options) = @_;
@@ -54,7 +54,10 @@ sub new {
          "hostname:s"   => { name => 'hostname' },
          "port:s"       => { name => 'port' },
          "proto:s"      => { name => 'proto', default => "http" },
-         "proxyurl:s"   => { name => 'proxyurl' },
+	 "credentials"  => { name => 'credentials' },
+         "username:s"   => { name => 'username' },
+         "password:s"   => { name => 'password' },
+	 "proxyurl:s"   => { name => 'proxyurl' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout', default => '3' },
@@ -84,38 +87,23 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
+
+    if (defined($self->{option_results}->{credentials} && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password})))) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http','https'], timeout => $self->{option_results}->{timeout});
     
     my $timing0 = [gettimeofday];
-    my $response = '';
     
-    if ($self->{option_results}->{proto} eq "https") {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['https'], $self->{option_results}->{proxyurl});
-        }
-        if (!defined $self->{option_results}->{port}) {
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.'/server-status');
-        } else  {
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
-    } else {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['http'], $self->{option_results}->{proxyurl});
-        }
-        if (!defined $self->{option_results}->{port}) {
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.'/server-status');
-        } else  {
-            $response = $ua->get('http://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
-    }
+    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self);    
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
-    if ($response->is_success) {
-        my $webcontent=$response->content;
+    
+    if (defined $webcontent) {
         my @webcontentarr = split("\n", $webcontent);
         my $i = 0;
         my $ScoreBoard = "";
@@ -134,56 +122,24 @@ sub run {
             }
             $i++;
         }
-
         for ($i = $PosPreBegin; $i <= $PosPreEnd; $i++) {
-            $ScoreBoard = $ScoreBoard . $webcontentarr[$i];
+           $ScoreBoard = $ScoreBoard . $webcontentarr[$i];
         }
-
         $ScoreBoard =~ s/^.*<[Pp][Rr][Ee]>//;
         $ScoreBoard =~ s/<\/[Pp][Rr][Ee].*>//;
-
         my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
-
         my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                       threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Response time %fs ", $timeelapsed));
         $self->{output}->perfdata_add(label => "time",
                                       value => $timeelapsed,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-        $self->{output}->perfdata_add(label => "open_slots",
-                                      value => $CountOpenSlots);
-        $self->{output}->perfdata_add(label => "waiting",
-                                      value => ($ScoreBoard =~ tr/\_//));
-        $self->{output}->perfdata_add(label => "starting",
-                                      value => ($ScoreBoard =~ tr/S//));
-        $self->{output}->perfdata_add(label => "reading",
-                                      value => ($ScoreBoard =~ tr/R//));
-        $self->{output}->perfdata_add(label => "sending",
-                                      value => ($ScoreBoard =~ tr/W//));
-        $self->{output}->perfdata_add(label => "keepalive",
-                                      value => ($ScoreBoard =~ tr/K//));
-        $self->{output}->perfdata_add(label => "dns_lookup",
-                                      value => ($ScoreBoard =~ tr/D//));
-        $self->{output}->perfdata_add(label => "closing",
-                                      value => ($ScoreBoard =~ tr/C//));
-        $self->{output}->perfdata_add(label => "logging",
-                                      value => ($ScoreBoard =~ tr/L//));
-        $self->{output}->perfdata_add(label => "gracefuly_finished",
-                                      value => ($ScoreBoard =~ tr/G//));
-        $self->{output}->perfdata_add(label => "idle_cleanup_worker",
-                                      value => ($ScoreBoard =~ tr/I//));
-        $self->{output}->perfdata_add(label => "open_slots_without_process",
-                                      value => ($ScoreBoard =~ tr/R//));
-    } else {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => $response->status_line);
-    }
+     }
 
-    $self->{output}->display();
-    $self->{output}->exit();
+       $self->{output}->display();
+       $self->{output}->exit();
 }
 
 1;
