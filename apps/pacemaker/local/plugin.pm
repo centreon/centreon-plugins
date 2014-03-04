@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,11 +33,11 @@
 #
 ####################################################################################
 
-package os::linux::snmp::plugin;
+package apps::pacemaker::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
@@ -47,21 +47,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'diskio'           => 'snmp_standard::mode::diskio',
-                         'disk-usage'       => 'snmp_standard::mode::diskusage',
-                         'inodes'           => 'snmp_standard::mode::inodes',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
-                         'processcount'     => 'snmp_standard::mode::processcount',
-                         'storage'          => 'snmp_standard::mode::storage',
-                         'swap'             => 'snmp_standard::mode::swap',
-                         'traffic'          => 'snmp_standard::mode::traffic',
-                         'uptime'           => 'snmp_standard::mode::uptime',
+                         'crm'      => 'apps::pacemaker::local::mode::crm',
                          );
 
     return $self;
@@ -73,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Linux operating systems in SNMP.
+Check Pacemaker through local commands (the plugin can use SSH).
 
 =cut
