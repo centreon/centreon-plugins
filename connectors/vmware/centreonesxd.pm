@@ -136,8 +136,8 @@ sub init {
     $self->load_module(@load_modules);
 
     ##### credstore check #####
-    if (defined($self->{credstore_use}) && defined($self->{credstore_file}) &&
-        $self->{credstore_use} == 1 && -e "$self->{credstore_file}") {
+    if (defined($self->{centreonesxd_config}->{credstore_use}) && defined($self->{centreonesxd_config}->{credstore_file}) &&
+        $self->{centreonesxd_config}->{credstore_use} == 1 && -e "$self->{centreonesxd_config}->{credstore_file}") {
         eval 'require VMware::VICredStore';
         if ($@) {
             $self->{logger}->writeLogError("Could not load module VMware::VICredStore");
@@ -145,7 +145,7 @@ sub init {
         }
         require VMware::VICredStore;
 
-        if (VMware::VICredStore::init(filename => $self->{credstore_file}) == 0) {
+        if (VMware::VICredStore::init(filename => $self->{centreonesxd_config}->{credstore_file}) == 0) {
             $self->{logger}->writeLogError("Credstore init failed: $@");
             exit(1);
         }
