@@ -153,7 +153,7 @@ sub run {
 
     my $result = $self->{snmp}->get_leef();
     $new_datas->{last_timestamp} = time();
-    my $old_timestamp;
+    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
     if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All traffic are ok');
@@ -175,6 +175,8 @@ sub run {
             }
             $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
             if ($interface_speed == 0) {
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => "Interface '" . $display_value . "' Speed is 0. You should force the value with --speed option");
                 next;
             }
         }
@@ -214,7 +216,6 @@ sub run {
             next;
         }
         
-        $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
         my $old_in = $self->{statefile_value}->get(name => 'in_' . $_);
         my $old_out = $self->{statefile_value}->get(name => 'out_' . $_);
         if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
