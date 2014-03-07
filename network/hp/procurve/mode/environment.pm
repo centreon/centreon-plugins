@@ -63,7 +63,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                    "skip-not-present"           => { name => 'skip_not_present' },
                                 });
 
     return $self;
@@ -100,6 +101,12 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("%s sensor '%s' state is %s.", 
                                                         $object_map{$object}, $instance,
                                                         ${$states{$status}}[0]));
+        if (defined($self->{option_results}->{skip_not_present}) &&
+            $status == 5) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping %s sensor '%s'.",
+                                                            $object_map{$object}, $instance));
+            next;
+        }
         if (${$states{$status}}[1] ne 'OK') {
             $self->{output}->output_add(severity  => ${$states{$status}}[1],
                                         short_msg => sprintf("%s sensor '%s' state is %s.", 
@@ -121,6 +128,10 @@ __END__
 Check sensors (hpicfChassis.mib).
 
 =over 8
+
+=item B<--skip-not-present>
+
+No warning for state 'not present'.
 
 =back
 

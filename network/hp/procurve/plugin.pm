@@ -47,10 +47,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'          => 'network::hp::procurve::mode::cpu',
-                         'environment'  => 'network::hp::procurve::mode::environment',
-                         'memory'       => 'network::hp::procurve::mode::memory',
-                         'traffic'      => 'snmp_standard::mode::traffic',
+                         'cpu'              => 'network::hp::procurve::mode::cpu',
+                         'environment'      => 'network::hp::procurve::mode::environment',
+                         'memory'           => 'network::hp::procurve::mode::memory',
+                         'traffic'          => 'snmp_standard::mode::traffic',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          );
 
     return $self;
