@@ -137,13 +137,13 @@ sub run {
                                 short_msg => sprintf("Busy workers: %d Idle workers: %d ( %d %% )", $BusyWorkers, $IdleWorkers, $prct_busy));
     $self->{output}->perfdata_add(label => "idle_workers",
                                   value => $IdleWorkers,
-				  min => 0,
+                                  min => 0,
                                   max => $srvLimit);
     $self->{output}->perfdata_add(label => "busy_workers",
                                   value => $BusyWorkers,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-				  min => 0,
+                                  min => 0,
                                   max => $srvLimit);
 
     $self->{output}->display();
