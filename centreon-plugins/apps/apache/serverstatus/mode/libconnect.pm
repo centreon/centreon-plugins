@@ -67,15 +67,15 @@ sub connect {
         }
     }
 
-   if ($response->is_success) {
+    if ($response->is_success) {
         $content = $response->content;
         return $content;
-   } else {
+    } else {
         $self->{output}->output_add(severity => 'CRITICAL',
-        short_msg => $response->status_line);     
+                                    short_msg => $response->status_line);     
         $self->{output}->display();
         $self->{output}->exit();
-   }
+    }
 
 }
 
