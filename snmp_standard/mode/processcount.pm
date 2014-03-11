@@ -39,6 +39,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -50,6 +52,8 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "warning-cpu-total:s"     => { name => 'warning_cpu_total', },
+                                  "critical-cpu-total:s"    => { name => 'critical_cpu_total', },
                                   "warning-mem-total:s"     => { name => 'warning_mem_total', },
                                   "critical-mem-total:s"    => { name => 'critical_mem_total', },
                                   "warning-mem-avg:s"       => { name => 'warning_mem_avg', },
@@ -61,7 +65,10 @@ sub new {
                                   "process-args:s"          => { name => 'process_args', },
                                   "regexp-args"             => { name => 'regexp_args', },
                                   "memory"                  => { name => 'memory', },
+                                  "cpu"                     => { name => 'cpu', },
                                 });
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->{filter4md5} = '';
     return $self;
 }
 
@@ -93,12 +100,31 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-mem-avg threshold '" . $self->{critical_mem_avg} . "'.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-cpu-total', value => $self->{option_results}->{warning_cpu_total})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-cpu-total threshold '" . $self->{warning_cpu_total} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-cpu-total', value => $self->{option_results}->{critical_cpu_total})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-cpu-total threshold '" . $self->{critical_cpu_total} . "'.");
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{option_results}->{process_name}) && 
         !defined($self->{option_results}->{process_path}) && 
         !defined($self->{option_results}->{process_args})
         ) {
         $self->{output}->add_option_msg(short_msg => "Need to specify at least one argument '--process-*'.");
         $self->{output}->option_exit();
+    }
+    
+    if (defined($self->{option_results}->{cpu})) {
+        $self->{statefile_cache}->check_options(%options);
+        # Construct filter for file cache (avoid one check erase one other)
+        my %labels = ('process_name', 'regexp_name', 'process_path', 'regexp_path', 'process_args', 'regexp_args');
+        foreach (keys %labels) {
+            if (defined($self->{option_results}->{$_})) {
+                $self->{filter4md5} .= ',' . $self->{option_results}->{$_};
+            }
+        }
     }
 }
 
@@ -115,6 +141,7 @@ sub run {
     
     my $oid_hrSWRunStatus = '.1.3.6.1.2.1.25.4.2.1.7';
     my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
+    my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 
     my $oid2check_filter;
     foreach (keys %$oids) {
@@ -128,6 +155,9 @@ sub run {
     my $more_oids = [$oid_hrSWRunStatus];
     if (defined($self->{option_results}->{memory})) {
         push @{$more_oids}, $oid_hrSWRunPerfMem;
+    }
+    if (defined($self->{option_results}->{cpu})) {
+        push @{$more_oids}, $oid_hrSWRunPerfCPU;
     }
     foreach (keys %$oids) {
         if ($_ ne $oid2check_filter && defined($self->{option_results}->{'process_' . $_})) {
@@ -149,6 +179,8 @@ sub run {
     }
 
     my $result2;
+    my $datas = {};
+    $datas->{last_timestamp} = time();
     if (scalar(keys %$instances_keep) > 0) {
         $self->{snmp}->load(oids => $more_oids, instances => [keys %$instances_keep ]);
         $result2 = $self->{snmp}->get_leef();
@@ -218,6 +250,52 @@ sub run {
                                       min => 0);
     }
     
+    # Check cpu
+    if (defined($self->{option_results}->{cpu}) && $num_processes_match > 0) {
+        $self->{hostname} = $self->{snmp}->get_hostname();
+        $self->{snmp_port} = $self->{snmp}->get_port();
+
+        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($self->{filter4md5}));
+        my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+        
+        my $total_cpu = 0;
+        my $checked = 0;
+        foreach my $key (keys %$instances_keep) {
+            $datas->{'cpu_' . $key} = $result2->{$oid_hrSWRunPerfCPU . "." . $key};
+            my $old_cpu = $self->{statefile_cache}->get(name => 'cpu_' . $key);
+            # No value added
+            if (!defined($old_cpu) || !defined($old_timestamp)) {
+                $self->{output}->output_add(long_msg => 'Buffer creation for process pid ' . $key . '...');
+                next;
+            }
+            # Go back to zero
+            if ($old_cpu > $datas->{'cpu_' . $key}) {
+                $old_cpu = 0;
+            }
+            my $time_delta = ($datas->{last_timestamp} - $old_timestamp);
+            # At least one seconds.
+            if ($time_delta == 0) {
+                $time_delta = 1;
+            }
+            
+            $total_cpu += (($datas->{'cpu_' . $key} - $old_cpu) / $time_delta);
+            $checked = 1;
+        }
+        
+        if ($checked == 1) {
+            $exit = $self->{perfdata}->threshold_check(value => $total_cpu, threshold => [ { label => 'critical-cpu-total', 'exit_litteral' => 'critical' }, { label => 'warning-cpu-total', exit_litteral => 'warning' } ]);
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("CPU Total Usage: %.2f %%", $total_cpu));
+            $self->{output}->perfdata_add(label => 'cpu_total', unit => '%',
+                                          value => sprintf("%.2f", $total_cpu),
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_cpu_total'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_cpu_total'),
+                                          min => 0);
+        }
+        
+        $self->{statefile_cache}->write(data => $datas);
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -229,17 +307,17 @@ __END__
 =head1 MODE
 
 Check system number of processes.
-Can also check memory usage.
+Can also check memory usage and cpu usage.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning.
+Threshold warning (process count).
 
 =item B<--critical>
 
-Threshold critical.
+Threshold critical (process count).
 
 =item B<--warning-mem-total>
 
@@ -256,6 +334,18 @@ Threshold warning in Bytes of average memory usage processes.
 =item B<--critical-mem-avg>
 
 Threshold warning in Bytes of average memory usage processes.
+
+=item B<--warning-cpu-total>
+
+Threshold warning in percent of cpu usage for all processes (sum).
+CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
+and a process can have a value greater than 100%.
+
+=item B<--critical-cpu-total>
+
+Threshold critical in percent of cpu usage for all processes (sum).
+CPU usage is in % of one cpu, so maximum can be 100% * number of CPU 
+and a process can have a value greater than 100%.
 
 =item B<--process-name>
 
@@ -284,6 +374,11 @@ Allows to use regexp to filter process args (with option --process-args).
 =item B<--memory>
 
 Check memory.
+
+=item B<--cpu>
+
+Check cpu usage. Should be used with fix processes.
+if processes pid changes too much, the plugin can compute values.
 
 =back
 
