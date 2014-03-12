@@ -198,13 +198,15 @@ sub run {
         my $out_absolute_per_sec = ($new_datas->{'out_' . $name} - $old_out) / $time_delta;
         
         my ($exit, $interface_speed, $in_prct, $out_prct);
-        if ($self->{option_results}->{units} eq '%') {
+        if (defined($self->{option_results}->{speed})) {
             $interface_speed = $self->{option_results}->{speed} * 1000000;
             $in_prct = $in_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
             $out_prct = $out_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-            my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-            $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+            if ($self->{option_results}->{units} eq '%') {
+                my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
+                my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
+                $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+            }
             $in_prct = sprintf("%.2f", $in_prct);
             $out_prct = sprintf("%.2f", $out_prct);
         } else {
