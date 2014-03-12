@@ -47,13 +47,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'          => 'os::linux::local::mode::cpu',
-                         'cmd-return'   => 'os::linux::local::mode::cmdreturn',
-                         'files-size'   => 'os::linux::local::mode::filessize',
-                         'files-date'   => 'os::linux::local::mode::filesdate',
-                         'load'         => 'os::linux::local::mode::loadaverage',
-                         'memory'       => 'os::linux::local::mode::memory',
-                         'swap'         => 'os::linux::local::mode::swap',
+                         'cpu'              => 'os::linux::local::mode::cpu',
+                         'cmd-return'       => 'os::linux::local::mode::cmdreturn',
+                         'files-size'       => 'os::linux::local::mode::filessize',
+                         'files-date'       => 'os::linux::local::mode::filesdate',
+                         'load'             => 'os::linux::local::mode::loadaverage',
+                         'list-storages'    => 'os::linux::local::mode::liststorages',
+                         'memory'           => 'os::linux::local::mode::memory',
+                         'storage'          => 'os::linux::local::mode::storage',
+                         'swap'             => 'os::linux::local::mode::swap',
                          );
 
     return $self;

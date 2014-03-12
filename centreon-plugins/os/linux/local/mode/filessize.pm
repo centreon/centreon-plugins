@@ -128,7 +128,7 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
     
     $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "All file/directorie sizes are ok.");
+                                short_msg => "All file/directory sizes are ok.");
     foreach (split(/\n/, $stdout)) {
         next if (!/(\d+)\t+(.*)/);
         my ($size, $name) = ($1, centreon::plugins::misc::trim($2));
