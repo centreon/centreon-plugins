@@ -121,7 +121,7 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
     
     $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "All file/directorie times are ok.");
+                                short_msg => "All file/directory times are ok.");
     foreach (split(/\n/, $stdout)) {
         next if (!/(\d+)\t+(\d+)\t+(.*)/);
         my ($size, $time, $name) = ($1, $2, centreon::plugins::misc::trim($3));
