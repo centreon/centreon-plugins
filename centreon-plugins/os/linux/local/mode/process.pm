@@ -179,7 +179,7 @@ sub run {
     
     my $exit = $self->{perfdata}->threshold_check(value => $num_processes_match, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => "Number of current processes running: $num_processes_match");
+                                short_msg => "Number of current processes: $num_processes_match");
     $self->{output}->perfdata_add(label => 'nbproc',
                                   value => $num_processes_match,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
