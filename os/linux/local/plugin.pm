@@ -54,6 +54,7 @@ sub new {
                          'load'             => 'os::linux::local::mode::loadaverage',
                          'list-storages'    => 'os::linux::local::mode::liststorages',
                          'memory'           => 'os::linux::local::mode::memory',
+                         'process'          => 'os::linux::local::mode::process',
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
                          );
