@@ -53,10 +53,12 @@ sub new {
                          'files-date'       => 'os::linux::local::mode::filesdate',
                          'load'             => 'os::linux::local::mode::loadaverage',
                          'list-storages'    => 'os::linux::local::mode::liststorages',
+                         'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
                          'memory'           => 'os::linux::local::mode::memory',
                          'process'          => 'os::linux::local::mode::process',
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
+                         'traffic'          => 'os::linux::local::mode::traffic',
                          );
 
     return $self;

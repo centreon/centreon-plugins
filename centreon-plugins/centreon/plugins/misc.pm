@@ -238,11 +238,13 @@ sub backtick {
 }
 
 sub trim {
+    my ($value) = $_[0];
+    
     # Sometimes there is a null character
-    $_[0] =~ s/\x00$//;
-    $_[0] =~ s/^[ \t]+//;
-    $_[0] =~ s/[ \t]+$//;
-    return $_[0];
+    $value =~ s/\x00$//;
+    $value =~ s/^[ \t]+//;
+    $value =~ s/[ \t]+$//;
+    return $value;
 }
 
 1;
