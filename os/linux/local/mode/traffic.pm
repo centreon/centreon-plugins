@@ -99,11 +99,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical 'out' threshold '" . $self->{option_results}->{critical_out} . "'.");
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
+    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' && $self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
         $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also).");
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{units}) && $self->{option_results}->{units} eq '%' && !defined($self->{option_results}->{speed})) {
+    if (defined($self->{option_results}->{units}) && $self->{option_results}->{units} eq '%' && 
+        (!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '')) {
         $self->{output}->add_option_msg(short_msg => "To use percent, you need to set --speed option.");
         $self->{output}->option_exit();
     }
@@ -198,7 +199,7 @@ sub run {
         my $out_absolute_per_sec = ($new_datas->{'out_' . $name} - $old_out) / $time_delta;
         
         my ($exit, $interface_speed, $in_prct, $out_prct);
-        if (defined($self->{option_results}->{speed})) {
+        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed} * 1000000;
             $in_prct = $in_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
             $out_prct = $out_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
