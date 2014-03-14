@@ -48,7 +48,11 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'cover-status'              => 'hardware::printers::standard::rfc3805::mode::coverstatus',
-                         'marker-usage'              => 'hardware::printers::standard::rfc3805::mode::markersupplies',
+                         'markersupply-usage'        => 'hardware::printers::standard::rfc3805::mode::markersupply',
+                         'marker-impression'         => 'hardware::printers::standard::rfc3805::mode::markerimpression',
+                         'papertray-usage'           => 'hardware::printers::standard::rfc3805::mode::papertray',
+                         'hardware-device'           => 'snmp_standard::mode::hardwaredevice',
+                         'printer-error'             => 'snmp_standard::mode::printererror',
                          );
 
     return $self;
