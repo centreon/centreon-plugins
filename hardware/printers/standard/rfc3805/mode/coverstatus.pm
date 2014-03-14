@@ -81,10 +81,11 @@ sub run {
     my $result = $self->{snmp}->get_table(oid => $oid_prtCoverEntry, nothing_quit => 1);
     
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_prtCoverStatus\.(.*)/);
-        my $index = $1;
-        my $status = $result->{$oid_prtCoverStatus . '.' . $index};
-        my $descr = centreon::plugins::misc::trim($result->{$oid_prtCoverDescription . '.' . $index});
+        next if ($key !~ /^$oid_prtCoverStatus\.(\d+).(\d+)/);
+        my ($hrDeviceIndex, $prtCoverIndex) = ($1, $2);
+        my $instance = $hrDeviceIndex . '.' . $prtCoverIndex;
+        my $status = $result->{$oid_prtCoverStatus . '.' . $instance};
+        my $descr = centreon::plugins::misc::trim($result->{$oid_prtCoverDescription . '.' . $instance});
         
         $self->{output}->output_add(long_msg => sprintf(${$cover_status{$status}}[0], $descr));
         if (!$self->{output}->is_status(value => ${$cover_status{$status}}[1], compare => 'ok', litteral => 1)) {

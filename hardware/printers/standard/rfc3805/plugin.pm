@@ -48,6 +48,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'cover-status'              => 'hardware::printers::standard::rfc3805::mode::coverstatus',
+                         'marker-usage'              => 'hardware::printers::standard::rfc3805::mode::markersupplies',
                          );
 
     return $self;
@@ -60,5 +61,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check printers compatible RFC3805 (Printer MIB v2) in SNMP.
+Don't know if you can have multiple printer devices at once. So it's not managed yet.
 
 =cut
