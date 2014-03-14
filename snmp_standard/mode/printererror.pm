@@ -86,25 +86,28 @@ sub run {
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "Printer is ok.");
     
-    my $oid_hrPrinterDetectedErrorState = '.1.3.6.1.2.1.25.3.5.1.2.1';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hrPrinterDetectedErrorState], nothing_quit => 1);
-    my ($value1, $value2) = unpack('C', $result->{$oid_hrPrinterDetectedErrorState});
+    my $oid_hrPrinterDetectedErrorState = '.1.3.6.1.2.1.25.3.5.1.2';
+    my $result = $self->{snmp}->get_table(oid => $oid_hrPrinterDetectedErrorState, nothing_quit => 1);
     
-    foreach my $key (keys %errors_printer) {
-        my ($byte_check, $pos);
-        if ($key >= 8) {
-            next if (!defined($value2));
-            $byte_check = $value2;
-            $pos = $key - 8;
-        } else {
-            $byte_check = $value1;
-            $pos = $key
-        }
-    
-        if (($byte_check & (1 << $pos)) &&
-            (!$self->{output}->is_status(value => ${$errors_printer{$key}}[1], compare => 'ok', litteral => 1))) {
-            $self->{output}->output_add(severity => ${$errors_printer{$key}}[1],
-                                        short_msg => sprintf(${$errors_printer{$key}}[0]));
+    foreach (keys %$result) {
+        my ($value1, $value2) = unpack('C', $result->{$_});
+        
+        foreach my $key (keys %errors_printer) {
+            my ($byte_check, $pos);
+            if ($key >= 8) {
+                next if (!defined($value2));
+                $byte_check = $value2;
+                $pos = $key - 8;
+            } else {
+                $byte_check = $value1;
+                $pos = $key
+            }
+        
+            if (($byte_check & (1 << $pos)) &&
+                (!$self->{output}->is_status(value => ${$errors_printer{$key}}[1], compare => 'ok', litteral => 1))) {
+                $self->{output}->output_add(severity => ${$errors_printer{$key}}[1],
+                                            short_msg => sprintf(${$errors_printer{$key}}[0]));
+            }
         }
     }
     
