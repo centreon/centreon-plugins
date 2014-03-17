@@ -132,10 +132,10 @@ sub run {
         
         my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, localtime($time)));
+        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($time))));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, localtime($time)));
+                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($time))));
         }
         $self->{output}->perfdata_add(label => $name, unit => 's',
                                       value => $diff_time,
