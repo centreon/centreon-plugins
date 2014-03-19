@@ -53,9 +53,9 @@ sub new {
             "hostname:s"    => { name => 'hostname' },
             "port:s"        => { name => 'port', default => '80' },
             "proto:s"       => { name => 'proto', default => "http" },
-	    "credentials"   => { name => 'credentials' },
-	    "username:s"    => { name => 'username' },
-	    "password:s"    => { name => 'password' },
+            "credentials"   => { name => 'credentials' },
+            "username:s"    => { name => 'username' },
+            "password:s"    => { name => 'password' },
             "proxyurl:s"    => { name => 'proxyurl' },
             "warning:s"     => { name => 'warning' },
             "critical:s"    => { name => 'critical' },
@@ -108,7 +108,7 @@ sub run {
             if ( $webcontentarr[$i] =~ m/<pre>/i ) {
                 $PosPreBegin = $i;
             }
-	}
+        }
         if (defined($PosPreBegin)) {
             if ( $webcontentarr[$i] =~ m/<\/pre>/i ) {
                 $PosPreEnd = $i;
@@ -123,6 +123,8 @@ sub run {
   
     $ScoreBoard =~ s/^.*<[Pp][Rr][Ee]>//;
     $ScoreBoard =~ s/<\/[Pp][Rr][Ee].*>//;
+    
+    my $srvLimit = length($ScoreBoard);
 
     my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
 
@@ -134,7 +136,9 @@ sub run {
     $self->{output}->perfdata_add(label => "freeSlots",
                                   value => $CountOpenSlots,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0,
+                                  max => $srvLimit);
     $self->{output}->perfdata_add(label => "waiting",
             value => ($ScoreBoard =~ tr/\_//));
     $self->{output}->perfdata_add(label => "starting",

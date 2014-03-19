@@ -53,9 +53,9 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', default => '80' },
             "proto:s"           => { name => 'proto', default => "http" },
-            "credentials"  	=> { name => 'credentials' },
-            "username:s"   	=> { name => 'username' },
-            "password:s"   	=> { name => 'password' },
+            "credentials"       => { name => 'credentials' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
             "proxyurl:s"        => { name => 'proxyurl' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
@@ -107,12 +107,20 @@ sub run {
     my @webcontentarr = split("\n", $webcontent);
     my $i = 0;
     my ($rPerSec, $rPerSecSfx, $bPerSec, $bPerSecSfx, $bPerReq, $bPerReqSfx);
-
+    
     while (($i < @webcontentarr) && ((!defined($rPerSec)) || (!defined($bPerSec)) || (!defined($bPerReq)))) {
         if ($webcontentarr[$i] =~ /([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/sec\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/second\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/request/) {
             ($rPerSec, $rPerSecSfx, $bPerSec, $bPerSecSfx, $bPerReq, $bPerReqSfx) = ($webcontentarr[$i] =~ /([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/sec\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/second\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/request/);
         }
         $i++;
+    }
+    
+    if (!defined($rPerSec)) {
+        $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
+        $self->{output}->option_exit();
+    }
+    if ($rPerSec =~ /^\./) {
+        $rPerSec = '0' . $rPerSec;
     }
     
     if ($bPerReqSfx eq 'kB') {
@@ -135,9 +143,14 @@ sub run {
     my $exit2 = $self->{perfdata}->threshold_check(value => $bPerReq, threshold => [ { label => 'critical-bytes', 'exit_litteral' => 'critical' }, { label => 'warning-bytes', exit_litteral => 'warning' } ]);
 
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-
+    
+    my ($bPerSec_value, $bPerSec_unit) = $self->{perfdata}->change_bytes(value => $bPerSec);
+    my ($bPerReq_value, $bPerReq_unit) = $self->{perfdata}->change_bytes(value => $bPerReq);
+    
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("RequestPerSec: %f  BytesPerSecond: %d BytesPerRequest: %d", $self->{perfdata}->change_bytes($rPerSec), $self->{perfdata}->change_bytes($bPerSec), $self->{perfdata}->change_bytes($bPerReq)));
+                                short_msg => sprintf("RequestPerSec: %s  BytesPerSecond: %s BytesPerRequest: %s", $rPerSec, 
+                                                     $bPerSec_value . ' ' . $bPerSec_unit, 
+                                                     $bPerReq_value . ' ' . $bPerReq_unit));
     $self->{output}->perfdata_add(label => "requestPerSec",
                                   value => $rPerSec,
                                   unit => $rPerSecSfx,
@@ -147,11 +160,11 @@ sub run {
     $self->{output}->perfdata_add(label => "bytesPerSec",
                                   value => $bPerSec,
                                   unit => 'B');
-    $self->{output}->perfdata_add(label => "bytesPerRequest",
+    $self->{output}->perfdata_add(label => "bytesPerRequest", unit => 'B',
                                   value => $bPerReq,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes'),
-                                  unit => 'B');
+                                  );
 
     $self->{output}->display();
     $self->{output}->exit();

@@ -54,10 +54,10 @@ sub new {
          "hostname:s"   => { name => 'hostname' },
          "port:s"       => { name => 'port', default => '80' },
          "proto:s"      => { name => 'proto', default => "http" },
-	 "credentials"  => { name => 'credentials' },
+         "credentials"  => { name => 'credentials' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
-	 "proxyurl:s"   => { name => 'proxyurl' },
+         "proxyurl:s"   => { name => 'proxyurl' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout', default => '3' },
@@ -98,7 +98,7 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self);    
+    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self, connection_exit => 'critical');    
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     

@@ -50,7 +50,6 @@ sub new {
 			'responsetime'	=> 'apps::apache::serverstatus::mode::responsetime',
 			'requests'	=> 'apps::apache::serverstatus::mode::requests',
 			'slotstates'	=> 'apps::apache::serverstatus::mode::slotstates',
-			'workers'	=> 'apps::apache::serverstatus::mode::workers',
 			);
 
 	return $self;
