@@ -481,6 +481,11 @@ sub run {
     while (1) {
         my @rh_set = $self->{read_select}->can_read(15);
         if ($self->{stop} == 1) {
+            # No childs
+            if (scalar(keys %{$self->{centreonesxd_config}->{vsphere_server}}) == 0) {
+                $self->{logger}->writeLogInfo("Quit main process");
+                exit(0);
+            }
             foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
                 $self->{logger}->writeLogInfo("Send STOP command to '$_' child.");
                 my $writer_handle = $self->{centreonesxd_config}->{vsphere_server}->{$_}->{writer_two};
@@ -496,7 +501,7 @@ sub run {
                 $client = $rh->accept();
                 $client->autoflush(1);
                 $self->{counter}++;
-                $self->{sockets}->{fileno($client)} = {"obj" => \$client, "ctime" => time(), "counter" => $self->{counter}};
+                $self->{sockets}->{fileno($client)} = {obj => \$client, ctime => time(), counter => $self->{counter}};
                 $self->{read_select}->add($client);
                 next;
             } elsif (defined($self->{filenos}->{$current_fileno})) {
