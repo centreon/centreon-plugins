@@ -43,6 +43,7 @@ use LWP::UserAgent;
 sub connect {
     my ($self, %options) = @_;
     my $ua = LWP::UserAgent->new( protocols_allowed => ['http','https'], timeout => $self->{option_results}->{timeout});
+    my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
     my $response;
     my $content;    
@@ -71,8 +72,8 @@ sub connect {
         $content = $response->content;
         return $content;
    } else {
-        $self->{output}->output_add(severity => 'CRITICAL',
-        short_msg => $response->status_line);     
+        $self->{output}->output_add(severity => $connection_exit,
+                                    short_msg => $response->status_line);     
         $self->{output}->display();
         $self->{output}->exit();
    }
