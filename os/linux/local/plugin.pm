@@ -59,6 +59,7 @@ sub new {
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
                          'traffic'          => 'os::linux::local::mode::traffic',
+                         'uptime'           => 'os::linux::local::mode::uptime',
                          );
 
     return $self;
