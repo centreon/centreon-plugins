@@ -278,7 +278,7 @@ Hostname to query (need --remote).
 
 =item B<--ssh-option>
 
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
 =item B<--ssh-path>
 
