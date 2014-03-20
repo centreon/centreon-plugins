@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::apcupsd::local::mode::temperatur;
+package apps::apcupsd::local::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -136,6 +136,18 @@ Warning Threshold
 =item B<--critical>
 
 Critical Threshold
+
+=item B<--remote>
+
+If you dont wanna install the apcupsd client on your local system you can run it remotely with 'ssh'.
+
+=item B<--hostname>
+
+Hostname to query (need --remote).
+
+=item B<--ssh-option>
+
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
 =back
 
