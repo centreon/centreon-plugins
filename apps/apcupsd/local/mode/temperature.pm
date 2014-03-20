@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::apcupsd::local::mode::temperatur;
+package apps::apcupsd::local::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
