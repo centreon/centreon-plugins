@@ -51,6 +51,7 @@ sub new {
                          'cmd-return'       => 'os::linux::local::mode::cmdreturn',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
+                         'inodes'           => 'os::linux::local::mode::inodes',
                          'load'             => 'os::linux::local::mode::loadaverage',
                          'list-storages'    => 'os::linux::local::mode::liststorages',
                          'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
