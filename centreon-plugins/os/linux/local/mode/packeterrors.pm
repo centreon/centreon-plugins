@@ -284,7 +284,7 @@ __END__
 
 =head1 MODE
 
-Check storage usages.
+Check packets errors and discards on interfaces.
 
 =over 8
 
