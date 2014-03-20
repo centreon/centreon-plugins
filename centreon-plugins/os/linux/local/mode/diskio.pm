@@ -72,6 +72,7 @@ sub new {
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "interrupt-frequency:s"   => { name => 'interrupt_frequency', default => 1000 },
                                   "bytes_per_sector:s"      => { name => 'bytes_per_sector', default => 512 },
+                                  "skip"                    => { name => 'skip', },
                                 });
     $self->{result} = { cpu => {}, total_cpu => 0, disks => {} };
     $self->{hostname} = undef;
@@ -150,11 +151,16 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $partition_name ne $self->{option_results}->{name});
 
+        if (defined($self->{option_results}->{skip}) && $read_sector == 0 && $write_sector == 0) {
+            $self->{output}->output_add(long_msg => "Skipping partition '" . $partition_name . "': no read/write IO.");
+            next;
+        }
+            
         $self->{result}->{disks}->{$partition_name} = { read_sectors => $read_sector, write_sectors => $write_sector,
                                                         read_ms => $read_ms, write_ms => $write_ms, ticks => $ms_ticks};
     }
     
-    if (scalar(keys %{$self->{result}}) <= 0) {
+    if (scalar(keys %{$self->{result}->{disks}}) <= 0) {
         if (defined($self->{option_results}->{name})) {
             $self->{output}->add_option_msg(short_msg => "No partition found for name '" . $self->{option_results}->{name} . "'.");
         } else {
@@ -168,10 +174,6 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{result});
-    exit(1);
     
     my $new_datas = {};
     $self->{statefile_value}->read(statefile => "cache_linux_local_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
@@ -180,84 +182,109 @@ sub run {
     
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All traffic are ok.');
+                                    short_msg => 'All partitions are ok.');
     }
     
-    foreach my $name (sort(keys %{$self->{result}})) {
+    foreach my $name (sort(keys %{$self->{result}->{disks}})) {
  
-        $new_datas->{'in_' . $name} = $self->{result}->{$name}->{in} * 8;
-        $new_datas->{'out_' . $name} = $self->{result}->{$name}->{out} * 8;
+        my $old_datas = {};
+        my $next = 0;
+        foreach (keys %{$self->{result}->{disks}->{$name}}) {
+            $new_datas->{$_ . '_' . $name} = $self->{result}->{disks}->{$name}->{$_};
+            $old_datas->{$_ . '_' . $name} = $self->{statefile_value}->get(name => $_ . '_' . $name);
+            if (!defined($old_datas->{$_ . '_' . $name})) {
+                $next = 1;
+            } elsif ($new_datas->{$_ . '_' . $name} < $old_datas->{$_ . '_' . $name}) {
+                # We set 0. has reboot
+                $old_datas->{$_ . '_' . $name} = 0;
+            }
+        }
+        foreach (keys %{$self->{result}->{cpu}}) {
+            $new_datas->{'cpu_' . $_} = $self->{result}->{cpu}->{$_};
+            $old_datas->{'cpu_' . $_} = $self->{statefile_value}->get(name => 'cpu_' . $_);
+            if (!defined($old_datas->{'cpu_' . $_})) {
+                $next = 1;
+            } elsif ($new_datas->{'cpu_' . $_} < $old_datas->{'cpu_' . $_}) {
+                # We set 0. has reboot
+                $old_datas->{'cpu_' . $_} = 0;
+            }
+        }
         
-        my $old_in = $self->{statefile_value}->get(name => 'in_' . $name);
-        my $old_out = $self->{statefile_value}->get(name => 'out_' . $name);
-        if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
+        if (!defined($old_timestamp) || $next == 1) {
             next;
         }
-        if ($new_datas->{'in_' . $name} < $old_in) {
-            # We set 0. Has reboot.
-            $old_in = 0;
-        }
-        if ($new_datas->{'out_' . $name} < $old_out) {
-            # We set 0. Has reboot.
-            $old_out = 0;
-        }
-
         my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
         if ($time_delta <= 0) {
             # At least one second. two fast calls ;)
             $time_delta = 1;
         }
-        my $in_absolute_per_sec = ($new_datas->{'in_' . $name} - $old_in) / $time_delta;
-        my $out_absolute_per_sec = ($new_datas->{'out_' . $name} - $old_out) / $time_delta;
-        
-        my ($exit, $interface_speed, $in_prct, $out_prct);
-        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $interface_speed = $self->{option_results}->{speed} * 1000000;
-            $in_prct = $in_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            $out_prct = $out_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            if ($self->{option_results}->{units} eq '%') {
-                my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-                my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-                $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-            }
-            $in_prct = sprintf("%.2f", $in_prct);
-            $out_prct = sprintf("%.2f", $out_prct);
-        } else {
-            my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-            my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-            $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-            $in_prct = '-';
-            $out_prct = '-';
+ 
+        ############
+
+        # Do calc
+        my $read_bytes_per_seconds = ($new_datas->{'read_sectors_' . $name} - $old_datas->{'read_sectors_' . $name}) * $self->{option_results}->{bytes_per_sector} / $time_delta;
+        my $write_bytes_per_seconds = ($new_datas->{'write_sectors_' . $name} - $old_datas->{'write_sectors_' . $name}) * $self->{option_results}->{bytes_per_sector} / $time_delta;
+        my $read_ms = $new_datas->{'read_ms_' . $name} - $old_datas->{'read_ms_' . $name};
+        my $write_ms = $new_datas->{'write_ms_' . $name} - $old_datas->{'write_ms_' . $name};
+        my $delta_ms = $self->{option_results}->{interrupt_frequency} * (($new_datas->{cpu_idle} + $new_datas->{cpu_iowait} + $new_datas->{cpu_user} + $new_datas->{cpu_system}) 
+                                                                          - 
+                                                                         ($old_datas->{cpu_idle} + $old_datas->{cpu_iowait} + $old_datas->{cpu_user} + $old_datas->{cpu_system})) 
+                        / $self->{result}->{total_cpu} / 100;
+        my $utils = 100 * ($new_datas->{'ticks_' . $name} - $old_datas->{'ticks_' . $name}) / $delta_ms;
+        if ($utils > 100) {
+            $utils = 100;
         }
        
         ###########
         # Manage Output
         ###########
         
-        my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
-        my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_absolute_per_sec, network => 1);
-        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                       $in_value . $in_unit, $in_prct,
-                                       $out_value . $out_unit, $out_prct));
+        my $exit1 = $self->{perfdata}->threshold_check(value => $read_bytes_per_seconds, threshold => [ { label => 'critical-bytes-read', 'exit_litteral' => 'critical' }, { label => 'warning-bytes-read', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{perfdata}->threshold_check(value => $write_bytes_per_seconds, threshold => [ { label => 'critical-bytes-write', 'exit_litteral' => 'critical' }, { label => 'warning-bytes-write', exit_litteral => 'warning' } ]);
+        my $exit3 = $self->{perfdata}->threshold_check(value => $utils, threshold => [ { label => 'critical-utils', 'exit_litteral' => 'critical' }, { label => 'warning-utils', exit_litteral => 'warning' } ]);
+
+        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
+        
+        my ($read_value, $read_unit) = $self->{perfdata}->change_bytes(value => $read_bytes_per_seconds);
+        my ($write_value, $write_unit) = $self->{perfdata}->change_bytes(value => $write_bytes_per_seconds);
+        
+        $self->{output}->output_add(long_msg => sprintf("Partition '%s' Read I/O : %s/s, Write I/O : %s/s, Write Time : %s ms, Read Time : %s ms, %%Utils: %.2f %%", $name,
+                                                        $read_value . $read_unit,
+                                                        $write_value . $write_unit,
+                                                        $read_ms, $write_ms, $utils
+                                                        ));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                            $in_value . $in_unit, $in_prct,
-                                            $out_value . $out_unit, $out_prct));
+                                        short_msg => sprintf("Partition '%s' Read I/O : %s/s, Write I/O : %s/s, Write Time : %s ms, Read Time : %s ms, %%Utils: %.2f %%", $name,
+                                                        $read_value . $read_unit,
+                                                        $write_value . $write_unit,
+                                                        $read_ms, $write_ms, $utils
+                                                        ));
         }
 
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $in_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
-        $self->{output}->perfdata_add(label => 'traffic_out' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $out_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
+        $self->{output}->perfdata_add(label => 'readio' . $extra_label, unit => 'B/s',
+                                      value => sprintf("%.2f", $read_bytes_per_seconds),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes-read'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes-read'),
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'writeio' . $extra_label, unit => 'B/s',
+                                      value => sprintf("%.2f", $write_bytes_per_seconds),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes-write'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes-write'),
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'readtime' . $extra_label, unit => 'ms',
+                                      value => $read_ms,
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'writetime' . $extra_label, unit => 'ms',
+                                      value => $write_ms,
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'utils' . $extra_label, unit => '%',
+                                      value => sprintf("%.2f", $utils),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-utils'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-util'),
+                                      min => 0, max => 100);
     }
     
     $self->{statefile_value}->write(data => $new_datas);    
@@ -365,6 +392,10 @@ Bytes per sector (Default: 512)
 =item B<--interrupt-frequency>
 
 Linux Kernel Timer Interrupt Frequency (Default: 1000)
+
+=item B<--skip>
+
+Skip partitions with 0 sectors read/write.
 
 =back
 
