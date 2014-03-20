@@ -103,7 +103,6 @@ sub run {
 
     $self->{output}->perfdata_add(label => $self->{option_results}->{searchpattern},
                                   value => $result,
-                                  unit => "",
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
                                   );
