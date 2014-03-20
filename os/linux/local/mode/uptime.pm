@@ -62,7 +62,7 @@ sub new {
                                   "command-options:s" => { name => 'command_options', default => '/proc/uptime 2>&1' },
                                   "warning:s"         => { name => 'warning', default => '' },
                                   "critical:s"        => { name => 'critical', default => '' },
-				  "seconds"           => { name => 'seconds', },
+                                  "seconds"           => { name => 'seconds', },
                                 });
     return $self;
 }
