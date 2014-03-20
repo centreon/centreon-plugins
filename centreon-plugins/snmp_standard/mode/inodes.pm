@@ -100,7 +100,7 @@ sub run {
 
     if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All inodes partitions are ok.');
+                                    short_msg => 'All inode partitions are ok.');
     }
 
     foreach (sort @{$self->{diskpath_id_selected}}) {
