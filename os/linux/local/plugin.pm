@@ -49,6 +49,7 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'os::linux::local::mode::cpu',
                          'cmd-return'       => 'os::linux::local::mode::cmdreturn',
+                         'diskio'           => 'os::linux::local::mode::diskio',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
                          'inodes'           => 'os::linux::local::mode::inodes',
