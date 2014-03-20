@@ -102,7 +102,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                 'batterycharge'       => 'apps::apcupsd::local::mode::batterycharge',   # BCHARGE
-                'temperatur'          => 'apps::apcupsd::local::mode::temperatur',      # ITEMP
+                'temperature'          => 'apps::apcupsd::local::mode::temperature',    # ITEMP
                 'timeleft'            => 'apps::apcupsd::local::mode::timeleft',        # TIMELEFT MAXTIME MINTIMEL
                 'linevoltage'         => 'apps::apcupsd::local::mode::linevoltage',     # LINEV
                 'batteryvoltage'      => 'apps::apcupsd::local::mode::batteryvoltage',  # BATTV
