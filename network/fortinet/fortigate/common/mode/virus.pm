@@ -219,7 +219,7 @@ __END__
 
 =head1 MODE
 
-Check filesystem usage (volumes and aggregates also).
+Check virus blocked and detected.
 
 =over 8
 
