@@ -217,7 +217,7 @@ sub reload_cache {
         $datas->{"device_" . $1} = $result->{$key};
     }
     
-    if (scalar(keys %$datas) <= 0) {
+    if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
         $self->{output}->option_exit();
     }
