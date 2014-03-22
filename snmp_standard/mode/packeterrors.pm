@@ -364,7 +364,7 @@ sub reload_cache {
         $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
     }
     
-    if (scalar(keys %$datas) <= 0) {
+    if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
         $self->{output}->option_exit();
     }
