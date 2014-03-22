@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::routers::fritzbox::mode::libgetdata;
+package network::fritzbox::mode::libgetdata;
 
 use base qw(centreon::plugins::mode);
 
