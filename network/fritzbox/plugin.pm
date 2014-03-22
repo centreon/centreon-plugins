@@ -74,7 +74,7 @@
 #NewExternalIPAddress               : 133.71.33.7
 ####################################################################################
 
-package hardware::routers::fritzbox::plugin;
+package network::fritzbox::plugin;
 
 use strict;
 use warnings;
@@ -89,11 +89,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                'upstatus'                  => 'hardware::routers::fritzbox::mode::upstatus',
-                'traffic'                   => 'hardware::routers::fritzbox::mode::traffic',
-                'externalip'                => 'hardware::routers::fritzbox::mode::externalip',
-                'dns1'                      => 'hardware::routers::fritzbox::mode::dns1',
-                'dns2'                      => 'hardware::routers::fritzbox::mode::dns2',
+                'upstatus'                  => 'network::fritzbox::mode::upstatus',
+                'traffic'                   => 'network::fritzbox::mode::traffic',
+                'externalip'                => 'network::fritzbox::mode::externalip',
+                'dns1'                      => 'network::fritzbox::mode::dns1',
+                'dns2'                      => 'network::fritzbox::mode::dns2',
                         );
     return $self;
 }

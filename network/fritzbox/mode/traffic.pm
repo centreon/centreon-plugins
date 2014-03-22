@@ -33,15 +33,14 @@
 #
 ####################################################################################
 
-package hardware::routers::fritzbox::mode::traffic;
+package network::fritzbox::mode::traffic;
 
 use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
-use hardware::routers::fritzbox::mode::libgetdata;
+use network::fritzbox::mode::libgetdata;
 
 sub new {
     my ($class, %options) = @_;
@@ -54,12 +53,12 @@ sub new {
                                   "hostname:s"          => { name => 'hostname' },
                                   "port:s"              => { name => 'port', default => '49000' },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "warning:s"           => { name => 'warning', default => '' },
-                                  "critical:s"          => { name => 'critical', default => '' },
+                                  "warning-in:s"        => { name => 'warning_in', },
+                                  "critical-in:s"       => { name => 'critical_in', },
+                                  "warning-out:s"       => { name => 'warning_out', },
+                                  "critical-out:s"      => { name => 'critical_out', },
                                   "units:s"             => { name => 'units', default => 'B' },
                                 });
-    $self->{result} = {};
-    $self->{hostname} = undef;
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -91,16 +90,13 @@ sub check_options {
 
     $self->{statefile_value}->check_options(%options);
     $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_linux_local_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => "cache_fritzbox_" . $self->{hostname}  . '_' . $self->{mode});
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
@@ -110,22 +106,22 @@ sub run {
 
     $self->{space} = 'GetAddonInfos';
     $self->{section} = 'NewTotalBytesSent';
-    my $NewTotalBytesSent = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
+    my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::getdata($self);
     #print $NewTotalBytesSent . "\n";
 
     $self->{space} = 'GetAddonInfos';
     $self->{section} = 'NewTotalBytesReceived';
-    my $NewTotalBytesReceived = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
+    my $NewTotalBytesReceived = network::fritzbox::mode::libgetdata::getdata($self);
     #print $NewTotalBytesReceived . "\n";
 
     $self->{space} = 'GetCommonLinkProperties';
     $self->{section} = 'NewLayer1UpstreamMaxBitRate';
-    my $NewLayer1UpstreamMaxBitRate = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
+    my $NewLayer1UpstreamMaxBitRate = network::fritzbox::mode::libgetdata::getdata($self);
     #print $NewLayer1UpstreamMaxBitRate . "\n";
 
     $self->{space} = 'GetCommonLinkProperties';
     $self->{section} = 'NewLayer1DownstreamMaxBitRate';
-    my $NewLayer1DownstreamMaxBitRate = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
+    my $NewLayer1DownstreamMaxBitRate = network::fritzbox::mode::libgetdata::getdata($self);
     #print $NewLayer1DownstreamMaxBitRate . "\n";
     ### GET DATA END
 
@@ -137,20 +133,24 @@ sub run {
     # calc ($VAR / 8)
     $NewLayer1UpstreamMaxBitRate = ($NewLayer1UpstreamMaxBitRate / 8);
     $NewLayer1DownstreamMaxBitRate = ($NewLayer1DownstreamMaxBitRate / 8);
-    $new_datas->{'in'} = ($NewTotalBytesReceived);
-    $new_datas->{'out'} = ($NewTotalBytesSent);
-
+    $new_datas->{in} = ($NewTotalBytesReceived);
+    $new_datas->{out} = ($NewTotalBytesSent);
+    $self->{statefile_value}->write(data => $new_datas);
+    
     my $old_in = $self->{statefile_value}->get(name => 'in');
     my $old_out = $self->{statefile_value}->get(name => 'out');
     if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
-        #next;
-        print "ERROR";
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        $self->{output}->display();
+        $self->{output}->exit();
     }
-    if ($new_datas->{'in'} < $old_in) {
+
+    if ($new_datas->{in} < $old_in) {
         # We set 0. Has reboot.
         $old_in = 0;
     }
-    if ($new_datas->{'out'} < $old_out) {
+    if ($new_datas->{out} < $old_out) {
         # We set 0. Has reboot.
         $old_out = 0;
     }
@@ -160,8 +160,8 @@ sub run {
         # At least one second. two fast calls ;)
         $time_delta = 1;
     }
-    my $in_absolute_per_sec = ($new_datas->{'in'} - $old_in) / $time_delta;
-    my $out_absolute_per_sec = ($new_datas->{'out'} - $old_out) / $time_delta;
+    my $in_absolute_per_sec = ($new_datas->{in} - $old_in) / $time_delta;
+    my $out_absolute_per_sec = ($new_datas->{out} - $old_out) / $time_delta;
 
     my ($exit, $in_prct, $out_prct);
 
@@ -174,8 +174,6 @@ sub run {
     }
     $in_prct = sprintf("%.2f", $in_prct);
     $out_prct = sprintf("%.2f", $out_prct);
-
-
 
     ### Manage Output
     my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
@@ -203,11 +201,7 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $NewLayer1UpstreamMaxBitRate),
                                   min => 0, max => $NewLayer1UpstreamMaxBitRate);
     
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
+        
 
     $self->{output}->display();
     $self->{output}->exit();

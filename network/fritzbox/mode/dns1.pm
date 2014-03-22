@@ -33,13 +33,13 @@
 #
 ####################################################################################
 
-package hardware::routers::fritzbox::mode::dns2;
+package network::fritzbox::mode::dns1;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::routers::fritzbox::mode::libgetdata;
+use network::fritzbox::mode::libgetdata;
 
 sub new {
     my ($class, %options) = @_;
@@ -50,10 +50,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"          => { name => 'hostname' },
-                                  "port:s"              => { name => 'port', default => '49000' },
+                                  "port:s"              => { name => 'port', default => 49000 },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "warning:s"           => { name => 'warning', default => '' },
-                                  "critical:s"          => { name => 'critical', default => '' },
                                 });
     return $self;
 }
@@ -76,16 +74,15 @@ sub run {
     $self->{pfad} = '/upnp/control/WANCommonIFC1';
     $self->{uri} = 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1';
     $self->{space} = 'GetAddonInfos';
-    $self->{section} = 'NewDNSServer2';
-    my $IP = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
+    $self->{section} = 'NewDNSServer1';
+    my $IP = network::fritzbox::mode::libgetdata::getdata($self);
     #print $IP . "\n";
 
     if ($IP =~ /^((([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$/) {
         $exit_code = 'ok';
     } else {
         $exit_code = 'critical';
-    };
-
+    }
 
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("Your current DNS-Server is " . $IP));
@@ -100,7 +97,7 @@ __END__
 
 =head1 MODE
 
-This Mode provides your current second DNS Address.
+This Mode provides your current first DNS Address.
 This Mode needs UPNP.
 
 =over 8

@@ -33,13 +33,14 @@
 #
 ####################################################################################
 
-package hardware::routers::fritzbox::mode::dns1;
+package network::fritzbox::mode::upstatus;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::routers::fritzbox::mode::libgetdata;
+use network::fritzbox::mode::libgetdata;
+use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -52,8 +53,9 @@ sub new {
                                   "hostname:s"          => { name => 'hostname' },
                                   "port:s"              => { name => 'port', default => '49000' },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "warning:s"           => { name => 'warning', default => '' },
-                                  "critical:s"          => { name => 'critical', default => '' },
+                                  "warning:s"           => { name => 'warning', },
+                                  "critical:s"          => { name => 'critical',  },
+                                  "seconds"             => { name => 'seconds', },
                                 });
     return $self;
 }
@@ -67,6 +69,14 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify an Hostname.");
        $self->{output}->option_exit(); 
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -75,20 +85,52 @@ sub run {
 
     $self->{pfad} = '/upnp/control/WANCommonIFC1';
     $self->{uri} = 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1';
-    $self->{space} = 'GetAddonInfos';
-    $self->{section} = 'NewDNSServer1';
-    my $IP = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
-    #print $IP . "\n";
+    
+    $self->{space} = 'GetCommonLinkProperties';
+    $self->{section} = 'NewWANAccessType';
+    my $WANAccessType = network::fritzbox::mode::libgetdata::getdata($self);
+    #print "Type: " . $WANAccessType . "\n";
 
-    if ($IP =~ /^((([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$/) {
-        $exit_code = 'ok';
-    } else {
+    $self->{space} = 'GetCommonLinkProperties';
+    $self->{section} = 'NewPhysicalLinkStatus';
+    my $LinkStatus = network::fritzbox::mode::libgetdata::getdata($self);
+    #print "Physical Link is: " . $LinkStatus . "\n";
+
+    $self->{pfad} = '/upnp/control/WANIPConn1';
+    $self->{uri} = 'urn:schemas-upnp-org:service:WANIPConnection:1';
+    
+    $self->{space} = 'GetStatusInfo';
+    $self->{section} = 'NewUptime';
+    my $uptime = network::fritzbox::mode::libgetdata::getdata($self);
+    #print "Internet is Connected since: " . $uptime . " seconds\n";
+    #print "Internet is Connected since: " . floor($uptime / 60 / 60 / 24) . " days\n";
+
+    $self->{space} = 'GetStatusInfo';
+    $self->{section} = 'NewConnectionStatus';
+    my $ConnectionStatus = network::fritzbox::mode::libgetdata::getdata($self);
+    #print "Internet is: " . $ConnectionStatus . "\n";
+
+    $exit_code = $self->{perfdata}->threshold_check(value => floor($uptime),
+                              threshold => [ { label => 'critical', exit_litteral => 'critical' }, 
+                                             { label => 'warning', exit_litteral => 'warning' } ]);
+
+    if ($LinkStatus !~ /^up$/i) {
         $exit_code = 'critical';
-    };
+    }
 
+    if ($ConnectionStatus !~ /^connected$/i) {
+        $exit_code = 'critical';
+    }
+    
+    $self->{output}->perfdata_add(label => 'uptime',
+                                  value => floor($uptime),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Your current DNS-Server is " . $IP));
+                                short_msg => sprintf("Physical Link is " . $LinkStatus . " and " . $WANAccessType . " is " . $ConnectionStatus .  
+                                " since: %s", defined($self->{option_results}->{seconds}) ? floor($uptime) . " seconds" : floor($uptime / 86400) . " days" ));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -100,10 +142,22 @@ __END__
 
 =head1 MODE
 
-This Mode provides your current first DNS Address.
+This Mode Checks Physical Link Status, Connection Status and Uptime of your Fritz!Box Internet Connection.
 This Mode needs UPNP.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning in seconds.
+
+=item B<--critical>
+
+Threshold critical in seconds.
+
+=item B<--seconds>
+
+Display uptime in seconds.
 
 =item B<--hostname>
 
