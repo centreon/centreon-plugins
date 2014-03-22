@@ -73,8 +73,8 @@ sub run {
     my ($self, %options) = @_;
     my $exit_code;
 
-    $self->{pfad} = '/upnp/control/WANIPConn1';
-    $self->{uri} = 'urn:schemas-upnp-org:service:WANIPConnection:1';
+    $self->{pfad} = '/upnp/control/WANCommonIFC1';
+    $self->{uri} = 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1';
     $self->{space} = 'GetAddonInfos';
     $self->{section} = 'NewDNSServer1';
     my $IP = hardware::routers::fritzbox::mode::libgetdata::getdata($self);
@@ -88,7 +88,7 @@ sub run {
 
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Your current IP-Address is " . $IP));
+                                short_msg => sprintf("Your current DNS-Server is " . $IP));
 
     $self->{output}->display();
     $self->{output}->exit();
