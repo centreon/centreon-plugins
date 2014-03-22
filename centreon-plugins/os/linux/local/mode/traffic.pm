@@ -264,7 +264,7 @@ __END__
 
 =head1 MODE
 
-Check storage usages.
+Check Traffic
 
 =over 8
 
