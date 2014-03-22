@@ -220,24 +220,23 @@ This Mode needs UPNP.
 
 =item B<--warning-in>
 
-Threshold warning in percent for 'in' traffic.
+Threshold warning for 'in' traffic.
 
 =item B<--critical-in>
 
-Threshold critical in percent for 'in' traffic.
+Threshold critical for 'in' traffic.
 
 =item B<--warning-out>
 
-Threshold warning in percent for 'out' traffic.
+Threshold warning for 'out' traffic.
 
 =item B<--critical-out>
 
-Threshold critical in percent for 'out' traffic.
+Threshold critical for 'out' traffic.
 
 =item B<--units>
 
 Units of thresholds (Default: '%') ('%', 'B').
-Percent can be used only if --speed is set.
 
 =item B<--hostname>
 
