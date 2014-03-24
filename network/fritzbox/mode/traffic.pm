@@ -103,12 +103,12 @@ sub run {
     network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANCommonIFC1',
                                                      uri => 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1');
     network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetAddonInfos');
-    my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::value($self, path => '/GetAddonInfosResponse/NewTotalBytesSent');
-    my $NewTotalBytesReceived = network::fritzbox::mode::libgetdata::value($self, path => '/GetAddonInfosResponse/NewTotalBytesReceived');
+    my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::value($self, path => '//GetAddonInfosResponse/NewTotalBytesSent');
+    my $NewTotalBytesReceived = network::fritzbox::mode::libgetdata::value($self, path => '//GetAddonInfosResponse/NewTotalBytesReceived');
 
     network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetCommonLinkProperties');
-    my $NewLayer1UpstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewLayer1UpstreamMaxBitRate');
-    my $NewLayer1DownstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewLayer1DownstreamMaxBitRate');
+    my $NewLayer1UpstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '//GetCommonLinkPropertiesResponse/NewLayer1UpstreamMaxBitRate');
+    my $NewLayer1DownstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '//GetCommonLinkPropertiesResponse/NewLayer1DownstreamMaxBitRate');
     ### GET DATA END
 
     # DID U KNOW? 
