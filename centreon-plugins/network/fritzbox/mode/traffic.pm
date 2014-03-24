@@ -38,7 +38,6 @@ package network::fritzbox::mode::traffic;
 use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use network::fritzbox::mode::libgetdata;
 
@@ -57,7 +56,7 @@ sub new {
                                   "critical-in:s"       => { name => 'critical_in', },
                                   "warning-out:s"       => { name => 'warning_out', },
                                   "critical-out:s"      => { name => 'critical_out', },
-                                  "units:s"             => { name => 'units', default => 'B' },
+                                  "units:s"             => { name => 'units', default => '%' },
                                 });
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -101,28 +100,15 @@ sub run {
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     ### GET DATA START
-    $self->{pfad} = '/upnp/control/WANCommonIFC1';
-    $self->{uri} = 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1';
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANCommonIFC1',
+                                                     uri => 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1');
+    network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetAddonInfos');
+    my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::value($self, path => '/GetAddonInfosResponse/NewTotalBytesSent');
+    my $NewTotalBytesReceived = network::fritzbox::mode::libgetdata::value($self, path => '/GetAddonInfosResponse/NewTotalBytesReceived');
 
-    $self->{space} = 'GetAddonInfos';
-    $self->{section} = 'NewTotalBytesSent';
-    my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::getdata($self);
-    #print $NewTotalBytesSent . "\n";
-
-    $self->{space} = 'GetAddonInfos';
-    $self->{section} = 'NewTotalBytesReceived';
-    my $NewTotalBytesReceived = network::fritzbox::mode::libgetdata::getdata($self);
-    #print $NewTotalBytesReceived . "\n";
-
-    $self->{space} = 'GetCommonLinkProperties';
-    $self->{section} = 'NewLayer1UpstreamMaxBitRate';
-    my $NewLayer1UpstreamMaxBitRate = network::fritzbox::mode::libgetdata::getdata($self);
-    #print $NewLayer1UpstreamMaxBitRate . "\n";
-
-    $self->{space} = 'GetCommonLinkProperties';
-    $self->{section} = 'NewLayer1DownstreamMaxBitRate';
-    my $NewLayer1DownstreamMaxBitRate = network::fritzbox::mode::libgetdata::getdata($self);
-    #print $NewLayer1DownstreamMaxBitRate . "\n";
+    network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetCommonLinkProperties');
+    my $NewLayer1UpstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewLayer1UpstreamMaxBitRate');
+    my $NewLayer1DownstreamMaxBitRate = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewLayer1DownstreamMaxBitRate');
     ### GET DATA END
 
     # DID U KNOW? 
@@ -171,6 +157,10 @@ sub run {
         my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
         $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+    } else {
+        my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
+        $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     }
     $in_prct = sprintf("%.2f", $in_prct);
     $out_prct = sprintf("%.2f", $out_prct);
@@ -189,13 +179,13 @@ sub run {
     }
 
     $self->{output}->perfdata_add(label => 'traffic_in', 
-                                  unit => 'b/s',
+                                  unit => 'B/s',
                                   value => sprintf("%.2f", $in_absolute_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $NewLayer1DownstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $NewLayer1DownstreamMaxBitRate),
                                   min => 0, max => $NewLayer1DownstreamMaxBitRate);
     $self->{output}->perfdata_add(label => 'traffic_out',
-                                  unit => 'b/s',
+                                  unit => 'B/s',
                                   value => sprintf("%.2f", $out_absolute_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $NewLayer1UpstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $NewLayer1UpstreamMaxBitRate),

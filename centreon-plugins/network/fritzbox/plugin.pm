@@ -89,11 +89,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                'upstatus'                  => 'network::fritzbox::mode::upstatus',
-                'traffic'                   => 'network::fritzbox::mode::traffic',
-                'externalip'                => 'network::fritzbox::mode::externalip',
-                'dns1'                      => 'network::fritzbox::mode::dns1',
-                'dns2'                      => 'network::fritzbox::mode::dns2',
+                         'upstatus'     => 'network::fritzbox::mode::upstatus',
+                         'traffic'      => 'network::fritzbox::mode::traffic',
                         );
     return $self;
 }
