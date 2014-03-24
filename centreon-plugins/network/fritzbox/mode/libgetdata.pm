@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use SOAP::Lite;
 
 my $soap;
 my $response;

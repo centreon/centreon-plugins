@@ -79,7 +79,6 @@ package network::fritzbox::plugin;
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_simple);
-use SOAP::Lite;
 
 sub new {
     my ($class, %options) = @_;
