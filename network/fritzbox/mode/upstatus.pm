@@ -82,43 +82,24 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my $exit_code;
-
-    $self->{pfad} = '/upnp/control/WANCommonIFC1';
-    $self->{uri} = 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1';
     
-    $self->{space} = 'GetCommonLinkProperties';
-    $self->{section} = 'NewWANAccessType';
-    my $WANAccessType = network::fritzbox::mode::libgetdata::getdata($self);
-    #print "Type: " . $WANAccessType . "\n";
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANCommonIFC1',
+                                                     uri => 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1');
+    network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetCommonLinkProperties');
+    my $WANAccessType = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewWANAccessType');
+    my $LinkStatus = network::fritzbox::mode::libgetdata::value($self, path => '/GetCommonLinkPropertiesResponse/NewPhysicalLinkStatus');
 
-    $self->{space} = 'GetCommonLinkProperties';
-    $self->{section} = 'NewPhysicalLinkStatus';
-    my $LinkStatus = network::fritzbox::mode::libgetdata::getdata($self);
-    #print "Physical Link is: " . $LinkStatus . "\n";
-
-    $self->{pfad} = '/upnp/control/WANIPConn1';
-    $self->{uri} = 'urn:schemas-upnp-org:service:WANIPConnection:1';
-    
-    $self->{space} = 'GetStatusInfo';
-    $self->{section} = 'NewUptime';
-    my $uptime = network::fritzbox::mode::libgetdata::getdata($self);
-    #print "Internet is Connected since: " . $uptime . " seconds\n";
-    #print "Internet is Connected since: " . floor($uptime / 60 / 60 / 24) . " days\n";
-
-    $self->{space} = 'GetStatusInfo';
-    $self->{section} = 'NewConnectionStatus';
-    my $ConnectionStatus = network::fritzbox::mode::libgetdata::getdata($self);
-    #print "Internet is: " . $ConnectionStatus . "\n";
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANIPConn1',
+                                                     uri => 'urn:schemas-upnp-org:service:WANIPConnection:1');
+    network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetStatusInfo');
+    my $uptime = network::fritzbox::mode::libgetdata::value($self, path => '/GetStatusInfoResponse/NewUptime');
+    my $ConnectionStatus = network::fritzbox::mode::libgetdata::value($self, path => '/GetStatusInfoResponse/NewConnectionStatus');
 
     $exit_code = $self->{perfdata}->threshold_check(value => floor($uptime),
                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, 
                                              { label => 'warning', exit_litteral => 'warning' } ]);
 
-    if ($LinkStatus !~ /^up$/i) {
-        $exit_code = 'critical';
-    }
-
-    if ($ConnectionStatus !~ /^connected$/i) {
+    if ($LinkStatus !~ /^up$/i || $ConnectionStatus !~ /^connected$/i) {
         $exit_code = 'critical';
     }
     
