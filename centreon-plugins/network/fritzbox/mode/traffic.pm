@@ -117,10 +117,10 @@ sub run {
     # so if you want all in BYTE... 
     # (8 BIT = 1 BYTE)
     # calc ($VAR / 8)
-    $NewLayer1UpstreamMaxBitRate = ($NewLayer1UpstreamMaxBitRate / 8);
-    $NewLayer1DownstreamMaxBitRate = ($NewLayer1DownstreamMaxBitRate / 8);
-    $new_datas->{in} = ($NewTotalBytesReceived);
-    $new_datas->{out} = ($NewTotalBytesSent);
+    $NewLayer1UpstreamMaxBitRate = ($NewLayer1UpstreamMaxBitRate);
+    $NewLayer1DownstreamMaxBitRate = ($NewLayer1DownstreamMaxBitRate);
+    $new_datas->{in} = ($NewTotalBytesReceived) * 8;
+    $new_datas->{out} = ($NewTotalBytesSent) * 8;
     $self->{statefile_value}->write(data => $new_datas);
     
     my $old_in = $self->{statefile_value}->get(name => 'in');
@@ -179,13 +179,13 @@ sub run {
     }
 
     $self->{output}->perfdata_add(label => 'traffic_in', 
-                                  unit => 'B/s',
+                                  unit => 'b/s',
                                   value => sprintf("%.2f", $in_absolute_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $NewLayer1DownstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $NewLayer1DownstreamMaxBitRate),
                                   min => 0, max => $NewLayer1DownstreamMaxBitRate);
     $self->{output}->perfdata_add(label => 'traffic_out',
-                                  unit => 'B/s',
+                                  unit => 'b/s',
                                   value => sprintf("%.2f", $out_absolute_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $NewLayer1UpstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $NewLayer1UpstreamMaxBitRate),
@@ -226,7 +226,7 @@ Threshold critical for 'out' traffic.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (Default: '%') ('%', 'b').
 
 =item B<--hostname>
 
