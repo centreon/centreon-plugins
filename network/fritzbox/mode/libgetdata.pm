@@ -39,44 +39,54 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use SOAP::Lite;
 
-sub getdata {
+my $soap;
+my $response;
+
+sub init {
     my ($self, %options) = @_;
-    my ($soap,$som,$body);
-
-    $self->{url} = 'http://' . $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port} . $self->{pfad};
+    
+    my $proxy = 'http://' . $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port} . $options{pfad};
 
     $soap = SOAP::Lite->new(
-            proxy		=> $self->{url},
-            uri                 => $self->{uri},
-            timeout             => $self->{option_results}->{timeout}
+        proxy		=> $proxy,
+        uri         => $options{uri},
+        timeout     => $self->{option_results}->{timeout}
     );
+    $soap->on_fault(
+        sub {    # SOAP fault handler
+            my $soap = shift;
+            my $res  = shift;
 
-    my $space = $self->{space};
-    my $section = $self->{section};
+            if(ref($res)) {
+                chomp( my $err = $res->faultstring );
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => "SOAP Fault: $err");
+            } else {
+                chomp( my $err = $soap->transport->status );
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => "Transport error: $err");     
+            }
+            
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+    );
+}
 
-    #Check SOAP Session Setup
-    if (! defined($soap)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'NO DATA FOUND');     
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
+sub call {
+    my ($self, %options) = @_;
+    
+    my $method = $options{soap_method};
+    $response = $soap->$method();
+}
 
-    # SOAP Call
-    $som = $soap->$space();
-
-    # Check Response
-    if (! exists($som->body->{$space."Response"})) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'NO DATA FOUND');     
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-
-    $body = $som->body->{$space."Response"};
-    return $body->{$section};
-};
+sub value {
+    my ($self, %options) = @_;
+    my $value = $response->valueof($options{path});
+    
+    return $value;
+}
 
 1;
