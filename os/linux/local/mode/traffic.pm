@@ -336,7 +336,7 @@ Set the interface name (empty means 'check all interfaces')
 
 =item B<--regexp>
 
-Allows to use regexp to filter storage mount point (with option --name).
+Allows to use regexp to filter intefaces (with option --name).
 
 =item B<--regexp-isensitive>
 
@@ -344,7 +344,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--filter-state>
 
-Filter filesystem type (regexp can be used. Default: 'RU').
+Filter interfaces type (regexp can be used. Default: 'RU').
 
 =item B<--speed>
 
