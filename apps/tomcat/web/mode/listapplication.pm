@@ -35,13 +35,13 @@
 # Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package apps::tomcat::mode::application;
+package apps::tomcat::web::mode::listapplication;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::tomcat::mode::libconnect;
+use apps::tomcat::web::mode::libconnect;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,24 +51,27 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port', default => '23002' },
-            "proto:s"       => { name => 'proto', default => "http" },
-            "credentials"   => { name => 'credentials' },
-            "showall"       => { name => 'showall' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "proxyurl:s"    => { name => 'proxyurl' },
-            "timeout:s"     => { name => 'timeout', default => '3' },
-            "application:s" => { name => 'application' },
-            "path:s"        => { name => 'path', default => '/manager/text/list' },
-            "realm:s"       => { name => 'realm', default => 'Tomcat Manager Application' },
+            "hostname:s"            => { name => 'hostname' },
+            "port:s"                => { name => 'port', default => '23002' },
+            "proto:s"               => { name => 'proto', default => "http" },
+            "credentials"           => { name => 'credentials' },
+            "username:s"            => { name => 'username' },
+            "password:s"            => { name => 'password' },
+            "proxyurl:s"            => { name => 'proxyurl' },
+            "timeout:s"             => { name => 'timeout', default => '3' },
+            "path:s"                => { name => 'path', default => '/manager/text/list' },
+            "realm:s"               => { name => 'realm', default => 'Tomcat Manager Application' },
+            "filter-name:s"         => { name => 'filter_name', },
+            "filter-state:s"        => { name => 'filter_state', },
+            "filter-path:s"         => { name => 'filter_path', },
             });
+
+    $self->{result} = {};
+    $self->{hostname} = undef;
     return $self;
 }
 
 sub check_options {
-
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
@@ -84,46 +87,61 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{application}) && (!defined($self->{option_results}->{showall}))) {
-        $self->{output}->add_option_msg(short_msg => "Please set the application option");
-        $self->{output}->option_exit();
-    }
 
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $webcontent = apps::tomcat::web::mode::libconnect::connect($self);  
+
+     while ($webcontent =~ m/\/(.*):(.*):(.*):(.*)/g) {      
+        my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
+               
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                 $context !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+                 $state !~ /$self->{option_results}->{filter_state}/);
+        next if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
+                 $contextpath !~ /$self->{option_results}->{filter_path}/);
+
+        $self->{result}->{$context} = {state => $state, sessions => $sessions, contextpath => $contextpath};
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    my $webcontent = apps::tomcat::mode::libconnect::connect($self);   
-    my $application = $self->{option_results}->{application};
-    my $result = '';
-    my $exit = '';
-
-    if (defined($self->{option_results}->{showall})) {
-        print $webcontent;
-        $self->{output}->exit();
-    };
-
-    if ($webcontent =~ m/\/$application:(.*):.*:/i) {
-        $result = $1;
-
-        if ($result eq 'running') {
-            $exit = 'OK';
-        } else {
-            $exit = 'CRITICAL';
-        };
-
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Tomcat Application " . $self->{option_results}->{application} . " has Status: " . $result));
-    } else {
-        $exit = 'UNKNOWN';
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Tomcat Application " . $self->{option_results}->{application} . " not found"));
-    };
-
-    $self->{output}->display();
+    $self->manage_selection();
+    my $context_display = '';
+    my $context_display_append = '';
+    foreach my $name (sort(keys %{$self->{result}})) {
+        $context_display .= $context_display_append . 'name = ' . $name . ' [state = ' . $self->{result}->{$name}->{state} . ']';
+        $context_display_append = ', ';
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List Contexts: ' . $context_display);
+    $self->{output}->display(nolabel => 1);
     $self->{output}->exit();
-};
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_disco_format(elements => ['name', 'state']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection();
+    foreach my $name (sort(keys %{$self->{result}})) {     
+        $self->{output}->add_disco_entry(name => $name,
+                                         state => $self->{result}->{$name}->{state}
+                                         );
+    }
+}
 
 1;
 
@@ -131,7 +149,7 @@ __END__
 
 =head1 MODE
 
-Check Tomcat Application Status by Tomcat Manager
+List Tomcat Application Server Contexts
 
 =over 8
 
@@ -171,19 +189,25 @@ Credentials Realm (Default: 'Tomcat Manager Application')
 
 Threshold for HTTP timeout
 
-=item B<--application>
-
-Name of the Tomcat Application you wanna Check
-
-=item B<--showall>
-
-This Function lists all Applications of your Tomcat
-
 =item B<--path>
 
 Path to the Tomcat Manager List (Default: '/manager/text/list')
 Tomcat 6: '/manager/list'
 Tomcat 7: '/manager/text/list'
+
+=item B<--filter-name>
+
+Filter Context name (regexp can be used).
+
+=item B<--filter-state>
+
+Filter state (regexp can be used).
+Can be for example: 'running' or 'stopped'.
+
+=item B<--filter-path>
+
+Filter Context Path (regexp can be used).
+Can be for example: '/STORAGE/context/test1'.
 
 =back
 
