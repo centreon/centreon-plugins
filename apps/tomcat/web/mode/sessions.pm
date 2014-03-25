@@ -122,7 +122,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $context ne $self->{option_results}->{name});
 
-        $self->{result}->{$context} = {status => $state, sessions => $sessions, contextpath => $contextpath};
+        $self->{result}->{$context} = {state => $state, sessions => $sessions, contextpath => $contextpath};
     }
     
     if (scalar(keys %{$self->{result}}) <= 0) {
