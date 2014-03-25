@@ -148,11 +148,11 @@ sub run {
     foreach my $name (sort(keys %{$self->{result}})) {
         my $exit = $self->{perfdata}->threshold_check(value => $self->{result}->{$name}->{sessions}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-        $self->{output}->output_add(long_msg => sprintf("Context '%s' Sessions : %s/s", $name,
+        $self->{output}->output_add(long_msg => sprintf("Context '%s' sessions : %s", $name,
                                        $self->{result}->{$name}->{sessions}));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Context '%s' Sessions : %s/s", $name,
+                                        short_msg => sprintf("Context '%s' sessions : %s", $name,
                                         $self->{result}->{$name}->{sessions}));
         }
 
