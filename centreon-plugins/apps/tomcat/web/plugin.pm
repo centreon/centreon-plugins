@@ -29,11 +29,13 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Author : Florian Asche <info@florian-asche.de>
 #
+# Based on De Bodt Lieven plugin
+# Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package apps::tomcat::plugin;
+package apps::tomcat::web::plugin;
 
 use strict;
 use warnings;
@@ -47,10 +49,11 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'application'	=> 'apps::tomcat::mode::application',
-			'sessions'	=> 'apps::tomcat::mode::sessions',
-			'threads'	=> 'apps::tomcat::mode::threads',
-			'memory'	=> 'apps::tomcat::mode::memory',
+			'application'           => 'apps::tomcat::web::mode::application',
+			'list-application'	=> 'apps::tomcat::web::mode::listapplication',
+			'sessions'              => 'apps::tomcat::web::mode::sessions',
+			'threads'               => 'apps::tomcat::web::mode::threads',
+			'memory'                => 'apps::tomcat::web::mode::memory',
 			);
 
 	return $self;
