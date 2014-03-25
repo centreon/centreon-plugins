@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::freebsd::plugin;
+package os::freebsd::snmp::plugin;
 
 use strict;
 use warnings;
