@@ -29,12 +29,13 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Simon BOMM <sbomm@merethis.com>
+# Author : Florian Asche <info@florian-asche.de>
 #
 # Based on De Bodt Lieven plugin
+# Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package apps::tomcat::mode::libconnect;
+package apps::tomcat::web::mode::libconnect;
 
 use strict;
 use warnings;
