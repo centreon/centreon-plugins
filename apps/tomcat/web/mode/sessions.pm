@@ -72,7 +72,6 @@ sub new {
 
     $self->{result} = {};
     $self->{hostname} = undef;
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
