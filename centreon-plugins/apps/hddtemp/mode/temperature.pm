@@ -139,12 +139,16 @@ sub run {
     foreach my $name (sort(keys %{$self->{result}})) {
         my $exit = $self->{perfdata}->threshold_check(value => $self->{result}->{$name}->{temperature}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-        $self->{output}->output_add(long_msg => sprintf("Harddrive '%s' Temperature : %s", $name,
-                                       $self->{result}->{$name}->{temperature}));
+        $self->{output}->output_add(long_msg => sprintf("Harddrive '%s' Temperature : %s%s", 
+                                       $name,
+                                       $self->{result}->{$name}->{temperature},
+                                       $self->{result}->{$name}->{unit}));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Harddrive '%s' Temperature : %s", $name,
-                                        $self->{result}->{$name}->{temperature}));
+                                        short_msg => sprintf("Harddrive '%s' Temperature : %s%s",
+                                       $name,
+                                       $self->{result}->{$name}->{temperature},
+                                       $self->{result}->{$name}->{unit}));
         }
 
         my $extra_label = '';
