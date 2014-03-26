@@ -39,6 +39,7 @@ use strict;
 use warnings;
 
 my %conditions = (
+    0 => ['other', 'UNKNOWN'], # maybe on standby mode only!!
     1 => ['other', 'CRITICAL'], 
     2 => ['ok', 'OK'], 
     3 => ['degraded', 'WARNING'], 
@@ -90,7 +91,7 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("Enclosure management module %d is %s, status is %s [serial: %s, part: %s, spare: %s].", 
                                     $instance, ${$conditions{$man_condition}}[0], $map_role{$man_role},
                                     $man_serial, $man_part, $man_spare));
-        if ($man_condition != 2) {
+        if ($man_role == 2 && $man_condition != 2) {
             $self->{output}->output_add(severity =>  ${$conditions{$man_condition}}[1],
                                         short_msg => sprintf("Enclosure management module %d is %s, status is %s", 
                                             $instance, ${$conditions{$man_condition}}[0], $map_role{$man_role}));
