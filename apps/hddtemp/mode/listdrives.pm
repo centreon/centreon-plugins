@@ -53,7 +53,7 @@ sub new {
             {
             "hostname:s"            => { name => 'hostname' },
             "port:s"                => { name => 'port', default => '7634' },
-            "timeout:s"             => { name => 'timeout', default => '1' },
+            "timeout:s"             => { name => 'timeout', default => '10' },
             "filter-name:s"         => { name => 'filter_name', },
             });
 
@@ -80,8 +80,13 @@ sub manage_selection {
                                              PeerAddr   => $self->{option_results}->{hostname},
                                              PeerPort   => $self->{option_results}->{port},
                                              Timeout    => $self->{option_results}->{timeout},
-                                           ) || $self->{output}->add_option_msg(short_msg => "Could not connect.") ; $self->{output}->option_exit();
+                                           );
     
+    if (!defined($oSocketConn)) {
+        $self->{output}->add_option_msg(short_msg => "Could not connect.");
+        $self->{output}->option_exit();
+    }
+
     #|/dev/sda|SD280813AS|35|C|#|/dev/sdb|ST2000CD005-1CH134|35|C|
 
     my $_ =  <$oSocketConn>;
