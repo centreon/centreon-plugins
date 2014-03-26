@@ -156,7 +156,7 @@ Set Timeout for Socketconnect
 
 =item B<--filter-name>
 
-Filter Context name (regexp can be used).
+Filter Harddrive name (regexp can be used).
 
 =back
 
