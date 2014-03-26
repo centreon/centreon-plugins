@@ -110,7 +110,7 @@ sub run {
     my $drive_display = '';
     my $drive_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $drive_display .= $drive_display_append . 'name = ' . $name . ' [state = ' . $self->{result}->{$name}->{temperature} . $self->{result}->{$name}->{unit} . ']';
+        $drive_display .= $drive_display_append . 'name = ' . $name . ' [temperature = ' . $self->{result}->{$name}->{temperature} . $self->{result}->{$name}->{unit} . ']';
         $drive_display_append = ', ';
     }
     
@@ -132,7 +132,7 @@ sub disco_show {
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
         $self->{output}->add_disco_entry(name => $name,
-                                         state => $self->{result}->{$name}->{temperature}
+                                         temperature => $self->{result}->{$name}->{temperature}
                                          );
     }
 }
