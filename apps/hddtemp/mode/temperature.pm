@@ -188,11 +188,11 @@ Critical Threshold for Temperature
 
 =item B<--name>
 
-Set the Context name (empty means 'check all contexts')
+Set the Harddrive name (empty means 'check all Harddrives')
 
 =item B<--regexp>
 
-Allows to use regexp to filter contexts (with option --name).
+Allows to use regexp to filter Harddrive (with option --name).
 
 =item B<--regexp-isensitive>
 
