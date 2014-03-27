@@ -179,7 +179,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-P -k -T 2>&1').
+Command options (Default: '-P -k 2>&1').
 
 =item B<--filter-fs>
 
