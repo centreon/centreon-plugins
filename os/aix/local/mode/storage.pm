@@ -254,7 +254,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-P -k -T 2>&1').
+Command options (Default: '-P -k 2>&1').
 
 =item B<--warning>
 
@@ -283,10 +283,6 @@ Allows to use regexp to filter storage mount point (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--filter-type>
-
-Filter filesystem type (regexp can be used).
 
 =item B<--filter-fs>
 
