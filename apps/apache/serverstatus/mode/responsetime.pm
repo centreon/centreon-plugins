@@ -57,7 +57,6 @@ sub new {
          "credentials"  => { name => 'credentials' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
-         "realm:s"      => { name => 'realm', default => 'Authentification' },
          "proxyurl:s"   => { name => 'proxyurl' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
@@ -175,10 +174,6 @@ Specify username for basic authentification (Mandatory if --credentials is speci
 =item B<--password>
 
 Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--realm>
-
-Credentials Realm (Default: 'Authentification')
 
 =item B<--proxyurl>
 
