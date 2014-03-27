@@ -49,7 +49,7 @@ sub connect {
     my $content;    
 
     if (defined $self->{option_results}->{credentials}) {
-        $ua->credentials($self->{option_results}->{hostname}.':'.$self->{option_results}->{port},$self->{option_results}->{username},$self->{option_results}->{password});
+        $ua->credentials($self->{option_results}->{hostname}.':'.$self->{option_results}->{port},$self->{option_results}->{realm},$self->{option_results}->{username},$self->{option_results}->{password});
     }
     
     if ($self->{option_results}->{proto} eq "https") {
