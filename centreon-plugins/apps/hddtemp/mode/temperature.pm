@@ -99,10 +99,21 @@ sub manage_selection {
     
     #|/dev/sda|SD280813AS|35|C|#|/dev/sdb|ST2000CD005-1CH134|35|C|
 
-    my $_ =  <$oSocketConn>;
+    my $line;
+    
+    eval {
+        local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
+        alarm(10);
+        $line = <$oSocketConn>;
+        alarm(0);
+    };
     $oSocketConn->shutdown(2);
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get informations.");
+        $self->{output}->option_exit();
+    }
 
-    while (m/\|([^|]+)\|([^|]+)\|([^|]+)\|(C|F)\|/g) {
+    while ($line =~ /\|([^|]+)\|([^|]+)\|([^|]+)\|(C|F)\|/g) {
         my ($drive, $serial, $temperature, $unit) = ($1, $2, $3, $4);
 
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
