@@ -42,42 +42,32 @@ use LWP::UserAgent;
 
 sub connect {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http','https'], timeout => $self->{option_results}->{timeout});
+    my $ua = LWP::UserAgent->new( protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
-    my $response;
-    my $content;    
+    my ($response, $content);
 
-    if (defined $self->{option_results}->{credentials}) {
-        $ua->credentials($self->{option_results}->{hostname}.':'.$self->{option_results}->{port},$self->{option_results}->{username},$self->{option_results}->{password});
+    my $req = HTTP::Request->new( GET => $self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
+    
+    if (defined($self->{option_results}->{credentials})) {
+        $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});
     }
     
-    if ($self->{option_results}->{proto} eq "https") {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['https'], $self->{option_results}->{proxyurl});
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        } else  {
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
-    } else {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['http'], $self->{option_results}->{proxyurl});
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.'/server-status');
-        } else  {
-            $response = $ua->get('http://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-        }
+    if (defined($self->{option_results}->{proxyurl})) {
+         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
+    
+    $response = $ua->request($req);
 
-   if ($response->is_success) {
+    if ($response->is_success) {
         $content = $response->content;
         return $content;
-   } else {
-        $self->{output}->output_add(severity => $connection_exit,
-                                    short_msg => $response->status_line);     
-        $self->{output}->display();
-        $self->{output}->exit();
-   }
-
+    }
+    
+    $self->{output}->output_add(severity => $connection_exit,
+                                short_msg => $response->status_line);     
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
