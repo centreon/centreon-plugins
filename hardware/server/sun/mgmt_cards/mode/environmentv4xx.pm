@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::mode::environmentv8xx;
+package hardware::server::sun::mgmt_cards::mode::environmentv4xx;
 
 use base qw(centreon::plugins::mode);
 
@@ -97,11 +97,10 @@ sub run {
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg); 
     
-    if ($output =~ /^\s+POWER\s+GEN FAULT[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
-        #   POWER                  GEN FAULT                      
-        #   [ ON]                   [OFF]
+    if ($output =~ /^System LED Status:[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
+        #System LED Status: LOCATOR     FAULT    POWER
+        #        [OFF]      [OFF]    [ ON]
         
-        my $power_status = $1;
         my $genfault_status = $2;
         $genfault_status = centreon::plugins::misc::trim($genfault_status);
         
@@ -110,98 +109,63 @@ sub run {
                                         short_msg => "Gen Fault status is '" . $genfault_status . "'");
         }
     }
-    
-    if ($output =~ /^\s+REMOVE\s+DISK FAULT[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
-        #   REMOVE                 DISK FAULT                      
-        #   [OFF]                   [OFF]
-        
-        my $remove_status = $1;
-        my $diskfault_status = $2;
-        $diskfault_status = centreon::plugins::misc::trim($diskfault_status);
-        
-        if (defined($diskfault_status) && $diskfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Disk Fault status is '" . $diskfault_status . "'");
-        }
-    }
-    
-    if ($output =~ /^\s+POWER FAULT\s+LEFT THERMAL FAULT[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
-        #   POWER FAULT            LEFT THERMAL FAULT                      
-        #   [OFF]                   [OFF]
-        
-        my $powerfault_status = $1;
-        my $leftthermalfault_status = $2;
-        $powerfault_status = centreon::plugins::misc::trim($powerfault_status);
-        $leftthermalfault_status = centreon::plugins::misc::trim($leftthermalfault_status);
-        
-        if (defined($powerfault_status) && $powerfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Power Fault status is '" . $powerfault_status . "'");
-        }
-        if (defined($leftthermalfault_status) && $leftthermalfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Left Thermal Fault status is '" . $leftthermalfault_status . "'");
-        }
-    }
-    
-    if ($output =~ /^\s+RIGHT THERMAL FAULT\s+LEFT DOOR[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
-        #   RIGHT THERMAL FAULT     LEFT DOOR                      
-        #   [OFF]                   [OFF]
-        
-        my $rightthermalfault_status = $1;
-        $rightthermalfault_status = centreon::plugins::misc::trim($rightthermalfault_status);
-        
-        if (defined($rightthermalfault_status) && $rightthermalfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Right Thermal Fault status is '" . $rightthermalfault_status . "'");
-        }
-    }
-    
-    while (($output =~ /^DISK\s+([0-9]+):\s+\[PRESENT\]\s+\[([^\]]+)\]/imsg)) {
-        #           Presence                Fault LED                
-        #           --------                ---------
-        #DISK    0:      [PRESENT]               [OFF]
-        #DISK    1:      [EMPTY]
-        
-        my $disknum = $1;
-        my $diskfault_status = $2;
-        $diskfault_status = centreon::plugins::misc::trim($diskfault_status);
-        
-        if (defined($diskfault_status) && $diskfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Disk $disknum status is '" . $diskfault_status . "'");
-        }
-    }
-    
-    if ($output =~ /^Fan Bank(.*?)=======/ims) {
-        #Bank                    Presence        ON State        Status
-        #----                    --------        --------        ------
-        #CPU0_PRIM_FAN           [PRESENT]        [ON]           [OK]
-        #CPU1_PRIM_FAN           [PRESENT]        [ON]           [OK]
 
+    if ($output =~ /^Disk LED Status:(.*?)=======/ims) {
+        #Disk LED Status:    OK = GREEN  ERROR = YELLOW
+        #    DISK  1: [EMPTY]
+        #    DISK  0:    [OK]
         my $content = $1;
-        while (($content =~ /^([^\s]+)\s+\[PRESENT\]\s+\[([^\]]+)\]\s+\[([^\]]+)\]/imsg)) {
-            my $fanbank_name = $1;
-            my $fanbank_status = $3;
-            $fanbank_status = centreon::plugins::misc::trim($fanbank_status);
-        
-            if (defined($fanbank_status) && $fanbank_status !~ /^(OK)$/i) {
+        while (($content =~ /DISK\s+([0-9]+)\s*:\s+\[([^\]]+?)\]/imsg)) {
+            my $disknum = $1;
+            my $disk_status = $2;
+            $disk_status = centreon::plugins::misc::trim($disk_status);
+            
+            if (defined($disk_status) && $disk_status !~ /^(OK|EMPTY)$/i) {
                 $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Fan Bank '" . $fanbank_name . "' status is '" . $fanbank_status . "'");
+                                            short_msg => "Disk $disknum status is '" . $disk_status . "'");
+            }
+        }
+    }
+    
+    if ($output =~ /^Fan Tray :(.*?)=======/ims) {
+        #Fan Tray :
+        #----------
+        #
+        #Tray                    Speed   Status
+        #----                    -----   ------
+        #FAN TRAY0 CPU FAN0       5555   [OK]
+        #FAN TRAY0 CPU FAN1       4000   [OK]
+        #FAN TRAY0 CPU FAN2       3846   [OK]
+        #FAN TRAY1  IO FAN0       4000   [OK]
+        #FAN TRAY1  IO FAN1       4166   [OK]
+        #FAN TRAY1  IO FAN2          0   [UNKNOWN]
+        #
+        # Can be [FAILED], [OK], [UNKNOWN]
+        # If system is poweroff, nothing displayed.
+        my $content = $1;
+        while (($content =~ /\n([^\n]*?)(\s+[0-9]+\s+|\s+)\[(.*?)\]$/imsg)) {
+            my $fan_name = $1;
+            my $fan_status = $3;
+            $fan_name = centreon::plugins::misc::trim($fan_name);
+            $fan_status = centreon::plugins::misc::trim($fan_status);
+            
+            if (defined($fan_status) && $fan_status !~ /^(OK)$/i) {
+                $self->{output}->output_add(severity => 'CRITICAL', 
+                                            short_msg => "Fan '" . $fan_name . "' status is '" . $fan_status . "'");
             }
         }
     }
     
     if ($output =~ /^Power Supplies(.*?)=======/ims) {
-        #Power Supplies:
+        # Power Supplies:
         #---------------
         #
-        #Supply     Status             Fan Fail    Temp Fail   CS Fail
-        #------     ------------       --------    ---------   -------
-        #1          NO AC POWER
-        #2          OK
+        #Supply     Status             PS Fault   Fan Fault  Temp Fault
+        #------     ------------       --------   ---------  ----------
+        #  0        OK                 OFF        OFF        OFF
+        #  1        OK                 OFF        OFF        OFF
         my $content = $1;
-        while (($content =~ /^\s*?([0-9]+)\s+(.*?)(\n|\s{2})/imsg)) {
+        while (($content =~ /^\s*?([0-9]+)\s+(.*?)(\n|\s{2})/imsg)) {        
             my $supplynum = $1;
             my $supply_status = $2;
             $supply_status = centreon::plugins::misc::trim($supply_status);
@@ -223,7 +187,7 @@ __END__
 
 =head1 MODE
 
-Check Sun v890 and v880 Hardware (through RSC card).
+Check Sun 'v480' and 'v490' Hardware (through RSC card).
 
 =over 8
 
