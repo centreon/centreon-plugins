@@ -33,14 +33,14 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::mode::environmentv4xx;
+package hardware::server::sun::mgmt_cards::mode::showboards;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use hardware::server::sun::mgmtcards::lib::telnet;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -55,7 +55,9 @@ sub new {
                                   "username:s"       => { name => 'username' },
                                   "password:s"       => { name => 'password' },
                                   "timeout:s"        => { name => 'timeout', default => 30 },
+                                  "memory"           => { name => 'memory' },
                                 });
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -75,6 +77,26 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify a password.");
        $self->{output}->option_exit(); 
     }
+    
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->check_options(%options);
+    }
+}
+
+sub telnet_shell_plateform {
+    my ($telnet_handle) = @_;
+    
+    # There are:
+    #System Controller 'sf6800':
+    #   Type  0  for Platform Shell
+    #   Type  1  for domain A console
+    #   Type  2  for domain B console
+    #   Type  3  for domain C console
+    #   Type  4  for domain D console
+    #   Input:
+    
+    $telnet_handle->waitfor(Match => '/Input:/i', Errmode => "return") or telnet_error($telnet_handle->errmsg);
+    $telnet_handle->print("0");
 }
 
 sub run {
@@ -85,98 +107,56 @@ sub run {
                             password => $self->{option_results}->{password},
                             hostname => $self->{option_results}->{hostname},
                             port => $self->{option_results}->{port},
-                            output => $self->{output});
-    my @lines = $telnet_handle->cmd("showenvironment");
+                            output => $self->{output},
+                            closure => \&telnet_shell_plateform);
+    my @lines = $telnet_handle->cmd("showboards");
+    
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->read(statefile => 'cache_sun_mgmtcards_' . $self->{option_results}->{hostname}  . '_' .  $self->{mode});
+        $self->{output}->output_add(severity => 'OK', 
+                                    short_msg => "No new problems on system.");
+    } else {
+        $self->{output}->output_add(severity => 'OK', 
+                                    short_msg => "No problems on system.");
+    }
 
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "No problems detected.");
-    
-    my ($output) = join("", @lines);
-    $output =~ s/\r//g;
-    my $long_msg = $output;
-    $long_msg =~ s/\|/~/mg;
-    $self->{output}->output_add(long_msg => $long_msg); 
-    
-    if ($output =~ /^System LED Status:[^\[]+?\[([^\]]+?)][^\[]+?\[([^\]]+?)]/ims && defined($1)) {
-        #System LED Status: LOCATOR     FAULT    POWER
-        #        [OFF]      [OFF]    [ ON]
+    my $datas = {};
+    foreach (@lines) {
+        chomp;
+        my $long_msg = $_;
+        $long_msg =~ s/\|/~/mg;
+        $self->{output}->output_add(long_msg => $long_msg);
+        my $id;
+        if (/([^\s]+?)\s+/) {
+            $id = $1;
+        }
+        my $status;
+        if (/\s+(Degraded|Failed|Not tested|Passed|OK|Under Test)\s+/i) {
+            $status = $1;
+        }
+        if (!defined($status) || $status eq '') {
+            next;
+        }
         
-        my $genfault_status = $2;
-        $genfault_status = centreon::plugins::misc::trim($genfault_status);
-        
-        if (defined($genfault_status) && $genfault_status !~ /^(OFF)$/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Gen Fault status is '" . $genfault_status . "'");
-        }
-    }
-
-    if ($output =~ /^Disk LED Status:(.*?)=======/ims) {
-        #Disk LED Status:    OK = GREEN  ERROR = YELLOW
-        #    DISK  1: [EMPTY]
-        #    DISK  0:    [OK]
-        my $content = $1;
-        while (($content =~ /DISK\s+([0-9]+)\s*:\s+\[([^\]]+?)\]/imsg)) {
-            my $disknum = $1;
-            my $disk_status = $2;
-            $disk_status = centreon::plugins::misc::trim($disk_status);
-            
-            if (defined($disk_status) && $disk_status !~ /^(OK|EMPTY)$/i) {
+        if ($status =~ /^(Degraded|Failed)$/i) {
+            if (defined($self->{option_results}->{memory})) {
+                my $old_status = $self->{statefile_cache}->get(name => "slot_$id");
+                if (!defined($old_status) || $old_status ne $status) {
+                    $self->{output}->output_add(severity => 'CRITICAL', 
+                                                short_msg => "Slot '$id' status is '$status'");
+                }
+                $datas->{"slot_$id"} = $status;
+            } else {
                 $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Disk $disknum status is '" . $disk_status . "'");
+                                            short_msg => "Slot '$id' status is '$status'");
             }
         }
     }
     
-    if ($output =~ /^Fan Tray :(.*?)=======/ims) {
-        #Fan Tray :
-        #----------
-        #
-        #Tray                    Speed   Status
-        #----                    -----   ------
-        #FAN TRAY0 CPU FAN0       5555   [OK]
-        #FAN TRAY0 CPU FAN1       4000   [OK]
-        #FAN TRAY0 CPU FAN2       3846   [OK]
-        #FAN TRAY1  IO FAN0       4000   [OK]
-        #FAN TRAY1  IO FAN1       4166   [OK]
-        #FAN TRAY1  IO FAN2          0   [UNKNOWN]
-        #
-        # Can be [FAILED], [OK], [UNKNOWN]
-        # If system is poweroff, nothing displayed.
-        my $content = $1;
-        while (($content =~ /\n([^\n]*?)(\s+[0-9]+\s+|\s+)\[(.*?)\]$/imsg)) {
-            my $fan_name = $1;
-            my $fan_status = $3;
-            $fan_name = centreon::plugins::misc::trim($fan_name);
-            $fan_status = centreon::plugins::misc::trim($fan_status);
-            
-            if (defined($fan_status) && $fan_status !~ /^(OK)$/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Fan '" . $fan_name . "' status is '" . $fan_status . "'");
-            }
-        }
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->write(data => $datas);
     }
-    
-    if ($output =~ /^Power Supplies(.*?)=======/ims) {
-        # Power Supplies:
-        #---------------
-        #
-        #Supply     Status             PS Fault   Fan Fault  Temp Fault
-        #------     ------------       --------   ---------  ----------
-        #  0        OK                 OFF        OFF        OFF
-        #  1        OK                 OFF        OFF        OFF
-        my $content = $1;
-        while (($content =~ /^\s*?([0-9]+)\s+(.*?)(\n|\s{2})/imsg)) {        
-            my $supplynum = $1;
-            my $supply_status = $2;
-            $supply_status = centreon::plugins::misc::trim($supply_status);
-            
-            if (defined($supply_status) && $supply_status !~ /^(OK)$/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Supply '" . $supplynum . "' status is '" . $supply_status . "'");
-            }
-        }
-    }
-
+ 
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -187,7 +167,7 @@ __END__
 
 =head1 MODE
 
-Check Sun 'v480' and 'v490' Hardware (through RSC card).
+Check Sun SFxxxx (sf6900, sf6800, sf3800,...) Hardware (through ScApp).
 
 =over 8
 
@@ -206,6 +186,10 @@ telnet username.
 =item B<--password>
 
 telnet password.
+
+=item B<--memory>
+
+Returns new errors (retention file is used by the following option).
 
 =item B<--timeout>
 

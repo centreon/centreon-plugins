@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::mode::showfaults;
+package hardware::server::sun::mgmt_cards::mode::showfaults;
 
 use base qw(centreon::plugins::mode);
 

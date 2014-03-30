@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::lib::telnet;
+package hardware::server::sun::mgmt_cards::lib::telnet;
 
 use strict;
 use warnings;

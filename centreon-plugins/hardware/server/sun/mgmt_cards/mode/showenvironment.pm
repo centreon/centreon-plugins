@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::mode::showenvironment;
+package hardware::server::sun::mgmt_cards::mode::showenvironment;
 
 use base qw(centreon::plugins::mode);
 
