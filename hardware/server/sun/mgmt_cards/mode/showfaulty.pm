@@ -33,13 +33,13 @@
 #
 ####################################################################################
 
-package hardware::server::sun::mgmtcards::mode::showboards;
+package hardware::server::sun::mgmt_cards::mode::showfaulty;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::server::sun::mgmtcards::lib::telnet;
+use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
 sub new {
@@ -51,11 +51,11 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"       => { name => 'hostname' },
-                                  "port:s"           => { name => 'port', default => 23 },
                                   "username:s"       => { name => 'username' },
                                   "password:s"       => { name => 'password' },
                                   "timeout:s"        => { name => 'timeout', default => 30 },
                                   "memory"           => { name => 'memory' },
+                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -83,33 +83,47 @@ sub check_options {
     }
 }
 
-sub telnet_shell_plateform {
-    my ($telnet_handle) = @_;
-    
-    # There are:
-    #System Controller 'sf6800':
-    #   Type  0  for Platform Shell
-    #   Type  1  for domain A console
-    #   Type  2  for domain B console
-    #   Type  3  for domain C console
-    #   Type  4  for domain D console
-    #   Input:
-    
-    $telnet_handle->waitfor(Match => '/Input:/i', Errmode => "return") or telnet_error($telnet_handle->errmsg);
-    $telnet_handle->print("0");
-}
-
 sub run {
     my ($self, %options) = @_;
 
-    my $telnet_handle = hardware::server::sun::mgmtcards::lib::telnet::connect(
-                            username => $self->{option_results}->{username},
-                            password => $self->{option_results}->{password},
-                            hostname => $self->{option_results}->{hostname},
-                            port => $self->{option_results}->{port},
-                            output => $self->{output},
-                            closure => \&telnet_shell_plateform);
-    my @lines = $telnet_handle->cmd("showboards");
+    ######
+    # Command execution
+    ######
+    my $cmd_in = 'show -o table -level all /SP/faultmgmt';
+    my $cmd = "echo '$cmd_in' | " . $self->{option_results}->{command_plink} . " -T -l '" . $self->{option_results}->{username} . "' -batch -pw '" . $self->{option_results}->{password} . "' " . $self->{option_results}->{hostname} . " 2>&1";
+    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
+                                                 command => $cmd,
+                                                 timeout => $self->{option_results}->{timeout},
+                                                 wait_exit => 1
+                                                 );
+    $stdout =~ s/\r//g;
+    if ($lerror <= -1000) {
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => $stdout);
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    if ($exit_code != 0) {
+        $stdout =~ s/\n/ - /g;
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command error: $stdout");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+  
+    ######
+    # Command treatment
+    ######
+    my ($otp1, $otp2) = split(/\Q$cmd_in\E\n/, $stdout);
+    my $long_msg = $otp2;
+    $long_msg =~ s/\|/~/mg;
+    $self->{output}->output_add(long_msg => $long_msg);
+    if ($otp2 !~ /Target.*?Property.*?Value/mi) {
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command '$cmd_in' problems (see additional info).");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => 'cache_sun_mgmtcards_' . $self->{option_results}->{hostname}  . '_' .  $self->{mode});
@@ -120,35 +134,45 @@ sub run {
                                     short_msg => "No problems on system.");
     }
 
+    # Check showfaults
+    # Format:
+    # Target              | Property               | Value
+    #--------------------+------------------------+---------------------------------
+    #/SP/faultmgmt/0     | fru                    | /SYS
+    #/SP/faultmgmt/0/    | timestamp              | Sep 20 08:08:07
+    # faults/0           |                        |
+    #/SP/faultmgmt/0/    | sp_detected_fault      | Input power unavailable for PSU
+    # faults/0           |                        | at PS1
+    
+    my @lines = split(/\n/, $otp2);
+    my $num_lines = $#lines;
     my $datas = {};
-    foreach (@lines) {
-        chomp;
-        my $long_msg = $_;
-        $long_msg =~ s/\|/~/mg;
-        $self->{output}->output_add(long_msg => $long_msg);
-        my $id;
-        if (/([^\s]+?)\s+/) {
-            $id = $1;
-        }
-        my $status;
-        if (/\s+(Degraded|Failed|Not tested|Passed|OK|Under Test)\s+/i) {
-            $status = $1;
-        }
-        if (!defined($status) || $status eq '') {
-            next;
+    if ($num_lines > 3) {
+        my $severity;
+        
+        while ($otp2 =~ m/\s+timestamp\s+\|\s+(.*?)\n\s+faults\/([0-9]+)/mg) {
+            my $timestamp = $1;
+            $timestamp = centreon::plugins::misc::trim($1);
+            my $num = $2;
+            
+            if (defined($self->{option_results}->{memory})) {
+                my $old_timestamp = $self->{statefile_cache}->get(name => "fault_$num");
+                if (!defined($old_timestamp) || $old_timestamp ne $timestamp) {
+                    $severity = 'CRITICAL';
+                }
+                $datas->{"fault_$num"} = $timestamp;
+            } else {
+                $severity = 'CRITICAL';
+            }
         }
         
-        if ($status =~ /^(Degraded|Failed)$/i) {
+        if (defined($severity)) {
             if (defined($self->{option_results}->{memory})) {
-                my $old_status = $self->{statefile_cache}->get(name => "slot_$id");
-                if (!defined($old_status) || $old_status ne $status) {
-                    $self->{output}->output_add(severity => 'CRITICAL', 
-                                                short_msg => "Slot '$id' status is '$status'");
-                }
-                $datas->{"slot_$id"} = $status;
+                $self->{output}->output_add(severity => 'CRITICAL', 
+                                            short_msg => "Some new errors on system (see additional info).");
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Slot '$id' status is '$status'");
+                                            short_msg => "Some errors on system (see additional info).");
             }
         }
     }
@@ -167,7 +191,7 @@ __END__
 
 =head1 MODE
 
-Check Sun SFxxxx (sf6900, sf6800, sf3800,...) Hardware (through ScApp).
+Check Sun 'T3-x', 'T4-x' and 'T5xxx' Hardware (through ILOM).
 
 =over 8
 
@@ -175,21 +199,21 @@ Check Sun SFxxxx (sf6900, sf6800, sf3800,...) Hardware (through ScApp).
 
 Hostname to query.
 
-=item B<--port>
-
-telnet port (Default: 23).
-
 =item B<--username>
 
-telnet username.
+ssh username.
 
 =item B<--password>
 
-telnet password.
+ssh password.
 
 =item B<--memory>
 
 Returns new errors (retention file is used by the following option).
+
+=item B<--command-plink>
+
+Plink command (default: plink). Use to set a path.
 
 =item B<--timeout>
 

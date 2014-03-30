@@ -228,7 +228,7 @@ __END__
 =head1 MODE
 
 Check Inodes space usage on partitions.
-Need to enable "includeAllDisk 10%" on snmpd.conf.
+Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
