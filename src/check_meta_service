@@ -258,19 +258,19 @@ sub retrieve_by_regexp() {
 ##################################################
 sub retrieve_by_list_centreon_broker() {
 	my $row2;
-		
+
 	my $query3;
 	my $DBRES3;
 	my $row3;
-	
+
 	my $query4;
 	my $DBRES4;
 	my $row4;	
-	
+
 	my $query2 = "SELECT host_id, metric_id FROM `meta_service_relation` WHERE meta_id = '".$OPTION{'id'}."'";
 	my $DBRES2 = $dbh->prepare($query2);
 	if (!$DBRES2->execute) {
-            die "Error:" . $DBRES2->errstr . "\n";
+        die "Error:" . $DBRES2->errstr . "\n";
 	}
 	my $i = 0;
 	while ($row2 = $DBRES2->fetchrow_hashref()) {
@@ -282,28 +282,28 @@ sub retrieve_by_list_centreon_broker() {
 		$row3 = $DBRES3->fetchrow_hashref();
 
 		if (defined($row3->{'service_description'})) {
-			$query4 = "SELECT s.perfdata FROM services s, hosts h WHERE s.host_id = h.host_id AND h.name = '".$row3->{'host_name'}."' AND s.description = '".$row3->{'service_description'}."' LIMIT 1"; 
+			$query4 = "SELECT s.perfdata FROM services s, hosts h WHERE s.host_id = h.host_id AND h.name = '".$row3->{'host_name'}."' AND s.description = '".$row3->{'service_description'}."' AND s.enabled = '1' AND h.enabled = '1' LIMIT 1"; 
 			$DBRES4 = $db_centstorage->prepare($query4);
 			if (!$DBRES4->execute) {
 				die "Error:" . $DBRES4->errstr . "\n";
 			}
 			$row4 = $DBRES4->fetchrow_hashref();
-                        if (defined($OPTION{'legacy'})) {
-                            while ($row4->{'perfdata'} =~ m/\'?([a-zA-Z0-9\_\-\/\.\:\ ]+)\'?=([0-9\.\,\-]+)/g) {
-                                my $value = $2;
-                                if (defined($1) && defined($value) && $1 =~ $row3->{'metric_name'}) {
-                                    $metric_value_tab[$i] = $value;
-                                    $i++;
-                                }
-                            }
-                        } else {
-                            while ($row4->{'perfdata'} =~ m/\'?([a|c|d|g]\[)?([a-zA-Z0-9\_\-\/\.\:\ ]+)(\])?\'?=([0-9\.\,\-]+)/g) {
-                                my $value = $4;
-                                if (defined($2) && defined($value) && $2 =~ $row3->{'metric_name'}) {
-                                    $metric_value_tab[$i] = $value;
-                                    $i++;
-                                }
-                            }
+            if (defined($OPTION{'legacy'})) {
+                while ($row4->{'perfdata'} =~ m/\'?([a-zA-Z0-9\_\-\/\.\:\ ]+)\'?=([0-9\.\,\-]+)/g) {
+                    my $value = $2;
+                    if (defined($1) && defined($value) && $1 =~ $row3->{'metric_name'}) {
+                        $metric_value_tab[$i] = $value;
+                        $i++;
+                    }
+                }
+            } else {
+                while ($row4->{'perfdata'} =~ m/\'?([a|c|d|g]\[)?([a-zA-Z0-9\_\-\/\.\:\ ]+)(\])?\'?=([0-9\.\,\-]+)/g) {
+                    my $value = $4;
+                    if (defined($2) && defined($value) && $2 =~ $row3->{'metric_name'}) {
+                        $metric_value_tab[$i] = $value;
+                        $i++;
+                    }
+                }
 			}
 		}
 	}
