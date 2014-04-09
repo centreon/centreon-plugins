@@ -93,7 +93,7 @@ sub threshold_check {
         next if (!defined($self->{threshold_label}->{$_->{label}}->{value}) || $self->{threshold_label}->{$_->{label}}->{value} eq '');
         if ($self->{threshold_label}->{$_->{label}}->{arobase} == 0 && ($options{value} < $self->{threshold_label}->{$_->{label}}->{start} || $options{value} > $self->{threshold_label}->{$_->{label}}->{end})) {
             return $_->{exit_litteral};
-        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{end} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end})) {
+        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{start} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end})) {
             return $_->{exit_litteral};
         }
     }
