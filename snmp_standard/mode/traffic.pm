@@ -66,6 +66,7 @@ sub new {
                                   "interface:s"             => { name => 'interface' },
                                   "speed:s"                 => { name => 'speed' },
                                   "skip"                    => { name => 'skip' },
+                                  "skip-speed0"             => { name => 'skip_speed0' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "oid-filter:s"            => { name => 'oid_filter', default => 'ifname'},
@@ -175,8 +176,12 @@ sub run {
             }
             $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
             if ($interface_speed == 0) {
-                $self->{output}->output_add(severity => 'UNKNOWN',
-                                            short_msg => "Interface '" . $display_value . "' Speed is 0. You should force the value with --speed option");
+                if (!defined($self->{option_results}->{skip_speed0})) {
+                    $self->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Interface '" . $display_value . "' Speed is 0. You should force the value with --speed option");
+                } else {
+                    $self->{output}->output_add(long_msg => "Skip interface '" . $display_value . "' (speed is 0).");
+                }
                 next;
             }
         }
@@ -430,6 +435,10 @@ Set interface speed (in Mb).
 =item B<--skip>
 
 Skip errors on interface status.
+
+=item B<--skip-speed0>
+
+Skip errors on interface with speed 0.
 
 =item B<--reload-cache-time>
 
