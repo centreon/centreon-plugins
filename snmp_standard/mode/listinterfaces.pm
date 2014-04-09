@@ -64,6 +64,7 @@ sub new {
                                   "interface:s"             => { name => 'interface' },
                                   "speed:s"                 => { name => 'speed' },
                                   "filter-status:s"         => { name => 'filter_status' },
+                                  "skip-speed0"             => { name => 'skip_speed0' },
                                   "use-adminstatus"         => { name => 'use_adminstatus' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
@@ -111,6 +112,8 @@ sub run {
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
+        
+        next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
         if (defined($self->{option_results}->{filter_status}) && $operstatus[$result->{$oid_operstatus . "." . $_} - 1] !~ /$self->{option_results}->{filter_status}/i) {
             next;
         }
@@ -236,6 +239,7 @@ sub disco_show {
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
+        next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
         if (defined($self->{option_results}->{filter_status}) && $operstatus[$result->{$oid_operstatus . "." . $_} - 1] !~ /$self->{option_results}->{filter_status}/i) {
             next;
         }
@@ -277,6 +281,10 @@ Allows to use regexp non case-sensitive (with --regexp).
 =item B<--speed>
 
 Set interface speed (in Mb).
+
+=item B<--skip-speed0>
+
+Don't display interface with speed 0.
 
 =item B<--filter-status>
 
