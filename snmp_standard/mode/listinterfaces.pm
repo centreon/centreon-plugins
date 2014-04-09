@@ -158,14 +158,14 @@ sub manage_selection {
     $self->{datas}->{oid_filter} = $self->{option_results}->{oid_filter};
     $self->{datas}->{oid_display} = $self->{option_results}->{oid_display};
     my $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_filter}});
-    my $total_interface = 0;
+    $self->{datas}->{all_ids} = [];
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
         $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-        $total_interface = $1;
+        push @{$self->{datas}->{all_ids}}, $1;
     }
     
-    if (scalar(keys %{$self->{datas}}) <= 0) {
+    if (scalar(@{$self->{datas}->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't get interfaces...");
         $self->{output}->option_exit();
     }
@@ -187,7 +187,7 @@ sub manage_selection {
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_interface; $i++) {
+        foreach my $i (@{$self->{datas}->{all_ids}}) {
             my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $i};
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{interface})) {
