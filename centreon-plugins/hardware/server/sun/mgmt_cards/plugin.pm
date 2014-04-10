@@ -50,10 +50,10 @@ sub new {
                          'show-faulty'      => 'hardware::server::sun::mgmt_cards::mode::showfaulty',
                          'showfaults'       => 'hardware::server::sun::mgmt_cards::mode::showfaults',
                          'showboards'       => 'hardware::server::sun::mgmt_cards::mode::showboards',
-                         'showenvironment'      => 'hardware::server::sun::mgmt_cards::mode::showenvironment',
-                         'environment-v8xx'     => 'hardware::server::sun::mgmt_cards::mode::environmentv8xx',
-                         'environment-v4xx'     => 'hardware::server::sun::mgmt_cards::mode::environmentv4xx',
-                         'environment-sf2xx'    => 'hardware::server::sun::mgmt_cards::mode::environmentsf2xx',
+                         'showenvironment'  => 'hardware::server::sun::mgmt_cards::mode::showenvironment',
+                         'environment-v8xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv8xx',
+                         'environment-v4xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv4xx',
+                         'environment-sf2xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentsf2xx',
                          );
 
     return $self;
@@ -67,7 +67,7 @@ __END__
 
 Check a variety of Sun Hardware through management cards:
 - mode 'show-faulty': ILOM (T3-x, T4-x, T5xxx) (in ssh with 'plink' command) ;
-- mode 'showfaults': ALOM4v (in T1xxx, T2xxx, T5xxx) (in ssh with 'plink' command) ;
+- mode 'showfaults': ALOM4v (in T1xxx, T2xxx) (in ssh with 'plink' command) ;
 - mode 'showboards': ScApp (SFxxxx - sf6900, sf6800, sf3800,...) (in telnet with Net::Telnet) ;
 - mode 'showenvironment': ALOM (v240, v440, v245,...) (in telnet with Net::Telnet) ;
 - mode 'environment-v8xx': RSC cards (v890, v880) (in telnet with Net::Telnet) ;

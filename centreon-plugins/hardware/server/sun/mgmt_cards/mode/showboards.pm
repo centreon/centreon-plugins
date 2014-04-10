@@ -39,7 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::server::sun::mgmtcards::lib::telnet;
+use hardware::server::sun::mgmt_cards::lib::telnet;
 use centreon::plugins::statefile;
 
 sub new {
@@ -102,11 +102,12 @@ sub telnet_shell_plateform {
 sub run {
     my ($self, %options) = @_;
 
-    my $telnet_handle = hardware::server::sun::mgmtcards::lib::telnet::connect(
+    my $telnet_handle = hardware::server::sun::mgmt_cards::lib::telnet::connect(
                             username => $self->{option_results}->{username},
                             password => $self->{option_results}->{password},
                             hostname => $self->{option_results}->{hostname},
                             port => $self->{option_results}->{port},
+                            timeout => $self->{option_results}->{timeout},
                             output => $self->{output},
                             closure => \&telnet_shell_plateform);
     my @lines = $telnet_handle->cmd("showboards");
