@@ -61,7 +61,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'prtdiag' },
                                   "command-path:s"    => { name => 'command_path', default => '/usr/platform/`/sbin/uname -i`/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-v 2&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-v 2>&1' },
                                   "config-file:s"     => { name => 'config_file' },
                                 });
     $self->{conf} = {};
@@ -266,6 +266,7 @@ sub prtdiag {
 sub run {
     my ($self, %options) = @_;
 
+    $self->load_prtdiag_config();
     $self->prtdiag();
     $self->{output}->display();
     $self->{output}->exit();
