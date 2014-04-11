@@ -117,7 +117,8 @@ sub run {
         }
     }
 
-    my ($exit_code) = check_threshold($volumes_errors, $OPTION{warning}, $OPTION{critical});
+    my ($exit_code) = $self->{perfdata}->threshold_check(value => $volumes_errors, 
+                                                         threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]); 
     if ($volumes_errors > 0) {
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("Some volumes problems:" . $volumes));

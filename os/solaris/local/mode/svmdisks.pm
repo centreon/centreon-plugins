@@ -160,11 +160,11 @@ sub run {
     my ($exit_code) = $self->{perfdata}->threshold_check(value => $num_metastat_errors, 
                                                          threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]); 
     if ($num_metastat_errors > 0) {
-        output_add(severity => $exit_code,
-                   short_msg => sprintf("Some metadevices need maintenance:" . $metastat_name));
+        $self->{output}->output_add(severity => $exit_code,
+                                    short_msg => sprintf("Some metadevices need maintenance:" . $metastat_name));
     } else {
-        output_add(severity => 'OK', 
-               short_msg => "No problems on metadevices");
+        $self->{output}->output_add(severity => 'OK', 
+                                    short_msg => "No problems on metadevices");
     }
     
     ($exit_code) = $self->{perfdata}->threshold_check(value => $num_metadb_errors, 
