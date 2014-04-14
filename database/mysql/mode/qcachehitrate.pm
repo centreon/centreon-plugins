@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package database::mysql::mode::innodbbufferpoolhitrate;
+package database::mysql::mode::qcachehitrate;
 
 use base qw(centreon::plugins::mode);
 
@@ -86,8 +86,8 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS WHERE Variable_name IN ('Innodb_buffer_pool_read_requests', 'Innodb_buffer_pool_reads')});
-    my $new_datas = {Innodb_buffer_pool_read_requests => undef, Innodb_buffer_pool_reads => undef};
+    $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS WHERE Variable_name IN ('Com_select', 'Qcache_hits')});
+    my $new_datas = {Com_select => undef, Qcache_hits => undef};
     my $result = $self->{sql}->fetchall_arrayref();
     foreach my $row (@{$result}) {
         $new_datas->{$$row[0]} = $$row[1];
@@ -98,34 +98,51 @@ sub run {
             $self->{output}->option_exit();
         }
     }
+    $self->{sql}->query(query => q{SHOW VARIABLES WHERE Variable_name IN ('have_query_cache', 'query_cache_size')});
+    my ($dummy, $have_query_cache) = $self->{sql}->fetchrow_array();
+    if (!defined($have_query_cache)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get have_query_cache variable.");
+        $self->{output}->option_exit();
+    }
+    ($dummy, my $query_cache_size) = $self->{sql}->fetchrow_array();
+    if (!defined($query_cache_size)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get query_cache_size variable.");
+        $self->{output}->option_exit();
+    }
+    if ($have_query_cache !~ /^yes$/i || $query_cache_size == 0) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Query cache is turned off.");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
 
     $self->{statefile_cache}->read(statefile => 'mysql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
     my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
     $new_datas->{last_timestamp} = time();
 
-    my $old_read_request = $self->{statefile_cache}->get(name => 'Innodb_buffer_pool_read_requests');
-    my $old_read = $self->{statefile_cache}->get(name => 'Innodb_buffer_pool_reads');
-    if (defined($old_read_request) && defined($old_read) &&
-        $new_datas->{Innodb_buffer_pool_read_requests} >= $old_read_request &&
-        $new_datas->{Innodb_buffer_pool_reads} >= $old_read) {
-             
+    my $old_com_select = $self->{statefile_cache}->get(name => 'Com_select');
+    my $old_qcache_hits = $self->{statefile_cache}->get(name => 'Qcache_hits');
+    if (defined($old_com_select) && defined($old_qcache_hits) &&
+        $new_datas->{Com_select} >= $old_com_select &&
+        $new_datas->{Qcache_hits} >= $old_qcache_hits) {
+   
         my %prcts = ();
-        my $total_read_requests = $new_datas->{Innodb_buffer_pool_read_requests} - $old_read_request;
-        my $total_read_disk = $new_datas->{Innodb_buffer_pool_reads} - $old_read;
-        $prcts{bufferpool_hitrate_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
-        $prcts{bufferpool_hitrate} = ($new_datas->{Innodb_buffer_pool_read_requests} == 0) ? 100 : ($new_datas->{Innodb_buffer_pool_read_requests} - $new_datas->{Innodb_buffer_pool_reads}) * 100 / $new_datas->{Innodb_buffer_pool_read_requests};
+        my $total_select_requests = ($new_datas->{Com_select} - $old_com_select) + ($new_datas->{Qcache_hits} - $old_qcache_hits);
+        my $total_hits = $new_datas->{Qcache_hits} - $old_qcache_hits;
+        $prcts{qcache_hitrate_now} = ($total_select_requests == 0) ? 100 : ($total_hits) * 100 / $total_select_requests;
+        $prcts{qcache_hitrate} = (($new_datas->{Qcache_hits} + $new_datas->{Com_select}) == 0) ? 100 : ($new_datas->{Qcache_hits}) * 100 / ($new_datas->{Qcache_hits} + $new_datas->{Com_select});
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("innodb buffer pool hitrate at %.2f%%", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
+                                    short_msg => sprintf("query cache hitrate at %.2f%%", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
-        $self->{output}->perfdata_add(label => 'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
-                                      value => sprintf("%.2f", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
+        $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now'), unit => '%',
+                                      value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
-        $self->{output}->perfdata_add(label => 'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), unit => '%',
-                                      value => sprintf("%.2f", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
+        $self->{output}->perfdata_add(label => 'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : ''), unit => '%',
+                                      value => sprintf("%.2f", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
                                       min => 0);
     }
     
@@ -145,7 +162,7 @@ __END__
 
 =head1 MODE
 
-Check hitrate in the InnoDB Buffer Pool.
+Check hitrate in the Query Cache.
 
 =over 8
 
@@ -159,7 +176,7 @@ Threshold critical.
 
 =item B<--lookback>
 
-Threshold isn't on the percent calculated from the difference ('bufferpool_hitrate_now').
+Threshold isn't on the percent calculated from the difference ('qcache_hitrate_now').
 
 =back
 
