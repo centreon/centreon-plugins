@@ -48,16 +48,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time' => 'database::mysql::mode::connectiontime',
-                         'databases-size' => 'database::mysql::mode::databasessize',
-                         'queries' => 'database::mysql::mode::queries',
-                         'slow-queries' => 'database::mysql::mode::slowqueries',
-                         'threads-connected' => 'database::mysql::mode::threadsconnected',
-                         'uptime' => 'database::mysql::mode::uptime',
-                         'open-files' => 'database::mysql::mode::openfiles',
-                         'innodb-bufferpool-hitrate' => 'database::mysql::mode::innodbbufferpoolhitrate',
-                         'myisam-keycache-hitrate' => 'database::mysql::mode::myisamkeycachehitrate',
-                         'replication-master-slave' => 'database::mysql::mode::replicationmasterslave',
+                         'connection-time'              => 'database::mysql::mode::connectiontime',
+                         'databases-size'               => 'database::mysql::mode::databasessize',
+                         'queries'                      => 'database::mysql::mode::queries',
+                         'slow-queries'                 => 'database::mysql::mode::slowqueries',
+                         'threads-connected'            => 'database::mysql::mode::threadsconnected',
+                         'uptime'                       => 'database::mysql::mode::uptime',
+                         'open-files'                   => 'database::mysql::mode::openfiles',
+                         'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
+                         'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
+                         'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
+                         'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
                          );
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
