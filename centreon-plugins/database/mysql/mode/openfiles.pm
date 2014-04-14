@@ -85,7 +85,7 @@ sub run {
     $self->{sql}->query(query => q{SHOW VARIABLES LIKE 'open_files_limit'});
     my ($dummy, $open_files_limit) = $self->{sql}->fetchrow_array();
     if (!defined($open_files_limit)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get ope files limit.");
+        $self->{output}->add_option_msg(short_msg => "Cannot get open files limit.");
         $self->{output}->option_exit();
     }
     $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Open_files'});
