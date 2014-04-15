@@ -60,7 +60,6 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "timeout:s"             => { name => 'timeout', default => '3' },
             "path:s"                => { name => 'path', default => '/manager/text/list' },
-            "realm:s"               => { name => 'realm', default => 'Tomcat Manager Application' },
             "warning:s"             => { name => 'warning' },
             "critical:s"            => { name => 'critical' },
             "name:s"                => { name => 'name' },
@@ -206,10 +205,6 @@ Specify username for basic authentification (Mandatory if --credentials is speci
 =item B<--password>
 
 Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--realm>
-
-Credentials Realm (Default: 'Tomcat Manager Application')
 
 =item B<--timeout>
 
