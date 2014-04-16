@@ -126,9 +126,9 @@ sub manage_selection {
     
     if (scalar(keys %{$self->{result}}) <= 0) {
         if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No contexts found for name '" . $self->{option_results}->{name} . "'.");
+            $self->{output}->add_option_msg(short_msg => "No session information found for name '" . $self->{option_results}->{name} . "'.");
         } else {
-            $self->{output}->add_option_msg(short_msg => "No contexts found.");
+            $self->{output}->add_option_msg(short_msg => "No session information found.");
         }
         $self->{output}->option_exit();
     }
@@ -141,7 +141,7 @@ sub run {
 
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Contexts are ok.');
+                                    short_msg => 'All Sessions are ok.');
     };
 
     foreach my $name (sort(keys %{$self->{result}})) {
