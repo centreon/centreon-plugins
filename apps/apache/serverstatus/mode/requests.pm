@@ -40,7 +40,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::apache::serverstatus::mode::libconnect;
+use centreon::plugins::httplib;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +54,7 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', default => '80' },
             "proto:s"           => { name => 'proto', default => "http" },
+            "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -61,13 +63,15 @@ sub new {
             "critical:s"        => { name => 'critical' },
             "warning-bytes:s"   => { name => 'warning_bytes' },
             "critical-bytes:s"  => { name => 'critical_bytes' },
+            "warning-access:s"  => { name => 'warning_access' },
+            "critical-access:s" => { name => 'critical_access' },
             "timeout:s"         => { name => 'timeout', default => '3' },
             });
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
 sub check_options {
-
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
@@ -87,6 +91,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes threshold '" . $self->{option_results}->{critical_bytes} . "'.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-access', value => $self->{option_results}->{warning_access})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-access threshold '" . $self->{option_results}->{warning_access} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-access', value => $self->{option_results}->{critical_access})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-access threshold '" . $self->{option_results}->{critical_access} . "'.");
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
@@ -95,76 +107,87 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
-
+    
+    $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
-
     my ($self, %options) = @_;
-        
-    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self);
+
+    my $webcontent = centreon::plugins::httplib::connect($self);
+    my ($rPerSec, $bPerReq, $total_access, $total_bytes);
+
+    $total_access = $1 if ($webcontent =~ /^Total Accesses:\s+([^\s]+)/mi);
+    $total_bytes = $1 * 1024 if ($webcontent =~ /^Total kBytes:\s+([^\s]+)/mi);
     
-    my @webcontentarr = split("\n", $webcontent);
-    my $i = 0;
-    my ($rPerSec, $rPerSecSfx, $bPerSec, $bPerSecSfx, $bPerReq, $bPerReqSfx);
+    $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
+    $bPerReq = $1 if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi);
     
-    while (($i < @webcontentarr) && ((!defined($rPerSec)) || (!defined($bPerSec)) || (!defined($bPerReq)))) {
-        if ($webcontentarr[$i] =~ /([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/sec\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/second\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/request/) {
-            ($rPerSec, $rPerSecSfx, $bPerSec, $bPerSecSfx, $bPerReq, $bPerReqSfx) = ($webcontentarr[$i] =~ /([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/sec\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/second\s-\s([0-9]*\.?[0-9]+)\s([A-Za-z]+)\/request/);
-        }
-        $i++;
-    }
-    
-    if (!defined($rPerSec)) {
+    if (!defined($bPerReq)) {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
         $self->{output}->option_exit();
     }
-    if ($rPerSec =~ /^\./) {
-        $rPerSec = '0' . $rPerSec;
-    }
+    $rPerSec = '0' . $rPerSec if ($rPerSec =~ /^\./);
     
-    if ($bPerReqSfx eq 'kB') {
-        $bPerReq = $bPerReq * 1024;
-    } elsif ($bPerReqSfx eq 'mB') {
-        $bPerReq = $bPerReq * 1024 * 1024;
-    } elsif ($bPerReqSfx eq 'gB') {
-        $bPerReq = $bPerReq * 1024 * 1024 * 1024;
-    }
+    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{option_results}->{port} . '_' . $self->{mode});
+    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+    my $old_total_access = $self->{statefile_value}->get(name => 'total_access');
+    my $old_total_bytes = $self->{statefile_value}->get(name => 'total_bytes');
 
-    if ($bPerSecSfx eq 'kB') {
-        $bPerSec = $bPerSec * 1024;
-    } elsif ($bPerSecSfx eq 'mB') {
-        $bPerSec = $bPerSec * 1024 * 1024;
-    } elsif ($bPerSecSfx eq 'gB') {
-        $bPerSec = $bPerSec * 1024 * 1024 * 1024;
+    my $new_datas = {};
+    $new_datas->{last_timestamp} = time();
+    $new_datas->{total_bytes} = $total_bytes;
+    $new_datas->{total_access} = $total_access;
+    
+    $self->{statefile_value}->write(data => $new_datas); 
+    if (!defined($old_timestamp) || !defined($old_total_access)) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        $self->{output}->display();
+        $self->{output}->exit();
     }
-
+    $old_total_access = 0 if ($old_total_access > $new_datas->{total_access}); 
+    $old_total_bytes = 0 if ($old_total_bytes > $new_datas->{total_bytes});
+    my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
+    
+    my $bPerSec = ($new_datas->{total_bytes} - $old_total_bytes) / $delta_time;
+    my $aPerSec = ($new_datas->{total_access} - $old_total_access) / $delta_time;
+    
     my $exit1 = $self->{perfdata}->threshold_check(value => $rPerSec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $bPerReq, threshold => [ { label => 'critical-bytes', 'exit_litteral' => 'critical' }, { label => 'warning-bytes', exit_litteral => 'warning' } ]);
-
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+    my $exit2 = $self->{perfdata}->threshold_check(value => $bPerSec, threshold => [ { label => 'critical-bytes', 'exit_litteral' => 'critical' }, { label => 'warning-bytes', exit_litteral => 'warning' } ]);
+    my $exit3 = $self->{perfdata}->threshold_check(value => $aPerSec, threshold => [ { label => 'critical-access', 'exit_litteral' => 'critical' }, { label => 'warning-access', exit_litteral => 'warning' } ]);
+    
+    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     
     my ($bPerSec_value, $bPerSec_unit) = $self->{perfdata}->change_bytes(value => $bPerSec);
     my ($bPerReq_value, $bPerReq_unit) = $self->{perfdata}->change_bytes(value => $bPerReq);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("RequestPerSec: %s  BytesPerSecond: %s BytesPerRequest: %s", $rPerSec, 
+                                short_msg => sprintf("RequestPerSec: %s  BytesPerSec: %s BytesPerRequest: %s AccessPerSec: %.2f", $rPerSec, 
                                                      $bPerSec_value . ' ' . $bPerSec_unit, 
-                                                     $bPerReq_value . ' ' . $bPerReq_unit));
+                                                     $bPerReq_value . ' ' . $bPerReq_unit,
+                                                     $aPerSec));
     $self->{output}->perfdata_add(label => "requestPerSec",
                                   value => $rPerSec,
-                                  unit => $rPerSecSfx,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0
                                   );
-    $self->{output}->perfdata_add(label => "bytesPerSec",
-                                  value => $bPerSec,
-                                  unit => 'B');
-    $self->{output}->perfdata_add(label => "bytesPerRequest", unit => 'B',
-                                  value => $bPerReq,
+    $self->{output}->perfdata_add(label => "bytesPerSec", unit => 'B',
+                                  value => sprintf("%.2f", $bPerSec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes'),
+                                  min => 0);
+    $self->{output}->perfdata_add(label => "bytesPerRequest", unit => 'B',
+                                  value => $bPerReq,
+                                  min => 0
                                   );
+    $self->{output}->perfdata_add(label => "accessPerSec",
+                                  value => sprintf("%.2f", $aPerSec),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-access'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-access'),
+                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -197,6 +220,10 @@ Proxy URL if any
 
 Specify https if needed
 
+=item B<--url-path>
+
+Set path to get server-status page in auto mode (Default: '/server-status/?auto')
+
 =item B<--credentials>
 
 Specify this option if you access server-status page over basic authentification
@@ -225,11 +252,19 @@ Critical Threshold for Request per seconds
 
 =item B<--warning-bytes>
 
-Warning Threshold for Bytes Per Request
+Warning Threshold for Bytes per seconds
 
 =item B<--critical-bytes>
 
-Critical Threshold for Bytes Per Request
+Critical Threshold for Bytes per seconds
+
+=item B<--warning-access>
+
+Warning Threshold for Access per seconds
+
+=item B<--critical-access>
+
+Critical Threshold for Access per seconds
 
 =back
 
