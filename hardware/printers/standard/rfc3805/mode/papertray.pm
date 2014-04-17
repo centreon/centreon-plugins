@@ -53,9 +53,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"   => { name => 'warning' },
-                                  "critical:s"  => { name => 'critical' },
-                                  "filter:s"    => { name => 'filter' },
+                                  "warning:s"       => { name => 'warning' },
+                                  "critical:s"      => { name => 'critical' },
+                                  "filter-tray:s"   => { name => 'filter_tray' },
                                 });
 
     return $self;
@@ -107,9 +107,9 @@ sub run {
             $descr = $hrDeviceIndex . '#' . $prtInputIndex;
         }
         
-        if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
-            $descr !~ /$self->{option_results}->{filter}/) {
-            $self->{output}->output_add(long_msg => "Skipping tray '$descr': not matching filter."); 
+        if (defined($self->{option_results}->{filter_tray}) && $self->{option_results}->{filter_tray} ne '' &&
+            $descr !~ /$self->{option_results}->{filter_tray}/) {
+            $self->{output}->output_add(long_msg => "Skipping tray '$   ': not matching filter."); 
             next;
         }
 
@@ -168,7 +168,7 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
-=item B<--filter>
+=item B<--filter-tray>
 
 Filter tray to check (can use a regexp).
 
