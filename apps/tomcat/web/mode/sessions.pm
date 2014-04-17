@@ -38,10 +38,9 @@
 package apps::tomcat::web::mode::sessions;
 
 use base qw(centreon::plugins::mode);
-
 use strict;
 use warnings;
-use apps::tomcat::web::mode::libconnect;
+use centreon::plugins::httplib;
 
 sub new {
     my ($class, %options) = @_;
@@ -59,7 +58,7 @@ sub new {
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
             "timeout:s"             => { name => 'timeout', default => '3' },
-            "path:s"                => { name => 'path', default => '/manager/text/list' },
+            "urlpath:s"             => { name => 'url_path', default => '/manager/text/list' },
             "warning:s"             => { name => 'warning' },
             "critical:s"            => { name => 'critical' },
             "name:s"                => { name => 'name' },
@@ -104,7 +103,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $webcontent = apps::tomcat::web::mode::libconnect::connect($self);  
+    my $webcontent = centreon::plugins::httplib::connect($self);  
 
      while ($webcontent =~ m/\/(.*):(.*):(.*):(.*)/g) {      
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
@@ -210,9 +209,9 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 Threshold for HTTP timeout
 
-=item B<--path>
+=item B<--url-path>
 
-Path to the Tomcat Manager List (Default: '/manager/text/list')
+Path to the Tomcat Manager List (Default: Tomcat 7 '/manager/text/list')
 Tomcat 6: '/manager/list'
 Tomcat 7: '/manager/text/list'
 
