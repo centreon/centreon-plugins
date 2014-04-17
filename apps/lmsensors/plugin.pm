@@ -49,8 +49,8 @@ sub new {
 	%{$self->{modes}} = (
 			'temperature'           => 'apps::lmsensors::mode::temperature',
 			'fan'                   => 'apps::lmsensors::mode::fan',
-			'volt'                   => 'apps::lmsensors::mode::volt',
-			'misc'                   => 'apps::lmsensors::mode::misc',
+			'voltage'               => 'apps::lmsensors::mode::voltage',
+			'misc'                  => 'apps::lmsensors::mode::misc',
 			);
 
 	return $self;

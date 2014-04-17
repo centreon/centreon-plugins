@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::lmsensors::mode::fan;
+package apps::lmsensors::mode::voltage;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,8 +41,8 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 
-my $oid_SensorDesc = '.1.3.6.1.4.1.2021.13.16.3.1.2';  # fan entry description
-my $oid_SensorValue = '.1.3.6.1.4.1.2021.13.16.3.1.3'; # fan entry value (RPM)
+my $oid_SensorDesc = '.1.3.6.1.4.1.2021.13.16.4.1.2';  # voltage entry description
+my $oid_SensorValue = '.1.3.6.1.4.1.2021.13.16.4.1.3'; # voltage entry value (mV)
 
 sub new {
     my ($class, %options) = @_;
@@ -96,27 +96,27 @@ sub run {
 
     if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Fans are ok.');
+                                    short_msg => 'All Voltages are ok.');
     }
 
     foreach my $SensorId (sort @{$self->{Sensor_id_selected}}) {
         my $SensorDesc = $SensorValueResult->{$oid_SensorDesc . '.' . $SensorId};
-        my $SensorValue = $SensorValueResult->{$oid_SensorValue . '.' . $SensorId};
+        my $SensorValue = $SensorValueResult->{$oid_SensorValue . '.' . $SensorId} / 1000;
 
         my $exit = $self->{perfdata}->threshold_check(value => $SensorValue, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' Fan: %s", 
+        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' Volt: %s", 
                                             $SensorDesc, $SensorValue));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s' Fan: %s", 
+                                        short_msg => sprintf("Sensor '%s' Volt: %s", 
                                             $SensorDesc, $SensorValue));
         }    
 
-        my $label = 'sensor_fan';
+        my $label = 'sensor_voltage';
         my $extra_label = '';
         $extra_label = '_' . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => $label . $extra_label,
+        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'V',
                                       value => $SensorValue,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
@@ -164,17 +164,17 @@ __END__
 
 =head1 MODE
 
-Check LM-Sensors: Fan Sensors
+Check LM-Sensors: Voltage Sensors
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning (Fan Speed, U/min)
+Threshold warning (Volt)
 
 =item B<--critical>
 
-Threshold critical (Fan Speed, U/min)
+Threshold critical (Volt)
 
 =item B<--sensor>
 
