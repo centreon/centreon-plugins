@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package apps::apache::serverstatus::mode::libconnect;
+package centreon::plugins::httplib;
 
 use strict;
 use warnings;
@@ -47,14 +47,14 @@ sub connect {
     
     my ($response, $content);
 
-    my $req = HTTP::Request->new( GET => $self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
+    my $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
     
     if (defined($self->{option_results}->{credentials})) {
         $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});
     }
     
     if (defined($self->{option_results}->{proxyurl})) {
-         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
+        $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
     
     $response = $ua->request($req);
@@ -71,4 +71,3 @@ sub connect {
 }
 
 1;
-

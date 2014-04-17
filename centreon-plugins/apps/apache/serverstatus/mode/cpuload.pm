@@ -34,13 +34,12 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package apps::apache::serverstatus::mode::responsetime;
+package apps::apache::serverstatus::mode::cpuload;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::httplib;
 
 sub new {
@@ -50,19 +49,19 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', default => '80' },
-         "proto:s"      => { name => 'proto', default => "http" },
-         "urlpath:s"    => { name => 'url_path', default => "/server-status/?auto" },
-         "credentials"  => { name => 'credentials' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "proxyurl:s"   => { name => 'proxyurl' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '3' },
-         });
+            {
+            "hostname:s"        => { name => 'hostname' },
+            "port:s"            => { name => 'port', default => '80' },
+            "proto:s"           => { name => 'proto', default => "http" },
+            "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
+            "credentials"       => { name => 'credentials' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
+            "proxyurl:s"        => { name => 'proxyurl' },
+            "warning:s"         => { name => 'warning' },
+            "critical:s"        => { name => 'critical' },
+            "timeout:s"         => { name => 'timeout', default => '3' },
+            });
     return $self;
 }
 
@@ -78,12 +77,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
@@ -96,24 +89,34 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $timing0 = [gettimeofday];
-    
-    my $webcontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');    
+        
+    my $webcontent = centreon::plugins::httplib::connect($self);
+    # If not present: cpuload is 0
+    my ($cpuload) = 0;
 
-    my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
+    if ($webcontent !~ /^ReqPerSec:\s+([^\s]+)/mi) {
+        $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
+        $self->{output}->option_exit();
+    }
+    if ($webcontent =~ /^CPULoad:\s+([^\s]+)/mi) {
+        $cpuload = $1;
+        $cpuload = '0' . $cpuload if ($cpuload =~ /^\./);
+    }
+
+    my $exit = $self->{perfdata}->threshold_check(value => $cpuload, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %fs ", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time",
-                                  value => $timeelapsed,
+                                short_msg => sprintf("CPU Load: %.2f %%", $cpuload));
+    $self->{output}->perfdata_add(label => "cpuload", unit => '%',
+                                  value => sprintf("%.2f", $cpuload),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0
+                                  );
 
     $self->{output}->display();
     $self->{output}->exit();
+
 }
 
 1;
@@ -122,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer statistics informations
+Check Apache WebServer CpuLoad
 
 =over 8
 
@@ -133,6 +136,10 @@ IP Addr/FQDN of the webserver host
 =item B<--port>
 
 Port used by Apache
+
+=item B<--proxyurl>
+
+Proxy URL if any
 
 =item B<--proto>
 
@@ -154,9 +161,7 @@ Specify username for basic authentification (Mandatory if --credentials is speci
 
 Specify password for basic authentification (Mandatory if --credentials is specidied)
 
-=item B<--proxyurl>
-
-Proxy URL if any
+=item B<--password>
 
 =item B<--timeout>
 
@@ -164,11 +169,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Threshold warning in seconds (server-status page response time)
+Warning Threshold for CpuLoad
 
 =item B<--critical>
 
-Threshold critical in seconds (server-status page response time)
+Critical Threshold for CpuLoad
 
 =back
 
