@@ -49,7 +49,7 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'application'           => 'apps::tomcat::web::mode::application',
+			'applications'          => 'apps::tomcat::web::mode::applications',
 			'list-application'	=> 'apps::tomcat::web::mode::listapplication',
 			'sessions'              => 'apps::tomcat::web::mode::sessions',
 			'threads'               => 'apps::tomcat::web::mode::threads',
