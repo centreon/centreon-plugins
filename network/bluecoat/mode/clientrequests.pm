@@ -122,6 +122,7 @@ sub run {
     if (!defined($old_timestamp) || !defined($old_client_http_misses)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
+        $self->{output}->display();
         $self->{output}->exit();
     }
         
