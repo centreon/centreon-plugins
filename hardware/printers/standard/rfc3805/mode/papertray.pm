@@ -109,7 +109,7 @@ sub run {
         
         if (defined($self->{option_results}->{filter_tray}) && $self->{option_results}->{filter_tray} ne '' &&
             $descr !~ /$self->{option_results}->{filter_tray}/) {
-            $self->{output}->output_add(long_msg => "Skipping tray '$   ': not matching filter."); 
+            $self->{output}->output_add(long_msg => "Skipping tray '$descr': not matching filter."); 
             next;
         }
 
