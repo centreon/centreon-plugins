@@ -41,8 +41,8 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 
-my $oid_SensorDesc = '.1.3.6.1.4.1.2021.13.16.5.1.2';   # misc entry description
-my $oid_SensorValue = '.1.3.6.1.4.1.2021.13.16.5.1.3';  # misc entry value
+my $oid_SensorDesc = '.1.3.6.1.4.1.2021.13.16.5.1.2';  # misc entry description
+my $oid_SensorValue = '.1.3.6.1.4.1.2021.13.16.5.1.3'; # misc entry value
 
 sub new {
     my ($class, %options) = @_;
@@ -54,18 +54,15 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
                                   "name"                    => { name => 'use_name' },
-                                  "sensordesc:s"            => { name => 'sensordesc' },
+                                  "sensor:s"                => { name => 'sensor' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "show-cache"              => { name => 'show_cache' },
                                 });
 
-    $self->{sensordesc_id_selected} = [];
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->{Sensor_id_selected} = [];
     
     return $self;
 }
@@ -82,8 +79,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    
-    $self->{statefile_cache}->check_options(%options);
+
 }
 
 sub run {
@@ -95,33 +91,31 @@ sub run {
 
     $self->manage_selection();
 
-    $self->{snmp}->load(oids => [$oid_SensorValue], instances => $self->{sensordesc_id_selected});
-    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
+    $self->{snmp}->load(oids => [$oid_SensorDesc, $oid_SensorValue], instances => $self->{Sensor_id_selected});
+    my $SensorValueResult = $self->{snmp}->get_leef(nothing_quit => 1);
 
-    if (!defined($self->{option_results}->{sensordesc}) || defined($self->{option_results}->{use_regexp})) {
+    if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All Sensors are ok.');
     }
 
-    foreach (sort @{$self->{sensordesc_id_selected}}) {
-        my $name_sensordesc = $self->get_display_value(id => $_);
-
-        my $varSensorValue = $result->{$oid_SensorValue . '.' . $_};
-        my $SensorValue = $varSensorValue;
+    foreach my $SensorId (sort @{$self->{Sensor_id_selected}}) {
+        my $SensorDesc = $SensorValueResult->{$oid_SensorDesc . '.' . $SensorId};
+        my $SensorValue = $SensorValueResult->{$oid_SensorValue . '.' . $SensorId};
 
         my $exit = $self->{perfdata}->threshold_check(value => $SensorValue, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s': %s", 
-                                            $name_sensordesc, $SensorValue));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{sensordesc}) && !defined($self->{option_results}->{use_regexp}))) {
+                                            $SensorDesc, $SensorValue));
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Sensor '%s': %s", 
-                                            $name_sensordesc, $SensorValue));
+                                            $SensorDesc, $SensorValue));
         }    
 
-        my $label = 'sensor';
+        my $label = 'sensor_misc';
         my $extra_label = '';
-        $extra_label = '_' . $name_sensordesc if (!defined($self->{option_results}->{sensordesc}) || defined($self->{option_results}->{use_regexp}));
+        $extra_label = '_' . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
         $self->{output}->perfdata_add(label => $label . $extra_label,
                                       value => $SensorValue,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
@@ -132,92 +126,36 @@ sub run {
     $self->{output}->exit();
 }
 
-sub reload_cache {
-    my ($self) = @_;
-    my $datas = {};
-
-    my $result = $self->{snmp}->get_table(oid => $oid_SensorDesc);
-    $datas->{all_ids} = [];
-    my $last_num = 0;
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        push @{$datas->{all_ids}}, $1;
-        $datas->{'SensorsDesc_' . $1} = $self->{output}->to_utf8($result->{$key});
-    }
-    
-    if (scalar(@{$datas->{all_ids}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_cache}->write(data => $datas);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
+    my $result = $self->{snmp}->get_table(oid => $oid_SensorDesc, nothing_quit => 1);
 
-    # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_apps_lmsensors_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
-    }
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($key !~ /\.([0-9]+)$/);
+        my $SensorId = $1;
+        my $SensorDesc = $result->{$key};
 
-    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-            $self->reload_cache();
-            $self->{statefile_cache}->read();
-    }
+        next if (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{use_name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
+            && $SensorId !~ /$self->{option_results}->{sensor}/i);
+        next if (defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
+            && $SensorDesc !~ /$self->{option_results}->{sensor}/i);
+        next if (defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
+            && $SensorDesc !~ /$self->{option_results}->{sensor}/);
+        next if (defined($self->{option_results}->{use_name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
+            && $SensorDesc ne $self->{option_results}->{sensor});
 
-    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
-    if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{sensordesc})) {
-        # get by ID
-        push @{$self->{sensordesc_id_selected}}, $self->{option_results}->{sensordesc}; 
-        my $name = $self->{statefile_cache}->get(name => 'SensorsDesc_' . $self->{option_results}->{sensordesc});
-        if (!defined($name)) {
-            $self->{output}->add_option_msg(short_msg => "No Sensor Desc found for id '" . $self->{option_results}->{sensordesc} . "'.");
-            $self->{output}->option_exit();
-        }
-    } else {
-        foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => 'SensorsDesc_' . $i);
-            next if (!defined($filter_name));
-            if (!defined($self->{option_results}->{sensordesc})) {
-                push @{$self->{sensordesc_id_selected}}, $i; 
-                next;
-            }
-            if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{sensordesc}/i) {
-                push @{$self->{sensordesc_id_selected}}, $i; 
-            }
-            if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{sensordesc}/) {
-                push @{$self->{sensordesc_id_selected}}, $i; 
-            }
-            if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{sensordesc}) {
-                push @{$self->{sensordesc_id_selected}}, $i; 
-            }
-        }
-        
-        if (scalar(@{$self->{sensordesc_id_selected}}) <= 0) {
-            if (defined($self->{option_results}->{sensordesc})) {
-                $self->{output}->add_option_msg(short_msg => "No Sensor Desc found for name '" . $self->{option_results}->{sensordesc} . "' (maybe you should reload cache file).");
-            } else {
-                $self->{output}->add_option_msg(short_msg => "No Sensor Desc found (maybe you should reload cache file).");
-            }
-            $self->{output}->option_exit();
-        }
-    }
+
+        push @{$self->{Sensor_id_selected}}, $SensorId;
 }
 
-sub get_display_value {
-    my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => 'SensorsDesc_' . $options{id});
-
-    if (defined($self->{option_results}->{display_transform_src})) {
-        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
+    if (scalar(@{$self->{Sensor_id_selected}}) <= 0) {
+        if (defined($self->{option_results}->{sensor})) {
+            $self->{output}->add_option_msg(short_msg => "No Sensors found for '" . $self->{option_results}->{sensor} . "'.");
+        } else {
+            $self->{output}->add_option_msg(short_msg => "No Sensors found.");
+        };
+        $self->{output}->option_exit();
     }
-    return $value;
 }
 
 1;
@@ -238,13 +176,13 @@ Threshold warning
 
 Threshold critical
 
-=item B<--sensordesc>
+=item B<--sensor>
 
 Set the Sensor Desc (number expected) ex: 1, 2,... (empty means 'check all sensors').
 
 =item B<--name>
 
-Allows to use Sensor Desc name with option --sensordesc instead of Sensor Desc oid index.
+Allows to use Sensor Desc name with option --sensor instead of Sensor Desc oid index.
 
 =item B<--regexp>
 
@@ -253,22 +191,6 @@ Allows to use regexp to filter sensordesc (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--reload-cache-time>
-
-Time in seconds before reloading cache file (default: 180).
-
-=item B<--display-transform-src>
-
-Regexp src to transform display value. (security risk!!!)
-
-=item B<--display-transform-dst>
-
-Regexp dst to transform display value. (security risk!!!)
-
-=item B<--show-cache>
-
-Display cache storage datas.
 
 =back
 
