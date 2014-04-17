@@ -55,6 +55,7 @@ sub new {
                                 {
                                   "warning:s"   => { name => 'warning' },
                                   "critical:s"  => { name => 'critical' },
+                                  "filter:s"    => { name => 'filter' },
                                 });
 
     return $self;
@@ -106,6 +107,12 @@ sub run {
             $descr = $hrDeviceIndex . '#' . $prtInputIndex;
         }
         
+        if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
+            $descr !~ /$self->{option_results}->{filter}/) {
+            $self->{output}->output_add(long_msg => "Skipping tray '$descr': not matching filter."); 
+            next;
+        }
+
         if (!defined($unit_managed{$unit})) {
             $self->{output}->output_add(long_msg => "Skipping input '$descr': unit not managed."); 
             next;
@@ -114,7 +121,7 @@ sub run {
             $self->{output}->output_add(long_msg => "Skipping tray '$descr': no level."); 
             next;
         } elsif ($current_value == -2) {
-            $self->{output}->output_add(long_msg => "Skippinp tray'$descr': level unknown."); 
+            $self->{output}->output_add(long_msg => "Skippinp tray '$descr': level unknown."); 
             next;
         } elsif ($current_value == -3) {
             $self->{output}->output_add(long_msg => "Tray '$descr': no level but some space remaining."); 
@@ -160,6 +167,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--filter>
+
+Filter tray to check (can use a regexp).
 
 =back
 
