@@ -49,6 +49,7 @@ sub new {
     %{$self->{modes}} = (
                          'battery-status'   => 'hardware::ups::standard::rfc1628::mode::batterystatus',
                          'input-lines'      => 'hardware::ups::standard::rfc1628::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::standard::rfc1628::mode::outputlines',
                          'output-source'    => 'hardware::ups::standard::rfc1628::mode::outputsource',
                          );
 

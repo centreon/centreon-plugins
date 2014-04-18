@@ -50,11 +50,11 @@ sub windows_execute {
     $cmd .= $options{command_options} if (defined($options{command_options}));
     
     eval {
-           local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
-           alarm( $options{timeout} );
-           $stdout = `$cmd`;
-           $exit_code = ($? >> 8);
-           alarm(0);
+        local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
+        alarm( $options{timeout} );
+        $stdout = `$cmd`;
+        $exit_code = ($? >> 8);
+        alarm(0);
     };
 
     if ($@) {
