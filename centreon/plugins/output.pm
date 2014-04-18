@@ -49,6 +49,7 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
+                                  "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
@@ -70,6 +71,8 @@ sub new {
     $self->{global_short_outputs} = {OK => [], WARNING => [], CRITICAL => [], UNKNOWN => [], UNQUALIFIED_YET => []};
     $self->{global_long_output} = [];
     $self->{perfdatas} = [];
+    $self->{explode_perfdatas} = {};
+    $self->{explode_perfdata_total} = 0;
     $self->{global_status} = 0;
 
     $self->{disco_elements} = [];
@@ -96,6 +99,22 @@ sub check_options {
         # By Default XML
         if (!defined($self->{option_results}->{output_json})) {
             $self->{option_results}->{output_xml} = 1;
+        }
+    }
+    
+    if (defined($self->{option_results}->{explode_perfdata_max})) {
+        if (${$self->{option_results}->{explode_perfdata_max}}[0] eq '') {
+            $self->{explode_perfdata_total} = 2;
+        } else {
+            $self->{explode_perfdata_total} = 1;
+            foreach (@{$self->{option_results}->{explode_perfdata_max}}) {
+                my ($perf_match, $perf_result) = split /,/;
+                if (!defined($perf_result)) {
+                    $self->add_option_msg(short_msg => "Wrong explode-perfdata-max option '" . $_ . "' (syntax: match,value)");
+                    $self->option_exit();
+                }
+                $self->{explode_perfdatas}->{$perf_match} = $perf_result;
+            }
         }
     }
 }
@@ -154,6 +173,25 @@ sub perfdata_add {
     push @{$self->{perfdatas}}, $perfdata;
 }
 
+sub explode_perfdatas {
+    my ($self, %options) = @_;
+    
+    return if ($self->{explode_perfdata_total} == 0);
+    foreach (@{$self->{perfdatas}}) {
+        next if ($_->{max} eq '');
+        if ($self->{explode_perfdata_total} == 2) {
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            next;
+        }
+        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
+            if ($_->{label} =~ /$regexp/) {
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                last;
+            }
+        }
+    }
+}
+
 sub output_json {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
@@ -189,6 +227,7 @@ sub output_json {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
+        $self->explode_perfdatas();
         foreach (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -274,6 +313,7 @@ sub output_xml {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
+        $self->explode_perfdatas();
         foreach (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -317,6 +357,7 @@ sub output_txt {
         print "\n";
     } else {
         print "|";
+        $self->explode_perfdatas();
         foreach (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -636,6 +677,11 @@ Display long output.
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
+
+=item B<--explode-perfdata-max>
+
+Put max perfdata (if it exist) in a specific perfdata 
+(without values: same with '_max' suffix)
 
 =item B<--opt-exit>
 
