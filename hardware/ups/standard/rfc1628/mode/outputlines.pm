@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::inputlines;
+package hardware::ups::standard::rfc1628::mode::outputlines;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,20 +41,20 @@ use strict;
 use warnings;
 
 my %oids = (
-    '.1.3.6.1.2.1.33.1.3.3.1.2' => { counter => 'frequence' }, # in dH upsInputFrequency
-    '.1.3.6.1.2.1.33.1.3.3.1.3' => { counter => 'voltage' }, # in Volt upsInputVoltage
-    '.1.3.6.1.2.1.33.1.3.3.1.4' => { counter => 'current' }, # in dA upsInputCurrent
-    '.1.3.6.1.2.1.33.1.3.3.1.5' => { counter => 'power' }, # in Watt upsInputTruePower
+    '.1.3.6.1.2.1.33.1.4.4.1.5' => { counter => 'load', no_present => -1 }, # upsOutputPercentLoad
+    '.1.3.6.1.2.1.33.1.4.4.1.2' => { counter => 'voltage', no_present => 0 }, # in Volt upsOutputVoltage
+    '.1.3.6.1.2.1.33.1.4.4.1.3' => { counter => 'current', no_present => 0 }, # in dA upsOutputCurrent
+    '.1.3.6.1.2.1.33.1.4.4.1.4' => { counter => 'power', no_present => 0 }, # in Watt upsOutputPower
 );
 
 my $maps_counters = {
-    frequence   => { thresholds => {
-                                    warning_frequence  =>  { label => 'warning-frequence', exit_value => 'warning' },
-                                    critical_frequence =>  { label => 'critical-frequence', exit_value => 'critical' },
-                                   },
-                     output_msg => 'Frequence : %.2f Hz',
-                     factor => 0.1, unit => 'Hz',
-                    },
+    load   => { thresholds => {
+                                warning_frequence  =>  { label => 'warning-load', exit_value => 'warning' },
+                                critical_frequence =>  { label => 'critical-load', exit_value => 'critical' },
+                              },
+                output_msg => 'Load : %.2f %%',
+                factor => 1, unit => '%',
+               },
     voltage => { thresholds => {
                                 warning_voltage  =>  { label => 'warning-voltage', exit_value => 'warning' },
                                 critical_voltage =>  { label => 'critical-voltage', exit_value => 'critical' },
@@ -85,7 +85,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                "warning-stdev-3phases:s"            => { name => 'warning_stdev' },
+                                "critical-stdev-3phases:s"           => { name => 'critical_stdev' },
                                 });
     foreach (keys %{$maps_counters}) {
         foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
@@ -104,6 +106,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if (($self->{perfdata}->threshold_validate(label => 'warning-stdev-3phases', value => $self->{option_results}->{warning_stdev})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-stdev-3phases threshold '" . $self->{option_results}->{warning_stdev} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-stdev-3phases', value => $self->{option_results}->{critical_stdev})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-stdev-3phases threshold '" . $self->{option_results}->{critical_stdev} . "'.");
+        $self->{output}->option_exit();
+    }
+    
     foreach (keys %{$maps_counters}) {
         foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
             if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
@@ -134,8 +145,37 @@ sub build_values {
     $self->{instances_done}->{$instance} = 1;
     $self->{counters_value}->{$instance} = {};
     foreach my $oid (keys %oids) {
-        $self->{counters_value}->{$instance}->{$oids{$oid}->{counter}} = defined($options{result}->{$oid . '.' . $instance}) ? $options{result}->{$oid . '.' . $instance} : 0;
+        $self->{counters_value}->{$instance}->{$oids{$oid}->{counter}} = defined($options{result}->{$oid . '.' . $instance}) ? $options{result}->{$oid . '.' . $instance} : $oids{$oid}->{no_present};
     }
+}
+
+sub stdev {
+    my ($self, %options) = @_;
+    
+    # Calculate stdev
+    my $total = 0;
+    my $num_present = 0;
+    foreach my $instance (keys %{$self->{instances_done}}) {
+        next if ($self->{counters_value}->{$instance}->{load} == -1); # Not present
+        $total += $self->{counters_value}->{$instance}->{load};
+        $num_present++;
+    }
+    my $mean = $total / $num_present;
+    $total = 0;
+    foreach my $instance (keys %{$self->{instances_done}}) {
+        next if ($self->{counters_value}->{$instance}->{load} == -1); # Not present
+        $total = ($mean - $self->{counters_value}->{$instance}->{load}) ** 2; 
+    }
+    my $stdev = sqrt($total / $num_present);
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $stdev, threshold => [ { label => 'critical-stdev-3phases', 'exit_litteral' => 'critical' }, { label => 'warning-stdev-3phases', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Load Standard Deviation : %.2f", $stdev));
+    
+    $self->{output}->perfdata_add(label => 'stdev',
+                                  value => sprintf("%.2f", $stdev),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-stdev-3phases'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-stdev-3phases'));
 }
 
 sub run {
@@ -143,8 +183,8 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_upsInputEntry = '.1.3.6.1.2.1.33.1.3.3.1';
-    my $result = $self->{snmp}->get_table(oid => $oid_upsInputEntry, nothing_quit => 1);
+    my $oid_upsOutputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
+    my $result = $self->{snmp}->get_table(oid => $oid_upsOutputEntry, nothing_quit => 1);
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         $self->build_values(current => $key, result => $result);
     }
@@ -170,7 +210,7 @@ sub run {
         my $str_output = "Input Line '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == 0);
+            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} <= 0);
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
@@ -188,6 +228,10 @@ sub run {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => $str_output);
     }
+    
+    if ($num > 1) {
+        $self->stdev();
+    }
                                   
     $self->{output}->display();
     $self->{output}->exit();
@@ -199,19 +243,27 @@ __END__
 
 =head1 MODE
 
-Check Input lines metrics (frequence, voltage, current and true power).
+Check Input lines metrics (load, voltage, current and true power).
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Can be: 'load', 'voltage', 'current', 'power'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Can be: 'load', 'voltage', 'current', 'power'.
+
+=item B<--warning-stdev-3phases>
+
+Threshold warning for standard deviation of 3 phases.
+
+=item B<--critical-stdev-3phases>
+
+Threshold critical for standard deviation of 3 phases.
 
 =back
 
