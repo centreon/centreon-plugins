@@ -115,13 +115,14 @@ sub run {
     my ($self, %options) = @_;
 
     my $webcontent = centreon::plugins::httplib::connect($self);
-    my ($rPerSec, $bPerReq, $total_access, $total_bytes);
+    my ($rPerSec, $bPerReq, $total_access, $total_bytes, $avg_bPerSec);
 
     $total_access = $1 if ($webcontent =~ /^Total Accesses:\s+([^\s]+)/mi);
     $total_bytes = $1 * 1024 if ($webcontent =~ /^Total kBytes:\s+([^\s]+)/mi);
     
     $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
     $bPerReq = $1 if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi);
+    $avg_bPerSec = $1 if ($webcontent =~ /^BytesPerSec:\s+([^\s]+)/mi);
     
     if (!defined($bPerReq)) {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
@@ -164,12 +165,14 @@ sub run {
     my ($bPerReq_value, $bPerReq_unit) = $self->{perfdata}->change_bytes(value => $bPerReq);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("RequestPerSec: %s  BytesPerSec: %s BytesPerRequest: %s AccessPerSec: %.2f", $rPerSec, 
-                                                     $bPerSec_value . ' ' . $bPerSec_unit, 
-                                                     $bPerReq_value . ' ' . $bPerReq_unit,
-                                                     $aPerSec));
-    $self->{output}->perfdata_add(label => "requestPerSec",
-                                  value => $rPerSec,
+                                short_msg => sprintf("BytesPerSec: %s AccessPerSec: %.2f RequestPerSec: %.2f BytesPerRequest: %s ", 
+                                                     $bPerSec_value . ' ' . $bPerSec_unit
+                                                     $aPerSec,
+                                                     $rPerSec,
+                                                     $bPerReq_value . ' ' . $bPerReq_unit
+                                                     ));
+    $self->{output}->perfdata_add(label => "avg_RequestPerSec",
+                                  value => sprintf("%.2f", $rPerSec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0
@@ -179,8 +182,12 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes'),
                                   min => 0);
-    $self->{output}->perfdata_add(label => "bytesPerRequest", unit => 'B',
+    $self->{output}->perfdata_add(label => "avg_bytesPerRequest", unit => 'B',
                                   value => $bPerReq,
+                                  min => 0
+                                  );
+    $self->{output}->perfdata_add(label => "avg_bytesPerSec", unit => 'B',
+                                  value => $avg_bPerSec,
                                   min => 0
                                   );
     $self->{output}->perfdata_add(label => "accessPerSec",
