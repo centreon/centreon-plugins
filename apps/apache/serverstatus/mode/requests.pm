@@ -166,7 +166,7 @@ sub run {
     
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("BytesPerSec: %s AccessPerSec: %.2f RequestPerSec: %.2f BytesPerRequest: %s ", 
-                                                     $bPerSec_value . ' ' . $bPerSec_unit
+                                                     $bPerSec_value . ' ' . $bPerSec_unit,
                                                      $aPerSec,
                                                      $rPerSec,
                                                      $bPerReq_value . ' ' . $bPerReq_unit
