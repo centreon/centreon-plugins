@@ -64,6 +64,7 @@ sub new {
                          'swap'             => 'os::aix::local::mode::swap',
                          'traffic'          => 'os::aix::local::mode::traffic',
                          'uptime'           => 'os::aix::local::mode::uptime',
+						 'mirrorvg'         => 'os::aix::local::mode::mirrorvg',
                          );
 
     return $self;
