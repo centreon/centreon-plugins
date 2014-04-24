@@ -62,7 +62,6 @@ sub new {
                                   "error-type:s"      => { name => 'error_type' },
 								  "error-class:s"     => { name => 'error_class' },
 								  "retention:s"       => { name => 'retention' },
-								  "timezone:s"        => { name => 'timezone' },
                                 });
     $self->{result} = {};
     return $self;
@@ -233,18 +232,17 @@ Allows to use regexp to filter storage mount point (with option --name).
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--filter-type>
+=item B<--error-type>
 
-Filter filesystem type (regexp can be used).
+Filter error type separated by a coma (INFO, PEND, PERF, PERM, TEMP, UNKN).
 
-=item B<--filter-fs>
+=item B<--error-class>
 
-Filter filesystem (regexp can be used).
+Filter error class ('H' for hardware, 'S' for software, '0' for errlogger, 'U' for undetermined).
 
-=item B<--space-reservation>
+=item B<--retention>
 
-Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
+Retention time of errors in seconds
 
 =back
 
