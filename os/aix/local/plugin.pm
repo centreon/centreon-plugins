@@ -65,6 +65,7 @@ sub new {
                          'traffic'          => 'os::aix::local::mode::traffic',
                          'uptime'           => 'os::aix::local::mode::uptime',
 						 'mirrorvg'         => 'os::aix::local::mode::mirrorvg',
+						 'errpt'         => 'os::aix::local::mode::errpt',
                          );
 
     return $self;
