@@ -48,7 +48,7 @@ sub connect {
     my ($response, $content);
     my $req;
 
-    if (defined($self->{option_results}->{port})) {
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^[0-9]+$/) {
         $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
     } else {
         $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
