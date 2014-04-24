@@ -46,8 +46,13 @@ sub connect {
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
     my ($response, $content);
+    my $req;
 
-    my $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
+    if (defined($self->{option_results}->{port})) {
+        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
+    } else {
+        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
+    }
     
     if (defined($self->{option_results}->{credentials})) {
         $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});

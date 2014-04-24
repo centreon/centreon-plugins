@@ -52,7 +52,7 @@ sub new {
     $options{options}->add_options(arguments =>
          {
          "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', default => '80' },
+         "port:s"       => { name => 'port', },
          "proto:s"      => { name => 'proto', default => "http" },
          "urlpath:s"    => { name => 'url_path', default => "/server-status/?auto" },
          "credentials"  => { name => 'credentials' },
