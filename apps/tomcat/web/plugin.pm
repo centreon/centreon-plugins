@@ -31,8 +31,6 @@
 # For more information : contact@centreon.com
 # Author : Florian Asche <info@florian-asche.de>
 #
-# Based on De Bodt Lieven plugin
-# Based on Apache Mode by Simon BOMM
 ####################################################################################
 
 package apps::tomcat::web::plugin;
@@ -53,6 +51,7 @@ sub new {
 			'list-application'	=> 'apps::tomcat::web::mode::listapplication',
 			'sessions'              => 'apps::tomcat::web::mode::sessions',
 			'threads'               => 'apps::tomcat::web::mode::threads',
+			'requestinfo'           => 'apps::tomcat::web::mode::requestinfo',
 			'memory'                => 'apps::tomcat::web::mode::memory',
 			);
 
