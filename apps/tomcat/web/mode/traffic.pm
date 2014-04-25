@@ -221,7 +221,7 @@ sub run {
     $self->manage_selection();
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_apps_tomcat_web1_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => "cache_apps_tomcat_web_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
@@ -282,12 +282,12 @@ sub run {
         
         my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
         my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_absolute_per_sec, network => 1);
-        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
+        $self->{output}->output_add(long_msg => sprintf("Connector '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
                                        $in_value . $in_unit, $in_prct,
                                        $out_value . $out_unit, $out_prct));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
+                                        short_msg => sprintf("Connector '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
                                             $in_value . $in_unit, $in_prct,
                                             $out_value . $out_unit, $out_prct));
         }
@@ -395,7 +395,7 @@ Threshold critical in percent for 'out' traffic.
 
 =item B<--speed>
 
-Set interface speed (in Mb).
+Set Connector Interface speed (in Mb).
 
 =back
 
