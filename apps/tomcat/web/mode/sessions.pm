@@ -209,7 +209,7 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 Threshold for HTTP timeout
 
-=item B<--url-path>
+=item B<--urlpath>
 
 Path to the Tomcat Manager List (Default: Tomcat 7 '/manager/text/list')
 Tomcat 6: '/manager/list'
