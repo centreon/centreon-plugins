@@ -116,7 +116,7 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
-	
+    
     $self->manage_selection();
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
@@ -130,13 +130,13 @@ sub run {
         my $type = $self->{result}->{$name}->{type};
         my $lp = $self->{result}->{$name}->{lp};
         my $pp = $self->{result}->{$name}->{pp};
-		my $pv = $self->{result}->{$name}->{pv};
-		my $lvstate = $self->{result}->{$name}->{lvstate};
-		my $mount = $name;
-			
+        my $pv = $self->{result}->{$name}->{pv};
+        my $lvstate = $self->{result}->{$name}->{lvstate};
+        my $mount = $name;
+            
         $self->{output}->output_add(long_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
                                             $mount, $lvstate,
-                                         	$lp, $pp, $pv));
+                                             $lp, $pp, $pv));
         $self->{output}->output_add(severity => 'critical',
                                     short_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
                                         $mount, $lvstate,

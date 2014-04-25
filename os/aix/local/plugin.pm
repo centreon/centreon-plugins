@@ -47,25 +47,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'os::aix::local::mode::cpu',
-                         'cmd-return'       => 'os::aix::local::mode::cmdreturn',
-                         'diskio'           => 'os::aix::local::mode::diskio',
-                         'files-size'       => 'os::aix::local::mode::filessize',
-                         'files-date'       => 'os::aix::local::mode::filesdate',
-                         'inodes'           => 'os::aix::local::mode::inodes',
-                         'load'             => 'os::aix::local::mode::loadaverage',
-                         'list-interfaces'  => 'os::aix::local::mode::listinterfaces',
-                         'list-partitions'  => 'os::aix::local::mode::listpartitions',
+                         'errpt'            => 'os::aix::local::mode::errpt',
                          'list-storages'    => 'os::aix::local::mode::liststorages',
-                         'memory'           => 'os::aix::local::mode::memory',
-                         'packet-errors'    => 'os::aix::local::mode::packeterrors',
-                         'process'          => 'os::aix::local::mode::process',
                          'storage'          => 'os::aix::local::mode::storage',
-                         'swap'             => 'os::aix::local::mode::swap',
-                         'traffic'          => 'os::aix::local::mode::traffic',
-                         'uptime'           => 'os::aix::local::mode::uptime',
-						 'mirrorvg'         => 'os::aix::local::mode::mirrorvg',
-						 'errpt'         => 'os::aix::local::mode::errpt',
+                         'mirrorvg'         => 'os::aix::local::mode::mirrorvg',
                          );
 
     return $self;
@@ -77,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Linux through local commands (the plugin can use SSH).
+Check AIX through local commands (the plugin can use SSH).
 
 =cut
