@@ -167,7 +167,7 @@ Proxy URL if any
 
 Protocol used http or https
 
-=item B<--url-path>
+=item B<--urlpath>
 
 Set path to get server-status page in auto mode (Default: '/server-status/?auto')
 
