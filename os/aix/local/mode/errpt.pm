@@ -58,10 +58,9 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'errpt' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => ' ' },
                                   "error-type:s"      => { name => 'error_type' },
-								  "error-class:s"     => { name => 'error_class' },
-								  "retention:s"       => { name => 'retention' },
+                                  "error-class:s"     => { name => 'error_class' },
+                                  "retention:s"       => { name => 'retention' },
                                 });
     $self->{result} = {};
     return $self;
@@ -74,33 +73,33 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-	my $extra_options = '';
+    my $extra_options = '';
 
-	if (defined($self->{option_results}->{error_type})){
-		$extra_options = $extra_options.' -T '.$self->{option_results}->{error_type};
-	}
-	if (defined($self->{option_results}->{error_class})){
+    if (defined($self->{option_results}->{error_type})){
+        $extra_options = $extra_options.' -T '.$self->{option_results}->{error_type};
+    }
+    if (defined($self->{option_results}->{error_class})){
         $extra_options = $extra_options.' -d '.$self->{option_results}->{error_class};
     }
-	if (defined($self->{option_results}->{retention})){
-    	my $retention = time() - $self->{option_results}->{retention};
-		my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
-		$year = $year - 100;
-		if (length($sec)==1){
-			$sec = '0'.$sec;
-		}
-		if (length($min)==1){
+    if (defined($self->{option_results}->{retention})){
+        my $retention = time() - $self->{option_results}->{retention};
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
+        $year = $year - 100;
+        if (length($sec)==1){
+            $sec = '0'.$sec;
+        }
+        if (length($min)==1){
             $min = '0'.$min;
         }
-		if (length($hour)==1){
+        if (length($hour)==1){
             $hour = '0'.$hour;
         }
-		$mon = $mon + 1;
-		if (length($mon)==1){
+        $mon = $mon + 1;
+        if (length($mon)==1){
             $mon = '0'.$mon;
         }
-		$retention = $mon.$mday.$hour.$min.$year;
-		$extra_options = $extra_options.' -s '.$retention;
+        $retention = $mon.$mday.$hour.$min.$year;
+        $extra_options = $extra_options.' -s '.$retention;
     }
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -108,14 +107,14 @@ sub manage_selection {
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $extra_options.' '.$self->{option_results}->{command_options});
+                                                  command_options => $extra_options);
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         
-		my ($identifier, $timestamp, $resource_name) = ($1, $2, $5);
+        my ($identifier, $timestamp, $resource_name) = ($1, $2, $5);
         $self->{result}->{$identifier} = {timestamp => $timestamp, resource_name => $resource_name};
     }
     
@@ -126,13 +125,13 @@ sub manage_selection {
             $self->{output}->output_add(short_msg => "No error found.");
         }
         $self->{output}->display();
-    	$self->{output}->exit();
+        $self->{output}->exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-	
+    
     $self->manage_selection();
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'No error found.');
@@ -141,9 +140,9 @@ sub run {
         my $timestamp = $self->{result}->{$identifier}->{timestamp};
         my $resource_name = $self->{result}->{$identifier}->{resource_name};
         my $exit;
-		
+        
         $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                         	$timestamp, $resource_name));
+                                             $timestamp, $resource_name));
         $self->{output}->output_add(severity => 'critical',
                                     short_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
                                         $timestamp, $resource_name));    
@@ -193,44 +192,12 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'df').
+Command to get information (Default: 'errpt').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
 
 Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-P -k -T 2>&1').
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
-
-=item B<--units>
-
-Units of thresholds (Default: '%') ('%', 'B').
-
-=item B<--free>
-
-Thresholds are on free space left.
-
-=item B<--name>
-
-Set the storage mount point (empty means 'check all storages')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--error-type>
 
