@@ -53,6 +53,7 @@ sub new {
 			'threads'               => 'apps::tomcat::web::mode::threads',
 			'requestinfo'           => 'apps::tomcat::web::mode::requestinfo',
 			'memory'                => 'apps::tomcat::web::mode::memory',
+			'traffic'               => 'apps::tomcat::web::mode::traffic',
 			);
 
 	return $self;
