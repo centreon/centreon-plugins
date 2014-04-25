@@ -39,6 +39,8 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::httplib;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 use XML::XPath;
 
 sub new {
@@ -49,22 +51,31 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '23002' },
-            "proto:s"               => { name => 'proto', default => "http" },
-            "credentials"           => { name => 'credentials' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout', default => '3' },
-            "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-            "name:s"                => { name => 'name' },
-            "regexp"                => { name => 'use_regexp' },
-            "regexp-isensitive"     => { name => 'use_regexpi' },
+            "hostname:s"                 => { name => 'hostname' },
+            "port:s"                     => { name => 'port', default => '23002' },
+            "proto:s"                    => { name => 'proto', default => "http" },
+            "credentials"                => { name => 'credentials' },
+            "username:s"                 => { name => 'username' },
+            "password:s"                 => { name => 'password' },
+            "proxyurl:s"                 => { name => 'proxyurl' },
+            "timeout:s"                  => { name => 'timeout', default => '3' },
+            "urlpath:s"                  => { name => 'url_path', default => '/manager/status?XML=true' },
+            "name:s"                     => { name => 'name' },
+            "regexp"                     => { name => 'use_regexp' },
+            "regexp-isensitive"          => { name => 'use_regexpi' },
+            "warning-maxtime:s"          => { name => 'warning_maxtime' },
+            "critical-maxtime:s"         => { name => 'critical_maxtime' },
+            "warning-processingtime:s"   => { name => 'warning_processingtime' },
+            "critical-processingtime:s"  => { name => 'critical_processingtime' },
+            "warning-requestcount:s"     => { name => 'warning_requestcount' },
+            "critical-requestcount:s"    => { name => 'critical_requestcount' },
+            "warning-errorcount:s"       => { name => 'warning_errorcount' },
+            "critical-errorcount:s"      => { name => 'critical_errorcount' },
             });
 
     $self->{result} = {};
     $self->{hostname} = undef;
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -84,15 +95,48 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+    #MaxTime
+    if (($self->{perfdata}->threshold_validate(label => 'warning-maxtime', value => $self->{option_results}->{warning_maxtime})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning 'warning-maxtime' threshold '" . $self->{option_results}->{warning_maxtime} . "'.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical-maxtime', value => $self->{option_results}->{critical_maxtime})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical 'critical-maxtime' threshold '" . $self->{option_results}->{critical_maxtime} . "'.");
+        $self->{output}->option_exit();
+    }
+    #processingTime
+    if (($self->{perfdata}->threshold_validate(label => 'warning-processingtime', value => $self->{option_results}->{warning_processingtime})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning 'warning-processingtime' threshold '" . $self->{option_results}->{warning_processingtime} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-processingtime', value => $self->{option_results}->{critical_processingtime})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical 'critical-processingtime' threshold '" . $self->{option_results}->{critical_processingtime} . "'.");
+        $self->{output}->option_exit();
+    }
+    #requestCount
+    if (($self->{perfdata}->threshold_validate(label => 'warning-requestcount', value => $self->{option_results}->{warning_requestcount})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning 'warning-requestcount' threshold '" . $self->{option_results}->{warning_requestcount} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-requestcount', value => $self->{option_results}->{critical_requestcount})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical 'critical-requestcount' threshold '" . $self->{option_results}->{critical_requestcount} . "'.");
+        $self->{output}->option_exit();
+    }
+    #errorCount
+    if (($self->{perfdata}->threshold_validate(label => 'warning-errorcount', value => $self->{option_results}->{warning_errorcount})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning 'warning-errorcount' threshold '" . $self->{option_results}->{warning_errorcount} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-errorcount', value => $self->{option_results}->{critical_errorcount})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical 'critical-errorcount' threshold '" . $self->{option_results}->{critical_errorcount} . "'.");
         $self->{output}->option_exit();
     }
 
+    $self->{statefile_value}->check_options(%options);
+    $self->{hostname} = $self->{option_results}->{hostname};
+    if (!defined($self->{hostname})) {
+        $self->{hostname} = 'me';
+    }
 }
 
 my %xpath_to_check = (
@@ -100,8 +144,6 @@ my %xpath_to_check = (
     requestInfo_processingTime  => '/status/connector/requestInfo/@processingTime',     #to last
     requestInfo_requestCount    => '/status/connector/requestInfo/@requestCount',       #to last
     requestInfo_errorCount      => '/status/connector/requestInfo/@errorCount',         #to last
-    requestInfo_bytesReceived   => '/status/connector/requestInfo/@bytesReceived',      #to last
-    requestInfo_bytesSent       => '/status/connector/requestInfo/@bytesSent',          #to last
 );
 
 sub manage_selection {
@@ -193,47 +235,100 @@ sub run {
     
     $self->manage_selection();
 
+    my $new_datas = {};
+    $self->{statefile_value}->read(statefile => "cache_apps_tomcat_web_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $new_datas->{last_timestamp} = time();
+    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All requestInfo Data are ok.');
-    };
+    }
 
     foreach my $name (sort(keys %{$self->{result}})) {
+        $new_datas->{'requestInfo_processingTime_' . $name} = $self->{result}->{$name}->{requestInfo_processingTime};
+        $new_datas->{'requestInfo_requestCount_' . $name} = $self->{result}->{$name}->{requestInfo_requestCount};
+        $new_datas->{'requestInfo_errorCount_' . $name} = $self->{result}->{$name}->{requestInfo_errorCount};
+
+        my $requestInfo_processingTime = $self->{statefile_value}->get(name => 'requestInfo_processingTime_' . $name);
+        my $requestInfo_requestCount = $self->{statefile_value}->get(name => 'requestInfo_requestCount_' . $name);
+        my $requestInfo_errorCount = $self->{statefile_value}->get(name => 'requestInfo_errorCount_' . $name);
+
+        if (!defined($old_timestamp) || !defined($requestInfo_processingTime) || !defined($requestInfo_requestCount) || !defined($requestInfo_errorCount)) {
+            next;
+        }
+        if ($new_datas->{'requestInfo_processingTime_' . $name} < $requestInfo_processingTime) {
+            # We set 0. Has reboot.
+            $requestInfo_processingTime = 0;
+        }
+        if ($new_datas->{'requestInfo_requestCount_' . $name} < $requestInfo_requestCount) {
+            # We set 0. Has reboot.
+            $requestInfo_requestCount = 0;
+        }
+        if ($new_datas->{'requestInfo_errorCount_' . $name} < $requestInfo_errorCount) {
+            # We set 0. Has reboot.
+            $requestInfo_errorCount = 0;
+        }
+
+        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
+        if ($time_delta <= 0) {
+            # At least one second. two fast calls ;)
+            $time_delta = 1;
+        }
+
+        my $requestInfo_maxTime = $self->{result}->{$name}->{requestInfo_maxTime};
+
+        my $requestInfo_processingTime_absolute_per_sec = ($new_datas->{'requestInfo_processingTime_' . $name} - $requestInfo_processingTime) / $time_delta;
+        my $requestInfo_requestCount_absolute_per_sec = ($new_datas->{'requestInfo_requestCount_' . $name} - $requestInfo_requestCount) / $time_delta;
+        my $requestInfo_errorCount_absolute_per_sec = ($new_datas->{'requestInfo_errorCount_' . $name} - $requestInfo_errorCount) / $time_delta;
+
+        my $exit1 = $self->{perfdata}->threshold_check(value => $requestInfo_maxTime, threshold => [ { label => 'critical-maxtime', 'exit_litteral' => 'critical' }, { label => 'warning-maxtime', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{perfdata}->threshold_check(value => $requestInfo_processingTime_absolute_per_sec, threshold => [ { label => 'critical-processingtime', 'exit_litteral' => 'critical' }, { label => 'warning-processingtime', exit_litteral => 'warning' } ]);
+        my $exit3 = $self->{perfdata}->threshold_check(value => $requestInfo_requestCount_absolute_per_sec, threshold => [ { label => 'critical-requestcount', 'exit_litteral' => 'critical' }, { label => 'warning-requestcount', exit_litteral => 'warning' } ]);
+        my $exit4 = $self->{perfdata}->threshold_check(value => $requestInfo_errorCount_absolute_per_sec, threshold => [ { label => 'critical-errorcount', 'exit_litteral' => 'critical' }, { label => 'warning-errorcount', exit_litteral => 'warning' } ]);
+        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4 ]);
+
+        $self->{output}->output_add(long_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %s, requestCount : %s, errorCount : %s", $name, $requestInfo_maxTime, $requestInfo_processingTime_absolute_per_sec, $requestInfo_requestCount_absolute_per_sec, $requestInfo_errorCount_absolute_per_sec));
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %s, requestCount : %s, errorCount : %s", $name,
+                                       $requestInfo_maxTime,
+                                       $requestInfo_processingTime_absolute_per_sec,
+                                       $requestInfo_requestCount_absolute_per_sec,
+                                       $requestInfo_errorCount_absolute_per_sec));
+        }
+        
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-	$self->{output}->perfdata_add(label => 'requestInfo_maxTime' . $extra_label,
+	$self->{output}->perfdata_add(label => 'maxTime' . $extra_label,
                                       value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_maxTime}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
 
-        $self->{output}->perfdata_add(label => 'requestInfo_processingTime' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_processingTime}),
+        $self->{output}->perfdata_add(label => 'processingTime' . $extra_label,
+                                      value => sprintf("%.2f", $requestInfo_processingTime_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
 
-        $self->{output}->perfdata_add(label => 'requestInfo_requestCount' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_requestCount}),
+        $self->{output}->perfdata_add(label => 'requestCount' . $extra_label,
+                                      value => sprintf("%.2f", $requestInfo_requestCount_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
-        $self->{output}->perfdata_add(label => 'requestInfo_errorCount' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_errorCount}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'requestInfo_bytesReceived' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_bytesReceived}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'requestInfo_bytesSent' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_bytesSent}),
+        $self->{output}->perfdata_add(label => 'errorCount' . $extra_label,
+                                      value => sprintf("%.2f", $requestInfo_errorCount_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
     };
+
+    $self->{statefile_value}->write(data => $new_datas);    
+    if (!defined($old_timestamp)) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -298,6 +393,38 @@ Allows to use regexp to filter (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
+
+=item B<--warning-maxtime>
+
+Threshold warning for maxTime
+
+=item B<--critical-maxtime>
+
+Threshold critical for maxTime
+
+=item B<--warning-processingtime>
+
+Threshold warning for ProcessingTime
+
+=item B<--critical-processingtime>
+
+Threshold critical for ProcessingTime
+
+=item B<--warning-requestcount>
+
+Threshold warning for requestCount
+
+=item B<--critical-requestcount>
+
+Threshold critical for requestCount
+
+=item B<--warning-errorcount>
+
+Threshold warning for errorCount
+
+=item B<--critical-errorcount>
+
+Threshold critical for errorCount
 
 =back
 
