@@ -103,8 +103,6 @@ sub run {
     $self->manage_selection();
     my $result = $self->get_additional_information();
     
-    my $interfaces_display = '';
-    my $interfaces_display_append = '';
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
 
@@ -113,21 +111,25 @@ sub run {
             $interface_speed = $self->{option_results}->{speed};
         }
         
-        next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
+        if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': interface speed is 0 and option --skip-speed0 is set");
+            next;
+        }
         if (defined($self->{option_results}->{filter_status}) && $operstatus[$result->{$oid_operstatus . "." . $_} - 1] !~ /$self->{option_results}->{filter_status}/i) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': no matching filter status");
             next;
         }
         if (defined($self->{option_results}->{use_adminstatus}) && $operstatus[$result->{$oid_adminstatus . "." . $_} - 1] ne 'up') {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': adminstatus is not 'up' and option --use-adminstatus is set");
             next;
         }
 
-        $interfaces_display .= $interfaces_display_append . "name = $display_value [speed = $interface_speed, status = " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1] . ", id = $_]";
-        $interfaces_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1] . ", id = $_]");
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List interfaces: ' . $interfaces_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List interfaces:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
