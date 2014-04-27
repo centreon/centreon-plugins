@@ -133,22 +133,22 @@ sub run {
 
     $self->manage_selection();
     my $result = $self->get_additional_information();
-    
-    my $storage_display = '';
-    my $storage_display_append = '';
+
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
-        next if (!defined($storage_type) || 
-                ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
+        if (!defined($storage_type) || 
+            ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i)) {
+            $self->{output}->output_add(long_msg => "Skipping storage '" . $display_value . "': no type or no matching filter type");
+            next;
+        }
         
-        $storage_display .= $storage_display_append . "name = $display_value [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B, id = $_]";
-        $storage_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B, id = $_]");
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storage: ' . $storage_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List storage:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

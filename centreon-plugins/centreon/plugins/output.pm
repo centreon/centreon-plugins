@@ -195,6 +195,7 @@ sub explode_perfdatas {
 sub output_json {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     my $json_content = {plugin => {
                                    name => $self->{plugin},
                                    mode => $self->{mode},
@@ -217,7 +218,7 @@ sub output_json {
         }
     }
 
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         foreach (@{$self->{global_long_output}}) {
             push @{$json_content->{plugin}->{outputs}}, {
                                                            type => 2,
@@ -249,6 +250,7 @@ sub output_json {
 sub output_xml {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     my ($child_plugin_name, $child_plugin_mode, $child_plugin_exit, $child_plugin_output, $child_plugin_perfdata); 
 
     my $root = $self->{xml_output}->createElement('plugin');
@@ -294,7 +296,7 @@ sub output_xml {
         }
     }
 
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         foreach (@{$self->{global_long_output}}) {
             my ($child_output, $child_type, $child_msg);
         
@@ -335,6 +337,7 @@ sub output_xml {
 sub output_txt {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
     if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
         $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
@@ -366,7 +369,7 @@ sub output_txt {
         print "\n";
     }
     
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         if (scalar(@{$self->{global_long_output}})) {
             print join("\n", @{$self->{global_long_output}});
             print "\n";
@@ -378,25 +381,29 @@ sub display {
     my ($self, %options) = @_;
     my $nolabel = defined($options{nolabel}) ? 1 : 0;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
         if ($self->{is_output_xml}) {
             $self->output_xml(exit_litteral => $self->get_litteral_status(), 
-                              nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                              nolabel => $nolabel, 
+                              force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
             return ;
         }
     } elsif (defined($self->{option_results}->{output_json})) {
         $self->create_json_document();
         if ($self->{is_output_json}) {
             $self->output_json(exit_litteral => $self->get_litteral_status(), 
-                               nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                               nolabel => $nolabel,
+                               force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
             return ;
         }
     } 
     
     $self->output_txt(exit_litteral => $self->get_litteral_status(), 
-                      nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                      nolabel => $nolabel,
+                      force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
 }
 
 sub die_exit {
