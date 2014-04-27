@@ -87,10 +87,16 @@ sub manage_selection {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         my ($fs, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6);
         
-        next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
-                 $fs !~ /$self->{option_results}->{filter_fs}/);
-        next if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
-                 $mount !~ /$self->{option_results}->{filter_mount}/);
+        if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
+            $fs !~ /$self->{option_results}->{filter_fs}/) {
+            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter fs");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
+            $mount !~ /$self->{option_results}->{filter_mount}/) {
+            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter mount");
+            next;
+        }
         
         $self->{result}->{$mount} = {fs => $fs};
     }
@@ -100,16 +106,13 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $storages_display = '';
-    my $storages_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $storages_display .= $storages_display_append . 'name = ' . $name . ' [fs = ' . $self->{result}->{$name}->{fs} . ']';
-        $storages_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storages: ' . $storages_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List storages:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
