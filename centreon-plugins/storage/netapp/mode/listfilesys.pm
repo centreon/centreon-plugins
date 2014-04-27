@@ -92,14 +92,21 @@ sub manage_selection {
             next;
         }
         
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            next if (defined($self->{option_results}->{type}) && $type !~ /$self->{option_results}->{type}/i);
-            push @{$self->{filesys_id_selected}}, $instance; 
+        if (defined($self->{option_results}->{type}) && $type !~ /$self->{option_results}->{type}/i) {
+            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter type");
+            next;
         }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            next if (defined($self->{option_results}->{type}) && $type !~ /$self->{option_results}->{type}/i);
-            push @{$self->{filesys_id_selected}}, $instance;
+
+        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} ne $self->{option_results}->{name}) {
+            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter name");
+            next;
         }
+        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} !~ /$self->{option_results}->{name}/) {
+            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter name (regexp)");
+            next;
+        }
+        
+        push @{$self->{filesys_id_selected}}, $instance;
     }
 }
 
@@ -121,8 +128,7 @@ sub run {
 
     $self->manage_selection();
     my $result = $self->get_additional_information();
-    my $filesys_display = '';
-    my $filesys_display_append = '';
+
     foreach my $instance (sort @{$self->{filesys_id_selected}}) { 
         my $name = $self->{result_names}->{$oid_dfFileSys . '.' . $instance};
         my $type = $self->{result_types}->{$oid_dfType . '.' . $instance};
@@ -130,15 +136,17 @@ sub run {
         if (defined($result->{$oid_df64TotalKBytes . '.' . $instance}) && $result->{$oid_df64TotalKBytes . '.' . $instance} != 0) {
             $total_size = $result->{$oid_df64TotalKBytes . '.' . $instance} * 1024;
         }
-        next if (defined($self->{option_results}->{skip_total_zero}) && $total_size == 0);
+        if (defined($self->{option_results}->{skip_total_zero}) && $total_size == 0) {
+            $self->{output}->output_add(long_msg => "Skipping filesys '" . $name . "': total size is 0 and option --skip-total-zero is set");
+            next;
+        }
 
-        $filesys_display .= $filesys_display_append . "name = $name [total_size = $total_size B, type = " . $map_types{$type} . "]";
-        $filesys_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [total_size = $total_size B] [type = " . $map_types{$type} . "]");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List filesys: ' . $filesys_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List filesys:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

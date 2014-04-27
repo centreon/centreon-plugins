@@ -143,7 +143,7 @@ sub run {
             next;
         }
         
-        $self->{output}->output_add(long_msg => "'" . $display_value . "' [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B, id = $_]");
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [size = " . $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_}  . "B] [id = $_]");
     }
 
     $self->{output}->output_add(severity => 'OK',
