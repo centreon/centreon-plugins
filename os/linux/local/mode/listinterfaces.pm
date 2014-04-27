@@ -87,12 +87,20 @@ sub manage_selection {
         $states .= 'R' if ($values =~ /RUNNING/ms);
         $states .= 'U' if ($values =~ /UP/ms);
         
-        next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                 $interface_name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $states !~ /$self->{option_results}->{filter_state}/);
-        
+        if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': option --no-loopback");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no matching filter name");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+            $states !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no matching filter state");
+            next;
+        }
         $self->{result}->{$interface_name} = {state => $states};
     }    
 }
@@ -101,16 +109,13 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $interfaces_display = '';
-    my $interfaces_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $interfaces_display .= $interfaces_display_append . 'name = ' . $name . ' [state = ' . $self->{result}->{$name}->{state} . ']';
-        $interfaces_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [state = " . $self->{result}->{$name}->{state} . ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List interfaces: ' . $interfaces_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List interfaces:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

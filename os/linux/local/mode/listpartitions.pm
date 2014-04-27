@@ -86,8 +86,11 @@ sub manage_selection {
         next if ($line !~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/);
         my ($major, $minor, $blocks, $name) = ($1, $2, $3, $4);
         
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                 $name !~ /$self->{option_results}->{filter_name}/);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping partition '" . $name . "': no matching filter name");
+            next;
+        }
         
         $self->{result}->{$name} = 1;
     }
@@ -97,16 +100,13 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $partitions_display = '';
-    my $partitions_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $partitions_display .= $partitions_display_append . 'name = ' . $name;
-        $partitions_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List partitions: ' . $partitions_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List partitions:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
