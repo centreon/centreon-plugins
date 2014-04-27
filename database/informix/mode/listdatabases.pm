@@ -71,6 +71,7 @@ SELECT name FROM sysdatabases ORDER BY name
     $self->{list_databases} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{name} !~ /$self->{option_results}->{exclude}/) {
+            $self->{output}->output_add(long_msg => "Skipping database '" . centreon::plugins::misc::trim($row->{name}) . "': no matching filter name");
             next;
         }
         push @{$self->{list_databases}}, centreon::plugins::misc::trim($row->{name});
@@ -84,10 +85,13 @@ sub run {
 
     $self->manage_selection();
     
+    foreach my $name (sort @{$self->{list_databases}}) {
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
+    }
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "List of dbspaces: " . join(', ', @{$self->{list_databases}}));
+                                short_msg => "List of databases:");
 
-    $self->{output}->display();
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

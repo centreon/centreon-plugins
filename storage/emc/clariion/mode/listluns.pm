@@ -99,16 +99,31 @@ sub manage_selection {
         $raid_group_id = $1 if ($content =~ /^RAIDGroup ID:\s+(.*)$/im);
         $drive_type = $1 if ($content =~ /^Drive Type:\s+(.*)$/im);
         
-        next if (defined($self->{option_results}->{filter_lunnumber}) && $self->{option_results}->{filter_lunnumber} ne '' &&
-                 $lun_num !~ /$self->{option_results}->{filter_lunnumber}/);
-        next if (defined($self->{option_results}->{filter_lunstate}) && $self->{option_results}->{filter_lunstate} ne '' &&
-                 $state !~ /$self->{option_results}->{filter_lunstate}/);
-        next if (defined($self->{option_results}->{filter_drivetype}) && $self->{option_results}->{filter_drivetype} ne '' &&
-                 $drive_type !~ /$self->{option_results}->{filter_drivetype}/);
-        next if (defined($self->{option_results}->{filter_raidtype}) && $self->{option_results}->{filter_raidtype} ne '' &&
-                 $raid_type !~ /$self->{option_results}->{filter_raidtype}/);
-        next if (defined($self->{option_results}->{filter_raidgroupid}) && $self->{option_results}->{filter_raidgroupid} ne '' &&
-                 $raid_group_id !~ /$self->{option_results}->{filter_raidgroupid}/);
+        if (defined($self->{option_results}->{filter_lunnumber}) && $self->{option_results}->{filter_lunnumber} ne '' &&
+            $lun_num !~ /$self->{option_results}->{filter_lunnumber}/) {
+            $self->{output}->output_add(long_msg => "Skipping lun '" . $lun_num . "': no matching filter lun number");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_lunstate}) && $self->{option_results}->{filter_lunstate} ne '' &&
+            $state !~ /$self->{option_results}->{filter_lunstate}/) {
+            $self->{output}->output_add(long_msg => "Skipping lun '" . $lun_num . "': no matching filter lun state");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_drivetype}) && $self->{option_results}->{filter_drivetype} ne '' &&
+            $drive_type !~ /$self->{option_results}->{filter_drivetype}/) {
+            $self->{output}->output_add(long_msg => "Skipping lun '" . $lun_num . "': no matching filter lun drive type");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_raidtype}) && $self->{option_results}->{filter_raidtype} ne '' &&
+            $raid_type !~ /$self->{option_results}->{filter_raidtype}/) {
+            $self->{output}->output_add(long_msg => "Skipping lun '" . $lun_num . "': no matching filter lun raid type");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_raidgroupid}) && $self->{option_results}->{filter_raidgroupid} ne '' &&
+            $raid_group_id !~ /$self->{option_results}->{filter_raidgroupid}/) {
+            $self->{output}->output_add(long_msg => "Skipping lun '" . $lun_num . "': no matching filter lun raid group id");
+            next;
+        }
 
         $self->{result}->{$lun_num} = {state => $state, drive_type => $drive_type, raid_type => $raid_type, raid_groupid => $raid_group_id};
     }
@@ -119,23 +134,17 @@ sub run {
     $self->{clariion} = $options{custom};
     
     $self->manage_selection();
-
-    my $lun_display = '';
-    my $lun_display_append = '';
     foreach my $num (sort(keys %{$self->{result}})) {
-        $lun_display .= $lun_display_append . 'number = ' . $num . 
-                               ' [' .
-                               'state = ' . $self->{result}->{$num}->{state} .
-                               ', drive type = ' . $self->{result}->{$num}->{drive_type} .
-                               ', raid type = ' . $self->{result}->{$num}->{raid_type} .
-                               ', raid groupid = ' . $self->{result}->{$num}->{raid_groupid} .
-                               ']';
-        $lun_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $num . "' [state = " . $self->{result}->{$num}->{state} .
+                                                '] [drive type = ' . $self->{result}->{$num}->{drive_type} .
+                                                '] [raid type = ' . $self->{result}->{$num}->{raid_type} .
+                                                '] [raid groupid = ' . $self->{result}->{$num}->{raid_groupid} .
+                                                ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List LUNs: ' . $lun_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List LUNs:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

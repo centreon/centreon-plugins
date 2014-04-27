@@ -113,7 +113,7 @@ sub run {
 	
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . ', type = ' . $self->{result}->{$name}->{type} . ']');
+        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . '] [type = ' . $self->{result}->{$name}->{type} . ']');
     }
     
     $self->{output}->output_add(severity => 'OK',

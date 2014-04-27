@@ -70,6 +70,7 @@ SELECT datname FROM pg_database
     $self->{list_db} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {
+            $self->{output}->output_add(long_msg => "Skipping database '" . $row->{datname} . "': no matching filter name");
             next;
         }
         push @{$self->{list_db}}, $row->{datname};
@@ -83,10 +84,13 @@ sub run {
 
     $self->manage_selection();
     
+    foreach my $name (sort @{$self->{list_db}}) {
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
+    }
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "List of databases: " . join(', ', @{$self->{list_db}}));
+                                short_msg => "List of databases:");
 
-    $self->{output}->display();
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

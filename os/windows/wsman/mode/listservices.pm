@@ -74,6 +74,7 @@ sub manage_selection {
         next if (!defined($self->{option_results}->{use_regexp}) && $name eq $self->{option_results}->{name});
         next if (defined($self->{option_results}->{use_regexp}) && $name =~ /$self->{option_results}->{name}/);
         
+        $self->{output}->output_add(long_msg => "Skipping service '" . $name . "': no matching filter name");
         delete $self->{result}->{$name};
     }
 }
@@ -84,21 +85,16 @@ sub run {
     $self->{wsman} = $options{wsman};
 
     $self->manage_selection();
-    my $services_display = '';
-    my $services_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-
-        $services_display .= $services_display_append . 'name = ' . $name  . 
-                                ' [DisplayName = ' . $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}) . ',' . 
-                                 'StartMode = ' . $self->{result}->{$name}->{StartMode} . ',' .
-                                 'State = ' . $self->{result}->{$name}->{State} .
-                                ']';
-        $services_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [DisplayName = " . $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}) . '] [' . 
+                                                'StartMode = ' . $self->{result}->{$name}->{StartMode} . '] [' .
+                                                'State = ' . $self->{result}->{$name}->{State} .
+                                                ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List services: ' . $services_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List services:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

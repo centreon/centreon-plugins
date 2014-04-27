@@ -96,12 +96,21 @@ sub manage_selection {
      while ($webcontent =~ m/\/(.*):(.*):(.*):(.*)/g) {      
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
                
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                 $context !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $state !~ /$self->{option_results}->{filter_state}/);
-        next if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
-                 $contextpath !~ /$self->{option_results}->{filter_path}/);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $context !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping context '" . $context . "': no matching filter name");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+            $state !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "Skipping context '" . $context . "': no matching filter state");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
+            $contextpath !~ /$self->{option_results}->{filter_path}/) {
+            $self->{output}->output_add(long_msg => "Skipping context '" . $context . "': no matching filter path");
+            next;
+        }
 
         $self->{result}->{$context} = {state => $state, sessions => $sessions, contextpath => $contextpath};
     }
@@ -111,16 +120,13 @@ sub run {
     my ($self, %options) = @_;
     
     $self->manage_selection();
-    my $context_display = '';
-    my $context_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $context_display .= $context_display_append . 'name = ' . $name . ' [state = ' . $self->{result}->{$name}->{state} . ']';
-        $context_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [state = " . $self->{result}->{$name}->{state} . ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Contexts: ' . $context_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List Contexts:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
