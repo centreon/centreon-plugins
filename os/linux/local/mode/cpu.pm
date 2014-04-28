@@ -48,7 +48,7 @@ my $maps = [
     { counter => 'system', output => 'System %.2f %%', position => 3 },
     { counter => 'idle', output => 'Idle %.2f %%', position => 4 },
     { counter => 'wait', output => 'Wait %.2f %%', position => 5 },
-    { counter => 'interrupt', output => 'Interrput %.2f %%', position => 6 },
+    { counter => 'interrupt', output => 'Interrupt %.2f %%', position => 6 },
     { counter => 'softirq', output => 'Soft Irq %.2f %%', position => 7 },
     { counter => 'steal', output => 'Steal %.2f %%', position => 8 },
     { counter => 'guest', output => 'Guest %.2f %%', position => 9 },
