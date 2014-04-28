@@ -84,12 +84,12 @@ sub run {
         my $cpu_num = $1;
         
         $cpu += $result->{$key};
-        $i++;
         
         $self->{output}->output_add(long_msg => sprintf("CPU $i Usage is %.2f%%", $result->{$key}));
-        $self->{output}->perfdata_add(label => 'cpu' . $cpu_num,
+        $self->{output}->perfdata_add(label => 'cpu' . $i,
                                   value => sprintf("%.2f", $result->{$key}),
                                   min => 0, max => 100);
+        $i++;
     }
 
     my $avg_cpu = $cpu / $i;
@@ -113,7 +113,9 @@ __END__
 
 =head1 MODE
 
-Check system CPUs.
+Check system CPUs (HOST-RESOURCES-MIB)
+(The average, over the last minute, of the percentage 
+of time that this processor was not idle)
 
 =over 8
 
