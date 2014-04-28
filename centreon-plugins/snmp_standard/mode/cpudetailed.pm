@@ -48,7 +48,7 @@ my $oids = {
     '.1.3.6.1.4.1.2021.11.53.0' => { counter => 'idle', output => 'Idle %.2f %%' }, # ssCpuRawIdle
     '.1.3.6.1.4.1.2021.11.54.0' => { counter => 'wait', output => 'Wait %.2f %%' }, # ssCpuRawWait
     '.1.3.6.1.4.1.2021.11.55.0' => { counter => 'kernel', output => 'Kernel %.2f %%' }, # ssCpuRawKernel
-    '.1.3.6.1.4.1.2021.11.56.0' => { counter => 'interrupt', output => 'Interrput %.2f %%' }, # ssCpuRawInterrupt
+    '.1.3.6.1.4.1.2021.11.56.0' => { counter => 'interrupt', output => 'Interrupt %.2f %%' }, # ssCpuRawInterrupt
     '.1.3.6.1.4.1.2021.11.61.0' => { counter => 'softirq', output => 'Soft Irq %.2f %%' }, # ssCpuRawSoftIRQ
     '.1.3.6.1.4.1.2021.11.64.0' => { counter => 'steal', output => 'Steal %.2f %%' }, # ssCpuRawSteal
     '.1.3.6.1.4.1.2021.11.65.0' => { counter => 'guest', output => 'Guest %.2f %%' }, # ssCpuRawGuest
