@@ -62,6 +62,7 @@ sub new {
                                   "filter-name:s"     => { name => 'filter_name', },
                                   "filter-state:s"    => { name => 'filter_state', },
                                   "no-loopback"       => { name => 'no_loopback', },
+                                  "skip-novalues"     => { name => 'skip_novalues', },
                                 });
     $self->{result} = {};
     return $self;
@@ -101,6 +102,12 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no matching filter state");
             next;
         }
+        
+        $values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi;
+        if (defined($self->{option_results}->{skip_novalues}) && !defined($1)) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no values");
+            next;
+        }
         $self->{result}->{$interface_name} = {state => $states};
     }    
 }
@@ -110,7 +117,7 @@ sub run {
 	
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [state = " . $self->{result}->{$name}->{state} . ']');
+        $self->{output}->output_add(long_msg => "'" . $name . "' [state = '" . $self->{result}->{$name}->{state} . "']");
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -199,6 +206,10 @@ Can be: 'R' (running), 'U' (up).
 =item B<--no-loopback>
 
 Don't display loopback interfaces.
+
+=item B<--skip-novalues>
+
+Filter interface without in/out byte values.
 
 =back
 
