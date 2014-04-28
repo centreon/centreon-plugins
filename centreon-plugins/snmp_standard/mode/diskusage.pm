@@ -113,7 +113,6 @@ sub run {
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        # in bytes hrStorageAllocationUnits
         my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
         if (defined($self->{option_results}->{space_reservation})) {
             $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);

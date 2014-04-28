@@ -42,6 +42,19 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
+my $maps = [
+    { counter => 'user', output => 'User %.2f %%', position => 1 },
+    { counter => 'nice', output => 'Nice %.2f %%', position => 2 }, 
+    { counter => 'system', output => 'System %.2f %%', position => 3 },
+    { counter => 'idle', output => 'Idle %.2f %%', position => 4 },
+    { counter => 'wait', output => 'Wait %.2f %%', position => 5 },
+    { counter => 'interrupt', output => 'Interrput %.2f %%', position => 6 },
+    { counter => 'softirq', output => 'Soft Irq %.2f %%', position => 7 },
+    { counter => 'steal', output => 'Steal %.2f %%', position => 8 },
+    { counter => 'guest', output => 'Guest %.2f %%', position => 9 },
+    { counter => 'guestnice', output => 'Guest Nice %.2f %%', position => 10 },
+];
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -60,9 +73,14 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'cat' },
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options', default => '/proc/stat 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
                                 });
+    foreach (@{$maps}) {
+        $options{options}->add_options(arguments => {
+                                                    'warning-' . $_->{counter} . ':s'    => { name => 'warning_' . $_->{counter} },
+                                                    'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
+                                                    });
+    }
+    
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{hostname} = undef;
     return $self;
@@ -72,13 +90,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+    foreach (@{$maps}) {
+        if (($self->{perfdata}->threshold_validate(label => 'warning-' . $_->{counter}, value => $self->{option_results}->{'warning_' . $_->{counter}})) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong warning-" . $_->{counter} . " threshold '" . $self->{option_results}->{'warning_' . $_->{counter}} . "'.");
+            $self->{output}->option_exit();
+        }
+        if (($self->{perfdata}->threshold_validate(label => 'critical-' . $_->{counter}, value => $self->{option_results}->{'critical_' . $_->{counter}})) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong critical-" . $_->{counter} . " threshold '" . $self->{option_results}->{'critical_' . $_->{counter}} . "'.");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{statefile_cache}->check_options(%options);
@@ -98,63 +118,98 @@ sub run {
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
     $self->{statefile_cache}->read(statefile => 'cache_linux_local_' . $self->{hostname}  . '_' .  $self->{mode});
-    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-    my $datas = {};
-    $datas->{last_timestamp} = time();
+    # Manage values
+    my ($buffer_creation, $exit) = (0, 0);
+    my $save_datas = {};
+    my $new_datas = {};
+    my $old_datas = {};
+    
+    foreach my $line (split(/\n/, $stdout)) {
+        next if ($line !~ /cpu(\d+)\s+/);
+        my $cpu_number = $1;
+        my @values = split /\s+/, $line;
+        
+        foreach (@{$maps}) {
+            next if (!defined($values[$_->{position}]));
+            if (!defined($new_datas->{$cpu_number})) {
+                $new_datas->{$cpu_number} = { total => 0 };
+                $old_datas->{$cpu_number} = { total => 0 };
+            }
+            $new_datas->{$cpu_number}->{$_->{counter}} = $values[$_->{position}];
+            $save_datas->{'cpu' . $cpu_number . '_' . $_->{counter}} = $values[$_->{position}];
+            my $tmp_value = $self->{statefile_cache}->get(name => 'cpu' . $cpu_number . '_' . $_->{counter});
+            if (!defined($tmp_value)) {
+                $buffer_creation = 1;
+                next;
+            }
+            if ($new_datas->{$cpu_number}->{$_->{counter}} < $tmp_value) {
+                $buffer_creation = 1;
+                next;
+            }
+            
+            $exit = 1;
+            $old_datas->{$cpu_number}->{$_->{counter}} = $tmp_value;
+            $new_datas->{$cpu_number}->{total} += $new_datas->{$cpu_number}->{$_->{counter}};
+            $old_datas->{$cpu_number}->{total} += $old_datas->{$cpu_number}->{$_->{counter}};
+        }
+    }
+    
+    $self->{statefile_cache}->write(data => $save_datas);
+    if ($buffer_creation == 1) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        if ($exit == 0) {
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+    }
     
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "CPUs usages are ok.");
-    foreach (split(/\n/, $stdout)) {
-        next if (!/cpu(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
-        my $cpu_number = $1;
-        $datas->{'cpu_idle_' . $cpu_number} = $5;
-        $datas->{'cpu_system_' . $cpu_number} = $4;
-        $datas->{'cpu_user_' . $cpu_number} = $1;
-        $datas->{'cpu_iowait_' . $cpu_number} = $6;
+    
+    foreach my $cpu_number (sort keys(%$new_datas)) {
+        # In buffer creation. New cpu
+        next if (scalar(keys %{$old_datas->{$cpu_number}}) <= 1);
         
-        if (!defined($old_timestamp)) {
-            next;
-        }
-        my $old_cpu_idle = $self->{statefile_cache}->get(name => 'cpu_idle_' . $cpu_number);
-        my $old_cpu_system = $self->{statefile_cache}->get(name => 'cpu_system_' . $cpu_number);
-        my $old_cpu_user = $self->{statefile_cache}->get(name => 'cpu_user_' . $cpu_number);
-        my $old_cpu_iowait = $self->{statefile_cache}->get(name => 'cpu_iowait_' . $cpu_number);
-        if (!defined($old_cpu_system) || !defined($old_cpu_idle) || !defined($old_cpu_user) || !defined($old_cpu_iowait)) {
-            next;
+        if ($new_datas->{$cpu_number}->{total} - $old_datas->{$cpu_number}->{total} == 0) {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => "Counter not moved. Have to wait.");
+            $self->{output}->display();
+            $self->{output}->exit();
         }
         
-        if ($datas->{'cpu_idle_' . $cpu_number} < $old_cpu_idle) {
-            # We set 0. Has reboot.
-            $old_cpu_user = 0;
-            $old_cpu_idle = 0;
-            $old_cpu_system = 0;
-            $old_cpu_iowait = 0;
+        my @exits;
+        foreach (@{$maps}) {
+            next if (!defined($new_datas->{$cpu_number}->{$_->{counter}}));
+            my $value = (($new_datas->{$cpu_number}->{$_->{counter}} - $old_datas->{$cpu_number}->{$_->{counter}}) * 100) / 
+                         ($new_datas->{$cpu_number}->{total} - $old_datas->{$cpu_number}->{total});
+            push @exits, $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical-' . $_->{counter}, 'exit_litteral' => 'critical' }, { label => 'warning-' . $_->{counter}, 'exit_litteral' => 'warning' }]);
         }
-        
-        my $total_elapsed = ($datas->{'cpu_idle_' . $cpu_number} + $datas->{'cpu_user_' . $cpu_number} + $datas->{'cpu_system_' . $cpu_number} + $datas->{'cpu_iowait_' . $cpu_number}) - ($old_cpu_user + $old_cpu_idle + $old_cpu_system + $old_cpu_iowait);
-        my $idle_elapsed = $datas->{'cpu_idle_' . $cpu_number} - $old_cpu_idle;
-        my $cpu_ratio_usetime = 100 * $idle_elapsed / $total_elapsed;
-        $cpu_ratio_usetime = 100 - $cpu_ratio_usetime;        
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_ratio_usetime, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(long_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
-        if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
-        }
-        $self->{output}->perfdata_add(label => 'cpu_' . $cpu_number, unit => '%',
-                                      value => sprintf("%.2f", $cpu_ratio_usetime),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-    }
 
-	$self->{statefile_cache}->write(data => $datas);
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+        $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        my $str_output = "CPU '$cpu_number' Usage: ";
+        my $str_append = '';
+        foreach (@{$maps}) {
+            next if (!defined($new_datas->{$cpu_number}->{$_->{counter}}));
+        
+            my $value = (($new_datas->{$cpu_number}->{$_->{counter}} - $old_datas->{$cpu_number}->{$_->{counter}}) * 100) / 
+                         ($new_datas->{$cpu_number}->{total} - $old_datas->{$cpu_number}->{total});
+            $str_output .= $str_append . sprintf($_->{output}, $value);
+            $str_append = ', ';
+            my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $_->{counter});
+            my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $_->{counter});
+
+            $self->{output}->perfdata_add(label => 'cpu' . $cpu_number . '_' . $_->{counter}, unit => '%',
+                                          value => sprintf("%.2f", $value),
+                                          warning => $warning,
+                                          critical => $critical,
+                                          min => 0, max => 100);
+        }
+        $self->{output}->output_add(long_msg => $str_output);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => $str_output);
+        }
     }
  
     $self->{output}->display();
@@ -167,17 +222,20 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (need '/proc/stat' file).
+Check average usage for each CPUs (need '/proc/stat' file)
+(User, Nice, System, Idle, Wait, Interrupt, SoftIRQ, Steal, Guest, GuestNice)
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*>
 
 Threshold warning in percent.
+Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
-=item B<--critical>
+=item B<--critical-*>
 
 Threshold critical in percent.
+Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
 
 =item B<--remote>
 
