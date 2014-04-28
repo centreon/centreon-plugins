@@ -215,23 +215,17 @@ sub parse_threshold {
 
 sub change_bytes {
     my ($self, %options) = @_;
-
-    my $unit = defined($options{network}) ? 'b' : 'B';
     my $divide = defined($options{network}) ? 1000 : 1024;
+    my @units = ('K', 'M', 'G', 'T');
+    my $unit = '';
     
-    if (($options{value} / $divide) >= 1) {
+    for (my $i = 0; $i < scalar(@units); $i++) {
+        last if (($options{value} / $divide) < 1);
+        $unit = $units[$i];
         $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Kb' : 'KB';
     }
-    if (($options{value} / $divide) >= 1) {
-        $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Mb' : 'MB';
-    }
-    if (($options{value} / $divide) >= 1) {
-        $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Gb' : 'GB';
-    }
-    return (sprintf("%.2f", $options{value}), $unit);
+
+    return (sprintf("%.2f", $options{value}), $unit . (defined($options{network}) ? 'b' : 'B'));
 }
 
 1;
