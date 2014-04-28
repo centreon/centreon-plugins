@@ -48,6 +48,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'cpu'              => 'snmp_standard::mode::cpu',
+                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
                          'diskio'           => 'snmp_standard::mode::diskio',
                          'disk-usage'       => 'snmp_standard::mode::diskusage',
                          'inodes'           => 'snmp_standard::mode::inodes',
