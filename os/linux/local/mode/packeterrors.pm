@@ -96,11 +96,12 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'ifconfig' },
                                   "command-path:s"    => { name => 'command_path', default => '/sbin' },
                                   "command-options:s" => { name => 'command_options', default => '-a 2>&1' },
-                                  "filter-state:s"    => { name => 'filter_state', default => 'RU' },
+                                  "filter-state:s"    => { name => 'filter_state', },
                                   "name:s"                  => { name => 'name' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "no-loopback"             => { name => 'no_loopback', },
+                                  "skip"                    => { name => 'skip' },
                                 });
     foreach (keys %{$maps_counters}) {
         foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
@@ -163,7 +164,7 @@ sub manage_selection {
             && $interface_name ne $self->{option_results}->{name});
 
         $values =~ /RX packets:(\d+).*?TX packets:(\d+)/msi;
-        $self->{result}->{$interface_name} = {total_in => $1, total_out => $2};
+        $self->{result}->{$interface_name} = {total_in => $1, total_out => $2, state => $states};
         foreach (keys %{$maps_counters}) {
             $values =~ /$maps_counters->{$_}->{regexp}/msi;
             $self->{result}->{$interface_name}->{$_} = $1;
@@ -197,9 +198,35 @@ sub run {
     
     foreach my $name (sort(keys %{$self->{result}})) {
 
+        if ($self->{result}->{$name}->{state} !~ /RU/) {
+            if (!defined($self->{option_results}->{skip})) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => "Interface '" . $name . "' is not up or/and running");
+            } else {
+                # Avoid getting "buffer creation..." alone
+                if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $name . "' is not up or/and running (normal state)");
+                }
+                $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': not up or/and running.");
+            }
+            next;
+        }
+        
+        # Some interface are running but not have bytes in/out
+        if (!defined($self->{result}->{$name}->{total_in})) {
+            if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $name . "' is up and running but can't get packets (no values)");
+            }
+            $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': can't get packets.");
+            next;
+        }
+    
         my $old_datas = {};
         my $next = 0;
         foreach (keys %{$self->{result}->{$name}}) {
+            next if ($_ eq 'state');
             $new_datas->{$_ . '_' . $name} = $self->{result}->{$name}->{$_};
             $old_datas->{$_ . '_' . $name} = $self->{statefile_value}->get(name => $_ . '_' . $name);
             if (!defined($old_datas->{$_ . '_' . $name})) {
@@ -353,7 +380,11 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--filter-state>
 
-Filter filesystem type (regexp can be used. Default: 'RU').
+Filter filesystem type (regexp can be used).
+
+=item B<--skip>
+
+Skip errors on interface status (not up and running).
 
 =item B<--no-loopback>
 
