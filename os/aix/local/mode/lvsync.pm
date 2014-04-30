@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package os::aix::local::mode::mirrorvg;
+package os::aix::local::mode::lvsync;
 
 use base qw(centreon::plugins::mode);
 
@@ -58,10 +58,9 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'lsvg' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-o | lsvg -i -l | grep -i stale 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-o | lsvg -i -l 2>&1' },
+                                  "filter-state:s"    => { name => 'filter_state', default => 'stale' },
                                   "filter-type:s"     => { name => 'filter_type', },
-                                  "warning:s"         => { name => 'warning' },
-                                  "critical:s"        => { name => 'critical' },
                                   "name:s"            => { name => 'name' },
                                   "regexp"              => { name => 'use_regexp' },
                                   "regexp-isensitive"   => { name => 'use_regexpi' },
@@ -87,65 +86,63 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
-    foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
-        my ($lv, $type, $lp, $pp, $pv, $lvstate, $mount) = ($1, $2, $3, $4, $5, $6, $7);
-        
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-                 $type !~ /$self->{option_results}->{filter_type}/);
-        
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $mount ne $self->{option_results}->{name});
-        
-        $self->{result}->{$mount} = {lv => $lv, type => $type, lp => $lp, pp => $pp, pv => $pv, lvstate => $lvstate};
+    if (scalar @lines != 0){
+        foreach my $line (@lines) {
+            next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
+            my ($lv, $type, $lp, $pp, $pv, $lvstate, $mount) = ($1, $2, $3, $4, $5, $6, $7);
+            
+            next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+                     $lvstate !~ /$self->{option_results}->{filter_state}/);
+            next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+                     $type !~ /$self->{option_results}->{filter_type}/);
+
+            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
+                && $mount !~ /$self->{option_results}->{name}/i);
+            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
+                && $mount !~ /$self->{option_results}->{name}/);
+            next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
+                && $mount ne $self->{option_results}->{name});
+            
+            $self->{result}->{$mount} = {lv => $lv, type => $type, lp => $lp, pp => $pp, pv => $pv, lvstate => $lvstate};
+        }
     }
     
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No lv found for mount point '" . $self->{option_results}->{name} . "'.");
-        } else {
-            $self->{output}->add_option_msg(short_msg => "No lv found.");
-        }
-        $self->{output}->option_exit();
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
     
     $self->manage_selection();
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All lv are ok.');
-    }
     
-    my $num_disk_check = 0;
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $num_disk_check++;
-        my $lv = $self->{result}->{$name}->{lv};
-        my $type = $self->{result}->{$name}->{type};
-        my $lp = $self->{result}->{$name}->{lp};
-        my $pp = $self->{result}->{$name}->{pp};
-        my $pv = $self->{result}->{$name}->{pv};
-        my $lvstate = $self->{result}->{$name}->{lvstate};
-        my $mount = $name;
+    if (scalar(keys %{$self->{result}}) <= 0) {
+        $self->{output}->output_add(long_msg => 'All LV are ok.');
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All LV are ok.');
+    } else {
+        my $num_disk_check = 0;
+        foreach my $name (sort(keys %{$self->{result}})) {
+            $num_disk_check++;
+            my $lv = $self->{result}->{$name}->{lv};
+            my $type = $self->{result}->{$name}->{type};
+            my $lp = $self->{result}->{$name}->{lp};
+            my $pp = $self->{result}->{$name}->{pp};
+            my $pv = $self->{result}->{$name}->{pv};
+            my $lvstate = $self->{result}->{$name}->{lvstate};
+            my $mount = $name;
             
-        $self->{output}->output_add(long_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
-                                            $mount, $lvstate,
+            $self->{output}->output_add(long_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
+                                             $mount, $lvstate,
                                              $lp, $pp, $pv));
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
-                                        $mount, $lvstate,
-                                        $lp, $pp, $pv));
-    }
-
-    if ($num_disk_check == 0) {
-        $self->{output}->add_option_msg(short_msg => "No lv checked.");
-        $self->{output}->option_exit();
+            $self->{output}->output_add(severity => 'critical',
+                                        short_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
+                                            $mount, $lvstate,
+                                            $lp, $pp, $pv));
+        }
+    
+        if ($num_disk_check == 0) {
+            $self->{output}->add_option_msg(short_msg => "No lv checked.");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{output}->display();
@@ -201,15 +198,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-o | lsvg -i -l | grep -i stale 2>&1').
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Command options (Default: '-o | lsvg -i -l 2>&1').
 
 =item B<--name>
 
@@ -222,6 +211,10 @@ Allows to use regexp to filter storage mount point (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
+
+=item B<--filter-state>
+
+Filter filesystem state (Default: stale) (regexp can be used).
 
 =item B<--filter-type>
 
