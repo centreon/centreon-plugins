@@ -54,7 +54,7 @@ sub new {
                                   "critical-read:s"         => { name => 'critical_read' },
                                   "warning-write:s"         => { name => 'warning_write' },
                                   "critical-write:s"        => { name => 'critical_write' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "device:s"                => { name => 'device' },
                                   "regexp"                  => { name => 'use_regexp' },
@@ -207,6 +207,7 @@ sub run {
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
+    $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
 
     my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
@@ -236,8 +237,8 @@ sub manage_selection {
     }
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || 
+        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
         $self->reload_cache();
         $self->{statefile_cache}->read();
     }
