@@ -54,7 +54,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "diskpath:s"              => { name => 'diskpath' },
                                   "regexp"                  => { name => 'use_regexp' },
@@ -138,8 +138,8 @@ sub reload_cache {
     my $datas = {};
 
     my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
+    $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
-    my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /\.([0-9]+)$/);
         push @{$datas->{all_ids}}, $1;
@@ -165,8 +165,8 @@ sub manage_selection {
     }
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || 
+        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
             $self->reload_cache();
             $self->{statefile_cache}->read();
     }
