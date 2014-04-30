@@ -50,7 +50,7 @@ sub new {
                          'errpt'            => 'os::aix::local::mode::errpt',
                          'list-storages'    => 'os::aix::local::mode::liststorages',
                          'storage'          => 'os::aix::local::mode::storage',
-                         'mirrorvg'         => 'os::aix::local::mode::mirrorvg',
+                         'lvsync'         => 'os::aix::local::mode::lvsync',
                          );
 
     return $self;
