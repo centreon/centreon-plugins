@@ -65,7 +65,7 @@ sub new {
                                   "critical-in-error:s"   => { name => 'critical_in_error' },
                                   "warning-out-error:s"   => { name => 'warning_out_error' },
                                   "critical-out-error:s"  => { name => 'critical_out_error' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "interface:s"             => { name => 'interface' },
                                   "skip"                    => { name => 'skip' },
@@ -356,6 +356,7 @@ sub reload_cache {
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
+    $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
     my $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_filter}});
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -395,7 +396,7 @@ sub manage_selection {
     my $oid_filter = $self->{statefile_cache}->get(name => 'oid_filter');
     if ($has_cache_file == 0 ||
         ($self->{option_results}->{oid_display} !~ /^($oid_display|$oid_filter)$/i || $self->{option_results}->{oid_filter} !~ /^($oid_display|$oid_filter)$/i) ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
         $self->reload_cache();
         $self->{statefile_cache}->read();
     }
