@@ -113,6 +113,33 @@ sub global {
                                 );
 }
 
+sub globalstatus {
+    my %status = (
+        1 => ['other', 'CRITICAL'],
+        2 => ['unknown', 'UNKNOWN'],
+        3 => ['ok', 'OK'],
+        4 => ['nonCritical', 'WARNING'],
+        5 => ['critical', 'CRITICAL'],
+        6 => ['nonRecoverable', 'CRITICAL'],
+    );
+
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking global system status");
+    return if ($self->check_exclude('globalstatus'));
+
+    my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.1.200.10.1.2.1';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus], nothing_quit => 1);
+    
+    $self->{output}->output_add(long_msg => sprintf("Overall global status is '%s'.",
+                                    ${$status{$result->{$oid_globalSystemStatus}}}[0]
+                                    ));
+    
+    $self->{output}->output_add(severity =>  ${$status{$result->{$oid_globalSystemStatus}}}[1],
+                            short_msg => sprintf("Overall global status is '%s'",
+                                            ${$status{$result->{$oid_globalSystemStatus}}}[0]));
+}
+
 sub component {
     my ($self, %options) = @_;
 
@@ -179,6 +206,8 @@ sub run {
 
     if ($self->{option_results}->{component} eq 'all') {
         $self->global();
+    } elsif ($self->{option_results}->{component} eq 'globalstatus') {
+        $self->globalstatus();
     } else {
         $self->component();
     }
