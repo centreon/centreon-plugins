@@ -107,8 +107,6 @@ sub run {
                                  $oid_dskUsedLow, $oid_dskUsedHigh], instances => $self->{diskpath_id_selected});
     my $result = $self->{snmp}->get_leef(nothing_quit => 1);
 
-    
-
     my $num_disk_check = 0;
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
