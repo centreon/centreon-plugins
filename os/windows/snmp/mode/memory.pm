@@ -119,8 +119,8 @@ sub run {
 
     $self->{output}->perfdata_add(label => "used",
                                   value => $physical_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0, max => $total_size);
 
     $self->{output}->display();
