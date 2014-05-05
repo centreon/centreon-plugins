@@ -48,9 +48,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"               => { name => 'warning', default => '' },
-                                  "critical:s"              => { name => 'critical', default => '' },
-                                  "average"              => { name => 'average' },
+                                  "warning:s"   => { name => 'warning', default => '' },
+                                  "critical:s"  => { name => 'critical', default => '' },
+                                  "average"     => { name => 'average' },
                                 });
 
     return $self;

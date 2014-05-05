@@ -56,11 +56,12 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'cat' },
+                                  "command:s"         => { name => 'command', default => 'tail' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '/proc/loadavg 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-n +1 /proc/loadavg /proc/stat 2>&1' },
                                   "warning:s"         => { name => 'warning', default => '' },
                                   "critical:s"        => { name => 'critical', default => '' },
+                                  "average"           => { name => 'average' },
                                 });
     return $self;
 }
@@ -109,42 +110,69 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
     
     my ($load1m, $load5m, $load15m);
-    if ($stdout =~ /([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)/) {
+    my ($msg, $cpu_load1, $cpu_load5, $cpu_load15);
+
+    if ($stdout =~ /\/proc\/loadavg.*?([0-9\.]+)\s+([0-9\.]+)\s+([0-9\.]+)/ms) {
         ($load1m, $load5m, $load15m) = ($1, $2, $3)
     }
-    
+
     if (!defined($load1m) || !defined($load5m) || !defined($load15m)) {
         $self->{output}->add_option_msg(short_msg => "Some informations missing.");
         $self->{output}->option_exit();
     }
+
+    if (defined($self->{option_results}->{average})) {    
+        my $countCpu = 0;
+        
+        $countCpu++ while ($stdout =~ /^cpu\d+/msg);
+        
+        if ($countCpu == 0){
+            $self->{output}->output_add(severity => 'unknown',
+                                        short_msg => 'Unable to get number of CPUs');
+            $self->{output}->display();
+            $self->{output}->exit();    
+        }
+
+        $cpu_load1 = sprintf("%0.2f", $load1m / $countCpu);
+        $cpu_load5 = sprintf("%0.2f", $load5m / $countCpu);
+        $cpu_load15 = sprintf("%0.2f", $load15m / $countCpu);
+        $msg = sprintf("Load average: %s [%s/%s CPUs], %s [%s/%s CPUs], %s [%s/%s CPUs]", $cpu_load1, $load1m, $countCpu,
+                       $cpu_load5, $load5m, $countCpu,
+                       $cpu_load15, $load15m, $countCpu);
+    } else {
+        $cpu_load1 = $load1m;
+        $cpu_load5 = $load5m;
+        $cpu_load15 = $load15m;
     
-    my $exit1 = $self->{perfdata}->threshold_check(value => $load1m, 
-                               threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $load5m, 
-                               threshold => [ { label => 'crit5', 'exit_litteral' => 'critical' }, { label => 'warn5', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $load15m, 
-                               threshold => [ { label => 'crit15', 'exit_litteral' => 'critical' }, { label => 'warn15', exit_litteral => 'warning' } ]);
+        $msg = sprintf("Load average: %s, %s, %s", $cpu_load1, $cpu_load5, $cpu_load15);
+    }
     
+    my $exit1 = $self->{perfdata}->threshold_check(value => $cpu_load1,
+                                                   threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
+    my $exit2 = $self->{perfdata}->threshold_check(value => $cpu_load5,
+                                                   threshold => [ { label => 'crit5', 'exit_litteral' => 'critical' }, { label => 'warn5', exit_litteral => 'warning' } ]);
+    my $exit3 = $self->{perfdata}->threshold_check(value => $cpu_load15,
+                                                   threshold => [ { label => 'crit15', 'exit_litteral' => 'critical' }, { label => 'warn15', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Load average: %s, %s, %s", $load1m, $load5m, $load15m));
-            
+                                short_msg => $msg);
+    
     $self->{output}->perfdata_add(label => 'load1',
-                                  value => $load1m,
+                                  value => $cpu_load1,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
                                   min => 0);
     $self->{output}->perfdata_add(label => 'load5',
-                                  value => $load5m,
+                                  value => $cpu_load5,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
                                   min => 0);
     $self->{output}->perfdata_add(label => 'load15',
-                                  value => $load15m,
+                                  value => $cpu_load15,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
                                   min => 0);
- 
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -166,6 +194,10 @@ Threshold warning (1min,5min,15min).
 =item B<--critical>
 
 Threshold critical (1min,5min,15min).
+
+=item B<--average>
+
+Load average for the number of CPUs.
 
 =item B<--remote>
 
@@ -197,7 +229,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'cat').
+Command to get information (Default: 'tail').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -206,7 +238,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '/proc/loadavg 2>&1').
+Command options (Default: '-n +1 /proc/loadavg /proc/stat 2>&1').
 
 =back
 
