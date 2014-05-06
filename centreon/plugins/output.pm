@@ -393,7 +393,7 @@ sub output_txt {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
-            print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $_->{max};
+            print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $perf->{max};
         }
         print "\n";
     }
