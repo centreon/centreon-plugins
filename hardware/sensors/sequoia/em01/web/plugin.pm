@@ -47,9 +47,11 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
+            'contact'       => 'hardware::sensors::sequoia::em01::web::mode::contact',
             'temperature'   => 'hardware::sensors::sequoia::em01::web::mode::temperature',
             'humidity'      => 'hardware::sensors::sequoia::em01::web::mode::humidity',
             'illumination'  => 'hardware::sensors::sequoia::em01::web::mode::illumination',
+            'voltage'       => 'hardware::sensors::sequoia::em01::web::mode::voltage',
 			);
 
 	return $self;
@@ -62,6 +64,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Sequoia em01 sensors through webpage.
-Tested on 'EM01b-STN'.
 
 =cut
