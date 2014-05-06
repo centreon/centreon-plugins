@@ -53,7 +53,7 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/" },
+            "urlpath:s"         => { name => 'url_path', default => "/index.htm?em" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -143,7 +143,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/server-status/?auto')
+Set path to get server-status page in auto mode (Default: '/index.htm?em')
 
 =item B<--credentials>
 
@@ -165,11 +165,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning Threshold for CpuLoad
+Warning Threshold for Illumination
 
 =item B<--critical>
 
-Critical Threshold for CpuLoad
+Critical Threshold for Illumination
 
 =back
 
