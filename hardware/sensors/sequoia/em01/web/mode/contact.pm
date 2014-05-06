@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::temperature;
+package hardware::sensors::sequoia::em01::web::mode::contact;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,30 +53,32 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/index.htm?em" },
+            "urlpath:s"         => { name => 'url_path', default => "/index.htm?eL" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
             "proxyurl:s"        => { name => 'proxyurl' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
+            "warning"           => { name => 'warning' },
+            "critical"          => { name => 'critical' },
+            "closed"            => { name => 'closed' },
             "timeout:s"         => { name => 'timeout', default => '3' },
             });
+    $self->{status} = { closed => 'ok', opened => 'ok' };
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
+    
+    my $label = 'opened';
+    $label = 'closed' if (defined($self->{option_results}->{closed}));
+    if (defined($self->{option_results}->{critical})) {
+        $self->{status}->{$label} = 'critical';
+    } elsif (defined($self->{option_results}->{warning})) {
+        $self->{status}->{$label} = 'warning';
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
@@ -91,23 +93,21 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = centreon::plugins::httplib::connect($self);
+    my $contact;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /T([CF]):\s*([0-9\.]+)/i) {
-        $self->{output}->add_option_msg(short_msg => "Could not find temperature information.");
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /([NW]).*?:/) {
+        $self->{output}->add_option_msg(short_msg => "Could not find door contact information.");
         $self->{output}->option_exit();
     }
-    my ($temperature, $unit) = ($2, $1);
-    $temperature = '0' . $temperature if ($temperature =~ /^\./);
+    $contact = $1;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $temperature, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Temperature: %.2f %s", $temperature, $unit));
-    $self->{output}->perfdata_add(label => "temperature", unit => $unit,
-                                  value => sprintf("%.2f", $temperature),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
+    if ($contact eq 'N') {
+        $self->{output}->output_add(severity => $self->{status}->{opened},
+                                short_msg => sprintf("Door is opened."));
+    } else {
+        $self->{output}->output_add(severity => $self->{status}->{closed},
+                                short_msg => sprintf("Door is closed."));
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -120,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check sensor Temperature.
+Check sensor voltage.
 
 =over 8
 
@@ -142,7 +142,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/index.htm?em')
+Set path to get server-status page in auto mode (Default: '/index.htm?eL')
 
 =item B<--credentials>
 
@@ -164,11 +164,15 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning Threshold for Humidity
+Warning if door is opened (can set --close for closed door)
 
 =item B<--critical>
 
-Critical Threshold for Humidity
+Critical if door is opened (can set --close for closed door)
+
+=item B<--closed>
+
+Threshold is on closed door (default: opened)
 
 =back
 
