@@ -50,6 +50,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
+                                  "range-perfdata:s"        => { name => 'range_perfdata' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
@@ -73,6 +74,7 @@ sub new {
     $self->{perfdatas} = [];
     $self->{explode_perfdatas} = {};
     $self->{explode_perfdata_total} = 0;
+    $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
 
     $self->{disco_elements} = [];
@@ -99,6 +101,15 @@ sub check_options {
         # By Default XML
         if (!defined($self->{option_results}->{output_json})) {
             $self->{option_results}->{output_xml} = 1;
+        }
+    }
+    
+    if (defined($self->{option_results}->{range_perfdata})) {
+        $self->{range_perfdata} = $self->{option_results}->{range_perfdata};
+        $self->{range_perfdata} = 1 if ($self->{range_perfdata} eq '');
+        if ($self->{range_perfdata} !~ /^[012]$/) {
+            $self->add_option_msg(short_msg => "Wrong range-perfdata option '" . $self->{range_perfdata} . "'");
+            $self->option_exit();
         }
     }
     
@@ -192,6 +203,21 @@ sub explode_perfdatas {
     }
 }
 
+sub range_perfdata {
+    my ($self, %options) = @_;
+    
+    return if ($self->{range_perfdata} == 0);
+    if ($self->{range_perfdata} == 1) {
+        for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
+            ${${$options{ranges}}[$i]} =~ s/^(@)?-?[0\.]+:/$1/;
+        }
+    } else {
+        for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
+            ${${$options{ranges}}[$i]} = '';
+        }
+    }
+}
+
 sub output_json {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
@@ -229,13 +255,14 @@ sub output_json {
 
     if ($options{force_ignore_perfdata} == 0) {
         $self->explode_perfdatas();
-        foreach (@{$self->{perfdatas}}) {
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
             
             my %values = ();
-            foreach my $key (keys %$_) {
-                $values{$key} = $_->{$key};
+            foreach my $key (keys %$perf) {
+                $values{$key} = $perf->{$key};
             }
             
             push @{$json_content->{plugin}->{perfdatas}}, {
@@ -316,16 +343,17 @@ sub output_xml {
 
     if ($options{force_ignore_perfdata} == 0) {
         $self->explode_perfdatas();
-        foreach (@{$self->{perfdatas}}) {
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         
             my ($child_perfdata);
             $child_perfdata = $self->{xml_output}->createElement("perfdata");
             $child_plugin_perfdata->addChild($child_perfdata);
-            foreach my $key (keys %$_) {
+            foreach my $key (keys %$perf) {
                 my $child = $self->{xml_output}->createElement($key);
-                $child->appendText($_->{$key});
+                $child->appendText($perf->{$key});
                 $child_perfdata->addChild($child);
             }
         }
@@ -361,10 +389,11 @@ sub output_txt {
     } else {
         print "|";
         $self->explode_perfdatas();
-        foreach (@{$self->{perfdatas}}) {
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
-            print " '" . $_->{label} . "'=" . $_->{value} . $_->{unit} . ";" . $_->{warning} . ";" . $_->{critical} . ";" . $_->{min} . ";" . $_->{max};
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
+            print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $_->{max};
         }
         print "\n";
     }
@@ -689,6 +718,11 @@ Filter perfdata that match the regexp.
 
 Put max perfdata (if it exist) in a specific perfdata 
 (without values: same with '_max' suffix)
+
+=item B<--range-perfdata>
+
+Change perfdata range thresholds display: 
+1 = start value equals to '0' is removed, 2 = threshold range is not display.
 
 =item B<--opt-exit>
 
