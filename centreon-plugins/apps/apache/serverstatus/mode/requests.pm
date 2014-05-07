@@ -243,8 +243,6 @@ Specify username for basic authentification (Mandatory if --credentials is speci
 
 Specify password for basic authentification (Mandatory if --credentials is specidied)
 
-=item B<--password>
-
 =item B<--timeout>
 
 Threshold for HTTP timeout
