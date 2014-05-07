@@ -61,6 +61,7 @@ sub new {
                          'processcount'     => 'snmp_standard::mode::processcount',
                          'storage'          => 'snmp_standard::mode::storage',
                          'swap'             => 'snmp_standard::mode::swap',
+                         'tcpcon'           => 'snmp_standard::mode::tcpcon',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
