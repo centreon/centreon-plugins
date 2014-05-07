@@ -34,11 +34,14 @@
 ####################################################################################
 
 package centreon::plugins::options;
+
 use Pod::Usage;
 use Pod::Find qw(pod_where);
 use Getopt::Long;
 Getopt::Long::Configure("pass_through");
 Getopt::Long::Configure('bundling');
+use strict;
+use warnings;
 
 sub new {
     my $class = shift;
@@ -61,9 +64,9 @@ sub set_output {
 sub display_help {
     my ($self, %options) = @_;
     
+    my $stdout;
     foreach (@{$self->{pod_package}}) {
-        my $stdout;
-       
+        
         {
             local *STDOUT;
             open STDOUT, '>', \$stdout;
@@ -88,9 +91,9 @@ sub add_help {
     }
     
     if (defined($options{help_first})) {
-        shift @{$self->{pod_package}}, {package => $options{package}, sections => $options{sections}};
+        unshift @{$self->{pod_package}}, {package => $options{package}, sections => $options{sections}};
     } else {
-        push @{$self->{pod_package}}, {package => $options{package}, sections => $options{sections}};
+        push @{$self->{pod_package}}, { package => $options{package}, sections => $options{sections} };
     }
     
     $self->{pod_packages_once}->{$options{package}} = 1;

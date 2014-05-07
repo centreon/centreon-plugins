@@ -35,6 +35,9 @@
 
 package centreon::plugins::perfdata;
 
+use strict;
+use warnings;
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -122,14 +125,16 @@ sub parse_threshold {
     my $global_status = 1;
     
     if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
-        ($exclusive, $value_start, $value_end) = ($1, $2, $3);
+        $value_start = $2 if (defined($2));
+        $value_end = $3 if (defined($3));
+        $arobase = 1 if (defined($1) && $1 eq '@');
         $value_start =~ s/[\+:]//g;
         $value_end =~ s/\+//;
-        if (!defined($value_end)) {
+        if ($value_end eq '') {
             $value_end = 1e500;
             $infinite_pos = 1;
         }
-        $value_start = 0 if (!defined($value_start)  || $value_start eq '');      
+        $value_start = 0 if ($value_start eq '');      
         $value_start =~ s/,/\./;
         $value_end =~ s/,/\./;
         
