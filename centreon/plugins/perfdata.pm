@@ -109,42 +109,10 @@ sub trim {
     return $value;
 }
 
-sub continue_to {
-    my $self = shift;
-    my ($forbidden, $stop1, $not_stop_after) = @_;
-    my $value = "";
-
-    while ($self->{perfdata_pos} < $self->{perfdata_size}) {
-        if (defined($forbidden) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] =~ /$forbidden/) {
-            return undef;
-        }
-        if (${$self->{perfdata_chars}}[$self->{perfdata_pos}] =~ /$stop1/) {
-            if (!defined($not_stop_after)) {
-                return $value;
-            }
-            if (!($self->{perfdata_pos} + 1 < $self->{perfdata_size} && ${$self->{perfdata_chars}}[$self->{perfdata_pos} + 1] =~ /$not_stop_after/)) {
-                $self->{perfdata_pos}++;
-                return $value;
-            }
-            $self->{perfdata_pos}++;
-        }
-
-        $value .= ${$self->{perfdata_chars}}[$self->{perfdata_pos}];
-        $self->{perfdata_pos}++;
-    }
-
-    return $value;
-}
-
 sub parse_threshold {
     my $self = shift;
 
-    @{$self->{perfdata_chars}} = split //, $self->trim($_[0]);
-    $self->{perfdata_pos} = 0;
-    $self->{perfdata_size} = scalar(@{$self->{perfdata_chars}});
-
-    my $neg = 1;
-    my $value_tmp = "";
+    my $perf = $self->trim($_[0]);
 
     my $arobase = 0;
     my $infinite_neg = 0;
@@ -153,61 +121,24 @@ sub parse_threshold {
     my $value_end = "";
     my $global_status = 1;
     
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "@") {
-        $arobase = 1;
-        $self->{perfdata_pos}++;
-    }
-
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "~") {
-        $infinite_neg = 1;
-        $self->{perfdata_pos}++;
-    } else {
-        if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "-") {
-            $neg = -1;
-            $self->{perfdata_pos}++;
-        }
-        $value_tmp = $self->continue_to(undef, "[^0-9\.,]");
-        if (defined($value_tmp) && $value_tmp ne "") {
-            $value_tmp =~ s/,/./g;
-            $value_tmp = $value_tmp * $neg;
-        }
-        $neg = 1;
-    }
-
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq ":") {
-        if ($value_tmp ne "") {
-            $value_start = $value_tmp;
-        } else {
-            $value_start = 0;
-        }
-        $self->{perfdata_pos}++;
-
-        if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "-") {
-            $neg = -1;
-            $self->{perfdata_pos}++;
-        }
-        $value_end = $self->continue_to(undef, "[^0-9\.,]");
-        if (defined($value_tmp) && $value_end ne "") {
-            $value_end =~ s/,/./g;
-            $value_end = $value_end * $neg;
-        } else {
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+        ($exclusive, $value_start, $value_end) = ($1, $2, $3);
+        $value_start =~ s/[\+:]//g;
+        $value_end =~ s/\+//;
+        if (!defined($value_end)) {
+            $value_end = 1e500;
             $infinite_pos = 1;
         }
+        $value_start = 0 if (!defined($value_start)  || $value_start eq '');      
+        $value_start =~ s/,/\./;
+        $value_end =~ s/,/\./;
+        
+        if ($value_start eq '~') {
+            $value_start = -1e500;
+            $infinite_neg = 1;
+        }
     } else {
-        $value_start = 0;
-        $value_end = $value_tmp;
-    }
-    
-    my $value = $self->continue_to(undef, "[ \t;]");
-    if ($value ne '') {
         $global_status = 0;
-    }
-
-    if ($infinite_neg == 1) {
-        $value_start = '-1e500';
-    }
-    if ($infinite_pos == 1) {
-        $value_end = '1e500';
     }
 
     return ($global_status, $value_start, $value_end, $arobase, $infinite_neg, $infinite_pos);
