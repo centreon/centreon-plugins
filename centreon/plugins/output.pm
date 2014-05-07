@@ -34,8 +34,11 @@
 ####################################################################################
 
 package centreon::plugins::output;
+
 use Encode;
 use centreon::plugins::misc;
+use strict;
+use warnings;
 
 sub new {
     my ($class, %options) = @_;
