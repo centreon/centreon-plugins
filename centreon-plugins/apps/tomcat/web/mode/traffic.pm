@@ -43,6 +43,7 @@ use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
+use URI::Escape;
 
 sub new {
     my ($class, %options) = @_;
@@ -188,6 +189,7 @@ sub manage_selection {
             my $connector_name = $node->getParentNode()->getParentNode()->getAttribute("name");
             $connector_name =~ s/^["'\s]+//;
             $connector_name =~ s/["'\s]+$//;
+            $connector_name = uri_unescape($connector_name);
 
             next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
                 && $connector_name !~ /$self->{option_results}->{name}/i);
