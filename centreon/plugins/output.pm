@@ -564,7 +564,8 @@ sub is_litteral_status {
 sub create_json_document {
     my ($self) = @_;
 
-    require JSON;
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON',
+                                               error_msg => "Cannot load module 'JSON'.");
     $self->{is_output_json} = 1;
     $self->{json_output} = JSON->new->utf8();
 }
@@ -572,7 +573,8 @@ sub create_json_document {
 sub create_xml_document {
     my ($self) = @_;
 
-    require XML::LibXML;
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'XML::LibXML',
+                                               error_msg => "Cannot load module 'XML::LibXML'.");
     $self->{is_output_xml} = 1;
     $self->{xml_output} = XML::LibXML::Document->new('1.0', 'utf-8');
 }
@@ -678,7 +680,7 @@ sub add_disco_entry {
 sub is_disco_format {
     my ($self) = @_;
 
-    if (defined($self->{option_results}->{disco_format}) ) {
+    if (defined($self->{option_results}->{disco_format})) {
         return 1;
     }
     return 0;
@@ -687,7 +689,7 @@ sub is_disco_format {
 sub is_disco_show {
     my ($self) = @_;
 
-    if ( defined($self->{option_results}->{disco_show}) ) {
+    if (defined($self->{option_results}->{disco_show})) {
         return 1;
     }
     return 0;
