@@ -238,7 +238,7 @@ sub run {
     $self->manage_selection();
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_apps_tomcat_web_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname}  . '_' . $self->{option_results}->{port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
