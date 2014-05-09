@@ -58,9 +58,12 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'errpt' },
                                   "command-path:s"    => { name => 'command_path' },
+                                  "command-options:s" => { name => 'command_options', default => '' },
                                   "error-type:s"      => { name => 'error_type' },
                                   "error-class:s"     => { name => 'error_class' },
                                   "retention:s"       => { name => 'retention' },
+                                  "timezone:s"        => { name => 'timezone' },
+                                  "description"       => { name => 'description' },
                                 });
     $self->{result} = {};
     return $self;
@@ -76,13 +79,16 @@ sub manage_selection {
     my $extra_options = '';
 
     if (defined($self->{option_results}->{error_type})){
-        $extra_options = $extra_options.' -T '.$self->{option_results}->{error_type};
+        $extra_options .= ' -T '.$self->{option_results}->{error_type};
     }
     if (defined($self->{option_results}->{error_class})){
-        $extra_options = $extra_options.' -d '.$self->{option_results}->{error_class};
+        $extra_options .= ' -d '.$self->{option_results}->{error_class};
     }
     if (defined($self->{option_results}->{retention})){
         my $retention = time() - $self->{option_results}->{retention};
+        if (defined($self->{option_results}->{timezone})){
+            $ENV{TZ} = $self->{option_results}->{timezone};
+        }
         my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
         $year = $year - 100;
         if (length($sec)==1){
@@ -94,13 +100,18 @@ sub manage_selection {
         if (length($hour)==1){
             $hour = '0'.$hour;
         }
+        if (length($mday)==1){
+            $mday = '0'.$mday;
+        }
         $mon = $mon + 1;
         if (length($mon)==1){
             $mon = '0'.$mon;
         }
         $retention = $mon.$mday.$hour.$min.$year;
-        $extra_options = $extra_options.' -s '.$retention;
+        $extra_options .= ' -s '.$retention;
     }
+    
+    $extra_options .= $self->{option_results}->{command_options};
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
@@ -114,14 +125,16 @@ sub manage_selection {
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         
-        my ($identifier, $timestamp, $resource_name) = ($1, $2, $5);
-        $self->{result}->{$identifier} = {timestamp => $timestamp, resource_name => $resource_name};
+        my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
+        $self->{result}->{$timestamp.'~'.$identifier.'~'.$resource_name} = {description => $description};
     }
     
     if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->output_add(long_msg => "No error found with these options.");
+        if (defined($self->{option_results}->{retention})) {
+            $self->{output}->output_add(long_msg => sprintf("No error found with these options since %s seconds.", $self->{option_results}->{retention}));
+            $self->{output}->output_add(short_msg => sprintf("No error found since %s seconds.", $self->{option_results}->{retention}));
         } else {
+            $self->{output}->output_add(long_msg => "No error found with these options.");
             $self->{output}->output_add(short_msg => "No error found.");
         }
         $self->{output}->display();
@@ -135,17 +148,27 @@ sub run {
     $self->manage_selection();
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'No error found.');
-    
-    foreach my $identifier (sort(keys %{$self->{result}})) {
-        my $timestamp = $self->{result}->{$identifier}->{timestamp};
-        my $resource_name = $self->{result}->{$identifier}->{resource_name};
+
+    foreach my $errpt_error (sort(keys %{$self->{result}})) {
+	    my @split_error = split ('~',$errpt_error);
+	    my $timestamp = $split_error[0];
+        my $identifier = $split_error[1];
+        my $resource_name = $split_error[2];
+	    my $description = $self->{result}->{$errpt_error}->{description};
         my $exit;
-        
-        $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                             $timestamp, $resource_name));
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                        $timestamp, $resource_name));    
+        if (defined($self->{option_results}->{description})) {
+            $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
+                                                $timestamp, $resource_name, $description));
+            $self->{output}->output_add(severity => 'critical',
+                                        short_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
+                                                $timestamp, $resource_name, $description));
+        } else {
+            $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
+                                                $timestamp, $resource_name));
+            $self->{output}->output_add(severity => 'critical',
+                                        short_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
+                                                $timestamp, $resource_name));    
+        }
     }
 
     $self->{output}->display();
@@ -209,7 +232,11 @@ Filter error class ('H' for hardware, 'S' for software, '0' for errlogger, 'U' f
 
 =item B<--retention>
 
-Retention time of errors in seconds
+Retention time of errors in seconds.
+
+=item B<--retention>
+
+Print error description in output.
 
 =back
 
