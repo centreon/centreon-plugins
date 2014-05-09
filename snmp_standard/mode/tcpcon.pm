@@ -80,6 +80,9 @@ sub new {
     @{$self->{connections}} = ();
     $self->{services} = { total => { filter => '.*?#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
     $self->{applications} = {};
+    $self->{states} = { closed => 0, listen => 0, synSent => 0, synReceived => 0,
+                        established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
+                        lastAck => 0, closing => 0, timeWait => 0 };
     return $self;
 }
 
@@ -127,6 +130,7 @@ sub get_from_rfc4022 {
             ($src_addr, $src_port) = ($1, $2);
         }
         push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#0#listen";
+        $self->{states}->{listen}++;
     }
     
     foreach (keys %$result) {
@@ -142,6 +146,7 @@ sub get_from_rfc4022 {
             /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($1, $2, $3, $4);
         }
+        $self->{states}->{$map_states{$result->{$_}}}++;
         push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$result->{$_}});
     }
     
@@ -157,6 +162,7 @@ sub get_from_rfc1213 {
     # Construct
     foreach (keys %$result) {
         /(\d+\.\d+\.\d+\.\d+).(\d+)\.(\d+\.\d+\.\d+\.\d+).(\d+)$/;
+        $self->{states}->{$map_states{$result->{$_}}}++;
         push @{$self->{connections}}, "ipv4#$1#$2#$3#$4#" . lc($map_states{$result->{$_}});
     }
 }
@@ -313,6 +319,12 @@ sub run {
     $self->build_connections();
     $self->test_services();
     $self->test_applications();
+    
+    foreach (keys %{$self->{states}}) {
+        $self->{output}->perfdata_add(label => 'con_' . $_,
+                                      value => $self->{states}->{$_},
+                                      min => 0);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
