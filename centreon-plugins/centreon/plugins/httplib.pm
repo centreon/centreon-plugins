@@ -40,6 +40,20 @@ use strict;
 use warnings;
 use LWP::UserAgent;
 
+sub get_port {
+    my ($self, %options) = @_;
+    
+    my $cache_port = '';
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '') {
+        $cache_port = $self->{option_results}->{port};
+    } else {
+        $cache_port = 80 if ($self->{option_results}->{proto} eq 'http');
+        $cache_port = 443 if ($self->{option_results}->{proto} eq 'https');
+    }
+    
+    return $cache_port;
+}
+
 sub connect {
     my ($self, %options) = @_;
     my $ua = LWP::UserAgent->new( protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
