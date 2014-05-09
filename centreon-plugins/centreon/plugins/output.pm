@@ -34,8 +34,11 @@
 ####################################################################################
 
 package centreon::plugins::output;
+
 use Encode;
 use centreon::plugins::misc;
+use strict;
+use warnings;
 
 sub new {
     my ($class, %options) = @_;
@@ -381,7 +384,7 @@ sub output_txt {
         print (($options{nolabel} == 0 ? 'UNKNOWN: ' : '') . $self->{global_short_concat_outputs}->{UNKNOWN} . " ");
     }
     if (uc($options{exit_litteral}) eq 'OK') {
-        print (($options{nolabel} == 0 ? 'OK: ' : '') . $self->{global_short_concat_outputs}->{OK} . " ");
+        print (($options{nolabel} == 0 ? 'OK: ' : '') . (defined($self->{global_short_concat_outputs}->{OK}) ? $self->{global_short_concat_outputs}->{OK} : '') . " ");
     }
 
     if ($force_ignore_perfdata == 1) {

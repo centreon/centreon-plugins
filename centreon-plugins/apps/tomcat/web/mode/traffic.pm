@@ -43,6 +43,7 @@ use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
+use URI::Escape;
 
 sub new {
     my ($class, %options) = @_;
@@ -188,6 +189,7 @@ sub manage_selection {
             my $connector_name = $node->getParentNode()->getParentNode()->getAttribute("name");
             $connector_name =~ s/^["'\s]+//;
             $connector_name =~ s/["'\s]+$//;
+            $connector_name = uri_unescape($connector_name);
 
             next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
                 && $connector_name !~ /$self->{option_results}->{name}/i);
@@ -221,7 +223,7 @@ sub run {
     $self->manage_selection();
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_apps_tomcat_web_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname}  . '_' . $self->{option_results}->{port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 

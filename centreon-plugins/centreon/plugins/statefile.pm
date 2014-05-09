@@ -34,6 +34,9 @@
 ####################################################################################
 
 package centreon::plugins::statefile;
+
+use strict;
+use warnings;
 use Data::Dumper;
 use vars qw($datas);
 
