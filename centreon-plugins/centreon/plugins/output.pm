@@ -212,7 +212,7 @@ sub range_perfdata {
     return if ($self->{range_perfdata} == 0);
     if ($self->{range_perfdata} == 1) {
         for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
-            ${${$options{ranges}}[$i]} =~ s/^(@)?-?[0\.]+:/$1/;
+            ${${$options{ranges}}[$i]} =~ s/^(@?)-?[0\.]+:/$1/;
         }
     } else {
         for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
