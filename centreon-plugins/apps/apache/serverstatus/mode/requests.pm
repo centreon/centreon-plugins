@@ -108,6 +108,13 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
+    $self->{cache_port} = '';
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '') {
+        $self->{cache_port} = $self->{option_results}->{port};
+    } else {
+        $self->{cache_port} = 80 if ($self->{option_results}->{proto} eq 'http');
+        $self->{cache_port} = 443 if ($self->{option_results}->{proto} eq 'https');
+    }
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -130,7 +137,7 @@ sub run {
     }
     $rPerSec = '0' . $rPerSec if ($rPerSec =~ /^\./);
     
-    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{option_results}->{port} . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{cache_port} . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
     my $old_total_access = $self->{statefile_value}->get(name => 'total_access');
     my $old_total_bytes = $self->{statefile_value}->get(name => 'total_bytes');
