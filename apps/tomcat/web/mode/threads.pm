@@ -51,7 +51,7 @@ sub new {
     $options{options}->add_options(arguments =>
             {
             "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '23002' },
+            "port:s"                => { name => 'port', default => '8080' },
             "proto:s"               => { name => 'proto', default => "http" },
             "credentials"           => { name => 'credentials' },
             "username:s"            => { name => 'username' },
