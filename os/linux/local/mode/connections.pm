@@ -80,7 +80,7 @@ sub new {
                                   "application:s@"  => { name => 'application', },
                                 });
     @{$self->{connections}} = ();
-    $self->{services} = { total => { filter => '.*?#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
+    $self->{services} = { total => { filter => '(?!(udp*))#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
     $self->{applications} = {};
     $self->{states} = { closed => 0, listen => 0, synSent => 0, synReceived => 0,
                         established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
