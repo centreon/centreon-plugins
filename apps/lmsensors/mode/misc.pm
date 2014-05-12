@@ -58,8 +58,6 @@ sub new {
                                   "sensor:s"                => { name => 'sensor' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
                                 });
 
     $self->{Sensor_id_selected} = [];
