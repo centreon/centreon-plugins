@@ -51,6 +51,8 @@ sub new {
             'temperature'   => 'hardware::sensors::sequoia::em01::web::mode::temperature',
             'humidity'      => 'hardware::sensors::sequoia::em01::web::mode::humidity',
             'illumination'  => 'hardware::sensors::sequoia::em01::web::mode::illumination',
+            'flood'         => 'hardware::sensors::sequoia::em01::web::mode::flood',
+            'thermistor'    => 'hardware::sensors::sequoia::em01::web::mode::thermistor',
             'voltage'       => 'hardware::sensors::sequoia::em01::web::mode::voltage',
 			);
 
