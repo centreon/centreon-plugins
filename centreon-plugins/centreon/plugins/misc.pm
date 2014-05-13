@@ -37,6 +37,7 @@ package centreon::plugins::misc;
 
 use strict;
 use warnings;
+use utf8;
 
 # Function more simple for Windows platform
 sub windows_execute {
@@ -245,6 +246,17 @@ sub trim {
     $value =~ s/^[ \t]+//;
     $value =~ s/[ \t]+$//;
     return $value;
+}
+
+sub powershell_encoded {
+	my ($value) = $_[0];
+
+	require Encode;
+	require MIME::Base64;
+	my $bytes = Encode::encode("utf16LE", $value);
+	my $script = MIME::Base64::encode_base64($bytes, "\n");
+	$script =~ s/\n//g;
+	return $script;
 }
 
 1;
