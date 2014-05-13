@@ -184,6 +184,8 @@ sub backtick {
         $sig_do = 'DEFAULT';
     }
     local $SIG{CHLD} = $sig_do;
+    $SIG{TTOU} = 'IGNORE';
+    $| = 1;
 
     if (!defined($pid = open( KID, "-|" ))) {
         return (-1001, "Cant fork: $!", -1);
@@ -221,6 +223,7 @@ sub backtick {
         # child
         # set the child process to be a group leader, so that
         # kill -9 will kill it and all its descendents
+        # We have ignore SIGTTOU to let write background processes
         setpgrp( 0, 0 );
 
         if ($arg{redirect_stderr} == 1) {
