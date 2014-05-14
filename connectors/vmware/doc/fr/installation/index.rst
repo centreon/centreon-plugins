@@ -20,6 +20,9 @@ centreon-esxd            1.5.4
 perl-centreon-base       2.5.0
 ==================== =====================
 
+.. warning::
+    Le connecteur "centreon-esxd" fourni par Merethis est conçu pour fonctionner Centreon 2.5 (CES 2.2 ou CES 3), il ne fonctionne pas avec Centreon 2.4.
+
 Préconisations matérielles
 ``````````````````````````
 

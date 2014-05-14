@@ -15,10 +15,13 @@ Installation on other system is possible but is outside the scope of this docume
 Software              Version
 ==================== =====================
 VMWare SDK Perl              5.1
-Perl    		             5.8
+Perl                         5.8
 centreon-esxd                1.4
 centreon-common-perl         2.5
 ==================== =====================
+
+.. warning::
+    The "centreon-esxd" RPMS provided by Merethis is designed to work with Centreon 2.5 (CES 2.2 or CES 3), it does not work with Centreon 2.4.
 
 Hardware Recommandations
 ````````````````````````
