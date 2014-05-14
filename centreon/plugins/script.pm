@@ -163,7 +163,7 @@ sub display_list_plugin {
         my $name = $key;
         $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
         $name =~ s/\//::/g;
-        $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION:/i;
+        $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION/i;
         
         $self->{output}->add_option_msg(long_msg => '-----------------');
         $self->{output}->add_option_msg(long_msg => 'PLUGIN: ' . $name);
