@@ -94,16 +94,18 @@ sub get_plugin {
     $self->{options}->set_output(output => $self->{output});
 
     $self->{options}->add_options(arguments => {
-                                                'plugin:s' => { name => 'plugin' }, 
-                                                'help' => { name => 'help' },
-                                                'version' => { name => 'version' },
-                                                'runas:s' => { name => 'runas' },
+                                                'plugin:s'       => { name => 'plugin' },
+                                                'list-plugin'    => { name => 'list_plugin' }, 
+                                                'help'           => { name => 'help' },
+                                                'version'        => { name => 'version' },
+                                                'runas:s'        => { name => 'runas' },
                                                 'environment:s%' => { name => 'environment' },
                                                 } );
 
     $self->{options}->parse_options();
 
     $self->{plugin} = $self->{options}->get_option(argument => 'plugin' );
+    $self->{list_plugin} = $self->{options}->get_option(argument => 'list_plugin' );
     $self->{help} = $self->{options}->get_option(argument => 'help' );
     $self->{version} = $self->{options}->get_option(argument => 'version' );
     $self->{runas} = $self->{options}->get_option(argument => 'runas' );
@@ -127,6 +129,46 @@ sub display_local_help {
     }
     
     $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
+}
+
+sub check_directory {
+    my ($self, $directory) = @_;
+    
+    opendir(my $dh, $directory) || return ;
+    while (my $filename = readdir $dh) {
+        $self->check_directory($directory . "/" . $filename) if ($filename !~ /^\./ && -d $directory . "/" . $filename);
+        if ($filename eq 'plugin.pm') {
+            my $stdout = '';
+            
+            {
+                local *STDOUT;
+                open STDOUT, '>', \$stdout;
+                pod2usage(-exitval => 'NOEXIT', -input => $directory . "/" . $filename,
+                          -verbose => 99, 
+                          -sections => "PLUGIN DESCRIPTION");
+            }
+            $self->{plugins_result}->{$directory . "/" . $filename} = $stdout;
+        }
+    }
+    closedir $dh;
+}
+
+sub display_list_plugin {
+    my $self = shift;
+    $self->{plugins_result} = {};
+    
+    # Search file 'plugin.pm'
+    $self->check_directory($FindBin::Bin);
+    foreach my $key (keys %{$self->{plugins_result}}) {
+        my $name = $key;
+        $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
+        $name =~ s/\//::/g;
+        $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION:/i;
+        
+        $self->{output}->add_option_msg(long_msg => '-----------------');
+        $self->{output}->add_option_msg(long_msg => 'PLUGIN: ' . $name);
+        $self->{output}->add_option_msg(long_msg => $self->{plugins_result}->{$key});
+    }
 }
 
 sub check_relaunch {
@@ -200,6 +242,10 @@ sub run {
         $self->display_local_help();
         $self->{output}->option_exit();
     }
+    if (defined($self->{list_plugin})) {
+        $self->display_list_plugin();
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{plugin}) || $self->{plugin} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--plugin' option.");
         $self->{output}->option_exit();
@@ -234,6 +280,10 @@ centreon_plugins.pl [options]
 =item B<--plugin>
 
 Specify the path to the plugin.
+
+=item B<--list-plugin>
+
+Print available plugins.
 
 =item B<--version>
 
