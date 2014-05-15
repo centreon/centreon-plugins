@@ -47,8 +47,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'databases'		=> 'apps::exchange::2010::local::mode::databases',
-						 'mapi-mailbox'		=> 'apps::exchange::2010::local::mode::mapimailbox',
+                         'activesync-mailbox'   => 'apps::exchange::2010::local::mode::activesyncmailbox',
+                         'databases'            => 'apps::exchange::2010::local::mode::databases',
+                         'imap-mailbox'         => 'apps::exchange::2010::local::mode::imapmailbox',
+                         'mapi-mailbox'         => 'apps::exchange::2010::local::mode::mapimailbox',                         
                          );
 
     return $self;
