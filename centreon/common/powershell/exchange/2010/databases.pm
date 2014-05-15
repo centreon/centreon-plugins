@@ -120,7 +120,7 @@ Foreach ($DB in $MountedDB) {
         $ps .= '
             # Test Mailflow
             $MailflowResult = Test-mailflow -Targetdatabase $DB.Name
-            Write-Host "[mailflow=" $MailflowResult.testmailflowresult "][latency=" $MailflowResult.MessageLatencyTime "]" -NoNewline
+            Write-Host "[mailflow=" $MailflowResult.testmailflowresult "][latency=" $MailflowResult.MessageLatencyTime.TotalMilliseconds "]" -NoNewline
 ';
     }
 
@@ -200,10 +200,9 @@ sub check_mailflow {
         }
     }
     
-    $latency =~ /\d+:\d+:(.*)/;
-    if (defined($1)) {
+    if ($latency =~ /^(\d+)/) {
         $self->{output}->perfdata_add(label => 'latency_' . $options{database}, unit => 's',
-                                      value => sprintf("%.3f", $1),
+                                      value => sprintf("%.3f", $1 / 1000),
                                       min => 0);
     }
 }
@@ -213,7 +212,7 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][mapi= Success ][mailflow= Success ][latency= 00:00:01.7949277 ]
+    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][mapi= Success ][mailflow= Success ][latency= 50,00 ]
     #...
     
     $self->{output}->output_add(severity => 'OK',

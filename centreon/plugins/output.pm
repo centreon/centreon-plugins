@@ -184,6 +184,7 @@ sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {'label' => '', 'value' => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
     $perfdata = {%$perfdata, %options};
+    $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
 }
 
