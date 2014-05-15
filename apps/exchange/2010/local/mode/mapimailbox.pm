@@ -33,16 +33,15 @@
 #
 ####################################################################################
 
-package apps::exchange::2010::local::mode::databases;
+package apps::exchange::2010::local::mode::mapimailbox;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::common::powershell::exchange::2010::databases;
+use centreon::common::powershell::exchange::2010::mapimailbox;
 
-my %threshold = ('warning_mapi' => 'warning', 'critical_mapi' => 'critical',
-                 'warning_mailflow' => 'warning', 'critical_mailflow' => 'critical');
+my %threshold = ('warning_mapi' => 'warning', 'critical_mapi' => 'critical');
 
 sub new {
     my ($class, %options) = @_;
@@ -52,20 +51,15 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "no-ps"             => { name => 'no_ps', },
-                                  "no-mailflow"       => { name => 'no_mailflow', },
-                                  "no-mapi"           => { name => 'no_mapi', },
-                                  "timeout:s"         => { name => 'timeout', default => 50 },
-                                  "command:s"         => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"              => { name => 'ps_exec_only', },
-                                  "ps-database-filter:s"      => { name => 'ps_database_filter', },
-                                  "ps-database-test-filter:s" => { name => 'ps_database_test_filter', },
-                                  "warning-mapi:s"            => { name => 'warning_mapi', },
-                                  "critical-mapi:s"           => { name => 'critical_mapi', },
-                                  "warning-mailflow:s"        => { name => 'warning_mailflow', },
-                                  "critical-mailflow:s"       => { name => 'critical_mailflow', },
+                                  "no-ps"               => { name => 'no_ps', },
+                                  "timeout:s"           => { name => 'timeout', default => 50 },
+                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
+                                  "command-path:s"      => { name => 'command_path' },
+                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+                                  "ps-exec-only"        => { name => 'ps_exec_only', },
+                                  "warning-mapi:s"      => { name => 'warning_mapi', },
+                                  "critical-mapi:s"     => { name => 'critical_mapi', },
+                                  "mailbox:s"           => { name => 'mailbox', },
                                 });
     $self->{thresholds} = {};
     return $self;
@@ -74,7 +68,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
+    if (!defined($self->{option_results}->{mailbox}) || $self->{option_results}->{mailbox} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--mailbox' option.");
+        $self->{output}->option_exit();
+    }
     foreach my $th (keys %threshold) {
         next if (!defined($self->{option_results}->{$th}));
         if ($self->{option_results}->{$th} !~ /^(\!=|=){0,1}(.*){0,1}/) {
@@ -92,11 +90,9 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(no_mailflow => $self->{option_results}->{no_mailflow},
-                                                                                     no_ps => $self->{option_results}->{no_ps},
-                                                                                     no_mapi => $self->{option_results}->{no_mapi},
-                                                                                     filter_database => $self->{option_results}->{ps_database_filter},
-                                                                                     filter_database_test => $self->{option_results}->{ps_database_test_filter});
+    my $ps = centreon::common::powershell::exchange::2010::mapimailbox::get_powershell(mailbox => $self->{option_results}->{mailbox},
+                                                                                       no_ps => $self->{option_results}->{no_ps},
+                                                                                       );
     $self->{option_results}->{command_options} .= " " . $ps . " 2>&1";
     my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
                                                           timeout => $self->{option_results}->{timeout},
@@ -109,7 +105,7 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::databases::check($self, stdout => $stdout);
+    centreon::common::powershell::exchange::2010::mapimailbox::check($self, stdout => $stdout, mailbox => $self->{option_results}->{mailbox});
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -121,17 +117,9 @@ __END__
 
 =head1 MODE
 
-Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working.
+Check mapi connection to a mailbox.
 
 =over 8
-
-=item B<--no-mailflow>
-
-Don't check mailflow connectivity.
-
-=item B<--no-mapi>
-
-Don't check mapi connectivity.
 
 =item B<--timeout>
 
@@ -158,14 +146,6 @@ Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 
 Print powershell output.
 
-=item B<--ps-database-filter>
-
-Filter database (only wilcard '*' can be used. In Powershell).
-
-=item B<--ps-database-test-filter>
-
-Skip mapi/mailflow test (regexp can be used. In Powershell).
-
 =item B<--warning-mapi>
 
 Warning threshold
@@ -178,17 +158,9 @@ Critical threshold
 (If set without value, it's: "!=Success". Need to change if your not US language.
 Regexp can be used)
 
-=item B<--warning-mailflow>
+=item B<--mailbox>
 
-Warning threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
-
-=item B<--critical-mailflow>
-
-Critical threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set the mailbox to check (Required).
 
 =back
 
