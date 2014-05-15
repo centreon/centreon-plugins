@@ -47,7 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'databases'    => 'apps::exchange::2010::local::mode::databases',
+                         'databases'		=> 'apps::exchange::2010::local::mode::databases',
+						 'mapi-mailbox'		=> 'apps::exchange::2010::local::mode::mapimailbox',
                          );
 
     return $self;
