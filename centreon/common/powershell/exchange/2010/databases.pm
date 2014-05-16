@@ -91,7 +91,7 @@ try {
     exit 1
 }
 Foreach ($DB in $MountedDB) {
-    Write-Host "[name=" $DB.Name "][server=" $DB.Server "][mounted=" $DB.Mounted "]" -NoNewline
+    Write-Host "[name=" $DB.Name "][server=" $DB.Server "][mounted=" $DB.Mounted "][size=" $DB.DatabaseSize "][asize=" $DB.AvailableNewMailboxSpace "]" -NoNewline
     
 ';
     
@@ -212,7 +212,7 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][mapi= Success ][mailflow= Success ][latency= 50,00 ]
+    #[name= Mailbox Database 0975194476 ][server= SRVI-WIN-TEST ][mounted= True ][size= 136.1 MB (142,671,872 bytes) ][asize= 124.4 MB (130,482,176 bytes) ][mapi= Success ][mailflow= Success ][latency= 50,00 ]
     #...
     
     $self->{output}->output_add(severity => 'OK',
@@ -228,12 +228,33 @@ sub check {
     
     my $checked = 0;
     foreach my $line (split /\n/, $options{stdout}) {
-        next if ($line !~ /^\[name=(.*?)\]\[server=(.*?)\]\[mounted=(.*?)\]/);
+        next if ($line !~ /^\[name=(.*?)\]\[server=(.*?)\]\[mounted=(.*?)\]\[size=(.*?)\]\[asize=(.*?)\]/);
         $checked++;
-        my ($database, $server, $mounted) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3));
+        my ($database, $server, $mounted, $size, $asize) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
-        # Check mounted
         $self->{output}->output_add(long_msg => sprintf("Test database '%s' server '%s':", $database, $server));
+        if ($size =~ /\((.*?)\s*bytes/) {
+            my $total_bytes = $1;
+            $total_bytes =~ s/[.,]//g;
+            $self->{output}->perfdata_add(label => 'size_' . $database, unit => 'B',
+                                          value => $total_bytes,
+                                          min => 0);
+            my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
+            $self->{output}->output_add(long_msg => sprintf("    Size %s", $total_value . ' ' . $total_unit));
+        }
+        if ($asize =~ /\((.*?)\s*bytes/) {
+            my $total_bytes = $1;
+            $total_bytes =~ s/[.,]//g;
+            $self->{output}->perfdata_add(label => 'asize_' . $database, unit => 'B',
+                                          value => $total_bytes,
+                                          min => 0);
+            my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
+            $self->{output}->output_add(long_msg => sprintf("    Available Size %s", $total_value . ' ' . $total_unit));
+        }
+        
+        
+        # Check mounted
         if ($mounted =~ /False/i) {
             $self->{output}->output_add(long_msg => sprintf("    not mounted\n   Skip mapi/mailflow test"));
             $self->{output}->output_add(short_msg => 'CRITICAL',
