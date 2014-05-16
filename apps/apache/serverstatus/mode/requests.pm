@@ -121,10 +121,15 @@ sub run {
     $total_bytes = $1 * 1024 if ($webcontent =~ /^Total kBytes:\s+([^\s]+)/mi);
     
     $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
-    $bPerReq = $1 if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi);
+    # Need a little time to init
+    if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi) {
+        $bPerReq = $1
+    } else {
+        $bPerReq = 0;
+    }
     $avg_bPerSec = $1 if ($webcontent =~ /^BytesPerSec:\s+([^\s]+)/mi);
     
-    if (!defined($bPerReq)) {
+    if (!defined($avg_bPerSec)) {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
         $self->{output}->option_exit();
     }
