@@ -122,7 +122,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer statistics informations
+Check Apache WebServer Time Response
 
 =over 8
 
