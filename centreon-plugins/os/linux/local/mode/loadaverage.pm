@@ -139,12 +139,51 @@ sub run {
         $msg = sprintf("Load average: %s [%s/%s CPUs], %s [%s/%s CPUs], %s [%s/%s CPUs]", $cpu_load1, $load1m, $countCpu,
                        $cpu_load5, $load5m, $countCpu,
                        $cpu_load15, $load15m, $countCpu);
+        $self->{output}->perfdata_add(label => 'avg_load1',
+                                  value => $cpu_load1,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'avg_load5',
+                                  value => $cpu_load5,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'avg_load15',
+                                  value => $cpu_load15,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'load1',
+                                  value => $load1m,
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'load5',
+                                  value => $load5m,
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'load15',
+                                  value => $load15m,
+                                  min => 0);
     } else {
         $cpu_load1 = $load1m;
         $cpu_load5 = $load5m;
         $cpu_load15 = $load15m;
     
         $msg = sprintf("Load average: %s, %s, %s", $cpu_load1, $cpu_load5, $cpu_load15);
+        $self->{output}->perfdata_add(label => 'load1',
+                                  value => $cpu_load1,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'load5',
+                                  value => $cpu_load5,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
+                                  min => 0);
+        $self->{output}->perfdata_add(label => 'load15',
+                                  value => $cpu_load15,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
+                                  min => 0);
     }
     
     my $exit1 = $self->{perfdata}->threshold_check(value => $cpu_load1,
@@ -156,22 +195,6 @@ sub run {
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => $msg);
-    
-    $self->{output}->perfdata_add(label => 'load1',
-                                  value => $cpu_load1,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load5',
-                                  value => $cpu_load5,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load15',
-                                  value => $cpu_load15,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
-                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();
