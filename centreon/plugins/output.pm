@@ -395,7 +395,7 @@ sub output_txt {
         $self->explode_perfdatas();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
             print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $perf->{max};
         }
