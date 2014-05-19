@@ -90,13 +90,13 @@ sub run {
         $exit_code = $self->{perfdata}->threshold_check(value => $valueRuntime, 
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
         $self->{output}->perfdata_add(label => 'runtime',
-                                      value => $valueRuntime,
+                                      value => floor($valueRuntime / 100),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("PfSense running since : %s",
-                                                 defined($self->{option_results}->{seconds}) ? $valueRuntime . " seconds" : floor($valueRuntime / 86400) . " days" ));
+                                                 defined($self->{option_results}->{seconds}) ? floor($valueRuntime / 100) . " seconds" : floor($valueRuntime / 86400 / 100) . " days" ));
 
     } else {
         $self->{output}->perfdata_add(label => 'runtime',
