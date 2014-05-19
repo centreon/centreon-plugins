@@ -50,7 +50,6 @@ sub new {
                          'runtime'     	            => 'apps::pfsense::snmp::mode::runtime',
                          'memory-dropped-packets'   => 'apps::pfsense::snmp::mode::memorydroppedpackets',
                          'blocked-packets'          => 'apps::pfsense::snmp::mode::blockedpackets',
-                         'address-table'            => 'apps::pfsense::snmp::mode::addresstable',
                          );
 
     return $self;
