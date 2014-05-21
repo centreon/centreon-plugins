@@ -55,18 +55,34 @@ sub get_perfdata_for_output {
     # $options{label} : threshold label
     # $options{total} : percent threshold to transform in global
     # $options{cast_int} : cast absolute to int
+    # $options{op} : operator to apply to start/end value (uses with 'value'})
+    # $options{value} : value to apply with 'op' option
     
-    my $perf_output = $self->{threshold_label}->{$options{label}}->{value};
-    if (defined($perf_output) && $perf_output ne '' && defined($options{total})) {
-            $perf_output = ($self->{threshold_label}->{$options{label}}->{arobase} == 1 ? "@" : "") . 
-                            (($self->{threshold_label}->{$options{label}}->{infinite_neg} == 0) ? (defined($options{cast_int}) ? sprintf("%d", ($self->{threshold_label}->{$options{label}}->{start} * $options{total} / 100)) : sprintf("%.2f", ($self->{threshold_label}->{$options{label}}->{start} * $options{total} / 100))) : "") . 
-                             ":" . 
-                             (($self->{threshold_label}->{$options{label}}->{infinite_pos} == 0) ? (defined($options{cast_int}) ? sprintf("%d", ($self->{threshold_label}->{$options{label}}->{end} * $options{total} / 100)) : sprintf("%.2f", ($self->{threshold_label}->{$options{label}}->{end} * $options{total} / 100))) : "");
+    if (!defined($self->{threshold_label}->{$options{label}}->{value}) || $self->{threshold_label}->{$options{label}}->{value} eq '') {
+        return '';
     }
+    
+    my %perf_value = %{$self->{threshold_label}->{$options{label}}};
+    
+    if (defined($options{op}) && defined($options{value})) {
+        eval "\$perf_value{start} = \$perf_value{start} $options{op} \$options{value}" if ($perf_value{infinite_neg} == 0);
+        eval "\$perf_value{end} = \$perf_value{end} $options{op} \$options{value}" if ($perf_value{infinite_pos} == 0);
+    }
+    if (defined($options{total})) {
+        $perf_value{start} = $perf_value{start} * $options{total} / 100 if ($perf_value{infinite_neg} == 0);
+        $perf_value{end} = $perf_value{end} * $options{total} / 100 if ($perf_value{infinite_pos} == 0);
+        $perf_value{start} = sprintf("%.2f", $perf_value{start}) if ($perf_value{infinite_neg} == 0 && !defined($options{cast_int}));
+        $perf_value{end} = sprintf("%.2f", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && !defined($options{cast_int}));
+    }
+    
+    $perf_value{start} = sprintf("%d", $perf_value{start}) if ($perf_value{infinite_neg} == 0 && defined($options{cast_int}));
+    $perf_value{end} = sprintf("%d", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && defined($options{cast_int}));
+    
+    my $perf_output = ($perf_value{arobase} == 1 ? "@" : "") . 
+                      (($perf_value{infinite_neg} == 0) ? $perf_value{start} : "~") . 
+                      ":" . 
+                      (($perf_value{infinite_pos} == 0) ? $perf_value{end} : "");
 
-    if (!defined($perf_output)) {
-        $perf_output = '';
-    }
     return $perf_output;
 }
 
