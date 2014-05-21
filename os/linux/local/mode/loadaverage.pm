@@ -156,12 +156,18 @@ sub run {
                                   min => 0);
         $self->{output}->perfdata_add(label => 'load1',
                                   value => $load1m,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1', op => '*', value => $countCpu),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1', op => '*', value => $countCpu),
                                   min => 0);
         $self->{output}->perfdata_add(label => 'load5',
                                   value => $load5m,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5', op => '*', value => $countCpu),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5', op => '*', value => $countCpu),
                                   min => 0);
         $self->{output}->perfdata_add(label => 'load15',
                                   value => $load15m,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15', op => '*', value => $countCpu),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15', op => '*', value => $countCpu),
                                   min => 0);
     } else {
         $cpu_load1 = $load1m;
