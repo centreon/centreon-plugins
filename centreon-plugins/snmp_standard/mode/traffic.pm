@@ -163,6 +163,21 @@ sub run {
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
 
+        if ($operstatus[$result->{$oid_operstatus . "." . $_} - 1] ne "up") {
+            if (!defined($self->{option_results}->{skip}) && (!defined($result->{$oid_adminstatus . "." . $_}) || $operstatus[$result->{$oid_adminstatus . "." . $_} - 1] eq 'up') ) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => "Interface '" . $display_value . "' is not ready: " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1]);
+            } else {
+                # Avoid getting "buffer creation..." alone
+                if (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $display_value . "' is not up (normal state)");
+                }
+                $self->{output}->output_add(long_msg => "Skip interface '" . $display_value . "'.");
+            }
+            next;
+        }
+        
         # Manage interface speed
         my $interface_speed;
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
@@ -184,22 +199,6 @@ sub run {
                 }
                 next;
             }
-        }
-        
-        
-        if ($operstatus[$result->{$oid_operstatus . "." . $_} - 1] ne "up") {
-            if (!defined($self->{option_results}->{skip}) && (!defined($result->{$oid_adminstatus . "." . $_}) || $operstatus[$result->{$oid_adminstatus . "." . $_} - 1] eq 'up') ) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => "Interface '" . $display_value . "' is not ready: " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1]);
-            } else {
-                # Avoid getting "buffer creation..." alone
-                if (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp})) {
-                    $self->{output}->output_add(severity => 'OK',
-                                                short_msg => "Interface '" . $display_value . "' is not up (normal state)");
-                }
-                $self->{output}->output_add(long_msg => "Skip interface '" . $display_value . "'.");
-            }
-            next;
         }
         
         my $old_mode = $self->{statefile_value}->get(name => 'mode_' . $_);
