@@ -155,6 +155,7 @@ sub run {
     my $result = $self->{snmp}->get_leef();
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+    my $buffer_creation = 0;
     if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All traffic are ok');
@@ -190,7 +191,7 @@ sub run {
                 next;
             }
             $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
-            if ($interface_speed == 0) {
+            if (!defined($interface_speed) || $interface_speed == 0) {
                 if (!defined($self->{option_results}->{skip_speed0})) {
                     $self->{output}->output_add(severity => 'UNKNOWN',
                                                 short_msg => "Interface '" . $display_value . "' Speed is 0. You should force the value with --speed option");
@@ -204,27 +205,43 @@ sub run {
         my $old_mode = $self->{statefile_value}->get(name => 'mode_' . $_);
         $new_datas->{'mode_' . $_} = '32';
  
-        $new_datas->{'in_' . $_} = $result->{$oid_in32 . "." . $_} * 8;
+        $new_datas->{'in_' . $_} = $result->{$oid_in32 . "." . $_};
         if (defined($result->{$oid_in64 . "." . $_}) && $result->{$oid_in64 . "." . $_} ne '' && $result->{$oid_in64 . "." . $_} != 0) {
-            $new_datas->{'in_' . $_} = $result->{$oid_in64 . "." . $_} * 8;
+            $new_datas->{'in_' . $_} = $result->{$oid_in64 . "." . $_};
             $new_datas->{'mode_' . $_} = '64';
         }
-        $new_datas->{'out_' . $_} = $result->{$oid_out32 . "." . $_} * 8;
+        $new_datas->{'out_' . $_} = $result->{$oid_out32 . "." . $_};
         if (defined($result->{$oid_out64 . "." . $_}) && $result->{$oid_out64 . "." . $_} ne '' && $result->{$oid_out64 . "." . $_} != 0) {
-            $new_datas->{'out_' . $_} = $result->{$oid_out64 . "." . $_} * 8;
+            $new_datas->{'out_' . $_} = $result->{$oid_out64 . "." . $_};
             $new_datas->{'mode_' . $_} = '64';
         }
         
+        # Check if there is no values. Can happen :)
+        if (!defined($new_datas->{'out_' . $_}) || !defined($new_datas->{'in_' . $_})) {
+            # Avoid empty message
+            if (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp})) {
+                 $self->{output}->output_add(severity => 'OK',
+                                             short_msg => "Interface '" . $display_value . "' is up");
+            }
+            $self->{output}->output_add(long_msg => "Skip interface '" . $display_value . "': bytes values are missing.");
+            next;
+        }
+        $new_datas->{'out_' . $_} *= 8;
+        $new_datas->{'in_' . $_} *= 8;
+        
         # We change mode. need to recreate a buffer
         if (!defined($old_mode) || $new_datas->{'mode_' . $_} ne $old_mode) {
+            $buffer_creation = 1;
             next;
         }
         
         my $old_in = $self->{statefile_value}->get(name => 'in_' . $_);
         my $old_out = $self->{statefile_value}->get(name => 'out_' . $_);
-        if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
+        if (!defined($old_in) || !defined($old_out)) {
+            $buffer_creation = 1;
             next;
         }
+        
         if ($new_datas->{'in_' . $_} < $old_in) {
             # We set 0. Has reboot.
             $old_in = 0;
@@ -278,7 +295,7 @@ sub run {
     }
 
     $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
+    if ($buffer_creation == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
     }
