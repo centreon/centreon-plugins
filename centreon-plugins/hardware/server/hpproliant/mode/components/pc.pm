@@ -62,8 +62,8 @@ sub check {
 
     # In MIB 'CPQHLTH-MIB.mib'
     $self->{output}->output_add(long_msg => "Checking power converters");
-    $self->{components}->{pc} = {name => 'power converters', total => 0};
-    return if ($self->check_exclude('pc'));
+    $self->{components}->{pc} = {name => 'power converters', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'pc'));
     
     my $oid_cpqHePwrConvPresent = '.1.3.6.1.4.1.232.6.2.13.3.1.3';
     my $oid_cpqHePwrConvIndex = '.1.3.6.1.4.1.232.6.2.13.3.1.2';
@@ -77,10 +77,12 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         # Chassis + index
-        $key =~ /(\d+\.\d+)$/;
-        my $oid_end = $1;
+        $key =~ /(\d+)\.(\d+)$/;
+        my $oid_end = $1 . '.' . $2;
+
+        next if ($present_map{$result->{$key}} ne 'present' &&
+                 $self->absent_problem(section => 'pc', instance => $1 . '.' . $2));
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqHePwrConvCondition . "." . $oid_end, $oid_cpqHePwrConvRedundant . "." . $oid_end,
@@ -93,7 +95,9 @@ sub check {
         my $pc_redundant = $result->{$oid_cpqHePwrConvRedundant . '.' . $_};
         my $pc_redundantgroup = defined($result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_}) ? $result->{$oid_cpqHePwrConvRedundantGroupId . '.' . $_} : 'undefined';
 
+        next if ($self->check_exclude(section => 'pc', instance => $pc_chassis . '.' . $pc_index));
         $self->{components}->{pc}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("powerconverter %d status is %s [chassis: %s, redundance: %s, redundant group: %s].",
                                     $pc_index, ${$conditions{$pc_condition}}[0],
                                     $pc_chassis, $redundant_map{$pc_redundant}, $pc_redundantgroup

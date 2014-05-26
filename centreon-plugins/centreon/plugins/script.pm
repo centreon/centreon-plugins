@@ -77,8 +77,7 @@ sub class_handle_DIE {
 sub handle_DIE {
     my ($self, $msg) = @_;
 
-    # For 'mod_perl'
-    die $msg if $^S;
+    return unless defined $^S and $^S == 0; # Ignore errors in eval
     $self->{output}->add_option_msg(short_msg => $msg);
     $self->{output}->die_exit();
 }

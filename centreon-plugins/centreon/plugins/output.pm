@@ -35,7 +35,6 @@
 
 package centreon::plugins::output;
 
-use Encode;
 use centreon::plugins::misc;
 use strict;
 use warnings;
@@ -79,6 +78,8 @@ sub new {
     $self->{explode_perfdata_total} = 0;
     $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
+    $self->{encode_utf8_import} = 0;
+    $self->{perlqq} = 0;
 
     $self->{disco_elements} = [];
     $self->{disco_entries} = [];
@@ -669,7 +670,18 @@ sub display_disco_show {
 sub to_utf8 {
     my ($self, $value) = @_;
     
-    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, Encode::PERLQQ));
+    if ($self->{encode_utf8_import} == 0) {
+        
+        
+        # Some Perl version dont have the following module (like Perl 5.6.x)
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Encode',
+                                               error_msg => "Cannot load module 'Encode'.");
+        
+        $self->{encode_utf8_import} = 1;
+        eval '$self->{perlqq} = Encode::PERLQQ';
+    }
+    
+    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, $self->{perlqq}));
 }
 
 sub add_disco_entry {

@@ -79,8 +79,8 @@ sub controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking sas controllers");
-    $self->{components}->{sasctl} = {name => 'sas controllers', total => 0};
-    return if ($self->check_exclude('sasctl'));
+    $self->{components}->{sasctl} = {name => 'sas controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sasctl'));
     
     my $oid_cpqSasHbaIndex = '.1.3.6.1.4.1.232.5.5.1.1.1.1';
     my $oid_cpqSasHbaCondition = '.1.3.6.1.4.1.232.5.5.1.1.1.5';
@@ -101,8 +101,10 @@ sub controller {
         my $sas_slot = $result2->{$oid_cpqSasHbaSlot . '.' . $instance};
         my $sas_condition = $result2->{$oid_cpqSasHbaCondition . '.' . $instance};
         my $sas_status = $result2->{$oid_cpqSasHbaStatus . '.' . $instance};
-        
+
+        next if ($self->check_exclude(section => 'sasctl', instance => $instance));
         $self->{components}->{sasctl}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("sas controller %s [slot: %s, status: %s] condition is %s.", 
                                     $instance, $sas_slot, $controllerstatus_map{$sas_status},
                                     ${$conditions{$sas_condition}}[0]));
@@ -118,8 +120,8 @@ sub logical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking sas logical drives");
-    $self->{components}->{sasldrive} = {name => 'sas logical drives', total => 0};
-    return if ($self->check_exclude('sasldrive'));
+    $self->{components}->{sasldrive} = {name => 'sas logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sasldrive'));
     
     my $oid_cpqSasLogDrvCondition = '.1.3.6.1.4.1.232.5.5.3.1.1.5';
     my $oid_cpqSasLogDrvStatusValue = '.1.3.6.1.4.1.232.5.5.3.1.1.4';
@@ -140,7 +142,9 @@ sub logical_drive {
         my $ldrive_status = $result2->{$oid_cpqSasLogDrvStatusValue . '.' . $instance};
         my $ldrive_condition = $result->{$key};
         
+        next if ($self->check_exclude(section => 'sasldrive', instance => $instance));
         $self->{components}->{sasldrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("sas logical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $ldrive_status_map{$ldrive_status},
@@ -163,8 +167,8 @@ sub physical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking sas physical drives");
-    $self->{components}->{saspdrive} = {name => 'sas physical drives', total => 0};
-    return if ($self->check_exclude('saspdrive'));
+    $self->{components}->{saspdrive} = {name => 'sas physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'saspdrive'));
     
     my $oid_cpqSasPhyDrvCondition = '.1.3.6.1.4.1.232.5.5.2.1.1.6';
     my $oid_cpqSasPhyDrvStatus = '.1.3.6.1.4.1.232.5.5.2.1.1.5';
@@ -184,8 +188,10 @@ sub physical_drive {
 
         my $pdrive_status = $result2->{$oid_cpqSasPhyDrvStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'saspdrive', instance => $instance));
         $self->{components}->{saspdrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("sas physical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},

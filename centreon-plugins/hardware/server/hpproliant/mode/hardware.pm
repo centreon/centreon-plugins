@@ -61,19 +61,31 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
+                                  "absent-problem:s" => { name => 'absent' },
                                   "component:s"      => { name => 'component', default => 'all' },
+                                  "no-component:s"   => { name => 'no_component' },
                                 });
 
     $self->{product_name} = undef;
     $self->{serial} = undef;
     $self->{romversion} = undef;
     $self->{components} = {};
+    $self->{no_components} = undef;
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (defined($self->{option_results}->{no_component})) {
+        if ($self->{option_results}->{no_component} ne '') {
+            $self->{no_components} = $self->{option_results}->{no_component};
+        } else {
+            $self->{no_components} = 'critical';
+        }
+    }
 }
 
 sub global {
@@ -111,9 +123,9 @@ sub global {
     my $display_by_component_append = '';
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0);
-        $total_components += $self->{components}->{$comp}->{total};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
     
@@ -123,6 +135,11 @@ sub global {
                                                     $display_by_component,
                                                     $self->{product_name}, $self->{serial}, $self->{romversion})
                                 );
+                                
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
 }
 
 sub component {
@@ -170,9 +187,9 @@ sub component {
     my $display_by_component_append = '';
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0);
-        $total_components += $self->{components}->{$comp}->{total};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
     
@@ -181,6 +198,11 @@ sub component {
                                                      $total_components,
                                                      $display_by_component)
                                 );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
 }
 
 sub run {
@@ -214,13 +236,34 @@ sub get_system_information {
 }
 
 sub check_exclude {
-    my ($self, $section) = @_;
+    my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$section(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $section section."));
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+            $self->{components}->{$options{section}}->{skip}++;
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+            return 1;
+        }
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
         return 1;
     }
     return 0;
+}
+
+sub absent_problem {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{absent}) && 
+        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
+                                                         $options{section}, $options{instance}));
+    }
+
+    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
+    $self->{components}->{$options{section}}->{skip}++;
+    return 1;
 }
 
 1;
@@ -240,9 +283,19 @@ Can be: 'cpu', 'psu', 'pc', 'fan', 'network', 'temperature', 'storage'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=psu,pc).
+Exclude some parts (comma seperated list) (Example: --exclude=fans,modules)
+Can also exclude specific instance: --exclude=fans#1.2#,lnic#1#,psus
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=fans#1.2#,psus
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
 
 =back
 
 =cut
-    
