@@ -73,8 +73,8 @@ sub controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking ide controllers");
-    $self->{components}->{idectl} = {name => 'ide controllers', total => 0};
-    return if ($self->check_exclude('idectl'));
+    $self->{components}->{idectl} = {name => 'ide controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'idectl'));
     
     my $oid_cpqIdeControllerIndex = '.1.3.6.1.4.1.232.14.2.3.1.1.1';
     my $oid_cpqIdeControllerCondition = '.1.3.6.1.4.1.232.14.2.3.1.1.7';
@@ -97,8 +97,10 @@ sub controller {
         my $ide_slot = $result2->{$oid_cpqIdeControllerSlot . '.' . $instance};
         my $ide_condition = $result2->{$oid_cpqIdeControllerCondition . '.' . $instance};
         my $ide_status = $result2->{$oid_cpqIdeControllerStatus . '.' . $instance};
-        
+
+        next if ($self->check_exclude(section => 'idectl', instance => $instance));
         $self->{components}->{idectl}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("ide controller %s [slot: %s, model: %s, status: %s] condition is %s.", 
                                     $instance, $ide_slot, $ide_model, $controllerstatus_map{$ide_status},
                                     ${$conditions{$ide_condition}}[0]));
@@ -114,8 +116,8 @@ sub logical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking ide logical drives");
-    $self->{components}->{ideldrive} = {name => 'ide logical drives', total => 0};
-    return if ($self->check_exclude('ideldrive'));
+    $self->{components}->{ideldrive} = {name => 'ide logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'ideldrive'));
     
     my $oid_cpqIdeLogicalDriveCondition = '.1.3.6.1.4.1.232.14.2.6.1.1.6';
     my $oid_cpqIdeLogicalDriveStatus = '.1.3.6.1.4.1.232.14.2.6.1.1.5';
@@ -135,8 +137,10 @@ sub logical_drive {
 
         my $ldrive_status = $result2->{$oid_cpqIdeLogicalDriveStatus . '.' . $instance};
         my $ldrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'ideldrive', instance => $instance));
         $self->{components}->{ideldrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("ide logical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $ldrive_status_map{$ldrive_status},
@@ -159,8 +163,8 @@ sub physical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking ide physical drives");
-    $self->{components}->{idepdrive} = {name => 'ide physical drives', total => 0};
-    return if ($self->check_exclude('idepdrive'));
+    $self->{components}->{idepdrive} = {name => 'ide physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'idepdrive'));
     
     my $oid_cpqIdeAtaDiskCondition = '.1.3.6.1.4.1.232.14.2.4.1.1.7';
     my $oid_cpqIdeAtaDiskStatus = '.1.3.6.1.4.1.232.14.2.4.1.1.6';
@@ -180,8 +184,10 @@ sub physical_drive {
 
         my $pdrive_status = $result2->{$oid_cpqIdeAtaDiskStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'idepdrive', instance => $instance));
         $self->{components}->{idepdrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("ide physical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},

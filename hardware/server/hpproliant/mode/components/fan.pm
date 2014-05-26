@@ -84,8 +84,8 @@ sub check {
 
     # In MIB 'CPQHLTH-MIB.mib'
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0};
-    return if ($self->check_exclude('fan'));
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fan'));
     
     my $oid_cpqHeFltTolFanPresent = '.1.3.6.1.4.1.232.6.2.6.7.1.4';
     my $oid_cpqHeFltTolFanChassis = '.1.3.6.1.4.1.232.6.2.6.7.1.1';
@@ -102,10 +102,13 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         # Chassis + index
-        $key =~ /(\d+\.\d+)$/;
-        my $oid_end = $1;
+        $key =~ /(\d+)\.(\d+)$/;
+        my $oid_end = $1 . '.' . $2;
+        
+        next if ($present_map{$result->{$key}} ne 'present' && 
+                 $self->absent_problem(section => 'fans', instance => $1 . '.' . $2));
+        
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqHeFltTolFanLocale . "." . $oid_end, $oid_cpqHeFltTolFanCondition . "." . $oid_end,
@@ -122,7 +125,9 @@ sub check {
         my $fan_redundant = $result->{$oid_cpqHeFltTolFanRedundant . '.' . $_};
         my $fan_redundantpartner = $result->{$oid_cpqHeFltTolFanRedundantPartner . '.' . $_};
 
+        next if ($self->check_exclude(section => 'fans', instance => $fan_chassis . '.' . $fan_index));
         $self->{components}->{fan}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("fan %d status is %s, speed is %s [chassis: %s, location: %s, redundance: %s, redundant partner: %s].",
                                     $fan_index, ${$conditions{$fan_condition}}[0], $fanspeed{$fan_speed},
                                     $fan_chassis, $location_map{$fan_locale},

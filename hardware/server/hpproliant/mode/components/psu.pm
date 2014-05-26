@@ -81,8 +81,8 @@ sub check {
 
     # In MIB 'CPQHLTH-MIB.mib'
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'power supplies', total => 0};
-    return if ($self->check_exclude('psu'));
+    $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'psu'));
     
     my $oid_cpqHeFltTolPowerSupplyPresent = '.1.3.6.1.4.1.232.6.2.9.3.1.3';
     my $oid_cpqHeFltTolPowerSupplyChassis = '.1.3.6.1.4.1.232.6.2.9.3.1.1';
@@ -100,10 +100,12 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         # Chassis + Bay
-        $key =~ /(\d+\.\d+)$/;
-        my $oid_end = $1;
+        $key =~ /(\d+)\.(\d+)$/;
+        my $oid_end = $1 . '.' . $2;
+        
+        next if ($present_map{$result->{$key}} ne 'present' &&
+                 $self->absent_problem(section => 'psu', instance => $1 . '.' . $2));
         
         push @oids_end, $oid_end;
         push @get_oids,
@@ -123,7 +125,9 @@ sub check {
         my $psu_capacitymaximum = $result->{$oid_cpqHeFltTolPowerSupplyCapacityMaximum . '.' . $_};
         my $psu_voltage = $result->{$oid_cpqHeFltTolPowerSupplyMainVoltage . '.' . $_};
 
+        next if ($self->check_exclude(section => 'psu', instance => $psu_chassis . '.' . $psu_bay));
         $self->{components}->{psu}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("powersupply %d status is %s [chassis: %s, redundance: %s, redundant partner: %s] (status %s).",
                                     $psu_bay, ${$conditions{$psu_condition}}[0],
                                     $psu_chassis, $redundant_map{$psu_redundant}, $psu_redundantpartner,

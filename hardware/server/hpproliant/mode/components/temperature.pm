@@ -66,8 +66,8 @@ sub check {
     # In MIB 'CPQSTDEQ-MIB.mib'
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0};
-    return if ($self->check_exclude('temperature'));
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'temperature'));
     
     my $oid_cpqHeTemperatureEntry = '.1.3.6.1.4.1.232.6.2.6.8.1';
     my $oid_cpqHeTemperatureCondition = '.1.3.6.1.4.1.232.6.2.6.8.1.6';
@@ -92,7 +92,9 @@ sub check {
         my $temp_threshold = $result->{$oid_cpqHeTemperatureThreshold . '.' . $instance};
         my $temp_locale = $result->{$oid_cpqHeTemperatureLocale . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'temperature', instance => $temp_chassis . '.' . $temp_index));
         $self->{components}->{temperature}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("%s %s temperature is %dC (%d max) (status is %s).", 
                                     $temp_index, $location_map{$temp_locale}, $temp_current,
                                     $temp_threshold,

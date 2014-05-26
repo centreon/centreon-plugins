@@ -58,7 +58,7 @@ sub new {
                                   "sudo1"              => { name => 'sudo1' },
                                   "command1:s"         => { name => 'command1', default => 'metastat' },
                                   "command1-path:s"    => { name => 'command1_path', default => '/usr/sbin' },
-                                  "command1-options:s" => { name => 'command1_options', default => '-c 2>&1' },
+                                  "command1-options:s" => { name => 'command1_options', default => '2>&1' },
                                   "sudo2"              => { name => 'sudo2' },
                                   "command2:s"         => { name => 'command2', default => 'metadb' },
                                   "command2-path:s"    => { name => 'command2_path', default => '/usr/sbin' },
@@ -108,20 +108,43 @@ sub run {
 
     my $num_metastat_errors = 0;
     my $metastat_name = '';
-    foreach (split(/\n/, $stdout)) {
-        #d1               m 10.0GB d11 d12 (maint)
-        #       d11          s 10.0GB /dev/dsk/c5t600A0B80002929FC0000842E5251EE71d0s6
-        #       d12          s 10.0GB /dev/dsk/c5t600A0B800011978E000026D95251FEF1d0s6 (maint)
-        #d5               r  4.0GB /dev/dsk/c5t600A0B80002929FC000084305251EFADd0s6 /dev/dsk/c5t600A0B800011978E000026DC52520043d0s6 /dev/dsk/c5t600A0B800011978E000026E25252811Ad0s6
+    foreach my $disk_info (split(/(?=d\d+:)/, $stdout)) {
+        #d5: Mirror
+        #    Submirror 0: d15
+        #      State: Okay
+        #    Submirror 1: d25
+        #      State: Okay
+        #    Pass: 1
+        #    Read option: roundrobin (default)
+        #    Write option: parallel (default)
+        #    Size: 525798 blocks
         #
-        # Only need to check 's' (stripping) and 'r' (raid). 'm' (mirror) is (maint) because of 's' is (maint)
+        #d15: Submirror of d5
+        #    State: Okay
+        #    Size: 525798 blocks
+        #    Stripe 0:
+        #        Device     Start Block  Dbase        State Reloc Hot Spare
+        #        c0t0d0s5          0     No            Okay   Yes
+        #
+        #
+        #d25: Submirror of d5
+        #    State: Okay
+        #    Size: 525798 blocks
+        #    Stripe 0:
+        #        Device     Start Block  Dbase        State Reloc Hot Spare
+        #        c0t1d0s5          0     No            Okay   Yes
         
-        if (/^\s*(\S+)\s+(s|r)\s+\S+\s+(.*?)\(maint\)/i ) {
-            my $name = $1;
-            my $disks = $3;
-            $disks = trim($disks);
-            $num_metastat_errors++;
-            $metastat_name .= ' [' . $name . ' (' . $disks . ')]';
+        my @lines = split("\n",$disk_info);
+        my @line1 = split(/:/, $lines[0]);
+        my $disk = $line1[0];
+        my $type = $line1[1];
+        $type =~ s/^\s*(.*)\s*$/$1/;
+        #$type =~ s/\s+//g;
+        foreach my $line (@lines) {
+            if ($line =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+Maint\S*\s+(.*?)$/i) {
+                $num_metastat_errors++;
+                $metastat_name .= ' [' . $1 . ' (' . $disk . ')][' . $type . ']';
+            }
         }
     }
     
@@ -238,7 +261,7 @@ Command path (Default: '/usr/sbin').
 
 =item B<--command1-options>
 
-Command options (Default: '-c 2>&1').
+Command options (Default: '2>&1').
 
 =item B<--sudo2>
 
