@@ -154,8 +154,8 @@ sub array_controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking da controller");
-    $self->{components}->{dactl} = {name => 'da controllers', total => 0};
-    return if ($self->check_exclude('dactl'));
+    $self->{components}->{dactl} = {name => 'da controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'dactl'));
     
     my $oid_cpqDaCntlrIndex = '.1.3.6.1.4.1.232.3.2.2.1.1.1';
     my $oid_cpqDaCntlrModel = '.1.3.6.1.4.1.232.3.2.2.1.1.2';
@@ -176,8 +176,10 @@ sub array_controller {
         my $da_model = $result2->{$oid_cpqDaCntlrModel . '.' . $instance};
         my $da_slot = $result2->{$oid_cpqDaCntlrSlot . '.' . $instance};
         my $da_condition = $result2->{$oid_cpqDaCntlrCondition . '.' . $instance};
-        
+
+        next if ($self->check_exclude(section => 'dactl', instance => $instance));
         $self->{components}->{dactl}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("da controller %s [slot: %s, model: %s] status is %s.", 
                                     $instance, $da_slot, $model_map{$da_model},
                                     ${$conditions{$da_condition}}[0]));
@@ -193,8 +195,8 @@ sub array_accelerator {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking da accelerator boards");
-    $self->{components}->{daacc} = {name => 'da accelerator boards', total => 0};
-    return if ($self->check_exclude('daacc'));
+    $self->{components}->{daacc} = {name => 'da accelerator boards', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'daacc'));
     
     my $oid_cpqDaAccelCntlrIndex = '.1.3.6.1.4.1.232.3.2.2.2.1.1';
     my $oid_cpqDaAccelStatus = '.1.3.6.1.4.1.232.3.2.2.2.1.2';
@@ -215,8 +217,10 @@ sub array_accelerator {
         my $accel_status = $result2->{$oid_cpqDaAccelStatus . '.' . $instance};
         my $accel_condition = $result2->{$oid_cpqDaAccelCondition . '.' . $instance};
         my $accel_battery = $result2->{$oid_cpqDaAccelBattery . '.' . $instance};
-        
+
+        next if ($self->check_exclude(section => 'daacc', instance => $instance));
         $self->{components}->{daacc}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("da controller accelerator %s [status: %s, battery status: %s] condition is %s.", 
                                     $instance, $accelstatus_map{$accel_status}, ${$conditionsbattery{$accel_battery}}[0],
                                     ${$conditions{$accel_condition}}[0]));
@@ -237,8 +241,8 @@ sub logical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking da logical drives");
-    $self->{components}->{daldrive} = {name => 'da logical drives', total => 0};
-    return if ($self->check_exclude('daldrive'));
+    $self->{components}->{daldrive} = {name => 'da logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'daldrive'));
     
     my $oid_cpqDaLogDrvCondition = '.1.3.6.1.4.1.232.3.2.3.1.1.11';
     my $oid_cpqDaLogDrvStatus = '.1.3.6.1.4.1.232.3.2.3.1.1.4';
@@ -261,8 +265,10 @@ sub logical_drive {
         my $ldrive_status = $result2->{$oid_cpqDaLogDrvStatus . '.' . $instance};
         my $ldrive_condition = $result->{$key};
         my $ldrive_faultol = $result2->{$oid_cpqDaLogDrvFaultTol . '.' . $instance};
-        
+
+        next if ($self->check_exclude(section => 'daldrive', instance => $instance));
         $self->{components}->{daldrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("da logical drive %s [fault tolerance: %s, status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $ldrive_fault_tolerance_map{$ldrive_faultol}, 
@@ -286,8 +292,8 @@ sub physical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking da physical drives");
-    $self->{components}->{dapdrive} = {name => 'da physical drives', total => 0};
-    return if ($self->check_exclude('dapdrive'));
+    $self->{components}->{dapdrive} = {name => 'da physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'dapdrive'));
     
     my $oid_cpqDaPhyDrvCondition = '.1.3.6.1.4.1.232.3.2.5.1.1.37';
     my $oid_cpqDaPhyDrvStatus = '.1.3.6.1.4.1.232.3.2.5.1.1.6';
@@ -307,8 +313,10 @@ sub physical_drive {
 
         my $pdrive_status = $result2->{$oid_cpqDaPhyDrvStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'dapdrive', instance => $instance));
         $self->{components}->{dapdrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("da physical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},

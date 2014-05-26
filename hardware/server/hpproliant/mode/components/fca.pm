@@ -182,8 +182,8 @@ sub host_array_controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fca host controller");
-    $self->{components}->{fcahostctl} = {name => 'fca host controllers', total => 0};
-    return if ($self->check_exclude('fcahostctl'));
+    $self->{components}->{fcahostctl} = {name => 'fca host controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fcahostctl'));
     
     my $oid_cpqFcaHostCntlrIndex = '.1.3.6.1.4.1.232.16.2.7.1.1.1';
     my $oid_cpqFcaHostCntlrSlot = '.1.3.6.1.4.1.232.16.2.7.1.1.2';
@@ -208,7 +208,9 @@ sub host_array_controller {
         my $fca_slot = $result2->{$oid_cpqFcaHostCntlrSlot . '.' . $instance};
         my $fca_condition = $result2->{$oid_cpqFcaHostCntlrCondition . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'fcahostctl', instance => $instance));
         $self->{components}->{fcahostctl}->{total}++;
+        
         $self->{output}->output_add(long_msg => sprintf("fca host controller %s [slot: %s, model: %s, status: %s] condition is %s.", 
                                     $fca_index, $fca_slot, $model_map{$fca_model}, $hostctlstatus_map{$fca_status},
                                     ${$conditions{$fca_condition}}[0]));
@@ -224,8 +226,8 @@ sub external_array_controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fca external controller");
-    $self->{components}->{fcaexternalctl} = {name => 'fca external controllers', total => 0};
-    return if ($self->check_exclude('fcaexternalctl'));
+    $self->{components}->{fcaexternalctl} = {name => 'fca external controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fcaexternalctl'));
     
     my $oid_cpqFcaCntlrCondition = '.1.3.6.1.4.1.232.16.2.2.1.1.6';
     my $oid_cpqFcaCntlrModel = '.1.3.6.1.4.1.232.16.2.2.1.1.3';
@@ -251,7 +253,9 @@ sub external_array_controller {
         my $fca_role = $result2->{$oid_cpqFcaCntlrCurrentRole . '.' . $instance};
         my $fca_condition = $result->{$key};
         
+        next if ($self->check_exclude(section => 'fcaexternalctl', instance => $instance));
         $self->{components}->{fcaexternalctl}->{total}++;
+        
         $self->{output}->output_add(long_msg => sprintf("fca external controller %s [model: %s, status: %s, role: %s] condition is %s.", 
                                     $fca_box_index . ':' . $fca_box_slot,
                                     $external_model_map{$fca_model}, $externalctlstatus_map{$fca_status}, $externalrole_map{$fca_role},
@@ -268,8 +272,8 @@ sub external_array_accelerator {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fca external accelerator boards");
-    $self->{components}->{fcaexternalacc} = {name => 'fca external accelerator boards', total => 0};
-    return if ($self->check_exclude('fcaexternalacc'));
+    $self->{components}->{fcaexternalacc} = {name => 'fca external accelerator boards', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fcaexternalacc'));
     
     my $oid_cpqFcaAccelCondition = '.1.3.6.1.4.1.232.16.2.2.2.1.9';
     my $oid_cpqFcaAccelStatus = '.1.3.6.1.4.1.232.16.2.2.2.1.3';
@@ -292,7 +296,9 @@ sub external_array_accelerator {
         my $accel_condition = $result->{$key};
         my $accel_battery = $result2->{$oid_cpqFcaAccelBatteryStatus . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'fcaexternalacc', instance => $instance));
         $self->{components}->{fcaexternalacc}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("fca external accelerator boards %s [status: %s, battery status: %s] condition is %s.", 
                                     $fca_box_index . ':' . $fca_box_slot, 
                                     $accelstatus_map{$accel_status}, ${$conditionsbattery{$accel_battery}}[0],
@@ -314,8 +320,8 @@ sub logical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fca logical drives");
-    $self->{components}->{fcaldrive} = {name => 'fca logical drives', total => 0};
-    return if ($self->check_exclude('fcaldrive'));
+    $self->{components}->{fcaldrive} = {name => 'fca logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fcaldrive'));
     
     my $oid_cpqFcaLogDrvCondition = '.1.3.6.1.4.1.232.16.2.3.1.1.11';
     my $oid_cpqFcaLogDrvStatus = '.1.3.6.1.4.1.232.16.2.3.1.1.4';
@@ -339,7 +345,9 @@ sub logical_drive {
         my $ldrive_condition = $result->{$key};
         my $ldrive_faultol = $result2->{$oid_cpqFcaLogDrvFaultTol . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'fcaldrive', instance => $instance));
         $self->{components}->{fcaldrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("fca logical drive %s [fault tolerance: %s, status: %s] condition is %s.", 
                                     $box_index . ':' . $drive_index,
                                     $ldrive_fault_tolerance_map{$ldrive_faultol}, 
@@ -363,8 +371,8 @@ sub physical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking fca physical drives");
-    $self->{components}->{fcapdrive} = {name => 'fca physical drives', total => 0};
-    return if ($self->check_exclude('fcapdrive'));
+    $self->{components}->{fcapdrive} = {name => 'fca physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fcapdrive'));
     
     my $oid_cpqFcaPhyDrvCondition = '.1.3.6.1.4.1.232.16.2.5.1.1.31';
     my $oid_cpqFcaPhyDrvStatus = '.1.3.6.1.4.1.232.16.2.5.1.1.6';
@@ -385,7 +393,9 @@ sub physical_drive {
         my $pdrive_status = $result2->{$oid_cpqFcaPhyDrvStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
         
+        next if ($self->check_exclude(section => 'fcapdrive', instance => $instance));
         $self->{components}->{fcapdrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("fca physical drive %s [status: %s] condition is %s.", 
                                     $box_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},
