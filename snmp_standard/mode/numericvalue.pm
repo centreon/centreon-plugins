@@ -71,11 +71,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{oid})) {
+    if (!defined($self->{option_results}->{oid}) || $self->{option_results}->{oid} eq '') {
        $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
        $self->{output}->option_exit(); 
     }
-    $self->{option_results}->{oid} .= '.' if ($self->{option_results}->{oid} !~ /^\./);
+    $self->{option_results}->{oid} = '.' . $self->{option_results}->{oid} if ($self->{option_results}->{oid} !~ /^\./);
     
     if ($self->{option_results}->{oid_type} !~ /^gauge|counter$/i) {
        $self->{output}->add_option_msg(short_msg => "Wrong --oid-type argument '" . $self->{option_results}->{oid_type} . "' ('gauge' or 'counter').");
