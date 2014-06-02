@@ -42,7 +42,7 @@ use warnings;
 
 my %states = (
     1 => ['other', 'WARNING'], 
-    2 => ['unknown', 'UNKNOWN'], 
+    2 => ['unknown', 'WARNING'], 
     3 => ['ok', 'OK'], 
     4 => ['non critical', 'WARNING'],
     5 => ['critical', 'CRITICAL'],
@@ -57,14 +57,46 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "threshold-overload:s@"     => { name => 'threshold_overload' },
                                 });
 
     return $self;
 }
 
+sub check_treshold_overload {
+    my ($self, %options) = @_;
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /(.*?)=(.*)/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($filter, $threshold) = ($1, $2);
+        if ($self->{output}->is_litteral_status(status => $threshold) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$filter} = $threshold;
+    }
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    $self->check_treshold_overload();
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = ${$states{$options{value}}}[1];
+    
+    foreach (keys %{$self->{overload_th}}) {
+        if (${$states{$options{value}}}[0] =~ /$_/) {
+            $status = $self->{overload_th}->{$_};
+        }
+    }
+    return $status;
 }
 
 sub run {
@@ -75,9 +107,9 @@ sub run {
     my $oid_TL2000StatusGlobalStatus = '.1.3.6.1.4.1.674.10893.2.102.2.1.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_TL2000StatusGlobalStatus], nothing_quit => 1);
     
-    $self->{output}->output_add(severity =>  ${$states{$result->{$oid_TL2000StatusGlobalStatus}}}[1],
+    $self->{output}->output_add(severity => $self->get_severity(value => $result->{$oid_TL2000StatusGlobalStatus}),
                                 short_msg => sprintf("Overall global status is '%s'.", 
-                                                ${$states{$result->{$oid_TL2000StatusGlobalStatus}}}[0]));
+                                                    ${$states{$result->{$oid_TL2000StatusGlobalStatus}}}[0]));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -92,6 +124,11 @@ __END__
 Check the overall status of the appliance.
 
 =over 8
+
+=item B<--threshold-overload>
+
+Set to overload default threshold value.
+Example: --threshold-overload='(unknown|non critical)=critical'
 
 =back
 
