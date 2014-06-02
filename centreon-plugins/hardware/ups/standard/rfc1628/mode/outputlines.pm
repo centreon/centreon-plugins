@@ -243,7 +243,7 @@ __END__
 
 =head1 MODE
 
-Check Input lines metrics (load, voltage, current and true power).
+Check Output lines metrics (load, voltage, current and true power).
 
 =over 8
 
