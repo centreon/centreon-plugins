@@ -111,7 +111,7 @@ sub run {
                                       min => 0, max => 100);
     }
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Charge remaining: %s%% (%s minutes remaing)", $charge_remain, $min_remain));
+                                short_msg => sprintf("Charge remaining: %s%% (%s minutes remaining)", $charge_remain, $min_remain));
     
     if ($current != 0) {
         $self->{output}->perfdata_add(label => 'current', unit => 'A',
