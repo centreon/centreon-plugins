@@ -50,6 +50,7 @@ sub new {
                                 {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "filter-pool:s"           => { name => 'filter_pool' },
                                 });
 
     return $self;
@@ -86,6 +87,13 @@ sub run {
     foreach my $oid (keys %$result) {
         next if ($oid !~ /^$oid_ciscoMemoryPoolName/);
         $oid =~ /\.([0-9]+)$/;
+        
+        if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+            $result->{$oid} !~ /$self->{option_results}->{filter_pool}/) {
+            $self->{output}->output_add(long_msg => "Skipping pool '" . $result->{$oid} . "'.");
+            next;
+        }
+        
         my $instance = $1;
         my $memory_name = $result->{$oid};
         my $memory_used = $result->{$oid_ciscoMemoryPoolUsed . '.' . $instance};
@@ -140,6 +148,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--filter-pool>
+
+Filter pool to check (can use regexp).
 
 =back
 
