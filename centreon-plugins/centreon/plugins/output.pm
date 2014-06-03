@@ -184,7 +184,10 @@ sub output_add {
 sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {'label' => '', 'value' => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
-    $perfdata = {%$perfdata, %options};
+    foreach (keys %options) {
+        next if (!defined($options{$_}));
+        $perfdata->{$_} = $options{$_};
+    }
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
 }
