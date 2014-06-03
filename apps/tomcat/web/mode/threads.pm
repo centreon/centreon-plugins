@@ -213,18 +213,18 @@ sub run {
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
         $self->{output}->perfdata_add(label => 'currentThreadsBusy' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{currentThreadsBusy}),
+                                      value => $self->{result}->{$name}->{currentThreadsBusy},
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0,
-                                      max => sprintf("%.2f", $self->{result}->{$name}->{maxThreads}));
+                                      max => $self->{result}->{$name}->{maxThreads});
 
         $self->{output}->perfdata_add(label => 'currentThreadCount' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{currentThreadCount}),
+                                      value => $self->{result}->{$name}->{currentThreadCount},
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0,
-                                      max => sprintf("%.2f", $self->{result}->{$name}->{maxThreads}));
+                                      max => $self->{result}->{$name}->{maxThreads});
     };
 
     $self->{output}->display();
