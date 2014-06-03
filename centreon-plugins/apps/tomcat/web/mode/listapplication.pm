@@ -93,7 +93,7 @@ sub manage_selection {
 
     my $webcontent = centreon::plugins::httplib::connect($self);  
 
-     while ($webcontent =~ m/\/(.*):(.*):(.*):(.*)/g) {      
+     while ($webcontent =~ m/(.*):(.*):(.*):(.*)/g) {      
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
                
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
