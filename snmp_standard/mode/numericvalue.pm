@@ -60,7 +60,7 @@ sub new {
                                   "format-scale-unit:s"     => { name => 'format_scale_unit', default => 'other'},
                                   "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
                                   "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
-                                  "perfdata-max:s"          => { name => 'perfdata_min', default => ''},
+                                  "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
                                   "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
