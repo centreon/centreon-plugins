@@ -290,10 +290,10 @@ sub run {
         my $exit4 = $self->{perfdata}->threshold_check(value => $requestInfo_errorCount_absolute_per_sec, threshold => [ { label => 'critical-errorcount', 'exit_litteral' => 'critical' }, { label => 'warning-errorcount', exit_litteral => 'warning' } ]);
         my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4 ]);
 
-        $self->{output}->output_add(long_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %s, requestCount : %s, errorCount : %s", $name, $requestInfo_maxTime, $requestInfo_processingTime_absolute_per_sec, $requestInfo_requestCount_absolute_per_sec, $requestInfo_errorCount_absolute_per_sec));
+        $self->{output}->output_add(long_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %.3f, requestCount : %.2f, errorCount : %.2f", $name, $requestInfo_maxTime, $requestInfo_processingTime_absolute_per_sec, $requestInfo_requestCount_absolute_per_sec, $requestInfo_errorCount_absolute_per_sec));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %s, requestCount : %s, errorCount : %s", $name,
+                                        short_msg => sprintf("Connector '%s' maxTime : %s, processingTime : %.3f, requestCount : %.2f, errorCount : %.2f", $name,
                                        $requestInfo_maxTime,
                                        $requestInfo_processingTime_absolute_per_sec,
                                        $requestInfo_requestCount_absolute_per_sec,
@@ -302,14 +302,14 @@ sub run {
         
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-	$self->{output}->perfdata_add(label => 'maxTime' . $extra_label,
+        $self->{output}->perfdata_add(label => 'maxTime' . $extra_label,
                                       value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_maxTime}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
 
         $self->{output}->perfdata_add(label => 'processingTime' . $extra_label,
-                                      value => sprintf("%.2f", $requestInfo_processingTime_absolute_per_sec),
+                                      value => sprintf("%.3f", $requestInfo_processingTime_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
