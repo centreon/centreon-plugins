@@ -114,7 +114,7 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an IMAP Server.
+Check messages in a mailbox with IMAP filter.
 
 =over 8
 
