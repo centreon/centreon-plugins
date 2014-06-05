@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::cache;
+package apps::varnish::mode::connections;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -59,12 +59,12 @@ sub new {
             "command-path:s"     => { name => 'command_path', default => '/usr/bin/' },
             "command-options:s"  => { name => 'command_options', default => ' -1 ' },
             "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
-            "warning-hit:s"      => { name => 'warning-hit', default => '' },
-            "critical-hit:s"     => { name => 'critical-hit', default => '' },
-            "warning-hitpass:s"  => { name => 'warning-hitpass', default => '' },
-            "critical-hitpass:s" => { name => 'critical-hitpass', default => '' },
-            "warning-miss:s"     => { name => 'warning-miss', default => '' },
-            "critical-miss:s"    => { name => 'critical-miss', default => '' },
+            "warning-hit:s"      => { name => 'warning_hit', default => '' },
+            "critical-hit:s"     => { name => 'critical_hit', default => '' },
+            "warning-hitpass:s"  => { name => 'warning_hitpass', default => '' },
+            "critical-hitpass:s" => { name => 'critical_hitpass', default => '' },
+            "warning-miss:s"     => { name => 'warning_miss', default => '' },
+            "critical-miss:s"    => { name => 'critical_miss', default => '' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -75,30 +75,30 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning-hit', value => $self->{option_results}->{warning-hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning-hit} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warning-conn', value => $self->{option_results}->{warning_conn})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-conn threshold '" . $self->{option_results}->{warning_conn} . "'.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-hit', value => $self->{option_results}->{critical-hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical-hit} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-hitpass', value => $self->{option_results}->{warning_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-bytes threshold '" . $self->{option_results}->{warning_hitpass} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-hitpass', value => $self->{option_results}->{critical_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes threshold '" . $self->{option_results}->{critical_hitpass} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical-conn', value => $self->{option_results}->{critical_conn})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-conn threshold '" . $self->{option_results}->{critical_conn} . "'.");
         $self->{output}->option_exit();
     }
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning-miss', value => $self->{option_results}->{warning_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-access threshold '" . $self->{option_results}->{warning_miss} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warning-drop', value => $self->{option_results}->{warning_drop})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-drop threshold '" . $self->{option_results}->{warning_drop} . "'.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-miss', value => $self->{option_results}->{critical_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-access threshold '" . $self->{option_results}->{critical_miss} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical-drop', value => $self->{option_results}->{critical_drop})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-drop threshold '" . $self->{option_results}->{critical_drop} . "'.");
+        $self->{output}->option_exit();
+    }
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning-req', value => $self->{option_results}->{warning_req})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-req threshold '" . $self->{option_results}->{warning_req} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-req', value => $self->{option_results}->{critical_req})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-req threshold '" . $self->{option_results}->{critical_req} . "'.");
         $self->{output}->option_exit();
     }
 
@@ -109,11 +109,6 @@ sub check_options {
 #client_conn            7287199         1.00 Client connections accepted
 #client_drop                  0         0.00 Connection dropped, no sess/wrk
 #client_req               24187         0.00 Client requests received
-#cache_hit                17941         0.00 Cache hits
-#cache_hitpass               10         0.00 Cache hits for pass
-#cache_miss               16746         0.00 Cache misses
-#backend_conn             13746         0.00 Backend conn. success
-#backend_unhealthy            0         0.00 Backend conn. not attempted
 #';
 
 sub getdata {
@@ -135,7 +130,7 @@ sub getdata {
         # - Descriptive text
 
         if  (/^(.\S*)\s*([0-9]*)\s*([0-9.]*)\s(.*)$/i) {
-            #print "FOUND: " . $2 . "\n";
+            #print "FOUND: " . $1 . "=" . $2 . "\n";
             $self->{result}->{$1} = $2;
         };
     };
@@ -149,12 +144,12 @@ sub run {
     $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $self->{result}->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_cache_hit = $self->{statefile_value}->get(name => 'cache_hit');
-    my $old_hitpass = $self->{statefile_value}->get(name => 'cache_hitpass');
-    my $old_miss    = $self->{statefile_value}->get(name => 'cache_miss');
+    my $old_client_conn = $self->{statefile_value}->get(name => 'client_conn');
+    my $old_client_drop = $self->{statefile_value}->get(name => 'client_drop');
+    my $old_client_req    = $self->{statefile_value}->get(name => 'client_req');
 
     $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp) || !defined($old_cache_hit)) {
+    if (!defined($old_timestamp) || !defined($old_client_conn)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
         $self->{output}->display();
@@ -162,46 +157,50 @@ sub run {
     }
 
     # Set 0 if Cache > Result
-    $old_cache_hit = 0 if ($old_cache_hit > $self->{result}->{cache_hit}->{value} ); 
-    $old_cache_hitpass = 0 if ($old_hitpass > $self->{result}->{cache_hitpass}->{value});
-    $old_cache_miss = 0 if ($old_miss > $self->{result}->{cache_miss}->{value});
+    $old_client_conn = 0 if ($old_client_conn > $self->{result}->{client_conn} ); 
+    $old_client_drop = 0 if ($old_hitpass > $self->{result}->{client_drop});
+    $old_client_req = 0 if ($old_miss > $self->{result}->{client_req});
 
     # Calculate
     my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
     $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-    my $cache_hit = ($self->{result}->{cache_hit}->{value} - $old_cache_hit) / $delta_time;
-    my $cache_hitpass = ($self->{result}->{cache_hitpass}->{value} - $old_cache_hitpass) / $delta_time;
-    my $cache_miss = ($self->{result}->{cache_}->{value} - $old_cache_miss) / $delta_time;
+    my $client_conn = ($self->{result}->{client_conn} - $old_client_conn) / $delta_time;
+    my $client_drop = ($self->{result}->{client_drop} - $old_client_drop) / $delta_time;
+    my $client_req = ($self->{result}->{client_req} - $old_client_req) / $delta_time;
 
-    my $exit1 = $self->{perfdata}->threshold_check(value => $cache_hit, threshold =>      [ { label => 'critical-hit', 'exit_litteral' => 'critical' }, { label => 'warning-hit', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $cache_hitpass, threshold =>  [ { label => 'critical-hitpass', 'exit_litteral' => 'critical' }, { label => 'warning-hitpass', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $cache_miss, threshold =>     [ { label => 'critical-miss', 'exit_litteral' => 'critical' }, { label => 'warning-miss', exit_litteral => 'warning' } ]);
+    #print $old_client_conn . "\n";
+    #print $self->{result}->{client_conn} . "\n";
+    #print $client_conn . "\n";
+
+    my $exit1 = $self->{perfdata}->threshold_check(value => $client_conn, threshold =>   [ { label => 'critical-conn', 'exit_litteral' => 'critical' }, { label => 'warning-conn', exit_litteral => 'warning' } ]);
+    my $exit2 = $self->{perfdata}->threshold_check(value => $client_drop, threshold =>   [ { label => 'critical-drop', 'exit_litteral' => 'critical' }, { label => 'warning-drop', exit_litteral => 'warning' } ]);
+    my $exit3 = $self->{perfdata}->threshold_check(value => $client_req, threshold =>    [ { label => 'critical-req', 'exit_litteral' => 'critical' }, { label => 'warning-req', exit_litteral => 'warning' } ]);
     
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Cache Hits: %.2f Cache Hits for pass: %.2f Cache misses: %.2f ", 
-                                    $cache_hit,
-                                    $cache_hitpass,
-                                    $cache_miss,
+                                short_msg => sprintf("Client connections accepted: %.2f Connection dropped, no sess/wrk: %.2f Client requests received: %.2f ", 
+                                    $client_conn,
+                                    $client_drop,
+                                    $client_req,
                                     ));
 
-    $self->{output}->perfdata_add(label => "cache_hit",
-                                    value => $cache_hit,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-hit'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-hit'),
+    $self->{output}->perfdata_add(label => "client_conn",
+                                    value => $client_conn,
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-conn'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-conn'),
                                     min => 0
                                     );
-    $self->{output}->perfdata_add(label => "cache_hitpass",
-                                    value => $cache_hitpass,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-hitpass'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-hitpass'),
+    $self->{output}->perfdata_add(label => "client_drop",
+                                    value => $client_drop,
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-drop'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-drop'),
                                     min => 0
                                     );
-    $self->{output}->perfdata_add(label => "cache_miss",
-                                    value => $cache_miss,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-miss'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-miss'),
+    $self->{output}->perfdata_add(label => "client_req",
+                                    value => $client_req,
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-req'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-req'),
                                     min => 0
                                     );
 
@@ -217,8 +216,24 @@ __END__
 =head1 MODE
 
 Check Varnish Cache with varnishstat Command
+This Mode Checks:
+- Client connections accepted
+- Connection dropped, no sess 
+- Client requests received
 
 =over 8
+
+=item B<--remote>
+
+If you dont run this script locally, if you wanna use it remote, you can run it remotely with 'ssh'.
+
+=item B<--hostname>
+
+Hostname to query (need --remote).
+
+=item B<--ssh-option>
+
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
 =item B<--command>
 
@@ -232,33 +247,29 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin/)
 
 Parameter for Binary File (Default: ' -1 ')
 
-=item B<--warning-hit>
+=item B<--warning-conn>
 
-Warning Threshold for Cache Hits
+Warning Threshold for Client connections accepted
 
-=item B<--warning-hit>
+=item B<--critical-conn>
 
-Warning Threshold for Cache Hits
+Critical Threshold for Client connections accepted
 
-=item B<--critical-hit>
+=item B<--warning-drop>
 
-Critical Threshold for Cache Hits
+Warning Threshold for Connection dropped, no sess/wrk
 
-=item B<--warning-hitpass>
+=item B<--critical-drop>
 
-Warning Threshold for Cache hits for Pass
+Critical Threshold for Connection dropped, no sess/wrk
 
-=item B<--critical-hitpass>
+=item B<--warning-req>
 
-Critical Threshold for Cache hits for Pass
+Warning Threshold for Client requests received
 
-=item B<--warning-miss>
+=item B<--critical-req>
 
-Warning Threshold for Cache Misses
-
-=item B<--critical-miss>
-
-Critical Threshold for Cache Misses
+Critical Threshold for Client requests received
 
 =back
 
