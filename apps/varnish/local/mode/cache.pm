@@ -76,29 +76,29 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (($self->{perfdata}->threshold_validate(label => 'warning-hit', value => $self->{option_results}->{warning_hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning_hit} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-hit threshold '" . $self->{option_results}->{warning_hit} . "'.");
         $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-hit', value => $self->{option_results}->{critical_hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical_hit} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-hit threshold '" . $self->{option_results}->{critical_hit} . "'.");
         $self->{output}->option_exit();
     }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-hitpass', value => $self->{option_results}->{warning_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-bytes threshold '" . $self->{option_results}->{warning_hitpass} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-hitpass threshold '" . $self->{option_results}->{warning_hitpass} . "'.");
         $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-hitpass', value => $self->{option_results}->{critical_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes threshold '" . $self->{option_results}->{critical_hitpass} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-hitpass threshold '" . $self->{option_results}->{critical_hitpass} . "'.");
         $self->{output}->option_exit();
     }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-miss', value => $self->{option_results}->{warning_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-access threshold '" . $self->{option_results}->{warning_miss} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-miss threshold '" . $self->{option_results}->{warning_miss} . "'.");
         $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-miss', value => $self->{option_results}->{critical_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-access threshold '" . $self->{option_results}->{critical_miss} . "'.");
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-miss threshold '" . $self->{option_results}->{critical_miss} . "'.");
         $self->{output}->option_exit();
     }
 
@@ -106,14 +106,9 @@ sub check_options {
 }
 
 #my $stdout = '
-#client_conn            7287199         1.00 Client connections accepted
-#client_drop                  0         0.00 Connection dropped, no sess/wrk
-#client_req               24187         0.00 Client requests received
 #cache_hit                69941         0.00 Cache hits
 #cache_hitpass               10         0.00 Cache hits for pass
 #cache_miss               16746         0.00 Cache misses
-#backend_conn             13746         0.00 Backend conn. success
-#backend_unhealthy            0         0.00 Backend conn. not attempted
 #';
 
 sub getdata {
@@ -217,6 +212,10 @@ __END__
 =head1 MODE
 
 Check Varnish Cache with varnishstat Command
+This Mode Checks:
+- Cache hits
+- Cache hits for pass 
+- Cache misses
 
 =over 8
 
@@ -243,10 +242,6 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin/)
 =item B<--command-options>
 
 Parameter for Binary File (Default: ' -1 ')
-
-=item B<--warning-hit>
-
-Warning Threshold for Cache Hits
 
 =item B<--warning-hit>
 
