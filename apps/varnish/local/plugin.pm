@@ -47,9 +47,17 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'cache'           => 'apps::varnish::mode::cache',
-			'client'          => 'apps::varnish::mode::client',
-			'backend'         => 'apps::varnish::mode::backend',
+			'connections'       => 'apps::varnish::mode::connections',
+			'cache'             => 'apps::varnish::mode::cache',
+			'backend'           => 'apps::varnish::mode::backend',
+			'fetch'             => 'apps::varnish::mode::fetch',
+			'workers'           => 'apps::varnish::mode::workers',
+			'shm'               => 'apps::varnish::mode::shm',
+			'sm'                => 'apps::varnish::mode::sm',
+			'sma'               => 'apps::varnish::mode::sma',
+			'sms'               => 'apps::varnish::mode::sms',
+			'hcb'               => 'apps::varnish::mode::hcb',
+			'esi'               => 'apps::varnish::mode::esi',
 			);
 
 	return $self;
