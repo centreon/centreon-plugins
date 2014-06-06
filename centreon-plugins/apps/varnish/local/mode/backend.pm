@@ -33,12 +33,71 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::backend;
+package apps::varnish::mode::cache;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+
+my $maps_counters = {
+    backend_conn   => { thresholds => {
+                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
+                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+                              },
+                output_msg => 'Backend conn. success: %.2f',
+                factor => 1, unit => '',
+               },
+    backend_unhealthy => { thresholds => {
+                                warning_unhealthy  =>  { label => 'warning-unhealthy', exit_value => 'warning' },
+                                critical_unhealthy =>  { label => 'critical-unhealthy', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. not attempted: %.2f',
+                 factor => 1, unit => '',
+                },
+    backend_busy => { thresholds => {
+                                warning_busy    =>  { label => 'warning-busy', exit_value => 'warning' },
+                                critical_busy   =>  { label => 'critical-busy', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. too many: %.2f',
+                 factor => 1, unit => '',
+               },
+    backend_fail => { thresholds => {
+                                warning_fail    =>  { label => 'warning-fail', exit_value => 'warning' },
+                                critical_fail   =>  { label => 'critical-fail', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. failures: %.2f',
+                 factor => 1, unit => '',
+               },
+    backend_reuse => { thresholds => {
+                                warning_reuse    =>  { label => 'warning-reuse', exit_value => 'warning' },
+                                critical_reuse   =>  { label => 'critical-reuse', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. reuses: %.2f',
+                 factor => 1, unit => '',
+               },
+    backend_toolate => { thresholds => {
+                                warning_toolate    =>  { label => 'warning-toolate', exit_value => 'warning' },
+                                critical_toolate   =>  { label => 'critical-toolate', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. was closed: %.2f',
+                 factor => 1, unit => '',
+               },
+    backend_recycle => { thresholds => {
+                                warning_recycle    =>  { label => 'warning-recycle', exit_value => 'warning' },
+                                critical_recycle   =>  { label => 'critical-recycle', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. recycles: %.2f',
+                 factor => 1, unit => '',
+               },
+    backend_retry => { thresholds => {
+                                warning_retry    =>  { label => 'warning-retry', exit_value => 'warning' },
+                                critical_retry   =>  { label => 'critical-retry', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. retry: %.2f',
+                 factor => 1, unit => '',
+               },
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -47,129 +106,47 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-        {
-            "hostname:s"            => { name => 'hostname' },
-            "remote"                => { name => 'remote' },
-            "ssh-option:s@"         => { name => 'ssh_option' },
-            "ssh-path:s"            => { name => 'ssh_path' },
-            "ssh-command:s"         => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"             => { name => 'timeout', default => 30 },
-            "sudo"                  => { name => 'sudo' },
-            "command:s"             => { name => 'command', default => 'varnishstat' },
-            "command-path:s"        => { name => 'command_path', default => '/usr/bin/' },
-            "command-options:s"     => { name => 'command_options', default => ' -1 ' },
-            "command-options2:s"    => { name => 'command_options2', default => ' 2>&1' },
-            "warning-conn:s"        => { name => 'warning_conn', default => '' },
-            "critical-conn:s"       => { name => 'critical_conn', default => '' },
-            "warning-unhealthy:s"   => { name => 'warning_unhealthy', default => '' },
-            "critical-unhealthy:s"  => { name => 'critical_unhealthy', default => '' },
-            "warning-busy:s"        => { name => 'warning_busy', default => '' },
-            "critical-busy:s"       => { name => 'critical_busy', default => '' },
-            "warning-fail:s"        => { name => 'warning_fail', default => '' },
-            "critical-fail:s"       => { name => 'critical_fail', default => '' },
-            "warning-reuse:s"       => { name => 'warning_reuse', default => '' },
-            "critical-reuse:s"      => { name => 'critical_reuse', default => '' },
-            "warning-toolate:s"     => { name => 'warning_toolate', default => '' },
-            "critical-toolate:s"    => { name => 'critical_toolate', default => '' },
-            "warning-recycle:s"     => { name => 'warning_recycle', default => '' },
-            "critical-recycle:s"    => { name => 'critical_recycle', default => '' },
-            "warning-retry:s"       => { name => 'warning_retry', default => '' },
-            "critical-retry:s"      => { name => 'critical_retry', default => '' },
-        });
+    {
+        "hostname:s"         => { name => 'hostname' },
+        "remote"             => { name => 'remote' },
+        "ssh-option:s@"      => { name => 'ssh_option' },
+        "ssh-path:s"         => { name => 'ssh_path' },
+        "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"          => { name => 'timeout', default => 30 },
+        "sudo"               => { name => 'sudo' },
+        "command:s"          => { name => 'command', default => 'varnishstat' },
+        "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
+        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+    });
 
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $options{options}->add_options(arguments => {
+                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
+            });
+        };
+    };
+
+    $self->{instances_done} = {};
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
-}
+};
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning-conn', value => $self->{option_results}->{warning_conn})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-conn threshold '" . $self->{option_results}->{warning_conn} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-conn', value => $self->{option_results}->{critical_conn})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-conn threshold '" . $self->{option_results}->{critical_conn} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-unhealthy', value => $self->{option_results}->{warning_unhealthy})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-unhealthy threshold '" . $self->{option_results}->{warning_unhealthy} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-unhealthy', value => $self->{option_results}->{critical_unhealthy})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-unhealthy threshold '" . $self->{option_results}->{critical_unhealthy} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-busy', value => $self->{option_results}->{warning_busy})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-busy threshold '" . $self->{option_results}->{warning_busy} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-busy', value => $self->{option_results}->{critical_busy})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-busy threshold '" . $self->{option_results}->{critical_busy} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-fail', value => $self->{option_results}->{warning_fail})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-fail threshold '" . $self->{option_results}->{warning_fail} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-fail', value => $self->{option_results}->{critical_fail})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-fail threshold '" . $self->{option_results}->{critical_fail} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-reuse', value => $self->{option_results}->{warning_reuse})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-reuse threshold '" . $self->{option_results}->{warning_reuse} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-reuse', value => $self->{option_results}->{critical_reuse})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-reuse threshold '" . $self->{option_results}->{critical_reuse} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-toolate', value => $self->{option_results}->{warning_toolate})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-toolate threshold '" . $self->{option_results}->{warning_toolate} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-toolate', value => $self->{option_results}->{critical_toolate})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-toolate threshold '" . $self->{option_results}->{critical_toolate} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-recycle', value => $self->{option_results}->{warning_recycle})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-recycle threshold '" . $self->{option_results}->{warning_recycle} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-recycle', value => $self->{option_results}->{critical_recycle})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-recycle threshold '" . $self->{option_results}->{critical_recycle} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-retry', value => $self->{option_results}->{warning_retry})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-retry threshold '" . $self->{option_results}->{warning_retry} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-retry', value => $self->{option_results}->{critical_retry})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-retry threshold '" . $self->{option_results}->{critical_retry} . "'.");
-        $self->{output}->option_exit();
-    }
-
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
+                $self->{output}->option_exit();
+            };
+        };
+    };
     $self->{statefile_value}->check_options(%options);
-}
-
-#my $stdout = '
-#backend_conn             13746         0.00 Backend conn. success
-#backend_unhealthy            0         0.00 Backend conn. not attempted
-#backend_busy                 0         0.00 Backend conn. too many
-#backend_fail                 0         0.00 Backend conn. failures
-#backend_reuse                0         0.00 Backend conn. reuses
-#backend_toolate              0         0.00 Backend conn. was closed
-#backend_recycle              0         0.00 Backend conn. recycles
-#backend_retry                0         0.00 Backend conn. retry
-#';
+};
 
 sub getdata {
     my ($self, %options) = @_;
@@ -204,123 +181,59 @@ sub run {
     $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $self->{result}->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_backend_conn = $self->{statefile_value}->get(name => 'backend_conn');
-    my $old_backend_unhealthy = $self->{statefile_value}->get(name => 'backend_unhealthy');
-    my $old_backend_busy    = $self->{statefile_value}->get(name => 'backend_busy');
-    my $old_backend_fail    = $self->{statefile_value}->get(name => 'backend_fail');
-    my $old_backend_reuse    = $self->{statefile_value}->get(name => 'backend_reuse');
-    my $old_backend_toolate    = $self->{statefile_value}->get(name => 'backend_toolate');
-    my $old_backend_recycle    = $self->{statefile_value}->get(name => 'backend_recycle');
-    my $old_backend_retry    = $self->{statefile_value}->get(name => 'backend_retry');
+    
+    # Calculate
+    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
 
+    
+    foreach (keys %{$maps_counters}) {
+        #print $_ . "\n";
+        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
+        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
+        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
+    };
+
+    # Write Cache if not there
     $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp) || !defined($old_backend_conn)) {
+    if (!defined($old_timestamp)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
         $self->{output}->display();
         $self->{output}->exit();
     }
 
-    # Set 0 if Cache > Result
-    $old_backend_conn = 0 if ($old_backend_conn > $self->{result}->{backend_conn} ); 
-    $old_backend_unhealthy = 0 if ($old_hitpass > $self->{result}->{backend_unhealthy});
-    $old_backend_busy = 0 if ($old_miss > $self->{result}->{backend_busy});
-    $old_backend_fail = 0 if ($old_miss > $self->{result}->{backend_fail});
-    $old_backend_reuse = 0 if ($old_miss > $self->{result}->{backend_reuse});
-    $old_backend_toolate = 0 if ($old_miss > $self->{result}->{backend_toolate});
-    $old_backend_recycle = 0 if ($old_miss > $self->{result}->{backend_recycle});
-    $old_backend_retry = 0 if ($old_miss > $self->{result}->{backend_retry});
+    my @exits;
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
+        }
+    }
 
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-    my $backend_conn = ($self->{result}->{backend_conn} - $old_backend_conn) / $delta_time;
-    my $backend_unhealthy = ($self->{result}->{backend_unhealthy} - $old_backend_unhealthy) / $delta_time;
-    my $backend_busy = ($self->{result}->{backend_busy} - $old_backend_busy) / $delta_time;
-    my $backend_fail = ($self->{result}->{backend_fail} - $old_backend_fail) / $delta_time;
-    my $backend_reuse = ($self->{result}->{backend_reuse} - $old_backend_reuse) / $delta_time;
-    my $backend_toolate = ($self->{result}->{backend_toolate} - $old_backend_toolate) / $delta_time;
-    my $backend_recycle = ($self->{result}->{backend_recycle} - $old_backend_recycle) / $delta_time;
-    my $backend_retry = ($self->{result}->{backend_retry} - $old_backend_retry) / $delta_time;
-
-    my $exit1 = $self->{perfdata}->threshold_check(value => $backend_conn, threshold =>   [ { label => 'critical-conn', 'exit_litteral' => 'critical' }, { label => 'warning-conn', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $backend_unhealthy, threshold =>   [ { label => 'critical-unhealthy', 'exit_litteral' => 'critical' }, { label => 'warning-unhealthy', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $backend_busy, threshold =>    [ { label => 'critical-busy', 'exit_litteral' => 'critical' }, { label => 'warning-busy', exit_litteral => 'warning' } ]);
-    my $exit4 = $self->{perfdata}->threshold_check(value => $backend_fail, threshold =>    [ { label => 'critical-fail', 'exit_litteral' => 'critical' }, { label => 'warning-fail', exit_litteral => 'warning' } ]);
-    my $exit5 = $self->{perfdata}->threshold_check(value => $backend_reuse, threshold =>    [ { label => 'critical-reuse', 'exit_litteral' => 'critical' }, { label => 'warning-reuse', exit_litteral => 'warning' } ]);
-    my $exit6 = $self->{perfdata}->threshold_check(value => $backend_toolate, threshold =>    [ { label => 'critical-toolate', 'exit_litteral' => 'critical' }, { label => 'warning-toolate', exit_litteral => 'warning' } ]);
-    my $exit7 = $self->{perfdata}->threshold_check(value => $backend_recycle, threshold =>    [ { label => 'critical-recycle', 'exit_litteral' => 'critical' }, { label => 'warning-recycle', exit_litteral => 'warning' } ]);
-    my $exit8 = $self->{perfdata}->threshold_check(value => $backend_retry, threshold =>    [ { label => 'critical-retry', 'exit_litteral' => 'critical' }, { label => 'warning-retry', exit_litteral => 'warning' } ]);
-
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4, $exit5, $exit6, $exit7, $exit8 ]);
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Backend conn. success: %.2f 
-                                                      Backend conn. not attempted: %.2f
-                                                      Backend conn. too many: %.2f
-                                                      Backend conn. failures: %.2f
-                                                      Backend conn. reuses: %.2f
-                                                      Backend conn. was closed: %.2f
-                                                      Backend conn. recycles: %.2f
-                                                      Backend conn. retry: %.2f ", 
-                                    $backend_conn,
-                                    $backend_unhealthy,
-                                    $backend_busy,
-                                    $backend_fail,
-                                    $backend_reuse,
-                                    $backend_toolate,
-                                    $backend_recycle,
-                                    $backend_retry,
-                                    ));
 
-    $self->{output}->perfdata_add(label => "backend_conn",
-                                    value => $backend_conn,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-conn'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-conn'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_unhealthy",
-                                    value => $backend_unhealthy,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-unhealthy'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-unhealthy'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_busy",
-                                    value => $backend_busy,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-busy'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-busy'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_fail",
-                                    value => $backend_fail,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-fail'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-fail'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_reuse",
-                                    value => $backend_reuse,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-reuse'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-reuse'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_toolate",
-                                    value => $backend_toolate,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-toolate'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-toolate'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_recycle",
-                                    value => $backend_recycle,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-recycle'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-recycle'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "backend_retry",
-                                    value => $backend_retry,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-retry'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-retry'),
-                                    min => 0
-                                    );
+    my $extra_label = '';
+    $extra_label = '_' . $instance_output if ($num > 1);
+
+    my $str_output = "";
+    my $str_append = '';
+    foreach (keys %{$maps_counters}) {
+        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
+        $str_append = ', ';
+        my ($warning, $critical);
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
+            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
+        }
+        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
+                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
+                                        warning => $warning,
+                                        critical => $critical);
+    }
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => $str_output);
+
     $self->{output}->display();
     $self->{output}->exit();
 };
@@ -332,16 +245,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command
-This Mode Checks:
-- Backend conn. success
-- Backend conn. not attempted
-- Backend conn. too many
-- Backend conn. failures
-- Backend conn. reuses
-- Backend conn. was closed
-- Backend conn. recycles
-- Backend conn. unused
+Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
 
 =over 8
 
@@ -363,75 +267,35 @@ Varnishstat Binary Filename (Default: varnishstat)
 
 =item B<--command-path>
 
-Directory Path to Varnishstat Binary File (Default: /usr/bin/)
+Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
 Parameter for Binary File (Default: ' -1 ')
 
-=item B<--warning-conn>
+=item B<--warning-*>
 
-Warning Threshold for Backend conn. success
+Warning Threshold for: 
+conn      => Backend conn. success,
+unhealthy => Backend conn. not attempted,
+busy      => Backend conn. too many,
+fail      => Backend conn. failures,
+reuse     => Backend conn. reuses,
+toolate   => Backend conn. was closed,
+recycle   => Backend conn. recycles,
+retry     => Backend conn. retry
 
-=item B<--critical-conn>
+=item B<--critical-*>
 
-Critical Threshold for Backend conn. success
-
-=item B<--warning-unhealthy>
-
-Warning Threshold for Backend conn. not attempted
-
-=item B<--critical-unhealthy>
-
-Critical Threshold for Backend conn. not attempted
-
-=item B<--warning-busy>
-
-Warning Threshold for Backend conn. too many
-
-=item B<--critical-busy>
-
-Critical Threshold for Backend conn. too many
-
-=item B<--warning-fail>
-
-Warning Threshold for Backend conn. failures
-
-=item B<--critical-fail>
-
-Critical Threshold for Backend conn. failures
-
-=item B<--warning-reuse>
-
-Warning Threshold for Backend conn. reuses
-
-=item B<--critical-reuse>
-
-Critical Threshold for Backend conn. reuses
-
-=item B<--warning-toolate>
-
-Warning Threshold for Backend conn. was closed
-
-=item B<--critical-toolate>
-
-Critical Threshold for Backend conn. was closed
-
-=item B<--warning-recycle>
-
-Warning Threshold for Backend conn. recycles
-
-=item B<--critical-recycle>
-
-Critical Threshold for Backend conn. recycles
-
-=item B<--warning-retry>
-
-Warning Threshold for Backend conn. retry
-
-=item B<--critical-retry>
-
-Critical Threshold for Backend conn. retry
+Critical Threshold for: 
+conn      => Backend conn. success,
+unhealthy => Backend conn. not attempted,
+busy      => Backend conn. too many,
+fail      => Backend conn. failures,
+reuse     => Backend conn. reuses,
+toolate   => Backend conn. was closed,
+recycle   => Backend conn. recycles,
+retry     => Backend conn. retry
 
 =back
 
