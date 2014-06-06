@@ -304,34 +304,34 @@ Parameter for Binary File (Default: ' -1 ')
 =item B<--warning-*>
 
 Warning Threshold for: 
-fetch_head     => Fetch head,
-fetch_length   => Fetch with Length,
-fetch_chunked  => Fetch chunked,
-fetch_eof      => Fetch EOF,
-fetch_bad      => Fetch had bad headers,
-fetch_close    => Fetch wanted close,
-fetch_oldhttp  => Fetch pre HTTP/1.1 closed,
-fetch_zero     => Fetch zero len,
-fetch_failed   => Fetch failed,
-fetch_1xx      => Fetch no body (1xx),
-fetch_204      => Fetch no body (204),
-fetch_304      => Fetch no body (304)
+head    => Fetch head,
+length  => Fetch with Length,
+chunked => Fetch chunked,
+eof     => Fetch EOF,
+bad     => Fetch had bad headers,
+close   => Fetch wanted close,
+oldhttp => Fetch pre HTTP/1.1 closed,
+zero    => Fetch zero len,
+failed  => Fetch failed,
+1xx     => Fetch no body (1xx),
+204     => Fetch no body (204),
+304     => Fetch no body (304)
 
 =item B<--critical-*>
 
 Critical Threshold for: 
-fetch_head     => Fetch head,
-fetch_length   => Fetch with Length,
-fetch_chunked  => Fetch chunked,
-fetch_eof      => Fetch EOF,
-fetch_bad      => Fetch had bad headers,
-fetch_close    => Fetch wanted close,
-fetch_oldhttp  => Fetch pre HTTP/1.1 closed,
-fetch_zero     => Fetch zero len,
-fetch_failed   => Fetch failed,
-fetch_1xx      => Fetch no body (1xx),
-fetch_204      => Fetch no body (204),
-fetch_304      => Fetch no body (304)
+head    => Fetch head,
+length  => Fetch with Length,
+chunked => Fetch chunked,
+eof     => Fetch EOF,
+bad     => Fetch had bad headers,
+close   => Fetch wanted close,
+oldhttp => Fetch pre HTTP/1.1 closed,
+zero    => Fetch zero len,
+failed  => Fetch failed,
+1xx     => Fetch no body (1xx),
+204     => Fetch no body (204),
+304     => Fetch no body (304)
 
 =back
 

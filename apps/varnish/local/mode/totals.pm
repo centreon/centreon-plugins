@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::totals;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,25 +41,53 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    s_sess   => { thresholds => {
+                                warning_sess  =>  { label => 'warning-sess', exit_value => 'warning' },
+                                critical_sess =>  { label => 'critical-sess', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'Total Sessions: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    s_req => { thresholds => {
+                                warning_req  =>  { label => 'warning-req', exit_value => 'warning' },
+                                critical_req =>  { label => 'critical-req', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'Total Requests: %.2f',
                  factor => 1, unit => '',
                 },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+    s_pipe => { thresholds => {
+                                warning_pipe    =>  { label => 'warning-pipe', exit_value => 'warning' },
+                                critical_pipe   =>  { label => 'critical-pipe', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'Total pipe: %.2f',
+                 factor => 1, unit => '',
+               },
+    s_pass => { thresholds => {
+                                warning_pass    =>  { label => 'warning-pass', exit_value => 'warning' },
+                                critical_pass   =>  { label => 'critical-pass', exit_value => 'critical' },
+                                },
+                 output_msg => 'Total pass: %.2f',
+                 factor => 1, unit => '',
+               },
+    s_fetch => { thresholds => {
+                                warning_fetch    =>  { label => 'warning-fetch', exit_value => 'warning' },
+                                critical_fetch   =>  { label => 'critical-fetch', exit_value => 'critical' },
+                                },
+                 output_msg => 'Total fetch: %.2f',
+                 factor => 1, unit => '',
+               },
+    s_hdrbytes => { thresholds => {
+                                warning_hdrbytes    =>  { label => 'warning-hdrbytes', exit_value => 'warning' },
+                                critical_hdrbytes   =>  { label => 'critical-hdrbytes', exit_value => 'critical' },
+                                },
+                 output_msg => 'Total header bytes: %.2f',
+                 factor => 1, unit => '',
+               },
+    s_bodybytes => { thresholds => {
+                                warning_bodybytes    =>  { label => 'warning-bodybytes', exit_value => 'warning' },
+                                critical_bodybytes   =>  { label => 'critical-bodybytes', exit_value => 'critical' },
+                                },
+                 output_msg => 'Total body bytes: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -240,17 +268,25 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn => Client connections accepted,
-drop => Connection dropped, no sess/wrk,
-req  => Client requests received
+Warning Threshold for: 
+sess      => Total Sessions,
+req       => Total Requests,
+pipe      => Total pipe,
+pass      => Total pass,
+fetch     => Total fetch,
+hdrbytes  => Total header bytes,
+bodybytes => Total body bytes
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn => Client connections accepted,
-drop => Connection dropped, no sess/wrk,
-req  => Client requests received
+Critical Threshold for: 
+sess      => Total Sessions,
+req       => Total Requests,
+pipe      => Total pipe,
+pass      => Total pass,
+fetch     => Total fetch,
+hdrbytes  => Total header bytes,
+bodybytes => Total body bytes
 
 =back
 

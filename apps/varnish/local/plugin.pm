@@ -52,6 +52,7 @@ sub new {
 			'backend'           => 'apps::varnish::mode::backend',
 			'fetch'             => 'apps::varnish::mode::fetch',
 			'workers'           => 'apps::varnish::mode::workers',
+			'totals'            => 'apps::varnish::mode::totals',
 			'shm'               => 'apps::varnish::mode::shm',
 			'sm'                => 'apps::varnish::mode::sm',
 			'sma'               => 'apps::varnish::mode::sma',
