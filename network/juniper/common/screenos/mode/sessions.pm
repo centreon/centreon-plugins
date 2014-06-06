@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::netscreen::sessions;
+package network::juniper::common::screenos::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -74,14 +74,14 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_ssgCurrentSession = '.1.3.6.1.4.1.3224.16.3.2.0';
-    my $oid_ssgMaxSession = '.1.3.6.1.4.1.3224.16.3.3.0';
+    my $oid_nsResSessAllocate = '.1.3.6.1.4.1.3224.16.3.2.0';
+    my $oid_nsResSessMaxium = '.1.3.6.1.4.1.3224.16.3.3.0';
     
-    my $result = $self->{snmp}->get_leef(oids => [$oid_ssgCurrentSession, $oid_ssgMaxSession], nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium], nothing_quit => 1);
     
     my $spu_done = 0;
-    my $cp_total = $result->{$oid_ssgMaxSession};
-    my $cp_used = $result->{$oid_ssgCurrentSession};
+    my $cp_total = $result->{$oid_nsResSessMaxium};
+    my $cp_used = $result->{$oid_nsResSessAllocate};
         
     my $prct_used = $cp_used * 100 / $cp_total;
     
@@ -93,8 +93,8 @@ sub run {
                                     $prct_used, $cp_used, $cp_total));
     $self->{output}->perfdata_add(label => 'sessions',
                                   value => $cp_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total, cast_int => 1),
                                   min => 0, max => $cp_total);
 
     if ($spu_done == 0) {
@@ -112,7 +112,7 @@ __END__
 
 =head1 MODE
 
-Check CP ('central point') sessions usage.
+Check Juniper sessions usage (NETSCREEN-RESOURCE-MIB).
 
 =over 8
 
