@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::workers;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,25 +41,53 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    n_wrk   => { thresholds => {
+                                warning_workers  =>  { label => 'warning-workers', exit_value => 'warning' },
+                                critical_workers =>  { label => 'critical-workers', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'Backend conn. success: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    n_wrk_create => { thresholds => {
+                                warning_create  =>  { label => 'warning-create', exit_value => 'warning' },
+                                critical_create =>  { label => 'critical-create', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'Backend conn. not attempted: %.2f',
                  factor => 1, unit => '',
                 },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+    n_wrk_failed => { thresholds => {
+                                warning_failed    =>  { label => 'warning-failed', exit_value => 'warning' },
+                                critical_failed   =>  { label => 'critical-failed', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'Backend conn. too many: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_wrk_max => { thresholds => {
+                                warning_max    =>  { label => 'warning-max', exit_value => 'warning' },
+                                critical_max   =>  { label => 'critical-max', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. failures: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_wrk_lqueue => { thresholds => {
+                                warning_lqueue    =>  { label => 'warning-lqueue', exit_value => 'warning' },
+                                critical_lqueue   =>  { label => 'critical-lqueue', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. reuses: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_wrk_queued => { thresholds => {
+                                warning_queued    =>  { label => 'warning-queued', exit_value => 'warning' },
+                                critical_queued   =>  { label => 'critical-queued', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. was closed: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_wrk_drop => { thresholds => {
+                                warning_drop    =>  { label => 'warning-drop', exit_value => 'warning' },
+                                critical_drop   =>  { label => 'critical-drop', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend conn. recycles: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -240,17 +268,25 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn => Client connections accepted,
-drop => Connection dropped, no sess/wrk,
-req  => Client requests received
+Warning Threshold for: 
+workers => N worker threads,
+create  => N worker threads created,
+failed  => N worker threads not created,
+max     => N worker threads limited,
+lqueue  => work request queue length,
+queued  => N queued work requests,
+drop    => N dropped work requests
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn => Client connections accepted,
-drop => Connection dropped, no sess/wrk,
-req  => Client requests received
+Critical Threshold for: 
+workers => N worker threads,
+create  => N worker threads created,
+failed  => N worker threads not created,
+max     => N worker threads limited,
+lqueue  => work request queue length,
+queued  => N queued work requests,
+drop    => N dropped work requests
 
 =back
 
