@@ -40,6 +40,30 @@ use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
+my $maps_counters = {
+    cache_hit   => { thresholds => {
+                                warning_hit  =>  { label => 'warning-hit', exit_value => 'warning' },
+                                critical_hit =>  { label => 'critical-hit', exit_value => 'critical' },
+                              },
+                output_msg => 'Cache Hits: %.2f',
+                factor => 1, unit => '',
+               },
+    cache_hitpass => { thresholds => {
+                                warning_hitpass  =>  { label => 'warning-hitpass', exit_value => 'warning' },
+                                critical_hitpass =>  { label => 'critical-hitpass', exit_value => 'critical' },
+                                },
+                 output_msg => 'Cache Hits for pass: %.2f',
+                 factor => 1, unit => '',
+                },
+    cache_miss => { thresholds => {
+                                warning_miss    =>  { label => 'warning-miss', exit_value => 'warning' },
+                                critical_miss   =>  { label => 'critical-miss', exit_value => 'critical' },
+                                },
+                 output_msg => 'Cache misses: %.2f',
+                 factor => 1, unit => '',
+               },
+};
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -47,63 +71,47 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-        {
-            "hostname:s"         => { name => 'hostname' },
-            "remote"             => { name => 'remote' },
-            "ssh-option:s@"      => { name => 'ssh_option' },
-            "ssh-path:s"         => { name => 'ssh_path' },
-            "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"          => { name => 'timeout', default => 30 },
-            "sudo"               => { name => 'sudo' },
-            "command:s"          => { name => 'command', default => 'varnishstat' },
-            "command-path:s"     => { name => 'command_path', default => '/usr/bin/' },
-            "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-            "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
-            "warning-hit:s"      => { name => 'warning_hit', default => '' },
-            "critical-hit:s"     => { name => 'critical_hit', default => '' },
-            "warning-hitpass:s"  => { name => 'warning_hitpass', default => '' },
-            "critical-hitpass:s" => { name => 'critical_hitpass', default => '' },
-            "warning-miss:s"     => { name => 'warning_miss', default => '' },
-            "critical-miss:s"    => { name => 'critical_miss', default => '' },
-        });
+    {
+        "hostname:s"         => { name => 'hostname' },
+        "remote"             => { name => 'remote' },
+        "ssh-option:s@"      => { name => 'ssh_option' },
+        "ssh-path:s"         => { name => 'ssh_path' },
+        "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"          => { name => 'timeout', default => 30 },
+        "sudo"               => { name => 'sudo' },
+        "command:s"          => { name => 'command', default => 'varnishstat' },
+        "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
+        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+    });
 
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $options{options}->add_options(arguments => {
+                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
+            });
+        };
+    };
+
+    $self->{instances_done} = {};
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
-}
+};
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning-hit', value => $self->{option_results}->{warning_hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-hit threshold '" . $self->{option_results}->{warning_hit} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-hit', value => $self->{option_results}->{critical_hit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-hit threshold '" . $self->{option_results}->{critical_hit} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-hitpass', value => $self->{option_results}->{warning_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-hitpass threshold '" . $self->{option_results}->{warning_hitpass} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-hitpass', value => $self->{option_results}->{critical_hitpass})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-hitpass threshold '" . $self->{option_results}->{critical_hitpass} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-miss', value => $self->{option_results}->{warning_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-miss threshold '" . $self->{option_results}->{warning_miss} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-miss', value => $self->{option_results}->{critical_miss})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-miss threshold '" . $self->{option_results}->{critical_miss} . "'.");
-        $self->{output}->option_exit();
-    }
-
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
+                $self->{output}->option_exit();
+            };
+        };
+    };
     $self->{statefile_value}->check_options(%options);
-}
+};
 
 #my $stdout = '
 #cache_hit                69941         0.00 Cache hits
@@ -144,61 +152,62 @@ sub run {
     $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $self->{result}->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_cache_hit = $self->{statefile_value}->get(name => 'cache_hit');
-    my $old_cache_hitpass = $self->{statefile_value}->get(name => 'cache_hitpass');
-    my $old_cache_miss    = $self->{statefile_value}->get(name => 'cache_miss');
+    
+    # Calculate
+    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
 
+    
+    foreach (keys %{$maps_counters}) {
+        #print $_ . "\n";
+        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
+        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
+        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
+    };
+
+    # Write Cache if not there
     $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp) || !defined($old_cache_hit)) {
+    if (!defined($old_timestamp)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
         $self->{output}->display();
         $self->{output}->exit();
     }
 
-    # Set 0 if Cache > Result
-    $old_cache_hit = 0 if ($old_cache_hit > $self->{result}->{cache_hit} ); 
-    $old_cache_hitpass = 0 if ($old_hitpass > $self->{result}->{cache_hitpass});
-    $old_cache_miss = 0 if ($old_miss > $self->{result}->{cache_miss});
+    my @exits;
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
+        }
+    }
 
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-    my $cache_hit = ($self->{result}->{cache_hit} - $old_cache_hit) / $delta_time;
-    my $cache_hitpass = ($self->{result}->{cache_hitpass} - $old_cache_hitpass) / $delta_time;
-    my $cache_miss = ($self->{result}->{cache_miss} - $old_cache_miss) / $delta_time;
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    
 
-    my $exit1 = $self->{perfdata}->threshold_check(value => $cache_hit, threshold =>      [ { label => 'critical-hit', 'exit_litteral' => 'critical' }, { label => 'warning-hit', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $cache_hitpass, threshold =>  [ { label => 'critical-hitpass', 'exit_litteral' => 'critical' }, { label => 'warning-hitpass', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $cache_miss, threshold =>     [ { label => 'critical-miss', 'exit_litteral' => 'critical' }, { label => 'warning-miss', exit_litteral => 'warning' } ]);
-    
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
-    
+    my $extra_label = '';
+    $extra_label = '_' . $instance_output if ($num > 1);
+
+    my $str_output = "";
+    my $str_append = '';
+    foreach (keys %{$maps_counters}) {
+        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
+        $str_append = ', ';
+        my ($warning, $critical);
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
+            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
+        }
+        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
+                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
+                                        warning => $warning,
+                                        critical => $critical);
+    }
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Cache Hits: %.2f Cache Hits for pass: %.2f Cache misses: %.2f ", 
-                                    $cache_hit,
-                                    $cache_hitpass,
-                                    $cache_miss,
-                                    ));
+                                short_msg => $str_output);
 
-    $self->{output}->perfdata_add(label => "cache_hit",
-                                    value => $cache_hit,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-hit'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-hit'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "cache_hitpass",
-                                    value => $cache_hitpass,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-hitpass'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-hitpass'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "cache_miss",
-                                    value => $cache_miss,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-miss'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-miss'),
-                                    min => 0
-                                    );
+
+
+
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -211,11 +220,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command
-This Mode Checks:
-- Cache hits
-- Cache hits for pass 
-- Cache misses
+Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
 
 =over 8
 
@@ -243,29 +248,13 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin/)
 
 Parameter for Binary File (Default: ' -1 ')
 
-=item B<--warning-hit>
+=item B<--warning-*>
 
-Warning Threshold for Cache Hits
+Warning Threshold for: hit => Cache Hits, hitpass => Cache hits for Pass, miss => Cache Misses
 
-=item B<--critical-hit>
+=item B<--critical-*>
 
-Critical Threshold for Cache Hits
-
-=item B<--warning-hitpass>
-
-Warning Threshold for Cache hits for Pass
-
-=item B<--critical-hitpass>
-
-Critical Threshold for Cache hits for Pass
-
-=item B<--warning-miss>
-
-Warning Threshold for Cache Misses
-
-=item B<--critical-miss>
-
-Critical Threshold for Cache Misses
+Warning Threshold for: hit => Cache Hits, hitpass => Cache hits for Pass, miss => Cache Misses
 
 =back
 
