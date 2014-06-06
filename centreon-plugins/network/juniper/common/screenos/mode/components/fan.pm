@@ -33,37 +33,46 @@
 #
 ####################################################################################
 
-package network::juniper::ssg::plugin;
+package network::juniper::common::screenos::mode::components::fan;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+my %map_status = (
+    1 => 'active',
+    2 => 'inactive'
+);
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-			 'cpu'			=> 'network::juniper::common::screenos::mode::cpu',
-			 'memory'		=> 'network::juniper::common::screenos::mode::memory',
-			 'sessions'		=> 'network::juniper::common::screenos::mode::sessions',
-			 'hardware'		=> 'network::juniper::common::screenos::mode::hardware',
-                         'traffic'              => 'snmp_standard::mode::traffic',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         );
+sub check {
+    my ($self) = @_;
 
-    return $self;
+    $self->{components}->{fans} = {name => 'fans', total => 0};
+    $self->{output}->output_add(long_msg => "Checking fans");
+    return if ($self->check_exclude(section => 'fans'));
+    
+    my $oid_nsFanEntry = '.1.3.6.1.4.1.3224.21.2.1';
+    my $oid_nsFanStatus = '.1.3.6.1.4.1.3224.21.2.1.2';
+    
+    my $result = $self->{snmp}->get_table(oid => $oid_nsFanEntry);
+    return if (scalar(keys %$result) <= 0);
+
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($key !~ /^$oid_nsFanStatus\.(\d+)$/);
+        my $instance = $1;
+    
+        next if ($self->check_exclude(section => 'fans', instance => $instance));
+    
+        my $status = $result->{$oid_nsFanStatus . '.' . $instance};
+
+        $self->{components}->{fans}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
+                                                        $instance, $map_status{$status}));
+        if ($status != 1) {
+            $self->{output}->output_add(severity =>  'CRITICAL',
+                                        short_msg => sprintf("Fan '%s' status is %s", 
+                                                             $instance, $map_status{$status}));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Juniper SSG in SNMP.
-
-=cut
