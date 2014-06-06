@@ -205,10 +205,6 @@ sub run {
     $self->{output}->output_add(severity => $exit,
                                 short_msg => $str_output);
 
-
-
-
-
     $self->{output}->display();
     $self->{output}->exit();
 };
@@ -242,7 +238,7 @@ Varnishstat Binary Filename (Default: varnishstat)
 
 =item B<--command-path>
 
-Directory Path to Varnishstat Binary File (Default: /usr/bin/)
+Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
@@ -250,11 +246,17 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for: hit => Cache Hits, hitpass => Cache hits for Pass, miss => Cache Misses
+Warning Threshold for:
+hit     => Cache Hits,
+hitpass => Cache hits for Pass,
+miss    => Cache Misses
 
 =item B<--critical-*>
 
-Warning Threshold for: hit => Cache Hits, hitpass => Cache hits for Pass, miss => Cache Misses
+Critical Threshold for:
+hit     => Cache Hits,
+hitpass => Cache hits for Pass,
+miss    => Cache Misses
 
 =back
 

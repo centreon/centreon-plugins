@@ -33,12 +33,36 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::cache;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+
+my $maps_counters = {
+    client_conn   => { thresholds => {
+                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
+                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+                              },
+                output_msg => 'Client connections accepted: %.2f',
+                factor => 1, unit => '',
+               },
+    client_drop => { thresholds => {
+                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
+                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+                                },
+                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 factor => 1, unit => '',
+                },
+    client_req => { thresholds => {
+                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
+                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+                                },
+                 output_msg => 'Client requests received: %.2f',
+                 factor => 1, unit => '',
+               },
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -47,69 +71,47 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-        {
-            "hostname:s"         => { name => 'hostname' },
-            "remote"             => { name => 'remote' },
-            "ssh-option:s@"      => { name => 'ssh_option' },
-            "ssh-path:s"         => { name => 'ssh_path' },
-            "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"          => { name => 'timeout', default => 30 },
-            "sudo"               => { name => 'sudo' },
-            "command:s"          => { name => 'command', default => 'varnishstat' },
-            "command-path:s"     => { name => 'command_path', default => '/usr/bin/' },
-            "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-            "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
-            "warning-hit:s"      => { name => 'warning_hit', default => '' },
-            "critical-hit:s"     => { name => 'critical_hit', default => '' },
-            "warning-hitpass:s"  => { name => 'warning_hitpass', default => '' },
-            "critical-hitpass:s" => { name => 'critical_hitpass', default => '' },
-            "warning-miss:s"     => { name => 'warning_miss', default => '' },
-            "critical-miss:s"    => { name => 'critical_miss', default => '' },
-        });
+    {
+        "hostname:s"         => { name => 'hostname' },
+        "remote"             => { name => 'remote' },
+        "ssh-option:s@"      => { name => 'ssh_option' },
+        "ssh-path:s"         => { name => 'ssh_path' },
+        "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"          => { name => 'timeout', default => 30 },
+        "sudo"               => { name => 'sudo' },
+        "command:s"          => { name => 'command', default => 'varnishstat' },
+        "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
+        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+    });
 
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $options{options}->add_options(arguments => {
+                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
+            });
+        };
+    };
+
+    $self->{instances_done} = {};
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
-}
+};
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning-conn', value => $self->{option_results}->{warning_conn})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-conn threshold '" . $self->{option_results}->{warning_conn} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-conn', value => $self->{option_results}->{critical_conn})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-conn threshold '" . $self->{option_results}->{critical_conn} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-drop', value => $self->{option_results}->{warning_drop})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-drop threshold '" . $self->{option_results}->{warning_drop} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-drop', value => $self->{option_results}->{critical_drop})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-drop threshold '" . $self->{option_results}->{critical_drop} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-req', value => $self->{option_results}->{warning_req})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-req threshold '" . $self->{option_results}->{warning_req} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-req', value => $self->{option_results}->{critical_req})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-req threshold '" . $self->{option_results}->{critical_req} . "'.");
-        $self->{output}->option_exit();
-    }
-
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
+                $self->{output}->option_exit();
+            };
+        };
+    };
     $self->{statefile_value}->check_options(%options);
-}
-
-#my $stdout = '
-#client_conn            7287199         1.00 Client connections accepted
-#client_drop                  0         0.00 Connection dropped, no sess/wrk
-#client_req               24187         0.00 Client requests received
-#';
+};
 
 sub getdata {
     my ($self, %options) = @_;
@@ -144,65 +146,58 @@ sub run {
     $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $self->{result}->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_client_conn = $self->{statefile_value}->get(name => 'client_conn');
-    my $old_client_drop = $self->{statefile_value}->get(name => 'client_drop');
-    my $old_client_req    = $self->{statefile_value}->get(name => 'client_req');
+    
+    # Calculate
+    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
 
+    
+    foreach (keys %{$maps_counters}) {
+        #print $_ . "\n";
+        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
+        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
+        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
+    };
+
+    # Write Cache if not there
     $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp) || !defined($old_client_conn)) {
+    if (!defined($old_timestamp)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
         $self->{output}->display();
         $self->{output}->exit();
     }
 
-    # Set 0 if Cache > Result
-    $old_client_conn = 0 if ($old_client_conn > $self->{result}->{client_conn} ); 
-    $old_client_drop = 0 if ($old_hitpass > $self->{result}->{client_drop});
-    $old_client_req = 0 if ($old_miss > $self->{result}->{client_req});
+    my @exits;
+    foreach (keys %{$maps_counters}) {
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
+        }
+    }
 
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-    my $client_conn = ($self->{result}->{client_conn} - $old_client_conn) / $delta_time;
-    my $client_drop = ($self->{result}->{client_drop} - $old_client_drop) / $delta_time;
-    my $client_req = ($self->{result}->{client_req} - $old_client_req) / $delta_time;
-
-    #print $old_client_conn . "\n";
-    #print $self->{result}->{client_conn} . "\n";
-    #print $client_conn . "\n";
-
-    my $exit1 = $self->{perfdata}->threshold_check(value => $client_conn, threshold =>   [ { label => 'critical-conn', 'exit_litteral' => 'critical' }, { label => 'warning-conn', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $client_drop, threshold =>   [ { label => 'critical-drop', 'exit_litteral' => 'critical' }, { label => 'warning-drop', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $client_req, threshold =>    [ { label => 'critical-req', 'exit_litteral' => 'critical' }, { label => 'warning-req', exit_litteral => 'warning' } ]);
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
-    
+
+    my $extra_label = '';
+    $extra_label = '_' . $instance_output if ($num > 1);
+
+    my $str_output = "";
+    my $str_append = '';
+    foreach (keys %{$maps_counters}) {
+        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
+        $str_append = ', ';
+        my ($warning, $critical);
+        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
+            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
+        }
+        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
+                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
+                                        warning => $warning,
+                                        critical => $critical);
+    }
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Client connections accepted: %.2f Connection dropped, no sess/wrk: %.2f Client requests received: %.2f ", 
-                                    $client_conn,
-                                    $client_drop,
-                                    $client_req,
-                                    ));
-
-    $self->{output}->perfdata_add(label => "client_conn",
-                                    value => $client_conn,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-conn'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-conn'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "client_drop",
-                                    value => $client_drop,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-drop'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-drop'),
-                                    min => 0
-                                    );
-    $self->{output}->perfdata_add(label => "client_req",
-                                    value => $client_req,
-                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-req'),
-                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-req'),
-                                    min => 0
-                                    );
+                                short_msg => $str_output);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -215,11 +210,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command
-This Mode Checks:
-- Client connections accepted
-- Connection dropped, no sess 
-- Client requests received
+Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
 
 =over 8
 
@@ -241,35 +232,25 @@ Varnishstat Binary Filename (Default: varnishstat)
 
 =item B<--command-path>
 
-Directory Path to Varnishstat Binary File (Default: /usr/bin/)
+Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
 Parameter for Binary File (Default: ' -1 ')
 
-=item B<--warning-conn>
+=item B<--warning-*>
 
-Warning Threshold for Client connections accepted
+Warning Threshold for:
+conn    => Client connections accepted,
+drop    => Connection dropped, no sess/wrk,
+req     => Client requests received
 
-=item B<--critical-conn>
+=item B<--critical-*>
 
-Critical Threshold for Client connections accepted
-
-=item B<--warning-drop>
-
-Warning Threshold for Connection dropped, no sess/wrk
-
-=item B<--critical-drop>
-
-Critical Threshold for Connection dropped, no sess/wrk
-
-=item B<--warning-req>
-
-Warning Threshold for Client requests received
-
-=item B<--critical-req>
-
-Critical Threshold for Client requests received
+Critical Threshold for:
+conn    => Client connections accepted,
+drop    => Connection dropped, no sess/wrk,
+req     => Client requests received
 
 =back
 
