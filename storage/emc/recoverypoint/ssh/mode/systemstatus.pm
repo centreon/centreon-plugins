@@ -50,7 +50,6 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
                                   "ssh-option:s@"     => { name => 'ssh_option' },
                                   "ssh-path:s"        => { name => 'ssh_path' },
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
@@ -67,6 +66,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    if (!defined($self->{option_results}->{hostname})) {
+       $self->{output}->add_option_msg(short_msg => "Need to specify hostname.");
+       $self->{output}->option_exit();
+    }
     
     if (!defined($self->{option_results}->{command})) {
        $self->{output}->add_option_msg(short_msg => "Need to specify command option.");
@@ -127,7 +131,7 @@ Check system status.
 
 =item B<--hostname>
 
-Hostname to query (need --remote).
+Hostname to query.
 
 =item B<--ssh-option>
 
