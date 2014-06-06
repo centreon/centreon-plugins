@@ -59,7 +59,7 @@ sub check {
     my $oid_cpqSeCpuName = '.1.3.6.1.4.1.232.1.2.2.1.1.3';
     my $oid_cpqSeCpuStatus = '.1.3.6.1.4.1.232.1.2.2.1.1.6';
     my $oid_cpqSeCpuSocketNumber = '.1.3.6.1.4.1.232.1.2.2.1.1.9';
-    
+
     my $result = $self->{snmp}->get_table(oid => $oid_cpqSeCpuUnitIndex);
     return if (scalar(keys %$result) <= 0);
     
