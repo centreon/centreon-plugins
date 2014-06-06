@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::juniper::common::netscreen::memory;
+package network::juniper::common::screenos::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -74,14 +74,14 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_MemStatsUsed = '.1.3.6.1.4.1.3224.16.2.1.0';
-    my $oid_MemStatsFree = '.1.3.6.1.4.1.3224.16.2.2.0';
-    my $oid_MemStatsFragmented = '.1.3.6.1.4.1.3224.16.2.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_MemStatsUsed, $oid_MemStatsFree, $oid_MemStatsFragmented], nothing_quit => 1);
+    my $oid_nsResMemAllocate= '.1.3.6.1.4.1.3224.16.2.1.0';
+    my $oid_nsResMemLeft = '.1.3.6.1.4.1.3224.16.2.2.0';
+    my $oid_nsResMemFrag = '.1.3.6.1.4.1.3224.16.2.3.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_nsResMemAllocate, $oid_nsResMemLeft, $oid_nsResMemFrag], nothing_quit => 1);
 
-    my $memory_used  = $result->{$oid_MemStatsUsed};
-    my $memory_free = $result->{$oid_MemStatsFree};
-    my $memory_frag = $result->{$oid_MemStatsFragmented};
+    my $memory_used  = $result->{$oid_nsResMemAllocate};
+    my $memory_free = $result->{$oid_nsResMemLeft};
+    my $memory_frag = $result->{$oid_nsResMemFrag};
     my $total_size = $memory_used + $memory_free + $memory_frag;
     
     my $prct_used = $memory_used * 100 / $total_size;
@@ -107,6 +107,10 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
                                   min => 0, max => $total_size);
 
+    $self->{output}->perfdata_add(label => "fragmented",
+                                  value => $memory_frag,
+                                  min => 0, max => $total_size);
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -117,7 +121,7 @@ __END__
 
 =head1 MODE
 
-Check Juniper SSG memory usage (NETSCREEN-RESOURCE-MIB).
+Check Juniper memory usage (NETSCREEN-RESOURCE-MIB).
 
 =over 8
 
