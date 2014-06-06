@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::client;
+package apps::varnish::mode::backend;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
