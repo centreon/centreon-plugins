@@ -146,7 +146,7 @@ Check monitored paramaters by RecoveryPoint Appliance.
 
 =item B<--hostname>
 
-Hostname to query (need --remote).
+Hostname to query.
 
 =item B<--ssh-option>
 
