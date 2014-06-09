@@ -94,13 +94,13 @@ sub run {
 
     my ($system, $clusters, $wans, $groups);
     foreach (split(/\n/, $stdout)) {
-        if (/^System:\s+(.*)$/im) {
+        if (/^System:\s+(.*)$/i) {
             $system = $1;
-        } elsif (/^Clusters:\s+(.*)$/im) {
+        } elsif (/^Clusters:\s+(.*)$/i) {
             $clusters = $1;
-        } elsif (/^Wans:\s+(.*)$/im) {
+        } elsif (/^Wans:\s+(.*)$/i) {
             $wans = $1;
-        } elsif (/^Groups:\s+(.*)$/im) {
+        } elsif (/^Groups:\s+(.*)$/i) {
             $groups = $1;
         }
     }    
