@@ -84,10 +84,8 @@ sub run {
     $valueStatus = $result->{$oid_pfsenseStatus};
     $valueRuntime = $result->{$oid_pfsenseRuntime};
     
-    my $exit_code = 'unknown';
-
     if ($valueStatus == 1) {
-        $exit_code = $self->{perfdata}->threshold_check(value => $valueRuntime, 
+        my $exit_code = $self->{perfdata}->threshold_check(value => $valueRuntime, 
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
         $self->{output}->perfdata_add(label => 'runtime',
                                       value => floor($valueRuntime / 100),
