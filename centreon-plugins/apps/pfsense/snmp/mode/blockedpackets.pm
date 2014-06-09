@@ -178,15 +178,15 @@ sub run {
         my $exit2 = $self->{perfdata}->threshold_check(value => $out_blocked_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
 
         my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s, Out Blocked : %.2f /s", $display_value,
+        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s [%i packets], Out Blocked : %.2f /s [%i packets]", $display_value,
                                                 $in_blocked_absolute_per_sec, $in_blocked_absolute,
                                                 $out_blocked_absolute_per_sec, $out_blocked_absolute));
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s [%i], Out Blocked : %.2f /s [%i]", $display_value,
-                                                    $in_blocked_absolute_per_sec, 
-                                                    $out_blocked_absolute_per_sec));
+                                        short_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s [%i packets], Out Blocked : %.2f /s [%i packets]", $display_value,
+                                                    $in_blocked_absolute_per_sec, $in_blocked_absolute, 
+                                                    $out_blocked_absolute_per_sec, $out_blocked_absolute));
         }
 
         my $extra_label = '';
