@@ -53,10 +53,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-in:s"          => { name => 'warning_in', },
-                                  "warning-out:s"          => { name => 'warning_out', },
-                                  "critical-in:s"         => { name => 'critical_in', },
-                                  "critical-out:s"         => { name => 'critical_out', },
+                                  "warning-in:s"            => { name => 'warning_in', },
+                                  "warning-out:s"           => { name => 'warning_out', },
+                                  "critical-in:s"           => { name => 'critical_in', },
+                                  "critical-out:s"          => { name => 'critical_out', },
                                   "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "interface:s"             => { name => 'interface' },
@@ -104,6 +104,11 @@ sub run {
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();    
 
+    if ($self->{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
+        $self->{output}->option_exit();
+    }
+
     $self->manage_selection();
 
     my $oid_pfsenseBlockedInPackets = '.1.3.6.1.4.1.12325.1.200.1.8.2.1.12';
@@ -127,7 +132,7 @@ sub run {
     }
 
     foreach (sort @{$self->{interface_id_selected}}) {
-        my $display_value = $self->get_display_value(id => $_);
+        my $display_value = $self->{statefile_value}->get(name => $_);
 
         #################
         # New values
@@ -160,8 +165,10 @@ sub run {
 
         ###########
         
-        my $in_blocked_absolute_per_sec = ($new_datas->{'in_blocked_' . $_} - $old_datas->{in_blocked}) / $time_delta;
-        my $out_blocked_absolute_per_sec = ($new_datas->{'out_blocked_' . $_} - $old_datas->{out_blocked}) / $time_delta;    
+        my $in_blocked_absolute = $new_datas->{'in_blocked_' . $_} - $old_datas->{in_blocked};
+        my $out_blocked_absolute = $new_datas->{'out_blocked_' . $_} - $old_datas->{out_blocked};
+        my $in_blocked_absolute_per_sec = $in_blocked_absolute / $time_delta;
+        my $out_blocked_absolute_per_sec = $out_blocked_absolute / $time_delta;    
 
         ###############
         # Manage Output
@@ -172,13 +179,13 @@ sub run {
 
         my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
         $self->{output}->output_add(long_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s, Out Blocked : %.2f /s", $display_value,
-                                                $in_blocked_absolute_per_sec,
-                                                $out_blocked_absolute_per_sec));
+                                                $in_blocked_absolute_per_sec, $in_blocked_absolute,
+                                                $out_blocked_absolute_per_sec, $out_blocked_absolute));
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s, Out Blocked : %.2f /s", $display_value,
-                                                    $in_blocked_absolute_per_sec,
+                                        short_msg => sprintf("Interface '%s' Packets In Blocked : %.2f /s [%i], Out Blocked : %.2f /s [%i]", $display_value,
+                                                    $in_blocked_absolute_per_sec, 
                                                     $out_blocked_absolute_per_sec));
         }
 
@@ -205,17 +212,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-}
-
-sub get_display_value {
-    my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => $options{id});
-
-    if (defined($self->{option_results}->{display_transform_src})) {
-        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
-        eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
-    }
-    return $value;
 }
 
 sub reload_cache {
