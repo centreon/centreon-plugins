@@ -57,16 +57,13 @@ sub new {
                                   "warning-out:s"           => { name => 'warning_out', },
                                   "critical-in:s"           => { name => 'critical_in', },
                                   "critical-out:s"          => { name => 'critical_out', },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "interface:s"             => { name => 'interface' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "show-cache"              => { name => 'show_cache' },
                                 });
 
     $self->{interface_id_selected} = [];
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -93,7 +90,6 @@ sub check_options {
        $self->{output}->option_exit();
     }
 
-    $self->{statefile_cache}->check_options(%options);
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -117,13 +113,11 @@ sub run {
    
     my $new_datas = {};
     $self->{statefile_value}->read(statefile => "pfsense_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all')));
-
-
-    foreach (@{$self->{interface_id_selected}}) {
-        $self->{snmp}->load(oids => [$oid_pfsenseBlockedInPackets . "." . $_, $oid_pfsenseBlockedOutPackets . "." . $_]);
-    }
-
+    
+    $self->{snmp}->load(oids => [$oid_pfsenseBlockedInPackets, $oid_pfsenseBlockedOutPackets],
+                        instances => $self->{interface_id_selected});
     $result = $self->{snmp}->get_leef();
+
     $new_datas->{last_timestamp} = time();
     my $old_timestamp;
     if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp})) {
@@ -132,7 +126,7 @@ sub run {
     }
 
     foreach (sort @{$self->{interface_id_selected}}) {
-        my $display_value = $self->{statefile_value}->get(name => $_);
+        my $display_value = $self->{names}->{$_};
 
         #################
         # New values
@@ -214,56 +208,28 @@ sub run {
     $self->{output}->exit();
 }
 
-sub reload_cache {
-    my ($self) = @_;
-    my $datas = {};
-
-    $datas->{last_timestamp} = time();
-    $datas->{all_ids} = [];
-
-    my $result = $self->{snmp}->get_table(oid => $oid_pfsenseInterfaceName);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        push @{$datas->{all_ids}}, $1;
-        $datas->{$1} = $self->{output}->to_utf8($result->{$key});
-    }
-
-    if (scalar(@{$datas->{all_ids}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_cache}->write(data => $datas);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-
-    # init cache file
- my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
+    
+    $all_ids = [];
+    $self->{names} = {};
+    my $result = $self->{snmp}->get_table(oid => $oid_pfsenseInterfaceName, nothing_quit => 1);
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($key !~ /\.([0-9]+)$/);
+        push @{$all_ids}, $1;
+        $self->{names}->{$1} = $self->{output}->to_utf8($result->{$key});
     }
 
-    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0) {
-        $self->reload_cache();
-        $self->{statefile_cache}->read();
-    }
-
-    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
         # get by ID
         push @{$self->{interface_id_selected}}, $self->{option_results}->{interface};
-        my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{interface});
-        if (!defined($name)) {
+        if (!defined($self->{names}->{$self->{option_results}->{interface}})) {
             $self->{output}->add_option_msg(short_msg => "No interface found for id '" . $self->{option_results}->{interface} . "'.");
             $self->{output}->option_exit();
         }
     } else {
         foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => $i);
+            my $filter_name = $self->{names}->{$i};
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{interface})) {
                 push @{$self->{interface_id_selected}}, $i;
@@ -332,15 +298,6 @@ Allows to use regexp to filter interfaces (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--reload-cache-time>
-
-Time in seconds before reloading cache file (default: 180).
-
-=item B<--show-cache>
-
-Display cache interface datas.
-
 
 =back
 
