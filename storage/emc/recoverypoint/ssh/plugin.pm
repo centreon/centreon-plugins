@@ -47,8 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'system-status'    => 'storage::emc::recoverypoint::ssh::mode::systemstatus',
-                         'monitored-parameters'    => 'storage::emc::recoverypoint::ssh::mode::monitoredparameters',
+                         'system-status'        => 'storage::emc::recoverypoint::ssh::mode::systemstatus',
+                         'monitored-parameters' => 'storage::emc::recoverypoint::ssh::mode::monitoredparameters',
                          );
 
     return $self;

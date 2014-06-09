@@ -59,10 +59,9 @@ sub new {
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options', default => '' },
                                   "min-severity:s"    => { name => 'min_severity', default => 'minor' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
+                                  "warning:s"         => { name => 'warning' },
+                                  "critical:s"        => { name => 'critical' },
                                 });
-    $self->{manage_returns} = {};
     return $self;
 }
 
@@ -88,7 +87,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{option_results}->{min_severity} !~ /minor/m) && ($self->{option_results}->{min_severity} !~ /major/m) && ($self->{option_results}->{min_severity} !~ /critical/m)) {
+    if ($self->{option_results}->{min_severity} !~ /^(minor|major|critical)$/) {
         $self->{output}->add_option_msg(short_msg => 'Min-severity must be minor, major or critical.');
         $self->{output}->option_exit();
     } 
