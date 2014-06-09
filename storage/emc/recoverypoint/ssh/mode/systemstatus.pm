@@ -59,7 +59,6 @@ sub new {
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options', default => 'category=system summary=yes' },
                                 });
-    $self->{manage_returns} = {};
     return $self;
 }
 
