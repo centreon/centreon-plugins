@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::hcb;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,25 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    hcb_nolock   => { thresholds => {
+                                warning_nolock  =>  { label => 'warning-nolock', exit_value => 'warning' },
+                                critical_nolock =>  { label => 'critical-nolock', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'HCB Lookups without lock: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    hcb_lock => { thresholds => {
+                                warning_lock  =>  { label => 'warning-lock', exit_value => 'warning' },
+                                critical_lock =>  { label => 'critical-lock', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'HCB Lookups with lock: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    hcb_insert => { thresholds => {
+                                warning_insert    =>  { label => 'warning-insert', exit_value => 'warning' },
+                                critical_insert   =>  { label => 'critical-insert', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'HCB Inserts: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +240,17 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+nolock => HCB Lookups without lock,
+lock   => HCB Lookups with lock,
+insert => HCB Inserts
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+nolock => HCB Lookups without lock,
+lock   => HCB Lookups with lock,
+insert => HCB Inserts
 
 =back
 

@@ -41,84 +41,84 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    backend_head   => { thresholds => {
+    fetch_head   => { thresholds => {
                                 warning_head  =>  { label => 'warning-head', exit_value => 'warning' },
                                 critical_head =>  { label => 'critical-head', exit_value => 'critical' },
                               },
                 output_msg => 'Fetch head: %.2f',
                 factor => 1, unit => '',
                },
-    backend_length => { thresholds => {
+    fetch_length => { thresholds => {
                                 warning_length  =>  { label => 'warning-length', exit_value => 'warning' },
                                 critical_length =>  { label => 'critical-length', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch with Length: %.2f',
                  factor => 1, unit => '',
                 },
-    backend_chunked => { thresholds => {
+    fetch_chunked => { thresholds => {
                                 warning_chunked    =>  { label => 'warning-chunked', exit_value => 'warning' },
                                 critical_chunked   =>  { label => 'critical-chunked', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch chunked: %.2f',
                  factor => 1, unit => '',
                },
-    backend_eof => { thresholds => {
+    fetch_eof => { thresholds => {
                                 warning_eof    =>  { label => 'warning-eof', exit_value => 'warning' },
                                 critical_eof   =>  { label => 'critical-eof', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch EOF: %.2f',
                  factor => 1, unit => '',
                },
-    backend_bad => { thresholds => {
+    fetch_bad => { thresholds => {
                                 warning_bad    =>  { label => 'warning-bad', exit_value => 'warning' },
                                 critical_bad   =>  { label => 'critical-bad', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch had bad headers: %.2f',
                  factor => 1, unit => '',
                },
-    backend_close => { thresholds => {
+    fetch_close => { thresholds => {
                                 warning_close    =>  { label => 'warning-close', exit_value => 'warning' },
                                 critical_close   =>  { label => 'critical-close', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch wanted close: %.2f',
                  factor => 1, unit => '',
                },
-    backend_oldhttp => { thresholds => {
+    fetch_oldhttp => { thresholds => {
                                 warning_oldhttp    =>  { label => 'warning-oldhttp', exit_value => 'warning' },
                                 critical_oldhttp   =>  { label => 'critical-oldhttp', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch pre HTTP/1.1 closed: %.2f',
                  factor => 1, unit => '',
                },
-    backend_zero => { thresholds => {
+    fetch_zero => { thresholds => {
                                 warning_zero    =>  { label => 'warning-zero', exit_value => 'warning' },
                                 critical_zero   =>  { label => 'critical-zero', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch zero len: %.2f',
                  factor => 1, unit => '',
                },
-    backend_failed => { thresholds => {
+    fetch_failed => { thresholds => {
                                 warning_failed    =>  { label => 'warning-failed', exit_value => 'warning' },
                                 critical_failed   =>  { label => 'critical-failed', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch failed: %.2f',
                  factor => 1, unit => '',
                },
-    backend_1xx => { thresholds => {
+    fetch_1xx => { thresholds => {
                                 warning_1xx    =>  { label => 'warning-1xx', exit_value => 'warning' },
                                 critical_1xx   =>  { label => 'critical-1xx', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch no body (1xx): %.2f',
                  factor => 1, unit => '',
                },
-    backend_204 => { thresholds => {
+    fetch_204 => { thresholds => {
                                 warning_204    =>  { label => 'warning-204', exit_value => 'warning' },
                                 critical_204   =>  { label => 'critical-204', exit_value => 'critical' },
                                 },
                  output_msg => 'Fetch no body (204): %.2f',
                  factor => 1, unit => '',
                },
-    backend_304 => { thresholds => {
+    fetch_304 => { thresholds => {
                                 warning_304    =>  { label => 'warning-304', exit_value => 'warning' },
                                 critical_304   =>  { label => 'critical-304', exit_value => 'critical' },
                                 },
@@ -273,7 +273,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
+Check Varnish Cache with varnishstat Command
 
 =over 8
 

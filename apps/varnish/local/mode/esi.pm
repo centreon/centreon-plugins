@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::esi;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,34 +41,20 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    esi_errors   => { thresholds => {
+                                warning_errors  =>  { label => 'warning-errors', exit_value => 'warning' },
+                                critical_errors =>  { label => 'critical-errors', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'ESI parse errors (unlock): %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    esi_warnings => { thresholds => {
+                                warning_warnings  =>  { label => 'warning-warnings', exit_value => 'warning' },
+                                critical_warnings =>  { label => 'critical-warnings', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'ESI parse warnings (unlock): %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
-                                },
-                 output_msg => 'Connection dropped late: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Client requests received: %.2f',
-                 factor => 1, unit => '',
-               },
 };
 
 sub new {
@@ -247,19 +233,15 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+errors   => ESI parse errors (unlock),
+warnings => ESI parse warnings (unlock)
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+errors   => ESI parse errors (unlock),
+warnings => ESI parse warnings (unlock)
 
 =back
 
