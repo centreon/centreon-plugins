@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::objects;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,25 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    n_objsendfile   => { thresholds => {
+                                warning_objsendfile  =>  { label => 'warning-objsendfile', exit_value => 'warning' },
+                                critical_objsendfile =>  { label => 'critical-objsendfile', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'Objects sent with sendfile: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    n_objwrite => { thresholds => {
+                                warning_objwrite  =>  { label => 'warning-objwrite', exit_value => 'warning' },
+                                critical_objwrite =>  { label => 'critical-objwrite', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'Objects sent with write: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    n_objoverflow => { thresholds => {
+                                warning_objoverflow    =>  { label => 'warning-objoverflow', exit_value => 'warning' },
+                                critical_objoverflow   =>  { label => 'critical-objoverflow', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'Objects overflowing workspace: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +240,17 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+objsendfile => Objects sent with sendfile,
+objwrite    => Objects sent with write,
+objoverflow => Objects overflowing workspace
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+objsendfile => Objects sent with sendfile,
+objwrite    => Objects sent with write,
+objoverflow => Objects overflowing workspace
 
 =back
 

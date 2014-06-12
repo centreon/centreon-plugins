@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::sms;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,39 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    sms_nreq   => { thresholds => {
+                                warning_nreq  =>  { label => 'warning-nreq', exit_value => 'warning' },
+                                critical_nreq =>  { label => 'critical-nreq', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'SMS allocator requests: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    sms_nobj => { thresholds => {
+                                warning_nobj  =>  { label => 'warning-nobj', exit_value => 'warning' },
+                                critical_nobj =>  { label => 'critical-nobj', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'SMS outstanding allocations: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    sms_nbytes => { thresholds => {
+                                warning_nbytes    =>  { label => 'warning-nbytes', exit_value => 'warning' },
+                                critical_nbytes   =>  { label => 'critical-nbytes', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
+                 output_msg => 'SMS outstanding bytes: %.2f',
                  factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+               },
+    sms_balloc => { thresholds => {
+                                warning_balloc    =>  { label => 'warning-balloc', exit_value => 'warning' },
+                                critical_balloc   =>  { label => 'critical-balloc', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'SMS bytes allocated: %.2f',
+                 factor => 1, unit => '',
+               },
+    sms_bfree => { thresholds => {
+                                warning_bfree    =>  { label => 'warning-bfree', exit_value => 'warning' },
+                                critical_bfree   =>  { label => 'critical-bfree', exit_value => 'critical' },
+                                },
+                 output_msg => 'SMS bytes freed: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +254,21 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+nreq   => SMS allocator requests,
+nobj   => SMS outstanding allocations,
+nbytes => SMS outstanding bytes,
+balloc => SMS bytes allocated,
+bfree  => SMS bytes freed
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+nreq   => SMS allocator requests,
+nobj   => SMS outstanding allocations,
+nbytes => SMS outstanding bytes,
+balloc => SMS bytes allocated,
+bfree  => SMS bytes freed
 
 =back
 

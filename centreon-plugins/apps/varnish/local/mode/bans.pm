@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::bans;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,46 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    n_ban   => { thresholds => {
+                                warning_total  =>  { label => 'warning-total', exit_value => 'warning' },
+                                critical_total =>  { label => 'critical-total', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'N total active bans: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    n_ban_add => { thresholds => {
+                                warning_add  =>  { label => 'warning-add', exit_value => 'warning' },
+                                critical_add =>  { label => 'critical-add', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'N new bans added: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    n_ban_retire => { thresholds => {
+                                warning_retire    =>  { label => 'warning-retire', exit_value => 'warning' },
+                                critical_retire   =>  { label => 'critical-retire', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
+                 output_msg => 'N old bans deleted: %.2f',
                  factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+               },
+    n_ban_obj_test => { thresholds => {
+                                warning_objtest    =>  { label => 'warning-objtest', exit_value => 'warning' },
+                                critical_objtest   =>  { label => 'critical-objtest', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'N objects tested: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_ban_re_test => { thresholds => {
+                                warning_retest    =>  { label => 'warning-retest', exit_value => 'warning' },
+                                critical_retest   =>  { label => 'critical-retest', exit_value => 'critical' },
+                                },
+                 output_msg => 'N regexps tested against: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_ban_dups => { thresholds => {
+                                warning_dups    =>  { label => 'warning-dups', exit_value => 'warning' },
+                                critical_dups   =>  { label => 'critical-dups', exit_value => 'critical' },
+                                },
+                 output_msg => 'N duplicate bans removed: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +261,23 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+total    => N total active bans,
+add      => N new bans added,
+retire   => N old bans deleted,
+objtest  => N objects tested,
+retest   => N regexps tested against,
+dups     => N duplicate bans removed
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+total    => N total active bans,
+add      => N new bans added,
+retire   => N old bans deleted,
+objtest  => N objects tested,
+retest   => N regexps tested against,
+dups     => N duplicate bans removed
 
 =back
 
