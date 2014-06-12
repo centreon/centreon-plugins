@@ -70,7 +70,7 @@ Check a variety of Sun Hardware through management cards:
 - mode 'show-faulty': ILOM (T3-x, T4-x, T5xxx) (in ssh with 'plink' command) ;
 - mode 'showfaults': ALOM4v (in T1xxx, T2xxx) (in ssh with 'plink' command) ;
 - mode 'showstatus': XSCF (Mxxxx - M3000, M4000, M5000,...) (in ssh with 'plink' command) ;
-- mode 'showboards': ScApp (SFxxxx - sf6900, sf6800, sf3800,...) (in telnet with Net::Telnet) ;
+- mode 'showboards': ScApp (SFxxxx - sf6900, sf6800, sf3800,...) (in telnet with Net::Telnet or in ssh with 'plink' command) ;
 - mode 'showenvironment': ALOM (v240, v440, v245,...) (in telnet with Net::Telnet or in ssh with 'plink' command) ;
 - mode 'environment-v8xx': RSC cards (v890, v880) (in telnet with Net::Telnet) ;
 - mode 'environment-v4xx': RSC cards (v480, v490) (in telnet with Net::Telnet) ;
