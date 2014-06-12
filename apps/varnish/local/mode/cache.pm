@@ -216,7 +216,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
+Check Varnish Cache with varnishstat Command
 
 =over 8
 

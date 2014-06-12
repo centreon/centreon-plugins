@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::n;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,88 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    n_sess_mem   => { thresholds => {
+                                warning_mem  =>  { label => 'warning-mem', exit_value => 'warning' },
+                                critical_mem =>  { label => 'critical-mem', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'N struct sess_mem: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    n_sess => { thresholds => {
+                                warning_sess  =>  { label => 'warning-sess', exit_value => 'warning' },
+                                critical_sess =>  { label => 'critical-sess', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'N struct sess: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    n_object => { thresholds => {
+                                warning_object    =>  { label => 'warning-object', exit_value => 'warning' },
+                                critical_object   =>  { label => 'critical-object', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
+                 output_msg => 'N struct object: %.2f',
                  factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+               },
+    n_vampireobject => { thresholds => {
+                                warning_vampireobject    =>  { label => 'warning-vampireobject', exit_value => 'warning' },
+                                critical_vampireobject   =>  { label => 'critical-vampireobject', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'N unresurrected objects: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_objectcore => { thresholds => {
+                                warning_objectcore    =>  { label => 'warning-objectcore', exit_value => 'warning' },
+                                critical_objectcore   =>  { label => 'critical-objectcore', exit_value => 'critical' },
+                                },
+                 output_msg => 'N struct objectcore: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_objecthead => { thresholds => {
+                                warning_objecthead    =>  { label => 'warning-objecthead', exit_value => 'warning' },
+                                critical_objecthead   =>  { label => 'critical-objecthead', exit_value => 'critical' },
+                                },
+                 output_msg => 'N struct objecthead: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_waitinglist => { thresholds => {
+                                warning_waitinglist    =>  { label => 'warning-waitinglist', exit_value => 'warning' },
+                                critical_waitinglist   =>  { label => 'critical-waitinglist', exit_value => 'critical' },
+                                },
+                 output_msg => 'N struct waitinglist: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_vbc => { thresholds => {
+                                warning_vbc    =>  { label => 'warning-vbc', exit_value => 'warning' },
+                                critical_vbc   =>  { label => 'critical-vbc', exit_value => 'critical' },
+                                },
+                 output_msg => 'N struct vbc: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_backend => { thresholds => {
+                                warning_backend    =>  { label => 'warning-backend', exit_value => 'warning' },
+                                critical_backend   =>  { label => 'critical-backend', exit_value => 'critical' },
+                                },
+                 output_msg => 'N backends: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_expired => { thresholds => {
+                                warning_expired    =>  { label => 'warning-expired', exit_value => 'warning' },
+                                critical_expired   =>  { label => 'critical-expired', exit_value => 'critical' },
+                                },
+                 output_msg => 'N expired objects: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_lru_nuked => { thresholds => {
+                                warning_nuked    =>  { label => 'warning-nuked', exit_value => 'warning' },
+                                critical_nuked   =>  { label => 'critical-nuked', exit_value => 'critical' },
+                                },
+                 output_msg => 'N LRU nuked objects: %.2f',
+                 factor => 1, unit => '',
+               },
+    n_lru_moved => { thresholds => {
+                                warning_moved    =>  { label => 'warning-moved', exit_value => 'warning' },
+                                critical_moved   =>  { label => 'critical-moved', exit_value => 'critical' },
+                                },
+                 output_msg => 'N LRU moved objects: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +303,35 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+n_sess_mem      => N struct sess_mem,
+n_sess          => N struct sess,
+n_object        => N struct object,
+n_vampireobject => N unresurrected objects,
+n_objectcore    => N struct objectcore,
+n_objecthead    => N struct objecthead,
+n_waitinglist   => N struct waitinglist,
+n_vbc           => N struct vbc,
+n_backend       => N backends,
+n_expired       => N expired objects,
+n_lru_nuked     => N LRU nuked objects,
+n_lru_moved     => N LRU moved objects
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+n_sess_mem      => N struct sess_mem,
+n_sess          => N struct sess,
+n_object        => N struct object,
+n_vampireobject => N unresurrected objects,
+n_objectcore    => N struct objectcore,
+n_objecthead    => N struct objecthead,
+n_waitinglist   => N struct waitinglist,
+n_vbc           => N struct vbc,
+n_backend       => N backends,
+n_expired       => N expired objects,
+n_lru_nuked     => N LRU nuked objects,
+n_lru_moved     => N LRU moved objects
 
 =back
 

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::dns;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,32 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    dir_dns_lookups   => { thresholds => {
+                                warning_lookups  =>  { label => 'warning-lookups', exit_value => 'warning' },
+                                critical_lookups =>  { label => 'critical-lookups', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'HCB Lookups without lock: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    dir_dns_failed => { thresholds => {
+                                warning_failed  =>  { label => 'warning-failed', exit_value => 'warning' },
+                                critical_failed =>  { label => 'critical-failed', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'HCB Lookups with lock: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    dir_dns_hit => { thresholds => {
+                                warning_hit    =>  { label => 'warning-hit', exit_value => 'warning' },
+                                critical_hit   =>  { label => 'critical-hit', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
+                 output_msg => 'HCB Inserts: %.2f',
                  factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+               },
+    dir_dns_cache_full => { thresholds => {
+                                warning_full    =>  { label => 'warning-full', exit_value => 'warning' },
+                                critical_full   =>  { label => 'critical-full', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'HCB Inserts: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +247,19 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+lookups => DNS director lookups,
+failed  => DNS director failed lookups,
+hit     => DNS director cached lookups hit,
+full    => DNS director full dnscache
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+lookups => DNS director lookups,
+failed  => DNS director failed lookups,
+hit     => DNS director cached lookups hit,
+full    => DNS director full dnscache
 
 =back
 
