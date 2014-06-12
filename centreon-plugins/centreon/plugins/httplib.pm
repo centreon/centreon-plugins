@@ -56,7 +56,7 @@ sub get_port {
 
 sub connect {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
+    my $ua = LWP::UserAgent->new( keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
     my ($response, $content);
@@ -67,8 +67,10 @@ sub connect {
     } else {
         $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
     }
-    
-    if (defined($self->{option_results}->{credentials})) {
+   
+    if (defined($self->{option_results}->{credentials}) && defined($self->{option_results}->{ntlm})) {
+        $ua->credentials($self->{option_results}->{hostname} . ':' . $self->{option_results}->{port}, '', $self->{option_results}->{username}, $self->{option_results}->{password});
+    } elsif (defined($self->{option_results}->{credentials})) {
         $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});
     }
     
