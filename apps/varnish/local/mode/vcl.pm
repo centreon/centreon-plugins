@@ -33,40 +33,34 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::vcl;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
+#n_vcl_avail could be max from n_vcl
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    n_vcl   => { thresholds => {
+                                warning_total  =>  { label => 'warning-total', exit_value => 'warning' },
+                                critical_total =>  { label => 'critical-total', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'N vcl total: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    n_vcl_avail => { thresholds => {
+                                warning_avail  =>  { label => 'warning-avail', exit_value => 'warning' },
+                                critical_avail =>  { label => 'critical-avail', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'N vcl available: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    n_vcl_discard => { thresholds => {
+                                warning_discard    =>  { label => 'warning-discard', exit_value => 'warning' },
+                                critical_discard   =>  { label => 'critical-discard', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'N vcl discarded: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +241,17 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+total   => N vcl total,
+avail   => N vcl available,
+discard => N vcl discarded
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+total   => N vcl total,
+avail   => N vcl available,
+discard => N vcl discarded
 
 =back
 

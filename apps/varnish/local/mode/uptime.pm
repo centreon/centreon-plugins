@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::uptime;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,33 +41,12 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    uptime   => { thresholds => {
+                                warning  =>  { label => 'warning', exit_value => 'warning' },
+                                critical =>  { label => 'critical', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'Uptime in sec: %.2f',
                 factor => 1, unit => '',
-               },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
-                                },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
-                                },
-                 output_msg => 'Connection dropped late: %.2f',
-                 factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Client requests received: %.2f',
-                 factor => 1, unit => '',
                },
 };
 
@@ -245,21 +224,13 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 Parameter for Binary File (Default: ' -1 ')
 
-=item B<--warning-*>
+=item B<--warning>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for Uptime
 
-=item B<--critical-*>
+=item B<--critical>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for Uptime
 
 =back
 

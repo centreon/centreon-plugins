@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Florian Asche <info@florian-asche.de>
+# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
 ####################################################################################
 
-package apps::varnish::local::plugin;
+package apps::protocols::http::plugin;
 
 use strict;
 use warnings;
@@ -47,23 +47,8 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'connections'       => 'apps::varnish::local::mode::connections',
-			'cache'             => 'apps::varnish::local::mode::cache',
-			'backend'           => 'apps::varnish::local::mode::backend',
-			'sessions'          => 'apps::varnish::local::mode::sessions',
-			'fetch'             => 'apps::varnish::local::mode::fetch',
-			'workers'           => 'apps::varnish::local::mode::workers',
-			'totals'            => 'apps::varnish::local::mode::totals',
-			'objects'           => 'apps::varnish::local::mode::objects',
-			'uptime'            => 'apps::varnish::local::mode::uptime',
-			'bans'              => 'apps::varnish::local::mode::bans',
-			'dns'               => 'apps::varnish::local::mode::dns',
-			'shm'               => 'apps::varnish::local::mode::shm',
-			'vcl'               => 'apps::varnish::local::mode::vcl',
-			'n'                 => 'apps::varnish::local::mode::n',
-			'sms'               => 'apps::varnish::local::mode::sms',
-			'hcb'               => 'apps::varnish::local::mode::hcb',
-			'esi'               => 'apps::varnish::local::mode::esi',
+            'response-time'     => 'apps::protocols::http::mode::responsetime',
+            'expected-content'  => 'apps::protocols::http::mode::expectedcontent',
 			);
 
 	return $self;
@@ -75,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Varnish Cache with varnishstat Command
+Check HTTP or HTTPS webpage.
 
 =cut
