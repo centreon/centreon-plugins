@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::mode::shm;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
@@ -41,32 +41,39 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
-    client_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
+    shm_records   => { thresholds => {
+                                warning_records  =>  { label => 'warning-records', exit_value => 'warning' },
+                                critical_records =>  { label => 'critical-records', exit_value => 'critical' },
                               },
-                output_msg => 'Client connections accepted: %.2f',
+                output_msg => 'SHM records: %.2f',
                 factor => 1, unit => '',
                },
-    client_drop => { thresholds => {
-                                warning_drop  =>  { label => 'warning-drop', exit_value => 'warning' },
-                                critical_drop =>  { label => 'critical-drop', exit_value => 'critical' },
+    shm_writes => { thresholds => {
+                                warning_writes  =>  { label => 'warning-writes', exit_value => 'warning' },
+                                critical_writes =>  { label => 'critical-writes', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped, no sess/wrk: %.2f',
+                 output_msg => 'SHM writes: %.2f',
                  factor => 1, unit => '',
                 },
-    client_drop_late => { thresholds => {
-                                warning_droplate  =>  { label => 'warning-droplate', exit_value => 'warning' },
-                                critical_droplate =>  { label => 'critical-droplate', exit_value => 'critical' },
+    shm_flushes => { thresholds => {
+                                warning_flushes    =>  { label => 'warning-flushes', exit_value => 'warning' },
+                                critical_flushes   =>  { label => 'critical-flushes', exit_value => 'critical' },
                                 },
-                 output_msg => 'Connection dropped late: %.2f',
+                 output_msg => 'SHM flushes due to overflow: %.2f',
                  factor => 1, unit => '',
-                },
-    client_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+               },
+    shm_cont => { thresholds => {
+                                warning_cont    =>  { label => 'warning-cont', exit_value => 'warning' },
+                                critical_cont   =>  { label => 'critical-cont', exit_value => 'critical' },
                                 },
-                 output_msg => 'Client requests received: %.2f',
+                 output_msg => 'SHM MTX contention: %.2f',
+                 factor => 1, unit => '',
+               },
+    shm_cycles => { thresholds => {
+                                warning_cycles    =>  { label => 'warning-cycles', exit_value => 'warning' },
+                                critical_cycles   =>  { label => 'critical-cycles', exit_value => 'critical' },
+                                },
+                 output_msg => 'SHM cycles through buffer: %.2f',
                  factor => 1, unit => '',
                },
 };
@@ -247,19 +254,21 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Warning Threshold for: 
+records => SHM records,
+writes  => SHM writes,
+flushes => SHM flushes due to overflow,
+cont    => SHM MTX contention,
+cycles  => SHM cycles through buffer
 
 =item B<--critical-*>
 
-Critical Threshold for:
-conn     => Client connections accepted,
-drop     => Connection dropped, no sess/wrk,
-droplate => Connection dropped late,
-req      => Client requests received
+Critical Threshold for: 
+records => SHM records,
+writes  => SHM writes,
+flushes => SHM flushes due to overflow,
+cont    => SHM MTX contention,
+cycles  => SHM cycles through buffer
 
 =back
 

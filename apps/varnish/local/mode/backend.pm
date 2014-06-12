@@ -97,6 +97,13 @@ my $maps_counters = {
                  output_msg => 'Backend conn. retry: %.2f',
                  factor => 1, unit => '',
                },
+    backend_req => { thresholds => {
+                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
+                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
+                                },
+                 output_msg => 'Backend requests made: %.2f',
+                 factor => 1, unit => '',
+               },
 };
 
 sub new {
@@ -245,7 +252,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
+Check Varnish Cache with varnishstat Command
 
 =over 8
 
@@ -283,7 +290,8 @@ fail      => Backend conn. failures,
 reuse     => Backend conn. reuses,
 toolate   => Backend conn. was closed,
 recycle   => Backend conn. recycles,
-retry     => Backend conn. retry
+retry     => Backend conn. retry,
+req       => Backend requests made
 
 =item B<--critical-*>
 
@@ -295,7 +303,8 @@ fail      => Backend conn. failures,
 reuse     => Backend conn. reuses,
 toolate   => Backend conn. was closed,
 recycle   => Backend conn. recycles,
-retry     => Backend conn. retry
+retry     => Backend conn. retry,
+req       => Backend requests made
 
 =back
 

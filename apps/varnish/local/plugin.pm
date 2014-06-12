@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::plugin;
+package apps::varnish::local::plugin;
 
 use strict;
 use warnings;
@@ -47,18 +47,23 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'connections'       => 'apps::varnish::mode::connections',
-			'cache'             => 'apps::varnish::mode::cache',
-			'backend'           => 'apps::varnish::mode::backend',
-			'fetch'             => 'apps::varnish::mode::fetch',
-			'workers'           => 'apps::varnish::mode::workers',
-			'totals'            => 'apps::varnish::mode::totals',
-			'shm'               => 'apps::varnish::mode::shm',
-			'sm'                => 'apps::varnish::mode::sm',
-			'sma'               => 'apps::varnish::mode::sma',
-			'sms'               => 'apps::varnish::mode::sms',
-			'hcb'               => 'apps::varnish::mode::hcb',
-			'esi'               => 'apps::varnish::mode::esi',
+			'connections'       => 'apps::varnish::local::mode::connections',
+			'cache'             => 'apps::varnish::local::mode::cache',
+			'backend'           => 'apps::varnish::local::mode::backend',
+			'sessions'          => 'apps::varnish::local::mode::sessions',
+			'fetch'             => 'apps::varnish::local::mode::fetch',
+			'workers'           => 'apps::varnish::local::mode::workers',
+			'totals'            => 'apps::varnish::local::mode::totals',
+			'objects'           => 'apps::varnish::local::mode::objects',
+			'uptime'            => 'apps::varnish::local::mode::uptime',
+			'bans'              => 'apps::varnish::local::mode::bans',
+			'dns'               => 'apps::varnish::local::mode::dns',
+			'shm'               => 'apps::varnish::local::mode::shm',
+			'vcl'               => 'apps::varnish::local::mode::vcl',
+			'n'                 => 'apps::varnish::local::mode::n',
+			'sms'               => 'apps::varnish::local::mode::sms',
+			'hcb'               => 'apps::varnish::local::mode::hcb',
+			'esi'               => 'apps::varnish::local::mode::esi',
 			);
 
 	return $self;
@@ -70,6 +75,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Varnish with Local Command or with SSH
+Check Varnish Cache with varnishstat Command
 
 =cut

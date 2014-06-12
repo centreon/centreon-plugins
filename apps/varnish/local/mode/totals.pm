@@ -90,6 +90,13 @@ my $maps_counters = {
                  output_msg => 'Total body bytes: %.2f',
                  factor => 1, unit => '',
                },
+    accept_fail => { thresholds => {
+                                warning_fail    =>  { label => 'warning-fail', exit_value => 'warning' },
+                                critical_fail   =>  { label => 'critical-fail', exit_value => 'critical' },
+                                },
+                 output_msg => 'Accept failures: %.2f',
+                 factor => 1, unit => '',
+               },
 };
 
 sub new {
@@ -238,7 +245,7 @@ __END__
 
 =head1 MODE
 
-Check Varnish Cache with varnishstat Command for: Cache hits, Cache hits for pass, Cache misses
+Check Varnish Cache with varnishstat Command
 
 =over 8
 
@@ -275,7 +282,8 @@ pipe      => Total pipe,
 pass      => Total pass,
 fetch     => Total fetch,
 hdrbytes  => Total header bytes,
-bodybytes => Total body bytes
+bodybytes => Total body bytes,
+fail      => Accept failures
 
 =item B<--critical-*>
 
@@ -286,7 +294,8 @@ pipe      => Total pipe,
 pass      => Total pass,
 fetch     => Total fetch,
 hdrbytes  => Total header bytes,
-bodybytes => Total body bytes
+bodybytes => Total body bytes,
+fail      => Accept failures
 
 =back
 
