@@ -65,6 +65,8 @@ sub new {
                                   "name"                    => { name => 'use_name' },
                                   "interface:s"             => { name => 'interface' },
                                   "speed:s"                 => { name => 'speed' },
+                                  "speed-in:s"              => { name => 'speed_in' },
+                                  "speed-out:s"             => { name => 'speed_out' },
                                   "skip"                    => { name => 'skip' },
                                   "skip-speed0"             => { name => 'skip_speed0' },
                                   "regexp"                  => { name => 'use_regexp' },
@@ -77,6 +79,7 @@ sub new {
                                 });
 
     $self->{interface_id_selected} = [];
+    $self->{get_speed} = 0;
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     
@@ -113,6 +116,11 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Unsupported --oid-display option.");
         $self->{output}->option_exit();
     }
+    if ((!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') &&
+        ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
+        (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq ''))) {
+        $self->{get_speed} = 1;
+    }
     
     $self->{statefile_cache}->check_options(%options);
     $self->{statefile_value}->check_options(%options);
@@ -141,12 +149,12 @@ sub run {
     
     foreach (@{$self->{interface_id_selected}}) {
         $self->{snmp}->load(oids => [$oid_adminstatus . "." . $_, $oid_operstatus . "." . $_, $oid_in32 . "." . $_, $oid_out32 . "." . $_]);
-        if (!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') {
+        if ($self->{get_speed} == 1) {
             $self->{snmp}->load(oids => [$oid_speed32 . "." . $_]);
         }
         if (!$self->{snmp}->is_snmpv1()) {
             $self->{snmp}->load(oids => [$oid_in64 . "." . $_, $oid_out64 . "." . $_]);
-            if (!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') {
+            if ($self->{get_speed} == 1) {
                 $self->{snmp}->load(oids => [$oid_speed64 . "." . $_]);
             }
         }
@@ -180,9 +188,15 @@ sub run {
         }
         
         # Manage interface speed
-        my $interface_speed;
-        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $interface_speed = $self->{option_results}->{speed} * 1000000;
+        my ($interface_speed_in, $interface_speed_out);
+        
+        if ($self->{get_speed} == 0) {
+            if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+                $interface_speed_in = $self->{option_results}->{speed} * 1000000;
+                $interface_speed_out = $self->{option_results}->{speed} * 1000000;
+            }
+            $interface_speed_in = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+            $interface_speed_out = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
         } else {
             if ((!defined($result->{$oid_speed32 . "." . $_}) || $result->{$oid_speed32 . "." . $_} !~ /^[0-9]+$/) && 
                 (!defined($result->{$oid_speed64 . "." . $_}) || $result->{$oid_speed64 . "." . $_} !~ /^[0-9]+$/)) {
@@ -190,7 +204,7 @@ sub run {
                                             short_msg => "Interface '" . $display_value . "' Speed is null or incorrect. You should force the value with --speed option");
                 next;
             }
-            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
+            my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
             if (!defined($interface_speed) || $interface_speed == 0) {
                 if (!defined($self->{option_results}->{skip_speed0})) {
                     $self->{output}->output_add(severity => 'UNKNOWN',
@@ -200,6 +214,10 @@ sub run {
                 }
                 next;
             }
+            $interface_speed_in = $interface_speed;
+            $interface_speed_out = $interface_speed;
+            $interface_speed_in = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+            $interface_speed_out = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
         }
         
         my $old_mode = $self->{statefile_value}->get(name => 'mode_' . $_);
@@ -258,8 +276,8 @@ sub run {
         }
         my $in_absolute_per_sec = ($new_datas->{'in_' . $_} - $old_in) / $time_delta;
         my $out_absolute_per_sec = ($new_datas->{'out_' . $_} - $old_out) / $time_delta;
-        my $in_prct = $in_absolute_per_sec * 100 / $interface_speed;
-        my $out_prct = $out_absolute_per_sec * 100 / $interface_speed;
+        my $in_prct = $in_absolute_per_sec * 100 / $interface_speed_in;
+        my $out_prct = $out_absolute_per_sec * 100 / $interface_speed_out;
        
         ###########
         # Manage Output
@@ -284,14 +302,14 @@ sub run {
         $extra_label = '_' . $display_value if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp}));
         $self->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
                                       value => sprintf("%.2f", $in_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed_in),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed_in),
+                                      min => 0, max => $interface_speed_in);
         $self->{output}->perfdata_add(label => 'traffic_out' . $extra_label, unit => 'b/s',
                                       value => sprintf("%.2f", $out_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed_out),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed_out),
+                                      min => 0, max => $interface_speed_out);
     }
 
     $self->{statefile_value}->write(data => $new_datas);    
@@ -447,7 +465,15 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--speed>
 
-Set interface speed (in Mb).
+Set interface speed for incoming/outgoing traffic (in Mb).
+
+=item B<--speed-in>
+
+Set interface speed for incoming traffic (in Mb).
+
+=item B<--speed-out>
+
+Set interface speed for outgoing traffic (in Mb).
 
 =item B<--skip>
 
