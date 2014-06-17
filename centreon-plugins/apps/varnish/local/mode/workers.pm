@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::workers;
+package apps::varnish::local::mode::workers;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::sms;
+package apps::varnish::local::mode::sms;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

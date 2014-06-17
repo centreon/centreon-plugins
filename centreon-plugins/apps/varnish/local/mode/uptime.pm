@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::uptime;
+package apps::varnish::local::mode::uptime;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

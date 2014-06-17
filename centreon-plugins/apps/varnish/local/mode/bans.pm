@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::bans;
+package apps::varnish::local::mode::bans;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::connections;
+package apps::varnish::local::mode::connections;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

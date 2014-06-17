@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::totals;
+package apps::varnish::local::mode::totals;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
