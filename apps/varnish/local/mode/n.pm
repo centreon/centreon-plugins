@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::n;
+package apps::varnish::local::mode::n;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

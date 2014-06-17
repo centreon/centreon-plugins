@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::vcl;
+package apps::varnish::local::mode::vcl;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

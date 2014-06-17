@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::dns;
+package apps::varnish::local::mode::dns;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;

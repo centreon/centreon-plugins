@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::varnish::mode::hcb;
+package apps::varnish::local::mode::hcb;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc;
