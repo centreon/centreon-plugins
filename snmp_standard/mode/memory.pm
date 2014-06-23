@@ -50,11 +50,12 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
-                                  "swap:s"                  => { name => 'check_swap' },
+                                  "swap"                    => { name => 'check_swap' },
                                   "warning-swap:s"          => { name => 'warning_swap' },
                                   "critical-swap:s"         => { name => 'critical_swap' },
+                                  "no-swap:s"               => { name => 'no_swap' },
                                 });
-    
+    $self->{no_swap} = 'critical';
     return $self;
 }
 
@@ -78,6 +79,13 @@ sub check_options {
         if (($self->{perfdata}->threshold_validate(label => 'critical-swap', value => $self->{option_results}->{critical_swap})) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong critical-swap threshold '" . $self->{option_results}->{critical_swap} . "'.");
             $self->{output}->option_exit();
+        }
+        if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
+            if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{no_swap} = $self->{option_results}->{no_swap};
         }
     }
 }
@@ -139,6 +147,13 @@ sub run {
                                   min => 0, max => $total_size);
 
     if (defined($self->{option_results}->{check_swap})) {
+        if ($result->{$oid_memTotalSwap} == 0) {
+            $self->{output}->output_add(severity => $self->{no_swap},
+                                        short_msg => 'No active swap.');
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+    
         $total_size = $result->{$oid_memTotalSwap} * 1024;
         my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
     
@@ -195,6 +210,10 @@ Threshold warning in percent.
 =item B<--critical-swap>
 
 Threshold critical in percent.
+
+=item B<--no-swap>
+
+Threshold if no active swap (default: 'critical').
 
 =back
 
