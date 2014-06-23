@@ -50,9 +50,10 @@ sub new {
     
     $self->{options}->add_options(
                                    arguments => {
-                                                'mode:s'       => { name => 'mode' },
-                                                'dyn-mode:s'   => { name => 'dynmode_name' },
-                                                'list-mode'    => { name => 'list_mode' },
+                                                'mode:s'         => { name => 'mode' },
+                                                'dyn-mode:s'     => { name => 'dynmode_name' },
+                                                'list-mode'      => { name => 'list_mode' },
+                                                'mode-version:s' => { name => 'mode_version' },
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -60,8 +61,9 @@ sub new {
     $self->{default} = undef;
     
     $self->{options}->parse_options();
-    $self->{mode_name} = $self->{options}->get_option(argument => 'mode' );
-    $self->{list_mode} = $self->{options}->get_option(argument => 'list_mode' );
+    $self->{mode_name} = $self->{options}->get_option(argument => 'mode');
+    $self->{list_mode} = $self->{options}->get_option(argument => 'list_mode');
+    $self->{mode_version} = $self->{options}->get_option(argument => 'mode_version');
     $self->{options}->clean();
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
@@ -112,6 +114,10 @@ sub init {
     if (defined($options{version})) {
         $self->{mode}->version();
         $self->{output}->option_exit(nolabel => 1);
+    }
+    if (centreon::plugins::misc::minimal_version($self->{mode}->{version}, $self->{mode_version}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Not good version for plugin mode. Excepted at least: " . $self->{mode_version} . ". Get: ".  $self->{mode}->{version});
+        $self->{output}->option_exit();
     }
     
     $self->{options}->parse_options();
@@ -191,6 +197,10 @@ Specify a mode with the path (separated by '::').
 =item B<--list-mode>
 
 List available modes.
+
+=item B<--mode-version>
+
+Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
