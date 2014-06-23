@@ -51,12 +51,13 @@ sub new {
     
     $self->{options}->add_options(
                                    arguments => {
-                                                'mode:s'       => { name => 'mode_name' },
-                                                'dyn-mode:s'   => { name => 'dynmode_name' },
-                                                'list-mode'    => { name => 'list_mode' },
-                                                'sqlmode:s'    => { name => 'sqlmode_name', default => 'dbi' },
-                                                'list-sqlmode' => { name => 'list_sqlmode' },
-                                                'multiple'     => { name => 'multiple' },
+                                                'mode:s'         => { name => 'mode_name' },
+                                                'dyn-mode:s'     => { name => 'dynmode_name' },
+                                                'list-mode'      => { name => 'list_mode' },
+                                                'mode-version:s' => { name => 'mode_version' },
+                                                'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
+                                                'list-sqlmode'   => { name => 'list_sqlmode' },
+                                                'multiple'       => { name => 'multiple' },
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -135,6 +136,10 @@ sub init {
     if (defined($options{version})) {
         $self->{mode}->version();
         $self->{output}->option_exit(nolabel => 1);
+    }
+    if (centreon::plugins::misc::minimal_version($self->{mode}->{version}, $self->{mode_version}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Not good version for plugin mode. Excepted at least: " . $self->{mode_version} . ". Get: ".  $self->{mode}->{version});
+        $self->{output}->option_exit();
     }
     
     $self->{options}->parse_options();
@@ -254,6 +259,10 @@ List available modes.
 =item B<--version>
 
 Display plugin version.
+
+=item B<--mode-version>
+
+Check minimal version of mode. If not, unknown error.
 
 =item B<--dyn-mode>
 
