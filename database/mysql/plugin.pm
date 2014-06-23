@@ -59,6 +59,7 @@ sub new {
                          'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
                          'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
                          'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
+                         'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
                          );
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
