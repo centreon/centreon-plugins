@@ -48,8 +48,9 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'cpu'              => 'os::linux::local::mode::cpu',
+                         'cpu-detailed'     => 'os::linux::local::mode::cpudetailed',
                          'cmd-return'       => 'os::linux::local::mode::cmdreturn',
-                         'connections'     => 'os::linux::local::mode::connections',
+                         'connections'      => 'os::linux::local::mode::connections',
                          'diskio'           => 'os::linux::local::mode::diskio',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
