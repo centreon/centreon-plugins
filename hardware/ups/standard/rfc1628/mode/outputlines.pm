@@ -138,7 +138,7 @@ sub build_values {
     }
     
     # Skip already done
-    if (defined($self->{instances_done}->{$instance})) {
+    if (!defined($instance) || defined($self->{instances_done}->{$instance})) {
         return 0;
     }
     
@@ -207,7 +207,7 @@ sub run {
         my $extra_label = '';
         $extra_label = '_' . $instance_output if ($num > 1);
 
-        my $str_output = "Input Line '$instance_output' ";
+        my $str_output = "Output Line '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
             next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} <= 0);
