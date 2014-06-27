@@ -33,48 +33,42 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::plugin;
+package storage::emc::clariion::mode::spcomponents::iomodule;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
-sub new {
-    my ($class, %options) = @_;
+my %conditions = (
+    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+);
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking I/O modules");
+    $self->{components}->{io} = {name => 'IO module', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'io'));
     
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'cache'        => 'storage::emc::clariion::mode::cache',
-                         'sp'           => 'storage::emc::clariion::mode::sp',
-                         'faults'       => 'storage::emc::clariion::mode::faults',
-                         'list-luns'    => 'storage::emc::clariion::mode::listluns',
-                         'sp-info'      => 'storage::emc::clariion::mode::spinfo',
-                        );
-    $self->{custom_modes}{clariion} = 'storage::emc::clariion::custom';
-
-    return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
+    # Enclosure SPE SP A I/O Module 0 State: Present
+    while ($self->{response} =~ /^Enclosure\s+(\S+)\s+SP\s+(\S+)\s+I\/O\s+Module\s+(\S+)\s+State:\s+(.*)$/mgi) {
+        my $instance = "$1.$2.$3";
+        my $state = $4;
+        
+        next if ($self->check_exclude(section => 'io', instance => $instance));
+        $self->{components}->{io}->{total}++;
+        
+        $self->{output}->output_add(long_msg => sprintf("I/O module '%s' state is %s.",
+                                                        $instance, $state)
+                                    );
+        foreach (keys %conditions) {
+            if ($state =~ /${$conditions{$_}}[0]/i) {
+                $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
+                                            short_msg => sprintf("I/O module '%s' state is %s",
+                                                        $instance, $state));
+                last;
+            }
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check EMC Clariion with 'navicli/naviseccli'.
-
-=over 8
-
-=back
-
-=cut
