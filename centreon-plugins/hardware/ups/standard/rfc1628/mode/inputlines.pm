@@ -127,7 +127,7 @@ sub build_values {
     }
     
     # Skip already done
-    if (defined($self->{instances_done}->{$instance})) {
+    if (!defined($instance) || defined($self->{instances_done}->{$instance})) {
         return 0;
     }
     
