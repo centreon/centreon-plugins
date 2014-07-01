@@ -112,19 +112,15 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $pools_display = '';
-    my $pools_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $pools_display .= $pools_display_append . 'name = ' . $name  . 
-                                ' [AutoStart = ' . $self->{result}->{$name}->{AutoStart} . ', ' . 
-                                 'State = ' . $state_map{$self->{result}->{$name}->{State}} .
-                                ']';
-        $pools_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [AutoStart = " . $self->{result}->{$name}->{AutoStart} . ', ' . 
+                                                'State = ' . $state_map{$self->{result}->{$name}->{State}} .
+                                                ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List application pools: ' . $pools_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List application pools:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

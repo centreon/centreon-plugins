@@ -78,23 +78,24 @@ sub run {
 
     $self->manage_selection();
     my $result = $self->get_additional_information();
-    
-    my $diskpath_display = '';
-    my $diskpath_display_append = '';
+
     foreach (sort @{$self->{diskpath_id_selected}}) {
-        if (defined($result)) {
-            my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_});
-            next if ($total_size == 0);
-        }
         my $display_value = $self->get_display_value(id => $_);
         
-        $diskpath_display .= $diskpath_display_append . "name = $display_value [id = $_]";
-        $diskpath_display_append = ', ';
+        if (defined($result)) {
+            my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_});
+            if ($total_size == 0) {
+                $self->{output}->output_add(long_msg => "Skipping disk path '" . $display_value . "': size is 0");
+                next;
+            }
+        }
+
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [id = " . $_ . ']');
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List disk path: ' . $diskpath_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List disk path:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

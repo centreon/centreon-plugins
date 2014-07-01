@@ -62,6 +62,7 @@ sub new {
                                   "filter-name:s"     => { name => 'filter_name', },
                                   "filter-state:s"    => { name => 'filter_state', },
                                   "no-loopback"       => { name => 'no_loopback', },
+                                  "skip-novalues"     => { name => 'skip_novalues', },
                                 });
     $self->{result} = {};
     return $self;
@@ -87,12 +88,26 @@ sub manage_selection {
         $states .= 'R' if ($values =~ /RUNNING/ms);
         $states .= 'U' if ($values =~ /UP/ms);
         
-        next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                 $interface_name !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $states !~ /$self->{option_results}->{filter_state}/);
+        if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': option --no-loopback");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no matching filter name");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+            $states !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no matching filter state");
+            next;
+        }
         
+        $values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi;
+        if (defined($self->{option_results}->{skip_novalues}) && !defined($1)) {
+            $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no values");
+            next;
+        }
         $self->{result}->{$interface_name} = {state => $states};
     }    
 }
@@ -101,16 +116,13 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $interfaces_display = '';
-    my $interfaces_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $interfaces_display .= $interfaces_display_append . 'name = ' . $name . ' [state = ' . $self->{result}->{$name}->{state} . ']';
-        $interfaces_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [state = '" . $self->{result}->{$name}->{state} . "']");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List interfaces: ' . $interfaces_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List interfaces:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
@@ -194,6 +206,10 @@ Can be: 'R' (running), 'U' (up).
 =item B<--no-loopback>
 
 Don't display loopback interfaces.
+
+=item B<--skip-novalues>
+
+Filter interface without in/out byte values.
 
 =back
 

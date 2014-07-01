@@ -29,58 +29,66 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Florian Asche <info@florian-asche.de>
+# Author : Simon BOMM <sbomm@merethis.com>
 #
 # Based on De Bodt Lieven plugin
-# Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package apps::tomcat::web::mode::libconnect;
+package centreon::plugins::httplib;
 
 use strict;
 use warnings;
 use LWP::UserAgent;
 
+sub get_port {
+    my ($self, %options) = @_;
+    
+    my $cache_port = '';
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '') {
+        $cache_port = $self->{option_results}->{port};
+    } else {
+        $cache_port = 80 if ($self->{option_results}->{proto} eq 'http');
+        $cache_port = 443 if ($self->{option_results}->{proto} eq 'https');
+    }
+    
+    return $cache_port;
+}
+
 sub connect {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http','https'], timeout => $self->{option_results}->{timeout});
+    my $ua = LWP::UserAgent->new( keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
-    my $response;
-    my $content;    
+    my ($response, $content);
+    my $req;
 
-    if (defined $self->{option_results}->{credentials}) {
-        #$ua->credentials($self->{option_results}->{hostname}.':'.$self->{option_results}->{port},$self->{option_results}->{username},$self->{option_results}->{password});
-         $ua->credentials($self->{option_results}->{hostname}.':'.$self->{option_results}->{port},$self->{option_results}->{realm},$self->{option_results}->{username},$self->{option_results}->{password});
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^[0-9]+$/) {
+        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
+    } else {
+        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
+    }
+   
+    if (defined($self->{option_results}->{credentials}) && defined($self->{option_results}->{ntlm})) {
+        $ua->credentials($self->{option_results}->{hostname} . ':' . $self->{option_results}->{port}, '', $self->{option_results}->{username}, $self->{option_results}->{password});
+    } elsif (defined($self->{option_results}->{credentials})) {
+        $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});
     }
     
-    if ($self->{option_results}->{proto} eq "https") {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['https'], $self->{option_results}->{proxyurl});
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.$self->{option_results}->{path});
-        } else  {
-            $response = $ua->get('https://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.$self->{option_results}->{path});
-        }
-    } else {
-        if (defined $self->{option_results}->{proxyurl}) {
-            $ua->proxy(['http'], $self->{option_results}->{proxyurl});
-            $response = $ua->get($self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.$self->{option_results}->{path});
-        } else  {
-            $response = $ua->get('http://'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.$self->{option_results}->{path});
-        }
+    if (defined($self->{option_results}->{proxyurl})) {
+        $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
+    
+    $response = $ua->request($req);
 
-   if ($response->is_success) {
+    if ($response->is_success) {
         $content = $response->content;
         return $content;
-   } else {
-        $self->{output}->output_add(severity => $connection_exit,
-                                    short_msg => $response->status_line);     
-        $self->{output}->display();
-        $self->{output}->exit();
-   }
-
+    }
+    
+    $self->{output}->output_add(severity => $connection_exit,
+                                short_msg => $response->status_line);     
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
-

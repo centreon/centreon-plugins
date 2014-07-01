@@ -59,7 +59,7 @@ sub new {
                                   "critical:s"              => { name => 'critical' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "diskpath:s"              => { name => 'diskpath' },
                                   "name"                    => { name => 'use_name' },
                                   "regexp"                  => { name => 'use_regexp' },
@@ -107,13 +107,10 @@ sub run {
                                  $oid_dskUsedLow, $oid_dskUsedHigh], instances => $self->{diskpath_id_selected});
     my $result = $self->{snmp}->get_leef(nothing_quit => 1);
 
-    
-
     my $num_disk_check = 0;
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        # in bytes hrStorageAllocationUnits
         my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
         if (defined($self->{option_results}->{space_reservation})) {
             $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);
@@ -192,6 +189,7 @@ sub reload_cache {
     my $datas = {};
 
     my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
+    $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
     my $last_num = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -219,8 +217,8 @@ sub manage_selection {
     }
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || 
+        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
             $self->reload_cache();
             $self->{statefile_cache}->read();
     }

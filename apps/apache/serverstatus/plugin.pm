@@ -47,9 +47,11 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'responsetime'	=> 'apps::apache::serverstatus::mode::responsetime',
-			'requests'	=> 'apps::apache::serverstatus::mode::requests',
-			'slotstates'	=> 'apps::apache::serverstatus::mode::slotstates',
+            'cpuload'       => 'apps::apache::serverstatus::mode::cpuload',
+            'responsetime'  => 'apps::apache::serverstatus::mode::responsetime',
+            'requests'      => 'apps::apache::serverstatus::mode::requests',
+            'slotstates'	=> 'apps::apache::serverstatus::mode::slotstates',
+            'workers'       => 'apps::apache::serverstatus::mode::workers',
 			);
 
 	return $self;

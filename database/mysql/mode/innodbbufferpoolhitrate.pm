@@ -108,8 +108,7 @@ sub run {
     if (defined($old_read_request) && defined($old_read) &&
         $new_datas->{Innodb_buffer_pool_read_requests} >= $old_read_request &&
         $new_datas->{Innodb_buffer_pool_reads} >= $old_read) {
-        
-        
+             
         my %prcts = ();
         my $total_read_requests = $new_datas->{Innodb_buffer_pool_read_requests} - $old_read_request;
         my $total_read_disk = $new_datas->{Innodb_buffer_pool_reads} - $old_read;

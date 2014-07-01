@@ -117,14 +117,16 @@ sub run {
     my ($otp1, $otp2) = split(/\Q$cmd_in\E\n/, $stdout);
     my $long_msg = $otp2;
     $long_msg =~ s/\|/~/mg;
-    $self->{output}->output_add(long_msg => $long_msg);
-    if ($otp2 !~ /Target.*?Property.*?Value/mi) {
+    
+    if (!defined($otp2) || $otp2 !~ /Target.*?Property.*?Value/mi) {
+        $self->{output}->output_add(long_msg => $stdout);
         $self->{output}->output_add(severity => 'UNKNOWN', 
                                     short_msg => "Command '$cmd_in' problems (see additional info).");
         $self->{output}->display();
         $self->{output}->exit();
     }
     
+    $self->{output}->output_add(long_msg => $long_msg);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => 'cache_sun_mgmtcards_' . $self->{option_results}->{hostname}  . '_' .  $self->{mode});
         $self->{output}->output_add(severity => 'OK', 

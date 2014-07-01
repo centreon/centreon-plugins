@@ -61,7 +61,9 @@ sub new {
                                   "command-options:s" => { name => 'command_options', default => '/proc/meminfo 2>&1' },
                                   "warning:s"         => { name => 'warning', },
                                   "critical:s"        => { name => 'critical', },
+                                  "no-swap:s"               => { name => 'no_swap' },
                                 });
+    $self->{no_swap} = 'critical';
     return $self;
 }
 
@@ -76,6 +78,13 @@ sub check_options {
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
+    }
+    if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
+        if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
+            $self->{output}->option_exit();
+        }
+         $self->{no_swap} = $self->{option_results}->{no_swap};
     }
 }
 
@@ -101,6 +110,12 @@ sub run {
     if (!defined($total_size) || !defined($swap_free)) {
         $self->{output}->add_option_msg(short_msg => "Some informations missing.");
         $self->{output}->option_exit();
+    }
+    if ($total_size == 0) {
+        $self->{output}->output_add(severity => $self->{no_swap},
+                                    short_msg => 'No active swap.');
+        $self->{output}->display();
+        $self->{output}->exit();
     }
     
     my $swap_used = $total_size - $swap_free;
@@ -145,6 +160,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--no-swap>
+
+Threshold if no active swap (default: 'critical').
 
 =item B<--remote>
 
