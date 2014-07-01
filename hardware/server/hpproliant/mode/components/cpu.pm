@@ -51,15 +51,15 @@ sub check {
     # In MIB 'CPQSTDEQ-MIB.mib'
     
     $self->{output}->output_add(long_msg => "Checking cpu");
-    $self->{components}->{cpu} = {name => 'cpus', total => 0};
-    return if ($self->check_exclude('cpu'));
+    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'cpu'));
     
     my $oid_cpqSeCpuUnitIndex = '.1.3.6.1.4.1.232.1.2.2.1.1.1';
     my $oid_cpqSeCpuSlot = '.1.3.6.1.4.1.232.1.2.2.1.1.2';
     my $oid_cpqSeCpuName = '.1.3.6.1.4.1.232.1.2.2.1.1.3';
     my $oid_cpqSeCpuStatus = '.1.3.6.1.4.1.232.1.2.2.1.1.6';
     my $oid_cpqSeCpuSocketNumber = '.1.3.6.1.4.1.232.1.2.2.1.1.9';
-    
+
     my $result = $self->{snmp}->get_table(oid => $oid_cpqSeCpuUnitIndex);
     return if (scalar(keys %$result) <= 0);
     
@@ -76,7 +76,9 @@ sub check {
         my $cpu_status = $result2->{$oid_cpqSeCpuStatus . '.' . $instance};
         my $cpu_socket_number =  $result2->{$oid_cpqSeCpuSocketNumber . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'cpu', instance => $instance));
         $self->{components}->{cpu}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("cpu [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 
                                     $cpu_slot, $result->{$key}, $cpu_name, $cpu_socket_number,
                                     ${$cpustatus{$cpu_status}}[0]));

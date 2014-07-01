@@ -19,9 +19,9 @@
 # General Public License cover the whole combination.
 # 
 # As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an timeelapsedutable, 
+# permission to link this program with independent modules to produce an executable, 
 # regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that 
+# distribute the resulting executable under terms of MERETHIS choice, provided that 
 # MERETHIS also meet, for each linked independent module, the terms  and conditions 
 # of the license of that module. An independent module is a module which is not 
 # derived from this program. If you modify this program, you may extend this 
@@ -29,46 +29,38 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Simon BOMM <sbomm@merethis.com>
+# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-# Based on De Bodt Lieven plugin
 ####################################################################################
 
-package apps::apache::serverstatus::mode::libconnect;
+package apps::nginx::serverstatus::plugin;
 
 use strict;
 use warnings;
-use LWP::UserAgent;
+use base qw(centreon::plugins::script_simple);
 
-sub connect {
-    my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
-    my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
-    
-    my ($response, $content);
+sub new {
+	my ($class, %options) = @_;
+	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+	bless $self, $class;
+# $options->{options} = options object
 
-    my $req = HTTP::Request->new( GET => $self->{option_results}->{proto}."://" .$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.'/server-status');
-    
-    if (defined($self->{option_results}->{credentials})) {
-        $req->authorization_basic($self->{option_results}->{username}, $self->{option_results}->{password});
-    }
-    
-    if (defined($self->{option_results}->{proxyurl})) {
-         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
-    }
-    
-    $response = $ua->request($req);
+	$self->{version} = '0.1';
+	%{$self->{modes}} = (
+            'connections'   => 'apps::nginx::serverstatus::mode::connections',
+            'responsetime'  => 'apps::nginx::serverstatus::mode::responsetime',
+            'requests'      => 'apps::nginx::serverstatus::mode::requests',
+			);
 
-    if ($response->is_success) {
-        $content = $response->content;
-        return $content;
-    }
-    
-    $self->{output}->output_add(severity => $connection_exit,
-                                short_msg => $response->status_line);     
-    $self->{output}->display();
-    $self->{output}->exit();
+	return $self;
 }
 
 1;
 
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check Nginx Web Servers through HttpStubStatusModule Module
+
+=cut

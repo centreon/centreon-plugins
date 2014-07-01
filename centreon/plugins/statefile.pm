@@ -34,8 +34,12 @@
 ####################################################################################
 
 package centreon::plugins::statefile;
+
+use strict;
+use warnings;
 use Data::Dumper;
 use vars qw($datas);
+use centreon::plugins::misc;
 
 my $default_dir = '/var/lib/centreon/centplugins';
 
@@ -47,15 +51,18 @@ sub new {
     if (defined($options{options})) {
         $options{options}->add_options(arguments =>
                                 {
-                                  "memcached:s"         => { name => 'memcached' },
+                                  "memcached:s"           => { name => 'memcached' },
                                   "statefile-dir:s"       => { name => 'statefile_dir', default => $default_dir },
                                   "statefile-concat-cwd"  => { name => 'statefile_concat_cwd' },
+                                  "statefile-storable"    => { name => 'statefile_storable' },
                                 });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
     
     $self->{output} = $options{output};
     $self->{datas} = {};
+    $self->{storable} = 0;
+    $self->{memcached_ok} = 0;
     $self->{memcached} = undef;
     
     $self->{statefile_dir} = undef;
@@ -67,14 +74,21 @@ sub check_options {
     my ($self, %options) = @_;
 
     if (defined($options{option_results}) && defined($options{option_results}->{memcached})) {
-        require Memcached::libmemcached;
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Memcached::libmemcached',
+                                               error_msg => "Cannot load module 'Memcached::libmemcached'.");
         $self->{memcached} = Memcached::libmemcached->new();
         Memcached::libmemcached::memcached_server_add($self->{memcached}, $options{option_results}->{memcached});
     }
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
     if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
-        require Cwd;
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Cwd',
+                                               error_msg => "Cannot load module 'Cwd'.");
         $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
+    }
+    if (defined($options{option_results}->{statefile_storable})) {
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Storable',
+                                               error_msg => "Cannot load module 'Storable'.");
+        $self->{storable} = 1;
     }
 }
 
@@ -87,6 +101,7 @@ sub read {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
         my $val = Memcached::libmemcached::memcached_get($self->{memcached}, $self->{statefile_dir} . "/" . $self->{statefile});
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS|NOT FOUND$/i) {
+            $self->{memcached_ok} = 1;
             if (defined($val)) {
                 eval( $val );
                 $self->{datas} = $datas;
@@ -95,7 +110,6 @@ sub read {
             }
             return 0;
         }
-        $self->{memcached_ok} = 0;
     }
     
     if (! -e $self->{statefile_dir} . "/" . $self->{statefile}) {
@@ -112,22 +126,36 @@ sub read {
         return 0;
     }
     
-    unless (my $return = do $self->{statefile_dir} . "/" . $self->{statefile}) {
+    if ($self->{storable} == 1) {
+        open FILE, $self->{statefile_dir} . "/" . $self->{statefile};
+        eval {
+            $self->{datas} = Storable::fd_retrieve(*FILE);
+        };
+        # File is corrupted surely. We'll reset it
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Couldn't parse '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $@");
-            $self->{output}->option_exit();
+            close FILE;
+            return 0;
         }
-        unless (defined($return)) {
-            $self->{output}->add_option_msg(short_msg => "Couldn't do '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
-            $self->{output}->option_exit();
+        close FILE;
+    } else {
+        unless (my $return = do $self->{statefile_dir} . "/" . $self->{statefile}) {
+            # File is corrupted surely. We'll reset it
+            return 0;
+            #if ($@) {
+            #    $self->{output}->add_option_msg(short_msg => "Couldn't parse '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $@");
+            #    $self->{output}->option_exit();
+            #}
+            #unless (defined($return)) {
+            #    $self->{output}->add_option_msg(short_msg => "Couldn't do '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
+            #    $self->{output}->option_exit();
+            #}
+            #unless ($return) {
+            #    $self->{output}->add_option_msg(short_msg => "Couldn't run '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
+            #    $self->{output}->option_exit();
         }
-        unless ($return) {
-            $self->{output}->add_option_msg(short_msg => "Couldn't run '" . $self->{statefile_dir} . "/" . $self->{statefile} . "': $!");
-            $self->{output}->option_exit();
-        }
+        $self->{datas} = $datas;
+        $datas = {};
     }
-    $self->{datas} = $datas;
-    $datas = {};
 
     return 1;
 }
@@ -150,7 +178,7 @@ sub get {
 sub write {
     my ($self, %options) = @_;
 
-    if (defined($self->{memcached})) {
+    if ($self->{memcached_ok} == 1) {
         Memcached::libmemcached::memcached_set($self->{memcached}, $self->{statefile_dir} . "/" . $self->{statefile}, 
                                                Data::Dumper->Dump([$options{data}], ["datas"]));
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i) {
@@ -158,7 +186,11 @@ sub write {
         }
     }
     open FILE, ">", $self->{statefile_dir} . "/" . $self->{statefile};
-    print FILE Data::Dumper->Dump([$options{data}], ["datas"]);
+    if ($self->{storable} == 1) {
+        Storable::store_fd($options{data}, *FILE);
+    } else {
+        print FILE Data::Dumper->Dump([$options{data}], ["datas"]);
+    }
     close FILE;
 }
 
@@ -190,6 +222,10 @@ Directory for statefile (Default: '/var/lib/centreon/centplugins').
 
 Concat current working directory with option '--statefile-dir'.
 Useful on Windows when plugin is compiled.
+
+=item B<--statefile-storable>
+
+Use Perl Module 'Storable' (instead Data::Dumper) to store datas.
 
 =back
 

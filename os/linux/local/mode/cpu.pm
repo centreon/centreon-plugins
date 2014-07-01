@@ -102,8 +102,7 @@ sub run {
     my $datas = {};
     $datas->{last_timestamp} = time();
     
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "CPUs usages are ok.");
+    my ($cpu, $i) = (0, 0);
     foreach (split(/\n/, $stdout)) {
         next if (!/cpu(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
         my $cpu_number = $1;
@@ -136,22 +135,28 @@ sub run {
         my $cpu_ratio_usetime = 100 * $idle_elapsed / $total_elapsed;
         $cpu_ratio_usetime = 100 - $cpu_ratio_usetime;        
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_ratio_usetime, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(long_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
-        if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("CPU %d: %.2f%%", $cpu_number, $cpu_ratio_usetime));
-        }
-        $self->{output}->perfdata_add(label => 'cpu_' . $cpu_number, unit => '%',
+        $cpu += $cpu_ratio_usetime;
+        $i++;
+        $self->{output}->output_add(long_msg => sprintf("CPU %d Usage is %.2f%%", $cpu_number, $cpu_ratio_usetime));
+        $self->{output}->perfdata_add(label => 'cpu' . $cpu_number, unit => '%',
                                       value => sprintf("%.2f", $cpu_ratio_usetime),
+                                      min => 0, max => 100);
+    }
+    
+    if ($i > 0) {
+        my $avg_cpu = $cpu / $i;
+        my $exit_code = $self->{perfdata}->threshold_check(value => $avg_cpu, 
+                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(severity => $exit_code,
+                                    short_msg => sprintf("CPU(s) average usage is: %.2f%%", $avg_cpu));
+        $self->{output}->perfdata_add(label => 'total_cpu_avg', unit => '%',
+                                      value => sprintf("%.2f", $avg_cpu),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0, max => 100);
     }
 
-	$self->{statefile_cache}->write(data => $datas);
+    $self->{statefile_cache}->write(data => $datas);
     if (!defined($old_timestamp)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");

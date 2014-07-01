@@ -37,6 +37,7 @@ package centreon::plugins::misc;
 
 use strict;
 use warnings;
+use utf8;
 
 # Function more simple for Windows platform
 sub windows_execute {
@@ -50,11 +51,11 @@ sub windows_execute {
     $cmd .= $options{command_options} if (defined($options{command_options}));
     
     eval {
-           local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
-           alarm( $options{timeout} );
-           $stdout = `$cmd`;
-           $exit_code = ($? >> 8);
-           alarm(0);
+        local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
+        alarm( $options{timeout} );
+        $stdout = `$cmd`;
+        $exit_code = ($? >> 8);
+        alarm(0);
     };
 
     if ($@) {
@@ -183,6 +184,8 @@ sub backtick {
         $sig_do = 'DEFAULT';
     }
     local $SIG{CHLD} = $sig_do;
+    $SIG{TTOU} = 'IGNORE';
+    $| = 1;
 
     if (!defined($pid = open( KID, "-|" ))) {
         return (-1001, "Cant fork: $!", -1);
@@ -220,6 +223,7 @@ sub backtick {
         # child
         # set the child process to be a group leader, so that
         # kill -9 will kill it and all its descendents
+        # We have ignore SIGTTOU to let write background processes
         setpgrp( 0, 0 );
 
         if ($arg{redirect_stderr} == 1) {
@@ -245,6 +249,41 @@ sub trim {
     $value =~ s/^[ \t]+//;
     $value =~ s/[ \t]+$//;
     return $value;
+}
+
+sub powershell_encoded {
+	my ($value) = $_[0];
+
+	require Encode;
+	require MIME::Base64;
+	my $bytes = Encode::encode("utf16LE", $value);
+	my $script = MIME::Base64::encode_base64($bytes, "\n");
+	$script =~ s/\n//g;
+	return $script;
+}
+
+sub minimal_version {
+    my ($version_src, $version_dst) = @_;
+    
+    # No Version. We skip
+    
+    if (!defined($version_src) || !defined($version_dst) || 
+        $version_src !~ /^[0-9]+(?:\.[0-9\.])*$/ || $version_dst !~ /^[0-9x]+(?:\.[0-9x\.])*$/) {
+        return 1;
+    }
+    
+    my @version_src = split /\./, $version_src;
+    my @versions = split /\./, $version_dst;
+    for (my $i = 0; $i < scalar(@versions); $i++) {
+        return 1 if ($versions[$i] eq 'x');
+        return 1 if (!defined($version_src[$i]));
+        $version_src[$i] =~ /^([0-9]*)/;
+        next if ($versions[$i] == int($1));
+        return 0 if ($versions[$i] > int($1));
+        return 1 if ($versions[$i] < int($1));
+    }
+    
+    return 1;
 }
 
 1;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::200B::plugin;
+package network::fortinet::fortigate::110C::plugin;
 
 use strict;
 use warnings;

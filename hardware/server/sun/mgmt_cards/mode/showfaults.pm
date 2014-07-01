@@ -81,7 +81,7 @@ sub run {
     ######
     # Command execution
     ######
-    my $cmd = "echo 'showfaults' | " . $self->{option_results}->{command_plink} . " -T -l '" . $self->{option_results}->{username} . "' -batch -pw '" . $self->{option_results}->{password} . "' " . $self->{option_results}->{password} . " 2>&1";
+    my $cmd = "echo -e '" . $self->{option_results}->{username} . "\n" . $self->{option_results}->{password} . "\nshowfaults\nlogout\n' | " . $self->{option_results}->{command_plink} . ' -T -batch ' . $self->{option_results}->{hostname} . " 2>&1";
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
                                                  command => $cmd,
                                                  timeout => $self->{option_results}->{timeout},
@@ -106,13 +106,17 @@ sub run {
     # Command treatment
     ######
     my ($otp1, $otp2) = split(/showfaults\n/, $stdout);
-    $self->{output}->output_add(long_msg => $otp2);
-    if ($otp2 !~ /ID.*?FRU.*?Fault/mi) {
+    my $long_msg = $otp2;
+    $long_msg =~ s/\|/~/mg;
+    if (!defined($otp2) || $otp2 !~ /(No failures|ID.*?FRU.*?Fault)/mi) {
+        $self->{output}->output_add(long_msg => $stdout);
         $self->{output}->output_add(severity => 'UNKNOWN', 
                                     short_msg => "Command 'showfaults' problems (see additional info).");
-        return ;
+        $self->{output}->display();
+        $self->{output}->exit();
     }
     
+    $self->{output}->output_add(long_msg => $long_msg);
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "No Problems on system.");
     # Check showfaults
@@ -134,7 +138,7 @@ __END__
 
 =head1 MODE
 
-Check Sun 'T1xxx', 'T2xxx' ans 'T5xxx' Hardware (through ALOM4v).
+Check Sun 'T1xxx', 'T2xxx' Hardware (through ALOM4v).
 
 =over 8
 

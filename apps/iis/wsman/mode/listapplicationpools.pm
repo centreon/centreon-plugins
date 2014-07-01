@@ -79,6 +79,7 @@ sub manage_selection {
     # AppPoolState -> 1=started, 2=starting, 3 = stopped, 4=stopping
     foreach my $name (sort(keys %{$self->{result}})) {
         if (defined($self->{option_results}->{filter_state}) && $state_map{$self->{result}->{$name}->{AppPoolState}} !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "Skipping application pool '" . $name . "': no matching filter state");
             delete $self->{result}->{$name};
             next;
         }
@@ -89,6 +90,7 @@ sub manage_selection {
         next if (!defined($self->{option_results}->{use_regexp}) && $name eq $self->{option_results}->{name});
         next if (defined($self->{option_results}->{use_regexp}) && $name =~ /$self->{option_results}->{name}/);
         
+        $self->{output}->output_add(long_msg => "Skipping application pool '" . $name . "': no matching filter name");
         delete $self->{result}->{$name};
     }
 }
@@ -99,19 +101,15 @@ sub run {
     $self->{wsman} = $options{wsman};
 
     $self->manage_selection();
-    my $pools_display = '';
-    my $pools_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $pools_display .= $pools_display_append . 'name = ' . $name  . 
-                                ' [AutoStart = ' . $self->{result}->{$name}->{AppPoolAutoStart} . ',' . 
-                                 'State = ' . $state_map{$self->{result}->{$name}->{AppPoolState}} .
-                                ']';
-        $pools_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [AutoStart = " . $self->{result}->{$name}->{AppPoolAutoStart} . '] [' . 
+                                    'State = ' . $state_map{$self->{result}->{$name}->{AppPoolState}} .
+                                    ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List application pools: ' . $pools_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List application pools:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

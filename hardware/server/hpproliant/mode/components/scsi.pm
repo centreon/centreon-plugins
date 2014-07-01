@@ -85,8 +85,8 @@ sub controller {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking scsi controllers");
-    $self->{components}->{scsictl} = {name => 'scsi controllers', total => 0};
-    return if ($self->check_exclude('scsictl'));
+    $self->{components}->{scsictl} = {name => 'scsi controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'scsictl'));
     
     my $oid_cpqScsiCntlrCondition = '.1.3.6.1.4.1.232.5.2.2.1.1.12';
     my $oid_cpqScsiCntlrSlot = '.1.3.6.1.4.1.232.5.2.2.1.1.6';
@@ -109,7 +109,9 @@ sub controller {
         my $scsi_condition = $result->{$key};
         my $scsi_status = $result2->{$oid_cpqScsiCntlrStatus . '.' . $instance};
         
+        next if ($self->check_exclude(section => 'scsictl', instance => $instance));
         $self->{components}->{scsictl}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("scsi controller %s [slot: %s, status: %s] condition is %s.", 
                                     $controller_index . ':' . $bus_index, $scsi_slot, $controllerstatus_map{$scsi_status},
                                     ${$conditions{$scsi_condition}}[0]));
@@ -125,8 +127,8 @@ sub logical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking scsi logical drives");
-    $self->{components}->{scsildrive} = {name => 'scsi logical drives', total => 0};
-    return if ($self->check_exclude('scsildrive'));
+    $self->{components}->{scsildrive} = {name => 'scsi logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'scsildrive'));
     
     my $oid_cpqScsiLogDrvCondition = '.1.3.6.1.4.1.232.5.2.3.1.1.8';
     my $oid_cpqScsiLogDrvStatus = '.1.3.6.1.4.1.232.5.2.3.1.1.5';
@@ -147,8 +149,10 @@ sub logical_drive {
 
         my $ldrive_status = $result2->{$oid_cpqScsiLogDrvStatus . '.' . $instance};
         my $ldrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'scsildrive', instance => $instance));
         $self->{components}->{scsildrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("scsi logical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $bus_index . ':' . $drive_index,
                                     $ldrive_status_map{$ldrive_status},
@@ -171,8 +175,8 @@ sub physical_drive {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking scsi physical drives");
-    $self->{components}->{scsipdrive} = {name => 'scsi physical drives', total => 0};
-    return if ($self->check_exclude('scsipdrive'));
+    $self->{components}->{scsipdrive} = {name => 'scsi physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'scsipdrive'));
     
     my $oid_cpqScsiPhyDrvCondition = '.1.3.6.1.4.1.232.5.2.4.1.1.26';
     my $oid_cpqScsiPhyDrvStatus = '.1.3.6.1.4.1.232.5.2.4.1.1.9';
@@ -193,8 +197,10 @@ sub physical_drive {
 
         my $pdrive_status = $result2->{$oid_cpqScsiPhyDrvStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
-        
+
+        next if ($self->check_exclude(section => 'scsipdrive', instance => $instance));
         $self->{components}->{scsipdrive}->{total}++;
+
         $self->{output}->output_add(long_msg => sprintf("scsi physical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $bus_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},

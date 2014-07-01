@@ -79,11 +79,15 @@ sub manage_selection {
         
         $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{bca_id_selected}}, $instance; 
+            push @{$self->{bca_id_selected}}, $instance;
+            next;
         }
         if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
             push @{$self->{bca_id_selected}}, $instance;
+            next;
         }
+        
+        $self->{output}->output_add(long_msg => "Skipping bca '" . $self->{result_names}->{$oid} . "': no matching filter name");
     }
 }
 
@@ -93,18 +97,15 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    my $bca_display = '';
-    my $bca_display_append = '';
     foreach my $instance (sort @{$self->{bca_id_selected}}) { 
         my $name = $self->{result_names}->{$oid_spvBCAName . '.' . $instance};
 
-        $bca_display .= $bca_display_append . "name = $name ";
-        $bca_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List bca: ' . $bca_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List bca:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

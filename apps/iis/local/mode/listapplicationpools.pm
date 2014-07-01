@@ -87,11 +87,18 @@ sub manage_selection {
         my $state = $obj->GetState();
 		
         if (defined($self->{option_results}->{filter_state}) && $state_map{$state} !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "Skipping application pool '" . $name . "': no matching filter state");
             next;
         }
 		
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && $name ne $self->{option_results}->{name});
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && $name !~ /$self->{option_results}->{name}/);
+        if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && $name ne $self->{option_results}->{name}) {
+            $self->{output}->output_add(long_msg => "Skipping application pool '" . $name . "': no matching filter name");
+            next;
+        }
+        if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && $name !~ /$self->{option_results}->{name}/) {
+            $self->{output}->output_add(long_msg => "Skipping application pool '" . $name . "': no matching filter name (regexp)");
+            next;
+        }
 
         $self->{result}->{$name} = {AutoStart => $auto_start, State => $state};	
     }
@@ -101,19 +108,15 @@ sub run {
     my ($self, %options) = @_;
 	
     $self->manage_selection();
-    my $pools_display = '';
-    my $pools_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $pools_display .= $pools_display_append . 'name = ' . $name  . 
-                                ' [AutoStart = ' . $self->{result}->{$name}->{AutoStart} . ', ' . 
-                                 'State = ' . $state_map{$self->{result}->{$name}->{State}} .
-                                ']';
-        $pools_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [AutoStart = " . $self->{result}->{$name}->{AutoStart} . '] [' . 
+                                                'State = ' . $state_map{$self->{result}->{$name}->{State}} .
+                                                ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List application pools: ' . $pools_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List application pools:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

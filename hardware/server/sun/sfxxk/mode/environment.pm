@@ -82,9 +82,15 @@ sub run {
                                                command => $self->{option_results}->{command_pasv},
                                                command_path => $self->{option_results}->{command_path_pasv},
                                                command_options => $self->{option_results}->{command_options_pasv});
-    if ($stdout !~ /MAIN/i) {
+    if ($stdout =~ /SPARE/i) {
         $self->{output}->output_add(severity => 'OK', 
                                     short_msg => "System Controller is in spare mode.");
+        $self->{output}->display();
+        $self->{output}->exit();
+    } elsif ($stdout !~ /MAIN/i) {
+        $self->{output}->output_add(long_msg => $stdout);
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command problems (see additional info).");
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -227,7 +233,7 @@ Hostname to query (need --remote).
 
 =item B<--ssh-option>
 
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
 =item B<--ssh-path>
 

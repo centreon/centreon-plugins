@@ -106,8 +106,11 @@ sub manage_selection {
     while ($line =~ /\|([^|]+)\|([^|]+)\|([^|]+)\|(C|F)\|/g) {
         my ($drive, $serial, $temperature, $unit) = ($1, $2, $3, $4);
                
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                 $drive !~ /$self->{option_results}->{filter_name}/);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $drive !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping drive '" . $drive . "': no matching filter name");
+            next;
+        }
 
         $self->{result}->{$drive} = {serial => $serial, temperature => $temperature, unit => $unit};
     }
@@ -117,17 +120,13 @@ sub run {
     my ($self, %options) = @_;
     
     $self->manage_selection();
-
-    my $drive_display = '';
-    my $drive_display_append = '';
     foreach my $name (sort(keys %{$self->{result}})) {
-        $drive_display .= $drive_display_append . 'name = ' . $name . ' [temperature = ' . $self->{result}->{$name}->{temperature} . $self->{result}->{$name}->{unit} . ']';
-        $drive_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "' [temperature = " . $self->{result}->{$name}->{temperature} . $self->{result}->{$name}->{unit} . ']');
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Drives: ' . $drive_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List Drives:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

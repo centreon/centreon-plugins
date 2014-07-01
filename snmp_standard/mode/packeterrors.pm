@@ -65,7 +65,7 @@ sub new {
                                   "critical-in-error:s"   => { name => 'critical_in_error' },
                                   "warning-out-error:s"   => { name => 'warning_out_error' },
                                   "critical-out-error:s"  => { name => 'critical_out_error' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time' },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "interface:s"             => { name => 'interface' },
                                   "skip"                    => { name => 'skip' },
@@ -191,7 +191,10 @@ sub run {
 
     my $result = $self->{snmp}->get_leef();
     $new_datas->{last_timestamp} = time();
-    my $old_timestamp;
+    my $buffer_creation = 0;
+    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+
+
     if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All interfaces are ok.');
@@ -205,6 +208,11 @@ sub run {
                 $self->{output}->output_add(severity => 'CRITICAL',
                                             short_msg => "Interface '" . $display_value . "' is not ready: " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1]);
             } else {
+                # Avoid empty message
+                if (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $display_value . "' is not up (normal state)");
+                }
                 $self->{output}->output_add(long_msg => "Skip interface '" . $display_value . "'.");
             }
             next;
@@ -238,7 +246,8 @@ sub run {
         }
         
         # We change mode. need to recreate a buffer
-        if (!defined($old_mode) || $new_datas->{'mode_' . $_} ne $old_mode) {
+        if (!defined($old_timestamp) || !defined($old_mode) || $new_datas->{'mode_' . $_} ne $old_mode) {
+            $buffer_creation = 1;
             next;
         }
         
@@ -248,7 +257,6 @@ sub run {
         my @getting = ('in_ucast', 'in_bcast', 'in_mcast', 'out_ucast', 'out_bcast', 'out_mcast',
                        'in_discard', 'in_error', 'out_discard', 'out_error');
         my $old_datas = {};
-        $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
         foreach my $key (@getting) {
             $old_datas->{$key} = $self->{statefile_value}->get(name => $key . '_' . $_);
             if (!defined($old_datas->{$key}) || $new_datas->{$key . '_' . $_} < $old_datas->{$key}) {
@@ -256,10 +264,7 @@ sub run {
                 $old_datas->{$key} = 0;
             }
         }
-        
-        if (!defined($old_timestamp)) {
-            next;
-        }
+
         my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
         if ($time_delta <= 0) {
             # At least one second. two fast calls ;)
@@ -330,7 +335,7 @@ sub run {
     }
 
     $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
+    if ($buffer_creation == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
     }
@@ -356,6 +361,7 @@ sub reload_cache {
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
+    $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
     my $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_filter}});
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
@@ -395,7 +401,7 @@ sub manage_selection {
     my $oid_filter = $self->{statefile_cache}->get(name => 'oid_filter');
     if ($has_cache_file == 0 ||
         ($self->{option_results}->{oid_display} !~ /^($oid_display|$oid_filter)$/i || $self->{option_results}->{oid_filter} !~ /^($oid_display|$oid_filter)$/i) ||
-        (defined($timestamp_cache) && (time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
         $self->reload_cache();
         $self->{statefile_cache}->read();
     }

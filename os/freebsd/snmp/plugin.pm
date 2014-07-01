@@ -47,17 +47,23 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu' => 'snmp_standard::mode::cpu',
-                         'load' => 'snmp_standard::mode::loadaverage',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'list-storages' => 'snmp_standard::mode::liststorages',
-                         'memory' => 'snmp_standard::mode::memory',
-                         'packet-errors' => 'snmp_standard::mode::packeterrors',
-                         'processcount' => 'snmp_standard::mode::processcount',
-                         'storage' => 'snmp_standard::mode::storage',
-                         'swap' => 'snmp_standard::mode::swap',
-                         'traffic' => 'snmp_standard::mode::traffic',
-                         'uptime' => 'snmp_standard::mode::uptime',
+                         'cpu'              => 'snmp_standard::mode::cpu',
+                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+                         'diskio'           => 'snmp_standard::mode::diskio',
+                         'disk-usage'       => 'snmp_standard::mode::diskusage',
+                         'inodes'           => 'snmp_standard::mode::inodes',
+                         'load'             => 'snmp_standard::mode::loadaverage',
+                         'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-storages'    => 'snmp_standard::mode::liststorages',
+                         'memory'           => 'snmp_standard::mode::memory',
+                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
+                         'processcount'     => 'snmp_standard::mode::processcount',
+                         'storage'          => 'snmp_standard::mode::storage',
+                         'swap'             => 'snmp_standard::mode::swap',
+                         'tcpcon'           => 'snmp_standard::mode::tcpcon',
+                         'traffic'          => 'snmp_standard::mode::traffic',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;

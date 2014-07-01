@@ -61,7 +61,7 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'ifconfig' },
                                   "command-path:s"    => { name => 'command_path', default => '/sbin' },
                                   "command-options:s" => { name => 'command_options', default => '-a 2>&1' },
-                                  "filter-state:s"    => { name => 'filter_state', default => 'RU' },
+                                  "filter-state:s"    => { name => 'filter_state', },
                                   "warning-in:s"      => { name => 'warning_in' },
                                   "critical-in:s"     => { name => 'critical_in' },
                                   "warning-out:s"     => { name => 'warning_out' },
@@ -72,6 +72,7 @@ sub new {
                                   "regexp-isensitive"   => { name => 'use_regexpi' },
                                   "speed:s"             => { name => 'speed' },
                                   "no-loopback"         => { name => 'no_loopback', },
+                                  "skip"                => { name => 'skip' },
                                 });
     $self->{result} = {};
     $self->{hostname} = undef;
@@ -172,6 +173,31 @@ sub run {
     }
     
     foreach my $name (sort(keys %{$self->{result}})) {
+ 
+        if ($self->{result}->{$name}->{state} !~ /RU/) {
+            if (!defined($self->{option_results}->{skip})) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => "Interface '" . $name . "' is not up or/and running");
+            } else {
+                # Avoid getting "buffer creation..." alone
+                if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $name . "' is not up or/and running (normal state)");
+                }
+                $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': not up or/and running.");
+            }
+            next;
+        }
+        
+        # Some interface are running but not have bytes in/out
+        if (!defined($self->{result}->{$name}->{in})) {
+            if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
+                    $self->{output}->output_add(severity => 'OK',
+                                                short_msg => "Interface '" . $name . "' is up and running but can't get traffic (no values)");
+            }
+            $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': can't get traffic.");
+            next;
+        }
  
         $new_datas->{'in_' . $name} = $self->{result}->{$name}->{in} * 8;
         $new_datas->{'out_' . $name} = $self->{result}->{$name}->{out} * 8;
@@ -344,7 +370,11 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--filter-state>
 
-Filter interfaces type (regexp can be used. Default: 'RU').
+Filter interfaces type (regexp can be used).
+
+=item B<--skip>
+
+Skip errors on interface status (not up and running).
 
 =item B<--speed>
 
