@@ -63,6 +63,7 @@ sub new {
                     { "datasource:s@"      => { name => 'data_source' },
                       "username:s@"        => { name => 'username' },
                       "password:s@"        => { name => 'password' },
+                      "connect-options:s@" => { name => 'connect_options' },
                       "sql-errors-exit:s"  => { name => 'sql_errors_exit', default => 'unknown' },
         });
     }
@@ -77,6 +78,8 @@ sub new {
     $self->{data_source} = undef;
     $self->{username} = undef;
     $self->{password} = undef;
+    $self->{connect_options} = undef;
+    $self->{connect_options_hash} = {};
     
     # Sometimes, we need to set ENV
     $self->{env} = undef;
@@ -119,12 +122,22 @@ sub check_options {
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
+    $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+    }
+    if (defined($self->{connect_options}) && $self->{connect_options} ne '') {
+        foreach my $entry (split /,/, $self->{connect_options}) {
+            if ($entry !~ /^\s*([^=]+)=([^=]+)\s*$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong format for --connect-options '" . $entry . "'.");
+                $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+            }
+            $self->{connect_options_hash}->{$1} = $2;
+        }
     }
     
     if (scalar(@{$self->{option_results}->{data_source}}) == 0) {
@@ -175,7 +188,7 @@ sub connect {
         "DBI:". $self->{data_source},
         $self->{username},
         $self->{password},
-        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1 }
+        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
     );
 
     if (!defined($self->{instance})) {
@@ -263,6 +276,11 @@ Database username.
 =item B<--password>
 
 Database password.
+
+=item B<--connect-options>
+
+Add options in database connect.
+Format: name=value,name2=value2,...
 
 =item B<--sql-errors-exit>
 

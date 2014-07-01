@@ -35,6 +35,9 @@
 
 package centreon::plugins::perfdata;
 
+use strict;
+use warnings;
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -52,18 +55,34 @@ sub get_perfdata_for_output {
     # $options{label} : threshold label
     # $options{total} : percent threshold to transform in global
     # $options{cast_int} : cast absolute to int
+    # $options{op} : operator to apply to start/end value (uses with 'value'})
+    # $options{value} : value to apply with 'op' option
     
-    my $perf_output = $self->{threshold_label}->{$options{label}}->{value};
-    if (defined($perf_output) && $perf_output ne '' && defined($options{total})) {
-            $perf_output = ($self->{threshold_label}->{$options{label}}->{arobase} == 1 ? "@" : "") . 
-                            (($self->{threshold_label}->{$options{label}}->{infinite_neg} == 0) ? (defined($options{cast_int}) ? sprintf("%d", ($self->{threshold_label}->{$options{label}}->{start} * $options{total} / 100)) : sprintf("%.2f", ($self->{threshold_label}->{$options{label}}->{start} * $options{total} / 100))) : "") . 
-                             ":" . 
-                             (($self->{threshold_label}->{$options{label}}->{infinite_pos} == 0) ? (defined($options{cast_int}) ? sprintf("%d", ($self->{threshold_label}->{$options{label}}->{end} * $options{total} / 100)) : sprintf("%.2f", ($self->{threshold_label}->{$options{label}}->{end} * $options{total} / 100))) : "");
+    if (!defined($self->{threshold_label}->{$options{label}}->{value}) || $self->{threshold_label}->{$options{label}}->{value} eq '') {
+        return '';
     }
+    
+    my %perf_value = %{$self->{threshold_label}->{$options{label}}};
+    
+    if (defined($options{op}) && defined($options{value})) {
+        eval "\$perf_value{start} = \$perf_value{start} $options{op} \$options{value}" if ($perf_value{infinite_neg} == 0);
+        eval "\$perf_value{end} = \$perf_value{end} $options{op} \$options{value}" if ($perf_value{infinite_pos} == 0);
+    }
+    if (defined($options{total})) {
+        $perf_value{start} = $perf_value{start} * $options{total} / 100 if ($perf_value{infinite_neg} == 0);
+        $perf_value{end} = $perf_value{end} * $options{total} / 100 if ($perf_value{infinite_pos} == 0);
+        $perf_value{start} = sprintf("%.2f", $perf_value{start}) if ($perf_value{infinite_neg} == 0 && !defined($options{cast_int}));
+        $perf_value{end} = sprintf("%.2f", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && !defined($options{cast_int}));
+    }
+    
+    $perf_value{start} = sprintf("%d", $perf_value{start}) if ($perf_value{infinite_neg} == 0 && defined($options{cast_int}));
+    $perf_value{end} = sprintf("%d", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && defined($options{cast_int}));
+    
+    my $perf_output = ($perf_value{arobase} == 1 ? "@" : "") . 
+                      (($perf_value{infinite_neg} == 0) ? $perf_value{start} : "~") . 
+                      ":" . 
+                      (($perf_value{infinite_pos} == 0) ? $perf_value{end} : "");
 
-    if (!defined($perf_output)) {
-        $perf_output = '';
-    }
     return $perf_output;
 }
 
@@ -93,7 +112,7 @@ sub threshold_check {
         next if (!defined($self->{threshold_label}->{$_->{label}}->{value}) || $self->{threshold_label}->{$_->{label}}->{value} eq '');
         if ($self->{threshold_label}->{$_->{label}}->{arobase} == 0 && ($options{value} < $self->{threshold_label}->{$_->{label}}->{start} || $options{value} > $self->{threshold_label}->{$_->{label}}->{end})) {
             return $_->{exit_litteral};
-        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{end} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end})) {
+        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{start} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end})) {
             return $_->{exit_litteral};
         }
     }
@@ -109,42 +128,10 @@ sub trim {
     return $value;
 }
 
-sub continue_to {
-    my $self = shift;
-    my ($forbidden, $stop1, $not_stop_after) = @_;
-    my $value = "";
-
-    while ($self->{perfdata_pos} < $self->{perfdata_size}) {
-        if (defined($forbidden) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] =~ /$forbidden/) {
-            return undef;
-        }
-        if (${$self->{perfdata_chars}}[$self->{perfdata_pos}] =~ /$stop1/) {
-            if (!defined($not_stop_after)) {
-                return $value;
-            }
-            if (!($self->{perfdata_pos} + 1 < $self->{perfdata_size} && ${$self->{perfdata_chars}}[$self->{perfdata_pos} + 1] =~ /$not_stop_after/)) {
-                $self->{perfdata_pos}++;
-                return $value;
-            }
-            $self->{perfdata_pos}++;
-        }
-
-        $value .= ${$self->{perfdata_chars}}[$self->{perfdata_pos}];
-        $self->{perfdata_pos}++;
-    }
-
-    return $value;
-}
-
 sub parse_threshold {
     my $self = shift;
 
-    @{$self->{perfdata_chars}} = split //, $self->trim($_[0]);
-    $self->{perfdata_pos} = 0;
-    $self->{perfdata_size} = scalar(@{$self->{perfdata_chars}});
-
-    my $neg = 1;
-    my $value_tmp = "";
+    my $perf = $self->trim($_[0]);
 
     my $arobase = 0;
     my $infinite_neg = 0;
@@ -153,61 +140,26 @@ sub parse_threshold {
     my $value_end = "";
     my $global_status = 1;
     
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "@") {
-        $arobase = 1;
-        $self->{perfdata_pos}++;
-    }
-
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "~") {
-        $infinite_neg = 1;
-        $self->{perfdata_pos}++;
-    } else {
-        if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "-") {
-            $neg = -1;
-            $self->{perfdata_pos}++;
-        }
-        $value_tmp = $self->continue_to(undef, "[^0-9\.,]");
-        if (defined($value_tmp) && $value_tmp ne "") {
-            $value_tmp =~ s/,/./g;
-            $value_tmp = $value_tmp * $neg;
-        }
-        $neg = 1;
-    }
-
-    if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq ":") {
-        if ($value_tmp ne "") {
-            $value_start = $value_tmp;
-        } else {
-            $value_start = 0;
-        }
-        $self->{perfdata_pos}++;
-
-        if (defined(${$self->{perfdata_chars}}[$self->{perfdata_pos}]) && ${$self->{perfdata_chars}}[$self->{perfdata_pos}] eq "-") {
-            $neg = -1;
-            $self->{perfdata_pos}++;
-        }
-        $value_end = $self->continue_to(undef, "[^0-9\.,]");
-        if (defined($value_tmp) && $value_end ne "") {
-            $value_end =~ s/,/./g;
-            $value_end = $value_end * $neg;
-        } else {
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+        $value_start = $2 if (defined($2));
+        $value_end = $3 if (defined($3));
+        $arobase = 1 if (defined($1) && $1 eq '@');
+        $value_start =~ s/[\+:]//g;
+        $value_end =~ s/\+//;
+        if ($value_end eq '') {
+            $value_end = 1e500;
             $infinite_pos = 1;
         }
+        $value_start = 0 if ($value_start eq '');      
+        $value_start =~ s/,/\./;
+        $value_end =~ s/,/\./;
+        
+        if ($value_start eq '~') {
+            $value_start = -1e500;
+            $infinite_neg = 1;
+        }
     } else {
-        $value_start = 0;
-        $value_end = $value_tmp;
-    }
-    
-    my $value = $self->continue_to(undef, "[ \t;]");
-    if ($value ne '') {
         $global_status = 0;
-    }
-
-    if ($infinite_neg == 1) {
-        $value_start = '-1e500';
-    }
-    if ($infinite_pos == 1) {
-        $value_end = '1e500';
     }
 
     return ($global_status, $value_start, $value_end, $arobase, $infinite_neg, $infinite_pos);
@@ -215,23 +167,17 @@ sub parse_threshold {
 
 sub change_bytes {
     my ($self, %options) = @_;
-
-    my $unit = defined($options{network}) ? 'b' : 'B';
     my $divide = defined($options{network}) ? 1000 : 1024;
+    my @units = ('K', 'M', 'G', 'T');
+    my $unit = '';
     
-    if (($options{value} / $divide) >= 1) {
+    for (my $i = 0; $i < scalar(@units); $i++) {
+        last if (($options{value} / $divide) < 1);
+        $unit = $units[$i];
         $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Kb' : 'KB';
     }
-    if (($options{value} / $divide) >= 1) {
-        $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Mb' : 'MB';
-    }
-    if (($options{value} / $divide) >= 1) {
-        $options{value} = $options{value} / $divide;
-        $unit = defined($options{network}) ? 'Gb' : 'GB';
-    }
-    return (sprintf("%.2f", $options{value}), $unit);
+
+    return (sprintf("%.2f", $options{value}), $unit . (defined($options{network}) ? 'b' : 'B'));
 }
 
 1;

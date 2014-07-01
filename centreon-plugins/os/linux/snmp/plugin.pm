@@ -48,6 +48,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'cpu'              => 'snmp_standard::mode::cpu',
+                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
                          'diskio'           => 'snmp_standard::mode::diskio',
                          'disk-usage'       => 'snmp_standard::mode::diskusage',
                          'inodes'           => 'snmp_standard::mode::inodes',
@@ -60,6 +61,7 @@ sub new {
                          'processcount'     => 'snmp_standard::mode::processcount',
                          'storage'          => 'snmp_standard::mode::storage',
                          'swap'             => 'snmp_standard::mode::swap',
+                         'tcpcon'           => 'snmp_standard::mode::tcpcon',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );

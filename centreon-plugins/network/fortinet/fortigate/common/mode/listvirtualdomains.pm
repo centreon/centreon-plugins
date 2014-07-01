@@ -77,12 +77,16 @@ sub manage_selection {
             next;
         }
         
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{virtualdomain_id_selected}}, $instance; 
+        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} ne $self->{option_results}->{name}) {
+            $self->{output}->output_add(long_msg => "Skipping virtualdomain '" . $self->{result_names}->{$oid} . "': no matching filter name");
+            next;
         }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{virtualdomain_id_selected}}, $instance;
+        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} !~ /$self->{option_results}->{name}/) {
+            $self->{output}->output_add(long_msg => "Skipping virtualdomain '" . $self->{result_names}->{$oid} . "': no matching filter name (regexp)");
+            next;
         }
+        
+        push @{$self->{virtualdomain_id_selected}}, $instance; 
     }
 }
 
@@ -92,18 +96,15 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    my $virtualdomains_display = '';
-    my $virtualdomains_display_append = '';
     foreach my $instance (sort @{$self->{virtualdomain_id_selected}}) { 
         my $name = $self->{result_names}->{$oid_fgVdEntName . '.' . $instance};
 
-        $virtualdomains_display .= $virtualdomains_display_append . "name = $name";
-        $virtualdomains_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List virtualdomains: ' . $virtualdomains_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List virtualdomains:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

@@ -40,7 +40,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::apache::serverstatus::mode::libconnect;
+use centreon::plugins::httplib;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,8 +51,9 @@ sub new {
     $options{options}->add_options(arguments =>
             {
             "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port', default => '80' },
+            "port:s"        => { name => 'port', },
             "proto:s"       => { name => 'proto', default => "http" },
+            "urlpath:s"     => { name => 'url_path', default => "/server-status/?auto" },
             "credentials"   => { name => 'credentials' },
             "username:s"    => { name => 'username' },
             "password:s"    => { name => 'password' },
@@ -65,7 +66,6 @@ sub new {
 }
 
 sub check_options {
-
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
@@ -96,40 +96,17 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self);
-    my @webcontentarr = split("\n", $webcontent);
-    my $i = 0;
+    my $webcontent = centreon::plugins::httplib::connect($self);
     my $ScoreBoard = "";
-    my $PosPreBegin = undef;
-    my $PosPreEnd = undef;
-    
-    while (($i < @webcontentarr) && ((!defined($PosPreBegin)) || (!defined($PosPreEnd)))) {
-        if (!defined($PosPreBegin)) {
-            if ( $webcontentarr[$i] =~ m/<pre>/i ) {
-                $PosPreBegin = $i;
-            }
-        }
-        if (defined($PosPreBegin)) {
-            if ( $webcontentarr[$i] =~ m/<\/pre>/i ) {
-                $PosPreEnd = $i;
-            }
-        }
-        $i++;
+    if ($webcontent =~ /^Scoreboard:\s+([^\s]+)/mi) {
+        $ScoreBoard = $1;
     }
-
-    for ($i = $PosPreBegin; $i <= $PosPreEnd; $i++) {
-        $ScoreBoard = $ScoreBoard . $webcontentarr[$i];
-    }
-  
-    $ScoreBoard =~ s/^.*<[Pp][Rr][Ee]>//;
-    $ScoreBoard =~ s/<\/[Pp][Rr][Ee].*>//;
-    
+   
     my $srvLimit = length($ScoreBoard);
-
     my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
 
     my $exit = $self->{perfdata}->threshold_check(value => $CountOpenSlots,
-                                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Free slots: %d", $CountOpenSlots));
@@ -189,6 +166,10 @@ Proxy URL if any
 =item B<--proto>
 
 Protocol used http or https
+
+=item B<--urlpath>
+
+Set path to get server-status page in auto mode (Default: '/server-status/?auto')
 
 =item B<--credentials>
 

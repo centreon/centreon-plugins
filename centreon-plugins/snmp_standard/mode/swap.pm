@@ -50,8 +50,9 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "no-swap:s"               => { name => 'no_swap' },
                                 });
-    
+    $self->{no_swap} = 'critical';
     return $self;
 }
 
@@ -66,7 +67,14 @@ sub check_options {
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
-    }    
+    }
+    if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
+        if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
+            $self->{output}->option_exit();
+        }
+         $self->{no_swap} = $self->{option_results}->{no_swap};
+    }
 }
 
 sub run {
@@ -78,6 +86,13 @@ sub run {
     my $oid_memAvailSwap = '.1.3.6.1.4.1.2021.4.4.0'; # KB
     my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalSwap, $oid_memAvailSwap], nothing_quit => 1);
 
+    if ($result->{$oid_memTotalSwap} == 0) {
+        $self->{output}->output_add(severity => $self->{no_swap},
+                                    short_msg => 'No active swap.');
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    
     my $total_size = $result->{$oid_memTotalSwap} * 1024;
     my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
     
@@ -96,8 +111,8 @@ sub run {
     
     $self->{output}->perfdata_add(label => "used",
                                   value => $swap_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0, max => $total_size);
 
     $self->{output}->display();
@@ -121,6 +136,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--no-swap>
+
+Threshold if no active swap (default: 'critical').
 
 =back
 

@@ -41,7 +41,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::apache::serverstatus::mode::libconnect;
+use centreon::plugins::httplib;
 
 sub new {
     my ($class, %options) = @_;
@@ -52,8 +52,9 @@ sub new {
     $options{options}->add_options(arguments =>
          {
          "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', default => '80' },
+         "port:s"       => { name => 'port', },
          "proto:s"      => { name => 'proto', default => "http" },
+         "urlpath:s"    => { name => 'url_path', default => "/server-status/?auto" },
          "credentials"  => { name => 'credentials' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
@@ -98,47 +99,21 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    my $webcontent = apps::apache::serverstatus::mode::libconnect::connect($self, connection_exit => 'critical');    
+    my $webcontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');    
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
-    if (defined $webcontent) {
-        my @webcontentarr = split("\n", $webcontent);
-        my $i = 0;
-        my $ScoreBoard = "";
-        my $PosPreBegin = undef;
-        my $PosPreEnd = undef;
-        while (($i < @webcontentarr) && ((!defined($PosPreBegin)) || (!defined($PosPreEnd)))) {
-            if (!defined($PosPreBegin)) {
-                if ($webcontentarr[$i] =~ m/<pre>/i) {
-                    $PosPreBegin = $i;
-                }
-            }
-            if (defined($PosPreBegin)) {
-                if ($webcontentarr[$i] =~ m/<\/pre>/i) {
-                    $PosPreEnd = $i;
-                }
-            }
-            $i++;
-        }
-        for ($i = $PosPreBegin; $i <= $PosPreEnd; $i++) {
-           $ScoreBoard = $ScoreBoard . $webcontentarr[$i];
-        }
-        $ScoreBoard =~ s/^.*<[Pp][Rr][Ee]>//;
-        $ScoreBoard =~ s/<\/[Pp][Rr][Ee].*>//;
-        my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
-        my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time %fs ", $timeelapsed));
-        $self->{output}->perfdata_add(label => "time",
-                                      value => $timeelapsed,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-     }
+    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
+                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Response time %fs ", $timeelapsed));
+    $self->{output}->perfdata_add(label => "time",
+                                  value => $timeelapsed,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
 
-       $self->{output}->display();
-       $self->{output}->exit();
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -147,7 +122,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer statistics informations
+Check Apache WebServer Time Response
 
 =over 8
 
@@ -162,6 +137,10 @@ Port used by Apache
 =item B<--proto>
 
 Specify https if needed
+
+=item B<--urlpath>
+
+Set path to get server-status page in auto mode (Default: '/server-status/?auto')
 
 =item B<--credentials>
 

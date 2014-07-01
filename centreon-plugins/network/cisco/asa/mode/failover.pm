@@ -119,7 +119,7 @@ __END__
 
 =head1 MODE
 
-Check current/average connections on Cisco ASA (CISCO-UNIFIED-FIREWALL-MIB).
+Check failover status on Cisco ASA (CISCO-UNIFIED-FIREWALL-MIB).
 
 =over 8
 

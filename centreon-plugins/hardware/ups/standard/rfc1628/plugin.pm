@@ -47,7 +47,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'battery-status'            => 'hardware::ups::standard::rfc1628::mode::batterystatus',
+                         'battery-status'   => 'hardware::ups::standard::rfc1628::mode::batterystatus',
+                         'input-lines'      => 'hardware::ups::standard::rfc1628::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::standard::rfc1628::mode::outputlines',
+                         'output-source'    => 'hardware::ups::standard::rfc1628::mode::outputsource',
+                         'alarms'           => 'hardware::ups::standard::rfc1628::mode::alarms',
                          );
 
     return $self;

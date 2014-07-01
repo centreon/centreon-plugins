@@ -60,5 +60,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Windows Microsoft Message Queuing locally.
+!!! Don't use it. Work on it (try to understand MSMQ :) !!!
 
 =cut

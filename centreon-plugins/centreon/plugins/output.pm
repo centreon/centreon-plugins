@@ -34,8 +34,10 @@
 ####################################################################################
 
 package centreon::plugins::output;
-use Encode;
+
 use centreon::plugins::misc;
+use strict;
+use warnings;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,6 +51,8 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
+                                  "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
+                                  "range-perfdata:s"        => { name => 'range_perfdata' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
@@ -70,7 +74,12 @@ sub new {
     $self->{global_short_outputs} = {OK => [], WARNING => [], CRITICAL => [], UNKNOWN => [], UNQUALIFIED_YET => []};
     $self->{global_long_output} = [];
     $self->{perfdatas} = [];
+    $self->{explode_perfdatas} = {};
+    $self->{explode_perfdata_total} = 0;
+    $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
+    $self->{encode_utf8_import} = 0;
+    $self->{perlqq} = 0;
 
     $self->{disco_elements} = [];
     $self->{disco_entries} = [];
@@ -96,6 +105,31 @@ sub check_options {
         # By Default XML
         if (!defined($self->{option_results}->{output_json})) {
             $self->{option_results}->{output_xml} = 1;
+        }
+    }
+    
+    if (defined($self->{option_results}->{range_perfdata})) {
+        $self->{range_perfdata} = $self->{option_results}->{range_perfdata};
+        $self->{range_perfdata} = 1 if ($self->{range_perfdata} eq '');
+        if ($self->{range_perfdata} !~ /^[012]$/) {
+            $self->add_option_msg(short_msg => "Wrong range-perfdata option '" . $self->{range_perfdata} . "'");
+            $self->option_exit();
+        }
+    }
+    
+    if (defined($self->{option_results}->{explode_perfdata_max})) {
+        if (${$self->{option_results}->{explode_perfdata_max}}[0] eq '') {
+            $self->{explode_perfdata_total} = 2;
+        } else {
+            $self->{explode_perfdata_total} = 1;
+            foreach (@{$self->{option_results}->{explode_perfdata_max}}) {
+                my ($perf_match, $perf_result) = split /,/;
+                if (!defined($perf_result)) {
+                    $self->add_option_msg(short_msg => "Wrong explode-perfdata-max option '" . $_ . "' (syntax: match,value)");
+                    $self->option_exit();
+                }
+                $self->{explode_perfdatas}->{$perf_match} = $perf_result;
+            }
         }
     }
 }
@@ -150,13 +184,52 @@ sub output_add {
 sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {'label' => '', 'value' => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
-    $perfdata = {%$perfdata, %options};
+    foreach (keys %options) {
+        next if (!defined($options{$_}));
+        $perfdata->{$_} = $options{$_};
+    }
+    $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
+}
+
+sub explode_perfdatas {
+    my ($self, %options) = @_;
+    
+    return if ($self->{explode_perfdata_total} == 0);
+    foreach (@{$self->{perfdatas}}) {
+        next if ($_->{max} eq '');
+        if ($self->{explode_perfdata_total} == 2) {
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            next;
+        }
+        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
+            if ($_->{label} =~ /$regexp/) {
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                last;
+            }
+        }
+    }
+}
+
+sub range_perfdata {
+    my ($self, %options) = @_;
+    
+    return if ($self->{range_perfdata} == 0);
+    if ($self->{range_perfdata} == 1) {
+        for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
+            ${${$options{ranges}}[$i]} =~ s/^(@?)-?[0\.]+:/$1/;
+        }
+    } else {
+        for (my $i = 0; $i < scalar(@{$options{ranges}}); $i++) {
+            ${${$options{ranges}}[$i]} = '';
+        }
+    }
 }
 
 sub output_json {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     my $json_content = {plugin => {
                                    name => $self->{plugin},
                                    mode => $self->{mode},
@@ -179,7 +252,7 @@ sub output_json {
         }
     }
 
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         foreach (@{$self->{global_long_output}}) {
             push @{$json_content->{plugin}->{outputs}}, {
                                                            type => 2,
@@ -189,13 +262,15 @@ sub output_json {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        foreach (@{$self->{perfdatas}}) {
+        $self->explode_perfdatas();
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
             
             my %values = ();
-            foreach my $key (keys %$_) {
-                $values{$key} = $_->{$key};
+            foreach my $key (keys %$perf) {
+                $values{$key} = $perf->{$key};
             }
             
             push @{$json_content->{plugin}->{perfdatas}}, {
@@ -210,6 +285,7 @@ sub output_json {
 sub output_xml {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     my ($child_plugin_name, $child_plugin_mode, $child_plugin_exit, $child_plugin_output, $child_plugin_perfdata); 
 
     my $root = $self->{xml_output}->createElement('plugin');
@@ -255,7 +331,7 @@ sub output_xml {
         }
     }
 
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         foreach (@{$self->{global_long_output}}) {
             my ($child_output, $child_type, $child_msg);
         
@@ -274,16 +350,18 @@ sub output_xml {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        foreach (@{$self->{perfdatas}}) {
+        $self->explode_perfdatas();
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
         
             my ($child_perfdata);
             $child_perfdata = $self->{xml_output}->createElement("perfdata");
             $child_plugin_perfdata->addChild($child_perfdata);
-            foreach my $key (keys %$_) {
+            foreach my $key (keys %$perf) {
                 my $child = $self->{xml_output}->createElement($key);
-                $child->appendText($_->{$key});
+                $child->appendText($perf->{$key});
                 $child_perfdata->addChild($child);
             }
         }
@@ -295,6 +373,7 @@ sub output_xml {
 sub output_txt {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
     if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
         $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
@@ -310,22 +389,24 @@ sub output_txt {
         print (($options{nolabel} == 0 ? 'UNKNOWN: ' : '') . $self->{global_short_concat_outputs}->{UNKNOWN} . " ");
     }
     if (uc($options{exit_litteral}) eq 'OK') {
-        print (($options{nolabel} == 0 ? 'OK: ' : '') . $self->{global_short_concat_outputs}->{OK} . " ");
+        print (($options{nolabel} == 0 ? 'OK: ' : '') . (defined($self->{global_short_concat_outputs}->{OK}) ? $self->{global_short_concat_outputs}->{OK} : '') . " ");
     }
 
     if ($force_ignore_perfdata == 1) {
         print "\n";
     } else {
         print "|";
-        foreach (@{$self->{perfdatas}}) {
+        $self->explode_perfdatas();
+        foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
-                     $_->{label} !~ /$self->{option_results}->{filter_perfdata}/);
-            print " '" . $_->{label} . "'=" . $_->{value} . $_->{unit} . ";" . $_->{warning} . ";" . $_->{critical} . ";" . $_->{min} . ";" . $_->{max};
+                     $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
+            print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $perf->{max};
         }
         print "\n";
     }
     
-    if (defined($self->{option_results}->{verbose}) || defined($options{force_long_output})) {
+    if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         if (scalar(@{$self->{global_long_output}})) {
             print join("\n", @{$self->{global_long_output}});
             print "\n";
@@ -337,25 +418,29 @@ sub display {
     my ($self, %options) = @_;
     my $nolabel = defined($options{nolabel}) ? 1 : 0;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
         if ($self->{is_output_xml}) {
             $self->output_xml(exit_litteral => $self->get_litteral_status(), 
-                              nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                              nolabel => $nolabel, 
+                              force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
             return ;
         }
     } elsif (defined($self->{option_results}->{output_json})) {
         $self->create_json_document();
         if ($self->{is_output_json}) {
             $self->output_json(exit_litteral => $self->get_litteral_status(), 
-                               nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                               nolabel => $nolabel,
+                               force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
             return ;
         }
     } 
     
     $self->output_txt(exit_litteral => $self->get_litteral_status(), 
-                      nolabel => $nolabel, force_ignore_perfdata => $force_ignore_perfdata);
+                      nolabel => $nolabel,
+                      force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
 }
 
 sub die_exit {
@@ -484,7 +569,8 @@ sub is_litteral_status {
 sub create_json_document {
     my ($self) = @_;
 
-    require JSON;
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON',
+                                               error_msg => "Cannot load module 'JSON'.");
     $self->{is_output_json} = 1;
     $self->{json_output} = JSON->new->utf8();
 }
@@ -492,7 +578,8 @@ sub create_json_document {
 sub create_xml_document {
     my ($self) = @_;
 
-    require XML::LibXML;
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'XML::LibXML',
+                                               error_msg => "Cannot load module 'XML::LibXML'.");
     $self->{is_output_xml} = 1;
     $self->{xml_output} = XML::LibXML::Document->new('1.0', 'utf-8');
 }
@@ -586,7 +673,18 @@ sub display_disco_show {
 sub to_utf8 {
     my ($self, $value) = @_;
     
-    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, Encode::PERLQQ));
+    if ($self->{encode_utf8_import} == 0) {
+        
+        
+        # Some Perl version dont have the following module (like Perl 5.6.x)
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Encode',
+                                               error_msg => "Cannot load module 'Encode'.");
+        
+        $self->{encode_utf8_import} = 1;
+        eval '$self->{perlqq} = Encode::PERLQQ';
+    }
+    
+    return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, $self->{perlqq}));
 }
 
 sub add_disco_entry {
@@ -598,7 +696,7 @@ sub add_disco_entry {
 sub is_disco_format {
     my ($self) = @_;
 
-    if (defined($self->{option_results}->{disco_format}) ) {
+    if (defined($self->{option_results}->{disco_format})) {
         return 1;
     }
     return 0;
@@ -607,7 +705,7 @@ sub is_disco_format {
 sub is_disco_show {
     my ($self) = @_;
 
-    if ( defined($self->{option_results}->{disco_show}) ) {
+    if (defined($self->{option_results}->{disco_show})) {
         return 1;
     }
     return 0;
@@ -636,6 +734,16 @@ Display long output.
 =item B<--filter-perfdata>
 
 Filter perfdata that match the regexp.
+
+=item B<--explode-perfdata-max>
+
+Put max perfdata (if it exist) in a specific perfdata 
+(without values: same with '_max' suffix)
+
+=item B<--range-perfdata>
+
+Change perfdata range thresholds display: 
+1 = start value equals to '0' is removed, 2 = threshold range is not display.
 
 =item B<--opt-exit>
 

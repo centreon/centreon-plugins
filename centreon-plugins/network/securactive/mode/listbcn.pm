@@ -104,19 +104,16 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    my $bcn_display = '';
-    my $bcn_display_append = '';
     foreach my $instance (sort @{$self->{bcn_id_selected}}) { 
         my $name = $self->{result_names}->{$oid_spvBCNName . '.' . $instance};
         $name = $self->get_display_value(value => $name);
         
-        $bcn_display .= $bcn_display_append . "name = $name ";
-        $bcn_display_append = ', ';
+        $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List bcn: ' . $bcn_display);
-    $self->{output}->display(nolabel => 1);
+                                short_msg => 'List bcn:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 

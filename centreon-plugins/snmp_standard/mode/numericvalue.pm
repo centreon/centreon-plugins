@@ -60,7 +60,7 @@ sub new {
                                   "format-scale-unit:s"     => { name => 'format_scale_unit', default => 'other'},
                                   "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
                                   "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
-                                  "perfdata-max:s"          => { name => 'perfdata_min', default => ''},
+                                  "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
                                   "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -71,11 +71,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{oid})) {
+    if (!defined($self->{option_results}->{oid}) || $self->{option_results}->{oid} eq '') {
        $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
        $self->{output}->option_exit(); 
     }
-    $self->{option_results}->{oid} .= '.' if ($self->{option_results}->{oid} !~ /^\./);
+    $self->{option_results}->{oid} = '.' . $self->{option_results}->{oid} if ($self->{option_results}->{oid} !~ /^\./);
     
     if ($self->{option_results}->{oid_type} !~ /^gauge|counter$/i) {
        $self->{output}->add_option_msg(short_msg => "Wrong --oid-type argument '" . $self->{option_results}->{oid_type} . "' ('gauge' or 'counter').");

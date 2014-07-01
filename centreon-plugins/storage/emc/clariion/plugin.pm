@@ -48,6 +48,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'cache'        => 'storage::emc::clariion::mode::cache',
+                         'sp'           => 'storage::emc::clariion::mode::sp',
                          'faults'       => 'storage::emc::clariion::mode::faults',
                          'list-luns'    => 'storage::emc::clariion::mode::listluns',
                          'sp-info'      => 'storage::emc::clariion::mode::spinfo',

@@ -39,7 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::server::sun::mgmtcards::lib::telnet;
+use hardware::server::sun::mgmt_cards::lib::telnet;
 use centreon::plugins::statefile;
 
 sub new {
@@ -56,6 +56,8 @@ sub new {
                                   "password:s"       => { name => 'password' },
                                   "timeout:s"        => { name => 'timeout', default => 30 },
                                   "memory"           => { name => 'memory' },
+                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
+                                  "ssh"              => { name => 'ssh' },
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -81,6 +83,10 @@ sub check_options {
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
+    
+    if (!defined($self->{option_results}->{ssh})) {
+        require hardware::server::sun::mgmt_cards::lib::telnet;
+    }
 }
 
 sub telnet_shell_plateform {
@@ -99,17 +105,65 @@ sub telnet_shell_plateform {
     $telnet_handle->print("0");
 }
 
+sub ssh_command {
+    my ($self, %options) = @_;
+    my $username = '';
+    
+    if (defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '') {
+        $username = $self->{option_results}->{username} . '\n';
+    }
+    
+    my $cmd_in = "0" . $username . $self->{option_results}->{password} . '\nshowboards\ndisconnect\n';
+    my $cmd = "echo -e '$cmd_in' | " . $self->{option_results}->{command_plink} . " -batch " . $self->{option_results}->{hostname} . " 2>&1";
+    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
+                                                 command => $cmd,
+                                                 timeout => $self->{option_results}->{timeout},
+                                                 wait_exit => 1
+                                                 );
+    $stdout =~ s/\r//g;
+    if ($lerror <= -1000) {
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => $stdout);
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    if ($exit_code != 0) {
+        $stdout =~ s/\n/ - /g;
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command error: $stdout");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+
+    if ($stdout !~ /Slot/mi) {
+        $self->{output}->output_add(long_msg => $stdout);
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command 'showboards' problems (see additional info).");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    
+    return $stdout;
+}
+
 sub run {
     my ($self, %options) = @_;
-
-    my $telnet_handle = hardware::server::sun::mgmtcards::lib::telnet::connect(
-                            username => $self->{option_results}->{username},
-                            password => $self->{option_results}->{password},
-                            hostname => $self->{option_results}->{hostname},
-                            port => $self->{option_results}->{port},
-                            output => $self->{output},
-                            closure => \&telnet_shell_plateform);
-    my @lines = $telnet_handle->cmd("showboards");
+    my ($output, @lines);
+    
+    if (defined($self->{option_results}->{ssh})) {
+        $output = $self->ssh_command();
+        @lines = split /\n/, $output;
+    } else {
+        my $telnet_handle = hardware::server::sun::mgmt_cards::lib::telnet::connect(
+                                username => $self->{option_results}->{username},
+                                password => $self->{option_results}->{password},
+                                hostname => $self->{option_results}->{hostname},
+                                port => $self->{option_results}->{port},
+                                timeout => $self->{option_results}->{timeout},
+                                output => $self->{output},
+                                closure => \&telnet_shell_plateform);
+        @lines = $telnet_handle->cmd("showboards");
+    }
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => 'cache_sun_mgmtcards_' . $self->{option_results}->{hostname}  . '_' .  $self->{mode});
@@ -194,6 +248,14 @@ Returns new errors (retention file is used by the following option).
 =item B<--timeout>
 
 Timeout in seconds for the command (Default: 30).
+
+=item B<--command-plink>
+
+Plink command (default: plink). Use to set a path.
+
+=item B<--ssh>
+
+Use ssh (with plink) instead of telnet.
 
 =back
 
