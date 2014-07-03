@@ -53,37 +53,6 @@ Total Reads:                   6653775
 Prct Idle:                     94.2
 
 ======================
-Mode pour les disques
-======================
-
-La commande pour tous: getdisk -state -bytrd -bytwrt -hw -hr
-
-Bus 1 Enclosure 7  Disk 13
-State:                   Enabled
-Kbytes Read:             311959566
-Kbytes Written:          0
-Hard Write Errors:       0
-Hard Read Errors:        0
-
-Bus 1 Enclosure 7  Disk 14
-State:                   Hot Spare Ready
-Kbytes Read:             1957049160
-Kbytes Written:          0
-Hard Write Errors:       0
-Hard Read Errors:        0
-
-
-La commande pour un seul: getdisk 1_7_14 -state -bytrd -bytwrt -hw -hr
-
-Bus 1 Enclosure 7  Disk 14
-State:                   Hot Spare Ready
-Kbytes Read:             1957105480
-Kbytes Written:          0
-Hard Write Errors:       0
-Hard Read Errors:        0
-
-
-======================
 Mode pour les raid group
 ======================
 
