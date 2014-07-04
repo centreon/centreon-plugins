@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::flood;
+package hardware::sensors::sensormetrix::em01::web::mode::flood;
 
 use base qw(centreon::plugins::mode);
 
