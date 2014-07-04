@@ -93,7 +93,7 @@ sub run {
     my $webcontent = centreon::plugins::httplib::connect($self);
     my $illumination;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /IL\s*(?::\s*([0-9\.]+)|([0-9\.]+))/i) {
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /IL(?:\s*:\s*|\s*)([0-9\.]+)/i) {
         $self->{output}->add_option_msg(short_msg => "Could not find illumination information.");
         $self->{output}->option_exit();
     }

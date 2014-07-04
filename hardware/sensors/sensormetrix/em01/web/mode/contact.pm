@@ -120,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check sensor voltage.
+Check sensor contact.
 
 =over 8
 
