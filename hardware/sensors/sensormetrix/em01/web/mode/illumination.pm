@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::flood;
+package hardware::sensors::sensormetrix::em01::web::mode::illumination;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,32 +53,30 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/" },
+            "urlpath:s"         => { name => 'url_path', default => "/index.htm?em" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
             "proxyurl:s"        => { name => 'proxyurl' },
-            "warning"           => { name => 'warning' },
-            "critical"          => { name => 'critical' },
-            "dry"               => { name => 'dry' },
+            "warning:s"         => { name => 'warning' },
+            "critical:s"        => { name => 'critical' },
             "timeout:s"         => { name => 'timeout', default => '3' },
             });
-    $self->{status} = { dry => 'ok', wet => 'ok' };
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    my $label = 'wet';
-    $label = 'dry' if (defined($self->{option_results}->{dry}));
-    if (defined($self->{option_results}->{critical})) {
-        $self->{status}->{$label} = 'critical';
-    } elsif (defined($self->{option_results}->{warning})) {
-        $self->{status}->{$label} = 'warning';
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
-    
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
@@ -93,21 +91,24 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = centreon::plugins::httplib::connect($self);
-    my $flood;
+    my $illumination;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /(dry|wet)/i) {
-        $self->{output}->add_option_msg(short_msg => "Could not find flood information (need to set good --urlpath option).");
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /IL(?:\s*:\s*|\s*)([0-9\.]+)/i) {
+        $self->{output}->add_option_msg(short_msg => "Could not find illumination information.");
         $self->{output}->option_exit();
     }
-    $flood = lc($1);
+    $illumination = $1;
+    $illumination = '0' . $illumination if ($illumination =~ /^\./);
 
-    if ($flood eq 'dry') {
-        $self->{output}->output_add(severity => $self->{status}->{dry},
-                                    short_msg => sprintf("Flood sensor is dry."));
-    } else {
-        $self->{output}->output_add(severity => $self->{status}->{wet},
-                                short_msg => sprintf("Flood sensor is wet."));
-    }
+    my $exit = $self->{perfdata}->threshold_check(value => $illumination, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Illumination: %.1f", $illumination));
+    $self->{output}->perfdata_add(label => "illumination",
+                                  value => sprintf("%.1f", $illumination),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -120,7 +121,7 @@ __END__
 
 =head1 MODE
 
-Check sensor flood.
+Check sensor Illumination.
 
 =over 8
 
@@ -142,7 +143,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/')
+Set path to get server-status page in auto mode (Default: '/index.htm?em')
 
 =item B<--credentials>
 
@@ -162,15 +163,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning if flood sensor is wet (can set --dry for dry sensor)
+Warning Threshold for Illumination
 
 =item B<--critical>
 
-Critical if flood sensor is wet (can set --dry for dry sensor)
-
-=item B<--closed>
-
-Threshold is on dry sensor (default: wet)
+Critical Threshold for Illumination
 
 =back
 

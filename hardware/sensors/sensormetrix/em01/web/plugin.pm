@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::plugin;
+package hardware::sensors::sensormetrix::em01::web::plugin;
 
 use strict;
 use warnings;
@@ -47,13 +47,13 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-            'contact'       => 'hardware::sensors::sequoia::em01::web::mode::contact',
-            'temperature'   => 'hardware::sensors::sequoia::em01::web::mode::temperature',
-            'humidity'      => 'hardware::sensors::sequoia::em01::web::mode::humidity',
-            'illumination'  => 'hardware::sensors::sequoia::em01::web::mode::illumination',
-            'flood'         => 'hardware::sensors::sequoia::em01::web::mode::flood',
-            'thermistor'    => 'hardware::sensors::sequoia::em01::web::mode::thermistor',
-            'voltage'       => 'hardware::sensors::sequoia::em01::web::mode::voltage',
+            'contact'       => 'hardware::sensors::sensormetrix::em01::web::mode::contact',
+            'temperature'   => 'hardware::sensors::sensormetrix::em01::web::mode::temperature',
+            'humidity'      => 'hardware::sensors::sensormetrix::em01::web::mode::humidity',
+            'illumination'  => 'hardware::sensors::sensormetrix::em01::web::mode::illumination',
+            'flood'         => 'hardware::sensors::sensormetrix::em01::web::mode::flood',
+            'thermistor'    => 'hardware::sensors::sensormetrix::em01::web::mode::thermistor',
+            'voltage'       => 'hardware::sensors::sensormetrix::em01::web::mode::voltage',
 			);
 
 	return $self;
@@ -65,6 +65,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Sequoia em01 sensors through webpage.
+Check Sensormetrix em01 sensors through webpage.
 
 =cut
