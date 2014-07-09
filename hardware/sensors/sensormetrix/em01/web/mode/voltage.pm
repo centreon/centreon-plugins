@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::thermistor;
+package hardware::sensors::sensormetrix::em01::web::mode::voltage;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,7 +53,7 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/index.htm?eR" },
+            "urlpath:s"         => { name => 'url_path', default => "/index.htm?ev" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -91,20 +91,21 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = centreon::plugins::httplib::connect($self);
+    my $voltage;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /R([CF])\s*([0-9\.]+)/i) {
-        $self->{output}->add_option_msg(short_msg => "Could not find thermistor temperature information.");
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /CV\s*([0-9\.]+)/i) {
+        $self->{output}->add_option_msg(short_msg => "Could not find voltage information.");
         $self->{output}->option_exit();
     }
-    my ($temperature, $unit) = ($2, $1);
-    $temperature = '0' . $temperature if ($temperature =~ /^\./);
+    $voltage = $1;
+    $voltage = '0' . $voltage if ($voltage =~ /^\./);
 
-    my $exit = $self->{perfdata}->threshold_check(value => $temperature, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $voltage, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Temperature: %.2f %s", $temperature, $unit));
-    $self->{output}->perfdata_add(label => "temperature", unit => $unit,
-                                  value => sprintf("%.2f", $temperature),
+                                short_msg => sprintf("Voltage: %.2f V", $voltage));
+    $self->{output}->perfdata_add(label => "voltage", unit => 'V',
+                                  value => sprintf("%.2f", $voltage),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   );
@@ -120,7 +121,7 @@ __END__
 
 =head1 MODE
 
-Check sensor thermistor temperature.
+Check sensor voltage.
 
 =over 8
 
@@ -142,7 +143,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/index.htm?eR')
+Set path to get server-status page in auto mode (Default: '/index.htm?ev')
 
 =item B<--credentials>
 
@@ -162,11 +163,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning Threshold for Humidity
+Warning Threshold for Voltage
 
 =item B<--critical>
 
-Critical Threshold for Humidity
+Critical Threshold for Voltage
 
 =back
 

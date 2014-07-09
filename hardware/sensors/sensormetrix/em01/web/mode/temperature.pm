@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::temperature;
+package hardware::sensors::sensormetrix::em01::web::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -162,11 +162,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning Threshold for Humidity
+Warning Threshold for Temperature
 
 =item B<--critical>
 
-Critical Threshold for Humidity
+Critical Threshold for Temperature
 
 =back
 

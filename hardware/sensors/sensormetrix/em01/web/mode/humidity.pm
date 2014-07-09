@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::humidity;
+package hardware::sensors::sensormetrix::em01::web::mode::humidity;
 
 use base qw(centreon::plugins::mode);
 

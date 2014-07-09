@@ -1,5 +1,5 @@
-###############################################################################
-# Copyright 2005-2013 MERETHIS
+################################################################################
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,34 +29,29 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::plugin;
+package hardware::ups::eaton::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
-	my ($class, %options) = @_;
-	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-	bless $self, $class;
-# $options->{options} = options object
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
-            'contact'       => 'hardware::sensors::sequoia::em01::web::mode::contact',
-            'temperature'   => 'hardware::sensors::sequoia::em01::web::mode::temperature',
-            'humidity'      => 'hardware::sensors::sequoia::em01::web::mode::humidity',
-            'illumination'  => 'hardware::sensors::sequoia::em01::web::mode::illumination',
-            'flood'         => 'hardware::sensors::sequoia::em01::web::mode::flood',
-            'thermistor'    => 'hardware::sensors::sequoia::em01::web::mode::thermistor',
-            'voltage'       => 'hardware::sensors::sequoia::em01::web::mode::voltage',
-			);
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'group'   => 'hardware::ups::eaton::mode::group',
+                         'outlet'   => 'hardware::ups::eaton::mode::outlet',
+                         );
 
-	return $self;
+    return $self;
 }
 
 1;
@@ -65,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Sequoia em01 sensors through webpage.
+Check Eaton EPDU in SNMP.
 
 =cut

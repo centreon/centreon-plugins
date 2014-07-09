@@ -211,7 +211,7 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $all_ids = [];
+    my $all_ids = [];
     $self->{names} = {};
     my $result = $self->{snmp}->get_table(oid => $oid_pfsenseInterfaceName, nothing_quit => 1);
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
