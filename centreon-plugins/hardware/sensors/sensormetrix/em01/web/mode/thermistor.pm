@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::illumination;
+package hardware::sensors::sensormetrix::em01::web::mode::thermistor;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,7 +53,7 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/index.htm?em" },
+            "urlpath:s"         => { name => 'url_path', default => "/index.htm?eR" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -91,21 +91,20 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = centreon::plugins::httplib::connect($self);
-    my $illumination;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /IL\s*([0-9\.]+)/i) {
-        $self->{output}->add_option_msg(short_msg => "Could not find illumination information.");
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /R([CF])\s*([0-9\.]+)/i) {
+        $self->{output}->add_option_msg(short_msg => "Could not find thermistor temperature information.");
         $self->{output}->option_exit();
     }
-    $illumination = $1;
-    $illumination = '0' . $illumination if ($illumination =~ /^\./);
+    my ($temperature, $unit) = ($2, $1);
+    $temperature = '0' . $temperature if ($temperature =~ /^\./);
 
-    my $exit = $self->{perfdata}->threshold_check(value => $illumination, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $temperature, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Illumination: %.1f", $illumination));
-    $self->{output}->perfdata_add(label => "illumination",
-                                  value => sprintf("%.1f", $illumination),
+                                short_msg => sprintf("Temperature: %.2f %s", $temperature, $unit));
+    $self->{output}->perfdata_add(label => "temperature", unit => $unit,
+                                  value => sprintf("%.2f", $temperature),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   );
@@ -121,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check sensor Illumination.
+Check sensor thermistor temperature.
 
 =over 8
 
@@ -143,7 +142,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/index.htm?em')
+Set path to get server-status page in auto mode (Default: '/index.htm?eR')
 
 =item B<--credentials>
 
@@ -163,11 +162,11 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning Threshold for Illumination
+Warning Threshold for Thermistor Temperature
 
 =item B<--critical>
 
-Critical Threshold for Illumination
+Critical Threshold for Thermistor Temperature
 
 =back
 
