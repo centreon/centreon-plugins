@@ -47,7 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'crm'      => 'apps::pacemaker::local::mode::crm',
+                         'crm'          => 'apps::pacemaker::local::mode::crm',
+                         'failover'     => 'apps::pacemaker::local::mode::failover',
                          );
 
     return $self;
