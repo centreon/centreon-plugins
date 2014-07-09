@@ -168,7 +168,7 @@ sub run {
         my $str_output = "Outlet '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_})) || $self->{counters_value}->{$instance}->{$_} == 0);
+            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == 0);
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
