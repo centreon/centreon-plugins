@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package hardware::sensors::sequoia::em01::web::mode::contact;
+package hardware::sensors::sensormetrix::em01::web::mode::flood;
 
 use base qw(centreon::plugins::mode);
 
@@ -53,17 +53,17 @@ sub new {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto', default => "http" },
-            "urlpath:s"         => { name => 'url_path', default => "/index.htm?eL" },
+            "urlpath:s"         => { name => 'url_path', default => "/" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
             "proxyurl:s"        => { name => 'proxyurl' },
             "warning"           => { name => 'warning' },
             "critical"          => { name => 'critical' },
-            "closed"            => { name => 'closed' },
+            "dry"               => { name => 'dry' },
             "timeout:s"         => { name => 'timeout', default => '3' },
             });
-    $self->{status} = { closed => 'ok', opened => 'ok' };
+    $self->{status} = { dry => 'ok', wet => 'ok' };
     return $self;
 }
 
@@ -71,8 +71,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    my $label = 'opened';
-    $label = 'closed' if (defined($self->{option_results}->{closed}));
+    my $label = 'wet';
+    $label = 'dry' if (defined($self->{option_results}->{dry}));
     if (defined($self->{option_results}->{critical})) {
         $self->{status}->{$label} = 'critical';
     } elsif (defined($self->{option_results}->{warning})) {
@@ -93,20 +93,20 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = centreon::plugins::httplib::connect($self);
-    my $contact;
+    my $flood;
 
-    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /([NW]).*?:/) {
-        $self->{output}->add_option_msg(short_msg => "Could not find door contact information.");
+    if ($webcontent !~ /<body>(.*)<\/body>/msi || $1 !~ /(dry|wet)/i) {
+        $self->{output}->add_option_msg(short_msg => "Could not find flood information (need to set good --urlpath option).");
         $self->{output}->option_exit();
     }
-    $contact = $1;
+    $flood = lc($1);
 
-    if ($contact eq 'N') {
-        $self->{output}->output_add(severity => $self->{status}->{opened},
-                                short_msg => sprintf("Door is opened."));
+    if ($flood eq 'dry') {
+        $self->{output}->output_add(severity => $self->{status}->{dry},
+                                    short_msg => sprintf("Flood sensor is dry."));
     } else {
-        $self->{output}->output_add(severity => $self->{status}->{closed},
-                                short_msg => sprintf("Door is closed."));
+        $self->{output}->output_add(severity => $self->{status}->{wet},
+                                short_msg => sprintf("Flood sensor is wet."));
     }
 
     $self->{output}->display();
@@ -120,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check sensor voltage.
+Check sensor flood.
 
 =over 8
 
@@ -142,7 +142,7 @@ Specify https if needed
 
 =item B<--urlpath>
 
-Set path to get server-status page in auto mode (Default: '/index.htm?eL')
+Set path to get server-status page in auto mode (Default: '/')
 
 =item B<--credentials>
 
@@ -162,15 +162,15 @@ Threshold for HTTP timeout
 
 =item B<--warning>
 
-Warning if door is opened (can set --close for closed door)
+Warning if flood sensor is wet (can set --dry for dry sensor)
 
 =item B<--critical>
 
-Critical if door is opened (can set --close for closed door)
+Critical if flood sensor is wet (can set --dry for dry sensor)
 
 =item B<--closed>
 
-Threshold is on closed door (default: opened)
+Threshold is on dry sensor (default: wet)
 
 =back
 

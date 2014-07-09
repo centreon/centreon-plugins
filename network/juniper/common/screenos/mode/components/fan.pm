@@ -46,7 +46,7 @@ my %map_status = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0, skip => 0};
+    $self->{components}->{fans} = {name => 'fans', total => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
     return if ($self->check_exclude(section => 'fans'));
     
