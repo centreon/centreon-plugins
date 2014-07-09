@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 # Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
@@ -33,42 +33,38 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::sp;
+package hardware::sensors::sensormetrix::em01::web::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_simple);
 
-my %conditions = (
-    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub new {
+	my ($class, %options) = @_;
+	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+	bless $self, $class;
+# $options->{options} = options object
 
-sub check {
-    my ($self) = @_;
+	$self->{version} = '0.1';
+	%{$self->{modes}} = (
+            'contact'       => 'hardware::sensors::sensormetrix::em01::web::mode::contact',
+            'temperature'   => 'hardware::sensors::sensormetrix::em01::web::mode::temperature',
+            'humidity'      => 'hardware::sensors::sensormetrix::em01::web::mode::humidity',
+            'illumination'  => 'hardware::sensors::sensormetrix::em01::web::mode::illumination',
+            'flood'         => 'hardware::sensors::sensormetrix::em01::web::mode::flood',
+            'thermistor'    => 'hardware::sensors::sensormetrix::em01::web::mode::thermistor',
+            'voltage'       => 'hardware::sensors::sensormetrix::em01::web::mode::voltage',
+			);
 
-    $self->{output}->output_add(long_msg => "Checking sp");
-    $self->{components}->{sp} = {name => 'sp', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sp'));
-    
-    # SP A State:                 Present
-    while ($self->{response} =~ /^SP\s+(\S+)\s+State:\s+(.*)$/mgi) {
-        my $instance = $1;
-        my $state = $2;
-        
-        next if ($self->check_exclude(section => 'sp', instance => $instance));
-        $self->{components}->{sp}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("sp '%s' state is %s.",
-                                                        $instance, $state)
-                                    );
-        foreach (keys %conditions) {
-            if ($state =~ /${$conditions{$_}}[0]/i) {
-                $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
-                                            short_msg => sprintf("sp '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
-        }
-    }
+	return $self;
 }
 
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check Sensormetrix em01 sensors through webpage.
+
+=cut

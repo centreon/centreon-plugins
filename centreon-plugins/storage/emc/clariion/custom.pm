@@ -233,19 +233,19 @@ my navisphere manage
 
 =item B<--navicli-path>
 
-Specify navicli path (default: '/opt/Navisphere/bin')
+Specify navicli path (default: 'navicli')
 
 =item B<--navicli-command>
 
-Specify navicli command (default: 'navicli').
+Specify navicli command (default: '/opt/Navisphere/bin').
 
 =item B<--naviseccli-path>
 
-Specify naviseccli path (default: '/opt/Navisphere/bin')
+Specify naviseccli path (default: 'naviseccli')
 
 =item B<--naviseccli-command>
 
-Specify naviseccli command (default: 'naviseccli').
+Specify naviseccli command (default: '/opt/Navisphere/bin').
 
 =item B<--sudo>
 

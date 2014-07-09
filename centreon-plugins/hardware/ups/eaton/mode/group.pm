@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::inputlines;
+package hardware::ups::eaton::mode::group;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,33 +41,27 @@ use strict;
 use warnings;
 
 my %oids = (
-    '.1.3.6.1.2.1.33.1.3.3.1.2' => { counter => 'frequence' }, # in dH upsInputFrequency
-    '.1.3.6.1.2.1.33.1.3.3.1.3' => { counter => 'voltage' }, # in Volt upsInputVoltage
-    '.1.3.6.1.2.1.33.1.3.3.1.4' => { counter => 'current' }, # in dA upsInputCurrent
-    '.1.3.6.1.2.1.33.1.3.3.1.5' => { counter => 'power' }, # in Watt upsInputTruePower
+    '.1.3.6.1.4.1.534.6.6.7.5.3.1.3' => { counter => 'voltage', no_present => 0 }, # in mVolt groupVoltage
+    '.1.3.6.1.4.1.534.6.6.7.5.4.1.3' => { counter => 'current', no_present => 0 }, # in mA groupCurrent
+    '.1.3.6.1.4.1.534.6.6.7.5.5.1.3' => { counter => 'power', no_present => 0 }, # in Watt groupWatts
 );
 
+my $oid_groups = '.1.3.6.1.4.1.534.6.6.7.5';
+
 my $maps_counters = {
-    frequence   => { thresholds => {
-                                    warning_frequence  =>  { label => 'warning-frequence', exit_value => 'warning' },
-                                    critical_frequence =>  { label => 'critical-frequence', exit_value => 'critical' },
-                                   },
-                     output_msg => 'Frequence : %.2f Hz',
-                     factor => 0.1, unit => 'Hz',
-                    },
     voltage => { thresholds => {
                                 warning_voltage  =>  { label => 'warning-voltage', exit_value => 'warning' },
                                 critical_voltage =>  { label => 'critical-voltage', exit_value => 'critical' },
                                 },
                  output_msg => 'Voltage : %.2f V',
-                 factor => 1, unit => 'V',
+                 factor => 0.001, unit => 'V',
                 },
     current => { thresholds => {
                                 warning_current    =>  { label => 'warning-current', exit_value => 'warning' },
                                 critical_current   =>  { label => 'critical-current', exit_value => 'critical' },
                                 },
                  output_msg => 'Current : %.2f A',
-                 factor => 0.1, unit => 'A',
+                 factor => 0.001, unit => 'A',
                },
     power   => { thresholds => {
                                 warning_power  =>  { label => 'warning-power', exit_value => 'warning' },
@@ -85,7 +79,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+				 "exclude:s"        => { name => 'exclude', }, 
                                 });
     foreach (keys %{$maps_counters}) {
         foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
@@ -134,6 +129,7 @@ sub build_values {
     $self->{instances_done}->{$instance} = 1;
     $self->{counters_value}->{$instance} = {};
     foreach my $oid (keys %oids) {
+	my $full_oid = $oid . '.' . $instance;
         $self->{counters_value}->{$instance}->{$oids{$oid}->{counter}} = defined($options{result}->{$oid . '.' . $instance}) ? $options{result}->{$oid . '.' . $instance} : 0;
     }
 }
@@ -143,8 +139,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_upsInputEntry = '.1.3.6.1.2.1.33.1.3.3.1';
-    my $result = $self->{snmp}->get_table(oid => $oid_upsInputEntry, nothing_quit => 1);
+    my $result = $self->{snmp}->get_table(oid => $oid_groups, nothing_quit => 1);
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         $self->build_values(current => $key, result => $result);
     }
@@ -157,8 +152,9 @@ sub run {
         my @exits;
         foreach (keys %{$maps_counters}) {
             foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
+	    	next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $_ =~ /$self->{option_results}->{exclude}/);
                 if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} != 0) {
-                    push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
+                    push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_}*$maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
                 }
             }
         }
@@ -167,10 +163,11 @@ sub run {
         my $extra_label = '';
         $extra_label = '_' . $instance_output if ($num > 1);
 
-        my $str_output = "Input Line '$instance_output' ";
+        my $str_output = "Group '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == 0);
+            next if (!defined($self->{counters_value}->{$instance}->{$_}));
+	    next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $_ =~ /$self->{option_results}->{exclude}/);
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
@@ -199,19 +196,25 @@ __END__
 
 =head1 MODE
 
-Check Input lines metrics (frequence, voltage, current and true power).
+Check Group metrics (voltage, current and power).
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Can be: 'voltage', 'current', 'power'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Can be: 'voltage', 'current', 'power'.
+
+=item B<--exclude>
+
+Metrics excluded.
+Can be: 'voltage', 'current', 'power'.
+Use | if you want to exclude two or more metrics.
 
 =back
 
