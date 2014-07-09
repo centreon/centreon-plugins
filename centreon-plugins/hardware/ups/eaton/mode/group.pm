@@ -80,7 +80,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-				 "exclude:s"        => { name => 'exclude', }, 
                                 });
     foreach (keys %{$maps_counters}) {
         foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
@@ -152,7 +151,6 @@ sub run {
         my @exits;
         foreach (keys %{$maps_counters}) {
             foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-	    	next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $_ =~ /$self->{option_results}->{exclude}/);
                 if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} != 0) {
                     push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_}*$maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
                 }
@@ -166,8 +164,7 @@ sub run {
         my $str_output = "Group '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}));
-	    next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $_ =~ /$self->{option_results}->{exclude}/);
+	    next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == 0);
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
@@ -209,12 +206,6 @@ Can be: 'voltage', 'current', 'power'.
 
 Threshold critical.
 Can be: 'voltage', 'current', 'power'.
-
-=item B<--exclude>
-
-Metrics excluded.
-Can be: 'voltage', 'current', 'power'.
-Use | if you want to exclude two or more metrics.
 
 =back
 
