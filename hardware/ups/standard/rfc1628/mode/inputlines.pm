@@ -158,7 +158,7 @@ sub run {
         foreach (keys %{$maps_counters}) {
             foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
                 if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} != 0) {
-                    push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
+                    push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
                 }
             }
         }
