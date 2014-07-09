@@ -42,7 +42,7 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0, skip => 0};
+    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
     return if ($self->check_exclude('temperatures'));
 
     my $oid_nsTemperatureEntry = '.1.3.6.1.4.1.3224.21.4.1';
@@ -58,10 +58,10 @@ sub check {
 
         next if ($self->check_exclude(section => 'temperatures', instance => $instance));
 	
-        my $temperature_name = $result->{$oid_nsTemperatureDesc . '.' . $instance};
+	my $temperature_name = $result->{$oid_nsTemperatureDesc . '.' . $instance};
 
-        my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_nsTemperatureCur . '.' . $instance},
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+	my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_nsTemperatureCur . '.' . $instance},
+            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     	$self->{components}->{temperatures}->{total}++;
 
@@ -71,13 +71,12 @@ sub check {
             $self->{output}->output_add(severity => $exit_code,short_msg => sprintf($temperature_name . " is %.2f C", $result->{$oid_nsTemperatureCur . '.' . $instance}));
         }
 
-        $temperature_name =~ s/\ /_/g;
-    	$self->{output}->perfdata_add(label => $temperature_name, unit => 'C',
-                                      value => sprintf("%.2f", $result->{$oid_nsTemperatureCur . '.' . $instance}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));    
+	$temperature_name =~ s/\ /_/g;
+    	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', value => sprintf("%.2f", $result->{$oid_nsTemperatureCur . '.' . $instance}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));    
+        }
     }
-}
 
 
 1;

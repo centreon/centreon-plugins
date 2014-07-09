@@ -59,31 +59,31 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    ($self->{warn1s}, $self->{warn4s}, $self->{warn64s}) = split /,/, $self->{option_results}->{warning};
-    ($self->{crit1s}, $self->{crit4s}, $self->{crit64s}) = split /,/, $self->{option_results}->{critical};
+    ($self->{warn1m}, $self->{warn5m}, $self->{warn15m}) = split /,/, $self->{option_results}->{warning};
+    ($self->{crit1m}, $self->{crit5m}, $self->{crit15m}) = split /,/, $self->{option_results}->{critical};
     
-    if (($self->{perfdata}->threshold_validate(label => 'warn1min', value => $self->{warn1s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warn1min', value => $self->{warn1m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warn5min', value => $self->{warn4s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (5min) threshold '" . $self->{warn4s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warn5min', value => $self->{warn5m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (5min) threshold '" . $self->{warn5m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warn15min', value => $self->{warn64s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (15min) threshold '" . $self->{warn64s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warn15min', value => $self->{warn15m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (15min) threshold '" . $self->{warn15m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'crit1min', value => $self->{crit1s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (1min) threshold '" . $self->{crit1s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'crit1min', value => $self->{crit1m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (1min) threshold '" . $self->{crit1m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'crit5min', value => $self->{crit4s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (5min) threshold '" . $self->{crit4s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'crit5min', value => $self->{crit5m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (5min) threshold '" . $self->{crit5m} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'crit15min', value => $self->{crit64s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (15min) threshold '" . $self->{crit64s} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'crit15min', value => $self->{crit15m})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (15min) threshold '" . $self->{crit15m} . "'.");
        $self->{output}->option_exit();
     }
 }

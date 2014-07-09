@@ -46,7 +46,7 @@ my %map_status = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{modules} = {name => 'modules', total => 0, skip => 0};
+    $self->{components}->{modules} = {name => 'modules', total => 0};
     $self->{output}->output_add(long_msg => "Checking modules");
     return if ($self->check_exclude(section => 'modules'));
     
@@ -62,11 +62,11 @@ sub check {
         my $instance = $1;
     
         next if ($self->check_exclude(section => 'modules', instance => $instance));
-        $self->{components}->{modules}->{total}++;
     
         my $type = $result->{$oid_nsSlotType . '.' . $instance};
         my $status = $result->{$oid_nsSlotStatus . '.' . $instance};
-        
+
+        $self->{components}->{modules}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s].", 
                                     $type, $map_status{$status}, $instance));
         if ($status != 1) {

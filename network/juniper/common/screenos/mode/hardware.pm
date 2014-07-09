@@ -52,13 +52,11 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
+                                { 
                                   "exclude:s"        => { name => 'exclude' },
-                                  "absent-problem:s" => { name => 'absent' },
                                   "component:s"      => { name => 'component', default => 'all' },
-                                  "no-component:s"   => { name => 'no_component' },
-                                  "warning:s"        => { name => 'warning', },
-                                  "critical:s"       => { name => 'critical', },
+				  "warning:s"        => { name => 'warning', default => '' },
+                                  "critical:s"       => { name => 'critical', default => '' },
                                 });
     $self->{components} = {};
     return $self;
@@ -76,13 +74,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
+
 }
 
 sub global {
@@ -114,14 +106,15 @@ sub run {
         $self->{output}->option_exit();
     }
 
+    
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
+        next if ($self->{components}->{$comp}->{total} == 0);
+        $total_components += $self->{components}->{$comp}->{total};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
     
@@ -132,44 +125,18 @@ sub run {
                                                     )
                                 );
     
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
-    }
-    
     $self->{output}->display();
     $self->{output}->exit();
 }
 
 sub check_exclude {
-    my ($self, %options) = @_;
+    my ($self, $section) = @_;
 
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
-        }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$section(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $section section."));
         return 1;
     }
     return 0;
-}
-
-sub absent_problem {
-    my ($self, %options) = @_;
-    
-    if (defined($self->{option_results}->{absent}) && 
-        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
-                                                         $options{section}, $options{instance}));
-    }
-
-    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
-    $self->{components}->{$options{section}}->{skip}++;
-    return 1;
 }
 
 1;
@@ -191,15 +158,6 @@ Can be: 'fan', 'psu', 'module'.
 
 Exclude some parts (comma seperated list) (Example: --exclude=fans,modules)
 Can also exclude specific instance: --exclude=fans#1#2#,modules#1#,psus
-
-=item B<--absent-problem>
-
-N/A for following equipment. Not needed.
-
-=item B<--no-component>
-
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
 
 =item B<--warning>
 

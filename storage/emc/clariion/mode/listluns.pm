@@ -198,7 +198,7 @@ Example: N/A, SATAII, Fibre Channel,...
 Filter Raid types (regexp can be used).
 Example: N/A, Hot Spare, RAID5,...
 
-=item B<--filter-raidtype>
+=item B<--filter-raidgroupid>
 
 Filter Raid Group ID (regexp can be used).
 Example: N/A or a number.
