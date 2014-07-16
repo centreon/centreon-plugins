@@ -136,7 +136,7 @@ sub execute {
         return ($stdout, $exit_code);
     }
     
-    if ($exit_code != 0) {
+    if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
         $options{output}->output_add(severity => 'UNKNOWN', 
                                     short_msg => "Command error: $stdout");

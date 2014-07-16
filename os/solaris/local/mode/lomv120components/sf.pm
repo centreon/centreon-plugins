@@ -33,41 +33,47 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::psu;
+package os::solaris::local::mode::lomv120components::sf;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 my %conditions = (
-    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+    1 => ['^(?!(ok)$)' => 'CRITICAL'],
 );
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    $self->{output}->output_add(long_msg => "Checking system flag");
+    $self->{components}->{sf} = {name => 'system flag', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sf'));
     
-    # Enclosure SPE Power A0 State: Present
-    # Bus 0 Enclosure 0 Power A State: Present
-    while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(Power)\s+(\S+)\s+State:\s+(.*)$/mgi) {
-        my ($state, $instance) = ($5, "$2.$3.$4");
-        if (defined($1)) {
-            $instance = "$1.$2.$3.$4";
-        }
+    #System status flags:
+    # 1        SCSI-Term status=ok
+    # 2             USB0 status=ok
+    # 3             USB1 status=ok
+    return if ($self->{stdout} !~ /^System status flags:(.*)/ims);
+    
+    my @content = split(/\n/, $1);
+    shift @content;
+    foreach my $line (@content) {
+        $line = centreon::plugins::misc::trim($line);
+        next if ($line !~ /^\s*(\S+).*?status=(.*)/);
+        my ($instance, $status) = ($1, $2);
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
-        $self->{components}->{psu}->{total}++;
+        next if ($self->check_exclude(section => 'sf', instance => $instance));
+        $self->{components}->{sf}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
-                                                        $instance, $state)
+        $self->{output}->output_add(long_msg => sprintf("System flag '%s' status is %s.",
+                                                        $instance, $status)
                                     );
         foreach (keys %conditions) {
-            if ($state =~ /${$conditions{$_}}[0]/i) {
-                $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
-                                            short_msg => sprintf("Power Supply '%s' state is %s",
-                                                        $instance, $state));
+            if ($status =~ /${$conditions{$_}}[0]/i) {
+                $self->{output}->output_add(severity => ${$conditions{$_}}[1],
+                                            short_msg => sprintf("System flag '%s' status is %s",
+                                                                 $instance, $status));
                 last;
             }
         }
