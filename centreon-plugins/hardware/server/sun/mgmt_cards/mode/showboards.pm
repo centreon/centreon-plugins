@@ -58,8 +58,13 @@ sub new {
                                   "memory"           => { name => 'memory' },
                                   "command-plink:s"  => { name => 'command_plink', default => 'plink' },
                                   "ssh"              => { name => 'ssh' },
+                                  "exclude:s"        => { name => 'exclude' },
+                                  "no-component:s"   => { name => 'no_component' },
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->{components} = {};
+    $self->{no_components} = undef;
+
     return $self;
 }
 
@@ -86,6 +91,14 @@ sub check_options {
     
     if (!defined($self->{option_results}->{ssh})) {
         require hardware::server::sun::mgmt_cards::lib::telnet;
+    }
+    
+    if (defined($self->{option_results}->{no_component})) {
+        if ($self->{option_results}->{no_component} ne '') {
+            $self->{no_components} = $self->{option_results}->{no_component};
+        } else {
+            $self->{no_components} = 'critical';
+        }
     }
 }
 
@@ -127,21 +140,6 @@ sub ssh_command {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    if ($exit_code != 0) {
-        $stdout =~ s/\n/ - /g;
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-
-    if ($stdout !~ /Slot/mi) {
-        $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command 'showboards' problems (see additional info).");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
     
     return $stdout;
 }
@@ -167,37 +165,45 @@ sub run {
     
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->read(statefile => 'cache_sun_mgmtcards_' . $self->{option_results}->{hostname}  . '_' .  $self->{mode});
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No new problems on system.");
-    } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems on system.");
     }
+    
+    #Slot     Pwr Component Type                 State      Status     Domain
+    #----     --- --------------                 -----      ------     ------
+    #SSC0     On  System Controller              Main       Passed     -
+    #ID0      On  Sun Fire 6800 Centerplane      -          OK         -
+    #PS0      On  A212 Power Supply              -          OK         -
+    #PS1      On  A212 Power Supply              -          OK         -
+    #PS2      On  A212 Power Supply              -          OK         -
+    #PS3      On  A212 Power Supply              -          OK         -
+    #PS4      On  A212 Power Supply              -          OK         -
+    #PS5      On  A212 Power Supply              -          OK         -
 
     my $datas = {};
+    $self->{output}->output_add(long_msg => "Checking slots");
+    $self->{components}->{slot} = {name => 'slot', total => 0, skip => 0, known_error => 0};
+
     foreach (@lines) {
         chomp;
-        my $long_msg = $_;
-        $long_msg =~ s/\|/~/mg;
-        $self->{output}->output_add(long_msg => $long_msg);
-        my $id;
-        if (/([^\s]+?)\s+/) {
-            $id = $1;
-        }
-        my $status;
-        if (/\s+(Degraded|Failed|Not tested|Passed|OK|Under Test)\s+/i) {
-            $status = $1;
-        }
-        if (!defined($status) || $status eq '') {
-            next;
-        }
+
+        my ($id, $status);
+        $id = $1 if (/([^\s]+?)\s+/);
+        $status = $1 if (/\s+(Degraded|Failed|Not tested|Passed|OK|Under Test)\s+/i);
+        next if (!defined($status) || $status eq '');
         
+        next if ($self->check_exclude(section => 'slot', instance => $id));
+        $self->{components}->{slot}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("Slot '%s' status is %s.",
+                                                        $id, $status)
+                                    );
         if ($status =~ /^(Degraded|Failed)$/i) {
             if (defined($self->{option_results}->{memory})) {
                 my $old_status = $self->{statefile_cache}->get(name => "slot_$id");
                 if (!defined($old_status) || $old_status ne $status) {
                     $self->{output}->output_add(severity => 'CRITICAL', 
                                                 short_msg => "Slot '$id' status is '$status'");
+                } else {
+                    $self->{components}->{slot}->{known_error}++;
                 }
                 $datas->{"slot_$id"} = $status;
             } else {
@@ -210,9 +216,43 @@ sub run {
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => $datas);
     }
+    
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . '/' . $self->{components}->{$comp}->{known_error} . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %s components [%s] are ok.", 
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
  
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{instance}(\s|,|$)/) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{instance}."));
+            return 1;
+        }
+    }
+    return 0;
 }
 
 1;
@@ -256,6 +296,15 @@ Plink command (default: plink). Use to set a path.
 =item B<--ssh>
 
 Use ssh (with plink) instead of telnet.
+
+=item B<--exclude>
+
+Exclude some slots (comma seperated list) (Example: --exclude=IDO,PS0)
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
 
 =back
 

@@ -33,40 +33,42 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::psu;
+package storage::emc::clariion::mode::spcomponents::battery;
 
 use strict;
 use warnings;
 
 my %conditions = (
-    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+    1 => ['^Not Ready$' => 'WARNING'],
+    2 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
 );
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    $self->{output}->output_add(long_msg => "Checking batteries");
+    $self->{components}->{battery} = {name => 'battery', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'battery'));
     
-    # Enclosure SPE Power A0 State: Present
-    # Bus 0 Enclosure 0 Power A State: Present
-    while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(Power)\s+(\S+)\s+State:\s+(.*)$/mgi) {
+    # SPS means = Standby Power Supply
+    
+    # Enclosure SPE SPS A State:  Present
+    while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(SPS)\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my ($state, $instance) = ($5, "$2.$3.$4");
         if (defined($1)) {
             $instance = "$1.$2.$3.$4";
         }
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
-        $self->{components}->{psu}->{total}++;
+        next if ($self->check_exclude(section => 'battery', instance => $instance));
+        $self->{components}->{battery}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
+        $self->{output}->output_add(long_msg => sprintf("Battery '%s' state is %s.",
                                                         $instance, $state)
                                     );
         foreach (keys %conditions) {
             if ($state =~ /${$conditions{$_}}[0]/i) {
                 $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
-                                            short_msg => sprintf("Power Supply '%s' state is %s",
+                                            short_msg => sprintf("Battery '%s' state is %s",
                                                         $instance, $state));
                 last;
             }

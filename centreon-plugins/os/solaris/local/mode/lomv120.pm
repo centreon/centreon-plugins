@@ -39,7 +39,10 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use os::solaris::local::mode::lomv120components::fan;
+use os::solaris::local::mode::lomv120components::psu;
+use os::solaris::local::mode::lomv120components::voltage;
+use os::solaris::local::mode::lomv120components::sf;
 
 sub new {
     my ($class, %options) = @_;
@@ -58,119 +61,103 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'lom' },
                                   "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-fpv 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-fpv 2>&1'},
+                                  "exclude:s"         => { name => 'exclude' },
+                                  "component:s"       => { name => 'component', default => 'all' },
+                                  "no-component:s"    => { name => 'no_component' },
                                 });
+    $self->{components} = {};
+    $self->{no_components} = undef;
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (defined($self->{option_results}->{no_component})) {
+        if ($self->{option_results}->{no_component} ne '') {
+            $self->{no_components} = $self->{option_results}->{no_component};
+        } else {
+            $self->{no_components} = 'critical';
+        }
+    }
+}
+
+sub component {
+    my ($self, %options) = @_;
+    
+    if ($self->{option_results}->{component} eq 'all') {
+        os::solaris::local::mode::lomv120components::fan::check($self);
+        os::solaris::local::mode::lomv120components::psu::check($self);
+        os::solaris::local::mode::lomv120components::voltage::check($self);
+        os::solaris::local::mode::lomv120components::sf::check($self);
+    } elsif ($self->{option_results}->{component} eq 'fan') {
+        os::solaris::local::mode::lomv120components::fan::check($self);
+    } elsif ($self->{option_results}->{component} eq 'psu') {
+        os::solaris::local::mode::lomv120components::psu::check($self);
+    } elsif ($self->{option_results}->{component} eq 'voltage') {
+        os::solaris::local::mode::lomv120components::voltage::check($self);
+    } elsif ($self->{option_results}->{component} eq 'sf') {
+        os::solaris::local::mode::lomv120components::sf::check($self);
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %s components [%s] are ok.", 
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    ($self->{stdout}) = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    my $long_msg = $stdout;
-    $long_msg =~ s/\|/~/mg;
-    $self->{output}->output_add(long_msg => $long_msg);
-    
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "No problems detected.");
-
-    if ($stdout =~ /^Fans:(.*?):/ims) {
-        #Fans:
-        #1 FAULT speed 0%
-        #2 FAULT speed 0%
-        #3 OK speed 100%
-        #4 OK speed 100%
-        my @content = split(/\n/, $1);
-        shift @content;
-        pop @content;
-        foreach my $line (@content) {
-            next if ($line !~ /^\s*(\S+)\s+(\S+)/);
-            my ($fan_num, $status) = ($1, $2);
-            
-            if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Fan '$fan_num' status is '$status'");
-            }
-        }
-    }
-    
-    if ($stdout =~ /^PSUs:(.*?):/ims) {
-        #PSUs:
-        #1 OK
-        my @content = split(/\n/, $1);
-        shift @content;
-        pop @content;
-        foreach my $line (@content) {
-            next if ($line !~ /^\s*(\S+)\s+(\S+)/);
-            my ($psu_num, $status) = ($1, $2);
-            
-            if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Psu '$psu_num' status is '$status'");
-            }
-        }
-    }
-    
-    if ($stdout =~ /^Supply voltages:(.*?):/ims) {
-        #Supply voltages:
-        #1               5V status=ok
-        #2              3V3 status=ok
-        #3             +12V status=ok
-        my @content = split(/\n/, $1);
-        shift @content;
-        pop @content;
-        foreach my $line (@content) {
-            $line = centreon::plugins::misc::trim($line);
-            my @fields = split(/\s+/, $line);
-
-            shift @fields;
-            my $field_status = pop(@fields);
-            $field_status =~ /status=(.*)/i;
-            my $status = $1;
-            my $name = join(' ', @fields);
-            if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Supply voltage '$name' status is '$status'");
-            }
-        }
-    }
-    
-    if ($stdout =~ /^System status flags:(.*)/ims) {
-        #System status flags:
-        # 1        SCSI-Term status=ok
-        # 2             USB0 status=ok
-        # 3             USB1 status=ok
-        my @content = split(/\n/, $1);
-        shift @content;
-        pop @content;
-        foreach my $line (@content) {
-            $line = centreon::plugins::misc::trim($line);
-            my @fields = split(/\s+/, $line);
-
-            shift @fields;
-            my $field_status = pop(@fields);
-            $field_status =~ /status=(.*)/i;
-            my $status = $1;
-            my $name = join(' ', @fields);
-            if ($status !~ /OK/i) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "System '$name' flag status is '$status'");
-            }
-        }
-    }
+                                                  command_options => $self->{option_results}->{command_options},
+                                                  no_quit => 1);
+    $self->component();
  
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+            $self->{components}->{$options{section}}->{skip}++;
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+            return 1;
+        }
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+        return 1;
+    }
+    return 0;
 }
 
 1;
@@ -193,7 +180,7 @@ Hostname to query (need --remote).
 
 =item B<--ssh-option>
 
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
 =item B<--ssh-path>
 
@@ -223,6 +210,21 @@ Command path (Default: '/usr/sbin').
 =item B<--command-options>
 
 Command options (Default: '-fpv 2>&1').
+
+=item B<--component>
+
+Which component to check (Default: 'all').
+Can be: 'fan', 'psu', 'voltage', 'sf'.
+
+=item B<--exclude>
+
+Exclude some parts (comma seperated list) (Example: --exclude=fan,sf)
+Can also exclude specific instance: --exclude=fan#1#,sf
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
 
 =back
 
