@@ -107,7 +107,7 @@ sub check {
         my $oid_end = $1 . '.' . $2;
         
         next if ($present_map{$result->{$key}} ne 'present' && 
-                 $self->absent_problem(section => 'fans', instance => $1 . '.' . $2));
+                 $self->absent_problem(section => 'fan', instance => $1 . '.' . $2));
         
         
         push @oids_end, $oid_end;
@@ -125,7 +125,7 @@ sub check {
         my $fan_redundant = $result->{$oid_cpqHeFltTolFanRedundant . '.' . $_};
         my $fan_redundantpartner = $result->{$oid_cpqHeFltTolFanRedundantPartner . '.' . $_};
 
-        next if ($self->check_exclude(section => 'fans', instance => $fan_chassis . '.' . $fan_index));
+        next if ($self->check_exclude(section => 'fan', instance => $fan_chassis . '.' . $fan_index));
         $self->{components}->{fan}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fan %d status is %s, speed is %s [chassis: %s, location: %s, redundance: %s, redundant partner: %s].",
