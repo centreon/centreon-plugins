@@ -33,41 +33,47 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::psu;
+package os::solaris::local::mode::lomv120components::fan;
 
 use strict;
 use warnings;
 
 my %conditions = (
-    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+    1 => ['^(?!(OK)$)' => 'CRITICAL'],
 );
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fan'));
     
-    # Enclosure SPE Power A0 State: Present
-    # Bus 0 Enclosure 0 Power A State: Present
-    while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(Power)\s+(\S+)\s+State:\s+(.*)$/mgi) {
-        my ($state, $instance) = ($5, "$2.$3.$4");
-        if (defined($1)) {
-            $instance = "$1.$2.$3.$4";
-        }
+    #Fans:
+    #1 FAULT speed 0%
+    #2 FAULT speed 0%
+    #3 OK speed 100%
+    #4 OK speed 100%
+    return if ($self->{stdout} !~ /^Fans:(.*?):/ims);
+    
+    my @content = split(/\n/, $1);
+    shift @content;
+    pop @content;
+    foreach my $line (@content) {
+        next if ($line !~ /^\s*(\S+)\s+(\S+)/);
+        my ($instance, $status) = ($1, $2);
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
-        $self->{components}->{psu}->{total}++;
+        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        $self->{components}->{fan}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
-                                                        $instance, $state)
+        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is %s.",
+                                                        $instance, $status)
                                     );
         foreach (keys %conditions) {
-            if ($state =~ /${$conditions{$_}}[0]/i) {
-                $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
-                                            short_msg => sprintf("Power Supply '%s' state is %s",
-                                                        $instance, $state));
+            if ($status =~ /${$conditions{$_}}[0]/i) {
+                $self->{output}->output_add(severity => ${$conditions{$_}}[1],
+                                            short_msg => sprintf("fan '%s' status is %s",
+                                                                 $instance, $status));
                 last;
             }
         }
