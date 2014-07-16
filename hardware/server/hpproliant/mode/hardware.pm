@@ -283,13 +283,13 @@ Can be: 'cpu', 'psu', 'pc', 'fan', 'network', 'temperature', 'storage'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fans,modules)
-Can also exclude specific instance: --exclude=fans#1.2#,lnic#1#,psus
+Exclude some parts (comma seperated list) (Example: --exclude=fan,cpu)
+Can also exclude specific instance: --exclude=fan#1.2#,lnic#1#,cpu
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fans#1.2#,psus
+Can be specific or global: --absent-problem=fan#1.2#,cpu
 
 =item B<--no-component>
 
