@@ -20,7 +20,7 @@ BEGIN {
 use base qw(centreon::script);
 use vars qw(%centreonesxd_config);
 
-my $VERSION = "1.5.3";
+my $VERSION = "1.5.5";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 my @load_modules = ('centreon::esxd::cmdcountvmhost',
                     'centreon::esxd::cmdcpuhost',
@@ -240,6 +240,29 @@ sub load_module {
     }    
 }
 
+sub verify_child_vsphere {
+    my $self = shift;
+    
+    # Don't need that. We need to quit. Don't want to recreate sub-process :)
+    return if ($self->{stop} != 0);
+    
+    # Some dead process. need to relaunch it
+    foreach (keys %{$self->{return_child}}) {
+        delete $self->{return_child}->{$_};
+        if (defined($self->{centreonesxd_config}->{vsphere_server}->{$_})) {
+            $self->{logger}->writeLogError("Sub-process for '" . $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name} . "' dead ???!! We relaunch it");
+            
+            close $self->{centreonesxd_config}->{vsphere_server}->{ $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name} }->{writer_two};
+            close $self->{centreonesxd_config}->{vsphere_server}->{ $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name} }->{reader_one};
+            delete $self->{filenos}->{ $self->{centreonesxd_config}->{vsphere_server}->{$_}->{fd}  };
+            $self->{read_select}->remove($self->{centreonesxd_config}->{vsphere_server}->{$_}->{fd});
+            
+            $self->create_vsphere_child(vsphere_name => $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name});
+            delete $self->{centreonesxd_config}->{vsphere_server}->{$_};
+        }
+    }
+}
+
 sub verify_child {
     my $self = shift;
     my $progress = 0;
@@ -423,6 +446,39 @@ sub vsphere_handler {
     }
 }
 
+sub create_vsphere_child {
+    my ($self, %options) = @_;
+    
+    $self->{logger}->writeLogInfo("Create vsphere sub-process for '" . $options{vsphere_name} . "'");
+    my ($reader_pipe_one, $writer_pipe_one);
+    my ($reader_pipe_two, $writer_pipe_two);
+    $self->{whoaim} = $options{vsphere_name};
+
+    pipe($reader_pipe_one, $writer_pipe_one);
+    pipe($reader_pipe_two, $writer_pipe_two);
+    $writer_pipe_one->autoflush(1);
+    $writer_pipe_two->autoflush(1);
+
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_one} = \*$reader_pipe_one;
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_one} = \*$writer_pipe_one;
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_two} = \*$reader_pipe_two;
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_two} = \*$writer_pipe_two;
+    $self->{child_vpshere_pid} = fork();
+    if (!$self->{child_vpshere_pid}) {
+        close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_one};
+        close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_two};
+        $self->vsphere_handler();
+        exit(0);
+    }
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 1;
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{child_vpshere_pid}} = { name => $self->{whoaim}, fd => fileno(${$self->{centreonesxd_config}->{vsphere_server}->{$options{vsphere_name}}->{reader_one}})};
+    close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_one};
+    close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_two};
+    
+    $self->{filenos}->{fileno(${$self->{centreonesxd_config}->{vsphere_server}->{$options{vsphere_name}}->{reader_one}})} = 1;
+    $self->{read_select}->add(${$self->{centreonesxd_config}->{vsphere_server}->{$options{vsphere_name}}->{reader_one}});
+}
+
 sub run {
     my $self = shift;
 
@@ -444,38 +500,13 @@ sub run {
     ##
     # Create childs
     ##
-    foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
-        my ($reader_pipe_one, $writer_pipe_one);
-        my ($reader_pipe_two, $writer_pipe_two);
-        $self->{whoaim} = $_;
-
-        pipe($reader_pipe_one, $writer_pipe_one);
-        pipe($reader_pipe_two, $writer_pipe_two);
-        $writer_pipe_one->autoflush(1);
-        $writer_pipe_two->autoflush(1);
-
-        $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_one} = \*$reader_pipe_one;
-        $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_one} = \*$writer_pipe_one;
-        $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_two} = \*$reader_pipe_two;
-        $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_two} = \*$writer_pipe_two;
-        $self->{child_vpshere_pid} = fork();
-        if (!$self->{child_vpshere_pid}) {
-            close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_one};
-            close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_two};
-            $self->vsphere_handler();
-            exit(0);
-        }
-        $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 1;
-        close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{writer_one};
-        close $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{reader_two};
-    }
-
     $self->{read_select} = new IO::Select();
     $self->{read_select}->add($server);
+    
     foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
-        $self->{filenos}->{fileno(${$self->{centreonesxd_config}->{vsphere_server}->{$_}->{reader_one}})} = 1;
-        $self->{read_select}->add(${$self->{centreonesxd_config}->{vsphere_server}->{$_}->{reader_one}});
+        $self->create_vsphere_child(vsphere_name => $_);
     }
+
     my $socket_fileno = fileno($server);
     $self->{logger}->writeLogInfo("[Server accepting clients]");
     while (1) {
@@ -568,6 +599,9 @@ sub run {
             }
         }
 
+        # Check if there some dead sub-process.
+        $self->verify_child_vsphere();
+        
         # Verify socket 
         foreach (keys %{$self->{sockets}}) {
             if (time() - $self->{sockets}->{$_}->{ctime} > $self->{centreonesxd_config}->{timeout}) {
