@@ -23,7 +23,7 @@ sub getCommandName {
 
 sub checkArgs {
     my $self = shift;
-    my ($ds, $warn, $crit, $warn2, $crit2) = @_;
+    my ($ds, $filter, $warn, $crit, $warn2, $crit2) = @_;
 
     if (!defined($ds) || $ds eq "") {
         $self->{logger}->writeLogError("ARGS error: need datastore name");
