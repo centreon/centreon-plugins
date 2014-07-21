@@ -39,6 +39,7 @@ use strict;
 use warnings;
 use SNMP;
 use Socket;
+use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -290,6 +291,173 @@ sub get_leef {
     return $results;
 }
 
+sub multiple_find_bigger {
+    my ($self, %options) = @_;
+    
+    my $getting = {};
+    my @values = ();
+    foreach my $key (keys %{$options{working_oids}}) {
+        push @values, $options{working_oids}->{$key}->{start};
+        $getting->{ $options{working_oids}->{$key}->{start} } = $key;
+    }
+    @values = $self->oid_lex_sort(@values);
+    
+    return $getting->{pop(@values)};
+}
+
+sub get_multiple_table {
+    my ($self, %options) = @_;
+    # $options{dont_quit} = integer
+    # $options{oids} = refs array
+    #     [ { oid => 'x.x.x.x', start => '', end => ''}, { oid => 'y.y.y.y', start => '', end => ''} ]
+    # $options{return_type} = integer
+    
+    my ($return_type) = (defined($options{return_type}) && $options{return_type} == 1) ? 1 : 0;
+    my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
+    my ($nothing_quit) = (defined($options{nothing_quit}) && $options{nothing_quit} == 1) ? 1 : 0;
+    $self->set_error();
+    
+    my $working_oids = {};
+    my $results = {};
+    # Check overlap
+    foreach my $entry (@{$options{oids}}) {
+        # Transform asking
+        if ($entry->{oid} !~ /(.*)\.(\d+)([\.\s]*)$/) {
+            if ($dont_quit == 1) {
+                $self->set_error(error_status => -1, error_msg => "Method 'get_table': Wrong OID '" . $entry->{oid} . "'.");
+                return undef;
+            }
+            $self->{output}->add_option_msg(short_msg => "Method 'get_table': Wrong OID '" . $entry->{oid} . "'.");
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+        }
+    
+        if (defined($entry->{start})) {
+            $working_oids->{$entry->{oid}} = { start => $entry->{start}, end => $entry->{end} }; # last in it
+        } else {
+            $working_oids->{$entry->{oid}} = { start => $entry->{oid}, end => $entry->{end} };
+        }
+        
+        if ($return_type == 0) {
+            $results->{$entry->{oid}} = {};
+        }
+    }
+    
+    # we use a medium (UDP have a PDU limit. SNMP protcol cant send multiples for one request)
+    # So we need to manage
+    # It's for "bulk". We ask 50 next values. If you set 1, it's like a getnext (snmp v1)
+    my $repeat_count = 50;
+    if (defined($self->{maxrepetitions}) && 
+        $self->{maxrepetitions} =~ /^d+$/) {
+        $repeat_count = $self->{maxrepetitions};
+    }
+    
+    $repeat_count = floor($repeat_count / (scalar(keys %{$working_oids})));
+    $repeat_count = 1 if ($repeat_count == 0);
+        
+    # Quit if base not the same or 'ENDOFMIBVIEW' value. Need all oid finish otherwise we continue :)
+    while (1) {
+        my $current_oids = 0;
+        my @bindings = ();
+        my @bases = ();
+        foreach my $key (keys %{$working_oids}) {
+            $working_oids->{$key}->{start} =~ /(.*)\.(\d+)([\.\s]*)$/;
+            push @bindings, [$1, $2];
+            push @bases, $key;
+            
+            $current_oids++;
+        }
+        
+        # Nothing more to check. We quit
+        last if ($current_oids == 0);
+        
+        my $vb = new SNMP::VarList(@bindings);
+        
+        if ($self->is_snmpv1()) {
+            $self->{session}->getnext($vb);
+        } else {
+            $self->{session}->getbulk(0, $repeat_count, $vb);
+        }
+        
+        # Error
+        if ($self->{session}->{ErrorNum}) {
+            # 0    noError       Pas d'erreurs.
+            # 1    tooBig        Reponse de taille trop grande.
+            # 2    noSuchName    Variable inexistante.
+            if ($self->{session}->{ErrorNum} == 2) {
+                # We are at the end with snmpv1. Need to find the most up oid ;)
+                my $oid_base = $self->multiple_find_bigger(working_oids => $working_oids);
+                delete $working_oids->{$oid_base};
+                next;
+            }
+            
+            my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
+        
+            if ($dont_quit == 0) {
+                $self->{output}->add_option_msg(short_msg => $msg);
+                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+            }
+            
+            $self->set_error(error_status => -1, error_msg => $msg);
+            return undef;
+        }
+        
+        # Manage
+        # step by step: [ 1 => 1, 2 => 1, 3 => 1 ], [ 1 => 2, 2 => 2, 3 => 2 ],...
+        
+        my $pos = -1;
+        foreach my $entry (@$vb) {
+            $pos++;
+        
+            # Already destruct. we continue
+            next if (!defined($working_oids->{ $bases[$pos % $current_oids] }));
+        
+            # ENDOFMIBVIEW is on each iteration. So we need to delete and skip after that
+            if (${$entry}[2] eq 'ENDOFMIBVIEW') {
+                delete $working_oids->{ $bases[$pos % $current_oids] };
+                # END mib
+                next;
+            }
+        
+            # Not in same table
+            my $complete_oid = ${$entry}[0] . "." . ${$entry}[1];
+            my $base = $bases[$pos % $current_oids];
+            if ($complete_oid !~ /^$base\./ ||
+                (defined($working_oids->{ $bases[$pos % $current_oids] }->{end}) && 
+                 $self->check_oid_up($complete_oid, $working_oids->{ $bases[$pos % $current_oids] }->{end}) )) {
+                delete $working_oids->{ $bases[$pos % $current_oids] };
+                next;
+            }
+        
+            if ($return_type == 0) {
+                $results->{$bases[$pos % $current_oids]}->{$complete_oid} = ${$entry}[2];
+            } else {
+                $results->{$complete_oid} = ${$entry}[2];
+            }
+
+            $working_oids->{ $bases[$pos % $current_oids] }->{start} = $complete_oid;
+        }
+    }
+    
+    my $total = 0;
+    if ($nothing_quit == 1) {
+        if ($return_type == 1) {
+            $total = scalar(keys %{$results});
+           
+        } else {
+            foreach (keys %{$results}) {
+                $total += scalar(%{$results->{$_}});
+            }
+        }
+        
+        if ($total == 0) {
+            $self->{output}->add_option_msg(short_msg => "SNMP Table Request: Cant get a single value.");
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+        }
+    }
+    
+    return $results;
+}
+
 sub get_table {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -304,7 +472,6 @@ sub get_table {
     if (defined($options{start})) {
         $options{start} = $self->clean_oid($options{start});
     }
-    my ($end_base, $end_instance);
     if (defined($options{end})) {
         $options{end} = $self->clean_oid($options{end});
     }
