@@ -63,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Citrix NetScaler 8000x Family in SNMP.
+Check Palo Alto PA 500 Family in SNMP.
 
 =cut
