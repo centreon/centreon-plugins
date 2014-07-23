@@ -49,6 +49,7 @@ sub new {
     %{$self->{modes}} = (
 			'cpu' => 'snmp_standard::mode::cpu',
 			'traffic' => 'snmp_standard::mode::traffic',
+                        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                         'hardware' => 'snmp_standard::mode::hardwaredevice',
                         'packet-errors' => 'snmp_standard::mode::packeterrors',
                          );
