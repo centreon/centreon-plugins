@@ -38,8 +38,8 @@ package storage::emc::clariion::mode::spcomponents::memory;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+my @conditions = (
+    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
 );
 
 sub check {
@@ -60,9 +60,9 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("Dimm '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (keys %conditions) {
-            if ($state =~ /${$conditions{$_}}[0]/i) {
-                $self->{output}->output_add(severity =>  ${$conditions{$_}}[1],
+        foreach (@conditions) {
+            if ($state =~ /$$_[0]/i) {
+                $self->{output}->output_add(severity =>  $$_[1],
                                             short_msg => sprintf("Dimm '%s' state is %s",
                                                         $instance, $state));
                 last;
