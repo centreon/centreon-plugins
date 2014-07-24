@@ -191,7 +191,7 @@ __END__
 
 =head1 MODE
 
-Check status of alcatel hardware.
+Check status of alcatel hardware (AlcatelIND1Chassis.mib).
 
 =over 8
 
