@@ -68,6 +68,12 @@ sub connect {
         $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
     }
    
+    if (defined($options{headers})) {
+        foreach my $key (keys %{$options{headers}}) {
+            $req->header($key => $options{headers}->{$key});
+        }
+    }
+    
     if (defined($self->{option_results}->{credentials}) && defined($self->{option_results}->{ntlm})) {
         $ua->credentials($self->{option_results}->{hostname} . ':' . $self->{option_results}->{port}, '', $self->{option_results}->{username}, $self->{option_results}->{password});
     } elsif (defined($self->{option_results}->{credentials})) {
