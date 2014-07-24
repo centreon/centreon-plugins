@@ -204,7 +204,17 @@ sub run {
                                             short_msg => "Interface '" . $display_value . "' Speed is null or incorrect. You should force the value with --speed option");
                 next;
             }
-            my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_} * 1000000) : ($result->{$oid_speed32 . "." . $_}));
+            my $interface_speed;
+
+            if (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '') {
+                $interface_speed = $result->{$oid_speed64 . "." . $_} * 1000000;
+                # If 0, we put the 32 bits
+                if ($interface_speed == 0) {
+                    $interface_speed = $result->{$oid_speed32 . "." . $_};
+                }
+            } else {
+                $interface_speed = $result->{$oid_speed32 . "." . $_};
+            }
             if (!defined($interface_speed) || $interface_speed == 0) {
                 if (!defined($self->{option_results}->{skip_speed0})) {
                     $self->{output}->output_add(severity => 'UNKNOWN',
