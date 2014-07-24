@@ -324,10 +324,10 @@ sub get_multiple_table {
         # Transform asking
         if ($entry->{oid} !~ /(.*)\.(\d+)([\.\s]*)$/) {
             if ($dont_quit == 1) {
-                $self->set_error(error_status => -1, error_msg => "Method 'get_table': Wrong OID '" . $entry->{oid} . "'.");
+                $self->set_error(error_status => -1, error_msg => "Method 'get_multiple_table': Wrong OID '" . $entry->{oid} . "'.");
                 return undef;
             }
-            $self->{output}->add_option_msg(short_msg => "Method 'get_table': Wrong OID '" . $entry->{oid} . "'.");
+            $self->{output}->add_option_msg(short_msg => "Method 'get_multiple_table': Wrong OID '" . $entry->{oid} . "'.");
             $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
         }
     
@@ -445,7 +445,7 @@ sub get_multiple_table {
            
         } else {
             foreach (keys %{$results}) {
-                $total += scalar(%{$results->{$_}});
+                $total += scalar(keys %{$results->{$_}});
             }
         }
         

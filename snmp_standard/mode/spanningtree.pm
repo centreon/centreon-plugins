@@ -47,6 +47,8 @@ my %states = (
     4 => ['learning', 'OK'],
     5 => ['forwarding', 'OK'],
     6 => ['broken', 'CRITICAL'],
+    
+    10 => ['not defined', 'UNKNOWN'], # mine status
 );
 
 sub new {
@@ -76,39 +78,43 @@ sub run {
     my $oid_dot1dStpPortState = '.1.3.6.1.2.1.17.2.15.1.3';
     my $oid_dot1dBasePortIfIndex = '.1.3.6.1.2.1.17.1.4.1.2';
     my $oid_ifDesc = '.1.3.6.1.2.1.2.2.1.2';
-    my $result = $self->{snmp}->get_table(oid => $oid_dot1dStpPortEnable, nothing_quit => 1);
-    
-    foreach my $oid (keys %$result) {
+    my $results = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_dot1dStpPortEnable },
+                                                            { oid => $oid_dot1dStpPortState },
+                                                           ], nothing_quit => 1);
+    my @instances = ();
+    foreach my $oid (keys %{$results->{$oid_dot1dStpPortEnable}}) {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
 
         # '2' => disabled, we skip
-        if ($result->{$oid} == 2) {
+        if ($results->{$oid_dot1dStpPortEnable}->{$oid} == 2) {
             $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
             next;
         }
         
-        $self->{snmp}->load(oids => [$oid_dot1dStpPortState . "." . $instance, $oid_dot1dBasePortIfIndex . "." . $instance]);
+        push @instances, $instance;
+       
     }
     
-    $result = $self->{snmp}->get_leef(nothing_quit => 1);
+    $self->{snmp}->load(oids => [$oid_dot1dBasePortIfIndex],
+                            instances => [@instances]);
+    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'Spanning Tree is ok on all interfaces');
     # Get description
     foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_dot1dBasePortIfIndex/);
+        next if ($oid !~ /^$oid_dot1dBasePortIfIndex\./ || !defined($result->{$oid}));
+        
         $self->{snmp}->load(oids => [$oid_ifDesc . "." . $result->{$oid}]);
     }
     my $result_desc = $self->{snmp}->get_leef();
     
-    # Parsing ports
-    foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_dot1dStpPortState/);
-        $oid =~ /\.([0-9]+)$/;
-        my $instance = $1;
-
-        my $stp_state = $result->{$oid};
-        my $descr = $result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}};
+    foreach my $instance (@instances) {
+        my $stp_state = defined($results->{$oid_dot1dStpPortState}->{$oid_dot1dStpPortState . '.' . $instance}) ? 
+                          $results->{$oid_dot1dStpPortState}->{$oid_dot1dStpPortState . '.' . $instance} : 10;
+        my $descr = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ? 
+                        $result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
         
         $self->{output}->output_add(long_msg => sprintf("Spanning Tree interface '%s' state is %s", $descr,
                                             ${$states{$stp_state}}[0]));
