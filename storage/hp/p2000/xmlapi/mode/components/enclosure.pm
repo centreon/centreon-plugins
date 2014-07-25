@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::hp::p2000::xmlapi::mode::components::disk;
+package storage::hp::p2000::xmlapi::mode::components::enclosure;
 
 use strict;
 use warnings;
@@ -55,29 +55,28 @@ my %health = (
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    $self->{output}->output_add(long_msg => "Checking enclosures");
+    $self->{components}->{enclosure} = {name => 'enclosures', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'enclosure'));
     
-    my $results = $self->{p2000}->get_infos(cmd => 'show disks', 
-                                            base_type => 'drives',
-                                            key => 'durable-id', 
-                                            properties_name => '^health-numeric$');
-    
-    foreach my $disk_id (keys %$results) {
-        next if ($self->check_exclude(section => 'disk', instance => $disk_id));
-        $self->{components}->{disk}->{total}++;
+    my $results = $self->{p2000}->get_infos(cmd => 'show enclosures', 
+                                            base_type => 'enclosures',
+                                            key => 'durable-id',
+                                            properties_name => '^health-numeric|health-reason$');
+    foreach my $enc_id (keys %$results) {
+        next if ($self->check_exclude(section => 'enclosure', instance => $enc_id));
+        $self->{components}->{enclosure}->{total}++;
         
-        my $state = $health{$results->{$disk_id}->{'health-numeric'}};
+        my $state = $health{$results->{$enc_id}->{'health-numeric'}};
         
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is %s.",
-                                                        $disk_id, $state)
+        $self->{output}->output_add(long_msg => sprintf("enclosure '%s' status is %s.",
+                                                        $enc_id, $state)
                                     );
         foreach (@conditions) {
             if ($state =~ /$$_[0]/i) {
                 $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Disk '%s' status is %s",
-                                                        $disk_id, $state));
+                                            short_msg => sprintf("enclosure '%s' status is %s (reason: %s)",
+                                                        $enc_id, $state, $health{$results->{$enc_id}->{'health-reason'}}));
                 last;
             }
         }

@@ -33,51 +33,44 @@
 #
 ####################################################################################
 
-package storage::hp::p2000::xmlapi::mode::components::disk;
+package storage::hp::p2000::xmlapi::mode::components::fru;
 
 use strict;
 use warnings;
 
 my @conditions = (
-    ['^degraded$' => 'WARNING'],
-    ['^failed$' => 'CRITICAL'],
-    ['^(unknown|not available)$' => 'UNKNOWN'],
-);
-
-my %health = (
-    0 => 'ok',
-    1 => 'degraded',
-    2 => 'failed',
-    3 => 'unknown',
-    4 => 'not available',
+    ['^absent$' => 'WARNING'],
+    ['^fault$' => 'CRITICAL'],
+    ['^not available$' => 'UNKNOWN'],
 );
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    $self->{output}->output_add(long_msg => "Checking frus");
+    $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fru'));
     
-    my $results = $self->{p2000}->get_infos(cmd => 'show disks', 
-                                            base_type => 'drives',
-                                            key => 'durable-id', 
-                                            properties_name => '^health-numeric$');
+    my $results = $self->{p2000}->get_infos(cmd => 'show frus', 
+                                            base_type => 'enclosure-fru',
+                                            key => 'part-number', 
+                                            properties_name => '^(fru-status|fru-location)$');
+    foreach my $part_number (keys %$results) {
+        my $instance = $results->{$part_number}->{'fru-location'};
     
-    foreach my $disk_id (keys %$results) {
-        next if ($self->check_exclude(section => 'disk', instance => $disk_id));
-        $self->{components}->{disk}->{total}++;
+        next if ($self->check_exclude(section => 'fru', instance => $instance));
+        $self->{components}->{fru}->{total}++;
         
-        my $state = $health{$results->{$disk_id}->{'health-numeric'}};
+        my $state = $results->{$part_number}->{'fru-status'};
         
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is %s.",
-                                                        $disk_id, $state)
+        $self->{output}->output_add(long_msg => sprintf("fru '%s' status is %s.",
+                                                        $instance, $state)
                                     );
         foreach (@conditions) {
             if ($state =~ /$$_[0]/i) {
                 $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Disk '%s' status is %s",
-                                                        $disk_id, $state));
+                                            short_msg => sprintf("fru '%s' status is %s",
+                                                        $instance, $state));
                 last;
             }
         }

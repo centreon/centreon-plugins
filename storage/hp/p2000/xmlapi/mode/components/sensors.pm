@@ -33,54 +33,63 @@
 #
 ####################################################################################
 
-package storage::hp::p2000::xmlapi::mode::components::disk;
+package storage::hp::p2000::xmlapi::mode::components::sensors;
 
 use strict;
 use warnings;
 
 my @conditions = (
-    ['^degraded$' => 'WARNING'],
-    ['^failed$' => 'CRITICAL'],
-    ['^(unknown|not available)$' => 'UNKNOWN'],
+    ['^warning|not installed|unavailable$' => 'WARNING'],
+    ['^error|unrecoverable$' => 'CRITICAL'],
+    ['^unknown|unsupported$' => 'UNKNOWN'],
 );
 
-my %health = (
-    0 => 'ok',
-    1 => 'degraded',
-    2 => 'failed',
-    3 => 'unknown',
-    4 => 'not available',
+my %sensor_type = (
+    # 2 it's other. Can be ok or '%'. Need to regexp
+    3 => { unit => 'C' },
+    6 => { unit => 'V' },
+    9 => { unit => 'V' },
 );
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    $self->{output}->output_add(long_msg => "Checking sensors");
+    $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sensor'));
     
-    my $results = $self->{p2000}->get_infos(cmd => 'show disks', 
-                                            base_type => 'drives',
-                                            key => 'durable-id', 
-                                            properties_name => '^health-numeric$');
-    
-    foreach my $disk_id (keys %$results) {
-        next if ($self->check_exclude(section => 'disk', instance => $disk_id));
-        $self->{components}->{disk}->{total}++;
+    # We don't use status-numeric. Values are buggy !!!???
+    my $results = $self->{p2000}->get_infos(cmd => 'show sensor-status', 
+                                            base_type => 'sensors',
+                                            key => 'sensor-name', 
+                                            properties_name => '^(value|sensor-type|status)$');
+
+    foreach my $sensor_id (keys %$results) {
+        next if ($self->check_exclude(section => 'sensor', instance => $sensor_id));
+        $self->{components}->{sensor}->{total}++;
         
-        my $state = $health{$results->{$disk_id}->{'health-numeric'}};
+        my $state = $results->{$sensor_id}->{status};
         
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is %s.",
-                                                        $disk_id, $state)
+        $results->{$sensor_id}->{value} =~ /\s*([0-9\.,]+)\s*(\S*)\s*/;
+        my ($value, $unit) = ($1, $2);
+        if (defined($sensor_type{$results->{$sensor_id}->{'sensor-type'}})) {
+            $unit = $sensor_type{$results->{$sensor_id}->{'sensor-type'}}->{unit};
+        }
+        
+        $self->{output}->output_add(long_msg => sprintf("sensor '%s' status is %s (value: %s %s).",
+                                                        $sensor_id, $state, $value, $unit)
                                     );
         foreach (@conditions) {
             if ($state =~ /$$_[0]/i) {
                 $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Disk '%s' status is %s",
-                                                        $disk_id, $state));
+                                            short_msg => sprintf("sensor '%s' status is %s",
+                                                        $sensor_id, $state));
                 last;
             }
         }
+        
+        $self->{output}->perfdata_add(label => $sensor_id, unit => $unit,
+                                      value => $value);
     }
 }
 
