@@ -41,6 +41,10 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use storage::hp::p2000::xmlapi::mode::components::disk;
+use storage::hp::p2000::xmlapi::mode::components::vdisk;
+use storage::hp::p2000::xmlapi::mode::components::sensors;
+use storage::hp::p2000::xmlapi::mode::components::fru;
+use storage::hp::p2000::xmlapi::mode::components::enclosure;
 
 sub new {
     my ($class, %options) = @_;
@@ -79,8 +83,20 @@ sub component {
     
     if ($self->{option_results}->{component} eq 'all') {
         storage::hp::p2000::xmlapi::mode::components::disk::check($self);
+        storage::hp::p2000::xmlapi::mode::components::vdisk::check($self);
+        storage::hp::p2000::xmlapi::mode::components::sensors::check($self);
+        storage::hp::p2000::xmlapi::mode::components::fru::check($self);
+        storage::hp::p2000::xmlapi::mode::components::enclosure::check($self);
     } elsif ($self->{option_results}->{component} eq 'disk') {
         storage::hp::p2000::xmlapi::mode::components::disk::check($self);
+    } elsif ($self->{option_results}->{component} eq 'vdisk') {
+        storage::hp::p2000::xmlapi::mode::components::vdisk::check($self);
+    } elsif ($self->{option_results}->{component} eq 'sensor') {
+        storage::hp::p2000::xmlapi::mode::components::sensors::check($self);
+    } elsif ($self->{option_results}->{component} eq 'fru') {
+        storage::hp::p2000::xmlapi::mode::components::fru::check($self);
+    } elsif ($self->{option_results}->{component} eq 'enclosure') {
+        storage::hp::p2000::xmlapi::mode::components::enclosure::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -149,12 +165,12 @@ Check health status of storage.
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'disk', 'xxx'.
+Can be: 'disk', 'vdisk', 'sensor', 'enclosure', 'fru'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fan,lcc)
-Can also exclude specific instance: --exclude=fan#1.2#,lcc
+Exclude some parts (comma seperated list) (Example: --exclude=fru)
+Can also exclude specific instance: --exclude=disk#disk_1.4#,sensor#Temperature Loc: lower-IOM B#
 
 =item B<--no-component>
 
