@@ -119,7 +119,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 30;
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 45;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
@@ -201,6 +201,46 @@ sub DESTROY {
     }
 }
 
+sub get_infos {
+    my ($self, %options) = @_;
+    my ($xpath, $nodeset);
+    
+    my $cmd = $options{cmd};
+    $cmd =~ s/ /\//g;
+    $self->{option_results}->{url_path} = $self->{url_path} . $cmd;
+    my $response = centreon::plugins::httplib::connect($self, 
+                                                       headers => {dataType => 'api', sessionKey => $self->{session_id} });
+    
+    eval {
+        $xpath = XML::XPath->new(xml => $response);
+        $nodeset = $xpath->find("//OBJECT[\@basetype='" . $options{base_type} . "']");
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot parse 'cmd' response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    my $results = {};
+    foreach my $node ($nodeset->get_nodelist()) {
+        my $properties = {};
+
+        foreach my $prop_node ($node->getChildNodes()) {
+            my $prop_name = $prop_node->getAttribute('name');
+        
+            if (defined($prop_name) && ($prop_name eq $options{key} || 
+                $prop_name =~ /$options{properties_name}/)) {
+                $properties->{$prop_name} = $prop_node->string_value;
+            }
+        }
+        
+        if (defined($properties->{$options{key}})) {
+            $results->{$properties->{$options{key}}} = $properties;
+        }
+    }
+    
+    return $results;
+}
+
 ##############
 # Specific methods
 ##############
@@ -214,19 +254,6 @@ sub login {
     $self->{option_results}->{url_path} = $self->{url_path} . 'login/' . $md5_hash;
     my $response = centreon::plugins::httplib::connect($self);
     $self->check_login(content => $response);
-
-    # test disk
-    $self->{option_results}->{url_path} = $self->{url_path} . 'show/disks';
-    $response = centreon::plugins::httplib::connect($self, 
-                                                    headers => {dataType => 'api', sessionKey => $self->{session_id} });
-    use Data::Dumper;
-    print Data::Dumper::Dumper($response);
-    
-     $self->{option_results}->{url_path} = $self->{url_path} . 'show/sensor-status';
-    $response = centreon::plugins::httplib::connect($self, 
-                                                    headers => {dataType => 'api', sessionKey => $self->{session_id} });
-    use Data::Dumper;
-    print Data::Dumper::Dumper($response);
 }
 
 1;
