@@ -53,13 +53,13 @@ sub new {
 
     $self->{perfdatas} = [];
     
-    $self->{output_template} = $self->{label} . ': %s';
+    $self->{output_template} = $self->{label} . ' : %s';
     $self->{output_use} = undef;
     $self->{output_change_bytes} = 0;
     $self->{output_absolute_unit} = '';
     $self->{output_per_second_unit} = '';
     
-    $self->{output_error_template} = $self->{label} . ': %s';
+    $self->{output_error_template} = $self->{label} . ' : %s';
     
     $self->{threshold_use} = undef;
     $self->{threshold_warn} = undef;
@@ -178,19 +178,28 @@ sub perfdata {
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
     
     foreach my $perf (@{$self->{perfdatas}}) {
-        my ($label, $extra_label) = ($self->{label}, '');
+        my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
         my $template = '%s';
         
         $template = $perf->{template} if (defined($perf->{template}));
         $label = $perf->{label} if (defined($perf->{label}));
+        if (defined($perf->{min})) {
+            $min = ($perf->{min} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{min}} : $perf->{min};
+        }
+        if (defined($perf->{max})) {
+            $max = ($perf->{max} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{max}} : $perf->{max};
+        }
+        if (defined($perf->{threshold_total})) {
+            $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
+        }
         
         $extra_label .= '_' . $self->{instance} if ($perf->{label_extra_instance} == 1 && 
                                                     (!defined($options{extra_instance}) || $options{extra_instance} != 0));
         $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
                                       value => sprintf($template, $self->{result_values}->{$perf->{value}}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => $warn),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => $crit),
-                                      min => $perf->{min}, max => $perf->{max});
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total),
+                                      min => $min, max => $max);
     }
 }
 

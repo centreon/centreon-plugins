@@ -49,7 +49,7 @@ my $maps_counters = {
                                         { name => 'data-read-numeric', diff => 1 },
                                       ],
                         per_second => 1,
-                        output_template => 'Read I/O: %s %s/s',
+                        output_template => 'Read I/O : %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'data-read-numeric_absolute', 
@@ -63,7 +63,7 @@ my $maps_counters = {
                                         { name => 'data-written-numeric', diff => 1 },
                                       ],
                         per_second => 1,
-                        output_template => 'Write I/O: %s %s/s',
+                        output_template => 'Write I/O : %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'data-written-numeric_absolute', 
@@ -78,7 +78,7 @@ my $maps_counters = {
                                         { name => 'write-cache-misses', diff => 1 },
                                       ],
                         closure_custom_calc => \&custom_write_cache_calc,
-                        output_template => 'Write Cache Hits: %.2f %%',
+                        output_template => 'Write Cache Hits : %.2f %%',
                         output_use => 'write-cache-hits_prct', threshold_use => 'write-cache-hits_prct',
                         perfdatas => [
                             { value => 'write-cache-hits_prct', template => '%.2f',
@@ -93,7 +93,7 @@ my $maps_counters = {
                                         { name => 'read-cache-misses', diff => 1 },
                                       ],
                         closure_custom_calc => \&custom_read_cache_calc,
-                        output_template => 'Read Cache Hits: %.2f %%',
+                        output_template => 'Read Cache Hits : %.2f %%',
                         output_use => 'read-cache-hits_prct',  threshold_use => 'read-cache-hits_prct',
                         perfdatas => [
                             { value => 'read-cache-hits_prct', template => '%.2f',
@@ -106,7 +106,7 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'iops' },
                                       ],
-                        output_template => 'IOPs: %s',
+                        output_template => 'IOPs : %s',
                         perfdatas => [
                             { value => 'iops_absolute', 
                               unit => 'iops', min => 0, label_extra_instance => 1 },
@@ -236,7 +236,7 @@ sub run {
     $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $name (sort @{$self->{volume_name_selected}}) {     
-        my ($short_msg, $long_msg) = ('', '');
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
         foreach (sort keys %{$maps_counters}) {
             $maps_counters->{$_}->{obj}->set(instance => $name);
@@ -245,32 +245,35 @@ sub run {
                                                                      new_datas => $self->{new_datas});
 
             if ($value_check != 0) {
-                $long_msg .= ' ' . $maps_counters->{$_}->{obj}->output_error();
+                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
+                $long_msg_append = ', ';
                 next;
             }
             my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
             push @exits, $exit2;
 
             my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= ' ' . $output;
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
             
             if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= ' ' . $output;
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
             }
             
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Volume '$name':$long_msg");
+        $self->{output}->output_add(long_msg => "Volume '$name' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Volume '$name':$short_msg"
+                                        short_msg => "Volume '$name' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Volume '$name':$long_msg");
+            $self->{output}->output_add(short_msg => "Volume '$name' $long_msg");
         }
     }
     
