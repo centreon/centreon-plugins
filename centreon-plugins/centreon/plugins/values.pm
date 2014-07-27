@@ -118,8 +118,8 @@ sub calc {
 sub threshold_check {
     my ($self, %options) = @_;
     
-    if (defined($self->{closure_custom_threshpld})) {
-        return &{$self->{closure_custom_threshold}}($self);
+    if (defined($self->{closure_custom_threshpld_check})) {
+        return &{$self->{closure_custom_threshold_check}}($self, %options);
     }
     
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
@@ -174,6 +174,11 @@ sub output {
 
 sub perfdata {
     my ($self, %options) = @_;
+    
+    if (defined($self->{closure_custom_perfdata})) {
+        return &{$self->{closure_custom_perfdata}}($self, %options);
+    }
+    
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
     
