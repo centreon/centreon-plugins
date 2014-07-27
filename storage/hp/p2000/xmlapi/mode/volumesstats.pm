@@ -49,7 +49,7 @@ my $maps_counters = {
                                         { name => 'data-read-numeric', diff => 1 },
                                       ],
                         per_second => 1,
-                        output_template => 'Read I/O : %s %s/s',
+                        output_template => 'Read I/O: %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'data-read-numeric_absolute', 
@@ -63,11 +63,41 @@ my $maps_counters = {
                                         { name => 'data-written-numeric', diff => 1 },
                                       ],
                         per_second => 1,
-                        output_template => 'Write I/O : %s %s/s',
+                        output_template => 'Write I/O: %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'data-written-numeric_absolute', 
                               unit => 'B/s', min => 0, label_extra_instance => 1 },
+                        ],
+                    }
+               },
+    'write-cache-hits' => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'write-cache-hits', diff => 1 },
+                                        { name => 'write-cache-misses', diff => 1 },
+                                      ],
+                        closure_custom_calc => \&custom_write_cache_calc,
+                        output_template => 'Write Cache Hits: %.2f %%',
+                        output_use => 'write-cache-hits_prct', threshold_use => 'write-cache-hits_prct',
+                        perfdatas => [
+                            { value => 'write-cache-hits_prct', template => '%.2f',
+                              unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                        ],
+                    }
+               },
+    'read-cache-hits' => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'read-cache-hits', diff => 1 },
+                                        { name => 'read-cache-misses', diff => 1 },
+                                      ],
+                        closure_custom_calc => \&custom_read_cache_calc,
+                        output_template => 'Read Cache Hits: %.2f %%',
+                        output_use => 'read-cache-hits_prct',  threshold_use => 'read-cache-hits_prct',
+                        perfdatas => [
+                            { value => 'read-cache-hits_prct', template => '%.2f',
+                              unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                         ],
                     }
                },
@@ -76,7 +106,7 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'iops' },
                                       ],
-                        output_template => 'IOPs : %s',
+                        output_template => 'IOPs: %s',
                         perfdatas => [
                             { value => 'iops_absolute', 
                               unit => 'iops', min => 0, label_extra_instance => 1 },
@@ -84,6 +114,36 @@ my $maps_counters = {
                     }
                },
 };
+
+sub custom_write_cache_calc {
+    my ($self, %options) = @_;
+    my $diff_hits = ($options{new_datas}->{$self->{instance} . '_write-cache-hits'} - $options{old_datas}->{$self->{instance} . '_write-cache-hits'});
+    my $total = $diff_hits
+                + ($options{new_datas}->{$self->{instance} . '_write-cache-misses'} - $options{old_datas}->{$self->{instance} . '_write-cache-misses'});
+    
+    if ($total == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    
+    $self->{result_values}->{'write-cache-hits_prct'} = $diff_hits * 100 / $total;
+    return 0;
+}
+
+sub custom_read_cache_calc {
+    my ($self, %options) = @_;
+    my $diff_hits = ($options{new_datas}->{$self->{instance} . '_read-cache-hits'} - $options{old_datas}->{$self->{instance} . '_read-cache-hits'});
+    my $total = $diff_hits
+                + ($options{new_datas}->{$self->{instance} . '_read-cache-misses'} - $options{old_datas}->{$self->{instance} . '_read-cache-misses'});
+    
+    if ($total == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    
+    $self->{result_values}->{'read-cache-hits_prct'} = $diff_hits * 100 / $total;
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -108,10 +168,9 @@ sub new {
         $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
                                                      output => $self->{output}, perfdata => $self->{perfdata},
                                                      label => $_);
+        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
     }
- 
 
-    
     return $self;
 }
 
@@ -120,12 +179,7 @@ sub check_options {
     $self->SUPER::init(%options);
     
     foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            }
-        }
+        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
     }
     
     $self->{statefile_value}->check_options(%options);
@@ -138,7 +192,7 @@ sub manage_selection {
                                                  base_type => 'volume-statistics',
                                                  key => 'volume-name',
                                                  properties_name => '^data-read-numeric|data-written-numeric|write-cache-hits|write-cache-misses|read-cache-hits|read-cache-misses|iops$');
-    foreach my $name (keys %{$self->{results}}) {
+    foreach my $name (sort keys %{$self->{results}}) {
         # Get all without a name
         if (!defined($self->{option_results}->{name})) {
             push @{$self->{volume_name_selected}}, $name; 
@@ -168,7 +222,12 @@ sub run {
     $self->{p2000}->login(); 
     $self->manage_selection();
     
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
+    my $multiple = 1;
+    if (scalar(@{$self->{volume_name_selected}}) == 1) {
+        $multiple = 0;
+    }
+    
+    if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All volumes statistics are ok.');
     }
@@ -179,15 +238,16 @@ sub run {
     foreach my $name (sort @{$self->{volume_name_selected}}) {     
         my ($short_msg, $long_msg) = ('', '');
         my @exits;
-        foreach (keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $name, 
-                                           %{$maps_counters->{$_}->{set}},
-                                           );
+        foreach (sort keys %{$maps_counters}) {
+            $maps_counters->{$_}->{obj}->set(instance => $name);
         
             my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{results}->{$name},
                                                                      new_datas => $self->{new_datas});
 
-            next if (!defined($value_check));
+            if ($value_check != 0) {
+                $long_msg .= ' ' . $maps_counters->{$_}->{obj}->output_error();
+                next;
+            }
             my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
             push @exits, $exit2;
 
@@ -198,7 +258,7 @@ sub run {
                 $short_msg .= ' ' . $output;
             }
             
-            $maps_counters->{$_}->{obj}->perfdata();
+            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Volume '$name':$long_msg");
@@ -207,6 +267,10 @@ sub run {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => "Volume '$name':$short_msg"
                                         );
+        }
+        
+        if ($multiple == 0) {
+            $self->{output}->output_add(short_msg => "Volume '$name':$long_msg");
         }
     }
     
@@ -228,12 +292,12 @@ Check volume statistics.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'read', 'write', .
+Can be: 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'read', 'write', .
+Can be: 'read', 'write', 'iops', 'write-cache-hits', 'read-cache-hits'.
 
 =item B<--name>
 
