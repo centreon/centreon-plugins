@@ -59,10 +59,12 @@ sub new {
     $self->{output_absolute_unit} = '';
     $self->{output_per_second_unit} = '';
     
+    $self->{output_error_template} = $self->{label} . ': %s';
+    
     $self->{threshold_use} = undef;
     $self->{threshold_warn} = undef;
     $self->{threshold_crit} = undef;
-    
+
     $self->{per_second} = 0;
     $self->{last_timestamp} = undef;
 
@@ -76,12 +78,12 @@ sub init {
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
     
-    if (($self->{perfdata}->threshold_validate(label => $warn, value => $self->{option_results}->{$warn})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong $warn threshold '" . $self->{option_results}->{$warn} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => $warn, value => $options{option_results}->{$warn})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong $warn threshold '" . $options{option_results}->{$warn} . "'.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => $crit, value => $self->{option_results}->{$crit})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong $crit threshold '" . $self->{option_results}->{$crit} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => $crit, value => $options{option_results}->{$crit})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong $crit threshold '" . $options{option_results}->{$crit} . "'.");
         $self->{output}->option_exit();
     }
 }
@@ -101,16 +103,16 @@ sub calc {
     foreach my $value (@{$self->{key_values}}) {
         if (defined($value->{diff}) && $value->{diff} == 1) { 
             if ($self->{per_second} == 1) {
-                $self->{result_values}->{$value->{name} . '_per_second'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
+                $self->{result_values}->{$value->{name} . '_per_second'} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
             }
-            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}), unit => $value->{unit};
+            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
         } else {
             # absolute one. nothing to do
-            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . . $value->{name}};
+            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
         }
     }
 
-    return 1;
+    return 0;
 }
 
 sub threshold_check {
@@ -119,6 +121,9 @@ sub threshold_check {
     if (defined($self->{closure_custom_threshpld})) {
         return &{$self->{closure_custom_threshold}}($self);
     }
+    
+    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
+    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label};
     
     my $first = ${${$self->{key_values}}[0]}{name};
     my $value;
@@ -132,15 +137,21 @@ sub threshold_check {
         $value = $self->{result_values}->{$self->{threshold_use}};
     }
 
-    return $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'warning-' . $self->{label}, 'exit_litteral' => 'critical' },
-                                                                              { label => 'critical-' . $self->{label}, 'exit_litteral' => 'warning' }]);
+    return $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => $crit, 'exit_litteral' => 'critical' },
+                                                                              { label => $warn, 'exit_litteral' => 'warning' }]);
+}
+
+sub output_error {
+    my ($self, %options) = @_;
+    
+    return sprintf($self->{output_error_template}, $self->{error_msg});
 }
 
 sub output {
     my ($self, %options) = @_;
      
     if (defined($self->{closure_custom_output})) {
-        return &{$self->{closure_custom_output}}($self);
+        return $self->{closure_custom_output}->($self);
     }
     my $first = ${${$self->{key_values}}[0]}{name};
     my ($value, $unit) = ($self->{result_values}->{$first . '_absolute'}, $self->{result_values}->{output_absolute_unit});
@@ -173,8 +184,9 @@ sub perfdata {
         $template = $perf->{template} if (defined($perf->{template}));
         $label = $perf->{label} if (defined($perf->{label}));
         
-        $extra_label .= '_' . $self->{instance} if ($perf->{label_extra_instance} == 1 && !defined($options{no_extra_instance}));
-        $self->{output}->perfdata_add(label => $perf->{label} . $extra_label, unit => $perf->{unit},
+        $extra_label .= '_' . $self->{instance} if ($perf->{label_extra_instance} == 1 && 
+                                                    (!defined($options{extra_instance}) || $options{extra_instance} != 0));
+        $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
                                       value => sprintf($template, $self->{result_values}->{$perf->{value}}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => $warn),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => $crit),
@@ -185,14 +197,16 @@ sub perfdata {
 sub execute {
     my ($self, %options) = @_;
     my $old_datas = {};
-    
+
+    $self->{result_values} = {},
+    $self->{error_msg} = undef;
     my $quit = 0;
     my $per_second = 0;
     
     $options{new_datas} = {} if (!defined($options{new_datas}));
     foreach my $value (@{$self->{key_values}}) {
         if (defined($value->{diff}) && $value->{diff} == 1) {            
-            $options{new_datas}->{$self->{instance} . '_' . $value} = $options{values}->{$value->{name}};
+            $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
             $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
             if (!defined($old_datas->{$self->{instance} . '_' . $value->{name}})) {
                 $quit = 1;
@@ -202,17 +216,23 @@ sub execute {
                 $old_datas->{$self->{instance} . '_' . $value->{name}} = 0;
             }
         } else {
-            $options{new_datas}->{$self->{instance} . '_' . $value} = $options{values}->{$value->{name}};
+            $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
         }
     }
 
-    return undef if ($quit == 1);
+    if ($quit == 1) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
     
     if ($self->{per_second} == 1) {
         if (!defined($self->{last_timestamp})) {
             $self->{last_timestamp} = $self->{statefile}->get(name => 'last_timestamp');
         }
-        return undef if (!defined($self->{last_timestamp}));
+        if (!defined($self->{last_timestamp})) {
+            $self->{error_msg} = "Buffer creation";
+            return -1;
+        }
     }
    
     my $delta_time;
@@ -224,7 +244,7 @@ sub execute {
     }
 
     if (defined($self->{closure_custom_calc})) {
-        return &{$self->{closure_custom_cacl}}($self, old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time );
+        return $self->{closure_custom_calc}->($self, old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time);
     }
     return $self->calc(old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time);
 }
