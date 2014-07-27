@@ -40,23 +40,47 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
-use centreon::plugins::class::bytes;
+use centreon::plugins::values;
 
 my $maps_counters = {
-    read   => { class => 'centreon::plugins::class::bytes', obj => undef,
+    read   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [
-                                        'data-read-numeric',
+                                        { name => 'data-read-numeric', diff => 1 },
                                       ],
-                        output_template => 'Read I/O : %s %s/s', per_second => 1,
+                        per_second => 1,
+                        output_template => 'Read I/O : %s %s/s',
+                        output_change_bytes => 1,
+                        perfdatas => [
+                            { value => 'data-read-numeric_absolute', 
+                              unit => 'B/s', min => 0, label_extra_instance => 1 },
+                        ],
                     }
                },
-    write   => { class => 'centreon::plugins::class::bytes', obj => undef,
-                set => {
-                        key_values => [ 
-                                        'data-written-numeric',
+    write   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'data-written-numeric', diff => 1 },
                                       ],
-                        output_template => 'Write I/O : %s %s/s', per_second => 1,
+                        per_second => 1,
+                        output_template => 'Write I/O : %s %s/s',
+                        output_change_bytes => 1,
+                        perfdatas => [
+                            { value => 'data-written-numeric_absolute', 
+                              unit => 'B/s', min => 0, label_extra_instance => 1 },
+                        ],
+                    }
+               },
+    iops   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'iops' },
+                                      ],
+                        output_template => 'IOPs : %s',
+                        perfdatas => [
+                            { value => 'iops_absolute', 
+                              unit => 'iops', min => 0, label_extra_instance => 1 },
+                        ],
                     }
                },
 };
@@ -164,7 +188,7 @@ sub run {
                                                                      new_datas => $self->{new_datas});
 
             next if (!defined($value_check));
-            my $exit2 = $maps_counters->{$_}->{obj}->check_threshold();
+            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
             push @exits, $exit2;
 
             my $output = $maps_counters->{$_}->{obj}->output();
