@@ -41,6 +41,21 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+my %map_ss_states = (
+    UNCONN => 'closed',
+    LISTEN => 'listen',
+    'SYN-SENT' => 'synSent',
+    'SYN-RECV' => 'synReceived',
+    ESTAB => 'established',
+    'FIN-WAIT-1' => 'finWait1',
+    'FIN-WAIT-2' => 'finWait2',
+    'CLOSE-WAIT' => 'closeWait',
+    'LAST-ACK' => 'lastAck',
+    CLOSING => 'closing',
+    'TIME-WAIT' => 'timeWait',
+    UNKNOWN => 'unknown',
+);
+
 my %map_states = (
     CLOSED => 'closed',
     LISTEN => 'listen',
@@ -71,13 +86,14 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'netstat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-antu 2>&1' },
+                                  "command:s"         => { name => 'command', },
+                                  "command-path:s"    => { name => 'command_path', },
+                                  "command-options:s" => { name => 'command_options', },
                                   "warning:s"       => { name => 'warning', },
                                   "critical:s"      => { name => 'critical', },
                                   "service:s@"      => { name => 'service', },
                                   "application:s@"  => { name => 'application', },
+                                  "con-mode:s"      => { name => 'con_mode', default => 'netstat' },
                                 });
     @{$self->{connections}} = ();
     $self->{services} = { total => { filter => '(?!(udp*))#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
@@ -88,16 +104,10 @@ sub new {
     return $self;
 }
 
-sub build_connections {
+sub netstat_build {
     my ($self, %options) = @_;
-    
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    foreach my $line (split /\n/, $stdout) {
+
+    foreach my $line (split /\n/, $self->{stdout}) {
         next if ($line !~ /^(tcp|udp)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s*(\S*)/);
         my ($type, $src, $dst, $state) = ($1, $2, $3, $4);
         $src =~ /(.*):(\d+|\*)$/;
@@ -118,6 +128,64 @@ sub build_connections {
         }
         
         push @{$self->{connections}}, $type . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($state);
+    }
+}
+
+sub ss_build {
+    my ($self, %options) = @_;
+
+    foreach my $line (split /\n/, $self->{stdout}) {
+        next if ($line !~ /^(tcp|udp)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*(\S+)/);
+        my ($type, $src, $dst, $state) = ($1, $3, $4, $2);
+        $src =~ /(.*):(\d+|\*)$/;
+        my ($src_addr, $src_port) = ($1, $2);
+        $dst =~ /(.*):(\d+|\*)$/;
+        my ($dst_addr, $dst_port) = ($1, $2);
+        $type .= '6' if ($src_addr !~ /^\d+\.\d+\.\d+\.\d+$/);
+        
+        if ($type =~ /^udp/) {
+            if ($dst_port eq '*') {
+                $state = 'listen';
+            } else {
+                $state = 'established';
+            }
+        } else {
+            $state = $map_ss_states{$state};
+            $self->{states}->{$state}++;
+        }
+        
+        push @{$self->{connections}}, $type . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($state);
+    }
+}
+
+sub build_connections {
+    my ($self, %options) = @_;
+    
+    if ($self->{option_results}->{con_mode} !~ /^ss|netstat$/) {
+        $self->{output}->add_option_msg(short_msg => "Unknown --con-mode option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (!defined($self->{option_results}->{command})) {
+        if ($self->{option_results}->{con_mode} eq 'netstat') {
+            $self->{option_results}->{command} = 'netstat';
+            $self->{option_results}->{command_options} = '-antu 2>&1';
+        } else {
+            $self->{option_results}->{command} = 'ss';
+            $self->{option_results}->{command_options} = '-a -A tcp,udp -n 2>&1';
+        }
+    }
+    
+    $self->{stdout} = centreon::plugins::misc::execute(output => $self->{output},
+                                                       options => $self->{option_results},
+                                                       sudo => $self->{option_results}->{sudo},
+                                                       command => $self->{option_results}->{command},
+                                                       command_path => $self->{option_results}->{command_path},
+                                                       command_options => $self->{option_results}->{command_options});
+    if ($self->{option_results}->{command} eq 'ss') {
+        $self->ss_build();
+    } else {
+        $self->netstat_build();
     }
 }
 
@@ -383,6 +451,7 @@ Use 'sudo' to execute the command.
 
 Command to get information (Default: 'netstat').
 Can be changed if you have output in a file.
+If --con-mode='ss', command 'ss' will be used.
 
 =item B<--command-path>
 
@@ -391,6 +460,11 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-antu 2>&1').
+If --con-mode='ss', argument default will '-a -A tcp,udp -n'.
+
+=item B<--con-mode>
+
+Default mode for parsing and command (Default: 'netstat').
 
 =back
 
