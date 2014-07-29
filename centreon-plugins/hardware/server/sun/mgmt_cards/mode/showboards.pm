@@ -54,7 +54,7 @@ sub new {
                                   "port:s"           => { name => 'port', default => 23 },
                                   "username:s"       => { name => 'username' },
                                   "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 30 },
+                                  "timeout:s"        => { name => 'timeout', default => 50 },
                                   "memory"           => { name => 'memory' },
                                   "command-plink:s"  => { name => 'command_plink', default => 'plink' },
                                   "ssh"              => { name => 'ssh' },

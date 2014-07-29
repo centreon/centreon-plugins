@@ -114,7 +114,7 @@ sub run {
         shift @content;
         foreach (@content) {
             next if (/^---/);
-            if (/(\S+)\s*$/ && $1 !~ /^OK|OFF$/) {
+            if (/(\S+)\s*$/ && $1 !~ /^OK|OFF|PRESENCE$/) {
                 my $sensor_status = $1;
                 
                 /^\s*(.*?)\s{2}\s*(.*?)\s{2}\s*/;

@@ -173,14 +173,14 @@ sub run {
         }
     }
     
-    if ($output =~ /^Front Status Panel.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
+    # Not a problem. Only a protection.
+    #if ($output =~ /^Front Status Panel.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         # Keyswitch position: NORMAL
-        $1 =~ /^[^:]+:\s+([^\s]+)$/;
-        if ($1 !~ /normal/i) {
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "Front Statut Panel is '" . $1 . "'");
-        }
-    }
+    #    if ($1 !~ /normal/i) {
+    #        $self->{output}->output_add(severity => 'CRITICAL', 
+    #                                    short_msg => "Front Statut Panel is '" . $1 . "'");
+    #    }
+    #}
     
     if ($output =~ /^System Disks.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Disk   Status            Service  OK2RM
