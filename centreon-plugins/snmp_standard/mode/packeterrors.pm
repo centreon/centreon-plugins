@@ -501,10 +501,6 @@ Allows to use regexp to filter interfaces (with option --name).
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--speed>
-
-Set interface speed (in Mb).
-
 =item B<--skip>
 
 Skip errors on interface status.
