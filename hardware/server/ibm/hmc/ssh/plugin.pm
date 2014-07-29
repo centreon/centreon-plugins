@@ -33,47 +33,32 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::battery;
+package hardware::server::ibm::hmc::ssh::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_simple);
 
-my @conditions = (
-    ['^(Not Ready|Testing)$' => 'WARNING'],
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
 
-sub check {
-    my ($self) = @_;
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'hardware-errors'      => 'hardware::server::ibm::hmc::ssh::mode::hardwareerrors',
+                         );
 
-    $self->{output}->output_add(long_msg => "Checking batteries");
-    $self->{components}->{battery} = {name => 'battery', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'battery'));
-    
-    # SPS means = Standby Power Supply
-    
-    # Enclosure SPE SPS A State:  Present
-    while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(SPS)\s+(\S+)\s+State:\s+(.*)$/mgi) {
-        my ($state, $instance) = ($5, "$2.$3.$4");
-        if (defined($1)) {
-            $instance = "$1.$2.$3.$4";
-        }
-        
-        next if ($self->check_exclude(section => 'battery', instance => $instance));
-        $self->{components}->{battery}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("Battery '%s' state is %s.",
-                                                        $instance, $state)
-                                    );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Battery '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
-        }
-    }
+    return $self;
 }
 
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check IBM HMC Hardware (in ssh with 'plink' command).
+
+=cut
