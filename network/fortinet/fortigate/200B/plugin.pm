@@ -47,7 +47,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+                         'cluster-status'       => 'network::fortinet::fortigate::common::mode::clusterstatus',
                          'cpu'                  => 'network::fortinet::fortigate::common::mode::cpu',
+                         'disk'                 => 'network::fortinet::fortigate::common::mode::disk',
                          'hardware'             => 'network::fortinet::fortigate::common::mode::hardware',
                          'list-virtualdomains'  => 'network::fortinet::fortigate::common::mode::listvirtualdomains',
                          'memory'               => 'network::fortinet::fortigate::common::mode::memory',
