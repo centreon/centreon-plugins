@@ -118,6 +118,7 @@ __END__
 =head1 MODE
 
 Check fortigate hardware sensors (FORTINET-FORTIGATE-MIB).
+It's deprecated. Work only for 'FortiGate-5000 Series Chassis'.
 
 =over 8
 

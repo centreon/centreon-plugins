@@ -40,6 +40,18 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+my $oid_fgProcessorUsage = '.1.3.6.1.4.1.12356.101.4.4.2.1.2'; # some not have
+my $oid_fgSysCpuUsage = '.1.3.6.1.4.1.12356.101.4.1.3';
+my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1'; # '.0' to have the mode
+my $oid_fgHaStatsCpuUsage = '.1.3.6.1.4.1.12356.101.13.2.1.1.3';
+my $oid_fgHaStatsMasterSerial = '.1.3.6.1.4.1.12356.101.13.2.1.1.16';
+
+my %maps_ha_mode = (
+    1 => 'standalone',
+    2 => 'activeActive',
+    3 => 'activePassive',
+);
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -50,6 +62,7 @@ sub new {
                                 {
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "cluster"                 => { name => 'cluster', },
                                 });
 
     return $self;
@@ -69,28 +82,71 @@ sub check_options {
     }
 }
 
+sub cpu_ha {
+    my ($self, %options) = @_;
+
+    if ($options{ha_mode} == 2) {
+        # We don't care. we use index
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsCpuUsage}})) {
+            next if ($key !~ /^$oid_fgHaStatsCpuUsage\.([0-9]+)$/);
+            my $cpu_num = $1;
+        
+            $self->{output}->output_add(long_msg => sprintf("CPU master $cpu_num Usage is %.2f%%", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
+            $self->{output}->perfdata_add(label => 'cpu_master' . $cpu_num,
+                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
+                                          min => 0, max => 100);
+        }
+    } elsif ($options{ha_mode} == 3) {
+        if (scalar(keys %{$self->{result}->{$oid_fgHaStatsMasterSerial}}) == 0) {
+            $self->{output}->output_add(long_msg => 'Skip cpu cluster: Cannot find master node.');
+        }
+
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsCpuUsage}})) {
+            next if ($key !~ /^$oid_fgHaStatsCpuUsage\.([0-9]+)$/);
+
+            my $label = $self->{result}->{$oid_fgHaStatsMasterSerial}->{$oid_fgHaStatsMasterSerial . '.' . $1} eq '' ? 
+                            'master' : 'slave';
+            
+            $self->{output}->output_add(long_msg => sprintf("CPU %s Usage is %.2f%%", $label, $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
+            $self->{output}->perfdata_add(label => 'cpu_' . $label,
+                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
+                                          min => 0, max => 100);
+        }
+    }
+}
+    
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_fgProcessorEntry = '.1.3.6.1.4.1.12356.101.4.4.2.1';
-    my $oid_fgProcessorUsage = '.1.3.6.1.4.1.12356.101.4.4.2.1.2';
-    my $result = $self->{snmp}->get_table(oid => $oid_fgProcessorEntry, nothing_quit => 1);
+    my $table_oids = [ { oid => $oid_fgProcessorUsage }, { oid => $oid_fgSysCpuUsage } ];
+    if (defined($self->{option_results}->{cluster})) {
+        push @$table_oids, { oid => $oid_fgHaSystemMode },
+                           { oid => $oid_fgHaStatsCpuUsage },
+                           { oid => $oid_fgHaStatsMasterSerial };
+    }
+    
+    $self->{result} = $self->{snmp}->get_multiple_table(oids => $table_oids, 
+                                                        nothing_quit => 1);
+    my $oid_cpu = $oid_fgProcessorUsage;
+    if (scalar(keys %{$self->{result}->{$oid_fgProcessorUsage}}) == 0) {
+        $oid_cpu = $oid_fgSysCpuUsage;
+    }
     
     my $cpu = 0;
     my $i = 0;
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fgProcessorUsage\.([0-9]+)$/);
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_cpu}})) {
+        next if ($key !~ /^$oid_cpu\.([0-9]+)$/);
         my $cpu_num = $1;
         
-        $cpu += $result->{$key};
+        $cpu += $self->{result}->{$oid_cpu}->{$key};
         $i++;
         
-        $self->{output}->output_add(long_msg => sprintf("CPU $i Usage is %.2f%%", $result->{$key}));
+        $self->{output}->output_add(long_msg => sprintf("CPU $cpu_num Usage is %.2f%%", $self->{result}->{$oid_cpu}->{$key}));
         $self->{output}->perfdata_add(label => 'cpu' . $cpu_num,
-                                  value => sprintf("%.2f", $result->{$key}),
-                                  min => 0, max => 100);
+                                      value => sprintf("%.2f", $self->{result}->{$oid_cpu}->{$key}),
+                                      min => 0, max => 100);
     }
 
     my $avg_cpu = $cpu / $i;
@@ -104,6 +160,16 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
     
+    if (defined($self->{option_results}->{cluster})) {
+        # Check if mode cluster
+        my $ha_mode = $self->{result}->{$oid_fgHaSystemMode}->{$oid_fgHaSystemMode . '.0'};
+        my $ha_output = defined($maps_ha_mode{$ha_mode}) ? $maps_ha_mode{$ha_mode} : 'unknown';
+        $self->{output}->output_add(long_msg => 'High availabily mode is ' . $ha_output . '.');
+        if (defined($ha_mode) && $ha_mode != 1) {
+            $self->cpu_ha(ha_mode => $ha_mode);
+        }
+    }
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -126,7 +192,10 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
+=item B<--cluster>
+
+Add cluster cpu informations.
+
 =back
 
 =cut
-    
