@@ -79,6 +79,13 @@ sub run {
     $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_fgSysDiskUsage, $oid_fgSysDiskCapacity ], 
                                               nothing_quit => 1);
     
+    if (!defined($self->{result}->{$oid_fgSysDiskCapacity}) || $self->{result}->{$oid_fgSysDiskCapacity} == 0) {
+        $self->{output}->output_add(severity => 'ok',
+                                    short_msg => sprintf("No disk present."));
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    
     my $fgSysDiskUsage = $self->{result}->{$oid_fgSysDiskUsage} * 1024 * 1024;
     my $fgSysDiskCapacity = $self->{result}->{$oid_fgSysDiskCapacity} * 1024 * 1024;
     
