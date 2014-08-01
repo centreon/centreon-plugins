@@ -85,7 +85,9 @@ sub execute {
     my ($lerror, $stdout, $exit_code);
     
     # Build command line
-    if (defined($options{options}->{remote})) {
+    # Can choose which command is done remotely (can filter and use local file)
+    if (defined($options{options}->{remote}) && 
+        ($options{options}->{remote} eq '' || !defined($options{label}) || $options{label} =~ /$options{options}->{remote}/)) {
         my $sub_cmd;
 
         $cmd = $options{options}->{ssh_path} . '/' if (defined($options{options}->{ssh_path}));
@@ -124,10 +126,16 @@ sub execute {
                                                  );
     }
 
+    if (defined($options{options}->{show_output}) && 
+        ($options{options}->{show_output} eq '' || (defined($options{label}) && $options{label} eq $options{options}->{show_output}))) {
+        print $stdout;
+        exit $exit_code;
+    }
+    
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
         $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => $stdout);
+                                     short_msg => $stdout);
         $options{output}->display();
         $options{output}->exit();
     }

@@ -50,7 +50,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
+                                  "remote:s"          => { name => 'remote' },
                                   "ssh-option:s@"     => { name => 'ssh_option' },
                                   "ssh-path:s"        => { name => 'ssh_path' },
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
@@ -63,6 +63,7 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'showenvironment' },
                                   "command-path:s"    => { name => 'command_path', default => '/opt/SUNWSMS/bin' },
                                   "command-options:s" => { name => 'command_options', default => '2>&1' },
+                                  "show-output:s"     => { name => 'show_output' },
                                 });
     return $self;
 }
@@ -76,7 +77,7 @@ sub run {
     my ($self, %options) = @_;
     my $stdout;
     
-    $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $stdout = centreon::plugins::misc::execute(label => 'pasv', output => $self->{output},
                                                options => $self->{option_results},
                                                sudo => $self->{option_results}->{sudo_pasv},
                                                command => $self->{option_results}->{command_pasv},
@@ -95,7 +96,7 @@ sub run {
         $self->{output}->exit();
     }
 
-    $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $stdout = centreon::plugins::misc::execute(label => 'showenvironment', output => $self->{output},
                                                options => $self->{option_results},
                                                sudo => $self->{option_results}->{sudo},
                                                command => $self->{option_results}->{command},
@@ -279,6 +280,11 @@ Command path (Default: '/opt/SUNWSMS/bin').
 =item B<--command-options>
 
 Command options (Default: '2>&1').
+
+=item B<--show-output>
+
+Display command output (for debugging or saving in a file).
+A mode can have multiple (can specify the label for the command).
 
 =back
 
