@@ -50,7 +50,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
+                                  "remote:s"          => { name => 'remote' },
                                   "ssh-option:s@"     => { name => 'ssh_option' },
                                   "ssh-path:s"        => { name => 'ssh_path' },
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
@@ -63,6 +63,7 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'showboards' },
                                   "command-path:s"    => { name => 'command_path', default => '/opt/SUNWSMS/bin' },
                                   "command-options:s" => { name => 'command_options', default => '2>&1' },
+                                  "show-output:s"     => { name => 'show_output' },
                                 });
     return $self;
 }
@@ -74,14 +75,14 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    my $stdout;
     
-    $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(label => 'pasv', output => $self->{output},
                                                options => $self->{option_results},
                                                sudo => $self->{option_results}->{sudo_pasv},
                                                command => $self->{option_results}->{command_pasv},
                                                command_path => $self->{option_results}->{command_path_pasv},
                                                command_options => $self->{option_results}->{command_options_pasv});
+
     if ($stdout =~ /SPARE/i) {
         $self->{output}->output_add(severity => 'OK', 
                                     short_msg => "System Controller is in spare mode.");
@@ -95,7 +96,7 @@ sub run {
         $self->{output}->exit();
     }
 
-    $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $stdout = centreon::plugins::misc::execute(label => 'showboards', output => $self->{output},
                                                options => $self->{option_results},
                                                sudo => $self->{option_results}->{sudo},
                                                command => $self->{option_results}->{command},
@@ -196,6 +197,11 @@ Command path (Default: '/opt/SUNWSMS/bin').
 =item B<--command-options>
 
 Command options (Default: '2>&1').
+
+=item B<--show-output>
+
+Display command output (for debugging or saving in a file).
+A mode can have multiple (can specify the label for the command).
 
 =back
 
