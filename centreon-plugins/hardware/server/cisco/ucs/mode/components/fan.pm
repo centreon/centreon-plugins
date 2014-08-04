@@ -44,42 +44,42 @@ sub check {
 
     # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0};
-    return if ($self->check_exclude('fan'));
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fan'));
     
     my $oid_cucsEquipmentFanPresence = '.1.3.6.1.4.1.9.9.719.1.15.12.1.13';
     my $oid_cucsEquipmentFanOperState = '.1.3.6.1.4.1.9.9.719.1.15.12.1.9';
     my $oid_cucsEquipmentFanDn = '.1.3.6.1.4.1.9.9.719.1.15.12.1.2';
 
-    my $result = $self->{snmp}->get_table(oid => $oid_cucsEquipmentFanPresence);
-    my @get_oids = ();
-    my @oids_end = ();
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+    my $result = $self->{snmp}->get_multiple_table(oids => [ 
+                                                            { oid => $oid_cucsEquipmentFanPresence },
+                                                            { oid => $oid_cucsEquipmentFanOperState },
+                                                            { oid => $oid_cucsEquipmentFanDn },
+                                                            ]
+                                                   );
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsEquipmentFanPresence}})) {
         # index
         $key =~ /\.(\d+)$/;
-        my $oid_end = $1;
+        my $fan_index = $1;        
+        my $fan_dn = $result->{$oid_cucsEquipmentFanDn}->{$oid_cucsEquipmentFanDn . '.' . $fan_index};
+        my $fan_operstate = defined($result->{$oid_cucsEquipmentFanOperState}->{$oid_cucsEquipmentFanOperState . '.' . $fan_index}) ?
+                                $result->{$oid_cucsEquipmentFanOperState}->{$oid_cucsEquipmentFanOperState . '.' . $fan_index} : 0; # unknown
+        my $fan_presence = defined($result->{$oid_cucsEquipmentFanPresence}->{$oid_cucsEquipmentFanPresence . '.' . $fan_index}) ? 
+                                $result->{$oid_cucsEquipmentFanPresence}->{$oid_cucsEquipmentFanPresence . '.' . $fan_index} : 0;
+        
+        next if ($self->absent_problem(section => 'fan', instance => $fan_dn));
+        next if ($self->check_exclude(section => 'fan', instance => $fan_dn));
 
-        if (${$presence{$result->{$key}}}[1] ne 'OK') {
-            $self->{components}->{fan}->{total}++;
-            $self->{output}->output_add(severity => ${$presence{$result->{$key}}}[1],
-                                        short_msg => sprintf("fan index '%s' presence is: '%s'",
-                                                             $oid_end, ${$presence{$result->{$key}}}[0])
+        if (${$presence{$fan_presence}}[1] ne 'OK') {
+            $self->{output}->output_add(severity => ${$presence{$fan_presence}}[1],
+                                        short_msg => sprintf("fan '%s' presence is: '%s'",
+                                                             $fan_dn, ${$presence{$fan_presence}}[0])
                                         );
+            next;
         }
         
-        push @oids_end, $oid_end;
-        push @get_oids, $oid_cucsEquipmentFanOperState . "." . $oid_end, $oid_cucsEquipmentFanDn . "." . $oid_end;
-    }
-    return if (scalar(@get_oids) <= 0);
-    
-    my $result2 = $self->{snmp}->get_leef(oids => \@get_oids);
-    foreach (@oids_end) {
-        my ($fan_index) = $_;
-        my $fan_dn = $result2->{$oid_cucsEquipmentFanDn . '.' . $_};
-        my $fan_operstate = $result2->{$oid_cucsEquipmentFanOperState . '.' . $_};
-        my $fan_presence = $result->{$oid_cucsEquipmentFanPresence . '.' . $_};
-
         $self->{components}->{fan}->{total}++;
+        
         $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
                                                         $fan_dn, ${$operability{$fan_operstate}}[0],
                                                         ${$presence{$fan_presence}}[0]
