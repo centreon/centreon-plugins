@@ -54,25 +54,22 @@ sub check {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /^$oid_sysChassisTempTemperature\.(\d+)$/);
         my $instance = $1;
-
         next if ($self->check_exclude(section => 'temperatures', instance => $instance));
 	
-	my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_sysChassisTempTemperature . '.' . $instance},
-            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_sysChassisTempTemperature . '.' . $instance},
+                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     	$self->{components}->{temperatures}->{total}++;
-
     	$self->{output}->output_add(severity => $exit_code,long_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));
-
-        if ($exit_code ne 'ok') {
+        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit_code,short_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));
         }
 
-    	$self->{output}->perfdata_add(label => "temp_" . $instance , unit => 'C', value => sprintf("%.2f", $result->{$oid_sysChassisTempTemperature . '.' . $instance}),
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));    
-        }
+    	$self->{output}->perfdata_add(label => "temp_" . $instance , unit => 'C', 
+                                      value => sprintf("%.2f", $result->{$oid_sysChassisTempTemperature . '.' . $instance}),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
     }
-
+}
 
 1;
