@@ -37,7 +37,7 @@ package hardware::server::cisco::ucs::mode::components::psu;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%presence %operability);
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub check {
     my ($self) = @_;
@@ -70,10 +70,11 @@ sub check {
         next if ($self->absent_problem(section => 'psu', instance => $psu_dn));
         next if ($self->check_exclude(section => 'psu', instance => $psu_dn));
 
-        if (${$presence{$psu_presence}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$presence{$psu_presence}}[1],
+         my $exit = $self->get_severity(section => 'psu', threshold => 'presence', value => $psu_presence);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' presence is: '%s'",
-                                                             $psu_dn, ${$presence{$psu_presence}}[0])
+                                                             $psu_dn, ${$thresholds->{presence}->{$psu_presence}}[0])
                                         );
             next;
         }
@@ -81,13 +82,14 @@ sub check {
         $self->{components}->{psu}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
-                                                        $psu_dn, ${$operability{$psu_operstate}}[0],
-                                                        ${$presence{$psu_presence}}[0]
+                                                        $psu_dn, ${$thresholds->{operability}->{$psu_presence}}[0],
+                                                        ${$thresholds->{presence}->{$psu_operstate}}[0]
                                     ));
-        if (${$operability{$psu_operstate}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operability{$psu_operstate}}[1],
+        $exit = $self->get_severity(section => 'psu', threshold => 'operability', value => $psu_operstate);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' state is '%s'.",
-                                                             $psu_dn, ${$operability{$psu_operstate}}[0]
+                                                             $psu_dn, ${$thresholds->{operability}->{$psu_operstate}}[0]
                                                              )
                                         );
         }

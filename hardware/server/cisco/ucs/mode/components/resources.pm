@@ -39,54 +39,54 @@ use strict;
 use warnings;
 use Exporter;
 
-our %presence;
-our %operability;
+our $thresholds;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%presence %operability);
+our @EXPORT_OK = qw($thresholds);
 
-%presence = (
-    0 => ['unknown', 'UNKNOWN'], 
-    1 => ['empty', 'OK'], 
-    10 => ['equipped', 'OK'], 
-    11 => ['missing', 'WARNING'],
-    12 => ['mismatch', 'WARNING'],
-    13 => ['equippedNotPrimary', 'OK'],
-    20 => ['equippedIdentityUnestablishable', 'WARNING'],
-    21 => ['mismatchIdentityUnestablishable', 'WARNING'],
-    30 => ['inaccessible', 'UNKNOWN'],
-    40 => ['unauthorized', 'UNKNOWN'],
-    100 => ['notSupported', 'WARNING'],
-);
-
-%operability = (
-    0 => ['unknown', 'UNKNOWN'], 
-    1 => ['operable', 'OK'], 
-    2 => ['inoperable', 'CRITICAL'], 
-    3 => ['degraded', 'WARNING'],
-    4 => ['poweredOff', 'WARNING'],
-    5 => ['powerProblem', 'CRITICAL'],
-    6 => ['removed', 'WARNING'],
-    7 => ['voltageProblem', 'CRITICAL'],
-    8 => ['thermalProblem', 'CRITICAL'],
-    9 => ['performanceProblem', 'CRITICAL'],
-    10 => ['accessibilityProblem', 'WARNING'],
-    11 => ['identityUnestablishable', 'WARNING'],
-    12 => ['biosPostTimeout', 'WARNING'],
-    13 => ['disabled', 'OK'],
-    51 => ['fabricConnProblem', 'WARNING'],
-    52 => ['fabricUnsupportedConn', 'WARNING'],
-    81 => ['config', 'OK'],
-    82 => ['equipmentProblem', 'CRITICAL'],
-    83 => ['decomissioning', 'WARNING'],
-    84 => ['chassisLimitExceeded', 'WARNING'],
-    100 => ['notSupported', 'WARNING'],
-    101 => ['discovery', 'OK'],
-    102 => ['discoveryFailed', 'WARNING'],
-    104 => ['postFailure', 'WARNING'],
-    105 => ['upgradeProblem', 'WARNING'],
-    106 => ['peerCommProblem', 'WARNING'],
-    107 => ['autoUpgrade', 'OK'],
-);
+$thresholds = {
+    presence => {
+        0 => ['unknown', 'UNKNOWN'], 
+        1 => ['empty', 'OK'], 
+        10 => ['equipped', 'OK'], 
+        11 => ['missing', 'WARNING'],
+        12 => ['mismatch', 'WARNING'],
+        13 => ['equippedNotPrimary', 'OK'],
+        20 => ['equippedIdentityUnestablishable', 'WARNING'],
+        21 => ['mismatchIdentityUnestablishable', 'WARNING'],
+        30 => ['inaccessible', 'UNKNOWN'],
+        40 => ['unauthorized', 'UNKNOWN'],
+        100 => ['notSupported', 'WARNING'],
+    },
+    operability => {
+        0 => ['unknown', 'UNKNOWN'], 
+        1 => ['operable', 'OK'], 
+        2 => ['inoperable', 'CRITICAL'], 
+        3 => ['degraded', 'WARNING'],
+        4 => ['poweredOff', 'WARNING'],
+        5 => ['powerProblem', 'CRITICAL'],
+        6 => ['removed', 'WARNING'],
+        7 => ['voltageProblem', 'CRITICAL'],
+        8 => ['thermalProblem', 'CRITICAL'],
+        9 => ['performanceProblem', 'CRITICAL'],
+        10 => ['accessibilityProblem', 'WARNING'],
+        11 => ['identityUnestablishable', 'WARNING'],
+        12 => ['biosPostTimeout', 'WARNING'],
+        13 => ['disabled', 'OK'],
+        51 => ['fabricConnProblem', 'WARNING'],
+        52 => ['fabricUnsupportedConn', 'WARNING'],
+        81 => ['config', 'OK'],
+        82 => ['equipmentProblem', 'CRITICAL'],
+        83 => ['decomissioning', 'WARNING'],
+        84 => ['chassisLimitExceeded', 'WARNING'],
+        100 => ['notSupported', 'WARNING'],
+        101 => ['discovery', 'OK'],
+        102 => ['discoveryFailed', 'WARNING'],
+        104 => ['postFailure', 'WARNING'],
+        105 => ['upgradeProblem', 'WARNING'],
+        106 => ['peerCommProblem', 'WARNING'],
+        107 => ['autoUpgrade', 'OK'],
+    },
+};
 
 1;
