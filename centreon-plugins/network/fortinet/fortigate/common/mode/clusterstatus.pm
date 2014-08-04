@@ -79,8 +79,6 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    
-    
     $self->{result} = $self->{snmp}->get_multiple_table(oids => [
                                                                   { oid => $oid_fgHaSystemMode },
                                                                   { oid => $oid_fgHaStatsMasterSerial },

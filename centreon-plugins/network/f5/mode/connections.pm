@@ -96,7 +96,7 @@ sub run {
     my $oid_sysClientsslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.9.2.0';
     my $oid_sysServersslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.10.2.0';
       
-    my $result = $self->{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns], nothing_quit => 0);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns], nothing_quit => 1);
     
     my $sysStatClientCurConns = $result->{$oid_sysStatClientCurConns};
     my $sysStatServerCurConns = $result->{$oid_sysStatServerCurConns};
