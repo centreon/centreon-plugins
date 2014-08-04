@@ -47,7 +47,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'network::f5::mode::hardware',
+                         'hardware'     => 'network::f5::mode::hardware',
                          'connections'  => 'network::f5::mode::connections',
                          );
 
@@ -60,6 +60,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Brocade hardware in SNMP.
+Check F-5 hardware in SNMP.
+Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
 
 =cut

@@ -83,23 +83,6 @@ sub global {
     network::f5::mode::components::psu::check($self);
 }
 
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
-        }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-        return 1;
-    }
-    return 0;
-}
-
-
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
@@ -141,6 +124,21 @@ sub run {
     $self->{output}->exit();
 }
 
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+            $self->{components}->{$options{section}}->{skip}++;
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+            return 1;
+        }
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+        return 1;
+    }
+    return 0;
+}
 
 1;
 
@@ -159,8 +157,8 @@ Can be: 'fan', 'psu', 'temperature'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fans,psus)
-Can also exclude specific instance: --exclude=fans#1#2#,modules#1#,psus
+Exclude some parts (comma seperated list) (Example: --exclude=fans,psu)
+Can also exclude specific instance: --exclude=fan#1#2#,psu
 
 =item B<--warning>
 
