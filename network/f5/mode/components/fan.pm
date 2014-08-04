@@ -38,22 +38,6 @@ package network::f5::mode::components::fan;
 use strict;
 use warnings;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning', default => '' },
-                                  "critical:s"              => { name => 'critical', default => '' },
-                                });
-
-    return $self;
-}
-
-
 my %map_status = (
     0 => 'bad',
     1 => 'good',
@@ -94,8 +78,7 @@ sub check {
 
         $self->{output}->perfdata_add(label => "fan_" . $instance,
                                       value => $speed,
-                                     );
-    
+                                      );
     }   
 
 }
