@@ -47,8 +47,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'equipment' => 'hardware::server::cisco::ucs::mode::equipment',
-                         'faults'    => 'hardware::server::cisco::ucs::mode::faults',
+                         'equipment'    => 'hardware::server::cisco::ucs::mode::equipment',
+                         'faults'       => 'hardware::server::cisco::ucs::mode::faults',
+                         'audit-logs'   => 'hardware::server::cisco::ucs::mode::auditlogs',
                          );
 
     return $self;
