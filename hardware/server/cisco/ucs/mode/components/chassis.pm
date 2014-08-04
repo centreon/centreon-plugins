@@ -37,7 +37,7 @@ package hardware::server::cisco::ucs::mode::components::chassis;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%presence %operability);
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub check {
     my ($self) = @_;
@@ -70,12 +70,13 @@ sub check {
         $self->{components}->{chassis}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("chassis '%s' state is '%s'.",
-                                                        $chassis_dn, ${$operability{$chassis_operstate}}[0],
+                                                        $chassis_dn, ${$thresholds->{presence}->{$chassis_operstate}}[0]
                                     ));
-        if (${$operability{$chassis_operstate}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operability{$chassis_operstate}}[1],
+        my $exit = $self->get_severity(section => 'chassis', threshold => 'operability', value => $chassis_operstate);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("chassis '%s' state is '%s'.",
-                                                             $chassis_dn, ${$operability{$chassis_operstate}}[0]
+                                                             $chassis_dn, ${$thresholds->{operability}->{$chassis_operstate}}[0]
                                                              )
                                         );
         }

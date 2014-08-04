@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 use hardware::server::cisco::ucs::mode::components::fan;
 use hardware::server::cisco::ucs::mode::components::psu;
 use hardware::server::cisco::ucs::mode::components::iocard;
@@ -55,8 +56,9 @@ sub new {
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
                                   "absent-problem:s" => { name => 'absent' },
-                                  "component:s"      => { name => 'component', default => 'all' },
-                                  "no-component:s"   => { name => 'no_component' },
+                                  "component:s"             => { name => 'component', default => 'all' },
+                                  "no-component:s"          => { name => 'no_component' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
     $self->{components} = {};
     $self->{no_components} = undef;
@@ -73,6 +75,22 @@ sub check_options {
         } else {
             $self->{no_components} = 'critical';
         }
+    }
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $type, $status, $filter) = ($1, $2, $3, $4);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = { } if (!defined($self->{overload_th}->{$section}));
+        $self->{overload_th}->{$section}->{$type} = { } if (!defined($self->{overload_th}->{$section}->{$type}));
+        $self->{overload_th}->{$section}->{$type}->{$filter} = $status;
     }
 }
 
@@ -158,6 +176,21 @@ sub check_exclude {
     return 0;
 }
 
+sub get_severity {
+    my ($self, %options) = @_;
+    
+    my $status = ${$thresholds->{$options{threshold}}->{$options{value}}}[1];
+    if (defined($self->{overload_th}->{$options{section}}->{$options{threshold}})) {
+        foreach (keys %{$self->{overload_th}->{$options{section}}->{$options{threshold}}}) {            
+            if (${$thresholds->{$options{threshold}}->{$options{value}}}[0] =~ /$_/i) {
+                $status = $self->{overload_th}->{$options{section}}->{$options{threshold}}->{$_};
+                last;
+            }
+        }
+    }
+    return $status;
+}
+
 sub absent_problem {
     my ($self, %options) = @_;
     
@@ -201,6 +234,11 @@ Can be specific or global: --exclude=fan#/sys/chassis-7/fan-module-1-7/fan-1#
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,threshold,status,regexp)
+Example: --threshold-overload='fan,operability,OK,poweredOff|removed'
 
 =back
 

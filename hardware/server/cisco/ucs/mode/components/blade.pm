@@ -37,7 +37,7 @@ package hardware::server::cisco::ucs::mode::components::blade;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%presence %operability);
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub check {
     my ($self) = @_;
@@ -70,10 +70,11 @@ sub check {
         next if ($self->absent_problem(section => 'blade', instance => $blade_dn));
         next if ($self->check_exclude(section => 'blade', instance => $blade_dn));
 
-        if (${$presence{$blade_presence}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$presence{$blade_presence}}[1],
+        my $exit = $self->get_severity(section => 'blade', threshold => 'presence', value => $blade_presence);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("blade '%s' presence is: '%s'",
-                                                             $blade_dn, ${$presence{$blade_presence}}[0])
+                                                             $blade_dn, ${$thresholds->{presence}{$blade_presence}}[0])
                                         );
             next;
         }
@@ -81,13 +82,14 @@ sub check {
         $self->{components}->{blade}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
-                                                        $blade_dn, ${$operability{$blade_operstate}}[0],
-                                                        ${$presence{$blade_presence}}[0]
+                                                        $blade_dn, ${$thresholds->{operability}->{$blade_operstate}}[0],
+                                                        ${$thresholds->{presence}->{$blade_presence}}[0]
                                     ));
-        if (${$operability{$blade_operstate}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operability{$blade_operstate}}[1],
+        $exit = $self->get_severity(section => 'blade', threshold => 'operability', value => $blade_operstate);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("blade '%s' state is '%s'.",
-                                                             $blade_dn, ${$operability{$blade_operstate}}[0]
+                                                             $blade_dn, ${$thresholds->{operability}->{$blade_operstate}}[0]
                                                              )
                                         );
         }

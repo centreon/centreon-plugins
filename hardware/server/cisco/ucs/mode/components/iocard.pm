@@ -37,7 +37,7 @@ package hardware::server::cisco::ucs::mode::components::iocard;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%presence %operability);
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub check {
     my ($self) = @_;
@@ -70,10 +70,11 @@ sub check {
         next if ($self->absent_problem(section => 'iocard', instance => $iocard_dn));
         next if ($self->check_exclude(section => 'iocard', instance => $iocard_dn));
 
-        if (${$presence{$iocard_presence}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$presence{$iocard_presence}}[1],
+        my $exit = $self->get_severity(section => 'iocard', threshold => 'presence', value => $iocard_presence);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' presence is: '%s'",
-                                                             $iocard_dn, ${$presence{$iocard_presence}}[0])
+                                                             $iocard_dn, ${$thresholds->{presence}->{$iocard_presence}}[0])
                                         );
             next;
         }
@@ -81,13 +82,14 @@ sub check {
         $self->{components}->{iocard}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
-                                                        $iocard_dn, ${$operability{$iocard_operstate}}[0],
-                                                        ${$presence{$iocard_presence}}[0]
+                                                        $iocard_dn, ${$thresholds->{operability}->{$iocard_presence}}[0],
+                                                        ${$thresholds->{presence}->{$iocard_operstate}}[0]
                                     ));
-        if (${$operability{$iocard_operstate}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operability{$iocard_operstate}}[1],
+        $exit = $self->get_severity(section => 'iocard', threshold => 'operability', value => $iocard_operstate);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' state is '%s'.",
-                                                             $iocard_dn, ${$operability{$iocard_operstate}}[0]
+                                                             $iocard_dn, ${$thresholds->{operability}->{$iocard_operstate}}[0]
                                                              )
                                         );
         }

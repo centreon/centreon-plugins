@@ -37,7 +37,7 @@ package hardware::server::cisco::ucs::mode::components::fan;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%presence %operability);
+use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub check {
     my ($self) = @_;
@@ -70,24 +70,25 @@ sub check {
         next if ($self->absent_problem(section => 'fan', instance => $fan_dn));
         next if ($self->check_exclude(section => 'fan', instance => $fan_dn));
 
-        if (${$presence{$fan_presence}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$presence{$fan_presence}}[1],
+        my $exit = $self->get_severity(section => 'fan', threshold => 'presence', value => $fan_presence);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s' presence is: '%s'",
-                                                             $fan_dn, ${$presence{$fan_presence}}[0])
+                                                             $fan_dn, ${$thresholds->{presence}->{$fan_presence}}[0])
                                         );
             next;
         }
         
-        $self->{components}->{fan}->{total}++;
-        
+        $self->{components}->{fan}->{total}++;      
         $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
-                                                        $fan_dn, ${$operability{$fan_operstate}}[0],
-                                                        ${$presence{$fan_presence}}[0]
+                                                        $fan_dn, ${$thresholds->{operability}->{$fan_operstate}}[0],
+                                                        ${$thresholds->{presence}->{$fan_presence}}[0]
                                     ));
-        if (${$operability{$fan_operstate}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operability{$fan_operstate}}[1],
+        $exit = $self->get_severity(section => 'fan', threshold => 'operability', value => $fan_operstate);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s' state is '%s'.",
-                                                             $fan_dn, ${$operability{$fan_operstate}}[0]
+                                                             $fan_dn, ${$thresholds->{operability}->{$fan_operstate}}[0]
                                                              )
                                         );
         }
