@@ -54,7 +54,6 @@ sub new {
                         'memory'            => 'network::alcatel::common::mode::memory',
                         'packet-errors'     => 'snmp_standard::mode::packeterrors',
                         'spanning-tree'     => 'snmp_standard::mode::spanningtree',
-                        #'stack'             => 'network::alcatel::common::mode::stack',
                         'traffic'           => 'snmp_standard::mode::traffic',
                         );
 
