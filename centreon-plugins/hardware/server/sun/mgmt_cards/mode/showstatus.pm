@@ -41,6 +41,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+my $thresholds = [
+    ['access denied', 'UNKNOWN'],
+    ['(?!(No failures))', 'CRITICAL'],
+    ['No failures', 'OK'],
+];
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -54,6 +60,7 @@ sub new {
                                   "password:s"       => { name => 'password' },
                                   "timeout:s"        => { name => 'timeout', default => 30 },
                                   "command-plink:s"  => { name => 'command_plink', default => 'plink' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
     return $self;
 }
@@ -74,6 +81,40 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify a password.");
        $self->{output}->option_exit(); 
     }
+    
+    $self->{overload_th} = [];
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($status, $filter) = ($1, $2);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        push @{$self->{overload_th}}, {filter => $filter, status => $status};
+    }
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'unknown'; # default 
+    
+    foreach (@{$self->{overload_th}}) {
+        if ($options{value} =~ /$_->{filter}/msi) {
+            $status = $_->{status};
+            return $status;
+        }
+    }
+    foreach (@{$thresholds}) {
+        if ($options{value} =~ /$$_[0]/msi) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+
+    return $status;
 }
 
 sub run {
@@ -119,20 +160,17 @@ sub run {
                                     short_msg => "Command '$stdout' problems (see additional info).");
         $self->{output}->display();
         $self->{output}->exit();
-    }
-    
+    }    
     $self->{output}->output_add(long_msg => $long_msg);
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "No problems on system.");
-
-    # OK:
-    #No failures found in System Initialization.
-    
-    if ($stdout !~ /No failures/i) {
-        $self->{output}->output_add(severity => 'CRITICAL', 
-                                            short_msg => "Some errors on system (see additional info).");
+   
+    my $exit = $self->get_severity(value => $stdout);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Some errors on system (see additional info).");
+    } else {
+        $self->{output}->output_add(severity => 'OK', 
+                                    short_msg => "No problems on system.");
     }
-
  
     $self->{output}->display();
     $self->{output}->exit();
@@ -167,6 +205,12 @@ Plink command (default: plink). Use to set a path.
 =item B<--timeout>
 
 Timeout in seconds for the command (Default: 30).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='UNKNOWN,access denied'
 
 =back
 
