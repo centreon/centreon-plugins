@@ -146,6 +146,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "with-sensors"  => { name => 'with_sensors' },
+                                  "exclude:s@"    => { name => 'exclude' },
                                 });
 
     return $self;
@@ -154,6 +155,18 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
+
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    foreach (@{$self->{option_results}->{exclude}}) {
+        if ($options{value} =~ /$_/) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{value}"));
+            return 1;
+        }
+    }
+    return 0;
 }
 
 sub run {
@@ -179,6 +192,8 @@ sub run {
         my $component_status = $oids_components_error_status->{$oid};
         # with '--'. there is 0x00 at the end str
         my $component_part = centreon::plugins::misc::trim($oids_components_part_number->{$oid_scfComponentPartNumber . '.' . $board_type . '.' . $oid_end});
+        
+        next if ($self->check_exclude(value => $components_board_types{$board_type} . '.' . $component_part));
         
         if ($component_status != 1) {
            $self->{output}->output_add(severity => ${$error_status{$component_status}}[1],
@@ -220,6 +235,13 @@ Check Mseries hardware components.
 =item B<--with-sensors>
 
 Get sensors perfdatas.
+
+=item B<--exclude>
+
+Exclude some parts (multiple values) (Example: --exclude=TYPE.PART)
+TYPE = board type ('cpum', 'mem', ...)
+PART = name
+(a regexp can be used)
 
 =back
 

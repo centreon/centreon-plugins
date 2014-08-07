@@ -64,6 +64,7 @@ sub new {
                                   "retention:s"       => { name => 'retention' },
                                   "timezone:s"        => { name => 'timezone' },
                                   "description"       => { name => 'description' },
+                                  "filter-resource:s"   => { name => 'filter_resource' },
                                 });
     $self->{result} = {};
     return $self;
@@ -84,7 +85,7 @@ sub manage_selection {
     if (defined($self->{option_results}->{error_class})){
         $extra_options .= ' -d '.$self->{option_results}->{error_class};
     }
-    if (defined($self->{option_results}->{retention})){
+    if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} ne ''){
         my $retention = time() - $self->{option_results}->{retention};
         if (defined($self->{option_results}->{timezone})){
             $ENV{TZ} = $self->{option_results}->{timezone};
@@ -128,49 +129,46 @@ sub manage_selection {
         my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
         $self->{result}->{$timestamp.'~'.$identifier.'~'.$resource_name} = {description => $description};
     }
-    
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{retention})) {
-            $self->{output}->output_add(long_msg => sprintf("No error found with these options since %s seconds.", $self->{option_results}->{retention}));
-            $self->{output}->output_add(short_msg => sprintf("No error found since %s seconds.", $self->{option_results}->{retention}));
-        } else {
-            $self->{output}->output_add(long_msg => "No error found with these options.");
-            $self->{output}->output_add(short_msg => "No error found.");
-        }
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    $self->manage_selection();
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'No error found.');
-
+    $self->manage_selection();    
+    if (defined($self->{option_results}->{retention})) {
+        $self->{output}->output_add(long_msg => sprintf("No error found with these options since %s seconds.", $self->{option_results}->{retention}));
+        $self->{output}->output_add(short_msg => sprintf("No error found since %s seconds.", $self->{option_results}->{retention}));
+    } else {
+        $self->{output}->output_add(long_msg => "No error found with these options.");
+        $self->{output}->output_add(short_msg => "No error found.");
+    }
+    
+    my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
 	    my @split_error = split ('~',$errpt_error);
 	    my $timestamp = $split_error[0];
         my $identifier = $split_error[1];
         my $resource_name = $split_error[2];
-	    my $description = $self->{result}->{$errpt_error}->{description};
-        my $exit;
+        my $description = $self->{result}->{$errpt_error}->{description};
+        
+        next if (defined($self->{option_results}->{filter_resource}) && $self->{option_results}->{filter_resource} ne '' &&
+                 $resource_name !~ /$self->{option_results}->{filter_resource}/);
+        
+        $total_error++;
         if (defined($self->{option_results}->{description})) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
-                                                $timestamp, $resource_name, $description));
-            $self->{output}->output_add(severity => 'critical',
-                                        short_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
-                                                $timestamp, $resource_name, $description));
+                                                $timestamp, $resource_name, $description));           
         } else {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
                                                 $timestamp, $resource_name));
-            $self->{output}->output_add(severity => 'critical',
-                                        short_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                                $timestamp, $resource_name));    
         }
     }
 
+    if ($total_error != 0) {
+        $self->{output}->output_add(severity => 'critical',
+                                    short_msg => sprintf("%s error(s) found(s)", $total_error));
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -181,7 +179,7 @@ __END__
 
 =head1 MODE
 
-Check storage usages.
+Check errpt messages.
 
 =over 8
 
@@ -234,9 +232,15 @@ Filter error class ('H' for hardware, 'S' for software, '0' for errlogger, 'U' f
 
 Retention time of errors in seconds.
 
-=item B<--retention>
+=item B<--description>
 
 Print error description in output.
+
+=item B<--filter-resource>
+
+Filter resource (can use a regexp).
+
+Set
 
 =back
 
