@@ -58,16 +58,16 @@ $thresholds = {
         ['^OK|NOT PRESENT$', 'OK'],
     ],
     fan => [
-        ['^(?!(OK)$)', 'CRITICAL'],
-        ['^OK$', 'OK'],
+        ['^(?!(OK|NOT PRESENT)$)', 'CRITICAL'],
+        ['^OK|NOT PRESENT$', 'OK'],
     ],
     voltage => [
         ['^(?!(OK)$)', 'CRITICAL'],
         ['^OK$', 'OK'],
     ],
     psu => [
-        ['^(?!(OK)$)', 'CRITICAL'],
-        ['^OK$', 'OK'],
+        ['^(?!(OK|NOT PRESENT)$)', 'CRITICAL'],
+        ['^OK|NOT PRESENT$', 'OK'],
     ],
     sensors => [
         ['^(?!(OK)$)', 'CRITICAL'],
