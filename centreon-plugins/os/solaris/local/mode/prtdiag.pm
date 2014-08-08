@@ -63,8 +63,10 @@ sub new {
                                   "command-path:s"    => { name => 'command_path', default => '/usr/platform/`/sbin/uname -i`/sbin' },
                                   "command-options:s" => { name => 'command_options', default => '-v 2>&1' },
                                   "config-file:s"     => { name => 'config_file' },
+                                  "exclude:s@"        => { name => 'exclude' },
                                 });
     $self->{conf} = {};
+    $self->{excludes} = {};
     $self->{syst} = undef;
     return $self;
 }
@@ -77,6 +79,33 @@ sub check_options {
     } else {
         $self->{config_file} = dirname(__FILE__) . '/../conf/prtdiag.conf';
     }
+    
+    foreach (@{$self->{option_results}->{exclude}}) {
+        next if (! /^(.*?),(.*?),(.*)$/);
+        my ($section, $tpl, $filter) = ($1, $2, $3);
+        $self->{excludes}->{$section} = [] if (!defined($self->{excludes}->{$section}));
+        push @{$self->{excludes}->{$section}}, { template => $tpl, filter => $filter };
+    }
+}
+
+sub check_exclude {
+    my ($self, %options) = @_;
+    
+    return 0 if (!defined($self->{excludes}->{$options{section}}));
+
+    foreach my $exclude (@{$self->{excludes}->{$options{section}}}) {
+        my ($template, $filter) = ($exclude->{template}, $exclude->{filter});
+        foreach my $label (keys %{$options{dataset}}) {
+            $template =~ s/%$label%/$options{dataset}->{$label}/g;
+        }
+        
+        if ($template =~ /$filter/) {
+            $self->{output}->output_add(long_msg => " INF - Skipping $template");
+            return 1;
+        }
+    }
+    
+    return 0;
 }
 
 sub prtdiag {
@@ -225,10 +254,12 @@ sub prtdiag {
             my $ok_condition = $self->{conf}->{$self->{syst}}->{"checks.$check.ok_condition"};
             my $output_string = $self->{conf}->{$self->{syst}}->{"checks.$check.output_string"};
 
+            next if ($self->check_exclude(dataset => $data{$dataset}, section => $check));
+            
             # Substitute labels in condition and output string
             foreach my $label ( keys( %{ $data{$dataset} } ) ) {
                 $ok_condition =~ s/%$label%/$data{$dataset}->{$label}/g;
-                $output_string =~ s/%$label%/$data{$dataset}->{$label}/g;
+                $output_string =~ s/%$label%/$data{$dataset}->{$label}/g;                
             }
             
             # Test condition
@@ -356,6 +387,13 @@ Command options (Default: '-v 2>&1').
 =item B<--config-file>
 
 Config file with prtdiag output description (Default: Directory 'conf/prtdiag.conf' under absolute mode path).
+
+=item B<--exclude>
+
+Exclude some components (multiple) (Syntax: SECTION,INSTANCE,FILTER).
+SECTION  = component type in prtdiag.conf (Example: temperature, fan,... 
+INSTANCE = Set the instance (Example: %Location%)
+FILTER   = regexp to filter
 
 =back
 

@@ -45,22 +45,39 @@ sub check {
     $self->{components}->{si} = {name => 'system indicator', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'si'));
     
-    if ($self->{stdout} =~ /^System Indicator Status.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
-        #MB.LOCATE            MB.SERVICE           MB.ACT
-        #--------------------------------------------------------
-        #OFF                  OFF                  ON
+    #--------------------------------------------------------
+    #System Indicator Status:
+    #--------------------------------------------------------
+    #MB.LOCATE            MB.SERVICE           MB.ACT
+    #--------------------------------------------------------
+    #OFF                  OFF                  ON
+    
+    #--------------------------------------------------------
+    #System Indicator Status:
+    #--------------------------------------------------------
+    #SYS/LOCATE           SYS/SERVICE          SYS/ACT
+    #OFF                  OFF                  ON
+    #--------------------------------------------------------
+    #SYS/REAR_FAULT       SYS/TEMP_FAULT       SYS/TOP_FAN_FAULT
+    #OFF                  OFF                  OFF
+    #--------------------------------------------------------
+    
+    if ($self->{stdout} =~ /^System Indicator Status.*?\n(.*?)\n\n/ims && defined($1)) {
+        my $match = $1;
 
-        if ($1 =~ /^([^\s]+)\s+([^\s].*?)\s{2}/) {
-            my $mbservice_status = defined($2) ? $2 : 'unknown';
+        if ($match =~ /^.*(MB\.SERVICE).*?\n---+\n\s*\S+\s*(\S+)/ims || 
+            $match =~ /^.*(SYS\/SERVICE).*?\n\s*\S+\s*(\S+)/ims) {
+            my $si_name = defined($1) ? $1 : 'unknown';
+            my $si_status = defined($2) ? $2 : 'unknown';
             
-            next if ($self->check_exclude(section => 'si', instance => 'MB.SERVICE'));
+            next if ($self->check_exclude(section => 'si', instance => $si_name));
             
             $self->{components}->{si}->{total}++;
-            $self->{output}->output_add(long_msg => "System Indicator Status 'MB.SERVICE' is " . $mbservice_status);
-            my $exit = $self->get_severity(section => 'si', value => $mbservice_status);
+            $self->{output}->output_add(long_msg => "System Indicator Status '$si_name' is " . $si_status);
+            my $exit = $self->get_severity(section => 'si', value => $si_status);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
-                                            short_msg => "System Indicator Status 'MB.SERVICE' is " . $mbservice_status);
+                                            short_msg => "System Indicator Status '$si_name' is " . $si_status);
             }
         }
     }
