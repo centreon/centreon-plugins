@@ -35,13 +35,14 @@ sub checkArgs {
 sub initArgs {
     my $self = shift;
     $self->{lhost} = $_[0];
+    $self->{storage_status} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
 }
 
 sub run {
     my $self = shift;
 
     my %filters = ('name' => $self->{lhost});
-    my @properties = ('runtime.healthSystemRuntime.hardwareStatusInfo.cpuStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo',
+    my @properties = ('runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
                       'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
@@ -49,7 +50,7 @@ sub run {
     }
     
     return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
-                                                $$result[0]->{'runtime.connectionState'}->val) == 0);
+                                                  $$result[0]->{'runtime.connectionState'}->val) == 0);
     
     my $status = 0; # OK
     my $output_critical = '';
@@ -62,49 +63,84 @@ sub run {
     my $CAlertCount = 0;
     my $WAlertCount = 0;
     foreach my $entity_view (@$result) {
-            my $cpuStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo.cpuStatusInfo'};
+        my $cpuStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{cpuStatusInfo};
+        my $memoryStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{memoryStatusInfo};
+        my $storageStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{storageStatusInfo};
         my $numericSensorInfo = $entity_view->{'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo'};
-        if (!defined($cpuStatusInfo)) {
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "API error - unable to get cpuStatusInfo");
-        }
-        if (!defined($numericSensorInfo)) {
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "API error - unable to get numericSensorInfo");
-        }
-
+        
         # CPU
-        foreach (@$cpuStatusInfo) {
-            if ($_->status->key =~ /^red$/i) {
-                centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                    $_->name . ": " . $_->status->summary);
-                $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                $CAlertCount++;
-            } elsif ($_->status->key =~ /^yellow$/i) {
-                centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                    $_->name . ": " . $_->status->summary);
-                $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                $WAlertCount++;
-            } else {
-                $OKCount++;
+        if (defined($cpuStatusInfo)) {
+            foreach (@$cpuStatusInfo) {
+                if ($_->status->key =~ /^red$/i) {
+                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $CAlertCount++;
+                } elsif ($_->status->key =~ /^yellow$/i) {
+                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $WAlertCount++;
+                } else {
+                    $OKCount++;
+                }
             }
         }
+        
+        # Memory
+        if (defined($memoryStatusInfo)) {
+            foreach (@$memoryStatusInfo) {
+                if ($_->status->key =~ /^red$/i) {
+                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $CAlertCount++;
+                } elsif ($_->status->key =~ /^yellow$/i) {
+                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $WAlertCount++;
+                } else {
+                    $OKCount++;
+                }
+            }
+        }
+        
+        # Storage
+        if ($self->{storage_status} == 1 && defined($storageStatusInfo)) {
+            foreach (@$storageStatusInfo) {
+                if ($_->status->key =~ /^red$/i) {
+                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $CAlertCount++;
+                } elsif ($_->status->key =~ /^yellow$/i) {
+                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        $_->name . ": " . $_->status->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $WAlertCount++;
+                } else {
+                    $OKCount++;
+                }
+            }
+        }
+        
         # Sensor
-        foreach (@$numericSensorInfo) {
-            if ($_->healthState->key =~ /^red$/i) {
-                centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                    $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
-                $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                $CAlertCount++;
-            } elsif ($_->healthState->key =~ /^yellow$/i) {
-                centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                    $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
-                $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                $WAlertCount++;
-            } else {
-                $OKCount++;
+        if (defined($numericSensorInfo)) {
+            foreach (@$numericSensorInfo) {
+                if ($_->healthState->key =~ /^red$/i) {
+                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
+                        $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $CAlertCount++;
+                } elsif ($_->healthState->key =~ /^yellow$/i) {
+                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
+                        $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
+                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $WAlertCount++;
+                } else {
+                    $OKCount++;
+                }
             }
         }
     }

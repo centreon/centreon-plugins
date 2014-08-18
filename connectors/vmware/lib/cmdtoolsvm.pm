@@ -37,6 +37,7 @@ sub initArgs {
     $self->{lvm} = $_[0];
     $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
     $self->{skip_errors} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
+    $self->{skip_not_running} = (defined($_[3]) && $_[3] == 1) ? 1 : 0;
 }
 
 sub run {
@@ -75,6 +76,11 @@ sub run {
                 centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
                                                     "'" . $virtual->{name} . "' not connected");
             }
+            next;
+        }
+        
+        if ($self->{skip_not_running} == 1 && 
+            !centreon::esxd::common::is_running($virtual->{'runtime.powerState'}->val)) {
             next;
         }
     

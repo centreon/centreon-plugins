@@ -6,7 +6,7 @@ use IO::Socket;
 use Getopt::Long;
 
 my $PROGNAME = $0;
-my $VERSION = "1.5.5";
+my $VERSION = "1.5.6";
 my %ERRORS = (OK => 0, WARNING => 1, CRITICAL => 2, UNKNOWN => 3, DEPENDENT => 4);
 my $socket;
 my $separatorin = '~';
@@ -36,6 +36,8 @@ my %OPTION = (
     consolidation => undef,
     check_disk_limit => undef,
     details_value => undef,
+    
+    storage_status => undef,
     
     # For Autodisco
     xml => undef,
@@ -81,6 +83,8 @@ GetOptions(
     
     "details-value:s"           => \$OPTION{details_value},
     
+    "storage-status"            => \$OPTION{storage_status},
+    
     "xml"                       => \$OPTION{xml},
     "show-attributes"           => \$OPTION{show_attributes},
 );
@@ -111,6 +115,7 @@ sub print_usage () {
     print "\n";
     print "'healthhost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
+    print "   --storage-status  Check storage of ESX\n";
     print "\n";
     print "'maintenancehost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -198,9 +203,10 @@ sub print_usage () {
     print "   --critical2       Critical Threshold in percent for cpu ready (default 10)\n";
     print "\n";
     print "'toolsvm':\n";
-    print "   --vm              VM to check (required)\n";
-    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
-    print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
+    print "   --vm                   VM to check (required)\n";
+    print "   --filter               Use regexp for --vm option (can check multiples vm at once)\n";
+    print "   --skip-errors          Status OK if vms are disconnected (when you checks multiples)\n";
+    print "   --skip-not-running     Skip vmtools for vms not running (also template)\n";
     print "\n";
     print "'snapshotvm':\n";
     print "   --vm                   VM to check (required)\n";
@@ -209,7 +215,7 @@ sub print_usage () {
     print "   --critical             Critical threshold in seconds (default: 5 days)\n";
     print "   --check-consolidation  Check if VM needs consolidation (since vsphere 5.0)\n";
     print "   --skip-errors          Status OK if vms are disconnected (when you checks multiples)\n";
-    print "   --skip-not-running     Skip snapshots from vms not running\n";
+    print "   --skip-not-running     Skip snapshots for vms not running\n";
     print "\n";
     print "'limitvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -226,8 +232,8 @@ sub print_usage () {
     print "\n";
     print "'memvm':\n";
     print "   --vm              VM to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
-    print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
+    print "   -w (--warning)    Warning Threshold in percent\n";
+    print "   -c (--critical)   Critical Threshold in percent\n";
     print "\n";
     print "'swapvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -326,12 +332,13 @@ sub healthhost_check_arg {
         print_usage();
         exit $ERRORS{UNKNOWN};
     }
+    $OPTION{storage_status} = (defined($OPTION{storage_status}) ? 1 : 0);
     return 0;
 }
 
 sub healthhost_get_str {
     return join($separatorin, 
-               ('healthhost', $OPTION{vsphere}, $OPTION{'esx-host'}));
+               ('healthhost', $OPTION{vsphere}, $OPTION{'esx-host'}, $OPTION{storage_status}));
 }
 
 sub datastoreusage_check_arg {
@@ -627,12 +634,13 @@ sub toolsvm_check_arg {
     }
     $OPTION{filter} = (defined($OPTION{filter}) ? 1 : 0);
     $OPTION{skip_errors} = (defined($OPTION{skip_errors}) ? 1 : 0);
+    $OPTION{skip_not_running} = (defined($OPTION{skip_not_running}) ? 1 : 0);
     return 0;
 }
 
 sub toolsvm_get_str {
     return join($separatorin, 
-               ('toolsvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{skip_errors}));
+               ('toolsvm', $OPTION{vsphere}, $OPTION{vm}, $OPTION{filter}, $OPTION{skip_errors}, $OPTION{skip_not_running}));
 }
 
 sub snapshotvm_check_arg {
@@ -709,10 +717,10 @@ sub memvm_check_arg {
         exit $ERRORS{UNKNOWN};
     }
     if (!defined($OPTION{warning})) {
-        $OPTION{warning} = 80;
+        $OPTION{warning} = '';
     }
     if (!defined($OPTION{critical})) {
-        $OPTION{critical} = 90;
+        $OPTION{critical} = '';
     }
     return 0;
 }

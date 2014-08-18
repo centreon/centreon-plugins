@@ -29,15 +29,15 @@ sub checkArgs {
         $self->{logger}->writeLogError("ARGS error: need vm name");
         return 1;
     }
-    if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+    if (defined($warn) && $warn ne '' && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
         $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
         return 1;
     }
-    if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
+    if (defined($crit) && $crit ne '' && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
         $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
         return 1;
     }
-    if (defined($warn) && defined($crit) && $warn > $crit) {
+    if (defined($warn) && defined($crit) && $warn ne '' && $crit ne '' && $warn > $crit) {
         $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
         return 1;
     }
@@ -47,8 +47,8 @@ sub checkArgs {
 sub initArgs {
     my $self = shift;
     $self->{lvm} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : 80);
-    $self->{crit} = (defined($_[2]) ? $_[2] : 90);
+    $self->{warn} = (defined($_[1]) ? $_[1] : undef);
+    $self->{crit} = (defined($_[2]) ? $_[2] : undef);
 }
 
 sub run {
@@ -91,15 +91,15 @@ sub run {
     my $status = 0; # OK
     my $output = '';
     
-    if ($mem_consumed * 100 / ($memory_size / 1024) >= $self->{warn}) {
+    if (defined($self->{warn}) && $mem_consumed * 100 / ($memory_size / 1024) >= $self->{warn}) {
         $status = centreon::esxd::common::errors_mask($status, 'WARNING');
     }
-    if ($mem_consumed * 100 / ($memory_size / 1024) >= $self->{crit}) {
+    if (defined($self->{crit}) && $mem_consumed * 100 / ($memory_size / 1024) >= $self->{crit}) {
         $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
     }
 
     $output = "Memory usage : " . centreon::esxd::common::simplify_number($mem_consumed / 1024 / 1024) . " Go - size : " . centreon::esxd::common::simplify_number($memory_size / 1024 / 1024 / 1024) . " Go - percent : " . centreon::esxd::common::simplify_number($mem_consumed * 100 / ($memory_size / 1024)) . " %";
-    $output .= "|usage=" . ($mem_consumed * 1024) . "o;" . centreon::esxd::common::simplify_number($memory_size * $self->{warn} / 100, 0) . ";" . centreon::esxd::common::simplify_number($memory_size * $self->{crit} / 100, 0) . ";0;" . ($memory_size) . " size=" . $memory_size . "o" . " overhead=" . ($mem_overhead * 1024) . "o" . " ballooning=" . ($mem_ballooning * 1024) . "o" . " shared=" . ($mem_shared * 1024) . "o" . " active=" . ($mem_active * 1024) . "o" ;
+    $output .= "|usage=" . ($mem_consumed * 1024) . "o;" . (defined($self->{warn}) ? centreon::esxd::common::simplify_number($memory_size * $self->{warn} / 100, 0) : '') . ";" . (defined($self->{crit}) ? centreon::esxd::common::simplify_number($memory_size * $self->{crit} / 100, 0) : '') . ";0;" . ($memory_size) . " size=" . $memory_size . "o" . " overhead=" . ($mem_overhead * 1024) . "o" . " ballooning=" . ($mem_ballooning * 1024) . "o" . " shared=" . ($mem_shared * 1024) . "o" . " active=" . ($mem_active * 1024) . "o" ;
 
     $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
