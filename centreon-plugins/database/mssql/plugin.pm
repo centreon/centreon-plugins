@@ -48,14 +48,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'availability-group-states'    => 'database::mssql::mode::availabilitygroupstates',
-                         'blocked-processes'            => 'database::mssql::mode::blockedprocesses',
-                         'cache-hitratio'               => 'database::mssql::mode::cachehitratio',
-                         'connected-users'              => 'database::mssql::mode::connectedusers',
-                         'connection-time'              => 'database::mssql::mode::connectiontime',
-                         'database-size'                => 'database::mssql::mode::databasesize',
-                         'locks-waits'                  => 'database::mssql::mode::lockswaits',
-                         'transactions'                 => 'database::mssql::mode::transactions',
+#                         'availability-group-states'            => 'database::mssql::mode::availabilitygroupstates',
+#                         'availability-group-synchronization'   => 'database::mssql::mode::availabilitygroupsync',
+                         'blocked-processes'                    => 'database::mssql::mode::blockedprocesses',
+                         'cache-hitratio'                       => 'database::mssql::mode::cachehitratio',
+                         'connected-users'                      => 'database::mssql::mode::connectedusers',
+                         'connection-time'                      => 'database::mssql::mode::connectiontime',
+#                         'database-size'                        => 'database::mssql::mode::databasesize',
+                         'locks-waits'                          => 'database::mssql::mode::lockswaits',
+                         'transactions'                         => 'database::mssql::mode::transactions',
+#                         'backup-age'                           => 'database::mssql::mode::backupage',
+#                         'failed-jobs'                          => 'database::mssql::mode::failedjobs',
                          );
 
     return $self;
@@ -66,21 +69,21 @@ sub init {
 
     $self->{options}->add_options(
                                    arguments => {
-                                                'host:s@'       => { name => 'db_host' },
-                                                'port:s@'       => { name => 'db_port' },
-                                                'database:s'    => { name => 'database' },
+                                                'hostname:s@'       => { name => 'hostname' },
+                                                'port:s@'           => { name => 'port' },
+                                                'database:s'        => { name => 'database' },
                                                 }
                                   );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();
 
-    if (defined($options_result->{db_host})) {
+    if (defined($options_result->{hostname})) {
         @{$self->{sqldefault}->{dbi}} = ();
-        for (my $i = 0; $i < scalar(@{$options_result->{db_host}}); $i++) {
-            $self->{sqldefault}->{dbi}[$i] = { data_source => 'Sybase:host=' . $options_result->{db_host}[$i] };
-            if (defined($options_result->{db_port}[$i])) {
-                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
+        for (my $i = 0; $i < scalar(@{$options_result->{hostname}}); $i++) {
+            $self->{sqldefault}->{dbi}[$i] = { data_source => 'Sybase:host=' . $options_result->{hostname}[$i] };
+            if (defined($options_result->{port}[$i])) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
             }
             if ((defined($options_result->{database})) && ($options_result->{database} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{database};
@@ -100,7 +103,7 @@ Check MSSQL Server.
 
 =over 8
 
-=item B<--host>
+=item B<--hostname>
 
 Hostname to query.
 
