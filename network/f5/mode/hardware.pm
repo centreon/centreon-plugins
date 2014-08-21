@@ -157,7 +157,7 @@ Can be: 'fan', 'psu', 'temperature'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fans,psu)
+Exclude some parts (comma seperated list) (Example: --exclude=fan,psu)
 Can also exclude specific instance: --exclude=fan#1#2#,psu
 
 =item B<--warning>
