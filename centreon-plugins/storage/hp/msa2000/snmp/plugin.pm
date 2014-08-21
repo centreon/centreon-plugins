@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::paloalto::pa::500::plugin;
+package storage::hp::msa2000::snmp::plugin;
 
 use strict;
 use warnings;
@@ -45,13 +45,11 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.5';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'               => 'snmp_standard::mode::cpu',
-                        'traffic'           => 'snmp_standard::mode::traffic',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'hardware'          => 'snmp_standard::mode::hardwaredevice',
-                        'packet-errors'     => 'snmp_standard::mode::packeterrors',
+                         'hardware'         => 'snmp_standard::mode::hardwarefibrealliance',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;
@@ -63,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Palo Alto PA 500 Family in SNMP.
+Check HP StorageWorks MSA2000 storage in SNMP.
 
 =cut
