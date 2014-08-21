@@ -47,8 +47,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'     => 'network::f5::mode::hardware',
-                         'connections'  => 'network::f5::mode::connections',
+                         'virtualserver-status' => 'network::f5::mode::virtualserverstatus',
+                         'list-virtualservers'  => 'network::f5::mode::listvirtualservers',
+                         'hardware'             => 'network::f5::mode::hardware',
+                         'connections'          => 'network::f5::mode::connections',
                          );
 
     return $self;

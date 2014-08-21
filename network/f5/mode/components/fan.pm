@@ -47,9 +47,9 @@ my %map_status = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0};
+    $self->{components}->{fan} = {name => 'fans', total => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude(section => 'fans'));
+    return if ($self->check_exclude(section => 'fan'));
     
     my $oid_sysChassisFanEntry = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1';
     my $oid_sysChassisFanStatus = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.2';
@@ -62,12 +62,12 @@ sub check {
         next if ($key !~ /^$oid_sysChassisFanStatus\.(\d+)$/);
         my $instance = $1;
     
-        next if ($self->check_exclude(section => 'fans', instance => $instance));
+        next if ($self->check_exclude(section => 'fan', instance => $instance));
     
         my $status = $result->{$oid_sysChassisFanStatus . '.' . $instance};
         my $speed = $result->{$oid_sysChassisFanSpeed . '.' . $instance};
 
-        $self->{components}->{fans}->{total}++;
+        $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
                                                         $instance, $map_status{$status}));
         if ($status < 1) {
