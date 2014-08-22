@@ -76,6 +76,13 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
+    # sysDescr values:
+    # Aix 5.2: .*Base Operating System Runtime AIX version: 05.02.*
+    # Aix 5.3: .*Base Operating System Runtime AIX version: 05.03.*
+    # Aix 6.1: .*Base Operating System Runtime AIX version: 06.01.*
+    # Aix 7.1: .*Base Operating System Runtime AIX version: 07.01.*
+    
+    my $oid_sysDescr        = ".1.3.6.1.2.1.1.1"; 
     my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";    # aixPageEntry
     my $aix_swap_name       = ".1.3.6.1.4.1.2.6.191.2.4.2.1.1";  # aixPageName
     my $aix_swap_total      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.4";  # aixPageSize (in MB)
@@ -84,11 +91,13 @@ sub run {
     my $aix_swap_index      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.8";
     
     my @indexes = ();
-    my $result = $self->{snmp}->get_table(oid => $aix_swap_pool);
+    my $results = $self->{snmp}->get_multiple_table(oids => [ 
+                                                        { oid => $aix_swap_pool },
+                                                        { oid => $oid_sysDescr },
+                                                    ]);
     
-    foreach my $key (keys %$result) {
-        if ($key =~ /^$aix_swap_index/ ) {
-            $key =~ /\.([0-9]+)$/;
+    foreach my $key (keys %{$results->{$aix_swap_pool}}) {
+        if ($key =~ /^$aix_swap_index\.(.*)/ ) {
             push @indexes, $1;
         }
     }
@@ -98,19 +107,26 @@ sub run {
         $self->{output}->option_exit();
     }
     
+    #  Check if the paging space is active.
+    #  Values are :
+    #   1 = "active"
+    #   2 = "notActive"
+    #  On AIX 5.x it's ok. But in AIX 6.x, 7.x, it's the contrary ??!!!
+    my $active_swap = 2;
+    if ($results->{$oid_sysDescr}->{$oid_sysDescr . ".0"} =~ /AIX version: 05\./i) {
+        $active_swap = 1;
+    }
+    
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Page spaces are ok.');
     my $nactive = 0;
     foreach (@indexes) {
-        #  Check if the paging space is active.
-        #  Values are :
-        #   1 = "active"
-        #   2 = "notActive"
-        #  We set "notActive" because of aixmibd seem to give false status.
-        if ($result->{$aix_swap_status . "." . $_} == 1) {
+       
+        if ($results->{$aix_swap_pool}->{$aix_swap_status . "." . $_} == $active_swap) {
             $nactive = 1;
-            my $swap_total = $result->{$aix_swap_total . "." . $_} * 1024 * 1024;
-            my $prct_used = $result->{$aix_swap_usage . "." . $_};
+            my $swap_name = $results->{$aix_swap_pool}->{$aix_swap_name . "." . $_};
+            my $swap_total = $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024;
+            my $prct_used = $results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_};
             my $total_used = $prct_used * $swap_total  / 100;
 
             my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $swap_total);
@@ -119,17 +135,17 @@ sub run {
             my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $result->{$aix_swap_name . "." . $_},
+                                            short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $swap_name,
                                                 $total_size_value . " " . $total_size_unit,
                                                 $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
-                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $result->{$aix_swap_total . "." . $_})));
+                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_})));
             }
             
-            $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $result->{$aix_swap_name . "." . $_},
+            $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $swap_name,
                                                 $total_size_value . " " . $total_size_unit,
                                                 $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
                                                 $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $swap_total)));
-            $self->{output}->perfdata_add(label => 'page_space_' . $result->{$aix_swap_name . "." . $_}, unit => 'B',
+            $self->{output}->perfdata_add(label => 'page_space_' . $swap_name, unit => 'B',
                                           value => int($total_used),
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_used, cast_int => 1),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_used, cast_int => 1),
