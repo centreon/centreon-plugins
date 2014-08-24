@@ -81,7 +81,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $ref_time, $distant_time;
+    my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
     my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ]);
     if (scalar(keys %$result) == 0) {
@@ -94,7 +94,7 @@ sub run {
         my %ntp;
         
         eval {
-            %ntp = Net::NTP::get_ntp_resonse($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
+            %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
         };
         if ($@) {
             $self->{output}->output_add(severity => 'UNKNOWN',
@@ -125,7 +125,7 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $diff, 
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Time offset %d", $diff));
+                                short_msg => sprintf("Time offset %d second(s)", $diff));
 
     $self->{output}->perfdata_add(label => 'offset', unit => 's',
                                   value => sprintf("%d", $diff),
