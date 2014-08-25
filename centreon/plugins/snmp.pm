@@ -347,7 +347,7 @@ sub get_multiple_table {
     # It's for "bulk". We ask 50 next values. If you set 1, it's like a getnext (snmp v1)
     my $repeat_count = 50;
     if (defined($self->{maxrepetitions}) && 
-        $self->{maxrepetitions} =~ /^d+$/) {
+        $self->{maxrepetitions} =~ /^\d+$/) {
         $repeat_count = $self->{maxrepetitions};
     }
     
@@ -481,7 +481,7 @@ sub get_table {
     # It's for "bulk". We ask 50 next values. If you set 1, it's like a getnext (snmp v1)
     my $repeat_count = 50;
     if (defined($self->{maxrepetitions}) && 
-        $self->{maxrepetitions} =~ /^d+$/) {
+        $self->{maxrepetitions} =~ /^\d+$/) {
         $repeat_count = $self->{maxrepetitions};
     }
     
@@ -825,7 +825,7 @@ Set the number of retries (default: 5) before failure.
 
 =item B<--maxrepetitions>
 
-Max repititions value (default: 50) (only for SNMP v2 and v3).
+Max repetitions value (default: 50) (only for SNMP v2 and v3).
 
 =item B<--subsetleef>
 
