@@ -54,6 +54,7 @@ sub new {
                                   "ntp-port:s"              => { name => 'ntp_port', default => 123 },
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "timezone:s"              => { name => 'timezone' },
                                 });
     return $self;
 }
@@ -109,6 +110,13 @@ sub run {
     }
     
     my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
+    my $timezone = 'UTC';
+    if (defined($self->{option_results}->{timezone})) {
+        $timezone = $self->{option_results}->{timezone};
+    } elsif (defined($remote_date[9])) {
+        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
+    }
+    
     my $dt = DateTime->new(
       year       => $remote_date[0],
       month      => $remote_date[1],
@@ -116,7 +124,7 @@ sub run {
       hour       => $remote_date[3],
       minute     => $remote_date[4],
       second     => $remote_date[5],
-      time_zone  => sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]) , # format +0630
+      time_zone  => $timezone, 
     );
     $distant_time = $dt->epoch;
     
@@ -164,6 +172,11 @@ Set the ntp hostname (if not set, localtime is used).
 =item B<--ntp-port>
 
 Set the ntp port (Default: 123).
+
+=item B<--timezone>
+
+Set the timezone of distant server. For Windows, you need to set it.
+Can use format: 'Europe/London' or '+0100'.
 
 =back
 
