@@ -111,7 +111,7 @@ sub run {
     
     my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
     my $timezone = 'UTC';
-    if (defined($self->{option_results}->{timezone})) {
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $timezone = $self->{option_results}->{timezone};
     } elsif (defined($remote_date[9])) {
         $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
