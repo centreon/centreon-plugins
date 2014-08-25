@@ -46,6 +46,17 @@ sub quit {
     $ftp_handle->quit;
 }
 
+sub message {
+    return $ftp_handle->message;
+}
+
+sub execute {
+    my ($self, %options) = @_;
+    my $command = $options{command};
+    
+    return $ftp_handle->$command(@{$options{command_args}});
+}
+
 sub connect {
     my ($self, %options) = @_;
     my %ftp_options = ();
