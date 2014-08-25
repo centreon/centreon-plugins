@@ -33,27 +33,18 @@
 #
 ####################################################################################
 
-package apps::protocols::ftp::mode::commands;
+package apps::protocols::ftp::mode::date;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes qw(gettimeofday tv_interval);
 use apps::protocols::ftp::lib::ftp;
 
 # How much arguments i need and commands manages
 my %map_commands = (
-    binary  => { ssl => { name => 'binary', num => 0 }, nossl => { name => 'binary', num => 0 } },
-    ascii   => { ssl => { name => 'ascii', num => 0 },  nossl => { name => 'ascii', num => 0 } },
-    cwd     => { ssl => { name => 'cwd', num => 1 },    nossl => { name => 'cwd', num => 0 } },
-    rmdir   => { ssl => { name => 'rmdir', num => 1 },  nossl => { name => 'rmdir', num => 1 } },
-    mkdir   => { ssl => { name => 'mkdir', num => 1 },  nossl => { name => 'mkdir', num => 1 } },
-    ls      => { ssl => { name => 'nlst', num => 0 },   nossl => { name => 'ls', num => 0    } },
-    rename  => { ssl => { name => 'rename', num => 2 }, nossl => { name => 'rename', num => 2    } },
-    delete  => { ssl => { name => 'delete', num => 1 }, nossl => { name => 'delete', num => 1    } },
-    get     => { ssl => { name => 'get', num => 1 },    nossl => { name => 'get', num => 1    } },
-    put     => { ssl => { name => 'put', num => 1 },    nossl => { name => 'put', num => 1    } },
+    mdtm  => { ssl => { name => '_mdtm'  }, nossl => { name => 'mdtm' } },
+    ls    => { ssl => { name => 'nlst' },   nossl => { name => 'ls'} },
 );
 
 sub new {
@@ -68,14 +59,14 @@ sub new {
          "port:s"           => { name => 'port', },
          "ssl"              => { name => 'use_ssl' },
          "ftp-options:s@"   => { name => 'ftp_options' },
-         "ftp-command:s@"   => { name => 'ftp_command' },
+         "directory:s@"     => { name => 'directory' },
+         "file:s@"          => { name => 'file' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout', default => '30' },
          });
-    $self->{commands} = [];
     return $self;
 }
 
@@ -95,52 +86,73 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
-    foreach (@{$self->{option_results}->{ftp_command}}) {
-        my ($command, @args) = split /,/;
-        if (!defined($map_commands{$command})) {
-            $self->{output}->add_option_msg(short_msg => "Command '$command' doesn't exist or is not supported.");
-            $self->{output}->option_exit();
-        }
-        my $ssl_or_not = $map_commands{$command}->{nossl};
-        if (defined($self->{option_results}->{use_ssl})) {
-            $ssl_or_not = $map_commands{$command}->{ssl};
-        }
-        
-        if (scalar(@args) < $ssl_or_not->{num}) {
-            $self->{output}->add_option_msg(short_msg => "Some arguments are missing for the command: '$command'.");
-            $self->{output}->option_exit();
-        }
-        push @{$self->{commands}}, { name => $ssl_or_not->{name}, args => \@args};
+    $self->{ssl_or_not} = 'nossl';
+    if (defined($self->{option_results}->{use_ssl})) {
+         $self->{ssl_or_not} = 'ssl';
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $timing0 = [gettimeofday];
+    my %file_times = ();
     
     apps::protocols::ftp::lib::ftp::connect($self);
-    foreach my $command (@{$self->{commands}}) {
-        if (!defined(apps::protocols::ftp::lib::ftp::execute($self, command => $command->{name}, command_args => \@{$command->{args}}))) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Command '$command->{name}' issue: %s", apps::protocols::ftp::lib::ftp::message()));
+    my $current_time = time();
+    foreach my $dir (@{$self->{option_results}->{directory}}) {
+        my @files;
+
+        if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("Command '$map_commands{ls}->{$self->{ssl_or_not}}->{name}' issue for directory '$dir': %s", apps::protocols::ftp::lib::ftp::message()));
             apps::protocols::ftp::lib::ftp::quit();
             $self->{output}->display();
             $self->{output}->exit();
         }
+        
+        foreach my $file (@files) {
+            my $time_result;
+            
+            if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
+                # Surely a directory. So we go forward. Can't get time for that.
+                next;
+            }
+            
+            $file_times{$file} = $time_result;
+        }
     }
+    foreach my $file (@{$self->{option_results}->{file}}) {
+        my $time_result;
+            
+        if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => sprintf("Command '$map_commands{mdtm}->{$self->{ssl_or_not}}->{name}' issue for file '$file': %s", apps::protocols::ftp::lib::ftp::message()));
+            apps::protocols::ftp::lib::ftp::quit();
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+        $file_times{$file} = $time_result;
+    }
+
     apps::protocols::ftp::lib::ftp::quit();
 
-    my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f ", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time",
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+    $self->{output}->output_add(severity => 'OK', 
+                                short_msg => "All file times are ok.");
+    foreach my $name (sort keys %file_times) {
+        my $diff_time = $current_time - $file_times{$name};
+
+        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
+                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($file_times{$name}))));
+        if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit_code,
+                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($file_times{$name}))));
+        }
+        $self->{output}->perfdata_add(label => $name, unit => 's',
+                                      value => $diff_time,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      );
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -152,7 +164,7 @@ __END__
 
 =head1 MODE
 
-Check if commands succeed to an FTP Server.
+Check modified time of files.
 
 =over 8
 
@@ -194,56 +206,21 @@ Threshold warning in seconds
 
 Threshold critical in seconds
 
-=item B<--ftp-command>
+=item B<--warning>
 
-Set command to test (can be multiple).
-It will be executed in the order and stop on first command problem.
-Following commands can be used:
+Threshold warning in seconds for each files (diff time)
 
-=over 16
+=item B<--critical>
 
-=item binary
+Threshold critical in seconds for each files (diff time)
 
-Transfer file in binary mode.
+=item B<--directory>
 
-=item ascii
+Check files in the directory (no recursive) (Multiple option)
 
-Transfer file in ascii mode.
+=item B<--file>
 
-=item cwd,DIR
-
-Attempt to change directory to the directory given in DIR.
-If no directory is given then an attempt is made to change the directory to the root directory.
-
-=item rmdir,DIR
-
-Remove the directory with the name DIR.
-
-=item mkdir,DIR
-
-Create a new directory with the name DIR.
-
-=item ls,DIR
-
-Get a directory listing of DIR, or the current directory.
-
-=item rename,OLDNAME,NEWNAME
-
-Rename a file on the remote FTP server from OLDNAME to NEWNAME.
-
-=item delete,FILENAME
-
-Send a request to the server to delete FILENAME.
-
-=item get,REMOTE_FILE,LOCAL_FILE
-
-Get REMOTE_FILE from the server and store locally.
-
-=item put,LOCAL_FILE,REMOTE_FILE
-
-Put a file on the remote server.
-
-=back
+Check file (Multiple option)
 
 =back
 
