@@ -47,8 +47,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::ftp::mode::login',
-                        'commands'         => 'apps::protocols::ftp::mode::commands',
+                        'login'     => 'apps::protocols::ftp::mode::login',
+                        'commands'  => 'apps::protocols::ftp::mode::commands',
+                        'date'      => 'apps::protocols::ftp::mode::date',
                         );
     return $self;
 }
