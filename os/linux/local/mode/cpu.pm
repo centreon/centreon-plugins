@@ -108,7 +108,7 @@ sub run {
         my $cpu_number = $1;
         $datas->{'cpu_idle_' . $cpu_number} = $5;
         $datas->{'cpu_system_' . $cpu_number} = $4;
-        $datas->{'cpu_user_' . $cpu_number} = $1;
+        $datas->{'cpu_user_' . $cpu_number} = $2;
         $datas->{'cpu_iowait_' . $cpu_number} = $6;
         
         if (!defined($old_timestamp)) {
