@@ -42,6 +42,13 @@ use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
+my %map_process_status = (
+    1 => 'running', 
+    2 => 'runnable', 
+    3 => 'notRunnable', 
+    4 => 'invalid',
+);
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -64,6 +71,7 @@ sub new {
                                   "regexp-path"             => { name => 'regexp_path', },
                                   "process-args:s"          => { name => 'process_args', },
                                   "regexp-args"             => { name => 'regexp_args', },
+                                  "process-status:s"        => { name => 'process_status', default => 'running|runnable' },
                                   "memory"                  => { name => 'memory', },
                                   "cpu"                     => { name => 'cpu', },
                                 });
@@ -108,18 +116,11 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-cpu-total threshold '" . $self->{critical_cpu_total} . "'.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{process_name}) && 
-        !defined($self->{option_results}->{process_path}) && 
-        !defined($self->{option_results}->{process_args})
-        ) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify at least one argument '--process-*'.");
-        $self->{output}->option_exit();
-    }
     
     if (defined($self->{option_results}->{cpu})) {
         $self->{statefile_cache}->check_options(%options);
         # Construct filter for file cache (avoid one check erase one other)
-        my %labels = ('process_name', 'regexp_name', 'process_path', 'regexp_path', 'process_args', 'regexp_args');
+        my %labels = ('process_name', 'regexp_name', 'process_path', 'regexp_path', 'process_args', 'regexp_args', 'process_status');
         foreach (keys %labels) {
             if (defined($self->{option_results}->{$_})) {
                 $self->{filter4md5} .= ',' . $self->{option_results}->{$_};
@@ -137,9 +138,9 @@ sub run {
                 name => '.1.3.6.1.2.1.25.4.2.1.2', # hrSWRunName
                 path => '.1.3.6.1.2.1.25.4.2.1.4', # hrSWRunPath
                 args => '.1.3.6.1.2.1.25.4.2.1.5', # hrSWRunParameters (Warning: it's truncated. (128 characters))
+                status => '.1.3.6.1.2.1.25.4.2.1.7', # hrSWRunStatus
                };
     
-    my $oid_hrSWRunStatus = '.1.3.6.1.2.1.25.4.2.1.7';
     my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
     my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 
@@ -152,7 +153,7 @@ sub run {
     }
     # Build other
     my $mores_filters = {};
-    my $more_oids = [$oid_hrSWRunStatus];
+    my $more_oids = [];
     if (defined($self->{option_results}->{memory})) {
         push @{$more_oids}, $oid_hrSWRunPerfMem;
     }
@@ -169,10 +170,11 @@ sub run {
     my $result = $self->{snmp}->get_table(oid => $oids->{$oid2check_filter});
     my $instances_keep = {};
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        my $val = $self->{option_results}->{'process_' . $oid2check_filter};
+        my $option_val = $self->{option_results}->{'process_' . $oid2check_filter};
         
-        if ((defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} =~ /$val/)
-            || (!defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} eq $val)) {
+        if ((defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} =~ /$option_val/)
+            || (!defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} eq $option_val)
+            || ($oid2check_filter eq 'status' && $map_process_status{$result->{$key}} =~ /$option_val/)) {
             $key =~ /\.([0-9]+)$/;
             $instances_keep->{$1} = 1;
         }
@@ -182,23 +184,20 @@ sub run {
     my $datas = {};
     $datas->{last_timestamp} = time();
     if (scalar(keys %$instances_keep) > 0) {
-        $self->{snmp}->load(oids => $more_oids, instances => [keys %$instances_keep ]);
-        $result2 = $self->{snmp}->get_leef();
+        if (scalar(@$more_oids) > 0) {
+            $self->{snmp}->load(oids => $more_oids, instances => [ keys %$instances_keep ]);
+            $result2 = $self->{snmp}->get_leef();
+        }
     
-        foreach my $key (keys %$instances_keep) {
-            # 1 = running, 2 = runnable, 3 = notRunnable, 4 => invalid
-            if (!defined($result2->{$oid_hrSWRunStatus . "." . $key}) || $result2->{$oid_hrSWRunStatus . "." . $key} > 2) {
-                delete $instances_keep->{$key};
-                next;
-            }
-            
+        foreach my $key (keys %$instances_keep) {            
             my $long_value = '[ ' . $oid2check_filter . ' => ' . $result->{$oids->{$oid2check_filter} . '.' . $key} . ' ]';
             my $deleted = 0;
             foreach (keys %$mores_filters) {
                 my $val = $self->{option_results}->{'process_' . $_};
                 
                 if ((defined($self->{option_results}->{'regexp_' . $_}) && $result2->{$oids->{$_} . '.' . $key} !~ /$val/)
-                    || (!defined($self->{option_results}->{'regexp_' . $_}) && $result2->{$oids->{$_} . '.' . $key} ne $val)) {
+                    || (!defined($self->{option_results}->{'regexp_' . $_}) && $result2->{$oids->{$_} . '.' . $key} ne $val)
+                    || ($_ eq 'status' && $map_process_status{$result2->{$oids->{$_} . '.' . $key}} !~ /$val/)) {
                     delete $instances_keep->{$key};
                     $deleted = 1;
                     last;
@@ -370,6 +369,10 @@ Check process args.
 =item B<--regexp-args>
 
 Allows to use regexp to filter process args (with option --process-args).
+
+=item B<--process-status>
+
+Check process status (Default: 'running|runnable'). Can be a regexp.
 
 =item B<--memory>
 
