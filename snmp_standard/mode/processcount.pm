@@ -145,7 +145,8 @@ sub run {
     my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 
     my $oid2check_filter;
-    foreach (keys %$oids) {
+    # To have a better order
+    foreach (('name', 'path', 'args', 'status')) {
         if (defined($self->{option_results}->{'process_' . $_})) {
             $oid2check_filter = $_;
             last;
@@ -172,9 +173,13 @@ sub run {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         my $option_val = $self->{option_results}->{'process_' . $oid2check_filter};
         
-        if ((defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} =~ /$option_val/)
-            || (!defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} eq $option_val)
-            || ($oid2check_filter eq 'status' && $map_process_status{$result->{$key}} =~ /$option_val/)) {
+        if ($oid2check_filter eq 'status') {
+            if ($map_process_status{$result->{$key}} =~ /$option_val/) {
+                $key =~ /\.([0-9]+)$/;
+                $instances_keep->{$1} = 1;
+            }
+        } elsif ((defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} =~ /$option_val/)
+                 || (!defined($self->{option_results}->{'regexp_' . $oid2check_filter}) && $result->{$key} eq $option_val)) {
             $key =~ /\.([0-9]+)$/;
             $instances_keep->{$1} = 1;
         }
@@ -189,21 +194,28 @@ sub run {
             $result2 = $self->{snmp}->get_leef();
         }
     
-        foreach my $key (keys %$instances_keep) {            
-            my $long_value = '[ ' . $oid2check_filter . ' => ' . $result->{$oids->{$oid2check_filter} . '.' . $key} . ' ]';
+        foreach my $key (keys %$instances_keep) {
+            my $value = ($oid2check_filter eq 'status') ? $map_process_status{$result->{$oids->{$oid2check_filter} . '.' . $key}} : $result->{$oids->{$oid2check_filter} . '.' . $key};       
+            my $long_value = '[ ' . $oid2check_filter . ' => ' . $value . ' ]';
             my $deleted = 0;
             foreach (keys %$mores_filters) {
-                my $val = $self->{option_results}->{'process_' . $_};
+                my $opt_val = $self->{option_results}->{'process_' . $_};
+                $value = ($_ eq 'status') ? $map_process_status{$result2->{$oids->{$_} . '.' . $key}} : $result2->{$oids->{$_} . '.' . $key};
                 
-                if ((defined($self->{option_results}->{'regexp_' . $_}) && $result2->{$oids->{$_} . '.' . $key} !~ /$val/)
-                    || (!defined($self->{option_results}->{'regexp_' . $_}) && $result2->{$oids->{$_} . '.' . $key} ne $val)
-                    || ($_ eq 'status' && $map_process_status{$result2->{$oids->{$_} . '.' . $key}} !~ /$val/)) {
+                if ($_ eq 'status') {
+                    if ($value !~ /$opt_val/) {
+                        delete $instances_keep->{$key};
+                        $deleted = 1;
+                        last;
+                    }
+                } elsif ((defined($self->{option_results}->{'regexp_' . $_}) && $value !~ /$opt_val/)
+                    || (!defined($self->{option_results}->{'regexp_' . $_}) && $value ne $opt_val)) {
                     delete $instances_keep->{$key};
                     $deleted = 1;
                     last;
                 }
                 
-                $long_value .= ' [ ' . $_ . ' => ' . $result2->{$oids->{$_} . '.' . $key} . ' ]';
+                $long_value .= ' [ ' . $_ . ' => ' . $value . ' ]';
             }
             
             if ($deleted == 0) {
