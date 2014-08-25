@@ -47,17 +47,18 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu' => 'snmp_standard::mode::cpu',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'list-storages' => 'snmp_standard::mode::liststorages',
-                         'memory' => 'os::windows::snmp::mode::memory',
-                         'packet-errors' => 'snmp_standard::mode::packeterrors',
-                         'processcount' => 'snmp_standard::mode::processcount',
-                         'service' => 'os::windows::snmp::mode::service',
-                         'storage' => 'snmp_standard::mode::storage',
-                         'swap' => 'os::windows::snmp::mode::swap',
-                         'traffic' => 'snmp_standard::mode::traffic',
-                         'uptime' => 'snmp_standard::mode::uptime',
+                         'cpu'              => 'snmp_standard::mode::cpu',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-storages'    => 'snmp_standard::mode::liststorages',
+                         'memory'           => 'os::windows::snmp::mode::memory',
+                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
+                         'processcount'     => 'snmp_standard::mode::processcount',
+                         'service'          => 'os::windows::snmp::mode::service',
+                         'storage'          => 'snmp_standard::mode::storage',
+                         'swap'             => 'os::windows::snmp::mode::swap',
+                         'time'             => 'snmp_standard::mode::ntp',
+                         'traffic'          => 'snmp_standard::mode::traffic',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
