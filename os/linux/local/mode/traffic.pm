@@ -237,11 +237,13 @@ sub run {
             $in_prct = sprintf("%.2f", $in_prct);
             $out_prct = sprintf("%.2f", $out_prct);
         } else {
+            $in_prct = '-';
+            $out_prct = '-';
+        }
+        if ($self->{option_results}->{units} ne '%') {
             my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
             my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
             $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-            $in_prct = '-';
-            $out_prct = '-';
         }
        
         ###########
@@ -353,7 +355,7 @@ Threshold critical in percent for 'out' traffic.
 
 =item B<--units>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Units of thresholds (Default: 'B') ('%', 'B').
 Percent can be used only if --speed is set.
 
 =item B<--name>
