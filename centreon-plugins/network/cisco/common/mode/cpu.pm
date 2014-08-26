@@ -88,28 +88,21 @@ sub check_options {
     }
 }
 
-sub run {
+sub check_table_cpu {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    my $oid_cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
-    my $oid_cpmCPUTotal5sec = '.1.3.6.1.4.1.9.9.109.1.1.1.1.3';
-    my $oid_cpmCPUTotal1min = '.1.3.6.1.4.1.9.9.109.1.1.1.1.4';
-    my $oid_cpmCPUTotal5min = '.1.3.6.1.4.1.9.9.109.1.1.1.1.5';
-    my $result = $self->{snmp}->get_table(oid => $oid_cpmCPUTotalEntry, nothing_quit => 1);
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All CPUs are ok.');
-    
-    foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_cpmCPUTotal5sec/);
+    my $checked = 0;
+    foreach my $oid (keys %{$self->{results}->{$options{entry}}}) {
+        next if ($oid !~ /^$options{sec5}/);
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
-        my $cpu5sec = $result->{$oid};
-        my $cpu1min = $result->{$oid_cpmCPUTotal1min . '.' . $instance};
-        my $cpu5min =$result->{$oid_cpmCPUTotal5min . '.' . $instance};
+        my $cpu5sec = $self->{results}->{$options{entry}}->{$oid};
+        my $cpu1min = $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance};
+        my $cpu5min = $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance};
         
+        next if ($cpu5sec eq '');
+        
+        $checked = 1;
         my $exit1 = $self->{perfdata}->threshold_check(value => $cpu5sec, 
                                threshold => [ { label => 'crit5s', 'exit_litteral' => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{perfdata}->threshold_check(value => $cpu1min, 
@@ -121,7 +114,7 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
                                             $cpu5sec, $cpu1min, $cpu5min));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{output}->output_add(severity => $exit,
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
                                             $cpu5sec, $cpu1min, $cpu5min));
         }
@@ -141,6 +134,48 @@ sub run {
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
                                       min => 0, max => 100);
+    }
+    
+    return $checked;
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    # Cisco IOS Software releases later to 12.0(3)T and prior to 12.2(3.5)
+    my $oid_cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
+    my $oid_cpmCPUTotal5sec = '.1.3.6.1.4.1.9.9.109.1.1.1.1.3';
+    my $oid_cpmCPUTotal1min = '.1.3.6.1.4.1.9.9.109.1.1.1.1.4';
+    my $oid_cpmCPUTotal5min = '.1.3.6.1.4.1.9.9.109.1.1.1.1.5';
+    # Cisco IOS Software releases 12.2(3.5) or later
+    my $oid_cpmCPUTotal5minRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.8';
+    my $oid_cpmCPUTotal1minRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.7';
+    my $oid_cpmCPUTotal5secRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.6';
+    # Cisco IOS Software releases prior to 12.0(3)T
+    my $oid_lcpu = '.1.3.6.1.4.1.9.2.1';
+    my $oid_busyPer = '.1.3.6.1.4.1.9.2.1.56'; # .0 in reality
+    my $oid_avgBusy1 = '.1.3.6.1.4.1.9.2.1.57'; # .0 in reality
+    my $oid_avgBusy5 = '.1.3.6.1.4.1.9.2.1.58'; # .0 in reality
+    
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
+                                                            { oid => $oid_cpmCPUTotalEntry,
+                                                              start => $oid_cpmCPUTotal5sec, end => $oid_cpmCPUTotal5minRev
+                                                            },
+                                                            { oid => $oid_lcpu,
+                                                              start => $oid_busyPer, end => $oid_avgBusy5 }],
+                                                   nothing_quit => 1);
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'All CPUs are ok.');
+    
+    if (!$self->check_table_cpu(entry => $oid_cpmCPUTotalEntry, sec5 => $oid_cpmCPUTotal5secRev, min1 => $oid_cpmCPUTotal1minRev, min5 => $oid_cpmCPUTotal5minRev)
+        && !$self->check_table_cpu(entry => $oid_cpmCPUTotalEntry, sec5 => $oid_cpmCPUTotal5sec, min1 => $oid_cpmCPUTotal1min, min5 => $oid_cpmCPUTotal5min)
+        && !$self->check_table_cpu(entry => $oid_lcpu, sec5 => $oid_busyPer, min1 => $oid_avgBusy1, min5 => $oid_avgBusy5)
+       ) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => sprintf("Cannot find CPU informations."));
     }
     
     $self->{output}->display();
@@ -168,4 +203,3 @@ Threshold critical in percent (5s,1min,5min).
 =back
 
 =cut
-    
