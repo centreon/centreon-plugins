@@ -79,7 +79,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude"        => { name => 'exclude' },
+                                  "exclude:s"        => { name => 'exclude' },
                                 });
 
     return $self;
