@@ -70,44 +70,31 @@ sub check_options {
     }
 }
 
-sub run {
+sub check_table_memory {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
 
-    my $oid_ciscoMemoryPoolEntry = '.1.3.6.1.4.1.9.9.48.1.1.1';
-    my $oid_ciscoMemoryPoolName = '.1.3.6.1.4.1.9.9.48.1.1.1.2';
-    my $oid_ciscoMemoryPoolUsed = '.1.3.6.1.4.1.9.9.48.1.1.1.5'; # in B
-    my $oid_ciscoMemoryPoolFree = '.1.3.6.1.4.1.9.9.48.1.1.1.6'; # in B
-    my $result = $self->{snmp}->get_table(oid => $oid_ciscoMemoryPoolEntry, nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All pool memories are ok.');
-    
-    foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_ciscoMemoryPoolName/);
+    my $checked = 0;
+    foreach my $oid (keys %{$self->{results}->{$options{entry}}}) {
+        next if ($oid !~ /^$options{poolName}/);
         $oid =~ /\.([0-9]+)$/;
-        
-        if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
-            $result->{$oid} !~ /$self->{option_results}->{filter_pool}/) {
-            $self->{output}->output_add(long_msg => "Skipping pool '" . $result->{$oid} . "'.");
-            next;
-        }
-        
         my $instance = $1;
-        my $memory_name = $result->{$oid};
-        my $memory_used = $result->{$oid_ciscoMemoryPoolUsed . '.' . $instance};
-        my $memory_free =$result->{$oid_ciscoMemoryPoolFree . '.' . $instance};
+        my $memory_name = $self->{results}->{$options{entry}}->{$oid};
+        my $memory_used = $self->{results}->{$options{entry}}->{$options{poolUsed} . '.' . $instance};
+        my $memory_free = $self->{results}->{$options{entry}}->{$options{poolFree} . '.' . $instance};
         
+        next if ($memory_name eq '');
+
+        $checked = 1;
+
         my $total_size = $memory_used + $memory_free;
         my $prct_used = $memory_used * 100 / $total_size;
         my $prct_free = 100 - $prct_used;
-        
+
         my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
         my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
         my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
-        
+
         $self->{output}->output_add(long_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $memory_name,
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
@@ -119,7 +106,7 @@ sub run {
                                             $used_value . " " . $used_unit, $prct_used,
                                             $free_value . " " . $free_unit, $prct_free));
         }
-        
+
         $self->{output}->perfdata_add(label => "used_" . $memory_name,
                                       value => $memory_used,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
@@ -127,8 +114,76 @@ sub run {
                                       min => 0, max => $total_size);
     }
     
+    return $checked;
+}
+
+sub check_percent_memory {
+    my ($self, %options) = @_;
+
+    my $checked = 0;
+    foreach my $oid (keys %{$self->{results}->{$options{entry}}}) {
+        next if ($oid !~ /^$options{memUsage}/);
+        $oid =~ /\.([0-9]+)$/;
+        my $instance = $1;
+        my $memory_usage = $self->{results}->{$options{entry}}->{$oid};
+
+        next if ($memory_usage eq '');
+
+        $checked = 1;
+
+        my $exit = $self->{perfdata}->threshold_check(value => $memory_usage,
+                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Memory used : %.2f%%", $memory_usage));
+        }
+
+        $self->{output}->perfdata_add(label => "utilization",
+                                      value => $memory_usage,
+                                      unit => "%",
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
+    }
+
+    return $checked;
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    my $oid_ciscoMemoryPoolEntry = '.1.3.6.1.4.1.9.9.48.1.1.1';
+    my $oid_ciscoMemoryPoolName = '.1.3.6.1.4.1.9.9.48.1.1.1.2';
+    my $oid_ciscoMemoryPoolUsed = '.1.3.6.1.4.1.9.9.48.1.1.1.5'; # in B
+    my $oid_ciscoMemoryPoolFree = '.1.3.6.1.4.1.9.9.48.1.1.1.6'; # in B
+
+    # OIDs for Nexus
+    my $oid_cseSysMemoryEntry = '.1.3.6.1.4.1.9.9.305.1.1';
+    my $oid_cseSysMemoryUtilization = '.1.3.6.1.4.1.9.9.305.1.1.2';
+
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_ciscoMemoryPoolEntry,
+                                                              start => $oid_ciscoMemoryPoolName, end => $oid_ciscoMemoryPoolFree
+                                                            },
+                                                            { oid => $oid_cseSysMemoryEntry,
+                                                              start => $oid_cseSysMemoryUtilization, end => $oid_cseSysMemoryUtilization }],
+                                                   nothing_quit => 1);
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'Memory is ok.');
+    
+    if (!$self->check_table_memory(entry => $oid_ciscoMemoryPoolEntry, poolName => $oid_ciscoMemoryPoolName, poolUsed => $oid_ciscoMemoryPoolUsed, poolFree => $oid_ciscoMemoryPoolFree)
+        && !$self->check_percent_memory(entry => $oid_cseSysMemoryEntry, memUsage => $oid_cseSysMemoryUtilization)
+        ) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => sprintf("Cannot find Memory informations."));
+    }
+
     $self->{output}->display();
     $self->{output}->exit();
+    
 }
 
 1;
@@ -137,7 +192,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (CISCO-MEMORY-POOL-MIB).
+Check memory usage (CISCO-MEMORY-POOL-MIB and CISCO-SYSTEM-EXT-MIB).
 
 =over 8
 
