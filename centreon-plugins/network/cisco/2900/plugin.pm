@@ -54,7 +54,7 @@ sub new {
                          'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          'stack'            => 'network::cisco::common::mode::stack',
-                        
+                         'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          );
 
     return $self;
