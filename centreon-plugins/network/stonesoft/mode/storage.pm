@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
 
 my $oid_fwMountPointName = '.1.3.6.1.4.1.1369.5.2.1.11.3.1.3';
 my $oid_fwPartitionSize = '.1.3.6.1.4.1.1369.5.2.1.11.3.1.4'; # in kB
