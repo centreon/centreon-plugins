@@ -53,6 +53,7 @@ sub new {
                                   "hostname:s"          => { name => 'hostname' },
                                   "port:s"              => { name => 'port', default => '49000' },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
+                                  "agent:s"             => { name => 'agent', default => 'igdupnp' },
                                   "warning:s"           => { name => 'warning', },
                                   "critical:s"          => { name => 'critical',  },
                                   "seconds"             => { name => 'seconds', },
@@ -83,13 +84,13 @@ sub run {
     my ($self, %options) = @_;
     my $exit_code;
     
-    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANCommonIFC1',
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/' . $self->{option_results}->{agent} . '/control/WANCommonIFC1',
                                                      uri => 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1');
     network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetCommonLinkProperties');
     my $WANAccessType = network::fritzbox::mode::libgetdata::value($self, path => '//GetCommonLinkPropertiesResponse/NewWANAccessType');
     my $LinkStatus = network::fritzbox::mode::libgetdata::value($self, path => '//GetCommonLinkPropertiesResponse/NewPhysicalLinkStatus');
 
-    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANIPConn1',
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/' . $self->{option_results}->{agent} . '/control/WANIPConn1',
                                                      uri => 'urn:schemas-upnp-org:service:WANIPConnection:1');
     network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetStatusInfo');
     my $uptime = network::fritzbox::mode::libgetdata::value($self, path => '//GetStatusInfoResponse/NewUptime');
@@ -127,6 +128,10 @@ This Mode Checks Physical Link Status, Connection Status and Uptime of your Frit
 This Mode needs UPNP.
 
 =over 8
+
+=item B<--agent>
+
+Fritzbox has two different UPNP Agents. upnp or igdupnp. (Default: igdupnp)
 
 =item B<--warning>
 
