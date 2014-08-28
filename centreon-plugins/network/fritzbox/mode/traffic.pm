@@ -52,6 +52,7 @@ sub new {
                                   "hostname:s"          => { name => 'hostname' },
                                   "port:s"              => { name => 'port', default => '49000' },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
+                                  "agent:s"             => { name => 'agent', default => 'igdupnp' },
                                   "warning-in:s"        => { name => 'warning_in', },
                                   "critical-in:s"       => { name => 'critical_in', },
                                   "warning-out:s"       => { name => 'warning_out', },
@@ -100,7 +101,7 @@ sub run {
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     ### GET DATA START
-    network::fritzbox::mode::libgetdata::init($self, pfad => '/upnp/control/WANCommonIFC1',
+    network::fritzbox::mode::libgetdata::init($self, pfad => '/' . $self->{option_results}->{agent} . '/control/WANCommonIFC1',
                                                      uri => 'urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1');
     network::fritzbox::mode::libgetdata::call($self, soap_method => 'GetAddonInfos');
     my $NewTotalBytesSent = network::fritzbox::mode::libgetdata::value($self, path => '//GetAddonInfosResponse/NewTotalBytesSent');
@@ -207,6 +208,10 @@ This Mode Checks your FritzBox Traffic on WAN Interface.
 This Mode needs UPNP.
 
 =over 8
+
+=item B<--agent>
+
+Fritzbox has two different UPNP Agents. upnp or igdupnp. (Default: igdupnp)
 
 =item B<--warning-in>
 
