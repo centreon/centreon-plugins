@@ -87,21 +87,17 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_fwPartitionSize, $oid_fwPartitionUsed],
-                        instances => $self->{storage_id_selected});
-    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
-
     my $num_disk_check = 0;
     foreach (sort @{$self->{storage_id_selected}}) {
         my $name_storage = $self->get_display_value(id => $_);
-        my $total_size = ($result->{$oid_fwPartitionSize . "." . $_}) * 1024;
+        my $total_size = ($self->{results}->{$oid_fwPartitionSize}->{$oid_fwPartitionSize . "." . $_}) * 1024;
         if ($total_size == 0) {
             $self->{output}->output_add(long_msg => sprintf("Skipping partition '%s' (total size is 0)", $name_storage));
             next;
         }
 
         $num_disk_check++;
-        my $total_used = ($result->{$oid_fwPartitionUsed . "." . $_}) * 1024;
+        my $total_used = ($self->{results}->{$oid_fwPartitionUsed}->{$oid_fwPartitionUsed . "." . $_}) * 1024;
         my $total_free = $total_size - $total_used;
         my $prct_used = $total_used * 100 / $total_size;
         my $prct_free = 100 - $prct_used;
@@ -167,11 +163,16 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_fwMountPointName);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                                { oid => $oid_fwMountPointName },
+                                                                { oid => $oid_fwPartitionSize },
+                                                                { oid => $oid_fwPartitionUsed }
+                                                              ],
+                                                              nothing_quit => 1);
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fwMountPointName}})) {
         $key =~ /\.([0-9]+)$/;
         my $instance = $1;
-        my $filter_name = $self->{output}->to_utf8($self->{result_names}->{$key});
+        my $filter_name = $self->{output}->to_utf8($self->{results}->{$oid_fwMountPointName}->{$key});
         next if (!defined($filter_name));
         if (!defined($self->{option_results}->{storage})) {
             push @{$self->{storage_id_selected}}, $instance; 
