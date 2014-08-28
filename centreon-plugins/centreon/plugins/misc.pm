@@ -270,6 +270,15 @@ sub powershell_encoded {
 	return $script;
 }
 
+sub powershell_escape {
+    my ($value) = $_[0];
+    $value =~ s/`/``/g;
+    $value =~ s/#/`#/g;
+    $value =~ s/'/`'/g;
+    $value =~ s/"/`"/g;
+    return $value;
+}
+
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
     

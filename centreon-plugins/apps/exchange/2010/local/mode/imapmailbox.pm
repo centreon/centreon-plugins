@@ -50,7 +50,10 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                  "remote-host:s"       => { name => 'remote_host', },
+                                  "remote-user:s"       => { name => 'remote_user', },
+                                  "remote-password:s"   => { name => 'remote_password', },
                                   "no-ps"               => { name => 'no_ps', },
                                   "timeout:s"           => { name => 'timeout', default => 50 },
                                   "command:s"           => { name => 'command', default => 'powershell.exe' },
@@ -94,10 +97,14 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::imapmailbox::get_powershell(mailbox => $self->{option_results}->{mailbox},
-                                                                                             password => $self->{option_results}->{password}, 
-                                                                                             no_ps => $self->{option_results}->{no_ps},
-                                                                                             );
+    my $ps = centreon::common::powershell::exchange::2010::imapmailbox::get_powershell(
+                                                                                       remote_host => $self->{option_results}->{remote_host},
+                                                                                       remote_user => $self->{option_results}->{remote_user},
+                                                                                       remote_password => $self->{option_results}->{remote_password},
+                                                                                       mailbox => $self->{option_results}->{mailbox},
+                                                                                       password => $self->{option_results}->{password}, 
+                                                                                       no_ps => $self->{option_results}->{no_ps},
+                                                                                       );
     $self->{option_results}->{command_options} .= " " . $ps . " 2>&1";
     my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
                                                           timeout => $self->{option_results}->{timeout},
@@ -125,6 +132,18 @@ __END__
 Check imap to a mailbox.
 
 =over 8
+
+=item B<--remote-host>
+
+Open a session to the remote-host (fully qualified host name). --remote-user and --remote-password are optional
+
+=item B<--remote-user>
+
+Open a session to the remote-host with authentication. This also needs --remote-host and --remote-password.
+
+=item B<--remote-password>
+
+Open a session to the remote-host with authentication. This also needs --remote-user and --remote-host.
 
 =item B<--timeout>
 
