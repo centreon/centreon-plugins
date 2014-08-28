@@ -38,6 +38,7 @@ package centreon::common::powershell::exchange::2010::databases;
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::common::powershell::exchange::2010::powershell;
 
 sub get_powershell {
     my (%options) = @_;
@@ -48,28 +49,9 @@ sub get_powershell {
     
     return '' if ($no_ps == 1);
     
-    my $ps = '
-$culture = new-object "System.Globalization.CultureInfo" "en-us"    
-[System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
-
-If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -eq "Microsoft.Exchange.Management.PowerShell.E2010"} ).count -eq 1) {
-    If (@(Get-PSSnapin | Where-Object {$_.Name -eq "Microsoft.Exchange.Management.PowerShell.E2010"} ).count -eq 0) {
-        Try {
-            Add-PSSnapin Microsoft.Exchange.Management.PowerShell.E2010 -ErrorAction STOP
-        } Catch {
-            Write-Host $Error[0].Exception
-            exit 1
-        }
-    } else {
-        Write-Host "Snap-In no present or not registered"
-        exit 1
-    }
-} else {
-    Write-Host "Snap-In no present or not registered"
-    exit 1
-}
-$ProgressPreference = "SilentlyContinue"
-
+    my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
+    
+    $ps .= '
 # Check to make sure all databases are mounted
 try { 
     $ErrorActionPreference = "Stop"

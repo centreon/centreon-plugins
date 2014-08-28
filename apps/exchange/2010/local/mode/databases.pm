@@ -51,7 +51,10 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                  "remote-host:s"     => { name => 'remote_host', },
+                                  "remote-user:s"     => { name => 'remote_user', },
+                                  "remote-password:s" => { name => 'remote_password', },
                                   "no-ps"             => { name => 'no_ps', },
                                   "no-mailflow"       => { name => 'no_mailflow', },
                                   "no-mapi"           => { name => 'no_mapi', },
@@ -92,7 +95,10 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(no_mailflow => $self->{option_results}->{no_mailflow},
+    my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(remote_host => $self->{option_results}->{remote_host},
+                                                                                     remote_user => $self->{option_results}->{remote_user},
+                                                                                     remote_password => $self->{option_results}->{remote_password},
+                                                                                     no_mailflow => $self->{option_results}->{no_mailflow},
                                                                                      no_ps => $self->{option_results}->{no_ps},
                                                                                      no_mapi => $self->{option_results}->{no_mapi},
                                                                                      filter_database => $self->{option_results}->{ps_database_filter},
@@ -124,6 +130,18 @@ __END__
 Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working.
 
 =over 8
+
+=item B<--remote-host>
+
+Open a session to the remote-host (fully qualified host name). --remote-user and --remote-password are optional
+
+=item B<--remote-user>
+
+Open a session to the remote-host with authentication. This also needs --remote-host and --remote-password.
+
+=item B<--remote-password>
+
+Open a session to the remote-host with authentication. This also needs --remote-user and --remote-host.
 
 =item B<--no-mailflow>
 
