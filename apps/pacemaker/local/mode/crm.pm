@@ -123,7 +123,7 @@ sub parse_output {
             # Check Master/Slave stopped
             $self->{output}->output_add(severity => $self->{threshold}, 
                                         short_msg => "$1 Stopped");
-        } elsif ($line =~ /^Failed actions\:/) { && !defined($self->{option_results}->{ignore_failed_actions})) {
+        } elsif ($line =~ /^Failed actions\:/) {
             # Check Failed Actions
             my $skip = 0;
             foreach ($self->{option_results}->{ignore_failed_actions}) {
