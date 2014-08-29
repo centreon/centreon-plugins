@@ -105,10 +105,16 @@ sub check_options {
 sub get_timestamp {
     my ($self, %options) = @_;
 
-    my $value = unpack('H*', $options{value});
-    $value =~ /^([0-9a-z]{4})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})/;
+    my $currentTmsp = 0;
+    my $value = $options{value};
+    if ($value =~ /^([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})/) {
+        $currentTmsp = mktime($6, $5, $4, $3, $2 - 1, $1 - 1900);
+    } else {
+        $value = unpack('H*', $value);
+        $value =~ /^([0-9a-z]{4})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})([0-9a-z]{2})/;
+	    $currentTmsp = mktime(hex($6), hex($5), hex($4), hex($3), hex($2) - 1, hex($1) - 1900);
+    }
 
-	my $currentTmsp = mktime(hex($6), hex($5), hex($4), hex($3), hex($2) - 1, hex($1) - 1900);
     return $currentTmsp;
 }
 
