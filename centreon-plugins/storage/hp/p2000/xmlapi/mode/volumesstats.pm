@@ -166,8 +166,8 @@ sub new {
                                       });
         my $class = $maps_counters->{$_}->{class};
         $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
-                                                     output => $self->{output}, perfdata => $self->{perfdata},
-                                                     label => $_);
+                                                  output => $self->{output}, perfdata => $self->{perfdata},
+                                                  label => $_);
         $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
     }
 

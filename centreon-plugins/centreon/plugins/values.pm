@@ -118,7 +118,7 @@ sub calc {
 sub threshold_check {
     my ($self, %options) = @_;
     
-    if (defined($self->{closure_custom_threshpld_check})) {
+    if (defined($self->{closure_custom_threshold_check})) {
         return &{$self->{closure_custom_threshold_check}}($self, %options);
     }
     
@@ -162,7 +162,7 @@ sub output {
             $unit = $self->{output_per_second_unit};
         }
     } else {
-         $value = $self->{result_values}->{$self->{output_use}};
+        $value = $self->{result_values}->{$self->{output_use}};
     }
 
     if ($self->{output_change_bytes} == 1) {
@@ -198,8 +198,15 @@ sub perfdata {
             $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
         }
         
-        $extra_label .= '_' . $self->{instance} if ($perf->{label_extra_instance} == 1 && 
-                                                    (!defined($options{extra_instance}) || $options{extra_instance} != 0));
+        if ($perf->{label_extra_instance} == 1 && 
+           (!defined($options{extra_instance}) || $options{extra_instance} != 0)) {
+          
+            if (defined($perf->{instance_use})) {
+                $extra_label .= '_' . $self->{result_values}->{$perf->{instance_use}};
+            } else {
+                $extra_label .= '_' . $self->{instance};
+            }
+        }
         $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
                                       value => sprintf($template, $self->{result_values}->{$perf->{value}}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total),
@@ -231,6 +238,7 @@ sub execute {
             }
         } else {
             $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
+            $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
         }
     }
 
@@ -258,7 +266,7 @@ sub execute {
     }
 
     if (defined($self->{closure_custom_calc})) {
-        return $self->{closure_custom_calc}->($self, old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time);
+        return $self->{closure_custom_calc}->($self, old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time, extra_options => $self->{closure_custom_calc_extra_options});
     }
     return $self->calc(old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time);
 }
