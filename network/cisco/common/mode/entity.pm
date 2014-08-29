@@ -95,7 +95,7 @@ my %map_states_psu = (
 );
 
 my %map_states_module = (
-    1 => 'unknown'
+    1 => 'unknown',
     2 => 'ok',
     3 => 'disabled',
     4 => 'okButDiagFailed',
@@ -139,8 +139,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "component:s"      => { name => 'component', default => 'all' },
+                                  "exclude:s"               => { name => 'exclude' },
+                                  "component:s"             => { name => 'component', default => 'all' },
                                   "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
@@ -217,12 +217,13 @@ sub run {
         # Skipping short msg when no components
         next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
         $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
+        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok.", 
+                                short_msg => sprintf("All %s components are ok [%s].", 
                                                      $total_components,
                                                      $display_by_component)
                                 );
@@ -281,8 +282,8 @@ sub check_fan {
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'fan'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcFanTrayOperStatus}})) {
-        $key =~ /\.([0-9]+)$/;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcFanTrayOperStatus}})) {
+        $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $fan_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $fan_state = $self->{results}->{$oid_cefcFanTrayOperStatus}->{$oid};
@@ -307,8 +308,8 @@ sub check_psu {
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'psu'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcFRUPowerOperStatus}})) {
-        $key =~ /\.([0-9]+)$/;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcFRUPowerOperStatus}})) {
+        $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $psu_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $psu_state = $self->{results}->{$oid_cefcFRUPowerOperStatus}->{$oid};
@@ -333,8 +334,8 @@ sub check_module {
     $self->{components}->{module} = {name => 'modules', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'module'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcModuleOperStatus}})) {
-        $key =~ /\.([0-9]+)$/;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcModuleOperStatus}})) {
+        $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $module_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $module_state = $self->{results}->{$oid_cefcModuleOperStatus}->{$oid};
@@ -359,8 +360,8 @@ sub check_physical {
     $self->{components}->{physical} = {name => 'physical', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'physical'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcPhysicalStatus}})) {
-        $key =~ /\.([0-9]+)$/;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcPhysicalStatus}})) {
+        $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
         my $physical_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $physical_state = $self->{results}->{$oid_cefcPhysicalStatus}->{$oid};
