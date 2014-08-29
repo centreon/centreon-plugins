@@ -57,11 +57,11 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'crm_mon' },
                                   "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s"       => { name => 'command_options', default => '-1 -r -f 2>&1' },
-                                  "warning"                 => { name => 'warning', },
-                                  "standbyignore"           => { name => 'standbyignore', },
-                                  "resources:s"             => { name => 'resources', },
-                                  "ignore-failed-actions"   => { name => 'ignore_failed_actions', },
+                                  "command-options:s"           => { name => 'command_options', default => '-1 -r -f 2>&1' },
+                                  "warning"                     => { name => 'warning', },
+                                  "standbyignore"               => { name => 'standbyignore', },
+                                  "resources:s"                 => { name => 'resources', },
+                                  "ignore-failed-actions:s@"    => { name => 'ignore_failed_actions', },
                                 });
     $self->{threshold} = 'CRITICAL';
     $self->{resources_check} = {};
@@ -123,8 +123,17 @@ sub parse_output {
             # Check Master/Slave stopped
             $self->{output}->output_add(severity => $self->{threshold}, 
                                         short_msg => "$1 Stopped");
-        } elsif ($line =~ /^Failed actions\:/ && !defined($self->{option_results}->{ignore_failed_actions})) {
+        } elsif ($line =~ /^Failed actions\:/) { && !defined($self->{option_results}->{ignore_failed_actions})) {
             # Check Failed Actions
+            my $skip = 0;
+            foreach ($self->{option_results}->{ignore_failed_actions}) {
+                if ($line =~ /$_/) {
+                    $skip = 1;
+                    last;
+                }
+            }
+            next if ($skip == 1);
+            
             $self->{output}->output_add(severity => 'CRITICAL', 
                                         short_msg => "FAILED actions detected or not cleaned up");
         } elsif ($line =~ /\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+FAILED/) {
@@ -190,7 +199,7 @@ If resources not started on the node specified, send a warning message:
 
 =item B<--ignore-failed-actions>
 
-Failed actions errors are skipped.
+Failed actions errors (that match) are skipped.
 
 =item B<--remote>
 
