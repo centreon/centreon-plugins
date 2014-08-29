@@ -47,6 +47,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'anycast'          => 'snmp_standard::mode::anycast',
                          'cpu'              => 'snmp_standard::mode::cpu',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'list-storages'    => 'snmp_standard::mode::liststorages',
