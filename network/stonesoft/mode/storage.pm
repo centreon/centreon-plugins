@@ -200,7 +200,7 @@ sub manage_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{result_names}->{$oid_fwMountPointName . '.' . $options{id}};
+    my $value = $self->{results}->{$oid_fwMountPointName}->{$oid_fwMountPointName . '.' . $options{id}};
 
     return $value;
 }
