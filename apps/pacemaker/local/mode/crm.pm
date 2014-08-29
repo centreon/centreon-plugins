@@ -126,7 +126,7 @@ sub parse_output {
         } elsif ($line =~ /^Failed actions\:/) {
             # Check Failed Actions
             my $skip = 0;
-            foreach ($self->{option_results}->{ignore_failed_actions}) {
+            foreach (@{$self->{option_results}->{ignore_failed_actions})} {
                 if ($line =~ /$_/) {
                     $skip = 1;
                     last;
