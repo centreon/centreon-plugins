@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::ruggeedcom::mode::memory;
+package network::ruggeedcom::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -74,30 +74,23 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_rcDeviceStsAvailableRam = '.1.3.6.1.4.1.15004.4.2.2.2.0'; # in bytes
-    my $oid_rcDeviceInfoTotalRam = '.1.3.6.1.4.1.15004.4.2.2.6.0'; # in bytes
+    my $oid_rcDeviceStsTemperature = '.1.3.6.1.4.1.15004.4.2.2.3.0'; # in Celsius
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_rcDeviceStsAvailableRam, $oid_rcDeviceInfoTotalRam], 
+    my $result = $self->{snmp}->get_leef(oids => [$oid_rcDeviceStsTemperature], 
                                          nothing_quit => 1);
-    my $used = $result->{$oid_rcDeviceStsAvailableRam};
-    my $total_size = $result->{$oid_rcDeviceInfoTotalRam};
+    my $temp = $result->{$oid_rcDeviceStsTemperature};
     
-    my $prct_used = $used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
+    my $exit = $self->{perfdata}->threshold_check(value => $temp, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used %s (%.2f%%), Total: %s",
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $total_value . " " . $total_unit));
+                                short_msg => sprintf("Device Temperature is %d C degrees",
+                                                     $temp));
 
-    $self->{output}->perfdata_add(label => "used",
-                                  value => $used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+    $self->{output}->perfdata_add(label => "temperature", unit => 'C',
+                                  value => $temp,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  );
                                   
     $self->{output}->display();
     $self->{output}->exit();
@@ -109,17 +102,17 @@ __END__
 
 =head1 MODE
 
-Check memory usage (RUGGEDCOM-SYS-INFO).
+Check temperature (RUGGEDCOM-SYS-INFO).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning in celsius degrees.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical in celsius degrees.
 
 =back
 
