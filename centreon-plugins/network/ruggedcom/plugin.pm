@@ -50,6 +50,7 @@ sub new {
                          'errors'               => 'network::ruggedcom::mode::errors',
                          'hardware'             => 'network::ruggedcom::mode::hardware',
                          'memory'               => 'network::ruggedcom::mode::memory',
+                         'temperature'          => 'network::ruggedcom::mode::temperature',
                          'traffic'              => 'snmp_standard::mode::traffic',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          );
