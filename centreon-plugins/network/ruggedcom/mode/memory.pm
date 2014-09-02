@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::ruggeedcom::mode::memory;
+package network::ruggedcom::mode::memory;
 
 use base qw(centreon::plugins::mode);
 

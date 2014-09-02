@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::ruggeedcom::mode::temperature;
+package network::ruggedcom::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
