@@ -75,7 +75,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_rcDeviceStsAvailableRam = '.1.3.6.1.4.1.15004.4.2.2.2.0'; # in bytes
-    my $oid_rcDeviceInfoTotalRam = '.1.3.6.1.4.1.15004.4.2.2.6.0'; # in bytes
+    my $oid_rcDeviceInfoTotalRam = '.1.3.6.1.4.1.15004.4.2.3.5.0'; # in bytes
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_rcDeviceStsAvailableRam, $oid_rcDeviceInfoTotalRam], 
                                          nothing_quit => 1);
