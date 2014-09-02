@@ -157,7 +157,7 @@ sub check_errors {
 
     for (my $i = 1; $i <= 11; $i++) {
         next if (!defined($self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'}));
-        my $instance = $map_errors{$self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'}};
+        my $instance = $map_errors{$i};
         my $state = $self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'};
 
         next if ($self->check_exclude(section => 'error', instance => $instance));

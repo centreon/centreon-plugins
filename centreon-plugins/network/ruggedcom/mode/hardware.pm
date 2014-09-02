@@ -40,9 +40,13 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+my $oid_rcDeviceStsPowerSupply1_entry = '.1.3.6.1.4.1.15004.4.2.2.4';
 my $oid_rcDeviceStsPowerSupply1 = '.1.3.6.1.4.1.15004.4.2.2.4.0';
+my $oid_rcDeviceStsPowerSupply2_entry = '.1.3.6.1.4.1.15004.4.2.2.5';
 my $oid_rcDeviceStsPowerSupply2 = '.1.3.6.1.4.1.15004.4.2.2.5.0';
+my $oid_rcDeviceStsFanBank1_entry = '.1.3.6.1.4.1.15004.4.2.2.10';
 my $oid_rcDeviceStsFanBank1 = '.1.3.6.1.4.1.15004.4.2.2.10.0';
+my $oid_rcDeviceStsFanBank2_entry = '.1.3.6.1.4.1.15004.4.2.2.11';
 my $oid_rcDeviceStsFanBank2 = '.1.3.6.1.4.1.15004.4.2.2.11.0';
 
 my $thresholds = {
@@ -129,13 +133,15 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    $self->{results} = $self->{snmp}->get_leef(oids => [
-                                                $oid_rcDeviceStsPowerSupply1,
-                                                $oid_rcDeviceStsPowerSupply2,
-                                                $oid_rcDeviceStsFanBank1,
-                                                $oid_rcDeviceStsFanBank2,
-                                               ]);
-    
+    # There is a bug with get_leef and snmpv1.
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                { oid => $oid_rcDeviceStsPowerSupply1_entry },
+                                                { oid => $oid_rcDeviceStsPowerSupply2_entry },
+                                                { oid => $oid_rcDeviceStsFanBank1_entry },
+                                                { oid => $oid_rcDeviceStsFanBank2_entry },
+                                               ],
+                                               return_type => 1);
+
     if ($self->{option_results}->{component} eq 'all') {    
         $self->check_fan();
         $self->check_psu();
@@ -238,10 +244,11 @@ sub check_fan {
     my $instance = 0;
     foreach my $value (($self->{results}->{$oid_rcDeviceStsFanBank1}, $self->{results}->{$oid_rcDeviceStsFanBank2})) {
         $instance++;
+        next if (!defined($value));
         my $fan_state = $value;
 
         next if ($self->check_exclude(section => 'fan', instance => $instance));
-        next if ($map_states_fan{$fan_state} ne 'notPresent' && 
+        next if ($map_states_fan{$fan_state} eq 'notPresent' && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         
         $self->{components}->{fan}->{total}++;
@@ -265,10 +272,11 @@ sub check_psu {
     my $instance = 0;
     foreach my $value (($self->{results}->{$oid_rcDeviceStsPowerSupply1}, $self->{results}->{$oid_rcDeviceStsPowerSupply2})) {
         $instance++;
+        next if (!defined($value));
         my $psu_state = $value;
 
         next if ($self->check_exclude(section => 'psu', instance => $instance));
-        next if ($map_states_psu{$psu_state} ne 'notPresent' && 
+        next if ($map_states_psu{$psu_state} eq 'notPresent' && 
                  $self->absent_problem(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
