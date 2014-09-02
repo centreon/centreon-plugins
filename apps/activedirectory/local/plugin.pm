@@ -48,6 +48,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'dcdiag'    => 'apps::activedirectory::local::mode::dcdiag',
+                         'netdom'    => 'apps::activedirectory::local::mode::netdom',
                          );
 
     return $self;

@@ -67,6 +67,10 @@ sub windows_execute {
     chomp $stdout;
     $stdout =~ s/\r//g;
     
+    if (defined($options{no_quit}) && $options{no_quit} == 1) {
+        return ($stdout, $exit_code);
+    }
+    
     if ($exit_code != 0) {
         $stdout =~ s/\n/ - /g;
         $options{output}->output_add(severity => 'UNKNOWN', 
