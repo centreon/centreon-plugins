@@ -77,7 +77,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"         => { name => 'exclude' },
-                                  "no-errors:s"       => { name => 'no_component' },
+                                  "no-errors:s"       => { name => 'no_errors' },
                                 });
   
     $self->{components} = {};
@@ -89,9 +89,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_errors} = $self->{option_results}->{no_component};
+    if (defined($self->{option_results}->{no_errors})) {
+        if ($self->{option_results}->{no_errors} ne '') {
+            $self->{no_errors} = $self->{option_results}->{no_errors};
         } else {
             $self->{no_errors} = 'critical';
         }
@@ -115,7 +115,7 @@ sub run {
                                 );
 
     if (defined($self->{option_results}->{no_errors}) && $total_errors == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
+        $self->{output}->output_add(severity => $self->{no_errors},
                                     short_msg => 'No errors are checked.');
     }
 
@@ -155,8 +155,8 @@ sub check_errors {
     $self->{components}->{error} = {name => 'errors', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'error'));
 
-    for ($i = 1; $i <= 11; $i) {
-        next if (defined($self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'}));
+    for (my $i = 1; $i <= 11; $i++) {
+        next if (!defined($self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'}));
         my $instance = $map_errors{$self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'}};
         my $state = $self->{results}->{$oid_rcDeviceError . '.' . $i . '.0'};
 
