@@ -57,10 +57,11 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "component:s"      => { name => 'component', default => 'all' },
-                                  "no-component:s"   => { name => 'no_component' },
+                                {
+                                  "getcrus-options:s"   => { name => 'getcrus_options', default => '-all' },
+                                  "exclude:s"           => { name => 'exclude' },
+                                  "component:s"         => { name => 'component', default => 'all' },
+                                  "no-component:s"      => { name => 'no_component' },
                                 });
 
     $self->{components} = {};
@@ -145,7 +146,7 @@ sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
     
-    $self->{response} = $clariion->execute_command(cmd => 'getcrus -all');
+    $self->{response} = $clariion->execute_command(cmd => 'getcrus ' . $self->{option_results}->{getcrus_options});
     chomp $self->{response};
 
     $self->component();
@@ -179,6 +180,11 @@ __END__
 Check status of storage processor.
 
 =over 8
+
+=item B<--getcrus-options>
+
+Set option for 'getcrus' command (Default: '-all').
+'-all' option is for some new flare version.
 
 =item B<--component>
 
