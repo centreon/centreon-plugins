@@ -52,28 +52,28 @@ my $maps_counters = {
                                 warning_frequence  =>  { label => 'warning-load', exit_value => 'warning' },
                                 critical_frequence =>  { label => 'critical-load', exit_value => 'critical' },
                               },
-                output_msg => 'Load : %.2f %%',
+                output_msg => 'Load : %.2f %%', no_present => -1,
                 factor => 1, unit => '%',
                },
     voltage => { thresholds => {
                                 warning_voltage  =>  { label => 'warning-voltage', exit_value => 'warning' },
                                 critical_voltage =>  { label => 'critical-voltage', exit_value => 'critical' },
                                 },
-                 output_msg => 'Voltage : %.2f V',
+                 output_msg => 'Voltage : %.2f V', no_present => 0,
                  factor => 1, unit => 'V',
                 },
     current => { thresholds => {
                                 warning_current    =>  { label => 'warning-current', exit_value => 'warning' },
                                 critical_current   =>  { label => 'critical-current', exit_value => 'critical' },
                                 },
-                 output_msg => 'Current : %.2f A',
+                 output_msg => 'Current : %.2f A', no_present => 0,
                  factor => 0.1, unit => 'A',
                },
     power   => { thresholds => {
                                 warning_power  =>  { label => 'warning-power', exit_value => 'warning' },
                                 critical_power  =>  { label => 'critical-power', exit_value => 'critical' },
                                },
-                 output_msg => 'Power : %.2f W',
+                 output_msg => 'Power : %.2f W', no_present => 0,
                  factor => 1, unit => 'W',
                 },
 };
@@ -197,7 +197,7 @@ sub run {
         my @exits;
         foreach (keys %{$maps_counters}) {
             foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-                if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} != 0) {
+                if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present}) {
                     push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
                 }
             }
@@ -210,7 +210,7 @@ sub run {
         my $str_output = "Output Line '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} <= 0);
+            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present});
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
