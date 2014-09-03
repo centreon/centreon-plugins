@@ -146,7 +146,7 @@ sub build_command {
     }
     
     if (defined($self->{special_arg}) && $self->{special_arg} ne '') {
-        $self->{cmd} .= $self->{special_arg};
+        $self->{cmd} .= ' ' . $self->{special_arg};
         $self->{no_navicmd} = 1;
         # It's ok if we use a file.
         $self->{secure} = 1;

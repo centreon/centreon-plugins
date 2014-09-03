@@ -54,6 +54,8 @@ sub new {
                          'faults'       => 'storage::emc::clariion::mode::faults',
                          'list-luns'    => 'storage::emc::clariion::mode::listluns',
                          'sp-info'      => 'storage::emc::clariion::mode::spinfo',
+                         'port-state'   => 'storage::emc::clariion::mode::portstate',
+                         'hba-state'    => 'storage::emc::clariion::mode::hbastate',
                         );
     $self->{custom_modes}{clariion} = 'storage::emc::clariion::custom';
 
