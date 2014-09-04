@@ -33,14 +33,14 @@
 #
 ####################################################################################
 
-package apps::protocols::smtp::mode::login;
+package apps::protocols::ldap::mode::search;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::smtp::lib::smtp;
+use apps::protocols::ldap::lib::ldap;
 
 sub new {
     my ($class, %options) = @_;
@@ -50,9 +50,14 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
-         "hostname:s"       => { name => 'hostname' },
-         "port:s"           => { name => 'port', },
-         "smtp-options:s@"  => { name => 'smtp_options' },
+         "hostname:s"               => { name => 'hostname' },
+         "search-base:s"            => { name => 'search_base' },
+         "search-filter:s"          => { name => 'search_filter' },
+         "ldap-connect-options:s@"  => { name => 'ldap_connect_options' },
+         "ldap-starttls-options:s@" => { name => 'ldap_starttls_options' },
+         "ldap-bind-options:s@"     => { name => 'ldap_bind_options' },
+         "ldap-search-options:s@"   => { name => 'ldap_search_options' },
+         "tls"                      => { name => 'use_tls' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
@@ -79,6 +84,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
+    if (!defined($self->{option_results}->{search_base})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the search-base option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{search_filter})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the search-filter option");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -86,15 +99,18 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::smtp::lib::smtp::connect($self, connection_exit => 'critical');  
-    apps::protocols::smtp::lib::smtp::quit();
+    apps::protocols::ldap::lib::ldap::connect($self);
+    my $search_result = apps::protocols::ldap::lib::ldap::search($self);  
+    apps::protocols::ldap::lib::ldap::quit();
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
+    my $num_entries = scalar($search_result->entries);
+    my $exit = $self->{perfdata}->threshold_check(value => $num_entries,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f second(s)", $timeelapsed));
+                                short_msg => sprintf("Number of results returned: %s", $num_entries));
+                                
     $self->{output}->perfdata_add(label => "time", unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
@@ -110,26 +126,67 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an SMTP Server.
+Check search results (by default it uses the scope 'sub').
+LDAP Control are not still managed. 
+Example: 
+centreon_plugins.pl --plugin=apps::protocols::ldap::plugin --mode=search --hostname='xxx.xxx.xxx.xxx' 
+--username='cn=Manager,dc=merethis,dc=com' --password='secret' --search-base='dc=merethis,dc=com' --search-filter='(objectclass=organizationalunit)'
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the smtp host
+IP Addr/FQDN of the ldap host (required).
 
-=item B<--port>
+=item B<--search-base>
 
-Port used
+Set the DN that is the base object entry relative to which the 
+search is to be performed (required).
 
-=item B<--smtp-options>
+=item B<--search-filter>
 
-Add custom smtp options.
-Example: --smtp-options='debug=1" --smtp-options='layer=none"
+Set filter that defines the conditions an entry in the directory 
+must meet in order for it to be returned by the search (required).
+
+=item B<--ldap-connect-options>
+
+Add custom ldap connect options:
+
+=over 16
+
+=item B<Set SSL connection>
+
+--ldap-connect-options='scheme=ldaps'
+
+=item B<Set LDAP version 2>
+
+--ldap-connect-options='version=2'
+
+=back
+
+=item B<--ldap-starttls-options>
+
+Add custom start tls options (need --tls option):
+
+=over 16
+
+=item B<An example>
+
+--ldap-starttls-options='verify=none'
+
+=back
+
+=item B<--ldap-bind-options>
+
+Add custom bind options (can force noauth) (not really useful now).
+
+=item B<--ldap-search-options>
+
+Add custom search options (can change the scope for example).
 
 =item B<--username>
 
-Specify username for authentification
+Specify username for authentification (can be a DN)
 
 =item B<--password>
 
@@ -141,11 +198,11 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
-Threshold warning in seconds
+Threshold warning (number of results)
 
 =item B<--critical>
 
-Threshold critical in seconds
+Threshold critical (number of results)
 
 =back
 
