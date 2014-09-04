@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -41,6 +41,70 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::values;
+
+my $maps_counters = {
+    read   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'read', diff => 1 }, { name => 'display' },
+                                      ],
+                        per_second => 1,
+                        output_template => 'Read I/O : %s %s/s',
+                        output_change_bytes => 1,
+                        perfdatas => [
+                            { value => 'read_per_second', template => '%d',
+                              unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                        ],
+                    }
+               },
+    write   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'write', diff => 1 }, { name => 'display' },
+                                      ],
+                        per_second => 1,
+                        output_template => 'Write I/O : %s %s/s',
+                        output_change_bytes => 1,
+                        perfdatas => [
+                            { value => 'write_per_second', template => '%d',
+                              unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                        ],
+                    }
+               },
+    'read-iops'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'read_iops', diff => 1 }, { name => 'display' },
+                                      ],
+                        per_second => 1,
+                        output_template => 'Read IOPs : %.2f',
+                        perfdatas => [
+                            { value => 'read_iops_per_second',  template => '%.2f',
+                              unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                        ],
+                    }
+               },
+    'write-iops'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'write_iops', diff => 1 }, { name => 'display' },
+                                      ],
+                        per_second => 1,
+                        output_template => 'Read IOPs : %.2f',
+                        perfdatas => [
+                            { value => 'write_iops_per_second', template => '%.2f',
+                              unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                        ],
+                    }
+               },
+};
+
+my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
+my $oid_diskIOReads = '.1.3.6.1.4.1.2021.13.15.1.1.5';
+my $oid_diskIOWrites = '.1.3.6.1.4.1.2021.13.15.1.1.6';
+my $oid_diskIONReadX = '.1.3.6.1.4.1.2021.13.15.1.1.12'; # in B
+my $oid_diskIONWrittenX = '.1.3.6.1.4.1.2021.13.15.1.1.13'; # in B
 
 sub new {
     my ($class, %options) = @_;
@@ -49,22 +113,27 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning-read:s"          => { name => 'warning_read' },
-                                  "critical-read:s"         => { name => 'critical_read' },
-                                  "warning-write:s"         => { name => 'warning_write' },
-                                  "critical-write:s"        => { name => 'critical_write' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                {
                                   "name"                    => { name => 'use_name' },
                                   "device:s"                => { name => 'device' },
                                   "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },            
-                                  "show-cache"              => { name => 'show_cache' },
+                                  "regexp-isensitive"       => { name => 'use_regexpi' },                                  
                                 });
 
-    $self->{device_id_selected} = [];
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{device_id_selected} = {};
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);                           
+     
+    foreach (keys %{$maps_counters}) {
+        $options{options}->add_options(arguments => {
+                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
+                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
+                                      });
+        my $class = $maps_counters->{$_}->{class};
+        $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
+                                                  output => $self->{output}, perfdata => $self->{perfdata},
+                                                  label => $_);
+        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
+    }
     
     return $self;
 }
@@ -72,25 +141,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-read', value => $self->{option_results}->{warning_read})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'read' threshold '" . $self->{option_results}->{warning_read} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-read', value => $self->{option_results}->{critical_read})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'read' threshold '" . $self->{option_results}->{critical_read} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-write', value => $self->{option_results}->{warning_write})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'write' threshold '" . $self->{option_results}->{warning_write} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-write', value => $self->{option_results}->{critical_write})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'write' threshold '" . $self->{option_results}->{critical_write} . "'.");
-        $self->{output}->option_exit();
-    }
     
-    $self->{statefile_cache}->check_options(%options);
+    foreach (keys %{$maps_counters}) {
+        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
+    }
+
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -98,184 +153,140 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
+    $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
     
     if ($self->{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
-    $self->{hostname} = $self->{snmp}->get_hostname();
 
     $self->manage_selection();
     
-    my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
-    my $oid_diskIONReadX = '.1.3.6.1.4.1.2021.13.15.1.1.12'; # in B
-    my $oid_diskIONWrittenX = '.1.3.6.1.4.1.2021.13.15.1.1.13'; # in B
-
-    my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{device}) ? md5_hex($self->{option_results}->{device}) : md5_hex('all')));
-
-    $self->{snmp}->load(oids => [$oid_diskIONReadX, $oid_diskIONWrittenX], 
-                        instances => $self->{device_id_selected});
-    my $result = $self->{snmp}->get_leef();
-    $new_datas->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    if (!defined($self->{option_results}->{device}) || defined($self->{option_results}->{use_regexp})) {
+    my $multiple = 1;
+    if (scalar(keys %{$self->{device_id_selected}}) == 1) {
+        $multiple = 0;
+    }
+    
+    if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All devices are ok.');
     }
-
-    foreach (sort @{$self->{device_id_selected}}) {
-        my $device_name = $self->{statefile_cache}->get(name => "device_" . $_);
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{device}) ? md5_hex($self->{option_results}->{device}) : md5_hex('all')));
+    $self->{new_datas}->{last_timestamp} = time();
     
-        if ($result->{$oid_diskIONReadX . "." . $_} == 0 && $result->{$oid_diskIONWrittenX . "." . $_} == 0 &&
-            (!defined($self->{option_results}->{device}) || defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->add_option_msg(long_msg => "Skip device '" . $device_name . "' with no values.");
-            next;
-        }
- 
-        $new_datas->{'readio_' . $_} = $result->{$oid_diskIONReadX . "." . $_};
-        $new_datas->{'writeio_' . $_} = $result->{$oid_diskIONWrittenX . "." . $_};
+    foreach my $id (sort keys %{$self->{device_id_selected}}) {     
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits;
+        foreach (sort keys %{$maps_counters}) {
+            $maps_counters->{$_}->{obj}->set(instance => $id);
+        
+            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{device_id_selected}->{$id},
+                                                                     new_datas => $self->{new_datas});
 
-        my $old_readio = $self->{statefile_value}->get(name => 'readio_' . $_);
-        my $old_writeio = $self->{statefile_value}->get(name => 'writeio_' . $_);
-        if (!defined($old_timestamp) || !defined($old_readio) || !defined($old_writeio)) {
-            next;
-        }
-        if ($new_datas->{'readio_' . $_} < $old_readio) {
-            # We set 0. Has reboot.
-            $old_readio = 0;
-        }
-        if ($new_datas->{'writeio_' . $_} < $old_writeio) {
-            # We set 0. Has reboot.
-            $old_writeio = 0;
+            if ($value_check != 0) {
+                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
+                $long_msg_append = ', ';
+                next;
+            }
+            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
+            push @exits, $exit2;
+
+            my $output = $maps_counters->{$_}->{obj}->output();
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            
+            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+            
+            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
-        if ($time_delta <= 0) {
-            # At least one second. two fast calls ;)
-            $time_delta = 1;
+        $self->{output}->output_add(long_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
+        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $short_msg"
+                                        );
         }
         
-        my $readio_absolute_per_sec = ($new_datas->{'readio_' . $_} - $old_readio) / $time_delta;
-        my $writeio_absolute_per_sec = ($new_datas->{'writeio_' . $_} - $old_writeio) / $time_delta;
-       
-        ###########
-        # Manage Output
-        ###########
-        my $exit1 = $self->{perfdata}->threshold_check(value => $readio_absolute_per_sec, threshold => [ { label => 'critical-read', 'exit_litteral' => 'critical' }, { label => 'warning-read', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $writeio_absolute_per_sec, threshold => [ { label => 'critical-write', 'exit_litteral' => 'critical' }, { label => 'warning-write', exit_litteral => 'warning' } ]);
-
-        my ($readio_value, $readio_unit) = $self->{perfdata}->change_bytes(value => $readio_absolute_per_sec);
-        my ($writeio_value, $writeio_unit) = $self->{perfdata}->change_bytes(value => $writeio_absolute_per_sec);
-        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-        $self->{output}->output_add(long_msg => sprintf("Device '%s' Read I/O : %s/s, Write I/O : %s/s", $device_name,
-                                    $readio_value . $readio_unit,
-                                    $writeio_value . $writeio_unit));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{device}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Device '%s' Read I/O : %s/s, Write I/O : %s/s", $device_name,
-                                            $readio_value . $readio_unit,
-                                            $writeio_value . $writeio_unit));
+        if ($multiple == 0) {
+            $self->{output}->output_add(short_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
         }
-
-        my $extra_label = '';
-        $extra_label = '_' . $device_name if (!defined($self->{option_results}->{device}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'readio' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $readio_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-read'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-read'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'writeio' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $writeio_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-write'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-write'),
-                                      min => 0);
     }
-
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-
+    
+    $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
 }
 
-sub reload_cache {
-    my ($self) = @_;
-    my $datas = {};
-    $datas->{last_timestamp} = time();
-    $datas->{all_ids} = [];
-
-    my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
-    my $result = $self->{snmp}->get_table(oid => $oid_diskIODevice);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        push @{$datas->{all_ids}}, $1;
-        $datas->{"device_" . $1} = $result->{$key};
+sub add_result {
+    my ($self, %options) = @_;
+    
+    if ($self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} == 0 && 
+        $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} == 0) {
+        $self->{output}->add_option_msg(long_msg => "Skip device '" . $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $options{instance}} . "' with no values.");
+        return ;
     }
     
-    if (scalar(@{$datas->{all_ids}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-   
-    $self->{statefile_cache}->write(data => $datas);
+    $self->{device_id_selected}->{$options{instance}} = {};
+    $self->{device_id_selected}->{$options{instance}}->{display} = $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $options{instance}};    
+    $self->{device_id_selected}->{$options{instance}}->{read} = $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}};
+    $self->{device_id_selected}->{$options{instance}}->{write} = $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}};
+    $self->{device_id_selected}->{$options{instance}}->{read_iops} = $self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}};
+    $self->{device_id_selected}->{$options{instance}}->{write_iops} = $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}};
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
-    }
-
-    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || 
-        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-        $self->reload_cache();
-        $self->{statefile_cache}->read();
-    }
-
-    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
+    
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_diskIODevice },
+                                                            { oid => $oid_diskIOReads },
+                                                            { oid => $oid_diskIOWrites },
+                                                            { oid => $oid_diskIONReadX },
+                                                            { oid => $oid_diskIONWrittenX },
+                                                         ],
+                                                         , nothing_quit => 1);
+ 
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{device})) {
-        # get by ID
-        push @{$self->{device_id_selected}}, $self->{option_results}->{device}; 
-        my $name = $self->{statefile_cache}->get(name => "device_" . $self->{option_results}->{device});
-        if (!defined($name)) {
-            $self->{output}->add_option_msg(short_msg => "No device for id '" . $self->{option_results}->{device} . "'.");
+        if (!defined($self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $self->{option_results}->{device}})) {
+            $self->{output}->add_option_msg(short_msg => "No device found for id '" . $self->{option_results}->{device} . "'.");
             $self->{output}->option_exit();
         }
+        $self->add_result(instance => $self->{option_results}->{device});
     } else {
-        foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => "device_" . $i);
-            next if (!defined($filter_name));
+        foreach my $oid (keys %{$self->{results}->{$oid_diskIODevice}}) {
+            $oid =~ /\.(\d+)$/;
+            my $instance = $1;
+            my $filter_name = $self->{results}->{$oid_diskIODevice}->{$oid}; 
             if (!defined($self->{option_results}->{device})) {
-                push @{$self->{device_id_selected}}, $i; 
+                $self->add_result(instance => $instance);
                 next;
             }
             if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{device}/i) {
-                push @{$self->{device_id_selected}}, $i; 
+                $self->add_result(instance => $instance);
             }
             if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{device}/) {
-                push @{$self->{device_id_selected}}, $i; 
+                $self->add_result(instance => $instance);
             }
             if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{device}) {
-                push @{$self->{device_id_selected}}, $i; 
+                $self->add_result(instance => $instance);
             }
-        }
-        
-        if (scalar(@{$self->{device_id_selected}}) <= 0) {
-            $self->{output}->add_option_msg(short_msg => "No device found for name '" . $self->{option_results}->{device} . "' (maybe you should reload cache file).");
-            $self->{output}->option_exit();
-        }
+        }    
     }
+    
+    if (scalar(keys %{$self->{device_id_selected}}) <= 0) {
+        if (defined($self->{option_results}->{device})) {
+            $self->{output}->add_option_msg(short_msg => "No device found '" . $self->{option_results}->{device} . "' (or counter values are 0).");
+        } else {
+            $self->{output}->add_option_msg(short_msg => "No device found (or values are 0).");
+        }
+        $self->{output}->option_exit();
+    }    
 }
 
 sub disco_format {
@@ -286,16 +297,17 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
+
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
-
     $self->manage_selection();
-    foreach (sort @{$self->{device_id_selected}}) {
-        $self->{output}->add_disco_entry(name => $self->{statefile_cache}->get(name => "device_" . $_),
+    foreach (sort keys %{$self->{device_id_selected}}) {
+        $self->{output}->add_disco_entry(name => $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $_},
                                          deviceid => $_);
     }
 }
+
 
 1;
 
@@ -303,25 +315,19 @@ __END__
 
 =head1 MODE
 
-Check read/write I/O disks. 
+Check read/write I/O disks (bytes per secondes, IOPs). 
 
 =over 8
 
-=item B<--warning-read>
+=item B<--warning-*>
 
-Threshold warning in bytes for 'read' io disks.
+Threshold warning.
+Can be: 'read', 'write', 'read-iops', 'write-iops'.
 
-=item B<--critical-read>
+=item B<--critical-*>
 
-Threshold critical in bytes for 'read' io disks.
-
-=item B<--warning-write>
-
-Threshold warning in bytes for 'write' io disks.
-
-=item B<--critical-write>
-
-Threshold critical in bytes for 'write' io disks.
+Threshold critical.
+Can be: 'read', 'write', 'read-iops', 'write-iops'.
 
 =item B<--device>
 
@@ -338,14 +344,6 @@ Allows to use regexp to filter devices (with option --name).
 =item B<--regexp-isensitive>
 
 Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--reload-cache-time>
-
-Time in seconds before reloading cache file (default: 180).
-
-=item B<--show-cache>
-
-Display cache interface datas.
 
 =back
 
