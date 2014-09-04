@@ -47,14 +47,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu' => 'network::cisco::common::mode::cpu',
-                         'environment' => 'network::cisco::common::mode::environment',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'memory' => 'network::cisco::common::mode::memory',
-                         'packet-errors' => 'snmp_standard::mode::packeterrors',
-                         'spanning-tree' => 'snmp_standard::mode::spanningtree',
-                         'stack' => 'network::cisco::common::mode::stack',
-                         'traffic' => 'snmp_standard::mode::traffic',
+                         'cpu'              => 'network::cisco::common::mode::cpu',
+                         'environment'      => 'network::cisco::common::mode::environment',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::cisco::common::mode::memory',
+                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
+                         'spanning-tree'    => 'snmp_standard::mode::spanningtree',
+                         'stack'            => 'network::cisco::common::mode::stack',
+                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;
