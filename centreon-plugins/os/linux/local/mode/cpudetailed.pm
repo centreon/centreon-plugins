@@ -123,6 +123,7 @@ sub run {
     my $save_datas = {};
     my $new_datas = {};
     my $old_datas = {};
+    my ($total_datas, $total_cpu_num) = ({}, 0);
     
     foreach my $line (split(/\n/, $stdout)) {
         next if ($line !~ /cpu(\d+)\s+/);
@@ -177,6 +178,7 @@ sub run {
             $self->{output}->display();
             $self->{output}->exit();
         }
+        $total_cpu_num++;
         
         my @exits;
         foreach (@{$maps}) {
@@ -194,6 +196,8 @@ sub run {
         
             my $value = (($new_datas->{$cpu_number}->{$_->{counter}} - $old_datas->{$cpu_number}->{$_->{counter}}) * 100) / 
                          ($new_datas->{$cpu_number}->{total} - $old_datas->{$cpu_number}->{total});
+            $total_datas->{$_->{counter}} = 0 if (!defined($total_datas->{$_->{counter}}));
+            $total_datas->{$_->{counter}} += $value;
             $str_output .= $str_append . sprintf($_->{output}, $value);
             $str_append = ', ';
             my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $_->{counter});
@@ -209,6 +213,15 @@ sub run {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => $str_output);
+        }
+    }
+    
+    # We can display a total (some buffer creation and counters have moved)
+    if ($total_cpu_num != 0) {
+        foreach my $counter (sort keys %{$total_datas}) {
+            $self->{output}->perfdata_add(label => 'total_cpu_' . $counter . '_avg', unit => '%',
+                                          value => sprintf("%.2f", $total_datas->{$counter} / $total_cpu_num),
+                                          min => 0, max => 100);
         }
     }
  
