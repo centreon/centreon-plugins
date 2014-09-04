@@ -107,7 +107,7 @@ sub calc {
             }
             $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
         } else {
-            # absolute one. nothing to do
+            # absolute one. nothing to do. Can be used for values.
             $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
         }
     }
@@ -207,6 +207,7 @@ sub perfdata {
                 $extra_label .= '_' . $self->{instance};
             }
         }
+
         $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
                                       value => sprintf($template, $self->{result_values}->{$perf->{value}}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total),
