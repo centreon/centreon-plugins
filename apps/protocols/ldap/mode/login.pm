@@ -33,14 +33,14 @@
 #
 ####################################################################################
 
-package apps::protocols::smtp::mode::login;
+package apps::protocols::ldap::mode::login;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::smtp::lib::smtp;
+use apps::protocols::ldap::lib::ldap;
 
 sub new {
     my ($class, %options) = @_;
@@ -50,9 +50,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
-         "hostname:s"       => { name => 'hostname' },
-         "port:s"           => { name => 'port', },
-         "smtp-options:s@"  => { name => 'smtp_options' },
+         "hostname:s"               => { name => 'hostname' },
+         "ldap-connect-options:s@"  => { name => 'ldap_connect_options' },
+         "ldap-starttls-options:s@" => { name => 'ldap_starttls_options' },
+         "ldap-bind-options:s@"     => { name => 'ldap_bind_options' },
+         "tls"                      => { name => 'use_tls' },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
@@ -86,8 +88,8 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::smtp::lib::smtp::connect($self, connection_exit => 'critical');  
-    apps::protocols::smtp::lib::smtp::quit();
+    apps::protocols::ldap::lib::ldap::connect($self, connection_exit => 'critical');  
+    apps::protocols::ldap::lib::ldap::quit();
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
@@ -110,26 +112,50 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to an SMTP Server.
+Check Connection (also login) to an LDAP Server.
+LDAP Control are not still managed.
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the smtp host
+IP Addr/FQDN of the ldap host
 
-=item B<--port>
+=item B<--ldap-connect-options>
 
-Port used
+Add custom ldap connect options:
 
-=item B<--smtp-options>
+=over 16
 
-Add custom smtp options.
-Example: --smtp-options='debug=1" --smtp-options='layer=none"
+=item B<Set SSL connection>
+
+--ldap-connect-options='scheme=ldaps'
+
+=item B<Set LDAP version 2>
+
+--ldap-connect-options='version=2'
+
+=back
+
+=item B<--ldap-starttls-options>
+
+Add custom start tls options (need --tls option):
+
+=over 16
+
+=item B<An example>
+
+--ldap-starttls-options='verify=none'
+
+=back
+
+=item B<--ldap-bind-options>
+
+Add custom bind options (can force noauth) (not really useful now).
 
 =item B<--username>
 
-Specify username for authentification
+Specify username for authentification (can be a DN)
 
 =item B<--password>
 
