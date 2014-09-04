@@ -52,7 +52,7 @@ my $maps_counters = {
                         output_template => 'Read I/O : %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
-                            { value => 'data-read-numeric_absolute', 
+                            { value => 'data-read-numeric_per_second', template => '%d',
                               unit => 'B/s', min => 0, label_extra_instance => 1 },
                         ],
                     }
@@ -66,7 +66,7 @@ my $maps_counters = {
                         output_template => 'Write I/O : %s %s/s',
                         output_change_bytes => 1,
                         perfdatas => [
-                            { value => 'data-written-numeric_absolute', 
+                            { value => 'data-written-numeric_per_second', template => '%d',
                               unit => 'B/s', min => 0, label_extra_instance => 1 },
                         ],
                     }
