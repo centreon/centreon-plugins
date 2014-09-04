@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::protocols::smtp::plugin;
+package apps::protocols::ldap::plugin;
 
 use strict;
 use warnings;
@@ -47,8 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::smtp::mode::login',
-                        'message'          => 'apps::protocols::smtp::mode::message',
+                        'login'            => 'apps::protocols::ldap::mode::login',
+                        'search'           => 'apps::protocols::ldap::mode::search',
                         );
     return $self;
 }
@@ -59,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check a SMTP server.
+Check a LDAP server.
 
 =cut
