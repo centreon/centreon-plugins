@@ -91,7 +91,7 @@ my $maps_counters = {
                                         { name => 'write_iops', diff => 1 }, { name => 'display' },
                                       ],
                         per_second => 1,
-                        output_template => 'Read IOPs : %.2f',
+                        output_template => 'Write IOPs : %.2f',
                         perfdatas => [
                             { value => 'write_iops_per_second', template => '%.2f',
                               unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
