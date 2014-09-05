@@ -39,19 +39,6 @@ LUN Capacity(Blocks):       1442538624
 Prct Rebuilt:               N/A
 Prct Bound:                 100
 
-
-======================
-Mode pour le controller global
-======================
-
-La commande: getcontrol -cbt -busy -write -read -idle
-Controller busy ticks:         500867
-Controller idle ticks:         8204812
-Prct Busy:                     5.75
-Total Writes:                  401613
-Total Reads:                   6653775
-Prct Idle:                     94.2
-
 ======================
 Mode pour les raid group
 ======================
