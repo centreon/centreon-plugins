@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Florian Asche <info@florian-asche.de>
+# Author : Quentin Garnier <qgarnier@merethis.com>
 #
 ####################################################################################
 
-package apps::tomcat::web::plugin;
+package apps::apc::web::plugin;
 
 use strict;
 use warnings;
@@ -47,14 +47,9 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'applications'          => 'apps::tomcat::web::mode::applications',
-			'list-application'	=> 'apps::tomcat::web::mode::listapplication',
-			'sessions'              => 'apps::tomcat::web::mode::sessions',
-			'threads'               => 'apps::tomcat::web::mode::threads',
-			'requestinfo'           => 'apps::tomcat::web::mode::requestinfo',
-			'memory'                => 'apps::tomcat::web::mode::memory',
-			'traffic'               => 'apps::tomcat::web::mode::traffic',
-			);
+        'file-cache'    => 'apps::apc::web::mode::filecache',
+        'memory'        => 'apps::apc::web::mode::memory',
+    );
 
 	return $self;
 }
@@ -65,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Tomcat Application Server through Manager Webpage
+Check apc php module through the webpage
 
 =cut
