@@ -198,7 +198,7 @@ sub perfdata {
             $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
         }
         
-        if ($perf->{label_extra_instance} == 1 && 
+        if (defined($perf->{label_extra_instance}) && $perf->{label_extra_instance} == 1 && 
            (!defined($options{extra_instance}) || $options{extra_instance} != 0)) {
           
             if (defined($perf->{instance_use})) {
@@ -227,6 +227,12 @@ sub execute {
     
     $options{new_datas} = {} if (!defined($options{new_datas}));
     foreach my $value (@{$self->{key_values}}) {
+        if (!defined($options{values}->{$value->{name}}) || 
+            defined($value->{no_value}) && $options{values}->{$value->{name}} eq $value->{no_value}) {
+            $quit = 2;
+            last;
+        }
+    
         if (defined($value->{diff}) && $value->{diff} == 1) {            
             $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
             $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
@@ -243,6 +249,11 @@ sub execute {
         }
     }
 
+    if ($quit == 2) {
+        $self->{error_msg} = "skipped (no value(s))";
+        return -1;
+    }
+    
     if ($quit == 1) {
         $self->{error_msg} = "Buffer creation";
         return -1;
