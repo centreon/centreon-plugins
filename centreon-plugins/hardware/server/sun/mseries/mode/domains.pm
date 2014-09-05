@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 my %error_status = (
     1 => ["The domain '%s' status is normal", 'OK'],

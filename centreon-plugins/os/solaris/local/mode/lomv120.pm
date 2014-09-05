@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use os::solaris::local::mode::lomv120components::fan;
 use os::solaris::local::mode::lomv120components::psu;
 use os::solaris::local::mode::lomv120components::voltage;

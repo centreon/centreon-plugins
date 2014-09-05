@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 my %errors_printer = (
     0 => ["Printer is low paper", 'WARNING'], 
