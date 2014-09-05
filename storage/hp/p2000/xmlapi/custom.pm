@@ -37,7 +37,6 @@ package storage::hp::p2000::xmlapi::custom;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::plugins::httplib;
 use XML::XPath;
 use Digest::MD5 qw(md5_hex);

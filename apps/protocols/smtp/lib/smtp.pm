@@ -37,7 +37,6 @@ package apps::protocols::smtp::lib::smtp;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use Email::Send::SMTP::Gmail;
 
 my $smtp_handle;

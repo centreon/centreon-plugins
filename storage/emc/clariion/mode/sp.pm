@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use storage::emc::clariion::mode::spcomponents::fan;
 use storage::emc::clariion::mode::spcomponents::lcc;
 use storage::emc::clariion::mode::spcomponents::psu;

@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use centreon::common::powershell::exchange::2010::imapmailbox;
 
 my %threshold = ('warning' => 'warning', 'critical' => 'critical');

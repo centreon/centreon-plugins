@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::httplib;
-use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;

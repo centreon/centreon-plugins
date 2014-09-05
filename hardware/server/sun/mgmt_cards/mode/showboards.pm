@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use hardware::server::sun::mgmt_cards::lib::telnet;
 use centreon::plugins::statefile;
 

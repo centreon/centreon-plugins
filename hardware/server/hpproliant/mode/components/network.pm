@@ -37,6 +37,7 @@ package hardware::server::hpproliant::mode::components::network;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 my %conditions = (
     1 => ['other', 'CRITICAL'], 

@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use storage::hp::p2000::xmlapi::mode::components::disk;
 use storage::hp::p2000::xmlapi::mode::components::vdisk;
 use storage::hp::p2000::xmlapi::mode::components::sensors;

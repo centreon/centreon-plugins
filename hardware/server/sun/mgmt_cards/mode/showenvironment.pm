@@ -39,7 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
+use centreon::plugins::misc;
 use hardware::server::sun::mgmt_cards::components::showenvironment::resources qw($thresholds);
 use hardware::server::sun::mgmt_cards::components::showenvironment::psu;
 use hardware::server::sun::mgmt_cards::components::showenvironment::fan;
