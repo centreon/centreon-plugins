@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use File::Basename;
 use XML::LibXML;
 use Win32;

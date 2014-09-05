@@ -37,7 +37,6 @@ package apps::protocols::imap::lib::imap;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use Net::IMAP::Simple;
 
 my $imap_handle;
