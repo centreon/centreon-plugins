@@ -47,9 +47,12 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-			'cpu' => 'network::citrix::netscaler::common::mode::cpu',
-			'memory' => 'network::citrix::netscaler::common::mode::memory'
-                         );
+            'cpu'               => 'network::citrix::netscaler::common::mode::cpu',
+            'health'            => 'network::citrix::netscaler::common::mode::health',
+            'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+            'memory'            => 'network::citrix::netscaler::common::mode::memory',
+            'traffic'           => 'snmp_standard::mode::traffic',
+    );
 
     return $self;
 }
