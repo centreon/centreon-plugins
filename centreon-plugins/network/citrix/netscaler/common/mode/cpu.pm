@@ -33,8 +33,8 @@
 #
 ####################################################################################
 
-package network::citix::netscaler::common::mode::cpu;
-
+package network::citrix::netscaler::common::mode::cpu;
+    
 use base qw(centreon::plugins::mode);
 
 use strict;
@@ -74,25 +74,30 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_resCpuUsage = '.1.3.6.1.4.1.5951.4.1.1.41.1';
-    my $result = $self->{snmp}->get_leef(oid => $oid_resCpuUsage, nothing_quit => 1);
+    my $oid_nsCPUEntry = '.1.3.6.1.4.1.5951.4.1.1.41.6';
+    my $oid_nsCPUname = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.1';
+    my $oid_nsCPUusage = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.2';
+    my $result = $self->{snmp}->get_table(oid => $oid_nsCPUEntry, nothing_quit => 1);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_resCpuUsage},
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($oid !~ /^$oid_nsCPUname\.(.*)$/);
+        my $name = $result->{$oid};
+        my $value = $result->{$oid_nsCPUusage . '.' . $1};
         
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage: %.2f%%", $result->{$oid_resCpuUsage}));
-    $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $result->{$oid_resCpuUsage},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
+        my $exit = $self->{perfdata}->threshold_check(value => $value,
+                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("CPU '%s' Usage: %.2f%%", $name, $value));
+        $self->{output}->perfdata_add(label => "cpu_" . $name, unit => '%',
+                                      value => $value,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
-
-
-
 }
     
 1;
