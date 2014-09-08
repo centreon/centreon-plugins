@@ -120,8 +120,8 @@ sub check_options {
     if (defined($self->{option_results}->{cpu})) {
         $self->{statefile_cache}->check_options(%options);
         # Construct filter for file cache (avoid one check erase one other)
-        my %labels = ('process_name', 'regexp_name', 'process_path', 'regexp_path', 'process_args', 'regexp_args', 'process_status');
-        foreach (keys %labels) {
+        my @labels = ('process_name', 'regexp_name', 'process_path', 'regexp_path', 'process_args', 'regexp_args', 'process_status');
+        foreach (@labels) {
             if (defined($self->{option_results}->{$_})) {
                 $self->{filter4md5} .= ',' . $self->{option_results}->{$_};
             }
