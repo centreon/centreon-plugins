@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', default => '' },
-                                  "critical:s"              => { name => 'critical', default => '' },
+                                  "warning:s"       => { name => 'warning' },
+                                  "critical:s"      => { name => 'critical' },
                                 });
 
     return $self;
@@ -59,12 +59,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warning} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
 }

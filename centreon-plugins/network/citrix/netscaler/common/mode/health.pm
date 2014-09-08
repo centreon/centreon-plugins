@@ -96,7 +96,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ('node', $1, $2);
+        my ($section, $status, $filter) = ('psu', $1, $2);
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
