@@ -33,8 +33,8 @@
 #
 ####################################################################################
 
-package network::citrix::netscaler::common::mode::memory;
-
+package network::citrix::netscaler::common::mode::storage;
+    
 use base qw(centreon::plugins::mode);
 
 use strict;
@@ -74,38 +74,49 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_resMemUsage = '.1.3.6.1.4.1.5951.4.1.1.41.2.0';
-    my $oid_memSizeMB = '.1.3.6.1.4.1.5951.4.1.1.41.4.0'; # in MB
-    my $result = $self->{snmp}->get_leef(oids => [$oid_resMemUsage, $oid_memSizeMB], nothing_quit => 1);
+    my $oid_nsSysHealthDiskEntry = '.1.3.6.1.4.1.5951.4.1.1.41.8.1';
+    my $oid_sysHealthDiskName = '.1.3.6.1.4.1.5951.4.1.1.41.8.1.1';
+    my $oid_sysHealthDiskSize = '.1.3.6.1.4.1.5951.4.1.1.41.8.1.2'; # in MB
+    my $oid_sysHealthDiskUsed = '.1.3.6.1.4.1.5951.4.1.1.41.8.1.4'; # in MB
+    my $result = $self->{snmp}->get_table(oid => $oid_nsSysHealthDiskEntry, nothing_quit => 1);
     
-    my $total_size = $result->{$oid_memSizeMB} * 1024 * 1024;
-    my $used = $result->{$oid_resMemUsage} * $total_size / 100;
-    my $free = $total_size - $used;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_resMemUsage},
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
-    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'All storages are ok.');
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($oid !~ /^$oid_sysHealthDiskName\.(.*)$/);
+        my $name = $result->{$oid};
+        my $total_used = $result->{$oid_sysHealthDiskUsed . '.' . $1} * 1024 * 1024;
+        my $total_size = $result->{$oid_sysHealthDiskSize . '.' . $1} * 1024 * 1024;
+        my $total_free = $total_size - $total_used;
+        my $prct_used = $total_used * 100 / $total_size;
+        my $prct_free = 100 - $prct_used;
+        
+        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+        my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
+        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $total_free);
+        
+        $self->{output}->output_add(long_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name,
+                                                        $total_size_value . " " . $total_size_unit,
+                                                        $total_used_value . " " . $total_used_unit, $prct_used,
+                                                        $total_free_value . " " . $total_free_unit, $prct_free));
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name,
+                                                             $total_size_value . " " . $total_size_unit,
+                                                             $total_used_value . " " . $total_used_unit, $prct_used,
+                                                             $total_free_value . " " . $total_free_unit, $prct_free));
+        }    
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                        $total_value . " " . $total_unit,
-                                        $used_value . " " . $used_unit, $result->{$oid_resMemUsage},
-                                        $free_value . " " . $free_unit, (100 - $result->{$oid_resMemUsage})));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => sprintf("%d", $used),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+        $self->{output}->perfdata_add(label => 'used_' . $name, unit => 'B',
+                                      value => $total_used,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+                                      min => 0, max => $total_size);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
-
-
-
 }
     
 1;
@@ -114,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (NS-MIB-smiv2).
+Check disk usages (NS-MIB-smiv2).
 
 =over 8
 
