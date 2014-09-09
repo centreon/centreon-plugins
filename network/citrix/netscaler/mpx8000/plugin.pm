@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::citrix::netscaler::8000::plugin;
+package network::citrix::netscaler::mpx8000::plugin;
 
 use strict;
 use warnings;
@@ -68,6 +68,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Citrix NetScaler 8000 Family in SNMP.
+Check Citrix NetScaler MPX 8000 Series in SNMP.
 
 =cut
