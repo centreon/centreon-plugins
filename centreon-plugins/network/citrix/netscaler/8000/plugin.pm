@@ -47,13 +47,16 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-            'cpu'               => 'network::citrix::netscaler::common::mode::cpu',
-            'storage'           => 'network::citrix::netscaler::common::mode::storage',
-            'health'            => 'network::citrix::netscaler::common::mode::health',
-            'ha-state'          => 'network::citrix::netscaler::common::mode::hastate',
-            'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-            'memory'            => 'network::citrix::netscaler::common::mode::memory',
-            'traffic'           => 'snmp_standard::mode::traffic',
+            'certificates-expire'   => 'network::citrix::netscaler::common::mode::certificatesexpire',
+            'cpu'                   => 'network::citrix::netscaler::common::mode::cpu',
+            'storage'               => 'network::citrix::netscaler::common::mode::storage',
+            'health'                => 'network::citrix::netscaler::common::mode::health',
+            'ha-state'              => 'network::citrix::netscaler::common::mode::hastate',
+            'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
+            'list-vservers'         => 'network::citrix::netscaler::common::mode::listvservers',
+            'vserver-status'        => 'network::citrix::netscaler::common::mode::vserverstatus',
+            'memory'                => 'network::citrix::netscaler::common::mode::memory',
+            'traffic'               => 'snmp_standard::mode::traffic',
     );
 
     return $self;
@@ -65,6 +68,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Citrix NetScaler 8000x Family in SNMP.
+Check Citrix NetScaler 8000 Family in SNMP.
 
 =cut
