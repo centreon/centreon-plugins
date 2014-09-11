@@ -47,7 +47,7 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-			'sessions' => 'network::cisco::WAAS::mode::sessions',
+			'sessions' => 'network::cisco::WaaS::mode::sessions',
                          );
 
     return $self;
