@@ -29,7 +29,7 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Author : Quentin Garnier <qgarnier@merethis.com>
+# Author : Simon Bomm <sbomm@merethis.com>
 #
 ####################################################################################
 
@@ -103,11 +103,11 @@ sub run {
     @array = @$ref_array;
     
     if (defined($self->{option_results}->{recursive})) {
-            while ($flag == 1) {
-                ($ref_array, $cpt, $flag) = $self->countFiles(@array);
-                $globalCount = $globalCount + $cpt;
-                @array = @$ref_array;
-            }
+        while ($flag == 1) {
+            ($ref_array, $cpt, $flag) = $self->countFiles(@array);
+            $globalCount = $globalCount + $cpt;
+            @array = @$ref_array;
+        }
     }
     apps::protocols::ftp::lib::ftp::quit();
 
@@ -115,41 +115,41 @@ sub run {
                                                        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit_code,
-				short_msg => sprintf("Number of files : %s", $globalCount));                               
+                                short_msg => sprintf("Number of files : %s", $globalCount));                               
     $self->{output}->perfdata_add(label => 'files',
                                   value => $globalCount,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                 );
+                                  min => 0);
     $self->{output}->display();
     $self->{output}->exit();
 }
 
 sub countFiles {
-   my ($self, @array) = @_;
-   my @files;
-   my @subdirs;
-   my $size;
-   my $cpt = 0;
-   my $time_result;
-   my $flag = 0;
+    my ($self, @array) = @_;
+    my @files;
+    my @subdirs;
+    my $size;
+    my $cpt = 0;
+    my $time_result;
+    my $flag = 0;
   
-   foreach my $dir (@array) {
+    foreach my $dir (@array) {
         if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
             $flag = 0;
         }
            
         foreach my $file (@files) {
-           if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
-               push(@subdirs, $file);
-               $flag = 1;        
-           }
-       $cpt++;
-       }
-       $size = @subdirs;
-   }
-   $cpt = $cpt - $size;
-   return \@subdirs, $cpt, $flag;
+            if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
+                push(@subdirs, $file);
+                $flag = 1;        
+            }
+            $cpt++;
+        }
+        $size = @subdirs;
+    }
+    $cpt = $cpt - $size;
+    return \@subdirs, $cpt, $flag;
 }
 
 1;
@@ -158,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Count files in an FTP directory, cab be recursive
+Count files in an FTP directory (can be recursive).
 
 =over 8
 
