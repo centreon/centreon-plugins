@@ -126,8 +126,8 @@ ORDER BY d.datname";
         
         $self->{output}->perfdata_add(label => 'connections_' . $database_name,
                                       value => $used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $max_connections, cast_int => 1),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $max_connections, cast_int => 1),
                                       min => 0, max => $max_connections);
     }
     if ($database_check == 0) {
