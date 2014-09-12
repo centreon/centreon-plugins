@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use apps::protocols::ftp::lib::ftp;
+use File::Basename;
 
 # How much arguments i need and commands manages
 my %map_commands = (
@@ -60,12 +61,13 @@ sub new {
          "ssl"              => { name => 'use_ssl' },
          "ftp-options:s@"   => { name => 'ftp_options' },
          "directory:s@"     => { name => 'directory' },
-         "recursive"        => { name => 'recursive' },
+         "max-depth:s"  => { name => 'max_depth', default => 0 },
          "username:s"   => { name => 'username' },
          "password:s"   => { name => 'password' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '30' },
+         "filter-file:s"    => { name => 'filter_file' },
+         "timeout:s"        => { name => 'timeout', default => '30' },
          });
     return $self;
 }
@@ -88,7 +90,7 @@ sub check_options {
     }
     $self->{ssl_or_not} = 'nossl';
     if (defined($self->{option_results}->{use_ssl})) {
-         $self->{ssl_or_not} = 'ssl';
+        $self->{ssl_or_not} = 'ssl';
     }
 }
 
@@ -98,26 +100,17 @@ sub run {
     my @files;
     my @array;
 
-    apps::protocols::ftp::lib::ftp::connect($self); 
-    my ($ref_array, $globalCount, $flag) = $self->countFiles(@{$self->{option_results}->{directory}});
-    @array = @$ref_array;
-    
-    if (defined($self->{option_results}->{recursive})) {
-        while ($flag == 1) {
-            ($ref_array, $cpt, $flag) = $self->countFiles(@array);
-            $globalCount = $globalCount + $cpt;
-            @array = @$ref_array;
-        }
-    }
+    apps::protocols::ftp::lib::ftp::connect($self);
+    my $count = $self->countFiles();
     apps::protocols::ftp::lib::ftp::quit();
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $globalCount,
+    my $exit_code = $self->{perfdata}->threshold_check(value => $count,
                                                        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Number of files : %s", $globalCount));                               
+                                short_msg => sprintf("Number of files : %s", $count));
     $self->{output}->perfdata_add(label => 'files',
-                                  value => $globalCount,
+                                  value => $count,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -126,30 +119,54 @@ sub run {
 }
 
 sub countFiles {
-    my ($self, @array) = @_;
-    my @files;
-    my @subdirs;
-    my $size;
-    my $cpt = 0;
-    my $time_result;
-    my $flag = 0;
-  
-    foreach my $dir (@array) {
-        if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
-            $flag = 0;
+    my ($self) = @_;
+    my @listings;
+    my $count = 0;
+    
+    if (!defined($self->{option_results}->{directory}) || scalar(@{$self->{option_results}->{directory}}) == 0) {
+        push @listings, [ { name => '.', level => 0 } ];
+    } else {
+        foreach my $dir (@{$self->{option_results}->{directory}}) {
+            push @listings, [ { name => $dir, level => 0 } ];
         }
-           
-        foreach my $file (@files) {
-            if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
-                push(@subdirs, $file);
-                $flag = 1;        
-            }
-            $cpt++;
-        }
-        $size = @subdirs;
     }
-    $cpt = $cpt - $size;
-    return \@subdirs, $cpt, $flag;
+
+    my @build_name = ();
+    foreach my $list (@listings) {
+        while (@$list) {
+            my @files;
+            my $hash = pop @$list;
+            my $dir = $hash->{name};
+            my $level = $hash->{level};
+                        
+            if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
+                # Cannot list we skip
+                next;
+            }
+
+            foreach my $file (@files) {
+                my $name = $dir . '/' . basename($file);
+                
+                if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
+                    $name !~ /$self->{option_results}->{filter_file}/) {
+                    $self->{output}->output_add(long_msg => sprintf("Skipping '%s'", $name));
+                    next;
+                }
+            
+                if (!(my $time_result = apps::protocols::ftp::lib::ftp::execute($self, 
+                                                                                command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, 
+                                                                                command_args => [$name]))) {
+                    if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
+                        push @$list, { name => $name, level => $level + 1};
+                    }
+                } else {
+                    $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
+                    $count++;
+                }
+            }            
+        }
+    }
+    return $count;
 }
 
 1;
@@ -203,6 +220,14 @@ Threshold critical (number of files)
 =item B<--directory>
 
 Check files in the directory (Multiple option)
+
+=item B<--max-depth>
+
+Don't check fewer levels (Default: '0'. Means current dir only).
+
+=item B<--filter-file>
+
+Filter files (can be a regexp. Directory is in the name).
 
 =back
 
