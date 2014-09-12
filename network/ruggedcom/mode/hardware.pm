@@ -285,7 +285,7 @@ sub check_psu {
         my $exit = $self->get_severity(section => 'psu', value => $map_states_psu{$psu_state});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power Supply'%s' state is %s.", $instance, $map_states_psu{$psu_state}));
+                                        short_msg => sprintf("Power Supply '%s' state is %s.", $instance, $map_states_psu{$psu_state}));
         }
     }
 }
