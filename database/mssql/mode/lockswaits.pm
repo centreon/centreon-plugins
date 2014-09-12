@@ -121,17 +121,17 @@ __END__
 
 =head1 MODE
 
-Check MySQL databases size.
+Check MSSQL locks-waits per second
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in bytes.
+Threshold warning number of lock-waits/seconds.
 
 =item B<--critical>
 
-Threshold critical in bytes.
+Threshold critical number of lock-waits/seconds..
 
 =item B<--filter>
 
