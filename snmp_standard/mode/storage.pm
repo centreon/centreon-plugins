@@ -161,7 +161,8 @@ sub run {
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
 
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], instances => $self->{storage_id_selected});
+    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
+                        instances => $self->{storage_id_selected}, nothing_quit => 1);
     my $result = $self->{snmp}->get_leef();
 
     if (!defined($self->{option_results}->{storage}) || defined($self->{option_results}->{use_regexp})) {
