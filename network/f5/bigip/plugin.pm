@@ -1,4 +1,4 @@
-################################################################################
+##############################################################################
 # Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
@@ -29,50 +29,44 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Stephane Duret <sduret@merethis.com>
+# Authors : Simon Bomm <sbomm@merethis.com>
 #
 ####################################################################################
 
-package network::f5::mode::components::psu;
+package network::f5::bigip::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_snmp);
 
-my %map_status = (
-    0 => 'bad',
-    1 => 'good',
-    2 => 'notPresent',
-);
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
 
-sub check {
-    my ($self) = @_;
+    $self->{version} = '1.0';
+    %{$self->{modes}} = (
+                         'node-status'          => 'network::f5::bigip::mode::nodestatus',
+                         'pool-status'          => 'network::f5::bigip::mode::poolstatus',
+                         'virtualserver-status' => 'network::f5::bigip::mode::virtualserverstatus',
+                         'list-nodes'           => 'network::f5::bigip::mode::listnodes',
+                         'list-pools'           => 'network::f5::bigip::mode::listpools',
+                         'list-virtualservers'  => 'network::f5::bigip::mode::listvirtualservers',
+                         'hardware'             => 'network::f5::bigip::mode::hardware',
+                         'connections'          => 'network::f5::bigip::mode::connections',
+                         );
 
-    $self->{components}->{psu} = {name => 'psus', total => 0};
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if ($self->check_exclude(section => 'psu'));
-    
-    my $oid_sysChassisPowerSupplyEntry = '.1.3.6.1.4.1.3375.2.1.3.2.2.2.1';
-    my $oid_sysChassisPowerSupplyStatus = '.1.3.6.1.4.1.3375.2.1.3.2.2.2.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_sysChassisPowerSupplyEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysChassisPowerSupplyStatus\.(\d+)$/);
-        my $instance = $1;
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
-    
-        my $status = $result->{$oid_sysChassisPowerSupplyStatus . '.' . $instance};
-     
-        $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is %s.", 
-                                                        $instance, $map_status{$status}));
-        if ($status < 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Power Supply '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
-        }
-    }
+    return $self;
 }
 
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check F-5 hardware in SNMP.
+Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
+
+=cut
