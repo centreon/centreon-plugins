@@ -33,19 +33,19 @@
 #
 ####################################################################################
 
-package network::f5::mode::nodestatus;
+package network::f5::bigip::mode::virtualserverstatus;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7';
-my $oid_ltmNodeAddrStatusAvailState = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3';
-my $oid_ltmNodeAddrStatusDetailReason = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.6';
+my $oid_ltmVsStatusName = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.1';
+my $oid_ltmVsStatusAvailState = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2';
+my $oid_ltmVsStatusDetailReason = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5';
 
 my $thresholds = {
-    node => [
+    vs => [
         ['none', 'CRITICAL'],
         ['green', 'OK'],
         ['yellow', 'WARNING'],
@@ -55,7 +55,7 @@ my $thresholds = {
     ],
 };
 
-my %map_node_status = (
+my %map_vs_status = (
     0 => 'none',
     1 => 'green',
     2 => 'yellow',
@@ -76,7 +76,7 @@ sub new {
                                   "regexp"                => { name => 'use_regexp' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
-    $self->{node_id_selected} = [];
+    $self->{vs_id_selected} = [];
 
     return $self;
 }
@@ -91,7 +91,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ('node', $1, $2);
+        my ($section, $status, $filter) = ('vs', $1, $2);
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
@@ -104,27 +104,27 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_ltmNodeAddrStatusName}})) {
-        next if ($oid !~ /^$oid_ltmNodeAddrStatusName\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_ltmVsStatusName}})) {
+        next if ($oid !~ /^$oid_ltmVsStatusName\.(.*)$/);
         my $instance = $1;
         
         # Get all without a name
         if (!defined($self->{option_results}->{name})) {
-            push @{$self->{node_id_selected}}, $instance; 
+            push @{$self->{vs_id_selected}}, $instance; 
             next;
         }
         
-        $self->{results}->{$oid_ltmNodeAddrStatusName}->{$oid} = $self->{results}->{$oid_ltmNodeAddrStatusName}->{$oid};
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmNodeAddrStatusName}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{node_id_selected}}, $instance; 
+        $self->{results}->{$oid_ltmVsStatusName}->{$oid} = $self->{results}->{$oid_ltmVsStatusName}->{$oid};
+        if (!defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmVsStatusName}->{$oid} eq $self->{option_results}->{name}) {
+            push @{$self->{vs_id_selected}}, $instance; 
         }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmNodeAddrStatusName}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{node_id_selected}}, $instance;
+        if (defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmVsStatusName}->{$oid} =~ /$self->{option_results}->{name}/) {
+            push @{$self->{vs_id_selected}}, $instance;
         }
     }
 
-    if (scalar(@{$self->{node_id_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No node found for name '" . $self->{option_results}->{name} . "'.");
+    if (scalar(@{$self->{vs_id_selected}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No virtual server found for name '" . $self->{option_results}->{name} . "'.");
         $self->{output}->option_exit();
     }
 }
@@ -135,36 +135,36 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmNodeAddrStatusName },
-                                                            { oid => $oid_ltmNodeAddrStatusAvailState },
-                                                            { oid => $oid_ltmNodeAddrStatusDetailReason },
+                                                            { oid => $oid_ltmVsStatusName },
+                                                            { oid => $oid_ltmVsStatusAvailState },
+                                                            { oid => $oid_ltmVsStatusDetailReason },
                                                             ],
                                                          nothing_quit => 1);
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(@{$self->{node_id_selected}}) == 1) {
+    if (scalar(@{$self->{vs_id_selected}}) == 1) {
         $multiple = 0;
     }
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Nodes are ok.');
+                                    short_msg => 'All Virtual Servers are ok.');
     }
     
-    foreach my $instance (sort @{$self->{node_id_selected}}) {
-        my $name = $self->{results}->{$oid_ltmNodeAddrStatusName}->{$oid_ltmNodeAddrStatusName . '.' . $instance};
-        my $status = defined($self->{results}->{$oid_ltmNodeAddrStatusAvailState}->{$oid_ltmNodeAddrStatusAvailState . '.' . $instance}) ? 
-                            $self->{results}->{$oid_ltmNodeAddrStatusAvailState}->{$oid_ltmNodeAddrStatusAvailState . '.' . $instance} : 4;
-        my $reason = defined($self->{results}->{$oid_ltmNodeAddrStatusDetailReason}->{$oid_ltmNodeAddrStatusDetailReason . '.' . $instance}) ? 
-                            $self->{results}->{$oid_ltmNodeAddrStatusDetailReason}->{$oid_ltmNodeAddrStatusDetailReason . '.' . $instance} : 'unknown';
+    foreach my $instance (sort @{$self->{vs_id_selected}}) {
+        my $name = $self->{results}->{$oid_ltmVsStatusName}->{$oid_ltmVsStatusName . '.' . $instance};
+        my $status = defined($self->{results}->{$oid_ltmVsStatusAvailState}->{$oid_ltmVsStatusAvailState . '.' . $instance}) ? 
+                            $self->{results}->{$oid_ltmVsStatusAvailState}->{$oid_ltmVsStatusAvailState . '.' . $instance} : 4;
+        my $reason = defined($self->{results}->{$oid_ltmVsStatusDetailReason}->{$oid_ltmVsStatusDetailReason . '.' . $instance}) ? 
+                            $self->{results}->{$oid_ltmVsStatusDetailReason}->{$oid_ltmVsStatusDetailReason . '.' . $instance} : 'unknown';
         
-        $self->{output}->output_add(long_msg => sprintf("Node '%s' status is %s [reason = %s]",
-                                                        $name, $map_node_status{$status}, $reason));
-        my $exit = $self->get_severity(section => 'node', value => $map_node_status{$status});
+        $self->{output}->output_add(long_msg => sprintf("Virtual Server '%s' status is %s [reason = %s]",
+                                                        $name, $map_vs_status{$status}, $reason));
+        my $exit = $self->get_severity(section => 'vs', value => $map_vs_status{$status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Node '%s' status is %s",
-                                                        $name, $map_node_status{$status}));
+                                        short_msg => sprintf("Virtual Server '%s' status is %s",
+                                                        $name, $map_vs_status{$status}));
         }
     }
     
@@ -200,17 +200,17 @@ __END__
 
 =head1 MODE
 
-Check Nodes status.
+Check Virtual Servers status.
 
 =over 8
 
 =item B<--name>
 
-Set the node name.
+Set the virtual server name.
 
 =item B<--regexp>
 
-Allows to use regexp to filter node name (with option --name).
+Allows to use regexp to filter virtual server name (with option --name).
 
 =item B<--threshold-overload>
 
