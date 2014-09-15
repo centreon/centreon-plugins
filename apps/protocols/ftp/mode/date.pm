@@ -200,14 +200,6 @@ Connection timeout in seconds (Default: 30)
 
 =item B<--warning>
 
-Threshold warning in seconds
-
-=item B<--critical>
-
-Threshold critical in seconds
-
-=item B<--warning>
-
 Threshold warning in seconds for each files (diff time)
 
 =item B<--critical>
