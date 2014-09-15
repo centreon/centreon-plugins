@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::f5::mode::components::fan;
+package network::f5::bigip::mode::components::psu;
 
 use strict;
 use warnings;
@@ -47,40 +47,32 @@ my %map_status = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fan} = {name => 'fans', total => 0};
-    $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude(section => 'fan'));
+    $self->{components}->{psu} = {name => 'psus', total => 0};
+    $self->{output}->output_add(long_msg => "Checking power supplies");
+    return if ($self->check_exclude(section => 'psu'));
     
-    my $oid_sysChassisFanEntry = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1';
-    my $oid_sysChassisFanStatus = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.2';
-    my $oid_sysChassisFanSpeed = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.3';
+    my $oid_sysChassisPowerSupplyEntry = '.1.3.6.1.4.1.3375.2.1.3.2.2.2.1';
+    my $oid_sysChassisPowerSupplyStatus = '.1.3.6.1.4.1.3375.2.1.3.2.2.2.1.2';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_sysChassisFanEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_sysChassisPowerSupplyEntry);
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysChassisFanStatus\.(\d+)$/);
+        next if ($key !~ /^$oid_sysChassisPowerSupplyStatus\.(\d+)$/);
         my $instance = $1;
+        next if ($self->check_exclude(section => 'psu', instance => $instance));
     
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
-    
-        my $status = $result->{$oid_sysChassisFanStatus . '.' . $instance};
-        my $speed = $result->{$oid_sysChassisFanSpeed . '.' . $instance};
-
-        $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
+        my $status = $result->{$oid_sysChassisPowerSupplyStatus . '.' . $instance};
+     
+        $self->{components}->{psu}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is %s.", 
                                                         $instance, $map_status{$status}));
         if ($status < 1) {
             $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Fan '%s' status is %s", 
+                                        short_msg => sprintf("Power Supply '%s' status is %s", 
                                                              $instance, $map_status{$status}));
         }
-
-        $self->{output}->perfdata_add(label => "fan_" . $instance,
-                                      value => $speed,
-                                      );
-    }   
-
+    }
 }
 
 1;
