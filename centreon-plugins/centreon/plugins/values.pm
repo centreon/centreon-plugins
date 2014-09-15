@@ -253,7 +253,7 @@ sub execute {
 
     if ($quit == 2) {
         $self->{error_msg} = "skipped (no value(s))";
-        return -1;
+        return -10;
     }
     
     if ($quit == 1) {

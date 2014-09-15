@@ -43,12 +43,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
+    # $options->{options} = options object    
+    
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'group'   => 'hardware::ups::eaton::mode::group',
-                         'outlet'   => 'hardware::ups::eaton::mode::outlet',
+                         'group'            => 'hardware::ups::eaton::mode::group',
+                         'outlet'           => 'hardware::ups::eaton::mode::outlet',
                          );
 
     return $self;
