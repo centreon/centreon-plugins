@@ -53,8 +53,8 @@ sub new {
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
                                   "component:s"      => { name => 'component', default => 'all' },
-				  "warning:s"        => { name => 'warning', default => '' },
-                                  "critical:s"       => { name => 'critical', default => '' },
+                                  "warning:s"        => { name => 'warning'  },
+                                  "critical:s"       => { name => 'critical' },
                                 });
     $self->{components} = {};
     return $self;
