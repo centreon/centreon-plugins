@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::f5::mode::components::temperature;
+package network::f5::bigip::mode::components::temperature;
 
 use strict;
 use warnings;

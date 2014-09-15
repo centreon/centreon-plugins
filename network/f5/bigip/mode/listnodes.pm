@@ -33,14 +33,14 @@
 #
 ####################################################################################
 
-package network::f5::mode::listvirtualservers;
+package network::f5::bigip::mode::listnodes;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my $oid_ltmVsStatusName = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.1';
+my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7';
 
 sub new {
     my ($class, %options) = @_;
@@ -53,7 +53,7 @@ sub new {
                                   "name:s"                => { name => 'name' },
                                   "regexp"                => { name => 'use_regexp' },
                                 });
-    $self->{vs_id_selected} = [];
+    $self->{node_id_selected} = [];
 
     return $self;
 }
@@ -66,28 +66,28 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmVsStatusName, nothing_quit => 1);
+    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmNodeAddrStatusName, nothing_quit => 1);
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /^$oid_ltmVsStatusName\.(.*)$/);
+        next if ($oid !~ /^$oid_ltmNodeAddrStatusName\.(.*)$/);
         my $instance = $1;
         
         # Get all without a name
         if (!defined($self->{option_results}->{name})) {
-            push @{$self->{vs_id_selected}}, $instance; 
+            push @{$self->{node_id_selected}}, $instance; 
             next;
         }
         
         $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{vs_id_selected}}, $instance;
+            push @{$self->{node_id_selected}}, $instance;
             next;
         }
         if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{vs_id_selected}}, $instance;
+            push @{$self->{node_id_selected}}, $instance;
             next;
         }
         
-        $self->{output}->output_add(long_msg => "Skipping virtual server '" . $self->{result_names}->{$oid} . "': no matching filter name");
+        $self->{output}->output_add(long_msg => "Skipping node '" . $self->{result_names}->{$oid} . "': no matching filter name");
     }
 }
 
@@ -97,14 +97,14 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    foreach my $instance (sort @{$self->{vs_id_selected}}) { 
-        my $name = $self->{result_names}->{$oid_ltmVsStatusName . '.' . $instance};
+    foreach my $instance (sort @{$self->{node_id_selected}}) { 
+        my $name = $self->{result_names}->{$oid_ltmNodeAddrStatusName . '.' . $instance};
 
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Virtual Servers:');
+                                short_msg => 'List Nodes:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -121,8 +121,8 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    foreach my $instance (sort @{$self->{vs_id_selected}}) {        
-        my $name = $self->{result_names}->{$oid_ltmVsStatusName . '.' . $instance};
+    foreach my $instance (sort @{$self->{node_id_selected}}) {        
+        my $name = $self->{result_names}->{$oid_ltmNodeAddrStatusName . '.' . $instance};
         
         $self->{output}->add_disco_entry(name => $name);
     }
@@ -134,17 +134,17 @@ __END__
 
 =head1 MODE
 
-List F-5 Virtual Servers.
+List F-5 Nodes.
 
 =over 8
 
 =item B<--name>
 
-Set the virtual server name.
+Set the node name.
 
 =item B<--regexp>
 
-Allows to use regexp to filter virtual server name (with option --name).
+Allows to use regexp to filter node name (with option --name).
 
 =back
 
