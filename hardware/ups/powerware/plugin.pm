@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package network::alteon::5224::plugin;
+package hardware::ups::powerware::plugin;
 
 use strict;
 use warnings;
@@ -43,13 +43,16 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '1.0';
+    # $options->{options} = options object    
+    
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'      => 'network::alteon::common::mode::cpu',
-                         'hardware' => 'network::alteon::common::mode::hardware',
-                         'memory'   => 'network::alteon::common::mode::memory',
+                         'environment'      => 'hardware::ups::powerware::mode::environment',
+                         'input-lines'      => 'hardware::ups::powerware::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::powerware::mode::outputlines',
+                         'output-source'    => 'hardware::ups::powerware::mode::outputsource',
+                         'alarms'           => 'hardware::ups::powerware::mode::alarms',
+                         'battery-status'   => 'hardware::ups::powerware::mode::batterystatus',
                          );
 
     return $self;
@@ -61,6 +64,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alteon 5224 in SNMP.
+Check UPS Powerware (branch of EATON) in SNMP.
 
 =cut
