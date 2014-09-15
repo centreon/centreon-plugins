@@ -184,6 +184,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 Threshold for HTTP timeout
 
+=item B<--expected-string>
+
+Specify String to check on the Webpage
+
 =back
 
 =cut
