@@ -32,16 +32,16 @@
 #
 ####################################################################################
 
-package network::f5::mode::hardware;
+package network::f5::bigip::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-use network::f5::mode::components::fan;
-use network::f5::mode::components::psu;
-use network::f5::mode::components::temperature;
+use network::f5::bigip::mode::components::fan;
+use network::f5::bigip::mode::components::psu;
+use network::f5::bigip::mode::components::temperature;
 
 sub new {
     my ($class, %options) = @_;
@@ -78,9 +78,9 @@ sub check_options {
 sub global {
     my ($self, %options) = @_;
 
-    network::f5::mode::components::temperature::check($self);
-    network::f5::mode::components::fan::check($self);
-    network::f5::mode::components::psu::check($self);
+    network::f5::bigip::mode::components::temperature::check($self);
+    network::f5::bigip::mode::components::fan::check($self);
+    network::f5::bigip::mode::components::psu::check($self);
 }
 
 sub run {
@@ -91,11 +91,11 @@ sub run {
     if ($self->{option_results}->{component} eq 'all') {
         $self->global();
     } elsif ($self->{option_results}->{component} eq 'fan') {
-        network::f5::mode::components::fan::check($self);
+        network::f5::bigip::mode::components::fan::check($self);
     } elsif ($self->{option_results}->{component} eq 'psu') {
-        network::f5::mode::components::psu::check($self);
+        network::f5::bigip::mode::components::psu::check($self);
     } elsif ($self->{option_results}->{component} eq 'temperature') {
-        network::f5::mode::components::temperature::check($self);
+        network::f5::bigip::mode::components::temperature::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();

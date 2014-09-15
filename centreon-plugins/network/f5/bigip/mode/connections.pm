@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::f5::mode::connections;
+package network::f5::bigip::mode::connections;
 
 use base qw(centreon::plugins::mode);
 
@@ -123,7 +123,6 @@ sub run {
                                   value => $sysClientsslStatCurConns);
     $self->{output}->perfdata_add(label => "ServerSSL", unit => 'con',
                                   value => $sysServersslStatCurConns);
-   
 
     $self->{output}->display();
     $self->{output}->exit();
