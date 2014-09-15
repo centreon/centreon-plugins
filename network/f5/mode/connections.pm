@@ -48,10 +48,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning-client:s"               => { name => 'warning_client' },
-                                  "critical-client:s"              => { name => 'critical_client' },
-                                  "warning-server:s"               => { name => 'warning_server' },
-                                  "critical-server:s"              => { name => 'critical_server' },
+                                  "warning-client:s"    => { name => 'warning_client' },
+                                  "critical-client:s"   => { name => 'critical_client' },
+                                  "warning-server:s"    => { name => 'warning_server' },
+                                  "critical-server:s"   => { name => 'critical_server' },
                                 });
 
     return $self;
@@ -77,8 +77,6 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical-server threshold '" . $self->{option_results}->{critical_client} . "'.");
        $self->{output}->option_exit();
     }
-
-
 }
 
 sub run {
@@ -129,9 +127,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-
-
-
 }
     
 1;
