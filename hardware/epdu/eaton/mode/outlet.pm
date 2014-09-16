@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::eaton::mode::outlet;
+package hardware::epdu::eaton::mode::outlet;
 
 use base qw(centreon::plugins::mode);
 
