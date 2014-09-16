@@ -33,21 +33,34 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::outputsource;
+package hardware::ups::powerware::mode::outputsource;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my %outputsource_status = (
-    1 => ['other', 'UNKNOWN'], 
-    2 => ['none', 'CRITICAL'], 
-    3 => ['normal', 'OK'], 
-    4 => ['bypass', 'WARNING'],
-    5 => ['battery', 'WARNING'],
-    6 => ['booster', 'WARNING'],
-    7 => ['reducer', 'WARNING'],
+my $oid_xupsOutputSource = '.1.3.6.1.4.1.534.1.4.5.0';
+
+my $thresholds = {
+    osource => [
+        ['normal', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+};
+
+my %map_osource_status = (
+    1 => 'other',
+    2 => 'none',
+    3 => 'normal',
+    4 => 'bypass',
+    5 => 'battery',
+    6 => 'booster', 
+    7 => 'reducer', 
+    8 => 'parallelCapacity', 
+    9 => 'parallelRedundant', 
+    10 => 'highEfficiencyMode', 
+    11 => 'maintenanceBypass', 
 );
 
 sub new {
@@ -57,7 +70,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
 
     return $self;
@@ -66,6 +80,21 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ('osource', $1, $2);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
 }
 
 sub run {
@@ -73,16 +102,37 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_upsOutputSource = '.1.3.6.1.2.1.33.1.4.1.0';
-    
-    my $result = $self->{snmp}->get_leef(oids => [$oid_upsOutputSource], nothing_quit => 1);
-    my $status = $result->{'.1.3.6.1.2.1.33.1.4.1.0'};
-  
-    $self->{output}->output_add(severity => ${$outputsource_status{$status}}[1],
-                                short_msg => sprintf("Output source status is %s", ${$outputsource_status{$status}}[0]));
+    my $result = $self->{snmp}->get_leef(oids => [$oid_xupsOutputSource], nothing_quit => 1);
+    my $exit = $self->get_severity(section => 'osource', value => $map_osource_status{$result->{$oid_xupsOutputSource}});
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Output source status is %s",
+                                                     $map_osource_status{$result->{$oid_xupsOutputSource}}));
 
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -91,9 +141,15 @@ __END__
 
 =head1 MODE
 
-Check output source status.
+Check output source status (XUPS-MIB).
 
 =over 8
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='WARNING,bypass|booster'
 
 =back
 
