@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
 use centreon::plugins::values;
 
 my $maps_counters = {
@@ -257,9 +256,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{instance_selected}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No input lines found.");
-        }
+        $self->{output}->add_option_msg(short_msg => "No input lines found.");
         $self->{output}->option_exit();
     }    
 }
@@ -270,7 +267,7 @@ __END__
 
 =head1 MODE
 
-Check Input lines metrics (frequence, voltage, current and true power).
+Check Input lines metrics (frequence, voltage, current and true power) (XUPS-MIB).
 
 =over 8
 

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::eaton::plugin;
+package hardware::epdu::eaton::plugin;
 
 use strict;
 use warnings;
@@ -47,8 +47,8 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'group'            => 'hardware::ups::eaton::mode::group',
-                         'outlet'           => 'hardware::ups::eaton::mode::outlet',
+                         'group'            => 'hardware::epdu::eaton::mode::group',
+                         'outlet'           => 'hardware::epdu::eaton::mode::outlet',
                          );
 
     return $self;
