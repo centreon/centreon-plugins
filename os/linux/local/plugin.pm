@@ -61,6 +61,7 @@ sub new {
                          'list-storages'    => 'os::linux::local::mode::liststorages',
                          'memory'           => 'os::linux::local::mode::memory',
                          'packet-errors'    => 'os::linux::local::mode::packeterrors',
+                         'paging'           => 'os::linux::local::mode::paging',
                          'process'          => 'os::linux::local::mode::process',
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
