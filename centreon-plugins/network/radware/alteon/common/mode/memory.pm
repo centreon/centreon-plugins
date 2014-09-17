@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::alteon::common::mode::memory;
+package network::radware::alteon::common::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
