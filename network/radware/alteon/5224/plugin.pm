@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::alteon::5224::plugin;
+package network::radware::alteon::5224::plugin;
 
 use strict;
 use warnings;
@@ -47,9 +47,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'      => 'network::alteon::common::mode::cpu',
-                         'hardware' => 'network::alteon::common::mode::hardware',
-                         'memory'   => 'network::alteon::common::mode::memory',
+                         'cpu'      => 'network::radware::alteon::common::mode::cpu',
+                         'hardware' => 'network::radware::alteon::common::mode::hardware',
+                         'memory'   => 'network::radware::alteon::common::mode::memory',
                          );
 
     return $self;
