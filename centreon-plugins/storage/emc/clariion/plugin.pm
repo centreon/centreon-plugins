@@ -48,17 +48,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cache'        => 'storage::emc::clariion::mode::cache',
-                         'controller'   => 'storage::emc::clariion::mode::controller',
-                         'disk'         => 'storage::emc::clariion::mode::disk',
-                         'sp'           => 'storage::emc::clariion::mode::sp',
-                         'faults'       => 'storage::emc::clariion::mode::faults',
-                         'list-luns'    => 'storage::emc::clariion::mode::listluns',
-                         'sp-info'      => 'storage::emc::clariion::mode::spinfo',
-                         'port-state'   => 'storage::emc::clariion::mode::portstate',
-                         'hba-state'    => 'storage::emc::clariion::mode::hbastate',
+                         'cache'        => 'centreon::common::emc::navisphere::mode::cache',
+                         'controller'   => 'centreon::common::emc::navisphere::mode::controller',
+                         'disk'         => 'centreon::common::emc::navisphere::mode::disk',
+                         'sp'           => 'centreon::common::emc::navisphere::mode::sp',
+                         'faults'       => 'centreon::common::emc::navisphere::mode::faults',
+                         'list-luns'    => 'centreon::common::emc::navisphere::mode::listluns',
+                         'sp-info'      => 'centreon::common::emc::navisphere::mode::spinfo',
+                         'port-state'   => 'centreon::common::emc::navisphere::mode::portstate',
+                         'hba-state'    => 'centreon::common::emc::navisphere::mode::hbastate',
                         );
-    $self->{custom_modes}{clariion} = 'storage::emc::clariion::custom';
+    $self->{custom_modes}{clariion} = 'centreon::common::emc::navisphere::custom::custom';
 
     return $self;
 }

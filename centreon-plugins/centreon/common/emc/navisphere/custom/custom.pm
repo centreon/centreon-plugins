@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::custom;
+package centreon::common::emc::navisphere::custom::custom;
 
 use strict;
 use warnings;
@@ -74,7 +74,7 @@ sub new {
                       "timeout:s@"          => { name => 'timeout' },
                     });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'CLARIION OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'NAVISPHERE OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
@@ -221,13 +221,13 @@ __END__
 
 =head1 NAME
 
-Clariion
+Navisphere
 
 =head1 SYNOPSIS
 
 my navisphere manage
 
-=head1 CLARIION OPTIONS
+=head1 NAVISPHERE OPTIONS
 
 =over 8
 
@@ -258,7 +258,7 @@ To be used for set a file. (Need to change command and use 'cat' instead).
 
 =item B<--hostname>
 
-Emc Clariion SP Hostname.
+Emc Clariion/VNX SP Hostname.
 
 =item B<--secfilepath>
 

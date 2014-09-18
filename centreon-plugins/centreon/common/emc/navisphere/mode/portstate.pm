@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::portstate;
+package centreon::common::emc::navisphere::mode::portstate;
 
 use base qw(centreon::plugins::mode);
 
