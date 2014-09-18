@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::radlan::mode::hardware;
+package centreon::common::radlan::mode::environment;
 
 use base qw(centreon::plugins::mode);
 
