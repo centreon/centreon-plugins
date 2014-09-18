@@ -164,7 +164,7 @@ sub stdev {
     $total = 0;
     foreach my $instance (keys %{$self->{instances_done}}) {
         next if ($self->{counters_value}->{$instance}->{load} == -1); # Not present
-        $total = ($mean - $self->{counters_value}->{$instance}->{load}) ** 2; 
+        $total += ($mean - $self->{counters_value}->{$instance}->{load}) ** 2; 
     }
     my $stdev = sqrt($total / $num_present);
     

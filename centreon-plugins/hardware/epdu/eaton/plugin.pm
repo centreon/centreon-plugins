@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,44 +29,26 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package os::linux::local::plugin;
+package hardware::epdu::eaton::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
+    # $options->{options} = options object    
+    
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'os::linux::local::mode::cpu',
-                         'cpu-detailed'     => 'os::linux::local::mode::cpudetailed',
-                         'cmd-return'       => 'os::linux::local::mode::cmdreturn',
-                         'connections'      => 'os::linux::local::mode::connections',
-                         'diskio'           => 'os::linux::local::mode::diskio',
-                         'files-size'       => 'os::linux::local::mode::filessize',
-                         'files-date'       => 'os::linux::local::mode::filesdate',
-                         'inodes'           => 'os::linux::local::mode::inodes',
-                         'load'             => 'os::linux::local::mode::loadaverage',
-                         'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
-                         'list-partitions'  => 'os::linux::local::mode::listpartitions',
-                         'list-storages'    => 'os::linux::local::mode::liststorages',
-                         'memory'           => 'os::linux::local::mode::memory',
-                         'packet-errors'    => 'os::linux::local::mode::packeterrors',
-                         'paging'           => 'os::linux::local::mode::paging',
-                         'process'          => 'os::linux::local::mode::process',
-                         'storage'          => 'os::linux::local::mode::storage',
-                         'swap'             => 'os::linux::local::mode::swap',
-                         'traffic'          => 'os::linux::local::mode::traffic',
-                         'uptime'           => 'os::linux::local::mode::uptime',
+                         'group'            => 'hardware::epdu::eaton::mode::group',
+                         'outlet'           => 'hardware::epdu::eaton::mode::outlet',
                          );
 
     return $self;
@@ -78,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Linux through local commands (the plugin can use SSH).
+Check Eaton EPDU in SNMP.
 
 =cut

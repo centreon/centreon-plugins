@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::disk;
+package centreon::common::emc::navisphere::mode::disk;
 
 sub get_absolute {
     my ($self, %options) = @_;

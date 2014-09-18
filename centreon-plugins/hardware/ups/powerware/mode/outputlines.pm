@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
 use centreon::plugins::values;
 
 my $maps_counters = {
@@ -99,7 +98,7 @@ my $maps_counters2 = {
                         key_values => [
                                         { name => 'load', no_value => -1 },
                                       ],
-                        output_template => 'Load: %.2f %', output_error_template => 'Load: %s',
+                        output_template => 'Load: %.2f %%', output_error_template => 'Load: %s',
                         perfdatas => [
                             { value => 'load_absolute', label => 'load', template => '%.2f',
                               unit => '%', min => 0 },
@@ -271,9 +270,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{instance_selected}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No output lines found.");
-        }
+        $self->{output}->add_option_msg(short_msg => "No output lines found.");
         $self->{output}->option_exit();
     }    
 }
@@ -284,7 +281,7 @@ __END__
 
 =head1 MODE
 
-Check Output lines metrics (load, voltage, current and true power).
+Check Output lines metrics (load, voltage, current and true power) (XUPS-MIB).
 
 =over 8
 
