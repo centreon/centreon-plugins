@@ -33,51 +33,76 @@
 #
 ####################################################################################
 
-package os::linux::local::plugin;
+package centreon::common::emc::navisphere::mode::spinfo;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'cpu'              => 'os::linux::local::mode::cpu',
-                         'cpu-detailed'     => 'os::linux::local::mode::cpudetailed',
-                         'cmd-return'       => 'os::linux::local::mode::cmdreturn',
-                         'connections'      => 'os::linux::local::mode::connections',
-                         'diskio'           => 'os::linux::local::mode::diskio',
-                         'files-size'       => 'os::linux::local::mode::filessize',
-                         'files-date'       => 'os::linux::local::mode::filesdate',
-                         'inodes'           => 'os::linux::local::mode::inodes',
-                         'load'             => 'os::linux::local::mode::loadaverage',
-                         'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
-                         'list-partitions'  => 'os::linux::local::mode::listpartitions',
-                         'list-storages'    => 'os::linux::local::mode::liststorages',
-                         'memory'           => 'os::linux::local::mode::memory',
-                         'packet-errors'    => 'os::linux::local::mode::packeterrors',
-                         'paging'           => 'os::linux::local::mode::paging',
-                         'process'          => 'os::linux::local::mode::process',
-                         'storage'          => 'os::linux::local::mode::storage',
-                         'swap'             => 'os::linux::local::mode::swap',
-                         'traffic'          => 'os::linux::local::mode::traffic',
-                         'uptime'           => 'os::linux::local::mode::uptime',
-                         );
+    
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                { 
+                                });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
+sub run {
+    my ($self, %options) = @_;
+    my $clariion = $options{custom};
+    
+    my $response = $clariion->execute_command(cmd => 'getagent -ver -rev -prom -model -type -mem -serial -spid');
+    
+    my $sp_id = 'unknown';
+    my $sp_agent_rev = 'unknown';
+    my $sp_flare_rev = 'unknown';
+    my $sp_prom_rev = 'unknown';
+    my $sp_model = 'unknown';
+    my $sp_model_type = 'unknown';
+    my $sp_memory_total = 'unknown';
+    my $sp_serial_number = 'unknown';
+
+    $sp_id = $1 if ($response =~ /^SP Identifier:\s+(.*)$/im);
+    $sp_agent_rev = $1 if ($response =~ /^Agent Rev:\s+(.*)$/im);
+    $sp_flare_rev = $1 if ($response =~ /^Revision:\s+(.*)$/im);
+    $sp_prom_rev = $1 if ($response =~ /^Prom Rev:\s+(.*)$/im);
+    $sp_model = $1 if ($response =~ /^Model:\s+(.*)$/im);
+    $sp_model_type = $1 if ($response =~ /^Model Type:\s+(.*)$/im);
+    $sp_memory_total = ($1 * 1024 * 1024) if ($response =~ /^SP Memory:\s+(.*)$/im);
+    $sp_serial_number = $1 if ($response =~ /^Serial No:\s+(.*)$/im);
+    
+    my ($memory_value, $memory_unit) = $self->{perfdata}->change_bytes(value => $sp_memory_total);
+    
+    $self->{output}->output_add(severity => 'ok',
+                                short_msg => sprintf('[SP ID: %s] [Agent Revision: %s] [FLARE Revision: %s] [PROM Revision: %s] [Model: %s, %s] [Memory: %s %s] [Serial Number: %s]',
+                                                    $sp_id, $sp_agent_rev, $sp_flare_rev, $sp_prom_rev, 
+                                                    $sp_model, $sp_model_type, $memory_value, $memory_unit, $sp_serial_number));
+    
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Linux through local commands (the plugin can use SSH).
+Display informations on the storage processor.
+
+=over 8
+
+=back
 
 =cut

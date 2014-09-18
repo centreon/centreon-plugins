@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::hbastate;
+package centreon::common::emc::navisphere::mode::hbastate;
 
 use base qw(centreon::plugins::mode);
 
