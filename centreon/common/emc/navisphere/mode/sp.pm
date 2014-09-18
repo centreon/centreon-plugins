@@ -33,21 +33,21 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::sp;
+package centreon::common::emc::navisphere::mode::sp;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use storage::emc::clariion::mode::spcomponents::fan;
-use storage::emc::clariion::mode::spcomponents::lcc;
-use storage::emc::clariion::mode::spcomponents::psu;
-use storage::emc::clariion::mode::spcomponents::battery;
-use storage::emc::clariion::mode::spcomponents::memory;
-use storage::emc::clariion::mode::spcomponents::cpu;
-use storage::emc::clariion::mode::spcomponents::iomodule;
-use storage::emc::clariion::mode::spcomponents::cable;
-use storage::emc::clariion::mode::spcomponents::sp;
+use centreon::common::emc::navisphere::mode::spcomponents::fan;
+use centreon::common::emc::navisphere::mode::spcomponents::lcc;
+use centreon::common::emc::navisphere::mode::spcomponents::psu;
+use centreon::common::emc::navisphere::spcomponents::battery;
+use centreon::common::emc::navisphere::spcomponents::memory;
+use centreon::common::emc::navisphere::spcomponents::cpu;
+use centreon::common::emc::navisphere::spcomponents::iomodule;
+use centreon::common::emc::navisphere::spcomponents::cable;
+use centreon::common::emc::navisphere::spcomponents::sp;
 
 sub new {
     my ($class, %options) = @_;
@@ -86,33 +86,33 @@ sub component {
     my ($self, %options) = @_;
     
     if ($self->{option_results}->{component} eq 'all') {
-        storage::emc::clariion::mode::spcomponents::fan::check($self);
-        storage::emc::clariion::mode::spcomponents::lcc::check($self);
-        storage::emc::clariion::mode::spcomponents::psu::check($self);
-        storage::emc::clariion::mode::spcomponents::battery::check($self);
-        storage::emc::clariion::mode::spcomponents::cable::check($self);
-        storage::emc::clariion::mode::spcomponents::iomodule::check($self);
-        storage::emc::clariion::mode::spcomponents::memory::check($self);
-        storage::emc::clariion::mode::spcomponents::cpu::check($self);
-        storage::emc::clariion::mode::spcomponents::sp::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::fan::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::lcc::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::psu::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::battery::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::cable::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::iomodule::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::memory::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::cpu::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::sp::check($self);
     } elsif ($self->{option_results}->{component} eq 'sp') {
-        storage::emc::clariion::mode::spcomponents::sp::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::sp::check($self);
     } elsif ($self->{option_results}->{component} eq 'fan') {
-        storage::emc::clariion::mode::spcomponents::fan::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::fan::check($self);
     } elsif ($self->{option_results}->{component} eq 'lcc') {
-        storage::emc::clariion::mode::spcomponents::lcc::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::lcc::check($self);
     } elsif ($self->{option_results}->{component} eq 'psu') {
-        storage::emc::clariion::mode::spcomponents::psu::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::psu::check($self);
     } elsif ($self->{option_results}->{component} eq 'battery') {
-        storage::emc::clariion::mode::spcomponents::psu::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::psu::check($self);
     } elsif ($self->{option_results}->{component} eq 'memory') {
-        storage::emc::clariion::mode::spcomponents::memory::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::memory::check($self);
     } elsif ($self->{option_results}->{component} eq 'cpu') {
-        storage::emc::clariion::mode::spcomponents::cpu::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::cpu::check($self);
     } elsif ($self->{option_results}->{component} eq 'io') {
-        storage::emc::clariion::mode::spcomponents::iomodule::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::iomodule::check($self);
     } elsif ($self->{option_results}->{component} eq 'cable') {
-        storage::emc::clariion::mode::spcomponents::cable::check($self);
+        centreon::common::emc::navisphere::mode::spcomponents::cable::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
