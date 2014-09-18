@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::controller;
+package centreon::common::emc::navisphere::mode::controller;
 
 use base qw(centreon::plugins::mode);
 

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,65 +29,40 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::faults;
-
-use base qw(centreon::plugins::mode);
+package hardware::ups::mge::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    # $options->{options} = options object    
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'environment'      => 'hardware::ups::mge::mode::environment',
+                         'input-lines'      => 'hardware::ups::mge::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::mge::mode::outputlines',
+                         'output-source'    => 'hardware::ups::mge::mode::outputsource',
+                         'battery-status'   => 'hardware::ups::mge::mode::batterystatus',
+                         );
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    my $clariion = $options{custom};
-    
-    my $response = $clariion->execute_command(cmd => 'faults -list', secure_only => 1);
-    chomp $response;
-    
-    if ($response =~ /The array is operating normally/msg) {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => 'The array is operating normally');
-    } else {
-        $self->{output}->output_add(long_msg => $response);
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => 'Problem detected (see detailed output for more details');
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 MODE
+=head1 PLUGIN DESCRIPTION
 
-Detect faults on the array.
-
-=over 8
-
-=back
+Check UPS MerlinGerin in SNMP.
 
 =cut
