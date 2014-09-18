@@ -35,7 +35,7 @@
 # Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package storage::emc::clariion::mode::listluns;
+package centreon::common::emc::navisphere::mode::listluns;
 
 use base qw(centreon::plugins::mode);
 

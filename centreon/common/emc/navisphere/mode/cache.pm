@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::cache;
+package centreon::common::emc::navisphere::mode::cache;
 
 use base qw(centreon::plugins::mode);
 

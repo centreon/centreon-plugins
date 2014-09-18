@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spinfo;
+package centreon::common::emc::navisphere::mode::faults;
 
 use base qw(centreon::plugins::mode);
 
@@ -62,32 +62,17 @@ sub run {
     my ($self, %options) = @_;
     my $clariion = $options{custom};
     
-    my $response = $clariion->execute_command(cmd => 'getagent -ver -rev -prom -model -type -mem -serial -spid');
+    my $response = $clariion->execute_command(cmd => 'faults -list', secure_only => 1);
+    chomp $response;
     
-    my $sp_id = 'unknown';
-    my $sp_agent_rev = 'unknown';
-    my $sp_flare_rev = 'unknown';
-    my $sp_prom_rev = 'unknown';
-    my $sp_model = 'unknown';
-    my $sp_model_type = 'unknown';
-    my $sp_memory_total = 'unknown';
-    my $sp_serial_number = 'unknown';
-
-    $sp_id = $1 if ($response =~ /^SP Identifier:\s+(.*)$/im);
-    $sp_agent_rev = $1 if ($response =~ /^Agent Rev:\s+(.*)$/im);
-    $sp_flare_rev = $1 if ($response =~ /^Revision:\s+(.*)$/im);
-    $sp_prom_rev = $1 if ($response =~ /^Prom Rev:\s+(.*)$/im);
-    $sp_model = $1 if ($response =~ /^Model:\s+(.*)$/im);
-    $sp_model_type = $1 if ($response =~ /^Model Type:\s+(.*)$/im);
-    $sp_memory_total = ($1 * 1024 * 1024) if ($response =~ /^SP Memory:\s+(.*)$/im);
-    $sp_serial_number = $1 if ($response =~ /^Serial No:\s+(.*)$/im);
-    
-    my ($memory_value, $memory_unit) = $self->{perfdata}->change_bytes(value => $sp_memory_total);
-    
-    $self->{output}->output_add(severity => 'ok',
-                                short_msg => sprintf('[SP ID: %s] [Agent Revision: %s] [FLARE Revision: %s] [PROM Revision: %s] [Model: %s, %s] [Memory: %s %s] [Serial Number: %s]',
-                                                    $sp_id, $sp_agent_rev, $sp_flare_rev, $sp_prom_rev, 
-                                                    $sp_model, $sp_model_type, $memory_value, $memory_unit, $sp_serial_number));
+    if ($response =~ /The array is operating normally/msg) {
+        $self->{output}->output_add(severity => 'ok',
+                                    short_msg => 'The array is operating normally');
+    } else {
+        $self->{output}->output_add(long_msg => $response);
+        $self->{output}->output_add(severity => 'critical',
+                                    short_msg => 'Problem detected (see detailed output for more details');
+    }
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -99,7 +84,7 @@ __END__
 
 =head1 MODE
 
-Display informations on the storage processor.
+Detect faults on the array.
 
 =over 8
 
