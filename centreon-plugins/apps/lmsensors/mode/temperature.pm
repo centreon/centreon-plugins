@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
 
 my $oid_SensorDesc = '.1.3.6.1.4.1.2021.13.16.2.1.2';  # temperature entry description
 my $oid_SensorValue = '.1.3.6.1.4.1.2021.13.16.2.1.3'; # temperature entry value (RPM)
