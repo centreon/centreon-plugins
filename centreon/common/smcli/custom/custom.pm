@@ -60,28 +60,24 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
-                      "navicli-command:s"       => { name => 'navicli_command', default => 'navicli' },
-                      "navicli-path:s"          => { name => 'navicli_path', default => '/opt/Navisphere/bin' },
-                      "naviseccli-command:s"    => { name => 'naviseccli_command', default => 'naviseccli' },
-                      "naviseccli-path:s"       => { name => 'naviseccli_path', default => '/opt/Navisphere/bin' },
-                      "sudo:s"                  => { name => 'sudo', },
+                      "smcli-command:s"     => { name => 'smcli_command', default => 'SMcli' },
+                      "smcli-path:s"        => { name => 'smcli_path', },
+                      "sudo:s"              => { name => 'sudo', },
+                      "extra-options:s@"    => { name => 'extra_options' },
                       "special-arg:s@"      => { name => 'special_arg' },
                       "hostname:s@"         => { name => 'hostname' },
-                      "secfilepath:s@"      => { name => 'secfilepath' },
-                      "username:s@"         => { name => 'username' },
+                      "hostname2:s@"        => { name => 'hostname2' },
                       "password:s@"         => { name => 'password' },
-                      "scope:s@"            => { name => 'scope' },
                       "timeout:s@"          => { name => 'timeout' },
                     });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'NAVISPHERE OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'SMCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
     
     # 1 means we use a file to read
-    $self->{no_navicmd} = 0;
-    $self->{secure} = 0;
+    $self->{no_smclicmd} = 0;
     
     return $self;
 }
@@ -116,40 +112,14 @@ sub set_defaults {
 sub build_command {
     my ($self, %options) = @_;
     
-    if ($self->{scope} !~ /^[012]$/) {
-        $self->{output}->add_option_msg(short_msg => "Wrong scope option '" . $self->{scope} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{cmd} = $self->{option_results}->{navicli_path} . '/' . $self->{option_results}->{navicli_command};
-    
-    if (defined($self->{username}) || defined($self->{secfilepath})) {
-        $self->{cmd} = $self->{option_results}->{naviseccli_path} . '/' . $self->{option_results}->{naviseccli_command};
-        $self->{secure} = 1;
-    }
-    
-    if (defined($self->{secfilepath})) { 
-        if (!(-x $self->{secfilepath} && -e $self->{secfilepath} . "/SecuredCLISecurityFile.xml" && -e $self->{secfilepath} . "/SecuredCLIXMLEncrypted.key")) {
-            $self->{output}->add_option_msg(short_msg => 'The secfilepath ' . $self->{secfilepath} . ' does not exist or SecuredCLI files are not created.');
-            $self->{output}->option_exit();
-        }
-    } elsif (defined($self->{username})) { 
-        if (!defined($self->{password})) {
-            $self->{output}->add_option_msg(short_msg => 'Need to specify password option.');
-            $self->{output}->option_exit();
-        }
-    }
-    
-    if (! -e $self->{cmd}) {
-        $self->{output}->add_option_msg(short_msg => "Command '" . $self->{cmd} . "' not exist or executable.");
-        $self->{output}->option_exit();
-    }
-    
+    $self->{cmd} = '';
+    $self->{cmd} .= $self->{option_results}->{smcli_path} . '/' if (defined($self->{option_results}->{smcli_path}));
+    $self->{cmd} .= $self->{option_results}->{smcli_path_command};
+   
     if (defined($self->{special_arg}) && $self->{special_arg} ne '') {
         $self->{cmd} .= ' ' . $self->{special_arg};
-        $self->{no_navicmd} = 1;
+        $self->{no_smclicmd} = 1;
         # It's ok if we use a file.
-        $self->{secure} = 1;
         return ;
     }
     
@@ -157,14 +127,11 @@ sub build_command {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
+    $self->{cmd} .= " " . $self->{hostname};
+    $self->{cmd} .= " " . $self->{hostname2} if (defined($self->{hostname2}));
     
-    if (defined($self->{secfilepath})) {
-        $self->{cmd} .= " -Secfilepath '" . $self->{secfilepath} . "'";
-    } elsif (defined($self->{username})) {
-        $self->{cmd} .= " -User '" . $self->{username} . "' -Password '" . $self->{password} . "' -Scope " . $self->{scope};
-    }
-    $self->{cmd} .= ' -t ' . $self->{timeout};
-    $self->{cmd} .= ' -h ' . $self->{hostname};
+    $self->{cmd} .= " -p '" . $self->{password} . "'" if (defined($self->{password}));
+    $self->{cmd} .= " " . $self->{extra_options} if (defined($self->{extra_options}));
 }
 
 sub check_options {
@@ -173,11 +140,10 @@ sub check_options {
     # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{secfilepath} = (defined($self->{option_results}->{secfilepath})) ? shift(@{$self->{option_results}->{secfilepath}}) : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
+    $self->{hostname2} = (defined($self->{option_results}->{hostname2})) ? shift(@{$self->{option_results}->{hostname2}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
-    $self->{scope} = (defined($self->{option_results}->{scope})) ? shift(@{$self->{option_results}->{scope}}) : 0;
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 30;
+    $self->{extra_options} = (defined($self->{option_results}->{extra_options})) ? shift(@{$self->{option_results}->{extra_options}}) : '-quick';
     $self->{special_arg} = (defined($self->{option_results}->{special_arg})) ? shift(@{$self->{option_results}->{special_arg}}) : undef;
     $self->{sudo} = $self->{option_results}->{sudo};
     
@@ -196,16 +162,12 @@ sub check_options {
 sub execute_command {
     my ($self, %options) = @_;
     
-    if ($self->{no_navicmd} == 0) {
-        $self->{cmd} .= ' ' . $options{cmd};
-    }
-    if (defined($options{secure_only}) && $options{secure_only} == 1 && $self->{secure} != 1) {
-        $self->{output}->add_option_msg(short_msg => "Mode only works with naviseccli.");
-        $self->{output}->option_exit();
+    if ($self->{no_smclicmd} == 0) {
+        $self->{cmd} .= " -c '" . $options{cmd} . "'";
     }
     
     # Need to set timeout over command.
-    $self->{option_results}->{timeout} = $self->{timeout} + 5;
+    $self->{option_results}->{timeout} = $self->{timeout};
     return centreon::plugins::misc::execute(output => $self->{output},
                                             options => $self->{option_results},
                                             sudo => $self->{sudo},
@@ -221,31 +183,27 @@ __END__
 
 =head1 NAME
 
-Navisphere
+Smcli
 
 =head1 SYNOPSIS
 
-my navisphere manage
+my smcli manage
 
-=head1 NAVISPHERE OPTIONS
+=head1 SMCLI OPTIONS
 
 =over 8
 
-=item B<--navicli-path>
+=item B<--smcli-path>
 
-Specify navicli path (default: '/opt/Navisphere/bin')
+Specify smcli path (default: none)
 
-=item B<--navicli-command>
+=item B<--smcli-command>
 
-Specify navicli command (default: 'navicli').
+Specify navicli command (default: 'SMcli').
 
-=item B<--naviseccli-path>
+=item B<--extra-option>
 
-Specify naviseccli path (default: '/opt/Navisphere/bin')
-
-=item B<--naviseccli-command>
-
-Specify naviseccli command (default: 'naviseccli').
+Set SMcli extras options (Default: '-quick').
 
 =item B<--sudo>
 
@@ -258,24 +216,15 @@ To be used for set a file. (Need to change command and use 'cat' instead).
 
 =item B<--hostname>
 
-Emc Clariion/VNX SP Hostname.
+Set controller hostname.
 
-=item B<--secfilepath>
+=item B<--hostname2>
 
-Set directory with security files (username and password not needed. 
-Will use 'naviseccli').
-
-=item B<--username>
-
-Username to connect (will use 'naviseccli').
+Set controller 2 hostname.
 
 =item B<--password>
 
-Password to connect (will use 'naviseccli').
-
-=item B<--scope>
-
-User scope to connect (will use 'naviseccli'. Default: '0' (global)).
+Password to connect.
 
 =item B<--timeout>
 
