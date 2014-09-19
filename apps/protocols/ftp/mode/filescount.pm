@@ -44,8 +44,7 @@ use File::Basename;
 
 # How much arguments i need and commands manages
 my %map_commands = (
-    mdtm  => { ssl => { name => '_mdtm'  }, nossl => { name => 'mdtm' } },
-    ls    => { ssl => { name => 'nlst' },   nossl => { name => 'ls'} },
+    ls    => { ssl => { name => 'list' }, nossl => { name => 'dir'} },
 );
 
 sub new {
@@ -144,8 +143,12 @@ sub countFiles {
                 next;
             }
 
-            foreach my $file (@files) {
-                my $name = $dir . '/' . basename($file);
+            foreach my $line (@files) {
+                next if ($line !~ /(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(.*)/);
+                my ($rights, $filename) = ($1, $2);
+                my $bname = basename($filename);
+                next if ($bname eq '.' || $bname eq '..');
+                my $name = $dir . '/' . $bname;
                 
                 if (defined($self->{option_results}->{filter_file}) && $self->{option_results}->{filter_file} ne '' &&
                     $name !~ /$self->{option_results}->{filter_file}/) {
@@ -153,9 +156,7 @@ sub countFiles {
                     next;
                 }
             
-                if (!(my $time_result = apps::protocols::ftp::lib::ftp::execute($self, 
-                                                                                command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, 
-                                                                                command_args => [$name]))) {
+                if ($rights =~ /^d/i) {
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
                         push @$list, { name => $name, level => $level + 1};
                     }
@@ -163,7 +164,7 @@ sub countFiles {
                     $self->{output}->output_add(long_msg => sprintf("Match '%s'", $name));
                     $count++;
                 }
-            }            
+            }        
         }
     }
     return $count;
@@ -195,7 +196,7 @@ Need Perl 'Net::FTPSSL' module
 =item B<--ftp-options>
 
 Add custom ftp options.
-Example: --ftp-options='Debug=1" --ftp-options='useSSL=1"
+Example: --ftp-options='Debug=1" --ftp-options='useSSL=1'
 
 =item B<--username>
 

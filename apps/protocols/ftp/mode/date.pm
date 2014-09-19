@@ -98,7 +98,11 @@ sub run {
     
     apps::protocols::ftp::lib::ftp::connect($self);
     my $current_time = time();
-    foreach my $dir (@{$self->{option_results}->{directory}}) {
+    my $dirs = ['.'];
+    if (defined($self->{option_results}->{directory}) && scalar(@{$self->{option_results}->{directory}}) != 0) {
+        $dirs = $self->{option_results}->{directory};
+    }
+    foreach my $dir (@$dirs) {
         my @files;
 
         if (!(@files = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{ls}->{$self->{ssl_or_not}}->{name}, command_args => [$dir]))) {
@@ -113,7 +117,7 @@ sub run {
             my $time_result;
             
             if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
-                # Surely a directory. So we go forward. Can't get time for that.
+                # Sometime we can't have mtime for a directory
                 next;
             }
             
@@ -184,7 +188,7 @@ Need Perl 'Net::FTPSSL' module
 =item B<--ftp-options>
 
 Add custom ftp options.
-Example: --ftp-options='Debug=1" --ftp-options='useSSL=1"
+Example: --ftp-options='Debug=1" --ftp-options='useSSL=1'
 
 =item B<--username>
 
