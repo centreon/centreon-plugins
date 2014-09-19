@@ -172,7 +172,7 @@ Need Perl 'Net::FTPSSL' module
 =item B<--ftp-options>
 
 Add custom ftp options.
-Example: --ftp-options='Debug=1" --ftp-options='useSSL=1"
+Example: --ftp-options='Debug=1" --ftp-options='useSSL=1'
 
 =item B<--username>
 
