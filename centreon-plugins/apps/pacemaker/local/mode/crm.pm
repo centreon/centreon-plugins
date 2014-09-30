@@ -93,7 +93,8 @@ sub parse_output {
     my @standby;
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "Cluster is OK");
-    foreach my $line (split /\n/, $options{crm_out}) {
+    my @lines = split /\n/, $options{crm_out};
+    foreach my $line (shift @lines) {
         if ($line =~ /Connection to cluster failed\:(.*)/i ) {
             $self->{output}->output_add(severity => 'CRITICAL', 
                                         short_msg => "Connection to cluster FAILED: $1");
@@ -125,26 +126,29 @@ sub parse_output {
             $self->{output}->output_add(severity => $self->{threshold}, 
                                         short_msg => "$1 Stopped");
         } elsif ($line =~ /^Failed actions\:/) {
-            # Check Failed Actions
-            my $skip = 0;
-            foreach (@{$self->{option_results}->{ignore_failed_actions}}) {
-                if ($line =~ /$_/) {
-                    $skip = 1;
+            # Check Failed Actions          
+            my $error = 0;
+            foreach my $line_failed_action (shift @lines) {
+                my $skip = 0;
+                foreach (@{$self->{option_results}->{ignore_failed_actions}}) {
+                    if ($line_failed_action =~ /$_/) {
+                        $skip = 1;
+                        last;
+                    }
+                }
+                if ($skip == 0) {
+                    $error = 1;
                     last;
                 }
             }
-            next if ($skip == 1);
-            
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "FAILED actions detected or not cleaned up");
+            if ($error == 1) {
+                $self->{output}->output_add(severity => 'CRITICAL', 
+                                            short_msg => "FAILED actions detected or not cleaned up");
+            }
         } elsif ($line =~ /\s*(\S+?)\s+ \(.*\)\:\s+\w+\s+\w+\s+\(unmanaged\)\s+FAILED/) {
             # Check Unmanaged
             $self->{output}->output_add(severity => 'CRITICAL', 
                                         short_msg => "$1 unmanaged FAILED");
-        } elsif ($line =~ /\s*(\S+?)\s+ \(.*\)\:\s+not installed/i) {
-            # Check for errors
-            $self->{output}->output_add(severity => 'CRITICAL', 
-                                        short_msg => "$1 not installed");
         } elsif ($line =~ /\s*(\S+?):.*(fail-count=\d+)/i) {
             # Check for resource Fail count
             $self->{output}->output_add(severity => 'WARNING', 
