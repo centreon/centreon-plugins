@@ -110,6 +110,7 @@ sub get_plugin {
     $self->{version} = $self->{options}->get_option(argument => 'version' );
     $self->{runas} = $self->{options}->get_option(argument => 'runas' );
     $self->{environment} = $self->{options}->get_option(argument => 'environment' );
+    $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg' );
 
     $self->{output}->mode(name => $self->{mode});
     $self->{output}->plugin(name => $self->{plugin});
