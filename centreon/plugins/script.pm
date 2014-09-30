@@ -93,12 +93,13 @@ sub get_plugin {
     $self->{options}->set_output(output => $self->{output});
 
     $self->{options}->add_options(arguments => {
-                                                'plugin:s'       => { name => 'plugin' },
-                                                'list-plugin'    => { name => 'list_plugin' }, 
-                                                'help'           => { name => 'help' },
-                                                'version'        => { name => 'version' },
-                                                'runas:s'        => { name => 'runas' },
-                                                'environment:s%' => { name => 'environment' },
+                                                'plugin:s'          => { name => 'plugin' },
+                                                'list-plugin'       => { name => 'list_plugin' }, 
+                                                'help'              => { name => 'help' },
+                                                'ignore-warn-msg'   => { name => 'ignore_warn_msg' },
+                                                'version'           => { name => 'version' },
+                                                'runas:s'           => { name => 'runas' },
+                                                'environment:s%'    => { name => 'environment' },
                                                 } );
 
     $self->{options}->parse_options();
@@ -249,6 +250,9 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--plugin' option.");
         $self->{output}->option_exit();
     }
+    if (defined($self->{ignore_warn_msg})) {
+        $SIG{__WARN__} = sub {};
+    }
 
     $self->check_relaunch();
     
@@ -291,6 +295,10 @@ Print plugin version.
 =item B<--help>
 
 Print a brief help message and exits.
+
+=item B<--ignore-warn-msg>
+
+Perl warn messages are ignored (not displayed).
 
 =item B<--runas>
 
