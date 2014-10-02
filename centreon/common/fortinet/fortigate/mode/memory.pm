@@ -33,17 +33,15 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::cpu;
+package centreon::common::fortinet::fortigate::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my $oid_fgProcessorUsage = '.1.3.6.1.4.1.12356.101.4.4.2.1.2'; # some not have
-my $oid_fgSysCpuUsage = '.1.3.6.1.4.1.12356.101.4.1.3';
 my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1'; # '.0' to have the mode
-my $oid_fgHaStatsCpuUsage = '.1.3.6.1.4.1.12356.101.13.2.1.1.3';
+my $oid_fgHaStatsMemUsage = '.1.3.6.1.4.1.12356.101.13.2.1.1.4';
 my $oid_fgHaStatsMasterSerial = '.1.3.6.1.4.1.12356.101.13.2.1.1.16';
 
 my %maps_ha_mode = (
@@ -82,83 +80,72 @@ sub check_options {
     }
 }
 
-sub cpu_ha {
+sub memory_ha {
     my ($self, %options) = @_;
 
     if ($options{ha_mode} == 2) {
         # We don't care. we use index
-        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsCpuUsage}})) {
-            next if ($key !~ /^$oid_fgHaStatsCpuUsage\.([0-9]+)$/);
-            my $cpu_num = $1;
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsMemUsage}})) {
+            next if ($key !~ /^$oid_fgHaStatsMemUsage\.([0-9]+)$/);
+            my $num = $1;
         
-            $self->{output}->output_add(long_msg => sprintf("CPU master $cpu_num Usage is %.2f%%", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
-            $self->{output}->perfdata_add(label => 'cpu_master' . $cpu_num,
-                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
+            $self->{output}->output_add(long_msg => sprintf("Memory master $num Usage is %.2f%%", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}));
+            $self->{output}->perfdata_add(label => 'used_master' . $num, unit => '%',
+                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}),
                                           min => 0, max => 100);
         }
     } elsif ($options{ha_mode} == 3) {
         if (scalar(keys %{$self->{result}->{$oid_fgHaStatsMasterSerial}}) == 0) {
-            $self->{output}->output_add(long_msg => 'Skip cpu cluster: Cannot find master node.');
+            $self->{output}->output_add(long_msg => 'Skip memory cluster: Cannot find master node.');
         }
 
-        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsCpuUsage}})) {
-            next if ($key !~ /^$oid_fgHaStatsCpuUsage\.([0-9]+)$/);
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsMemUsage}})) {
+            next if ($key !~ /^$oid_fgHaStatsMemUsage\.([0-9]+)$/);
 
             my $label = $self->{result}->{$oid_fgHaStatsMasterSerial}->{$oid_fgHaStatsMasterSerial . '.' . $1} eq '' ? 
                             'master' : 'slave';
             
-            $self->{output}->output_add(long_msg => sprintf("CPU %s Usage is %.2f%%", $label, $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
-            $self->{output}->perfdata_add(label => 'cpu_' . $label,
-                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
+            $self->{output}->output_add(long_msg => sprintf("Memory %s Usage is %.2f%%", $label, $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}));
+            $self->{output}->perfdata_add(label => 'used_' . $label, unit => '%',
+                                          value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}),
                                           min => 0, max => 100);
         }
     }
 }
-    
+
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $table_oids = [ { oid => $oid_fgProcessorUsage }, { oid => $oid_fgSysCpuUsage } ];
+    my $oid_fgSystemInfo = '.1.3.6.1.4.1.12356.101.4.1';
+    my $oid_fgSysMemUsage = '.1.3.6.1.4.1.12356.101.4.1.4';
+    my $oid_fgSysMemCapacity = '.1.3.6.1.4.1.12356.101.4.1.5';
+
+    my $table_oids = [ { oid => $oid_fgSystemInfo, start => $oid_fgSysMemUsage, end => $oid_fgSysMemCapacity } ];
     if (defined($self->{option_results}->{cluster})) {
         push @$table_oids, { oid => $oid_fgHaSystemMode },
-                           { oid => $oid_fgHaStatsCpuUsage },
+                           { oid => $oid_fgHaStatsMemUsage },
                            { oid => $oid_fgHaStatsMasterSerial };
     }
-    
+
     $self->{result} = $self->{snmp}->get_multiple_table(oids => $table_oids, 
                                                         nothing_quit => 1);
-    my $oid_cpu = $oid_fgProcessorUsage;
-    if (scalar(keys %{$self->{result}->{$oid_fgProcessorUsage}}) == 0) {
-        $oid_cpu = $oid_fgSysCpuUsage;
-    }
     
-    my $cpu = 0;
-    my $i = 0;
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_cpu}})) {
-        next if ($key !~ /^$oid_cpu\.([0-9]+)$/);
-        my $cpu_num = $1;
-        
-        $cpu += $self->{result}->{$oid_cpu}->{$key};
-        $i++;
-        
-        $self->{output}->output_add(long_msg => sprintf("CPU $cpu_num Usage is %.2f%%", $self->{result}->{$oid_cpu}->{$key}));
-        $self->{output}->perfdata_add(label => 'cpu' . $cpu_num,
-                                      value => sprintf("%.2f", $self->{result}->{$oid_cpu}->{$key}),
-                                      min => 0, max => 100);
-    }
-
-    my $avg_cpu = $cpu / $i;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $avg_cpu, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU(s) average usage is: %.2f%%", $avg_cpu));
-    $self->{output}->perfdata_add(label => 'total_cpu_avg',
-                                  value => sprintf("%.2f", $avg_cpu),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
+    my $fgSysMemUsage = $self->{result}->{$oid_fgSystemInfo}->{$oid_fgSysMemUsage . '.0'};
+    my $fgSysMemCapacity = $self->{result}->{$oid_fgSystemInfo}->{$oid_fgSysMemCapacity . '.0'};
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $fgSysMemUsage, 
+                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $fgSysMemCapacity * 1024);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Memory Usage: %.2f%% used [Total: %s]", 
+                                                     $fgSysMemUsage, $size_value . " " . $size_unit));
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
+                                  value => int(($fgSysMemCapacity * 1024 * $fgSysMemUsage) / 100),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysMemCapacity * 1024, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysMemCapacity * 1024, cast_int => 1),
+                                  min => 0, max => $fgSysMemCapacity * 1024);
     
     if (defined($self->{option_results}->{cluster})) {
         # Check if mode cluster
@@ -166,10 +153,10 @@ sub run {
         my $ha_output = defined($maps_ha_mode{$ha_mode}) ? $maps_ha_mode{$ha_mode} : 'unknown';
         $self->{output}->output_add(long_msg => 'High availabily mode is ' . $ha_output . '.');
         if (defined($ha_mode) && $ha_mode != 1) {
-            $self->cpu_ha(ha_mode => $ha_mode);
+            $self->memory_ha(ha_mode => $ha_mode);
         }
     }
-
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -180,7 +167,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (FORTINET-FORTIGATE-MIB).
+Check system memory usage (FORTINET-FORTIGATE).
 
 =over 8
 
@@ -194,7 +181,7 @@ Threshold critical in percent.
 
 =item B<--cluster>
 
-Add cluster cpu informations.
+Add cluster memory informations.
 
 =back
 

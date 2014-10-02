@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::disk;
+package storage::qnap::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"               => { name => 'warning' },
+                                  "critical:s"              => { name => 'critical' },
                                 });
 
     return $self;
@@ -69,40 +69,60 @@ sub check_options {
     }
 }
 
+sub convert_bytes {
+    my ($self, %options) = @_;
+    my $multiple = defined($options{network}) ? 1000 : 1024;
+    my %units = (K => 1, M => 2, G => 3, T => 4);
+    
+    if ($options{value} !~ /^\s*([0-9\.\,]+)\s*(.)/) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    output => "Cannot convert value '" . $options{value} . "'");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    my ($bytes, $unit) = ($1, uc($2));
+    
+    for (my $i = 0; $i < $units{$unit}; $i++) {
+        $bytes *= $multiple;
+    }
+
+    return $bytes;
+}
+
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_fgSysDiskUsage = '.1.3.6.1.4.1.12356.101.4.1.6.0'; # in MB
-    my $oid_fgSysDiskCapacity = '.1.3.6.1.4.1.12356.101.4.1.7.0'; # in MB
-    $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_fgSysDiskUsage, $oid_fgSysDiskCapacity ], 
-                                              nothing_quit => 1);
-    
-    if (!defined($self->{result}->{$oid_fgSysDiskCapacity}) || $self->{result}->{$oid_fgSysDiskCapacity} == 0) {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => sprintf("No disk present."));
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    
-    my $fgSysDiskUsage = $self->{result}->{$oid_fgSysDiskUsage} * 1024 * 1024;
-    my $fgSysDiskCapacity = $self->{result}->{$oid_fgSysDiskCapacity} * 1024 * 1024;
-    
-    my $prct = $fgSysDiskUsage * 100 / $fgSysDiskCapacity;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $prct, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $fgSysDiskCapacity);
+    my $oid_SystemTotalMem = '.1.3.6.1.4.1.24681.1.2.2.0';
+    my $oid_SystemFreeMem = '.1.3.6.1.4.1.24681.1.2.3.0';
+
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_SystemTotalMem, $oid_SystemFreeMem ],
+                                         nothing_quit => 1);
+    my $total_size = $self->convert_bytes(value => $result->{$oid_SystemTotalMem});
+    my $memory_free = $self->convert_bytes(value => $result->{$oid_SystemFreeMem});    
+    my $memory_used = $total_size - $memory_free;
+
+    my $prct_used = $memory_used * 100 / $total_size;
+    my $prct_free = 100 - $prct_used;
+
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
+
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Disk Usage: %.2f%% used [Total: %s]", 
-                                                     $prct, $size_value . " " . $size_unit));
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $fgSysDiskUsage,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysDiskCapacity, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysDiskCapacity, cast_int => 1),
-                                  min => 0, max => $fgSysDiskCapacity);
-    
+                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                                        $total_value . " " . $total_unit,
+                                        $used_value . " " . $used_unit, $prct_used,
+                                        $free_value . " " . $free_unit, $prct_free));
+
+    $self->{output}->perfdata_add(label => "used",
+                                  value => sprintf("%d", $memory_used),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+                                  min => 0, max => sprintf("%d", $total_size));
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -113,7 +133,7 @@ __END__
 
 =head1 MODE
 
-Check system disk usage (FORTINET-FORTIGATE).
+Check memory usage (NAS.mib).
 
 =over 8
 
@@ -128,3 +148,4 @@ Threshold critical in percent.
 =back
 
 =cut
+    

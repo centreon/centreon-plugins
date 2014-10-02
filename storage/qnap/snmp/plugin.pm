@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::40C::plugin;
+package storage::qnap::snmp::plugin;
 
 use strict;
 use warnings;
@@ -45,17 +45,15 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cluster-status'       => 'network::fortinet::fortigate::common::mode::clusterstatus',
-                         'cpu'                  => 'network::fortinet::fortigate::common::mode::cpu',
-                         'disk'                 => 'network::fortinet::fortigate::common::mode::disk',
-                         'hardware'             => 'network::fortinet::fortigate::common::mode::hardware',
-                         'list-virtualdomains'  => 'network::fortinet::fortigate::common::mode::listvirtualdomains',
-                         'memory'               => 'network::fortinet::fortigate::common::mode::memory',
-                         'sessions'             => 'network::fortinet::fortigate::common::mode::sessions',
-                         'traffic'              => 'snmp_standard::mode::traffic',
-                         'virus'                => 'network::fortinet::fortigate::common::mode::virus',
+                         'cpu'              => 'snmp_standard::mode::cpu',
+                         'hardware'         => 'storage::qnap::snmp::mode::hardware',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-storages'    => 'snmp_standard::mode::liststorages',
+                         'memory'           => 'storage::qnap::snmp::mode::memory',
+                         'storage'          => 'snmp_standard::mode::storage',
+                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;
@@ -67,6 +65,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Fortinet 40C in SNMP.
+Check Qnap NAS in SNMP.
 
 =cut
