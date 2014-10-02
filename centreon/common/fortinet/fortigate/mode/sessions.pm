@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::sessions;
+package centreon::common::fortinet::fortigate::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
