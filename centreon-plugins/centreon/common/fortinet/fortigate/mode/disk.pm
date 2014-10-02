@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::disk;
+package centreon::common::fortinet::fortigate::mode::disk;
 
 use base qw(centreon::plugins::mode);
 

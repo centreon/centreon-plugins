@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::hardware;
+package centreon::common::fortinet::fortigate::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 

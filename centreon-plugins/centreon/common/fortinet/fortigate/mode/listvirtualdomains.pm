@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::listvirtualdomains;
+package centreon::common::fortinet::fortigate::mode::listvirtualdomains;
 
 use base qw(centreon::plugins::mode);
 
