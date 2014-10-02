@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::hardware;
+package centreon::common::fortinet::fortigate::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
@@ -74,8 +74,9 @@ sub run {
     my $oid_fgHwSensorCount = '.1.3.6.1.4.1.12356.101.4.3.1.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_sysDescr, $oid_fgSysVersion, $oid_fgHwSensorCount], nothing_quit => 1);
     
-    $self->{output}->output_add(long_msg => sprintf("[System: %s] [Firmware: %s]", $result->{$oid_sysDescr}, $result->{$oid_fgSysVersion}));
-    if ($result->{$oid_fgHwSensorCount} == 0) {
+    $self->{output}->output_add(long_msg => sprintf("[System: %s] [Firmware: %s]", $result->{$oid_sysDescr}, 
+                                                    defined($result->{$oid_fgSysVersion}) ? $result->{$oid_fgSysVersion} : 'unknown'));
+    if (!defined($result->{$oid_fgHwSensorCount}) || $result->{$oid_fgHwSensorCount} == 0) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => "No hardware sensors available.");
         $self->{output}->display();

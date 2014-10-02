@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::300B::plugin;
+package network::fortinet::fortigate::plugin;
 
 use strict;
 use warnings;
@@ -47,15 +47,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cluster-status'       => 'network::fortinet::fortigate::common::mode::clusterstatus',
-                         'cpu'                  => 'network::fortinet::fortigate::common::mode::cpu',
-                         'disk'                 => 'network::fortinet::fortigate::common::mode::disk',
-                         'hardware'             => 'network::fortinet::fortigate::common::mode::hardware',
-                         'list-virtualdomains'  => 'network::fortinet::fortigate::common::mode::listvirtualdomains',
-                         'memory'               => 'network::fortinet::fortigate::common::mode::memory',
-                         'sessions'             => 'network::fortinet::fortigate::common::mode::sessions',
+                         'cluster-status'       => 'centreon::common::fortinet::fortigate::mode::clusterstatus',
+                         'cpu'                  => 'centreon::common::fortinet::fortigate::mode::cpu',
+                         'disk'                 => 'centreon::common::fortinet::fortigate::mode::disk',
+                         'hardware'             => 'centreon::common::fortinet::fortigate::mode::hardware',
+                         'list-virtualdomains'  => 'centreon::common::fortinet::fortigate::mode::listvirtualdomains',
+                         'memory'               => 'centreon::common::fortinet::fortigate::mode::memory',
+                         'sessions'             => 'centreon::common::fortinet::fortigate::mode::sessions',
                          'traffic'              => 'snmp_standard::mode::traffic',
-                         'virus'                => 'network::fortinet::fortigate::common::mode::virus',
+                         'virus'                => 'centreon::common::fortinet::fortigate::mode::virus',
                          );
 
     return $self;
@@ -67,6 +67,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Fortinet 300B in SNMP.
+Check Fortinet Fortigate in SNMP.
 
 =cut

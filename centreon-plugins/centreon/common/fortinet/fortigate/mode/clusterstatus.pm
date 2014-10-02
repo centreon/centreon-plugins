@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::clusterstatus;
+package centreon::common::fortinet::fortigate::mode::clusterstatus;
 
 use base qw(centreon::plugins::mode);
 
