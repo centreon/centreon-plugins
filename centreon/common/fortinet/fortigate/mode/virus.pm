@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::fortinet::fortigate::common::mode::virus;
+package centreon::common::fortinet::fortigate::mode::virus;
 
 use base qw(centreon::plugins::mode);
 
