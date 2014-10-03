@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use lib '/usr/lib/nagios/plugins';
 
 use network::checkpoint::mode::components::fan;
 use network::checkpoint::mode::components::psu;
