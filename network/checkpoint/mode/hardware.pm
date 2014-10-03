@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use lib '/usr/lib/nagios/plugins';
 
 use network::checkpoint::mode::components::fan;
 use network::checkpoint::mode::components::psu;
@@ -62,8 +63,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    }
 
 }
 
@@ -92,7 +91,6 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
     }
-
     
     my $total_components = 0;
     my $display_by_component = '';
@@ -132,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check hardware (fans, power supplies).
+Check hardware (fans, power supplies, temperatures).
 
 =over 8
 
