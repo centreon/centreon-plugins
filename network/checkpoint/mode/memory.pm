@@ -105,7 +105,7 @@ __END__
 
 =head1 MODE
 
-Check system memory usage (SW.mib).
+Check firewall real memory usage (chkpnt.mib).
 
 =over 8
 
