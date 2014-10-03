@@ -39,9 +39,7 @@ use strict;
 use warnings;
  
 my %map_status = (
-    1 => 'Out of range',
-    2 => 'OK',
-    3 => 'Error reading',
+    0 => 'OK',
 );
 
 sub check {
@@ -70,10 +68,10 @@ sub check {
         $self->{components}->{psus}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is %s.", 
                                                         $instance, $map_status{$status}));
-        if ($status != 2) {
+        if ($status != 0) {
             $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Power Supply '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
+                                        short_msg => sprintf("Power Supply '%s' status is in an error state", 
+                                                             $instance));
         }
         $self->{output}->perfdata_add(label => $psu_name , unit => 'V', value => sprintf("%d", $result->{$oid_voltageSensorValue . '.' . $instance})),
 
