@@ -118,7 +118,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (SW.mib).
+Check firewall average cpu usage (system+user) (chkpnt.mib).
 
 =over 8
 

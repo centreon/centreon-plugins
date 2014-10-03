@@ -49,7 +49,8 @@ sub new {
     %{$self->{modes}} = (
                         'cpu'               => 'network::checkpoint::mode::cpu',
                         'memory'            => 'network::checkpoint::mode::memory',
-                        'connections'     => 'snmp_standard::mode::connections'
+                        'connections'       => 'network::checkpoint::mode::connections',
+                        'hardware'	    => 'network::checkpoint::mode::hardware',
                         );
 
     return $self;
@@ -61,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check CheckPoint in SNMP.
+Check CheckPoint FW in SNMP.
 
 =cut

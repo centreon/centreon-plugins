@@ -98,17 +98,17 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (SW.mib).
+Check firewall number of connections (chkpnt.mib).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Number of connections trigerring a warning state
 
 =item B<--critical>
 
-Threshold critical in percent.
+Number of connections trigerring a criticalstate
 
 =back
 
