@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::fca;
+package hardware::server::hp::proliant::snmp::mode::components::fca;
 
 use strict;
 use warnings;

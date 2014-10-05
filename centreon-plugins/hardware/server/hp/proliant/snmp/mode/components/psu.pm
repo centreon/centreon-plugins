@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::psu;
+package hardware::server::hp::proliant::snmp::mode::components::psu;
 
 use strict;
 use warnings;

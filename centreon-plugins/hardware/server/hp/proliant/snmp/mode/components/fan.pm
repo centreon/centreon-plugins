@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::fan;
+package hardware::server::hp::proliant::snmp::mode::components::fan;
 
 use strict;
 use warnings;

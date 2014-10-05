@@ -59,12 +59,14 @@ sub new {
                                   "command1:s"         => { name => 'command1', default => 'vxdisk' },
                                   "command1-path:s"    => { name => 'command1_path', default => '/usr/sbin' },
                                   "command1-options:s" => { name => 'command1_options', default => 'list 2>&1' },
+                                  "skip-vxdisk"        => { name => 'skip_vxdisk' },
                                   "sudo2"              => { name => 'sudo2' },
                                   "command2:s"         => { name => 'command2', default => 'vxprint' },
                                   "command2-path:s"    => { name => 'command2_path', default => '/usr/sbin' },
                                   "command2-options:s" => { name => 'command2_options', default => '-Ath 2>&1' },
-                                  "warning:s"          => { name => 'warning', },
-                                  "critical:s"         => { name => 'critical', },
+                                  "skip-vxprint"       => { name => 'skip_vxprint' },
+                                  "warning:s"          => { name => 'warning' },
+                                  "critical:s"         => { name => 'critical' },
                                 });
     return $self;
 }
@@ -83,9 +85,9 @@ sub check_options {
     }
 }
 
-sub run {
+sub vdisk_execute {
     my ($self, %options) = @_;
-
+    
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo1},
@@ -95,43 +97,58 @@ sub run {
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
-
-    my $stdout2 = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   sudo => $self->{option_results}->{sudo2},
-                                                   command => $self->{option_results}->{command2},
-                                                   command_path => $self->{option_results}->{command2_path},
-                                                   command_options => $self->{option_results}->{command2_options});
-    $long_msg = $stdout2;
-    $long_msg =~ s/\|/~/mg;
-    $self->{output}->output_add(long_msg => $long_msg); 
-
-    my $num_errors = 0;
-    my $vxdisks_name = '';
+    
     foreach (split /\n/, $stdout) {        
         if (/(failed)/i ) {
             my $status = $1;
             next if (! /\S+\s+\S+\s+(\S+)\s+/);
-            $num_errors++;
-            $vxdisks_name .= ' [' . $1 . '/' . $status . ']';
+            $self->{num_errors}++;
+            $self->{vxdisks_name} .= ' [' . $1 . '/' . $status . ']';
         }
     }
+}
+
+sub vxprint_execute {
+    my ($self, %options) = @_;
     
-    my $vxprint_name = '';
-    foreach (split /\n/, $stdout2) {        
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+                                                  options => $self->{option_results},
+                                                  sudo => $self->{option_results}->{sudo2},
+                                                  command => $self->{option_results}->{command2},
+                                                  command_path => $self->{option_results}->{command2_path},
+                                                  command_options => $self->{option_results}->{command2_options});
+    my $long_msg = $stdout;
+    $long_msg =~ s/\|/~/mg;
+    $self->{output}->output_add(long_msg => $long_msg);
+    
+    foreach (split /\n/, $stdout) {
         if (/(NODEVICE|FAILING)/i ) {
             my $status = $1;
-            next if (! /\S+\s+(\S+)\s+/);
-            $num_errors++;
-            $vxprint_name .= ' [' . $1 . '/' . $status . ']';
+            next if (! /^\s*\S+\s+(\S+)\s+/);
+            $self->{num_errors}++;
+            $self->{vxprint_name} .= ' [' . $1 . '/' . $status . ']';
         }
     }
+}
 
-    my ($exit_code) =  $self->{perfdata}->threshold_check(value => $num_errors, 
+sub run {
+    my ($self, %options) = @_;
+    $self->{num_errors} = 0;
+    $self->{vxdisks_name} = '';
+    $self->{vxprint_name} = '';
+
+    if (!defined($self->{option_results}->{skip_vxdisk})) {
+        $self->vdisk_execute();
+    }
+    if (!defined($self->{option_results}->{skip_vxprint})) {
+        $self->vxprint_execute();
+    }
+    
+    my ($exit_code) =  $self->{perfdata}->threshold_check(value => $self->{num_errors}, 
                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if ($num_errors > 0) {
+    if ($self->{num_errors} > 0) {
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Problems on some disks:" . $vxdisks_name  . $vxdisks_name));
+                                    short_msg => sprintf("Problems on some disks:" . $self->{vxdisks_name}  . $self->{vxprint_name}));
     } else {
         $self->{output}->output_add(severity => 'OK', 
                                     short_msg => "No problems on disks.");
@@ -216,6 +233,15 @@ Command path (Default: '/usr/sbin').
 =item B<--command2-options>
 
 Command options (Default: '-Ath 2>&1').
+
+=item B<--skip-vxdisk>
+
+Skip 'vxdisk' command (not executed).
+
+=item B<--skip-vxprint>
+
+Skip 'vxprint' command (not executed).
+
 
 =back
 

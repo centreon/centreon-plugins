@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::components::fuse;
+package hardware::server::hp::bladechassis::snmp::mode::components::fuse;
 
 use strict;
 use warnings;

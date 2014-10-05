@@ -33,24 +33,24 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::hardware;
+package hardware::server::hp::proliant::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use hardware::server::hpproliant::mode::components::cpu;
-use hardware::server::hpproliant::mode::components::psu;
-use hardware::server::hpproliant::mode::components::pc;
-use hardware::server::hpproliant::mode::components::fan;
-use hardware::server::hpproliant::mode::components::temperature;
-use hardware::server::hpproliant::mode::components::network;
-use hardware::server::hpproliant::mode::components::ida;
-use hardware::server::hpproliant::mode::components::fca;
-use hardware::server::hpproliant::mode::components::ide;
-use hardware::server::hpproliant::mode::components::sas;
-use hardware::server::hpproliant::mode::components::scsi;
+use hardware::server::hp::proliant::snmp::mode::components::cpu;
+use hardware::server::hp::proliant::snmp::mode::components::psu;
+use hardware::server::hp::proliant::snmp::mode::components::pc;
+use hardware::server::hp::proliant::snmp::mode::components::fan;
+use hardware::server::hp::proliant::snmp::mode::components::temperature;
+use hardware::server::hp::proliant::snmp::mode::components::network;
+use hardware::server::hp::proliant::snmp::mode::components::ida;
+use hardware::server::hp::proliant::snmp::mode::components::fca;
+use hardware::server::hp::proliant::snmp::mode::components::ide;
+use hardware::server::hp::proliant::snmp::mode::components::sas;
+use hardware::server::hp::proliant::snmp::mode::components::scsi;
 
 sub new {
     my ($class, %options) = @_;
@@ -92,31 +92,31 @@ sub global {
     my ($self, %options) = @_;
  
     $self->get_system_information();
-    hardware::server::hpproliant::mode::components::cpu::check($self);
-    hardware::server::hpproliant::mode::components::psu::check($self);
-    hardware::server::hpproliant::mode::components::pc::check($self);
-    hardware::server::hpproliant::mode::components::fan::check($self);
-    hardware::server::hpproliant::mode::components::temperature::check($self);
-    hardware::server::hpproliant::mode::components::network::physical_nic($self);
-    hardware::server::hpproliant::mode::components::network::logical_nic($self);
-    hardware::server::hpproliant::mode::components::ida::array_controller($self);
-    hardware::server::hpproliant::mode::components::ida::array_accelerator($self);
-    hardware::server::hpproliant::mode::components::ida::logical_drive($self);
-    hardware::server::hpproliant::mode::components::ida::physical_drive($self);
-    hardware::server::hpproliant::mode::components::fca::host_array_controller($self);
-    hardware::server::hpproliant::mode::components::fca::external_array_controller($self);
-    hardware::server::hpproliant::mode::components::fca::external_array_accelerator($self);
-    hardware::server::hpproliant::mode::components::fca::logical_drive($self);
-    hardware::server::hpproliant::mode::components::fca::physical_drive($self);
-    hardware::server::hpproliant::mode::components::ide::controller($self);
-    hardware::server::hpproliant::mode::components::ide::logical_drive($self);
-    hardware::server::hpproliant::mode::components::ide::physical_drive($self);
-    hardware::server::hpproliant::mode::components::sas::controller($self);
-    hardware::server::hpproliant::mode::components::sas::logical_drive($self);
-    hardware::server::hpproliant::mode::components::sas::physical_drive($self);
-    hardware::server::hpproliant::mode::components::scsi::controller($self);
-    hardware::server::hpproliant::mode::components::scsi::logical_drive($self);
-    hardware::server::hpproliant::mode::components::scsi::physical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::cpu::check($self);
+    hardware::server::hp::proliant::snmp::mode::components::psu::check($self);
+    hardware::server::hp::proliant::snmp::mode::components::pc::check($self);
+    hardware::server::hp::proliant::snmp::mode::components::fan::check($self);
+    hardware::server::hp::proliant::snmp::mode::components::temperature::check($self);
+    hardware::server::hp::proliant::snmp::mode::components::network::physical_nic($self);
+    hardware::server::hp::proliant::snmp::mode::components::network::logical_nic($self);
+    hardware::server::hp::proliant::snmp::mode::components::ida::array_controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::ida::array_accelerator($self);
+    hardware::server::hp::proliant::snmp::mode::components::ida::logical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::ida::physical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::fca::host_array_controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::fca::external_array_controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::fca::external_array_accelerator($self);
+    hardware::server::hp::proliant::snmp::mode::components::fca::logical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::fca::physical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::ide::controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::ide::logical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::ide::physical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::sas::controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::sas::logical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::sas::physical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::scsi::controller($self);
+    hardware::server::hp::proliant::snmp::mode::components::scsi::logical_drive($self);
+    hardware::server::hp::proliant::snmp::mode::components::scsi::physical_drive($self);
     
     my $total_components = 0;
     my $display_by_component = '';
@@ -146,37 +146,37 @@ sub component {
     my ($self, %options) = @_;
     
     if ($self->{option_results}->{component} eq 'cpu') {
-        hardware::server::hpproliant::mode::components::cpu::check($self);
+        hardware::server::hp::proliant::snmp::mode::components::cpu::check($self);
     } elsif ($self->{option_results}->{component} eq 'psu') {
-        hardware::server::hpproliant::mode::components::psu::check($self);
+        hardware::server::hp::proliant::snmp::mode::components::psu::check($self);
     } elsif ($self->{option_results}->{component} eq 'pc') {
-        hardware::server::hpproliant::mode::components::pc::check($self);
+        hardware::server::hp::proliant::snmp::mode::components::pc::check($self);
     } elsif ($self->{option_results}->{component} eq 'fan') {
-        hardware::server::hpproliant::mode::components::fan::check($self);
+        hardware::server::hp::proliant::snmp::mode::components::fan::check($self);
     } elsif ($self->{option_results}->{component} eq 'temperature') {
-        hardware::server::hpproliant::mode::components::temperature::check($self);
+        hardware::server::hp::proliant::snmp::mode::components::temperature::check($self);
     } elsif ($self->{option_results}->{component} eq 'network') {
-        hardware::server::hpproliant::mode::components::network::physical_nic($self);
-        hardware::server::hpproliant::mode::components::network::logical_nic($self);
+        hardware::server::hp::proliant::snmp::mode::components::network::physical_nic($self);
+        hardware::server::hp::proliant::snmp::mode::components::network::logical_nic($self);
     } elsif ($self->{option_results}->{component} eq 'storage') {
-        hardware::server::hpproliant::mode::components::ida::array_controller($self);
-        hardware::server::hpproliant::mode::components::ida::array_accelerator($self);
-        hardware::server::hpproliant::mode::components::ida::logical_drive($self);
-        hardware::server::hpproliant::mode::components::ida::physical_drive($self);
-        hardware::server::hpproliant::mode::components::fca::host_array_controller($self);
-        hardware::server::hpproliant::mode::components::fca::external_array_controller($self);
-        hardware::server::hpproliant::mode::components::fca::external_array_accelerator($self);
-        hardware::server::hpproliant::mode::components::fca::logical_drive($self);
-        hardware::server::hpproliant::mode::components::fca::physical_drive($self);
-        hardware::server::hpproliant::mode::components::ide::controller($self);
-        hardware::server::hpproliant::mode::components::ide::logical_drive($self);
-        hardware::server::hpproliant::mode::components::ide::physical_drive($self);
-        hardware::server::hpproliant::mode::components::sas::controller($self);
-        hardware::server::hpproliant::mode::components::sas::logical_drive($self);
-        hardware::server::hpproliant::mode::components::sas::physical_drive($self);
-        hardware::server::hpproliant::mode::components::scsi::controller($self);
-        hardware::server::hpproliant::mode::components::scsi::logical_drive($self);
-        hardware::server::hpproliant::mode::components::scsi::physical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::ida::array_controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::ida::array_accelerator($self);
+        hardware::server::hp::proliant::snmp::mode::components::ida::logical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::ida::physical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::fca::host_array_controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::fca::external_array_controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::fca::external_array_accelerator($self);
+        hardware::server::hp::proliant::snmp::mode::components::fca::logical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::fca::physical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::ide::controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::ide::logical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::ide::physical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::sas::controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::sas::logical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::sas::physical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::scsi::controller($self);
+        hardware::server::hp::proliant::snmp::mode::components::scsi::logical_drive($self);
+        hardware::server::hp::proliant::snmp::mode::components::scsi::physical_drive($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
