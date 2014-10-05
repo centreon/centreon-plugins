@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::components::enclosure;
+package hardware::server::hp::bladechassis::snmp::mode::components::enclosure;
 
 use strict;
 use warnings;

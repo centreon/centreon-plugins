@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::components::psu;
+package hardware::server::hp::bladechassis::snmp::mode::components::psu;
 
 use strict;
 use warnings;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::plugin;
+package hardware::server::hp::proliant::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,7 +47,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::hpproliant::mode::hardware',
+                         'hardware' => 'hardware::server::hp::proliant::snmp::mode::hardware',
                          );
 
     return $self;
