@@ -182,14 +182,27 @@ sub run {
 
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
-        if (defined($self->{option_results}->{space_reservation})) {
-            $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);
+        if ($total_size <= 0) {
+            $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%d)", 
+                                                                $name_storage, $total_size));
+            next;
         }
-        next if ($total_size == 0);
+        
+        my $reserved_value = 0;
+        if (defined($self->{option_results}->{space_reservation})) {
+            $reserved_value = $self->{option_results}->{space_reservation} * $total_size / 100;
+        }
         my $total_used = $result->{$oid_hrStorageUsed . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
-        my $total_free = $total_size - $total_used;
-        my $prct_used = $total_used * 100 / $total_size;
+        my $total_free = $total_size - $total_used - $reserved_value;
+        my $prct_used = $total_used * 100 / ($total_size - $reserved_value);
         my $prct_free = 100 - $prct_used;
+        
+        # limit to 100. Better output.
+        if ($prct_used > 100) {
+            $total_free = 0;
+            $prct_used = 100;
+            $prct_free = 0;
+        }
 
         my ($exit, $threshold_value);
 
@@ -203,7 +216,7 @@ sub run {
 
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
         my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
-        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $total_used));
+        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $total_free);
 
         $self->{output}->output_add(long_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
                                             $total_size_value . " " . $total_size_unit,
@@ -227,14 +240,14 @@ sub run {
         $extra_label = '_' . $name_storage if (!defined($self->{option_results}->{storage}) || defined($self->{option_results}->{use_regexp}));
         my %total_options = ();
         if ($self->{option_results}->{units} eq '%') {
-            $total_options{total} = $total_size;
+            $total_options{total} = $total_size - $reserved_value;
             $total_options{cast_int} = 1; 
         }
         $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
                                       value => $value_perf,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                      min => 0, max => $total_size);
+                                      min => 0, max => sprintf("%d", $total_size - $reserved_value));
     }
 
     if ($num_disk_check == 0) {
@@ -420,7 +433,7 @@ Display cache storage datas.
 =item B<--space-reservation>
 
 Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
+The value is in percent of total (Default: none) (results like 'df' command).
 
 =item B<--filter-storage-type>
 
