@@ -33,20 +33,20 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::hardware;
+package hardware::server::hp::bladechassis::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::server::hpbladechassis::mode::components::enclosure;
-use hardware::server::hpbladechassis::mode::components::manager;
-use hardware::server::hpbladechassis::mode::components::fan;
-use hardware::server::hpbladechassis::mode::components::blade;
-use hardware::server::hpbladechassis::mode::components::network;
-use hardware::server::hpbladechassis::mode::components::psu;
-use hardware::server::hpbladechassis::mode::components::temperature;
-use hardware::server::hpbladechassis::mode::components::fuse;
+use hardware::server::hp::bladechassis::snmp::mode::components::enclosure;
+use hardware::server::hp::bladechassis::snmp::mode::components::manager;
+use hardware::server::hp::bladechassis::snmp::mode::components::fan;
+use hardware::server::hp::bladechassis::snmp::mode::components::blade;
+use hardware::server::hp::bladechassis::snmp::mode::components::network;
+use hardware::server::hp::bladechassis::snmp::mode::components::psu;
+use hardware::server::hp::bladechassis::snmp::mode::components::temperature;
+use hardware::server::hp::bladechassis::snmp::mode::components::fuse;
 
 sub new {
     my ($class, %options) = @_;
@@ -71,14 +71,14 @@ sub check_options {
 sub global {
     my ($self, %options) = @_;
 
-    hardware::server::hpbladechassis::mode::components::enclosure::check($self);
-    hardware::server::hpbladechassis::mode::components::manager::check($self);
-    hardware::server::hpbladechassis::mode::components::fan::check($self);
-    hardware::server::hpbladechassis::mode::components::blade::check($self);
-    hardware::server::hpbladechassis::mode::components::network::check($self);
-    hardware::server::hpbladechassis::mode::components::psu::check($self);
-    hardware::server::hpbladechassis::mode::components::temperature::check($self);
-    hardware::server::hpbladechassis::mode::components::fuse::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::enclosure::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::manager::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::fan::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::blade::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::network::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::psu::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::temperature::check($self);
+    hardware::server::hp::bladechassis::snmp::mode::components::fuse::check($self);
 }
 
 sub run {
@@ -89,21 +89,21 @@ sub run {
     if ($self->{option_results}->{component} eq 'all') {
         $self->global();
     } elsif ($self->{option_results}->{component} eq 'enclosure') {
-        hardware::server::hpbladechassis::mode::components::enclosure::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::enclosure::check($self);
     } elsif ($self->{option_results}->{component} eq 'manager') {
-        hardware::server::hpbladechassis::mode::components::manager::check($self, force => 1);
+        hardware::server::hp::bladechassis::snmp::mode::components::manager::check($self, force => 1);
     } elsif ($self->{option_results}->{component} eq 'fan') {
-        hardware::server::hpbladechassis::mode::components::fan::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::fan::check($self);
     } elsif ($self->{option_results}->{component} eq 'blade') {
-        hardware::server::hpbladechassis::mode::components::blade::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::blade::check($self);
     } elsif ($self->{option_results}->{component} eq 'network') {
-        hardware::server::hpbladechassis::mode::components::network::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::network::check($self);
     } elsif ($self->{option_results}->{component} eq 'psu') {
-        hardware::server::hpbladechassis::mode::components::psu::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::psu::check($self);
     } elsif ($self->{option_results}->{component} eq 'temperature') {
-        hardware::server::hpbladechassis::mode::components::temperature::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::temperature::check($self);
     } elsif ($self->{option_results}->{component} eq 'fuse') {
-        hardware::server::hpbladechassis::mode::components::fuse::check($self);
+        hardware::server::hp::bladechassis::snmp::mode::components::fuse::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();

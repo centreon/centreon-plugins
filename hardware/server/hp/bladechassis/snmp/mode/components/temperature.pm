@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::components::temperature;
+package hardware::server::hp::bladechassis::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::plugin;
+package hardware::server::hp::bladechassis::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,7 +47,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::hpbladechassis::mode::hardware',
+                         'hardware' => 'hardware::server::hp::bladechassis::snmp::mode::hardware',
                          );
 
     return $self;

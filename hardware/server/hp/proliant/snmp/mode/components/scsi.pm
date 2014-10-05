@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::scsi;
+package hardware::server::hp::proliant::snmp::mode::components::scsi;
 # In 'CPQSCSI-MIB.mib'
 
 use strict;

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::temperature;
+package hardware::server::hp::proliant::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

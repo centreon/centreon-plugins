@@ -33,17 +33,18 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::sas;
+package hardware::server::hp::proliant::snmp::mode::components::ide;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
-# In 'CPQSCSI-MIB.mib'
+# In 'CPQIDE-MIB.mib'
 
 my %controllerstatus_map = (
-    1 => "other",
-    2 => "ok",
-    3 => "failed",
+    1 => 'other',
+    2 => 'ok',
+    3 => 'failed',
 );
 
 my %conditions = (
@@ -54,63 +55,59 @@ my %conditions = (
 );
 
 my %ldrive_status_map = (
-    1 => "other",
-    2 => "ok",
-    3 => "degraded",
-    4 => "rebuilding",
-    5 => "failed",
-    6 => "offline",
+    1 => 'other',
+    2 => 'ok',
+    3 => 'degraded',
+    4 => 'rebuilding',
+    5 => 'failed',
 );
 
 my %pdrive_status_map = (
-    1 => "other",
-    2 => "ok",
-    3 => "predictiveFailure",
-    4 => "offline",
-    5 => "failed",
-    6 => "missingWasOk",
-    7 => "missingWasPredictiveFailure",
-    8 => "missingWasOffline",
-    9 => "missingWasFailed",
+    1 => 'other',
+    2 => 'ok',
+    3 => 'smartError',
+    4 => 'failed',
 );
 
 sub controller {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking sas controllers");
-    $self->{components}->{sasctl} = {name => 'sas controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sasctl'));
+    $self->{output}->output_add(long_msg => "Checking ide controllers");
+    $self->{components}->{idectl} = {name => 'ide controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'idectl'));
     
-    my $oid_cpqSasHbaIndex = '.1.3.6.1.4.1.232.5.5.1.1.1.1';
-    my $oid_cpqSasHbaCondition = '.1.3.6.1.4.1.232.5.5.1.1.1.5';
-    my $oid_cpqSasHbaSlot = '.1.3.6.1.4.1.232.5.5.1.1.1.6';
-    my $oid_cpqSasHbaStatus  = '.1.3.6.1.4.1.232.5.5.1.1.1.4';
+    my $oid_cpqIdeControllerIndex = '.1.3.6.1.4.1.232.14.2.3.1.1.1';
+    my $oid_cpqIdeControllerCondition = '.1.3.6.1.4.1.232.14.2.3.1.1.7';
+    my $oid_cpqIdeControllerModel = '.1.3.6.1.4.1.232.14.2.3.1.1.3';
+    my $oid_cpqIdeControllerSlot = '.1.3.6.1.4.1.232.14.2.3.1.1.5';
+    my $oid_cpqIdeControllerStatus = '.1.3.6.1.4.1.232.14.2.3.1.1.6';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqSasHbaIndex);
+    my $result = $self->{snmp}->get_table(oid => $oid_cpqIdeControllerIndex);
     return if (scalar(keys %$result) <= 0);
     
-    $self->{snmp}->load(oids => [$oid_cpqSasHbaCondition, $oid_cpqSasHbaSlot,
-                                 $oid_cpqSasHbaStatus],
+    $self->{snmp}->load(oids => [$oid_cpqIdeControllerCondition, $oid_cpqIdeControllerModel,
+                                 $oid_cpqIdeControllerSlot, $oid_cpqIdeControllerStatus],
                         instances => [keys %$result]);
     my $result2 = $self->{snmp}->get_leef();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         $key =~ /(\d+)$/;
         my $instance = $1;
 
-        my $sas_slot = $result2->{$oid_cpqSasHbaSlot . '.' . $instance};
-        my $sas_condition = $result2->{$oid_cpqSasHbaCondition . '.' . $instance};
-        my $sas_status = $result2->{$oid_cpqSasHbaStatus . '.' . $instance};
+        my $ide_model = centreon::plugins::misc::trim($result2->{$oid_cpqIdeControllerModel . '.' . $instance});
+        my $ide_slot = $result2->{$oid_cpqIdeControllerSlot . '.' . $instance};
+        my $ide_condition = $result2->{$oid_cpqIdeControllerCondition . '.' . $instance};
+        my $ide_status = $result2->{$oid_cpqIdeControllerStatus . '.' . $instance};
 
-        next if ($self->check_exclude(section => 'sasctl', instance => $instance));
-        $self->{components}->{sasctl}->{total}++;
+        next if ($self->check_exclude(section => 'idectl', instance => $instance));
+        $self->{components}->{idectl}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("sas controller %s [slot: %s, status: %s] condition is %s.", 
-                                    $instance, $sas_slot, $controllerstatus_map{$sas_status},
-                                    ${$conditions{$sas_condition}}[0]));
-        if (${$conditions{$sas_condition}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$conditions{$sas_condition}}[1],
-                                        short_msg => sprintf("sas controller %d is %s", 
-                                            $instance, ${$conditions{$sas_condition}}[0]));
+        $self->{output}->output_add(long_msg => sprintf("ide controller %s [slot: %s, model: %s, status: %s] condition is %s.", 
+                                    $instance, $ide_slot, $ide_model, $controllerstatus_map{$ide_status},
+                                    ${$conditions{$ide_condition}}[0]));
+        if (${$conditions{$ide_condition}}[1] ne 'OK') {
+            $self->{output}->output_add(severity => ${$conditions{$ide_condition}}[1],
+                                        short_msg => sprintf("ide controller %d is %s", 
+                                            $instance, ${$conditions{$ide_condition}}[0]));
         }
     }
 }
@@ -118,17 +115,17 @@ sub controller {
 sub logical_drive {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking sas logical drives");
-    $self->{components}->{sasldrive} = {name => 'sas logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sasldrive'));
+    $self->{output}->output_add(long_msg => "Checking ide logical drives");
+    $self->{components}->{ideldrive} = {name => 'ide logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'ideldrive'));
     
-    my $oid_cpqSasLogDrvCondition = '.1.3.6.1.4.1.232.5.5.3.1.1.5';
-    my $oid_cpqSasLogDrvStatusValue = '.1.3.6.1.4.1.232.5.5.3.1.1.4';
+    my $oid_cpqIdeLogicalDriveCondition = '.1.3.6.1.4.1.232.14.2.6.1.1.6';
+    my $oid_cpqIdeLogicalDriveStatus = '.1.3.6.1.4.1.232.14.2.6.1.1.5';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqSasLogDrvCondition);
+    my $result = $self->{snmp}->get_table(oid => $oid_cpqIdeLogicalDriveCondition);
     return if (scalar(keys %$result) <= 0);
     
-    $self->{snmp}->load(oids => [$oid_cpqSasLogDrvStatusValue],
+    $self->{snmp}->load(oids => [$oid_cpqIdeLogicalDriveStatus],
                         instances => [keys %$result],
                         instance_regexp => '(\d+\.\d+)$');
     my $result2 = $self->{snmp}->get_leef();
@@ -138,24 +135,24 @@ sub logical_drive {
         my $drive_index = $2;
         my $instance = $1 . '.' . $2;
 
-        my $ldrive_status = $result2->{$oid_cpqSasLogDrvStatusValue . '.' . $instance};
+        my $ldrive_status = $result2->{$oid_cpqIdeLogicalDriveStatus . '.' . $instance};
         my $ldrive_condition = $result->{$key};
-        
-        next if ($self->check_exclude(section => 'sasldrive', instance => $instance));
-        $self->{components}->{sasldrive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("sas logical drive %s [status: %s] condition is %s.", 
+        next if ($self->check_exclude(section => 'ideldrive', instance => $instance));
+        $self->{components}->{ideldrive}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("ide logical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $ldrive_status_map{$ldrive_status},
                                     ${$conditions{$ldrive_condition}}[0]));
         if (${$conditions{$ldrive_condition}}[1] ne 'OK') {
             if ($ldrive_status_map{$ldrive_status} =~ /rebuild/i) {
                 $self->{output}->output_add(severity => 'WARNING',
-                                            short_msg => sprintf("sas logical drive %s is %s", 
+                                            short_msg => sprintf("ide logical drive %s is %s", 
                                                 $controller_index . ':' . $drive_index, ${$conditions{$ldrive_condition}}[0]));
             } else {
                 $self->{output}->output_add(severity => ${$conditions{$ldrive_condition}}[1],
-                                            short_msg => sprintf("sas logical drive %s is %s", 
+                                            short_msg => sprintf("ide logical drive %s is %s", 
                                                 $controller_index . ':' . $drive_index, ${$conditions{$ldrive_condition}}[0]));
             }
         }
@@ -165,17 +162,17 @@ sub logical_drive {
 sub physical_drive {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking sas physical drives");
-    $self->{components}->{saspdrive} = {name => 'sas physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'saspdrive'));
+    $self->{output}->output_add(long_msg => "Checking ide physical drives");
+    $self->{components}->{idepdrive} = {name => 'ide physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'idepdrive'));
     
-    my $oid_cpqSasPhyDrvCondition = '.1.3.6.1.4.1.232.5.5.2.1.1.6';
-    my $oid_cpqSasPhyDrvStatus = '.1.3.6.1.4.1.232.5.5.2.1.1.5';
+    my $oid_cpqIdeAtaDiskCondition = '.1.3.6.1.4.1.232.14.2.4.1.1.7';
+    my $oid_cpqIdeAtaDiskStatus = '.1.3.6.1.4.1.232.14.2.4.1.1.6';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqSasPhyDrvCondition);
+    my $result = $self->{snmp}->get_table(oid => $oid_cpqIdeAtaDiskCondition);
     return if (scalar(keys %$result) <= 0);
     
-    $self->{snmp}->load(oids => [$oid_cpqSasPhyDrvStatus],
+    $self->{snmp}->load(oids => [$oid_cpqIdeAtaDiskStatus],
                         instances => [keys %$result],
                         instance_regexp => '(\d+\.\d+)$');
     my $result2 = $self->{snmp}->get_leef();
@@ -185,19 +182,19 @@ sub physical_drive {
         my $drive_index = $2;
         my $instance = $1 . '.' . $2;
 
-        my $pdrive_status = $result2->{$oid_cpqSasPhyDrvStatus . '.' . $instance};
+        my $pdrive_status = $result2->{$oid_cpqIdeAtaDiskStatus . '.' . $instance};
         my $pdrive_condition = $result->{$key};
 
-        next if ($self->check_exclude(section => 'saspdrive', instance => $instance));
-        $self->{components}->{saspdrive}->{total}++;
+        next if ($self->check_exclude(section => 'idepdrive', instance => $instance));
+        $self->{components}->{idepdrive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("sas physical drive %s [status: %s] condition is %s.", 
+        $self->{output}->output_add(long_msg => sprintf("ide physical drive %s [status: %s] condition is %s.", 
                                     $controller_index . ':' . $drive_index,
                                     $pdrive_status_map{$pdrive_status},
                                     ${$conditions{$pdrive_condition}}[0]));
         if (${$conditions{$pdrive_condition}}[1] ne 'OK') {
             $self->{output}->output_add(severity => ${$conditions{$pdrive_condition}}[1],
-                                       short_msg => sprintf("sas physical drive %s is %s", 
+                                       short_msg => sprintf("ide physical drive %s is %s", 
                                                 $controller_index . ':' . $drive_index, ${$conditions{$pdrive_condition}}[0]));
         }
     }

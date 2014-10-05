@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpproliant::mode::components::ida;
+package hardware::server::hp::proliant::snmp::mode::components::ida;
 
 use strict;
 use warnings;

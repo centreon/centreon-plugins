@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::server::hpbladechassis::mode::components::manager;
+package hardware::server::hp::bladechassis::snmp::mode::components::manager;
 
 use strict;
 use warnings;
