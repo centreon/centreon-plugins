@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"   => { name => 'warning' },
+                                  "critical:s"  => { name => 'critical' },
                                 });
 
     return $self;
@@ -75,7 +75,6 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_fwNumCom = '.1.3.6.1.4.1.2620.1.1.25.3.0';
-
     my $result = $self->{snmp}->get_leef(oids => $oid_fwNumCom, nothing_quit => 1);
     
     my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_fwNumCom}, 
@@ -86,6 +85,7 @@ sub run {
                                   value => $result->{$oid_fwNumCom},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0
                                  );
     
     $self->{output}->display();

@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"   => { name => 'warning', },
+                                  "critical:s"  => { name => 'critical', },
                                 });
 
     return $self;
@@ -88,11 +88,9 @@ sub run {
                                 short_msg => sprintf("Memory Usage: %.2f %s used (%.2f%%)", $memActiveReal64_value, $memActiveReal64_unit, $memPrctUsage));
     $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $result->{$oid_memActiveReal64},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                 );
-    $self->{output}->perfdata_add(label => "size", unit => 'B',
-                                  value => $result->{$oid_memTotalReal64},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $result->{$oid_memTotalReal64}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $result->{$oid_memTotalReal64}, cast_int => 1),
+                                  min => 0, max => $result->{$oid_memTotalReal64}
                                  );
     
     $self->{output}->display();

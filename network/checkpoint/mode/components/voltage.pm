@@ -33,12 +33,12 @@
 #
 ####################################################################################
 
-package network::checkpoint::mode::components::fan;
+package network::checkpoint::mode::components::voltage;
 
 use strict;
 use warnings;
-
-my %map_states_fan = (
+ 
+my %map_states_voltage = (
     0 => 'false',
     1 => 'true',
     2 => 'reading error',
@@ -47,38 +47,37 @@ my %map_states_fan = (
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    $self->{output}->output_add(long_msg => "Checking voltages");
+    $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'voltage'));
     
-    my $oid_fanSpeedSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.2.1';
-    my $oid_fanSpeedSensorStatus = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.6';
-    my $oid_fanSpeedSensorValue = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.3';
-    my $oid_fanSpeedSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.2';
+    my $oid_voltageSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.3.1';
+    my $oid_voltageSensorStatus = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.6';
+    my $oid_voltageSensorValue = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.3';
+    my $oid_voltageSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.2';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_fanSpeedSensorEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_voltageSensorEntry);
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fanSpeedSensorStatus\.(\d+)$/);
+        next if ($key !~ /^$oid_voltageSensorStatus\.(\d+)$/);
         my $instance = $1;
     
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
-          
-        my $fan_name = $result->{$oid_fanSpeedSensorName . '.' . $instance};
-        my $fan_state = $result->{$oid_fanSpeedSensorStatus . '.' . $instance};
-
-        $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' sensor out of range status is '%s'",
-                                    $fan_name, $map_states_fan{$fan_state}));
-        my $exit = $self->get_severity(section => 'fan', value => $map_states_fan{$fan_state});
+        next if ($self->check_exclude(section => 'voltage', instance => $instance));
+        my $voltage_name = $result->{$oid_voltageSensorName . '.' . $instance}; 
+        my $voltage_state = $result->{$oid_voltageSensorStatus . '.' . $instance};
+     
+        $self->{components}->{voltage}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s'",
+                                        $voltage_name, $map_states_voltage{$voltage_state}));
+        my $exit = $self->get_severity(section => 'voltage', value => $map_states_voltage{$voltage_state});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' sensor out of range status is '%s'", $fan_name, $map_states_fan{$fan_state}));
+                                        short_msg => sprintf("Voltage '%s' sensor out of range status is '%s'", $voltage_name, $map_states_voltage{$voltage_state}));
         }
+        $self->{output}->perfdata_add(label => $voltage_name , unit => 'V', 
+                                      value => sprintf("%d", $result->{$oid_voltageSensorValue . '.' . $instance}));
 
-        $self->{output}->perfdata_add(label => $fan_name , unit => 'rpm',
-                                      value => sprintf("%d", $result->{$oid_fanSpeedSensorValue . '.' . $instance}));
     }
 }
 
