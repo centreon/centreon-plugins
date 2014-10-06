@@ -52,7 +52,6 @@ my %map_states_system = (
     2 => 'Failed',
 );
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -73,7 +72,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_synoSystemsystemStatus = '.1.3.6.1.4.1.6574.1.1.0'; # in Celsius
+    my $oid_synoSystemsystemStatus = '.1.3.6.1.4.1.6574.1.1.0';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_synoSystemsystemStatus],
                                          nothing_quit => 1);

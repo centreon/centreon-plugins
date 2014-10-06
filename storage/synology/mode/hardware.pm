@@ -93,8 +93,8 @@ sub new {
                                   "exclude:s"               => { name => 'exclude' },
                                   "component:s"             => { name => 'component', default => 'all' },
                                   "no-component:s"          => { name => 'no_component' },
-        			  "threshold-overload:s@"   => { name => 'threshold_overload' },
-	                        });
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                });
 
     $self->{components} = {};
     $self->{no_components} = undef;
@@ -137,7 +137,7 @@ sub run {
 
 
     $self->{results} = $self->{snmp}->get_leef(oids => [$oid_synoSystempowerStatus, $oid_synoSystemcpuFanStatus, $oid_synoSystemsystemFanStatus],
-						nothing_quit => 1);	
+                        nothing_quit => 1);    
 
     if ($self->{option_results}->{component} eq 'all') {
         $self->check_fan_cpu();
@@ -291,8 +291,8 @@ sub check_disk {
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {              
         next if ($key !~ /^$oid_synoDiskdiskStatus\.(\d+)/);
-	my $index = $1;
-	$instance = $1;                                                            
+        my $index = $1;
+        $instance = $1;                                                            
         my $disk_state = $results->{$oid_synoDiskdiskStatus . '.' . $index}; 
 
         next if ($self->check_exclude(section => 'disk', instance => $instance));
@@ -302,13 +302,12 @@ sub check_disk {
         $self->{output}->output_add(long_msg => sprintf("Disk '%s' state is %s.",
                                     $index, $map_states_disk{$disk_state}));
         my $exit = $self->get_severity(section => 'disk', value => $map_states_disk{$disk_state});
-	if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Disk '%s' state is %s.", $index, $map_states_disk{$disk_state}));
         }
     }
 }
-
 
 1;
 

@@ -39,7 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
+                                  "warning:s"       => { name => 'warning' },
+                                  "critical:s"      => { name => 'critical' },
                                 });
     return $self;
 }
