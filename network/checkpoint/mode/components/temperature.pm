@@ -38,16 +38,19 @@ package network::checkpoint::mode::components::temperature;
 use strict;
 use warnings;
 
-my %map_status = (
-    0 => 'OK',
+my %map_states_temperature = (
+    0 => 'false',
+    1 => 'true',
+    2 => 'reading error',
 );
+
 
 sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
-    return if ($self->check_exclude('temperatures'));
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'temperature'));
 
     my $oid_tempertureSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.1.1';
     my $oid_tempertureSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.1.1.2';
@@ -61,23 +64,21 @@ sub check {
         next if ($key !~ /^$oid_tempertureSensorValue\.(\d+)$/);
         my $instance = $1;
 
-        next if ($self->check_exclude(section => 'temperatures', instance => $instance));
-	
-	my $temperature_name = $result->{$oid_tempertureSensorName . '.' . $instance};
-        my $status = $result->{$oid_tempertureSensorStatus . '.' . $instance};
+        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        my $temperature_name = $result->{$oid_tempertureSensorName . '.' . $instance};
+        my $temperature_state = $result->{$oid_tempertureSensorStatus . '.' . $instance};
     	
-        $self->{components}->{temperatures}->{total}++;
-
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' status is %s.",
-                                                        $instance, $map_status{$status}));
-        if ($status != 0) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Temperature '%s' status is in an error state",
-                                                             $instance));
+        $self->{components}->{temperature}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s'",
+                                        $temperature_name, $map_states_temperature{$temperature_state}));
+        my $exit = $self->get_severity(section => 'temperature', value => $map_states_temperature{$temperature_state});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $voltage_name, $map_states_temperature{$temperature_state}));
         }
 
-    	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', value => sprintf("%.2f", $result->{$oid_tempertureSensorValue . '.' . $instance})),
-
+    	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', 
+                                      value => sprintf("%.2f", $result->{$oid_tempertureSensorValue . '.' . $instance}));
     }
 }
 
