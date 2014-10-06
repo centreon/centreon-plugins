@@ -47,10 +47,10 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::checkpoint::mode::cpu',
-                        'memory'            => 'network::checkpoint::mode::memory',
-                        'connections'       => 'network::checkpoint::mode::connections',
-                        'hardware'	    => 'network::checkpoint::mode::hardware',
+                        'cpu'           => 'network::checkpoint::mode::cpu',
+                        'memory'        => 'network::checkpoint::mode::memory',
+                        'connections'   => 'network::checkpoint::mode::connections',
+                        'hardware'      => 'network::checkpoint::mode::hardware',
                         );
 
     return $self;
