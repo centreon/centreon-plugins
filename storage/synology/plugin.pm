@@ -47,10 +47,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'             => 'storage::synology::mode::hardware',
+                         'components'           => 'storage::synology::mode::components',
                          'temperature'          => 'storage::synology::mode::temperature',
-                         'raidstatus'           => 'storage::synology::mode::raidstatus',
-                         'systemstatus'         => 'storage::synology::mode::systemstatus',
+                         'ups'                  => 'storage::synology::mode::ups',
                          'traffic'              => 'snmp_standard::mode::traffic',
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'memory'               => 'snmp_standard::mode::memory',

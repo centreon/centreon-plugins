@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::synology::mode::hardware;
+package storage::synology::mode::components;
 
 use base qw(centreon::plugins::mode);
 
@@ -45,6 +45,10 @@ my $oid_synoSystemsystemFanStatus = '.1.3.6.1.4.1.6574.1.4.1.0';
 my $oid_synoSystemcpuFanStatus = '.1.3.6.1.4.1.6574.1.4.2.0';
 my $oid_synoDisk = '.1.3.6.1.4.1.6574.2.1';
 my $oid_synoDiskdiskStatus = '.1.3.6.1.4.1.6574.2.1.1.5';
+my $oid_synoSystemsystemStatus = '.1.3.6.1.4.1.6574.1.1.0';
+my $oid_synoRaid = '.1.3.6.1.4.1.6574.3.1.1';
+my $oid_synoRaidraidName = '.1.3.6.1.4.1.6574.3.1.1.2';
+my $oid_synoRaidraidStatus = '.1.3.6.1.4.1.6574.3.1.1.3';
 
 my $thresholds = {
     psu => [
@@ -61,6 +65,24 @@ my $thresholds = {
         ['NotInitialized', 'OK'],
         ['SystemPartitionFailed', 'CRITICAL'],
         ['Crashed', 'CRITICAL'],
+    ],
+    raid => [
+        ['Normal', 'OK'],
+        ['Repairing', 'OK'],
+        ['Migrating', 'OK'],
+        ['Expanding', 'OK'],
+        ['Deleting', 'OK'],
+        ['Creating', 'OK'],
+        ['RaidSyncing', 'OK'],
+        ['RaidParityChecking', 'OK'],
+        ['RaidAssembling', 'OK'],
+        ['Canceling', 'OK'],
+        ['Degrade', 'WARNING'],
+        ['Crashed', 'CRITICAL'],
+    ],
+    system => [
+        ['Normal', 'OK'],
+        ['Failed', 'CRITICAL'],
     ],
 };
 
@@ -80,6 +102,26 @@ my %map_states_disk = (
     3 => 'NotInitialized',
     4 => 'SystemPartitionFailed',
     5 => 'Crashed',
+);
+
+my %map_states_raid = (
+    1 => 'Normal',
+    2 => 'Repairing',
+    3 => 'Migrating',
+    4 => 'Expanding',
+    5 => 'Deleting',
+    6 => 'Creating',
+    7 => 'RaidSyncing',
+    8 => 'RaidParityChecking',
+    9 => 'RaidAssembling',
+    10 => 'Canceling',
+    11 => 'Degrade',
+    12 => 'Crashed',
+);
+
+my %map_states_system = (
+    1 => 'Normal',
+    2 => 'Failed',
 );
 
 sub new {
@@ -136,14 +178,16 @@ sub run {
     $self->{snmp} = $options{snmp};
 
 
-    $self->{results} = $self->{snmp}->get_leef(oids => [$oid_synoSystempowerStatus, $oid_synoSystemcpuFanStatus, $oid_synoSystemsystemFanStatus],
-                        nothing_quit => 1);    
+    $self->{results} = $self->{snmp}->get_leef(oids => [$oid_synoSystempowerStatus, $oid_synoSystemcpuFanStatus, $oid_synoSystemsystemFanStatus, $oid_synoSystemsystemStatus],
+                                               nothing_quit => 1);
 
     if ($self->{option_results}->{component} eq 'all') {
         $self->check_fan_cpu();
         $self->check_fan_psu();
         $self->check_psu();
         $self->check_disk();
+        $self->check_system();
+        $self->check_raid();
     } elsif ($self->{option_results}->{component} eq 'fan_cpu') {
         $self->check_fan_cpu();
     } elsif ($self->{option_results}->{component} eq 'fan_psu') {
@@ -152,6 +196,10 @@ sub run {
         $self->check_psu();
     } elsif ($self->{option_results}->{component} eq 'disk') {
         $self->check_disk();
+    } elsif ($self->{option_results}->{component} eq 'system') {
+        $self->check_status();
+    } elsif ($self->{option_results}->{component} eq 'raid') {
+        $self->check_raid();
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -277,6 +325,24 @@ sub check_psu {
     }
 }
 
+sub check_system {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking system status");
+    $self->{components}->{system} = {name => 'system', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'system'));
+    $self->{components}->{system}->{total}++;
+
+    my $system_state = $self->{results}->{$oid_synoSystemsystemStatus};
+    $self->{output}->output_add(long_msg => sprintf("System status is %s.",
+                                    $map_states_system{$system_state}));
+    my $exit = $self->get_severity(section => 'system', value => $map_states_system{$system_state});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("System status is %s.", $map_states_system{$system_state}));
+    }
+}
+
 sub check_disk {
     my ($self) = @_;
 
@@ -289,16 +355,16 @@ sub check_disk {
 
     my $instance = 0;
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {              
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {
         next if ($key !~ /^$oid_synoDiskdiskStatus\.(\d+)/);
         my $index = $1;
-        $instance = $1;                                                            
-        my $disk_state = $results->{$oid_synoDiskdiskStatus . '.' . $index}; 
+        $instance = $1;
+        my $disk_state = $results->{$oid_synoDiskdiskStatus . '.' . $index};
 
         next if ($self->check_exclude(section => 'disk', instance => $instance));
 
         $self->{components}->{disk}->{total}++;
-        
+
         $self->{output}->output_add(long_msg => sprintf("Disk '%s' state is %s.",
                                     $index, $map_states_disk{$disk_state}));
         my $exit = $self->get_severity(section => 'disk', value => $map_states_disk{$disk_state});
@@ -309,20 +375,53 @@ sub check_disk {
     }
 }
 
+sub check_raid {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking raid");
+    $self->{components}->{raid} = {name => 'raid', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'raid'));
+
+    my $results = $self->{snmp}->get_table(oid => $oid_synoRaid, start => $oid_synoRaidraidName, end => $oid_synoRaidraidStatus, nothing_quit => 1);
+
+    my $instance = 0;
+
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {
+        next if ($key !~ /^$oid_synoRaidraidName\.(.*)/);
+        my $id = $1;
+        $instance = $1;
+        my $raid_name = $results->{$key};
+        my $raid_state = $results->{$oid_synoRaidraidStatus . '.' . $id};
+
+        next if ($self->check_exclude(section => 'raid', instance => $instance));
+
+        $self->{components}->{raid}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("Raid '%s' state is %s.",
+                                    $raid_name, $map_states_raid{$raid_state}));
+        my $exit = $self->get_severity(section => 'raid', value => $map_states_raid{$raid_state});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Raid '%s' state is %s.", $raid_name, $map_states_raid{$raid_state}));
+
+        }
+    }
+}
+
 1;
 
 __END__
 
 =head1 MODE
 
-Check hardware (SYNOLOGY-SYSTEM-MIB) (Fans, Power Supplies, Disk status).
+Check hardware (SYNOLOGY-SYSTEM-MIB, SYNOLOGY-RAID-MIB) (Fans, Power Supplies, Disk status, Raid status, System status).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'psu', 'fan_cpu', 'fan_psu', 'disk'.
+Can be: 'psu', 'fan_cpu', 'fan_psu', 'disk', 'raid', 'system'.
 
 =item B<--exclude>
 
