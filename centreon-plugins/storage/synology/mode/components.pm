@@ -178,8 +178,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
 
-    $self->{results} = $self->{snmp}->get_leef(oids => [$oid_synoSystempowerStatus, $oid_synoSystemcpuFanStatus, $oid_synoSystemsystemFanStatus, $oid_synoSystemsystemStatus],
-                                               nothing_quit => 1);
+    $self->{results} = $self->{snmp}->get_leef(oids => [$oid_synoSystempowerStatus, $oid_synoSystemcpuFanStatus, $oid_synoSystemsystemFanStatus, $oid_synoSystemsystemStatus]);
 
     if ($self->{option_results}->{component} eq 'all') {
         $self->check_fan_cpu();
@@ -351,7 +350,7 @@ sub check_disk {
     return if ($self->check_exclude(section => 'disk'));
 
 
-    my $results = $self->{snmp}->get_table(oid => $oid_synoDisk, return_type => 1);
+    my $results = $self->{snmp}->get_table(oid => $oid_synoDisk);
 
     my $instance = 0;
 
@@ -382,14 +381,11 @@ sub check_raid {
     $self->{components}->{raid} = {name => 'raid', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'raid'));
 
-    my $results = $self->{snmp}->get_table(oid => $oid_synoRaid, start => $oid_synoRaidraidName, end => $oid_synoRaidraidStatus, nothing_quit => 1);
-
-    my $instance = 0;
-
+    my $results = $self->{snmp}->get_table(oid => $oid_synoRaid, start => $oid_synoRaidraidName, end => $oid_synoRaidraidStatus);
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {
         next if ($key !~ /^$oid_synoRaidraidName\.(.*)/);
         my $id = $1;
-        $instance = $1;
+        my $instance = $1;
         my $raid_name = $results->{$key};
         my $raid_state = $results->{$oid_synoRaidraidStatus . '.' . $id};
 
