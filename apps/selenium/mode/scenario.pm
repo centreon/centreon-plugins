@@ -41,10 +41,11 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::httplib;
 use XML::XPath;
 use XML::XPath::XMLParser;
 use WWW::Selenium;
+
+my %handlers = (ALRM => {} );
 
 sub new {
     my ($class, %options) = @_;
@@ -61,8 +62,32 @@ sub new {
          "scenario:s"           => { name => 'scenario' },
          "warning:s"            => { name => 'warning' },
          "critical:s"           => { name => 'critical' },
+         "timeout:s"            => { name => 'timeout', default => 50 },
          });
+    $self->set_signal_handlers;
     return $self;
+}
+
+sub set_signal_handlers {
+    my $self = shift;
+
+    $SIG{ALRM} = \&class_handle_ALRM;
+    $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
+}
+
+sub class_handle_ALRM {
+    foreach (keys %{$handlers{ALRM}}) {
+        &{$handlers{ALRM}->{$_}}();
+    }
+}
+
+sub handle_ALRM {
+    my $self = shift;
+    
+    $self->{output}->output_add(severity => 'UNKNOWN',
+                                short_msg => sprintf("Cannot finished scenario execution (timeout received)"));
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 sub check_options {
@@ -76,6 +101,10 @@ sub check_options {
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
+    }
+    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
+        $self->{option_results}->{timeout} > 0) {
+        alarm($self->{option_results}->{timeout});
     }
 }
 
@@ -139,7 +168,7 @@ sub run {
     my $availability = sprintf("%d", $stepOk * 100 / $step);
 
     my $exit2 = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
@@ -190,6 +219,10 @@ Directory where scenarii are stored
 =item B<--scenario>
 
 Scenario used by Selenium server (without extension)
+
+=item B<--timeout>
+
+Set global execution timeout (Default: 50)
 
 =item B<--warning>
 
