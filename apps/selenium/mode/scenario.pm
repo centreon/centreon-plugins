@@ -132,6 +132,7 @@ sub run {
     my $timing0 = [gettimeofday];
     my ($action, $filter, $value);
     my $step = $listActionNode->get_nodelist;
+    my $temp_step = 0;
     my $stepOk = 0;
     my $exit1 = 'UNKNOWN';
     foreach my $actionNode ($listActionNode->get_nodelist) {
@@ -139,6 +140,7 @@ sub run {
         my $trim_action = centreon::plugins::misc::trim($action->string_value);
         my $trim_filter = centreon::plugins::misc::trim($filter->string_value);
         my $trim_value = centreon::plugins::misc::trim($value->string_value);
+        $temp_step++;
         if ($trim_action eq 'pause') {
             my $sleepTime = 1000;
             if ($trim_value =~ /^\d+$/) {
@@ -149,9 +151,12 @@ sub run {
             }
             sleep($sleepTime / 1000);
             $stepOk++;
+            $self->{output}->output_add(long_msg => "Step " . $temp_step . " - Pause : " . $sleepTime . "ms");
+        } elsif ($trim_action eq 'echo'){
+            next;
         } else {
             my $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value);
-            $self->{output}->output_add(long_msg => "Step " . $step
+            $self->{output}->output_add(long_msg => "Step " . $temp_step
                                                     . " - Command : '" . $trim_action . "'"
                                                     . " , Filter : '" . $trim_filter . "'"
                                                     . " , Value : '" . $trim_value . "'");
