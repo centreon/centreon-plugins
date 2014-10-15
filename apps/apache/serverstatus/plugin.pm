@@ -40,21 +40,21 @@ use warnings;
 use base qw(centreon::plugins::script_simple);
 
 sub new {
-	my ($class, %options) = @_;
-	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-	bless $self, $class;
-# $options->{options} = options object
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
             'cpuload'       => 'apps::apache::serverstatus::mode::cpuload',
             'responsetime'  => 'apps::apache::serverstatus::mode::responsetime',
             'requests'      => 'apps::apache::serverstatus::mode::requests',
             'slotstates'	=> 'apps::apache::serverstatus::mode::slotstates',
             'workers'       => 'apps::apache::serverstatus::mode::workers',
-			);
+    );
 
-	return $self;
+    return $self;
 }
 
 1;

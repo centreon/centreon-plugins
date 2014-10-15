@@ -55,8 +55,8 @@ sub new {
     $options{options}->add_options(arguments =>
          {
          "selenium-hostname:s"  => { name => 'selenium_hostname', default => 'localhost' },
-         "selenium-port:s"      => { name => 'selenium_port', default => '4444'},
-         "browser:s"            => { name => 'browser', default => '*firefox'},
+         "selenium-port:s"      => { name => 'selenium_port', default => '4444' },
+         "browser:s"            => { name => 'browser', default => '*firefox' },
          "directory:s"          => { name => 'directory', default => '/var/lib/centreon_waa' },
          "scenario:s"           => { name => 'scenario' },
          "warning:s"            => { name => 'warning' },
@@ -98,7 +98,6 @@ sub run {
         browser_url => $baseurl
     );
 
-
     $sel->start;
 
     my $timing0 = [gettimeofday];
@@ -106,7 +105,6 @@ sub run {
     my $step = $listActionNode->get_nodelist;
     my $stepOk = 0;
     my $exit1 = 'UNKNOWN';
-
     foreach my $actionNode ($listActionNode->get_nodelist) {
         ($action, $filter, $value) = $xp->find('./td', $actionNode)->get_nodelist;
         my $trim_action = centreon::plugins::misc::trim($action->string_value);
@@ -138,30 +136,23 @@ sub run {
         }
     }
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
-
     my $availability = sprintf("%d", $stepOk * 100 / $step);
-
 
     my $exit2 = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
-    $self->{output}->perfdata_add(label => "time",
+    $self->{output}->perfdata_add(label => "time", unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
-                                  unit => 's',
                                   min => 0,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
-
     $self->{output}->perfdata_add(label => "steps",
                                   value => sprintf('%d', $stepOk),
                                   min => 0,
                                   max => $step);
-
-    $self->{output}->perfdata_add(label => "availability",
-                                  unit => '%',
+    $self->{output}->perfdata_add(label => "availability", unit => '%',
                                   value => sprintf('%d', $availability),
                                   min => 0,
                                   max => 100);
