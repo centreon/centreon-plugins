@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::epdu::eaton::plugin;
+package hardware::pdu::eaton::plugin;
 
 use strict;
 use warnings;
