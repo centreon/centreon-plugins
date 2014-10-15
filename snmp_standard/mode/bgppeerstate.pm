@@ -33,7 +33,7 @@
 ##
 #####################################################################################
 
-package apps::protocols::bgp::mode::peerstate;
+package snmp_standard::mode::bgppeerstate;
 
 use base qw(centreon::plugins::mode);
 
