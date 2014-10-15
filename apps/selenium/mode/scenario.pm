@@ -129,6 +129,8 @@ sub run {
 
     $sel->start;
 
+    $self->{output}->output_add(long_msg => "Base URL : " . $baseurl);
+
     my $timing0 = [gettimeofday];
     my ($action, $filter, $value);
     my $step = $listActionNode->get_nodelist;
