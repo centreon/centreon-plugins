@@ -47,8 +47,8 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'group'            => 'hardware::epdu::eaton::mode::group',
-                         'outlet'           => 'hardware::epdu::eaton::mode::outlet',
+                         'group'            => 'hardware::pdu::eaton::mode::group',
+                         'outlet'           => 'hardware::pdu::eaton::mode::outlet',
                          );
 
     return $self;
@@ -60,6 +60,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Eaton EPDU in SNMP.
+Check Eaton PDU in SNMP.
 
 =cut
