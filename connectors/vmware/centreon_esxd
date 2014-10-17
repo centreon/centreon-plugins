@@ -2,6 +2,8 @@
 
 use warnings;
 use centreon::script::centreonesxd;
+use FindBin;
+use lib "$FindBin::Bin";
 
 centreon::script::centreonesxd->new()->run();
 
