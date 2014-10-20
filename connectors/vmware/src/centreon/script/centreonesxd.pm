@@ -1,19 +1,22 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 package centreon::script::centreonesxd;
 
 use strict;
+use warnings;
 use VMware::VIRuntime;
 use VMware::VILib;
 use ZMQ::LibZMQ3;
 use ZMQ::Constants qw(:all);
 use File::Basename;
 use POSIX ":sys_wait_h";
+use JSON;
 use Data::Dumper;
 use centreon::script;
 use centreon::esxd::common;
+use centreon::esxd::connector;
 
-my ($centreonesxd, $frontend, $backend);
+my ($centreonesxd, $frontend);
 
 BEGIN {
     $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
@@ -22,8 +25,9 @@ BEGIN {
 use base qw(centreon::script);
 use vars qw(%centreonesxd_config);
 
-my $VERSION = "1.5.6";
+my $VERSION = "1.6.0";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
+
 my @load_modules = ('centreon::esxd::cmdcountvmhost',
                     'centreon::esxd::cmdcpuhost',
                     'centreon::esxd::cmdcpuvm',
@@ -87,21 +91,9 @@ sub new {
             }
         );
 
-    $self->{child_proc} = {};
     $self->{return_child} = {};
-    $self->{vsphere_connected} = 0;
-    $self->{last_time_vsphere} = undef;
-    $self->{keeper_session_time} = undef;
-    $self->{last_time_check} = undef;
-    $self->{perfmanager_view} = undef;
-    $self->{perfcounter_cache} = {};
-    $self->{perfcounter_cache_reverse} = {};
-    $self->{perfcounter_refreshrate} = 20;
-    $self->{perfcounter_speriod} = -1;
     $self->{stop} = 0;
-    $self->{counter_request_id} = 0;
     $self->{childs_vpshere_pid} = {};
-    $self->{session1} = undef;
     $self->{counter} = 0;
     $self->{whoaim} = undef; # to know which vsphere to connect
     $self->{module_date_parse_loaded} = 0;
@@ -219,19 +211,13 @@ sub handle_CHLD {
     $SIG{CHLD} = \&class_handle_CHLD;
 }
 
-sub print_response {
-    my $self = shift;
-
-    print $self->{global_id} . "|" . $_[0];
-}
-
 sub load_module {
     my $self = shift;
 
     for (@_) {
         (my $file = "$_.pm") =~ s{::}{/}g;
         require $file;
-        my $obj = $_->new($self->{logger}, $self);
+        my $obj = $_->new($self->{logger});
         $self->{modules_registry}->{$obj->getCommandName()} = $obj;
     }    
 }
@@ -263,35 +249,64 @@ sub verify_child_vsphere {
             $count++;
         }
     }
-    
+
     return $count;
 }
 
-sub verify_child {
-    my $self = shift;
-    my $progress = 0;
-
-    # Verify process
-    foreach (keys %{$self->{child_proc}}) {
-        # Check ctime
-        if (time() - $self->{child_proc}->{$_}->{ctime} > $self->{centreonesxd_config}->{timeout}) {
-            print "===timeout papa===\n";
-            #print $handle_writer_pipe "$_|-1|Timeout Process.\n";
-            kill('INT', $self->{child_proc}->{$_}->{pid});
-            delete $self->{child_proc}->{$_};
-        } else {
-            $progress++;
-        }
+sub request {
+    my ($self, %options) = @_;
+    
+    # Decode json
+    my $result;
+    eval {
+        $result = JSON->new->utf8->decode($options{data});
+    };
+    if ($@) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Cannot decode json result: $@");
+        centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
+        return ;
     }
-    # Clean old hash CHILD (security)
-    foreach (keys %{$self->{return_child}}) {
-        if (time() - $self->{return_child}->{$_}->{rtime} > 600) {
-            $self->{logger}->writeLogInfo("Clean Old return_child list = " . $_);
-            delete $self->{return_child}->{$_};
-        }
+    if (!defined($self->{modules_registry}->{$result->{command}})) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Unknown method name '$result->{command}'");
+        centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
+        return ;
+    }
+    if ($self->{modules_registry}->{$result->{command}}->checkArgs(manager => $options{manager},
+                                                                   arguments => $result)) {
+        centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
+        return ;
+    }
+    if (!defined($self->{centreonesxd_config}->{vsphere_server}->{$result->{container}})) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                       short_msg => "Unknown container name '$result->{container}'");
+        centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
+        return ;
     }
 
-    return $progress;
+    zmq_sendmsg($frontend, "server-" . $result->{container}, ZMQ_SNDMORE);
+    zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data});
+}
+
+sub repserver {
+    my ($self, %options) = @_;
+    
+    # Decode json
+    my $result;
+    eval {
+        $result = JSON->new->utf8->decode($options{data});
+    };
+    if ($@) {
+        $self->{logger}->writeLogError("Cannot decode JSON: $@ (options{data}");
+        return ;
+    }
+    
+    $result->{plugin}->{name} =~ /^client-(.*)$/;
+    my $identity = 'client-' . pack('H*', $1);
+    
+    centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, 
+                                     identity => $identity, stdout => $options{data});
 }
 
 sub router_event {
@@ -304,183 +319,37 @@ sub router_event {
         my $data = zmq_msg_data($message);
         
         my $manager = centreon::esxd::common::init_response();
-        
         if ($centreonesxd->{stop} != 0) {
             # We quit so we say we're leaving ;)
             $manager->{output}->output_add(severity => 'UNKNOWN',
                                            short_msg => 'Daemon is restarting...');
-            centreon::esxd::common::response(endpoint => $frontend, identity => $identity);
-        } elsif ($data =~ /^REQCLIENT\s+(.*)$/) {
-            
-            
-            
-            zmq_sendmsg($frontend, "server-" . $1, ZMQ_SNDMORE);
-            zmq_sendmsg($frontend, $data);
-
-            my $manager = centreon::esxd::common::init_response();
-            $manager->{output}->output_add(severity => 'OK',
-                                           short_msg => 'ma reponse enfin');
-            centreon::esxd::common::response(endpoint => $frontend, identity => $identity);
+            centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $identity);
+        } elsif ($data =~ /^REQCLIENT\s+(.*)$/msi) {
+            $centreonesxd->request(identity => $identity, data => $1, manager => $manager);
+        } elsif ($data =~ /^RESPSERVER2\s+(.*)$/msi) {
+            $centreonesxd->repserver(data => $1, manager => $manager);
         }
-        
+
         my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);        
         last unless $more;
-    }
-}
-
-sub vsphere_event {
-    while (1) {
-        # Process all parts of the message
-        my $message = zmq_recvmsg($backend);
-        print "=== " . Data::Dumper::Dumper(zmq_msg_data($message)) . " ===\n";
-        
-        zmq_sendmsg($backend, 'bien tutu');
-        
-        print "=PLAPLA=\n";
-        my $data = zmq_msg_data($message);
-        if (defined($message)) {
-            if ($centreonesxd->{vsphere_connected}) {                
-                $centreonesxd->{logger}->writeLogInfo("vpshere '" . $centreonesxd->{whoaim} . "' handler asking: $message");
-
-                $centreonesxd->{child_proc}->{pid} = fork;
-                if (!$centreonesxd->{child_proc}->{pid}) {
-                    # Child
-                    $centreonesxd->{logger}->{log_mode} = 1 if ($centreonesxd->{logger}->{log_mode} == 0);
-                    my ($id, $name, @args) = split /\Q$centreonesxd->{separatorin}\E/, $message;
-                    $centreonesxd->{global_id} = $id;
-                    $centreonesxd->{modules_registry}->{$name}->initArgs(@args);
-                    $centreonesxd->{modules_registry}->{$name}->run();
-                    exit(0);
-                }
-            } else {
-                #print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
-            }
-        } 
-
-        my $more = zmq_getsockopt($backend, ZMQ_RCVMORE);
-        #zmq_sendmsg($backend, $message, $more ? ZMQ_SNDMORE : 0);
-        last unless $more;
-    }
-}
-
-sub vsphere_handler {
-    $centreonesxd = shift;
-    my $timeout_process;
-
-    my $context = zmq_init();
-
-    $backend = zmq_socket($context, ZMQ_DEALER);
-    zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $centreonesxd->{whoaim});
-    zmq_connect($backend, 'ipc://routing.ipc');
-    #zmq_sendmsg($backend, 'ready');
-    
-    # Initialize poll set
-    my @poll = (
-        {
-            socket  => $backend,
-            events  => ZMQ_POLLIN,
-            callback => \&vsphere_event,
-        },
-    );
-    
-    while (1) {
-        my $progress = $centreonesxd->verify_child();
-
-        #####
-        # Manage ending
-        #####
-        if ($centreonesxd->{stop} && $timeout_process > $centreonesxd->{centreonesxd_config}->{timeout_kill}) {
-            $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Kill child not gently.");
-            foreach (keys %{$centreonesxd->{child_proc}}) {
-                kill('INT', $centreonesxd->{child_proc}->{$_}->{pid});
-            }
-            $progress = 0;
-        }
-        if ($centreonesxd->{stop} && !$progress) {
-            if ($centreonesxd->{vsphere_connected}) {
-                eval {
-                    $centreonesxd->{session1}->logout();
-                };
-            }            
-            exit (0);
-        }
-
-        ###
-        # Manage vpshere connection
-        ###
-        if (defined($centreonesxd->{last_time_vsphere}) && defined($centreonesxd->{last_time_check}) 
-            && $centreonesxd->{last_time_vsphere} < $centreonesxd->{last_time_check}) {
-            $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Disconnect");
-            $centreonesxd->{vsphere_connected} = 0;
-            eval {
-                $centreonesxd->{session1}->logout();
-            };
-        }
-        if ($centreonesxd->{vsphere_connected} == 0) {
-            if (!centreon::esxd::common::connect_vsphere($centreonesxd->{logger},
-                                                         $centreonesxd->{whoaim},
-                                                         $centreonesxd->{centreonesxd_config}->{timeout_vsphere},
-                                                         \$centreonesxd->{session1},
-                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{url}, 
-                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{username},
-                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{password})) {
-                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Vsphere connection ok");
-                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Create perf counters cache in progress");
-                if (!centreon::esxd::common::cache_perf_counters($centreonesxd)) {
-                    $centreonesxd->{last_time_vsphere} = time();
-                    $centreonesxd->{keeper_session_time} = time();
-                    $centreonesxd->{vsphere_connected} = 1;
-                    $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Create perf counters cache done");
-                }
-            }
-        }
-
-        ###
-        # Manage session time
-        ###
-        if (defined($centreonesxd->{keeper_session_time}) && 
-            (time() - $centreonesxd->{keeper_session_time}) > ($centreonesxd->{centreonesxd_config}->{refresh_keeper_session} * 60)) {
-            my $stime;
-
-            eval {
-                $stime = $centreonesxd->{session1}->get_service_instance()->CurrentTime();
-                $centreonesxd->{keeper_session_time} = time();
-            };
-            if ($@) {
-                $centreonesxd->{logger}->writeLogError("$@");
-                $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Ask a new connection");
-                # Ask a new connection
-                $centreonesxd->{last_time_check} = time();
-            } else {
-                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
-            }
-        }
-
-        my $data_element;
-        my @rh_set;
-        if ($centreonesxd->{vsphere_connected} == 0) {
-            sleep(5);
-        }
-        if ($centreonesxd->{stop} != 0) {
-            sleep(1);
-            next;
-        }
-        
-        print "====chaton===\n";
-        zmq_poll(\@poll, 5000);
     }
 }
 
 sub create_vsphere_child {
     my ($self, %options) = @_;
 
+    $self->{whoaim} = $options{vsphere_name};
     $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 0;
     $self->{logger}->writeLogInfo("Create vsphere sub-process for '" . $options{vsphere_name} . "'");   
-    $self->{whoaim} = $options{vsphere_name};
 
     my $child_vpshere_pid = fork();
     if ($child_vpshere_pid == 0) {
-        $self->vsphere_handler();
+        my $connector = centreon::esxd::connector->new(name => $self->{whoaim},
+                                                       modules_registry => $self->{modules_registry},
+                                                       module_date_parse_loaded => $self->{module_date_parse_loaded},
+                                                       config => $self->{centreonesxd_config},
+                                                       logger => $self->{logger});
+        $connector->run();
         exit(0);
     }
     $self->{childs_vpshere_pid}->{$child_vpshere_pid} = $self->{whoaim};

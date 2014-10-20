@@ -14,10 +14,6 @@ use centreon::plugins::perfdata;
 
 my $manager_display = {};
 
-my %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3, "PENDING" => 4);
-my %MYERRORS = (0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN");
-my %MYERRORS_MASK = ("CRITICAL" => 3, "WARNING" => 1, "UNKNOWN" => 7, "OK" => 0);
-
 sub init_response {
     $manager_display->{options} = centreon::plugins::options->new();
     $manager_display->{output} = centreon::plugins::output->new(options => $manager_display->{options});
@@ -30,64 +26,37 @@ sub response {
     my (%options) = @_;
 
     my $stdout;
-    {
+    if (!defined($options{stdout})) {
         local *STDOUT;
         $manager_display->{output}->{option_results}->{output_json} = 1;
         open STDOUT, '>', \$stdout;
-        $manager_display->{output}->display(force_long_output => 1);
+        $manager_display->{output}->display(force_long_output => 1, nolabel => 1);
+    } else {
+        $stdout = $options{stdout};
     }
     
-    print "====stdout === $stdout===\n";
-    zmq_sendmsg($options{endpoint}, $options{identity}, ZMQ_SNDMORE);
-    zmq_sendmsg($options{endpoint}, "RESPSERVER " . $stdout);
-}
-
-sub errors_mask {
-    my ($status, $state) = @_;
-    
-    $status |= $MYERRORS_MASK{$state};
-    return $status;
-}
-
-sub get_status {
-    my ($state) = @_;
-    
-    return $ERRORS{$MYERRORS{$state}};
-}
-
-sub response_client2 {
-    my ($obj_esxd, $id, $msg) = @_;
-    
-    # Avoid croak kill. Can be happened (not often)
-    eval {
-        ${$obj_esxd->{sockets}->{$id}->{obj}}->send($msg);
-    };
-    $obj_esxd->{read_select}->remove(${$obj_esxd->{sockets}->{$id}->{obj}});
-    close ${$obj_esxd->{sockets}->{$id}->{obj}};
-    delete $obj_esxd->{sockets}->{$id};
-}
-
-sub response_client1 {
-    my ($obj_esxd, $rh, $current_fileno, $msg) = @_;
-
-    # Avoid croak kill. Can be happened (not often)
-    eval {
-        $rh->send($msg);
-    };
-    $obj_esxd->{read_select}->remove($rh);
-    close $rh;
-    delete $obj_esxd->{sockets}->{$current_fileno};
+    if (defined($options{reinit})) {
+         my $context = zmq_init();
+         $options{endpoint} = zmq_socket($context, ZMQ_DEALER);
+         zmq_connect($options{endpoint}, $options{reinit});
+    }
+    if (defined($options{identity})) {
+        zmq_sendmsg($options{endpoint}, $options{identity}, ZMQ_SNDMORE);
+    }
+    zmq_sendmsg($options{endpoint}, $options{token} . " " . $stdout);
 }
 
 sub vmware_error {
     my ($obj_esxd, $lerror) = @_;
 
+    $manager_display->{output}->output_add(long_msg => $lerror);
     $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $lerror");
-    $lerror =~ s/\n/ /g;
     if ($lerror =~ /NoPermissionFault/i) {
-        $obj_esxd->print_response("-2|Error: Not enough permissions\n");
+        $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => 'VMWare error: not enought permissions');
     } else {
-        $obj_esxd->print_response("-1|Error: " . $lerror . "\n");
+        $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => 'VMWare error (verbose mode for more details)');
     }
     return undef;
 }
@@ -104,7 +73,7 @@ sub connect_vsphere {
                 password => $password);
         alarm(0);
     };
-    if($@) {
+    if ($@) {
         $logger->writeLogError("'$whoaim' No response from VirtualCenter server") if($@ =~ /TIMEOUT/);
         $logger->writeLogError("'$whoaim' You need to upgrade HTTP::Message!") if($@ =~ /HTTP::Message/);
         $logger->writeLogError("'$whoaim' Login to VirtualCenter server failed: $@");
@@ -118,12 +87,6 @@ sub connect_vsphere {
 #        return 1;
 #    }
     return 0;
-}
-
-sub output_add($$$$) {
-    my ($output_str, $output_append, $delim, $str) = (shift, shift, shift, shift);
-    $$output_str .= $$output_append . $str;
-    $$output_append = $delim;
 }
 
 sub simplify_number {
@@ -252,7 +215,8 @@ sub generic_performance_values_historic {
         my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
-            $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe you have call a wrong instance.\n");
+            $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => 'Cannot get value for counters. Maybe you have call a wrong instance');
             return undef;
         }
         foreach my $val (@$perfdata) {
@@ -261,7 +225,8 @@ sub generic_performance_values_historic {
                     $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
                     next;
                 } elsif (!defined($_->value)) {
-                    $obj_esxd->print_response("-3|Error: Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also).\n");
+                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                           short_msg => 'Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also)');
                     return undef;
                 }
                 
@@ -330,8 +295,8 @@ sub get_entities_host {
     }
     if (!@$entity_views) {
         my $status = 0;
-        $status = errors_mask($status, 'UNKNOWN');
-        $obj_esxd->print_response(get_status($status) . "|Object $view_type does not exist.\n");
+        $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Object $view_type does not exist");
         return undef;
     }
     #eval {
@@ -400,15 +365,15 @@ sub vm_state {
     
     if ($connection_state !~ /^connected$/i) {
         my $output = "VM '" . $vm . "' not connected. Current Connection State: '$connection_state'.";
-        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{vm_state_error});
-        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{vm_state_error},
+                                               short_msg => $output);
         return 0;
     }
     
-    if (!defined($nocheck_ps) && $power_state !~ /^poweredOn$/i) {
+    if (!defined($nocheck_ps) && $power_state !~ /^poweredOn$/i) {    
         my $output = "VM '" . $vm . "' not running. Current Power State: '$power_state'.";
-        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{vm_state_error});
-        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{vm_state_error},
+                                               short_msg => $output);
         return 0;
     }
     
@@ -420,8 +385,8 @@ sub host_state {
     
     if ($connection_state !~ /^connected$/i) {
         my $output = "Host '" . $host . "' not connected. Current Connection State: '$connection_state'.";
-        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{host_state_error});
-        $obj_esxd->print_response(get_status($status) . "|$output\n");
+        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{host_state_error},
+                                               short_msg => $output);
         return 0;
     }
     
@@ -443,7 +408,7 @@ sub stats_info {
     } elsif ($$args[0] ne '' and $num_connection >= $$args[0]) {
         $status = errors_mask($status, 'WARNING');
     }
-    response_client1($obj_esxd, $rh, $current_fileno, get_status($status) . "|$output\n");
+    #response_client1($obj_esxd, $rh, $current_fileno, get_status($status) . "|$output\n");
 }
 
 1;

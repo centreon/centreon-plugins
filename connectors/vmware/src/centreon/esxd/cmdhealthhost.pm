@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'healthhost';
     
     bless $self, $class;
@@ -22,26 +21,38 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($host) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($host) || $host eq "") {
-        $self->{logger}->writeLogError("ARGS error: need hostname");
+    if (!defined($options{arguments}->{esx_hostname}) || $options{arguments}->{esx_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: need esx hostname");
         return 1;
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lhost} = $_[0];
-    $self->{storage_status} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    $self->{manager}->{perfdata}->threshold_validate(label => 'warning', value => 0);
+    $self->{manager}->{perfdata}->threshold_validate(label => 'critical', value => 0);
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    my %filters = ('name' => $self->{lhost});
+    my %filters = (name => $self->{esx_hostname});
     my @properties = ('runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
                       'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
@@ -49,20 +60,13 @@ sub run {
         return ;
     }
     
-    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
+    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{esx_hostname}, 
                                                   $$result[0]->{'runtime.connectionState'}->val) == 0);
     
-    my $status = 0; # OK
-    my $output_critical = '';
-    my $output_critical_append = '';
-    my $output_warning = '';
-    my $output_warning_append = '';
-    my $output = '';
-    my $output_append = '';
-    my $OKCount = 0;
-    my $CAlertCount = 0;
-    my $WAlertCount = 0;
     foreach my $entity_view (@$result) {
+        my $OKCount = 0;
+        my $CAlertCount = 0;
+        my $WAlertCount = 0;
         my $cpuStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{cpuStatusInfo};
         my $memoryStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{memoryStatusInfo};
         my $storageStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{storageStatusInfo};
@@ -72,14 +76,10 @@ sub run {
         if (defined($cpuStatusInfo)) {
             foreach (@$cpuStatusInfo) {
                 if ($_->status->key =~ /^red$/i) {
-                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $CAlertCount++;
                 } elsif ($_->status->key =~ /^yellow$/i) {
-                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $WAlertCount++;
                 } else {
                     $OKCount++;
@@ -91,14 +91,10 @@ sub run {
         if (defined($memoryStatusInfo)) {
             foreach (@$memoryStatusInfo) {
                 if ($_->status->key =~ /^red$/i) {
-                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $CAlertCount++;
                 } elsif ($_->status->key =~ /^yellow$/i) {
-                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $WAlertCount++;
                 } else {
                     $OKCount++;
@@ -110,14 +106,10 @@ sub run {
         if ($self->{storage_status} == 1 && defined($storageStatusInfo)) {
             foreach (@$storageStatusInfo) {
                 if ($_->status->key =~ /^red$/i) {
-                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $CAlertCount++;
                 } elsif ($_->status->key =~ /^yellow$/i) {
-                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                        $_->name . ": " . $_->status->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
                     $WAlertCount++;
                 } else {
                     $OKCount++;
@@ -129,34 +121,32 @@ sub run {
         if (defined($numericSensorInfo)) {
             foreach (@$numericSensorInfo) {
                 if ($_->healthState->key =~ /^red$/i) {
-                    centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                        $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+                    $self->{manager}->{output}->output_add(long_msg => $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
                     $CAlertCount++;
                 } elsif ($_->healthState->key =~ /^yellow$/i) {
-                    centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                        $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+                    $self->{manager}->{output}->output_add(long_msg => $_->sensorType . " sensor " . $_->name . ": ".$_->healthState->summary);
                     $WAlertCount++;
                 } else {
                     $OKCount++;
                 }
             }
         }
+        
+        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $WAlertCount, 
+                                                                 threshold => [ { label => 'warning', exit_litteral => 'warning' } ]);
+        if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                                   short_msg => sprintf("%s health issue(s) found", $WAlertCount));
+        }
+        $exit = $self->{manager}->{perfdata}->threshold_check(value => $CAlertCount, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' } ]);
+        if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("%s health issue(s) found", $CAlertCount));
+        }
+        
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All %s health checks are green", $OKCount));
     }
-
-    if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - $CAlertCount health issue(s) found: $output_critical";
-        $output_append = ". ";
-    }
-    if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - $WAlertCount health issue(s) found: $output_warning";
-    }
-    if ($status == 0) {
-        $output = "All $OKCount health checks are green";
-    }
-    
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
 
 1;
