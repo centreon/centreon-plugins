@@ -13,6 +13,8 @@ use Data::Dumper;
 use centreon::script;
 use centreon::esxd::common;
 
+my ($centreonesxd, $frontend, $backend);
+
 BEGIN {
     $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 }
@@ -85,8 +87,6 @@ sub new {
             }
         );
 
-    $self->{session_id} = undef;
-    $self->{sockets} = {};
     $self->{child_proc} = {};
     $self->{return_child} = {};
     $self->{vsphere_connected} = 0;
@@ -100,14 +100,10 @@ sub new {
     $self->{perfcounter_speriod} = -1;
     $self->{stop} = 0;
     $self->{counter_request_id} = 0;
-    $self->{child_vpshere_pid} = undef;
-    $self->{read_select} = undef;
+    $self->{childs_vpshere_pid} = {};
     $self->{session1} = undef;
     $self->{counter} = 0;
-    $self->{global_id} = undef;
     $self->{whoaim} = undef; # to know which vsphere to connect
-    $self->{separatorin} = '~';
-    $self->{filenos} = {};
     $self->{module_date_parse_loaded} = 0;
     $self->{modules_registry} = {};
     
@@ -243,19 +239,32 @@ sub load_module {
 sub verify_child_vsphere {
     my $self = shift;
     
-    # Don't need that. We need to quit. Don't want to recreate sub-process :)
-    return if ($self->{stop} != 0);
-    
     # Some dead process. need to relaunch it
     foreach (keys %{$self->{return_child}}) {
         delete $self->{return_child}->{$_};
-        if (defined($self->{centreonesxd_config}->{vsphere_server}->{$_})) {
-            $self->{logger}->writeLogError("Sub-process for '" . $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name} . "' dead ???!! We relaunch it");
-            
-            $self->create_vsphere_child(vsphere_name => $self->{centreonesxd_config}->{vsphere_server}->{$_}->{name});
-            delete $self->{centreonesxd_config}->{vsphere_server}->{$_};
+        
+        # We need to quit
+        if ($self->{stop} != 0) {
+            my $name = $self->{childs_vpshere_pid}->{$_};
+            $self->{centreonesxd_config}->{vsphere_server}->{$name}->{running} = 0;            
+            next;
+        }
+        
+        if (defined($self->{childs_vpshere_pid}->{$_})) {
+            $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' dead ???!! We relaunch it");
+            $self->create_vsphere_child(vsphere_name => $self->{childs_vpshere_pid}->{$_});
+            delete $self->{childs_vpshere_pid}->{$_};
         }
     }
+    
+    my $count = 0;
+    foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
+        if ($self->{centreonesxd_config}->{vsphere_server}->{$_}->{running} == 1) {
+            $count++;
+        }
+    }
+    
+    return $count;
 }
 
 sub verify_child {
@@ -285,34 +294,112 @@ sub verify_child {
     return $progress;
 }
 
+sub router_event {
+    while (1) {
+        # Process all parts of the message
+        my $message = zmq_recvmsg($frontend);
+        my $identity = zmq_msg_data($message);
+        $message = zmq_recvmsg($frontend);
+       
+        my $data = zmq_msg_data($message);
+        
+        my $manager = centreon::esxd::common::init_response();
+        
+        if ($centreonesxd->{stop} != 0) {
+            # We quit so we say we're leaving ;)
+            $manager->{output}->output_add(severity => 'UNKNOWN',
+                                           short_msg => 'Daemon is restarting...');
+            centreon::esxd::common::response(endpoint => $frontend, identity => $identity);
+        } elsif ($data =~ /^REQCLIENT\s+(.*)$/) {
+            
+            
+            
+            zmq_sendmsg($frontend, "server-" . $1, ZMQ_SNDMORE);
+            zmq_sendmsg($frontend, $data);
+
+            my $manager = centreon::esxd::common::init_response();
+            $manager->{output}->output_add(severity => 'OK',
+                                           short_msg => 'ma reponse enfin');
+            centreon::esxd::common::response(endpoint => $frontend, identity => $identity);
+        }
+        
+        my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);        
+        last unless $more;
+    }
+}
+
+sub vsphere_event {
+    while (1) {
+        # Process all parts of the message
+        my $message = zmq_recvmsg($backend);
+        print "=== " . Data::Dumper::Dumper(zmq_msg_data($message)) . " ===\n";
+        
+        zmq_sendmsg($backend, 'bien tutu');
+        
+        print "=PLAPLA=\n";
+        my $data = zmq_msg_data($message);
+        if (defined($message)) {
+            if ($centreonesxd->{vsphere_connected}) {                
+                $centreonesxd->{logger}->writeLogInfo("vpshere '" . $centreonesxd->{whoaim} . "' handler asking: $message");
+
+                $centreonesxd->{child_proc}->{pid} = fork;
+                if (!$centreonesxd->{child_proc}->{pid}) {
+                    # Child
+                    $centreonesxd->{logger}->{log_mode} = 1 if ($centreonesxd->{logger}->{log_mode} == 0);
+                    my ($id, $name, @args) = split /\Q$centreonesxd->{separatorin}\E/, $message;
+                    $centreonesxd->{global_id} = $id;
+                    $centreonesxd->{modules_registry}->{$name}->initArgs(@args);
+                    $centreonesxd->{modules_registry}->{$name}->run();
+                    exit(0);
+                }
+            } else {
+                #print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
+            }
+        } 
+
+        my $more = zmq_getsockopt($backend, ZMQ_RCVMORE);
+        #zmq_sendmsg($backend, $message, $more ? ZMQ_SNDMORE : 0);
+        last unless $more;
+    }
+}
+
 sub vsphere_handler {
-    my $self = shift;
+    $centreonesxd = shift;
     my $timeout_process;
 
     my $context = zmq_init();
 
-    my $backend  = zmq_socket($context, ZMQ_DEALER);
-    #zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $self->{whoaim});
-    #zmq_connect($backend, 'ipc://routing.ipc');
+    $backend = zmq_socket($context, ZMQ_DEALER);
+    zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $centreonesxd->{whoaim});
+    zmq_connect($backend, 'ipc://routing.ipc');
     #zmq_sendmsg($backend, 'ready');
-
+    
+    # Initialize poll set
+    my @poll = (
+        {
+            socket  => $backend,
+            events  => ZMQ_POLLIN,
+            callback => \&vsphere_event,
+        },
+    );
+    
     while (1) {
-        my $progress = $self->verify_child();
+        my $progress = $centreonesxd->verify_child();
 
         #####
         # Manage ending
         #####
-        if ($self->{stop} && $timeout_process > $self->{centreonesxd_config}->{timeout_kill}) {
-            $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Kill child not gently.");
-            foreach (keys %{$self->{child_proc}}) {
-                kill('INT', $self->{child_proc}->{$_}->{pid});
+        if ($centreonesxd->{stop} && $timeout_process > $centreonesxd->{centreonesxd_config}->{timeout_kill}) {
+            $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Kill child not gently.");
+            foreach (keys %{$centreonesxd->{child_proc}}) {
+                kill('INT', $centreonesxd->{child_proc}->{$_}->{pid});
             }
             $progress = 0;
         }
-        if ($self->{stop} && !$progress) {
-            if ($self->{vsphere_connected}) {
+        if ($centreonesxd->{stop} && !$progress) {
+            if ($centreonesxd->{vsphere_connected}) {
                 eval {
-                    $self->{session1}->logout();
+                    $centreonesxd->{session1}->logout();
                 };
             }            
             exit (0);
@@ -321,28 +408,29 @@ sub vsphere_handler {
         ###
         # Manage vpshere connection
         ###
-        if (defined($self->{last_time_vsphere}) && defined($self->{last_time_check}) && $self->{last_time_vsphere} < $self->{last_time_check}) {
-            $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Disconnect");
-            $self->{vsphere_connected} = 0;
+        if (defined($centreonesxd->{last_time_vsphere}) && defined($centreonesxd->{last_time_check}) 
+            && $centreonesxd->{last_time_vsphere} < $centreonesxd->{last_time_check}) {
+            $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Disconnect");
+            $centreonesxd->{vsphere_connected} = 0;
             eval {
-                $self->{session1}->logout();
+                $centreonesxd->{session1}->logout();
             };
         }
-        if ($self->{vsphere_connected} == 0) {
-            if (!centreon::esxd::common::connect_vsphere($self->{logger},
-                                                         $self->{whoaim},
-                                                         $self->{centreonesxd_config}->{timeout_vsphere},
-                                                         \$self->{session1},
-                                                         $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{url}, 
-                                                         $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{username},
-                                                         $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{password})) {
-                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Vsphere connection ok");
-                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache in progress");
-                if (!centreon::esxd::common::cache_perf_counters($self)) {
-                    $self->{last_time_vsphere} = time();
-                    $self->{keeper_session_time} = time();
-                    $self->{vsphere_connected} = 1;
-                    $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Create perf counters cache done");
+        if ($centreonesxd->{vsphere_connected} == 0) {
+            if (!centreon::esxd::common::connect_vsphere($centreonesxd->{logger},
+                                                         $centreonesxd->{whoaim},
+                                                         $centreonesxd->{centreonesxd_config}->{timeout_vsphere},
+                                                         \$centreonesxd->{session1},
+                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{url}, 
+                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{username},
+                                                         $centreonesxd->{centreonesxd_config}->{vsphere_server}->{$centreonesxd->{whoaim}}->{password})) {
+                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Vsphere connection ok");
+                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Create perf counters cache in progress");
+                if (!centreon::esxd::common::cache_perf_counters($centreonesxd)) {
+                    $centreonesxd->{last_time_vsphere} = time();
+                    $centreonesxd->{keeper_session_time} = time();
+                    $centreonesxd->{vsphere_connected} = 1;
+                    $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Create perf counters cache done");
                 }
             }
         }
@@ -350,136 +438,109 @@ sub vsphere_handler {
         ###
         # Manage session time
         ###
-        if (defined($self->{keeper_session_time}) && (time() - $self->{keeper_session_time}) > ($self->{centreonesxd_config}->{refresh_keeper_session} * 60)) {
+        if (defined($centreonesxd->{keeper_session_time}) && 
+            (time() - $centreonesxd->{keeper_session_time}) > ($centreonesxd->{centreonesxd_config}->{refresh_keeper_session} * 60)) {
             my $stime;
 
             eval {
-                $stime = $self->{session1}->get_service_instance()->CurrentTime();
-                $self->{keeper_session_time} = time();
+                $stime = $centreonesxd->{session1}->get_service_instance()->CurrentTime();
+                $centreonesxd->{keeper_session_time} = time();
             };
             if ($@) {
-                $self->{logger}->writeLogError("$@");
-                $self->{logger}->writeLogError("'" . $self->{whoaim} . "' Ask a new connection");
+                $centreonesxd->{logger}->writeLogError("$@");
+                $centreonesxd->{logger}->writeLogError("'" . $centreonesxd->{whoaim} . "' Ask a new connection");
                 # Ask a new connection
-                $self->{last_time_check} = time();
+                $centreonesxd->{last_time_check} = time();
             } else {
-                $self->{logger}->writeLogInfo("'" . $self->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
+                $centreonesxd->{logger}->writeLogInfo("'" . $centreonesxd->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
             }
         }
 
         my $data_element;
         my @rh_set;
-        if ($self->{vsphere_connected} == 0) {
+        if ($centreonesxd->{vsphere_connected} == 0) {
             sleep(5);
         }
-        if ($self->{stop} != 0) {
+        if ($centreonesxd->{stop} != 0) {
             sleep(1);
             next;
         }
         
-        my $message = zmq_recvmsg($backend, ZMQ_DONTWAIT);
-        if (defined($message)) {
-            if ($self->{vsphere_connected}) {                
-                $self->{logger}->writeLogInfo("vpshere '" . $self->{whoaim} . "' handler asking: $message");
-
-                $self->{child_proc}->{pid} = fork;
-                if (!$self->{child_proc}->{pid}) {
-                    # Child
-                    $self->{logger}->{log_mode} = 1 if ($self->{logger}->{log_mode} == 0);
-                    my ($id, $name, @args) = split /\Q$self->{separatorin}\E/, $data_element;
-                    $self->{global_id} = $id;
-                    $self->{modules_registry}->{$name}->initArgs(@args);
-                    $self->{modules_registry}->{$name}->run();
-                    exit(0);
-                }
-            } else {
-                #print $handle_writer_pipe "$id|-1|Vsphere connection error.\n";
-            }
-        } 
+        print "====chaton===\n";
+        zmq_poll(\@poll, 5000);
     }
 }
 
 sub create_vsphere_child {
     my ($self, %options) = @_;
-    
+
+    $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 0;
     $self->{logger}->writeLogInfo("Create vsphere sub-process for '" . $options{vsphere_name} . "'");   
     $self->{whoaim} = $options{vsphere_name};
 
-    $self->{child_vpshere_pid} = fork();
-    if (!$self->{child_vpshere_pid}) {
+    my $child_vpshere_pid = fork();
+    if ($child_vpshere_pid == 0) {
         $self->vsphere_handler();
         exit(0);
     }
+    $self->{childs_vpshere_pid}->{$child_vpshere_pid} = $self->{whoaim};
     $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 1;
-    $self->{centreonesxd_config}->{vsphere_server}->{$self->{child_vpshere_pid}} = { name => $self->{whoaim} };
 }
 
 sub run {
-    my $self = shift;
+    $centreonesxd = shift;
 
-    $self->SUPER::run();
-    $self->{logger}->redirect_output();
+    $centreonesxd->SUPER::run();
+    $centreonesxd->{logger}->redirect_output();
 
-    $self->{logger}->writeLogDebug("centreonesxd launched....");
-    $self->{logger}->writeLogDebug("PID: $$");
+    $centreonesxd->{logger}->writeLogDebug("centreonesxd launched....");
+    $centreonesxd->{logger}->writeLogDebug("PID: $$");
 
     my $context = zmq_init();
-    my $frontend = zmq_socket($context, ZMQ_ROUTER);
+    $frontend = zmq_socket($context, ZMQ_ROUTER);
 
     zmq_bind($frontend, 'tcp://*:5700');
     zmq_bind($frontend, 'ipc://routing.ipc');
     
     if (!defined($frontend)) {
-        $self->{logger}->writeLogError("Can't setup server: $!");
+        $centreonesxd->{logger}->writeLogError("Can't setup server: $!");
         exit(1);
     }
     
-    foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
-        $self->create_vsphere_child(vsphere_name => $_);
+    foreach (keys %{$centreonesxd->{centreonesxd_config}->{vsphere_server}}) {
+        $centreonesxd->create_vsphere_child(vsphere_name => $_);
     }
 
-    $self->{logger}->writeLogInfo("[Server accepting clients]");
+    $centreonesxd->{logger}->writeLogInfo("[Server accepting clients]");
     
     # Initialize poll set
     my @poll = (
         {
             socket  => $frontend,
             events  => ZMQ_POLLIN,
-            callback => sub {
-                while (1) {
-                    # Process all parts of the message
-                    my $message = zmq_recvmsg($frontend);
-                    print "=== " . Data::Dumper::Dumper(zmq_msg_data($message)) . " ===\n";
-                    $message = zmq_recvmsg($frontend);
-                    print "=== " . Data::Dumper::Dumper(zmq_msg_data($message)) . " ===\n";
-                                       
-                    my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);
-                    
-                    #zmq_sendmsg($backend, $message, $more ? ZMQ_SNDMORE : 0);
-                    last unless $more;
-                    return 1;
-                }
-            }
+            callback => \&router_event,
         },
     );
 
     # Switch messages between sockets
     while (1) {
-        #if ($self->{stop} == 1) {
+        my $count = $centreonesxd->verify_child_vsphere();
+
+        if ($centreonesxd->{stop} == 1) {
             # No childs
-        #    if (scalar(keys %{$self->{centreonesxd_config}->{vsphere_server}}) == 0) {
-        #        $self->{logger}->writeLogInfo("Quit main process");
-        #        exit(0);
-        #    }
-        #    foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
-        #        $self->{logger}->writeLogInfo("Send STOP command to '$_' child.");
-        #        my $send_msg = zmq_msg_init_data($_ . " STOP");
-        #        zmq_msg_send($send_msg, $publisher, 0);
-        #    }
-        #    $self->{stop} = 2;
-        #}
+            if ($count == 0) {
+                $centreonesxd->{logger}->writeLogInfo("Quit main process");
+                exit(0);
+            }
+            foreach (keys %{$centreonesxd->{centreonesxd_config}->{vsphere_server}}) {
+                $centreonesxd->{logger}->writeLogInfo("Send STOP command to '$_' child.");
+                zmq_sendmsg($frontend, "server-" . $_, ZMQ_SNDMORE);
+                zmq_sendmsg($frontend, "STOP");
+            }
+            $centreonesxd->{stop} = 2;
+        }
     
-        zmq_poll(\@poll, 1000);
+        zmq_poll(\@poll, 5000);
     }
 }
 

@@ -6,10 +6,41 @@ use strict;
 use Data::Dumper;
 use VMware::VIRuntime;
 use VMware::VILib;
+use ZMQ::LibZMQ3;
+use ZMQ::Constants qw(:all);
+use centreon::plugins::options;
+use centreon::plugins::output;
+use centreon::plugins::perfdata;
+
+my $manager_display = {};
 
 my %ERRORS = ( "OK" => 0, "WARNING" => 1, "CRITICAL" => 2, "UNKNOWN" => 3, "PENDING" => 4);
 my %MYERRORS = (0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN");
 my %MYERRORS_MASK = ("CRITICAL" => 3, "WARNING" => 1, "UNKNOWN" => 7, "OK" => 0);
+
+sub init_response {
+    $manager_display->{options} = centreon::plugins::options->new();
+    $manager_display->{output} = centreon::plugins::output->new(options => $manager_display->{options});
+    $manager_display->{perfdata} = centreon::plugins::perfdata->new(output => $manager_display->{output});
+    
+    return $manager_display;
+}
+
+sub response {
+    my (%options) = @_;
+
+    my $stdout;
+    {
+        local *STDOUT;
+        $manager_display->{output}->{option_results}->{output_json} = 1;
+        open STDOUT, '>', \$stdout;
+        $manager_display->{output}->display(force_long_output => 1);
+    }
+    
+    print "====stdout === $stdout===\n";
+    zmq_sendmsg($options{endpoint}, $options{identity}, ZMQ_SNDMORE);
+    zmq_sendmsg($options{endpoint}, "RESPSERVER " . $stdout);
+}
 
 sub errors_mask {
     my ($status, $state) = @_;
