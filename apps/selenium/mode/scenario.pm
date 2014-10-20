@@ -106,6 +106,11 @@ sub check_options {
         $self->{option_results}->{timeout} > 0) {
         alarm($self->{option_results}->{timeout});
     }
+    if (!defined($self->{option_results}->{scenario})) 
+        $self->{output}->add_option_msg(short_msg => "Please specify a scenario name" . $self->{option_results}->{scenario} . "'.");
+        $self->{output}->option_exit();
+    }
+
 }
 
 sub run {
@@ -113,7 +118,7 @@ sub run {
 
     my $p = XML::Parser->new(NoLWP => 1);
     my $filename = $self->{option_results}->{directory} . '/' . $self->{option_results}->{scenario} . '.html';
-    my $xp = XML::XPath->new(parser => $p, filename => $filename);
+    #my $xp = XML::XPath->new(parser => $p, filename => $filename);
 
     my $baseurlNode = $xp->find('/html/head/link[@rel="selenium.base"]');
     my $baseurl = $baseurlNode->shift->getAttribute('href');
