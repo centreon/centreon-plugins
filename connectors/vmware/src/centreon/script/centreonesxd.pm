@@ -193,6 +193,11 @@ sub handle_TERM {
     my $self = shift;
     $self->{logger}->writeLogInfo("$$ Receiving order to stop...");
     $self->{stop} = 1;
+    
+    foreach (keys %{$self->{childs_vpshere_pid}}) {
+        kill('TERM', $_);
+        $self->{logger}->writeLogInfo("Send -TERM signal to '" . $self->{childs_vpshere_pid}->{$_} . "' process..");
+    }
 }
 
 sub handle_HUP {
@@ -208,6 +213,7 @@ sub handle_CHLD {
     while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
         $self->{return_child}{$child_pid} = {status => 1, rtime => time()};
     }
+    
     $SIG{CHLD} = \&class_handle_CHLD;
 }
 
@@ -229,20 +235,20 @@ sub verify_child_vsphere {
     foreach (keys %{$self->{return_child}}) {
         delete $self->{return_child}->{$_};
         
-        # We need to quit
-        if ($self->{stop} != 0) {
-            my $name = $self->{childs_vpshere_pid}->{$_};
-            $self->{centreonesxd_config}->{vsphere_server}->{$name}->{running} = 0;            
-            next;
-        }
-        
         if (defined($self->{childs_vpshere_pid}->{$_})) {
-            $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' dead ???!! We relaunch it");
-            $self->create_vsphere_child(vsphere_name => $self->{childs_vpshere_pid}->{$_});
+            if ($self->{stop} == 0) {
+                $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "'???!! we relaunch it!!!");
+
+                $self->create_vsphere_child(vsphere_name => $self->{childs_vpshere_pid}->{$_});
+            } else {
+                $self->{logger}->writeLogInfo("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' dead ???!!");
+                $self->{centreonesxd_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}}->{running} = 0;
+            }
+            
             delete $self->{childs_vpshere_pid}->{$_};
         }
     }
-    
+
     my $count = 0;
     foreach (keys %{$self->{centreonesxd_config}->{vsphere_server}}) {
         if ($self->{centreonesxd_config}->{vsphere_server}->{$_}->{running} == 1) {
@@ -399,14 +405,9 @@ sub run {
             # No childs
             if ($count == 0) {
                 $centreonesxd->{logger}->writeLogInfo("Quit main process");
+                zmq_close($frontend);
                 exit(0);
             }
-            foreach (keys %{$centreonesxd->{centreonesxd_config}->{vsphere_server}}) {
-                $centreonesxd->{logger}->writeLogInfo("Send STOP command to '$_' child.");
-                zmq_sendmsg($frontend, "server-" . $_, ZMQ_SNDMORE);
-                zmq_sendmsg($frontend, "STOP");
-            }
-            $centreonesxd->{stop} = 2;
         }
     
         zmq_poll(\@poll, 5000);

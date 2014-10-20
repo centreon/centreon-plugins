@@ -20,6 +20,7 @@ sub new {
     my ($class, %options) = @_;
     $connector = {};
     bless $connector, $class;
+    $connector->set_signal_handlers;
 
     $connector->{child_proc} = {};
     $connector->{return_child} = {};
@@ -82,13 +83,13 @@ sub class_handle_CHLD {
 
 sub handle_TERM {
     my $self = shift;
-    $self->{logger}->writeLogInfo("$$ Receiving order to stop...");
+    $self->{logger}->writeLogInfo("connector '" . $self->{whoaim} . "' Receiving order to stop...");
     $self->{stop} = 1;
 }
 
 sub handle_HUP {
     my $self = shift;
-    $self->{logger}->writeLogInfo("$$ Receiving order to reload...");
+    $self->{logger}->writeLogInfo("connector $$ Receiving order to reload...");
     # TODO
 }
 
@@ -163,6 +164,7 @@ sub reqclient {
             $self->{modules_registry}->{$result->{command}}->run();
             
             centreon::esxd::common::response(token => 'RESPSERVER2', endpoint => $backend, reinit => 'ipc://routing.ipc');
+            zmq_close($backend);
             exit(0);
         }
     } else {
@@ -223,8 +225,10 @@ sub run {
                 eval {
                     $connector->{session1}->logout();
                 };
-            }            
-            exit (0);
+            }
+            
+            zmq_close($backend);
+            exit(0);
         }
 
         ###
