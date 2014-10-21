@@ -44,8 +44,6 @@ use ZMQ::LibZMQ3;
 use ZMQ::Constants qw(:all);
 use UUID;
 
-my %handlers = (ALRM => {} );
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -60,6 +58,7 @@ sub new {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "storage-status"          => { name => 'storage_status' },
+                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "timeout:s"               => { name => 'timeout', default => 50 },
                                 });
     $self->{json_send} = {};
@@ -80,6 +79,11 @@ sub check_options {
         $self->{timeout} = $self->{option_results}->{timeout};
     } else {
         $self->{timeout} = 50;
+    }
+    
+    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -171,6 +175,10 @@ ESX hostname is a regexp.
 =item B<--storage-status>
 
 Check storage(s) status.
+
+=item B<--disconnect-status>
+
+Status if ESX host disconnected (default: 'unknown').
 
 =item B<--timeout>
 
