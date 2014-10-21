@@ -13,6 +13,7 @@ use centreon::plugins::output;
 use centreon::plugins::perfdata;
 
 my $manager_display = {};
+my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
 
 sub init_response {
     $manager_display->{options} = centreon::plugins::options->new();
@@ -39,11 +40,14 @@ sub response {
          my $context = zmq_init();
          $options{endpoint} = zmq_socket($context, ZMQ_DEALER);
          zmq_connect($options{endpoint}, $options{reinit});
+         # we wait 10 seconds after. If not there is a problem... so we can quit
+         # dialog from vsphere response to router
+         zmq_setsockopt($options{endpoint}, ZMQ_LINGER, 10000); 
     }
     if (defined($options{identity})) {
-        zmq_sendmsg($options{endpoint}, $options{identity}, ZMQ_SNDMORE);
+        zmq_sendmsg($options{endpoint}, $options{identity}, $flag);
     }
-    zmq_sendmsg($options{endpoint}, $options{token} . " " . $stdout);
+    zmq_sendmsg($options{endpoint}, $options{token} . " " . $stdout, ZMQ_NOBLOCK);
 }
 
 sub vmware_error {

@@ -291,8 +291,9 @@ sub request {
         return ;
     }
 
-    zmq_sendmsg($frontend, "server-" . $result->{container}, ZMQ_SNDMORE);
-    zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data});
+    my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
+    zmq_sendmsg($frontend, "server-" . $result->{container}, $flag);
+    zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data}, ZMQ_NOBLOCK);
 }
 
 sub repserver {
@@ -374,6 +375,7 @@ sub run {
     my $context = zmq_init();
     $frontend = zmq_socket($context, ZMQ_ROUTER);
 
+    zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
     zmq_bind($frontend, 'tcp://*:5700');
     zmq_bind($frontend, 'ipc://routing.ipc');
     

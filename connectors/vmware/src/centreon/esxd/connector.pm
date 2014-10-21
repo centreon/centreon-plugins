@@ -34,7 +34,6 @@ sub new {
     $connector->{perfcounter_refreshrate} = 20;
     $connector->{perfcounter_speriod} = -1;
     $connector->{stop} = 0;
-    $connector->{childs_vpshere_pid} = {};
     $connector->{session1} = undef;
     
     $connector->{modules_registry} = $options{modules_registry};
@@ -120,7 +119,10 @@ sub verify_child {
     # Verify process
     foreach (keys %{$self->{child_proc}}) {
         # Check ctime
-        if (time() - $self->{child_proc}->{$_}->{ctime} > $self->{config_child_timeout}) {
+        if (defined($self->{return_child}->{$self->{child_proc}->{$_}->{pid}})) {
+            delete $self->{return_child}->{$_};
+            delete $self->{child_proc}->{$_};
+        } elsif (time() - $self->{child_proc}->{$_}->{ctime} > $self->{config_child_timeout}) {
             $self->response_router(severity => 'UNKNOWN', msg => 'Timeout process',
                                    identity => $_);
             kill('INT', $self->{child_proc}->{$_}->{pid});
@@ -196,6 +198,7 @@ sub run {
 
     $backend = zmq_socket($context, ZMQ_DEALER);
     zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $connector->{whoaim});
+    zmq_setsockopt($backend, ZMQ_LINGER, 0); # we discard  
     zmq_connect($backend, 'ipc://routing.ipc');
     
     # Initialize poll set
@@ -209,7 +212,7 @@ sub run {
 
     while (1) {
         my $progress = $connector->verify_child();
-
+        
         #####
         # Manage ending
         #####

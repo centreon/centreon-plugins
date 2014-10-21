@@ -23,9 +23,9 @@ sub getCommandName {
 sub checkArgs {
     my ($self, %options) = @_;
 
-    if (!defined($options{arguments}->{esx_hostname}) || $options{arguments}->{esx_hostname} eq "") {
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
         $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: need esx hostname");
+                                                short_msg => "Argument error: esx hostname cannot be null");
         return 1;
     }
     return 0;
@@ -103,7 +103,7 @@ sub run {
         }
         
         # Storage
-        if ($self->{storage_status} == 1 && defined($storageStatusInfo)) {
+        if (defined($self->{storage_status}) && defined($storageStatusInfo)) {
             foreach (@$storageStatusInfo) {
                 if ($_->status->key =~ /^red$/i) {
                     $self->{manager}->{output}->output_add(long_msg => $_->name . ": " . $_->status->summary);
