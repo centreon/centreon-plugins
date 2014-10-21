@@ -44,6 +44,8 @@ use ZMQ::LibZMQ3;
 use ZMQ::Constants qw(:all);
 use UUID;
 
+my %handlers = (ALRM => {} );
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -56,7 +58,9 @@ sub new {
                                   "connector-port:s"        => { name => 'connector_port', default => 5700 },
                                   "container:s"             => { name => 'container', default => 'default' },
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
+                                  "filter"                  => { name => 'filter' },
                                   "storage-status"          => { name => 'storage_status' },
+                                  "timeout:s"               => { name => 'timeout', default => 50 },
                                 });
     $self->{json_send} = {};
     return $self;
@@ -71,6 +75,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
         $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
+        $self->{option_results}->{timeout} > 0) {
+        $self->{timeout} = $self->{option_results}->{timeout};
+    } else {
+        $self->{timeout} = 50;
+    }
 }
 
 sub build_request {
@@ -78,9 +88,9 @@ sub build_request {
     
     $self->{json_send}->{identity} = 'client-' . unpack('H*', $options{uuid});
     $self->{json_send}->{command} = 'healthhost';
-    $self->{json_send}->{container} = $self->{option_results}->{container};
-    $self->{json_send}->{esx_hostname} = $self->{option_results}->{esx_hostname};
-    $self->{json_send}->{storage_status} = defined($self->{option_results}->{storage_status}) ? 1 : 0;
+    foreach (keys %{$self->{option_results}}) {
+        $self->{json_send}->{$_} = $self->{option_results}->{$_};
+    }
 }
 
 sub run {
@@ -88,23 +98,41 @@ sub run {
 
     my $uuid;
     my $context = zmq_init();
-    my $requester = zmq_socket($context, ZMQ_DEALER);
-    if (!defined($requester)) {
+    $self->{requester} = zmq_socket($context, ZMQ_DEALER);
+    if (!defined($self->{requester})) {
         $self->{output}->add_option_msg(short_msg => "Cannot create socket: $!");
         $self->{output}->option_exit();
     }
-        
+    
+    my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
     UUID::generate($uuid);
-    zmq_setsockopt($requester, ZMQ_IDENTITY, "client-" . $uuid);
-    zmq_connect($requester, 'tcp://' . $self->{option_results}->{connector_hostname} . ':' . $self->{option_results}->{connector_port});
+    zmq_setsockopt($self->{requester}, ZMQ_IDENTITY, "client-" . $uuid);
+    zmq_setsockopt($self->{requester}, ZMQ_LINGER, 0); # we discard
+    zmq_connect($self->{requester}, 'tcp://' . $self->{option_results}->{connector_hostname} . ':' . $self->{option_results}->{connector_port});
     
     $self->build_request(uuid => $uuid);
     
-    zmq_sendmsg($requester, "REQCLIENT " . JSON->new->utf8->encode($self->{json_send}));
-    my $response = zmq_recvmsg($requester);
-    zmq_close($requester);
- 
-    apps::vmware::connector::lib::common::connector_response($self, response => $response);
+    zmq_sendmsg($self->{requester}, "REQCLIENT " . JSON->new->utf8->encode($self->{json_send}), ZMQ_NOBLOCK);
+    
+    my @poll = (
+        {
+            socket  => $self->{requester},
+            events  => ZMQ_POLLIN,
+            callback => sub {
+               my $response = zmq_recvmsg($self->{requester});
+               zmq_close($self->{requester});
+               apps::vmware::connector::lib::common::connector_response($self, response => $response);
+               $self->{output}->display();
+               $self->{output}->exit();
+            },
+        },
+    );
+    
+    zmq_poll(\@poll, $self->{timeout} * 1000);    
+    zmq_close($self->{requester});
+    
+    $self->{output}->output_add(severity => 'UNKNOWN',
+                                short_msg => sprintf("Cannot get response (timeout received)"));
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -134,10 +162,19 @@ Container to use (it depends of the connector configuration).
 =item B<--esx-hostname>
 
 ESX hostname to check.
+If not set, we check all ESX.
+
+=item B<--filter>
+
+ESX hostname is a regexp.
 
 =item B<--storage-status>
 
 Check storage(s) status.
+
+=item B<--timeout>
+
+Set global execution timeout (Default: 50)
 
 =back
 
