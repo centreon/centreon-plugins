@@ -385,12 +385,16 @@ sub vm_state {
 }
 
 sub host_state {
-    my ($obj_esxd, $host, $connection_state) = @_;
+    my (%options) = @_;
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{host_state_error};
     
-    if ($connection_state !~ /^connected$/i) {
-        my $output = "Host '" . $host . "' not connected. Current Connection State: '$connection_state'.";
-        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{host_state_error},
-                                               short_msg => $output);
+    if ($options{state} !~ /^connected$/i) {
+        my $output = "Host '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";
+        if ($options{multiple} == 0 || 
+            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+            $manager_display->{output}->output_add(severity => $status,
+                                                   short_msg => $output);
+        }
         return 0;
     }
     

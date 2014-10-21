@@ -52,18 +52,39 @@ sub set_connector {
 sub run {
     my $self = shift;
 
-    my %filters = (name => $self->{esx_hostname});
-    my @properties = ('runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
+    my %filters = ();
+    my $multiple = 0;
+
+    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
+        $filters{name} =  qr/^\Q$self->{esx_hostname}\E$/;
+    } elsif (!defined($self->{esx_hostname})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{esx_hostname}/;
+    }
+    
+    my @properties = ('name', 'runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
                       'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     if (!defined($result)) {
         return ;
     }
     
-    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{esx_hostname}, 
-                                                  $$result[0]->{'runtime.connectionState'}->val) == 0);
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All ESX health checks are ok"));
+    }
     
     foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+                                                    hostname => $entity_view->{name}, 
+                                                    state => $entity_view->{'runtime.connectionState'}->val,
+                                                    status => $self->{disconnect_status},
+                                                    multiple => $multiple) == 0);
+
         my $OKCount = 0;
         my $CAlertCount = 0;
         my $WAlertCount = 0;
@@ -71,6 +92,7 @@ sub run {
         my $memoryStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{memoryStatusInfo};
         my $storageStatusInfo = $entity_view->{'runtime.healthSystemRuntime.hardwareStatusInfo'}->{storageStatusInfo};
         my $numericSensorInfo = $entity_view->{'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo'};
+        $self->{manager}->{output}->output_add(long_msg => sprintf("Checking %s", $entity_view->{name}));
         
         # CPU
         if (defined($cpuStatusInfo)) {
@@ -136,16 +158,19 @@ sub run {
                                                                  threshold => [ { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                                   short_msg => sprintf("%s health issue(s) found", $WAlertCount));
+                                                   short_msg => sprintf("'%s' %s health issue(s) found", $entity_view->{name}, $WAlertCount));
         }
         $exit = $self->{manager}->{perfdata}->threshold_check(value => $CAlertCount, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' } ]);
         if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s health issue(s) found", $CAlertCount));
+                                                   short_msg => sprintf("'%s' %s health issue(s) found", $entity_view->{name}, $CAlertCount));
         }
         
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All %s health checks are green", $OKCount));
+        $self->{manager}->{output}->output_add(long_msg => sprintf("%s health checks are green", $OKCount));
+        if ($multiple == 0) {
+            $self->{manager}->{output}->output_add(severity => 'OK',
+                                                   short_msg => sprintf("'%s' %s health checks are green", $entity_view->{name}, $OKCount));
+        }
     }
 }
 
