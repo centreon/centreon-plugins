@@ -113,7 +113,6 @@ sub print_usage () {
     print "   --vsphere         vsphere name (default: none)\n";
     print "   -u (--usage)       What to check. The list and args (required)\n";
     print "\n";
-
     print "'datastore-usage':\n";
     print "   --datastore       Datastore name to check (required)\n";
     print "   -w (--warning)    Warning Threshold (default 80)\n";
@@ -145,12 +144,6 @@ sub print_usage () {
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "   --skip-errors     Status OK if not enough permissions or others errors (when you checks multiples)\n";
     print "\n";
-    print "'cpuhost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
-    print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
-    print "   --light-perfdata  Display only total average cpu perfdata\n";
-    print "\n";
     print "'nethost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
     print "   --nic             Physical nic name to check (required)\n";
@@ -158,16 +151,6 @@ sub print_usage () {
     print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
     print "   --filter          Use regexp for --nic option (can check multiple nics at once)\n";
     print "   --skip-errors     Status OK if some nic are down (when you checks multiples)\n";
-    print "\n";
-    print "'memhost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in percent (default 80)\n";
-    print "   -c (--critical)   Critical Threshold in percent (default 90)\n";
-    print "\n";
-    print "'swaphost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in MB/s (default 0.8)\n";
-    print "   -c (--critical)   Critical Threshold in MB/s (default 1)\n";
     print "\n";
     print "'datastoreshost':\n";
     print "   -e (--esx-host)   Esx Host to check (required)\n";
@@ -182,9 +165,6 @@ sub print_usage () {
     print "   -c (--critical)   Critical Threshold if more VMs on (default none)\n";
     print "   --warning2        Warning Threshold if more VMs not on (default none)\n";
     print "   --critical2       Critical Threshold if more VMs not on (default none)\n";
-    print "\n";
-    print "'uptimehost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
     print "\n";
     print "'cpuvm':\n";
     print "   --vm              VM to check (required)\n";
@@ -239,10 +219,6 @@ sub print_usage () {
     print "   --warn            Warn\n";
     print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
     print "\n";
-
-    print "'stats':\n";
-    print "   -w (--warning)    Warning Threshold in total client connections (default none)\n";
-    print "   -c (--critical)   Critical Threshold in total client connections (default none)\n";
 }
 
 sub print_help () {
