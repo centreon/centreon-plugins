@@ -52,6 +52,8 @@ sub new {
                          'list-datastores'  => 'apps::vmware::connector::mode::listdatastores',
                          'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
                          'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
+                         'stat-connectors'  => 'apps::vmware::connector::mode::statconnectors',
+                         'status-host'      => 'apps::vmware::connector::mode::statushost',
                          );
 
     return $self;
