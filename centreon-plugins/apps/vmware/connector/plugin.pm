@@ -47,13 +47,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'cpu-host'         => 'apps::vmware::connector::mode::cpuhost', 
                          'getmap'           => 'apps::vmware::connector::mode::getmap',
                          'health-host'      => 'apps::vmware::connector::mode::healthhost',
                          'list-datastores'  => 'apps::vmware::connector::mode::listdatastores',
                          'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
                          'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
+                         'memory-host'      => 'apps::vmware::connector::mode::memoryhost',
                          'stat-connectors'  => 'apps::vmware::connector::mode::statconnectors',
                          'status-host'      => 'apps::vmware::connector::mode::statushost',
+                         'swap-host'        => 'apps::vmware::connector::mode::swaphost',
+                         'uptime-host'      => 'apps::vmware::connector::mode::uptimehost',
                          );
 
     return $self;
