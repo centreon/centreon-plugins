@@ -147,7 +147,7 @@ __END__
 
 =head1 MODE
 
-Check health of ESX hosts.
+Check ESX global status.
 
 =over 8
 
