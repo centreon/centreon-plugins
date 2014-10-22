@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'maintenancehost';
     
     bless $self, $class;
@@ -22,44 +21,91 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($lhost) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($lhost) || $lhost eq "") {
-        $self->{logger}->writeLogError("ARGS error: need hostname");
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: esx hostname cannot be null");
+        return 1;
+    }
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
+        return 1;
+    }
+    if (defined($options{arguments}->{maintenance_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{maintenance_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for maintenance status '" . $options{arguments}->{maintenance_status} . "'");
         return 1;
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lhost} = $_[0];
+    my ($self, %options) = @_;
+
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    my %filters = ('name' => $self->{lhost});
-    my @properties = ('runtime.inMaintenanceMode');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
+    my %filters = ();
+    my $multiple = 0;
 
-    my $status = 0; # OK
-    my $output = '';
+    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
+        $filters{name} =  qr/^\Q$self->{esx_hostname}\E$/;
+    } elsif (!defined($self->{esx_hostname})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{esx_hostname}/;
+    }
+    
+    my @properties = ('name', 'runtime.inMaintenanceMode', 'runtime.connectionState');
+    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    return if (!defined($result));
+
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All ESX maintenance mode are ok"));
+    }
 
     foreach my $entity_view (@$result) {
-        if ($entity_view->{'runtime.inMaintenanceMode'} ne "false") {
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-            $output = "Server " . $self->{lhost} . " is on maintenance mode.";
-        } else {
-            $output = "Server " . $self->{lhost} . " is not on maintenance mode.";
+        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+                                                    hostname => $entity_view->{name}, 
+                                                    state => $entity_view->{'runtime.connectionState'}->val,
+                                                    status => $self->{disconnect_status},
+                                                    multiple => $multiple) == 0);
+    
+        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' maintenance mode is %s", 
+                                                                   $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}));
+        
+        if ($entity_view->{'runtime.inMaintenanceMode'} =~ /$self->{maintenance_alert}/ && 
+            !$self->{manager}->{output}->is_status(value => $self->{maintenance_status}, compare => 'ok', litteral => 1)) {
+            $self->{manager}->{output}->output_add(severity => $self->{maintenance_status},
+                                                   short_msg => sprintf("'%s' maintenance mode is %s", 
+                                                                        $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}))
+        } elsif ($multiple == 0) {
+            $self->{manager}->{output}->output_add(severity => 'OK',
+                                                   short_msg => sprintf("'%s' maintenance mode is %s", 
+                                                                        $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}))
         }
     }
-
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
 
 1;

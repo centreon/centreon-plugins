@@ -28,6 +28,12 @@ sub checkArgs {
                                                 short_msg => "Argument error: esx hostname cannot be null");
         return 1;
     }
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
+        return 1;
+    }
     return 0;
 }
 
@@ -56,7 +62,7 @@ sub run {
     my $multiple = 0;
 
     if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
-        $filters{name} =  qr/^\Q$self->{esx_hostname}\E$/;
+        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
     } elsif (!defined($self->{esx_hostname})) {
         $filters{name} = qr/.*/;
     } else {
@@ -66,9 +72,7 @@ sub run {
     my @properties = ('name', 'runtime.healthSystemRuntime.hardwareStatusInfo', 'runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo', 
                       'runtime.connectionState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
+    return if (!defined($result));
     
     if (scalar(@$result) > 1) {
         $multiple = 1;

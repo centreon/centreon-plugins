@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'getmap';
     
     bless $self, $class;
@@ -22,56 +21,75 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
+    my ($self, %options) = @_;
+
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: esx hostname cannot be null");
+        return 1;
+    }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lhost} = $_[0];
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
     my %filters = ();
-    if (defined($self->{lhost}) and $self->{lhost} ne "") {
-        %filters = ('name' => $self->{lhost});
+
+    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
+        $filters{name} =  qr/^\Q$self->{esx_hostname}\E$/;
+    } elsif (!defined($self->{esx_hostname})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'vm');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
+    return if (!defined($result));
 
-    my $status = 0; # OK
-    my $output = '';
-    my $output_append = "";
-
+    $self->{manager}->{output}->output_add(severity => 'OK',
+                                           short_msg => sprintf("List ESX host(s):"));
+    
     foreach my $entity_view (@$result) {
-        $output .= $output_append . "ESX Host '" . $entity_view->name . "': ";
+        $self->{manager}->{output}->output_add(long_msg => sprintf("  %s%s", $entity_view->name, 
+                                                                   defined($self->{vm_no}) ? '' : ':'));
+        next if (defined($self->{vm_no}));
+        
         my @vm_array = ();
         if (defined $entity_view->vm) {
-                @vm_array = (@vm_array, @{$entity_view->vm});
+            @vm_array = (@vm_array, @{$entity_view->vm});
         }
 
         @properties = ('name', 'summary.runtime.powerState');
         my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
-        if (!defined($result)) {
-            return ;
+        return if (!defined($result2));
+        
+        my %vms = ();
+        foreach my $vm (@$result2) {
+            $vms{$vm->name} = $vm->{'summary.runtime.powerState'}->val;
         }
         
-        my $output_append2 = '';
-        foreach my $vm (@$result2) {
-            if ($vm->{'summary.runtime.powerState'}->val eq "poweredOn") {
-                $output .= $output_append2 . "[" . $vm->name . "]";
-                $output_append2 = ', ';
-            }
+        foreach (sort keys %vms) {
+            $self->{manager}->{output}->output_add(long_msg => sprintf("      %s [%s]", 
+                                                                       $_, $vms{$_}));
         }
-        $output_append = ". ";
     }
-
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
 
 1;

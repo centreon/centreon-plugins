@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'listnichost';
     
     bless $self, $class;
@@ -22,32 +21,40 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($host) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($host) || $host eq "") {
-        $self->{logger}->writeLogError("ARGS error: need hostname");
+    if (!defined($options{arguments}->{esx_hostname}) || $options{arguments}->{esx_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: esx hostname need to be set");
         return 1;
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lhost} = $_[0];
-    $self->{xml} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
+     my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
     my %nic_in_vswitch = ();
     
-    my %filters = ('name' => $self->{lhost});
+    my %filters = (name => $self->{esx_hostname});
     my @properties = ('config.network.pnic', 'config.network.vswitch', 'config.network.proxySwitch');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
+    return if (!defined($result));
     
     # Get Name from vswitch
     if (defined($$result[0]->{'config.network.vswitch'})) {
@@ -68,36 +75,48 @@ sub run {
         }
     }
 
-    my $status = 0; # OK
-    my $output_up = 'Nic Up List: ';
-    my $output_down = 'Nic Down List: ';
-    my $output_down_no_vswitch = 'Nic Down List (not in vswitch, dvswitch): ';
-    my $output_up_append = "";
-    my $output_down_append = "";
-    my $output_down_no_vswitch_append = "";
-    my $xml_output = '<data>';
+    if (!defined($self->{disco_show})) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => 'List nic host:');
+    }
+    
+    my %nics = ();
     foreach (@{$$result[0]->{'config.network.pnic'}}) {
+        if (defined($nic_in_vswitch{$_->key})) {
+            $nics{$_->device}{vswitch} = 1;
+        }
         if (defined($_->linkSpeed)) {
-            $output_up .= $output_up_append . "'" . $_->device . "'";
-            $output_up_append = ', ';
-            $xml_output .= '<element name="' . $_->device . '" />';
+            $nics{$_->device}{up} = 1;
         } else {
-            if (defined($nic_in_vswitch{$_->key})) {
-                $output_down .= $output_down_append . "'" . $_->device . "'";
-                $output_down_append = ', ';
-                $xml_output .= '<element name="' . $_->device . '" />';
-            } else {
-                $output_down_no_vswitch .= $output_down_no_vswitch_append . "'" . $_->device . "'";
-                $output_down_no_vswitch_append = ', ';
-            }
+            $nics{$_->device}{down} = 1;
         }
     }
-    $xml_output .= '</data>';
-
-    if ($self->{xml} == 1) {
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$xml_output\n");
-    } else {
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output_up. $output_down. $output_down_no_vswitch.\n");
+    
+    foreach my $nic_name (sort keys %nics) {
+        my $status = defined($nics{$nic_name}{up}) ? 'up' : 'down';
+        my $vswitch = defined($nics{$nic_name}{vswitch}) ? 1 : 0;
+        
+        if (defined($self->{disco_show})) {
+            $self->{manager}->{output}->add_disco_entry(name => $nic_name,
+                                                        status => $status,
+                                                        vswitch => $vswitch);
+        } else {
+            $self->{manager}->{output}->output_add(long_msg => sprintf('%s [status: %s] [vswitch: %s]', 
+                                                                       $nic_name, $status, $vswitch));
+        }
+    }
+    
+    if (defined($self->{disco_show})) {
+        my $stdout;
+        {
+            local *STDOUT;
+            $self->{manager}->{output}->{option_results}->{output_xml} = 1;
+            open STDOUT, '>', \$stdout;
+            $self->{manager}->{output}->display_disco_show();
+            delete $self->{manager}->{output}->{option_results}->{output_xml};
+            $self->{manager}->{output}->output_add(severity => 'OK',
+                                                   short_msg => $stdout);
+        }
     }
 }
 
