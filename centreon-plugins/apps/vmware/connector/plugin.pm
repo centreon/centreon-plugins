@@ -47,7 +47,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health-host'  => 'apps::vmware::connector::mode::healthhost',
+                         'getmap'           => 'apps::vmware::connector::mode::getmap',
+                         'health-host'      => 'apps::vmware::connector::mode::healthhost',
+                         'list-datastores'  => 'apps::vmware::connector::mode::listdatastores',
+                         'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
+                         'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
                          );
 
     return $self;
