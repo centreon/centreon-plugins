@@ -93,7 +93,7 @@ sub new {
     $self->{return_child} = {};
     $self->{stop} = 0;
     $self->{childs_vpshere_pid} = {};
-    $self->{counter} = 0;
+    $self->{counter_stats} = {};
     $self->{whoaim} = undef; # to know which vsphere to connect
     $self->{module_date_parse_loaded} = 0;
     $self->{modules_registry} = {};
@@ -272,6 +272,12 @@ sub request {
         centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
+    if ($result->{command} eq 'stats') {
+        centreon::esxd::common::stats_info(manager => $options{manager},
+                                           counters => $self->{counter_stats});
+        centreon::esxd::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
+        return ;
+    }
     if (!defined($self->{modules_registry}->{$result->{command}})) {
         $options{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                 short_msg => "Unknown method name '$result->{command}'");
@@ -290,6 +296,7 @@ sub request {
         return ;
     }
 
+    $self->{counter_stats}->{$result->{container}}++;
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
     zmq_sendmsg($frontend, "server-" . $result->{container}, $flag);
     zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data}, ZMQ_NOBLOCK);
@@ -384,6 +391,7 @@ sub run {
     }
     
     foreach (keys %{$centreonesxd->{centreonesxd_config}->{vsphere_server}}) {
+        $centreonesxd->{counter_stats}->{$_} = 0;
         $centreonesxd->create_vsphere_child(vsphere_name => $_);
     }
 

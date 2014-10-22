@@ -97,7 +97,7 @@ sub handle_CHLD {
     my $child_pid;
 
     while (($child_pid = waitpid(-1, &WNOHANG)) > 0) {
-        $self->{return_child}{$child_pid} = {status => 1, rtime => time()};
+        $self->{return_child}->{$child_pid} = {status => 1, rtime => time()};
     }
     $SIG{CHLD} = \&class_handle_CHLD;
 }
@@ -120,7 +120,7 @@ sub verify_child {
     foreach (keys %{$self->{child_proc}}) {
         # Check ctime
         if (defined($self->{return_child}->{$self->{child_proc}->{$_}->{pid}})) {
-            delete $self->{return_child}->{$_};
+            delete $self->{return_child}->{$self->{child_proc}->{$_}->{pid}};
             delete $self->{child_proc}->{$_};
         } elsif (time() - $self->{child_proc}->{$_}->{ctime} > $self->{config_child_timeout}) {
             $self->response_router(severity => 'UNKNOWN', msg => 'Timeout process',

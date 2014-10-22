@@ -171,7 +171,8 @@ sub get_perf_metric_ids {
             }
         } else {
             $obj_esxd->{logger}->writeLogError("Metric '" . $_->{'label'} . "' unavailable.");
-            $obj_esxd->print_response("-3|Error: Counter doesn't exist. VMware version can be too old.\n");
+            $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => "Counter doesn't exist. VMware version can be too old.");
             return undef;
         }
     }
@@ -179,7 +180,7 @@ sub get_perf_metric_ids {
 }
 
 sub generic_performance_values_historic {
-    my ($obj_esxd, $views, $perfs, $interval, $skip_undef_counter, $multiples) = @_;
+    my ($obj_esxd, $views, $perfs, $interval, %options) = @_;
     my $counter = 0;
     my %results;
     
@@ -225,7 +226,7 @@ sub generic_performance_values_historic {
         }
         foreach my $val (@$perfdata) {
             foreach (@{$val->{value}}) {
-                if (defined($skip_undef_counter) && $skip_undef_counter == 1 && !defined($_->value)) {
+                if (defined($options{skip_undef_counter}) && $options{skip_undef_counter} == 1 && !defined($_->value)) {
                     $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
                     next;
                 } elsif (!defined($_->value)) {
@@ -234,8 +235,13 @@ sub generic_performance_values_historic {
                     return undef;
                 }
                 
-                if (defined($multiples) && $multiples == 1) {
-                    $results{$val->{entity}->{value} . ":" . $_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                if (defined($options{multiples}) && $options{multiples} == 1) {
+                    if (defined($options{multiples_result_by_entity}) && $options{multiples_result_by_entity} == 1) {
+                        $results{$val->{entity}->{value}} = {} if (!defined($results{$val->{entity}->{value}}));
+                        $results{$val->{entity}->{value}}->{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                    } else {
+                        $results{$val->{entity}->{value} . ":" . $_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                    }
                 } else {
                     $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
                 }
@@ -402,21 +408,20 @@ sub host_state {
 }
 
 sub stats_info {
-    my ($obj_esxd, $rh, $current_fileno, $args) = @_;
-    my $output;
-    my $status = 0;
-    
-    $$args[0] ='' if (!defined($$args[0]));
-    $$args[1] = '' if (!defined($$args[1]));
-    
-    my $num_connection = scalar(keys(%{$obj_esxd->{sockets}}));
-    $output = "'$num_connection' total client connections | connection=$num_connection;$$args[0];$$args[1];0; requests=" . $obj_esxd->{counter};
-    if ($$args[1] ne '' and $num_connection >= $$args[1]) {
-        $status = errors_mask($status, 'CRITICAL');
-    } elsif ($$args[0] ne '' and $num_connection >= $$args[0]) {
-        $status = errors_mask($status, 'WARNING');
+    my (%options) = @_;
+
+    my $total = 0;
+    foreach my $container (keys %{$options{counters}}) {
+        $total += $options{counters}->{$container};
+        $options{manager}->{output}->perfdata_add(label => 'c[requests_' . $container . ']',
+                                                  value => $options{counters}->{$container},
+                                                  min => 0);
     }
-    #response_client1($obj_esxd, $rh, $current_fileno, get_status($status) . "|$output\n");
+    $options{manager}->{output}->perfdata_add(label => 'c[requests]',
+                                              value => $total,
+                                              min => 0);  
+    $options{manager}->{output}->output_add(severity => 'OK',
+                                            short_msg => sprintf("'%s' total requests", $total));
 }
 
 1;

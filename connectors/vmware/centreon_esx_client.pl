@@ -113,16 +113,7 @@ sub print_usage () {
     print "   --vsphere         vsphere name (default: none)\n";
     print "   -u (--usage)       What to check. The list and args (required)\n";
     print "\n";
-    print "'healthhost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   --storage-status  Check storage of ESX\n";
-    print "\n";
-    print "'maintenancehost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "\n";
-    print "'statushost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "\n";
+
     print "'datastore-usage':\n";
     print "   --datastore       Datastore name to check (required)\n";
     print "   -w (--warning)    Warning Threshold (default 80)\n";
@@ -248,21 +239,7 @@ sub print_usage () {
     print "   --warn            Warn\n";
     print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
     print "\n";
-    print "'listhost':\n";
-    print "   None\n";
-    print "\n";
-    print "'listdatastore':\n";
-    print "   --xml             centreon-autodiscovery xml format\n";
-    print "   --show-attributes centreon-autodiscovery attributes xml display\n";
-    print "\n";
-    print "'listnichost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   --xml             centreon-autodiscovery xml format\n";
-    print "   --show-attributes centreon-autodiscovery attributes xml display\n";
-    print "\n";
-    print "'getmap':\n";
-    print "   -e (--esx-host)   Esx Host to check\n";
-    print "\n";
+
     print "'stats':\n";
     print "   -w (--warning)    Warning Threshold in total client connections (default none)\n";
     print "   -c (--critical)   Critical Threshold in total client connections (default none)\n";
