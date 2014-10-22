@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::vmware::connector::mode::listnichost;
+package apps::vmware::connector::mode::cpuhost;
 
 use base qw(centreon::plugins::mode);
 
@@ -57,6 +57,9 @@ sub new {
                                   "container:s"             => { name => 'container', default => 'default' },
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                   "timeout:s"               => { name => 'timeout', default => 50 },
                                 });
     $self->{json_send} = {};
@@ -72,16 +75,24 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{esx_hostname}) ||
-        $self->{option_results}->{esx_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set option --esx-hostname.");
-        $self->{output}->option_exit();
-    }
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
         $self->{option_results}->{timeout} > 0) {
         $self->{timeout} = $self->{option_results}->{timeout};
     } else {
         $self->{timeout} = 50;
+    }
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
+    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -89,7 +100,7 @@ sub build_request {
     my ($self, %options) = @_;
     
     $self->{json_send}->{identity} = 'client-' . unpack('H*', $options{uuid});
-    $self->{json_send}->{command} = 'listnichost';
+    $self->{json_send}->{command} = 'cpuhost';
     foreach (keys %{$self->{option_results}}) {
         $self->{json_send}->{$_} = $self->{option_results}->{$_};
     }
@@ -121,15 +132,11 @@ sub run {
             socket  => $self->{requester},
             events  => ZMQ_POLLIN,
             callback => sub {
-                my $response = zmq_recvmsg($self->{requester});
-                zmq_close($self->{requester});
-                apps::vmware::connector::lib::common::connector_response($self, response => $response);
-                # We need to remove xml output
-                if (defined($self->{output}->{option_results}->{output_xml})) {
-                    delete $self->{output}->{option_results}->{output_xml};
-                }
-                $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-                $self->{output}->exit();
+               my $response = zmq_recvmsg($self->{requester});
+               zmq_close($self->{requester});
+               apps::vmware::connector::lib::common::connector_response($self, response => $response);
+               $self->{output}->display();
+               $self->{output}->exit();
             },
         },
     );
@@ -143,27 +150,13 @@ sub run {
     $self->{output}->exit();
 }
 
-sub disco_format {
-    my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name', 'status', 'vswitch']);
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
-    # We ask to use XML output from the connector
-    $self->{json_send}->{disco_show} = 1;
-    $self->run();
-}
-
 1;
 
 __END__
 
 =head1 MODE
 
-List ESX interfaces.
+Check ESX cpu usage.
 
 =over 8
 
@@ -181,11 +174,28 @@ Container to use (it depends of the connector configuration).
 
 =item B<--esx-hostname>
 
-ESX hostname to check (required).
+ESX hostname to check.
+If not set, we check all ESX.
+
+=item B<--filter>
+
+ESX hostname is a regexp.
+
+=item B<--disconnect-status>
+
+Status if ESX host disconnected (default: 'unknown').
 
 =item B<--timeout>
 
-Set global execution timeout (Default: 50).
+Set global execution timeout (Default: 50)
+
+=item B<--warning>
+
+Threshold warning in percent.
+
+=item B<--critical>
+
+Threshold critical in percent.
 
 =back
 
