@@ -205,7 +205,7 @@ my smcli manage
 
 =item B<--smcli-path>
 
-Specify smcli path (default: none)
+Specify smcli path (default: for dell '/opt/dell/mdstoragemanager/client', for ibm '/opt/IBM_DS/client')
 
 =item B<--smcli-command>
 
