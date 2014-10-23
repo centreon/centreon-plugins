@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::emc::navisphere::custom::custom;
+package centreon::common::smcli::custom::custom;
 
 use strict;
 use warnings;
@@ -69,6 +69,7 @@ sub new {
                       "hostname2:s@"        => { name => 'hostname2' },
                       "password:s@"         => { name => 'password' },
                       "timeout:s@"          => { name => 'timeout' },
+                      "show-output:s"       => { name => 'show_output' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SMCLI OPTIONS', once => 1);
@@ -114,7 +115,7 @@ sub build_command {
     
     $self->{cmd} = '';
     $self->{cmd} .= $self->{option_results}->{smcli_path} . '/' if (defined($self->{option_results}->{smcli_path}));
-    $self->{cmd} .= $self->{option_results}->{smcli_path_command};
+    $self->{cmd} .= $self->{option_results}->{smcli_command};
    
     if (defined($self->{special_arg}) && $self->{special_arg} ne '') {
         $self->{cmd} .= ' ' . $self->{special_arg};
@@ -143,7 +144,7 @@ sub check_options {
     $self->{hostname2} = (defined($self->{option_results}->{hostname2})) ? shift(@{$self->{option_results}->{hostname2}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 30;
-    $self->{extra_options} = (defined($self->{option_results}->{extra_options})) ? shift(@{$self->{option_results}->{extra_options}}) : '-quick';
+    $self->{extra_options} = (defined($self->{option_results}->{extra_options})) ? shift(@{$self->{option_results}->{extra_options}}) : '-quick -S';
     $self->{special_arg} = (defined($self->{option_results}->{special_arg})) ? shift(@{$self->{option_results}->{special_arg}}) : undef;
     $self->{sudo} = $self->{option_results}->{sudo};
     
@@ -168,13 +169,22 @@ sub execute_command {
     
     # Need to set timeout over command.
     $self->{option_results}->{timeout} = $self->{timeout};
-    return centreon::plugins::misc::execute(output => $self->{output},
+    my ($response, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
                                             options => $self->{option_results},
                                             sudo => $self->{sudo},
                                             command => $self->{cmd},
                                             command_path => undef,
-                                            command_options => undef
+                                            command_options => undef,
+                                            no_quit => 1
                                             );
+    if ($exit_code != 0) {
+        $self->{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Command execution error (verbose mode for more details)");
+        $self->{output}->output_add(long_msg => $response);
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    return $response;
 }
 
 1;
@@ -203,7 +213,7 @@ Specify navicli command (default: 'SMcli').
 
 =item B<--extra-option>
 
-Set SMcli extras options (Default: '-quick').
+Set SMcli extras options (Default: '-quick -S').
 
 =item B<--sudo>
 

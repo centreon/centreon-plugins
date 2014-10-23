@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,61 +33,68 @@
 #
 ####################################################################################
 
-package centreon::plugins::mode;
+package centreon::common::smcli::mode::healthstatus;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::perfdata;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
-    $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
-    %{$self->{option_results}} = ();
-    $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    $self->{version} = undef;
+    
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                { 
+                                  "storage-command:s"       => { name => 'storage_command', },
+                                });
 
     return $self;
 }
 
-sub init {
+sub check_options {
     my ($self, %options) = @_;
-    # options{default} = { mode_xxx => { option_name => option_value }, }
-
-    %{$self->{option_results}} = %{$options{option_results}};
-    # Manage default value
-    return if (!defined($options{default}));
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            foreach my $value (keys %{$options{default}->{$_}}) {
-                if (!defined($self->{option_results}->{$value})) {
-                    $self->{option_results}->{$value} = $options{default}->{$_}->{$value};
-                }
-            }
-        }
-    }
+    $self->SUPER::init(%options);
 }
 
-sub version {
+sub run {
     my ($self, %options) = @_;
+    my $smcli = $options{custom};
+
+    my $response = $smcli->execute_command(cmd => $self->{option_results}->{storage_command});    
+    # IBM smcli: Storage Subsystem health status = optimal.
+    # Dell smcli: Storage array health status = optimal.
     
-    $self->{output}->add_option_msg(short_msg => "Mode Version: " . $self->{version});
-}
+    my $match_ok_regexp = 'health status.*optimal';
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("storage health status is optimal"));
+    if ($response !~ /$match_ok_regexp/msi) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Some failures have been found (verbose mode for more details)"));
+        $self->{output}->output_add(long_msg => $response);
+    }
 
-sub disco_format {
-    my ($self, %options) = @_;
-
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
+=head1 MODE
+
+Check health status
+
+=over 8
+
+=item B<--storage-command>
+
+By default for Dell MD: 'show storageArray healthstatus;'
+By default for IBM DS: 'show storageSubsystem healthstatus;'
+
+=back
+
+=cut
