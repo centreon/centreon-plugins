@@ -40,6 +40,7 @@ use Pod::Find qw(pod_where);
 use Getopt::Long;
 Getopt::Long::Configure("pass_through");
 Getopt::Long::Configure('bundling');
+Getopt::Long::Configure('no_auto_abbrev');
 use strict;
 use warnings;
 
