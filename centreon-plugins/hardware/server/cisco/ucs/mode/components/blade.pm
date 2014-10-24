@@ -82,14 +82,14 @@ sub check {
         $self->{components}->{blade}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
-                                                        $blade_dn, ${$thresholds->{operability}->{$blade_operstate}}[0],
+                                                        $blade_dn, ${$thresholds->{overall_status}->{$blade_operstate}}[0],
                                                         ${$thresholds->{presence}->{$blade_presence}}[0]
                                     ));
-        $exit = $self->get_severity(section => 'blade', threshold => 'operability', value => $blade_operstate);
+        $exit = $self->get_severity(section => 'blade', threshold => 'overall_status', value => $blade_operstate);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("blade '%s' state is '%s'.",
-                                                             $blade_dn, ${$thresholds->{operability}->{$blade_operstate}}[0]
+                                                             $blade_dn, ${$thresholds->{overall_status}->{$blade_operstate}}[0]
                                                              )
                                         );
         }
