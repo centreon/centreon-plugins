@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,61 +33,42 @@
 #
 ####################################################################################
 
-package centreon::plugins::mode;
+package apps::vmware::connector::plugin;
 
 use strict;
 use warnings;
-use centreon::plugins::perfdata;
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    # $options->{options} = options object
 
-    $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
-    %{$self->{option_results}} = ();
-    $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    $self->{version} = undef;
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'cpu-host'         => 'apps::vmware::connector::mode::cpuhost', 
+                         'getmap'           => 'apps::vmware::connector::mode::getmap',
+                         'health-host'      => 'apps::vmware::connector::mode::healthhost',
+                         'list-datastores'  => 'apps::vmware::connector::mode::listdatastores',
+                         'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
+                         'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
+                         'memory-host'      => 'apps::vmware::connector::mode::memoryhost',
+                         'stat-connectors'  => 'apps::vmware::connector::mode::statconnectors',
+                         'status-host'      => 'apps::vmware::connector::mode::statushost',
+                         'swap-host'        => 'apps::vmware::connector::mode::swaphost',
+                         'uptime-host'      => 'apps::vmware::connector::mode::uptimehost',
+                         );
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-    # options{default} = { mode_xxx => { option_name => option_value }, }
-
-    %{$self->{option_results}} = %{$options{option_results}};
-    # Manage default value
-    return if (!defined($options{default}));
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            foreach my $value (keys %{$options{default}->{$_}}) {
-                if (!defined($self->{option_results}->{$value})) {
-                    $self->{option_results}->{$value} = $options{default}->{$_}->{$value};
-                }
-            }
-        }
-    }
-}
-
-sub version {
-    my ($self, %options) = @_;
-    
-    $self->{output}->add_option_msg(short_msg => "Mode Version: " . $self->{version});
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
 }
 
 1;
 
 __END__
 
+=head1 PLUGIN DESCRIPTION
+
+Check VMWare with centreon-esxd connector.
+
+=cut

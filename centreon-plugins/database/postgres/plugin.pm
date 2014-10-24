@@ -55,6 +55,7 @@ sub new {
                          'list-databases' => 'database::postgres::mode::listdatabases',
                          'query-time' => 'database::postgres::mode::querytime',
                          'timesync' => 'database::postgres::mode::timesync',
+                         'vacuum' => 'database::postgres::mode::vacuum',
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;

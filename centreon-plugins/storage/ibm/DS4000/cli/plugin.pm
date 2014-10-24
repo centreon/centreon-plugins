@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,61 +33,46 @@
 #
 ####################################################################################
 
-package centreon::plugins::mode;
+package storage::ibm::DS3000::cli::plugin;
 
 use strict;
 use warnings;
-use centreon::plugins::perfdata;
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    # $options->{options} = options object
 
-    $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
-    %{$self->{option_results}} = ();
-    $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
-    $self->{version} = undef;
-
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'health-status'  => 'centreon::common::smcli::mode::healthstatus',
+                        );
+    $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
+    $self->{default} = { 'health-status' => { storage_command => 'show storageSubsystem healthstatus;',
+                                              smcli_path => '/opt/IBM_DS/client' }, };
+    
     return $self;
 }
 
 sub init {
     my ($self, %options) = @_;
-    # options{default} = { mode_xxx => { option_name => option_value }, }
 
-    %{$self->{option_results}} = %{$options{option_results}};
-    # Manage default value
-    return if (!defined($options{default}));
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            foreach my $value (keys %{$options{default}->{$_}}) {
-                if (!defined($self->{option_results}->{$value})) {
-                    $self->{option_results}->{$value} = $options{default}->{$_}->{$value};
-                }
-            }
-        }
-    }
-}
-
-sub version {
-    my ($self, %options) = @_;
-    
-    $self->{output}->add_option_msg(short_msg => "Mode Version: " . $self->{version});
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
+    $self->SUPER::init(%options);    
 }
 
 1;
 
 __END__
 
+=head1 PLUGIN DESCRIPTION
+
+Check IBM DS4000 series.
+
+=over 8
+
+=back
+
+=cut
