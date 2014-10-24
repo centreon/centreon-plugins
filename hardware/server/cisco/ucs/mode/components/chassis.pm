@@ -70,7 +70,7 @@ sub check {
         $self->{components}->{chassis}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("chassis '%s' state is '%s'.",
-                                                        $chassis_dn, ${$thresholds->{presence}->{$chassis_operstate}}[0]
+                                                        $chassis_dn, ${$thresholds->{operability}->{$chassis_operstate}}[0]
                                     ));
         my $exit = $self->get_severity(section => 'chassis', threshold => 'operability', value => $chassis_operstate);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
