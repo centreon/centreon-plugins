@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::ibm::DS3000::cli::plugin;
+package storage::ibm::DS4000::cli::plugin;
 
 use strict;
 use warnings;
