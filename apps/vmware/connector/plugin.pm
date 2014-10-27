@@ -47,6 +47,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'countvm-host'     => 'apps::vmware::connector::mode::countvmhost', 
                          'cpu-host'         => 'apps::vmware::connector::mode::cpuhost', 
                          'getmap'           => 'apps::vmware::connector::mode::getmap',
                          'health-host'      => 'apps::vmware::connector::mode::healthhost',
@@ -54,6 +55,8 @@ sub new {
                          'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
                          'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
                          'memory-host'      => 'apps::vmware::connector::mode::memoryhost',
+                         'memory-vm'        => 'apps::vmware::connector::mode::memoryvm',
+                         'net-host'         => 'apps::vmware::connector::mode::nethost',
                          'stat-connectors'  => 'apps::vmware::connector::mode::statconnectors',
                          'status-host'      => 'apps::vmware::connector::mode::statushost',
                          'swap-host'        => 'apps::vmware::connector::mode::swaphost',
