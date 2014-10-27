@@ -83,6 +83,11 @@ sub check_table_memory {
         my $memory_free = $self->{results}->{$options{entry}}->{$options{poolFree} . '.' . $instance};
         
         next if ($memory_name eq '');
+        if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
+            $memory_name !~ /$self->{option_results}->{filter_pool}/) {
+            $self->{output}->output_add(long_msg => "Skipping pool '" . $memory_name . "'.");	
+            next;
+        }
 
         $checked = 1;
 
