@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'nethost';
     
     bless $self, $class;
@@ -21,192 +20,239 @@ sub getCommandName {
     return $self->{commandName};
 }
 
-sub checkArgs {
-    my $self = shift;
-    my ($host, $pnic, $filter, $warn, $crit) = @_;
 
-    if (!defined($host) || $host eq "") {
-        $self->{logger}->writeLogError("ARGS error: need hostname");
+sub checkArgs {
+    my ($self, %options) = @_;
+
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: esx hostname cannot be null");
         return 1;
     }
-    if (!defined($pnic) || $pnic eq "") {
-        $self->{logger}->writeLogError("ARGS error: need physical nic name");
+    if (defined($options{arguments}->{nic_name}) && $options{arguments}->{nic_name} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: nic name cannot be null");
         return 1;
     }
-    if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
+    if (defined($options{arguments}->{link_down_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{link_down_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for link down status '" . $options{arguments}->{link_down_status} . "'");
         return 1;
     }
-    if (defined($warn) && defined($crit) && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
-        return 1;
+    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lhost} = $_[0];
-    $self->{pnic} = $_[1];
-    $self->{filter} = (defined($_[2]) && $_[2] == 1) ? 1 : 0;
-    $self->{warn} = (defined($_[3]) ? $_[3] : 80);
-    $self->{crit} = (defined($_[4]) ? $_[4] : 90);
-    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Can't retrieve perf counters");
         return ;
     }
 
-    my %filters = ('name' => $self->{lhost});
-    my @properties = ('config.network.pnic', 'runtime.connectionState', 'config.network.vswitch', 'config.network.proxySwitch');
+    my %filters = ();
+    my $multiple = 0;
+    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
+    } elsif (!defined($self->{esx_hostname})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{esx_hostname}/;
+    }
+    my @properties = ('name', 'config.network.pnic', 'runtime.connectionState', 'config.network.vswitch', 'config.network.proxySwitch');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
+    return if (!defined($result));
+    
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All traffics are ok"));
     }
     
-    return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
-                                                $$result[0]->{'runtime.connectionState'}->val) == 0);
-    
-    my %nic_in_vswitch = ();
-    my %pnic_def_up = ();
-    my %pnic_def_down = ();
-    my $instances = [];
-    my $filter_ok = 0;
-    
-    # Get Name from vswitch
-    if (defined($$result[0]->{'config.network.vswitch'})) {
-        foreach (@{$$result[0]->{'config.network.vswitch'}}) {
-            next if (!defined($_->{pnic}));
-            foreach my $keynic (@{$_->{pnic}}) {
-                $nic_in_vswitch{$keynic} = 1;
+    my $pnic_def_up = {};
+    my $pnic_def_down = {};
+    my $query_perfs = [];
+    foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+                                                    hostname => $entity_view->{name}, 
+                                                    state => $entity_view->{'runtime.connectionState'}->val,
+                                                    status => $self->{disconnect_status},
+                                                    multiple => $multiple) == 0);
+        $pnic_def_up->{$entity_view->{mo_ref}->{value}} = {};
+        $pnic_def_down->{$entity_view->{mo_ref}->{value}} = {};
+        my %nic_in_vswitch = ();
+        my $instances = [];
+        my $filter_ok = 0;
+        
+        # Get Name from vswitch
+        if (defined($entity_view->{'config.network.vswitch'})) {
+            foreach (@{$entity_view->{'config.network.vswitch'}}) {
+                next if (!defined($_->{pnic}));
+                foreach my $keynic (@{$_->{pnic}}) {
+                    $nic_in_vswitch{$keynic} = 1;
+                }
             }
         }
-    }
-    # Get Name from proxySwitch
-    if (defined($$result[0]->{'config.network.proxySwitch'})) {
-        foreach (@{$$result[0]->{'config.network.proxySwitch'}}) {
-            next if (!defined($_->{pnic}));
-            foreach my $keynic (@{$_->{pnic}}) {
-                $nic_in_vswitch{$keynic} = 1;
+        # Get Name from proxySwitch
+        if (defined($entity_view->{'config.network.proxySwitch'})) {
+            foreach (@{$entity_view->{'config.network.proxySwitch'}}) {
+                next if (!defined($_->{pnic}));
+                foreach my $keynic (@{$_->{pnic}}) {
+                    $nic_in_vswitch{$keynic} = 1;
+                }
             }
         }
-    }
 
-    foreach (@{$$result[0]->{'config.network.pnic'}}) {
-        # Not in vswitch. Skip
-        if (!defined($nic_in_vswitch{$_->key})) {
+        foreach (@{$entity_view->{'config.network.pnic'}}) {
+            # Not in vswitch. Skip
+            next if (!defined($nic_in_vswitch{$_->key}));
+
+            # Check filter
+            if (defined($self->{nic_name}) && !defined($self->{filter_nic}) && $_->device ne $self->{nic_name}) {
+                next;
+            } elsif (defined($self->{nic_name}) && defined($self->{filter_nic}) && $_->device !~ /$self->{nic_name}/) {
+                next;
+            }
+            $filter_ok = 1;
+            if (defined($_->linkSpeed)) {
+                $pnic_def_up->{$entity_view->{mo_ref}->{value}}->{$_->device} = $_->linkSpeed->speedMb;
+                push @$instances, $_->device;
+            } else {
+                $pnic_def_down->{$entity_view->{mo_ref}->{value}}->{$_->device} = 1;
+            }
+        }
+        
+        if ($filter_ok == 0) {
+           $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                  short_msg => sprintf("%s can't get physical nic with filter '%s'. (or physical nic not in a 'vswitch' or 'dvswitch'",
+                                                                        $entity_view->{name}, $self->{nic_name}));
+           next;
+        }
+        if (scalar(@${instances}) == 0 && 
+            ($multiple == 0 || ($multiple == 1 && !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1)))) {
+            $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
+                                                   short_msg => sprintf("%s Link(s) '%s' is(are) down",
+                                                                        $entity_view->{name}, join("','", keys %{$pnic_def_down->{$entity_view->{mo_ref}->{value}}})));
             next;
         }
-
-        # Check filter
-        next if ($self->{filter} == 0 && $_->device !~ /^\Q$self->{pnic}\E$/);
-        next if ($self->{filter} == 1 && $_->device !~ /$self->{pnic}/);
         
-        $filter_ok = 1;
-        if (defined($_->linkSpeed)) {
-            $pnic_def_up{$_->device} = $_->linkSpeed->speedMb;
-            push @$instances, $_->device;
-        } else {
-            $pnic_def_down{$_->device} = 1;
-        }
-    }
+        push @$query_perfs, {
+                              entity => $entity_view,
+                              metrics => [ 
+                                {label => 'net.received.average', instances => $instances},
+                                {label => 'net.transmitted.average', instances => $instances}
+                              ]
+                             };
+    }  
     
-    if ($filter_ok == 0) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't get physical nic with filter '$self->{pnic}'. (or physical nic not in a 'vswitch' or 'dvswitch')\n");
-        return ;
-    }
-    if ($#${instances} == -1) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Link(s) '" . join("','", keys %pnic_def_down) . "' is(are) down.\n");
-        return ;
-    }
-
-
+    # Nothing to retrieve. problem before already.
+    return if (scalar(@$query_perfs) == 0);
+        
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
-                        $result, 
-                        [{'label' => 'net.received.average', 'instances' => $instances},
-                         {'label' => 'net.transmitted.average', 'instances' => $instances}],
-                        $self->{obj_esxd}->{perfcounter_speriod});
+                        undef, 
+                        $query_perfs,
+                        $self->{obj_esxd}->{perfcounter_speriod},
+                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
-
-    my $status = 0; # OK
-    my $output = "";
-    my $output_append = '';
-    my $output_warning = '';
-    my $output_warning_append = '';
-    my $output_critical = '';
-    my $output_critical_append = '';
-    my $output_unknown = '';
-    my $output_unknown_append = '';
-    my $output_ok_unit = '';
-    my $perfdata = '';
     
-    my @nic_downs = keys %pnic_def_down;
-    if ($#nic_downs >= 0) {
-        if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
-            $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-			centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                     "Link(s) '" . join("','", @nic_downs) . "' is(are) down");
-        }
-    }
-
-    foreach (keys %pnic_def_up) {
-    
-        my $traffic_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'net.received.average'}->{'key'} . ":" . $_}[0]));    
-        my $traffic_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'net.transmitted.average'}->{'key'} . ":" . $_}[0]));
-    
-        $output_ok_unit = "Traffic In : " . centreon::esxd::common::simplify_number($traffic_in / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_in / 1024 * 100 / $pnic_def_up{$_}) . " %), Out : " . centreon::esxd::common::simplify_number($traffic_out / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_out / 1024 * 100 / $pnic_def_up{$_}) . " %)";
-    
-        if (($traffic_in / 1024 * 100 / $pnic_def_up{$_}) >= $self->{crit} || ($traffic_out / 1024 * 100 / $pnic_def_up{$_}) >= $self->{crit}) {
-            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ". ",
-                        "'$_' Traffic In : " . centreon::esxd::common::simplify_number($traffic_in / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_in / 1024 * 100 / $pnic_def_up{$_}) . " %), Out : " . centreon::esxd::common::simplify_number($traffic_out / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_out / 1024 * 100 / $pnic_def_up{$_}) . " %)");
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        } elsif (($traffic_in / 1024 * 100 / $pnic_def_up{$_}) >= $self->{warn} || ($traffic_out / 1024 * 100 / $pnic_def_up{$_}) >= $self->{warn}) {
-            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ". ",
-                        "'$_' Traffic In : " . centreon::esxd::common::simplify_number($traffic_in / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_in / 1024 * 100 / $pnic_def_up{$_}) . " %), Out : " . centreon::esxd::common::simplify_number($traffic_out / 1024) . " MB/s (" . centreon::esxd::common::simplify_number($traffic_out / 1024 * 100 / $pnic_def_up{$_}) . " %)");
-            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+    foreach my $entity_view (@$result) {
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        if (scalar(keys %{$pnic_def_down->{$entity_value}}) > 0 && 
+            ($multiple == 0 || !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1))) {
+            $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
+                                                   short_msg => sprintf("%s Link(s) '%s' is(are) down",
+                                                                        $entity_view->{name}, join("','", keys %{$pnic_def_down->{$entity_value}})));
         }
         
-        my $warn_perfdata = ($pnic_def_up{$_} * $self->{warn} / 100) * 1024 * 1024;
-        my $crit_perfdata = ($pnic_def_up{$_} * $self->{crit} / 100) * 1024 * 1024;
-        
-        if ($self->{filter} == 1) {
-            $perfdata .= " 'traffic_in_" . $_ . "'=" . ($traffic_in * 1024) . "B/s;$warn_perfdata;$crit_perfdata;0; 'traffic_out_" . $_ . "'=" . (($traffic_out * 1024)) . "B/s;$warn_perfdata;$crit_perfdata;0;";
-        } else {
-            $perfdata .= " traffic_in=" . ($traffic_in * 1024) . "B/s;$warn_perfdata;$crit_perfdata;0; traffic_out=" . (($traffic_out * 1024)) . "B/s;$warn_perfdata;$crit_perfdata;0;";
-        }
-    }
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits;
+        foreach (sort keys %{$pnic_def_up->{$entity_value}}) {
+            # KBps
+            my $traffic_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_}[0])) * 1024 * 8;    
+            my $traffic_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_}[0])) * 1024 * 8;
+            my $interface_speed = $pnic_def_up->{$entity_value}->{$_} * 1024 * 1024;
+            my $in_prct = $traffic_in  * 100 / $interface_speed;
+            my $out_prct = $traffic_out * 100 / $interface_speed;
+           
+            my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical_in', exit_litteral => 'critical' }, { label => 'warning_in', exit_litteral => 'warning' } ]);
+            my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical_out', exit_litteral => 'critical' }, { label => 'warning_out', exit_litteral => 'warning' } ]);
 
-    if ($output_unknown ne "") {
-        $output .= $output_append . "UNKNOWN - $output_unknown";
-        $output_append = ". ";
-    }
-    if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - $output_critical";
-        $output_append = ". ";
-    }
-    if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - $output_warning";
-    }
-    if ($status == 0) {
-        if ($self->{filter} == 1) {
-            $output .= $output_append . "All traffics are ok";
-        } else {
-            $output .= $output_append . $output_ok_unit;
+            my ($in_value, $in_unit) = $self->{manager}->{perfdata}->change_bytes(value => $traffic_in, network => 1);
+            my ($out_value, $out_unit) = $self->{manager}->{perfdata}->change_bytes(value => $traffic_out, network => 1);
+            my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+            push @exits, $exit;
+ 
+            my $output = sprintf("Interface '%s' Traffic In : %s/s (%.2f %%), Out : %s/s (%.2f %%) ", $_,
+                                           $in_value . $in_unit, $in_prct,
+                                           $out_value . $out_unit, $out_prct);
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+
+            my $extra_label = '';
+            $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
+            $self->{manager}->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
+                                          value => sprintf("%.2f", $traffic_in),
+                                          warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed),
+                                          min => 0, max => $interface_speed);
+            $self->{manager}->{output}->perfdata_add(label => 'traffic_out' . $extra_label, unit => 'b/s',
+                                          value => sprintf("%.2f", $traffic_out),
+                                          warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
+                                          min => 0, max => $interface_speed);
+        }
+        
+        $self->{manager}->{output}->output_add(long_msg => "$entity_view->{name}' $long_msg");
+        my $exit = $self->{manager}->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{manager}->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                                   short_msg => "'$entity_view->{name}' $short_msg"
+                                                   );
+        }
+        if ($multiple == 0) {
+            $self->{manager}->{output}->output_add(short_msg => "'$entity_view->{name}' $long_msg");
         }
     }
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
 }
 
 1;

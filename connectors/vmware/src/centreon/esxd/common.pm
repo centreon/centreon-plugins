@@ -163,14 +163,14 @@ sub get_perf_metric_ids {
     my $filtered_list = [];
    
     foreach (@$perf_names) {
-        if (defined($obj_esxd->{perfcounter_cache}->{$_->{'label'}})) {
-            foreach my $instance (@{$_->{'instances'}}) {
-                my $metric = PerfMetricId->new(counterId => $obj_esxd->{perfcounter_cache}->{$_->{'label'}}{'key'},
+        if (defined($obj_esxd->{perfcounter_cache}->{$_->{label}})) {
+            foreach my $instance (@{$_->{instances}}) {
+                my $metric = PerfMetricId->new(counterId => $obj_esxd->{perfcounter_cache}->{$_->{label}}{key},
                                    instance => $instance);
                 push @$filtered_list, $metric;
             }
         } else {
-            $obj_esxd->{logger}->writeLogError("Metric '" . $_->{'label'} . "' unavailable.");
+            $obj_esxd->{logger}->writeLogError("Metric '" . $_->{label} . "' unavailable.");
             $manager_display->{output}->output_add(severity => 'UNKNOWN',
                                                    short_msg => "Counter doesn't exist. VMware version can be too old.");
             return undef;
@@ -179,45 +179,102 @@ sub get_perf_metric_ids {
     return $filtered_list;
 }
 
+sub performance_builder_specific {
+    my (%options) = @_;
+    
+    my @perf_query_spec;
+    foreach my $entry (@{$options{metrics}}) {
+        my $perf_metric_ids = get_perf_metric_ids($options{connector}, $entry->{metrics});
+        return undef if (!defined($perf_metric_ids));
+        
+        my $tstamp = time();
+        my (@t) = gmtime($tstamp - $options{interval});
+        my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        (@t) = gmtime($tstamp);
+        my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        if ($options{interval} == 20) {
+            push @perf_query_spec, PerfQuerySpec->new(entity => $entry->{entity},
+                                    metricId => $perf_metric_ids,
+                                    format => 'normal',
+                                    intervalId => 20,
+                                    startTime => $startTime,
+                                    endTime => $endTime,
+                                    maxSample => 1);
+        } else {
+            push @perf_query_spec, PerfQuerySpec->new(entity => $entry->{entity},
+                                    metricId => $perf_metric_ids,
+                                    format => 'normal',
+                                    intervalId => $options{interval},
+                                    startTime => $startTime,
+                                    endTime => $endTime
+                                    );
+                                    #maxSample => 1);
+        }
+    }
+    
+    return $options{connector}->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
+}
+
+sub performance_builder_global {
+    my (%options) = @_;
+    
+    my @perf_query_spec;
+    my $perf_metric_ids = get_perf_metric_ids($options{connector}, $options{metrics});
+    return undef if (!defined($perf_metric_ids));
+    
+    my $tstamp = time();
+    my (@t) = gmtime($tstamp - $options{interval});
+    my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    (@t) = gmtime($tstamp);
+    my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        
+    foreach (@{$options{views}}) {
+        if ($options{interval} == 20) {
+            push @perf_query_spec, PerfQuerySpec->new(entity => $_,
+                                    metricId => $perf_metric_ids,
+                                    format => 'normal',
+                                    intervalId => 20,
+                                    startTime => $startTime,
+                                    endTime => $endTime,
+                                    maxSample => 1);
+        } else {
+            push @perf_query_spec, PerfQuerySpec->new(entity => $_,
+                                    metricId => $perf_metric_ids,
+                                    format => 'normal',
+                                    intervalId => $options{interval},
+                                    startTime => $startTime,
+                                    endTime => $endTime
+                                    );
+                                    #maxSample => 1);
+        }
+    }
+    
+    return $options{connector}->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
+}
+
 sub generic_performance_values_historic {
     my ($obj_esxd, $views, $perfs, $interval, %options) = @_;
     my $counter = 0;
     my %results;
     
     eval {
-        my $perf_metric_ids = get_perf_metric_ids($obj_esxd, $perfs);
-        return undef if (!defined($perf_metric_ids));
-
-        my @perf_query_spec;
-        my $tstamp = time();
-        my (@t) = gmtime($tstamp - $interval);
-        my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-                (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
-        (@t) = gmtime($tstamp);
-        my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-                (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        my $perfdata;
         
-        foreach (@$views) {
-            if ($interval == 20) {
-                push @perf_query_spec, PerfQuerySpec->new(entity => $_,
-                                        metricId => $perf_metric_ids,
-                                        format => 'normal',
-                                        intervalId => 20,
-                                        startTime => $startTime,
-                                        endTime => $endTime,
-                                        maxSample => 1);
-            } else {
-                push @perf_query_spec, PerfQuerySpec->new(entity => $_,
-                                        metricId => $perf_metric_ids,
-                                        format => 'normal',
-                                        intervalId => $interval,
-                                        startTime => $startTime,
-                                        endTime => $endTime
-                                        );
-                                        #maxSample => 1);
-            }
+        if (defined($views)) {
+            $perfdata = performance_builder_global(connector => $obj_esxd,
+                                                   views => $views,
+                                                   metrics => $perfs,
+                                                   interval => $interval);
+        } else {
+            $perfdata = performance_builder_specific(connector => $obj_esxd,
+                                                     metrics => $perfs,
+                                                     interval => $interval);
         }
-        my $perfdata = $obj_esxd->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
+        return undef if (!defined($perfdata));
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             $manager_display->{output}->output_add(severity => 'UNKNOWN',
