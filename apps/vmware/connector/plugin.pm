@@ -49,17 +49,22 @@ sub new {
     %{$self->{modes}} = (
                          'countvm-host'     => 'apps::vmware::connector::mode::countvmhost', 
                          'cpu-host'         => 'apps::vmware::connector::mode::cpuhost', 
+                         'cpu-vm'           => 'apps::vmware::connector::mode::cpuvm', 
                          'getmap'           => 'apps::vmware::connector::mode::getmap',
                          'health-host'      => 'apps::vmware::connector::mode::healthhost',
+                         'limit-vm'         => 'apps::vmware::connector::mode::limitvm',
                          'list-datastores'  => 'apps::vmware::connector::mode::listdatastores',
                          'list-nichost'     => 'apps::vmware::connector::mode::listnichost',
                          'maintenance-host' => 'apps::vmware::connector::mode::maintenancehost',
                          'memory-host'      => 'apps::vmware::connector::mode::memoryhost',
                          'memory-vm'        => 'apps::vmware::connector::mode::memoryvm',
                          'net-host'         => 'apps::vmware::connector::mode::nethost',
+                         'snapshot-vm'      => 'apps::vmware::connector::mode::snapshotvm',
                          'stat-connectors'  => 'apps::vmware::connector::mode::statconnectors',
                          'status-host'      => 'apps::vmware::connector::mode::statushost',
                          'swap-host'        => 'apps::vmware::connector::mode::swaphost',
+                         'swap-vm'          => 'apps::vmware::connector::mode::swapvm',
+                         'tools-vm'         => 'apps::vmware::connector::mode::toolsvm',
                          'uptime-host'      => 'apps::vmware::connector::mode::uptimehost',
                          );
 
