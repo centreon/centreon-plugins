@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'cpuvm';
     
     bless $self, $class;
@@ -22,113 +21,161 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($vm, $warn, $crit, $warn2, $crit2) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($vm) || $vm eq "") {
-        $self->{logger}->writeLogError("ARGS error: need vm hostname");
+    if (defined($options{arguments}->{vm_hostname}) && $options{arguments}->{vm_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: vm hostname cannot be null");
         return 1;
     }
-    if (defined($warn) && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
-        return 1;
-    } 
-    if (defined($crit) && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (defined($warn) && defined($crit) && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
+    if (defined($options{arguments}->{nopoweredon_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{nopoweredon_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for nopoweredon status '" . $options{arguments}->{nopoweredon_status} . "'");
         return 1;
     }
-    if (defined($warn2) && $warn2 !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn2 threshold must be a positive number");
-        return 1;
-    } 
-    if (defined($crit2) && $crit2 !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit2 threshold must be a positive number");
-        return 1;
-    }
-    if (defined($warn2) && defined($crit2) && $warn2 > $crit2) {
-        $self->{logger}->writeLogError("ARGS error: warn2 threshold must be lower than crit2 threshold");
-        return 1;
+    foreach my $label (('warning_usagemhz', 'critical_usagemhz', 'warning_usage', 'critical_usage', 'warning_ready', 'critical_ready')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lvm} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : 80);
-    $self->{crit} = (defined($_[2]) ? $_[2] : 90);
-    $self->{warn2} = (defined($_[3]) ? $_[3] : 5);
-    $self->{crit2} = (defined($_[4]) ? $_[4] : 10);
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning_usagemhz', 'critical_usagemhz', 'warning_usage', 'critical_usage', 'warning_ready', 'critical_ready')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Can't retrieve perf counters");
         return ;
     }
 
-    my %filters = ('name' => $self->{lvm});
+    my %filters = ();
+    my $multiple = 0;
+    if (defined($self->{vm_hostname}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{vm_hostname}\E$/;
+    } elsif (!defined($self->{vm_hostname})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{vm_hostname}/;
+    }
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
-    }
-    
-    return if (centreon::esxd::common::vm_state($self->{obj_esxd}, $self->{lvm}, 
-                                                $$result[0]->{'runtime.connectionState'}->val,
-                                                $$result[0]->{'runtime.powerState'}->val) == 0);
+    return if (!defined($result));
 
     my @instances = ('*');
-
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $result, 
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances},
                          {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
                          {'label' => 'cpu.ready.summation', 'instances' => \@instances}],
-                        $self->{obj_esxd}->{perfcounter_speriod});
+                        $self->{obj_esxd}->{perfcounter_speriod},
+                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
     
-    my $status = 0; # OK
-    my $output = '';
-    my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
-    my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
-    my $total_cpu_ready = centreon::esxd::common::simplify_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"}[0] / ($self->{obj_esxd}->{perfcounter_speriod} * 1000) * 100);
-    
-    if ($total_cpu_average >= $self->{warn}) {
-        $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
     }
-    if ($total_cpu_average >= $self->{crit}) {
-        $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All cpu usages are ok"));
     }
-    if ($total_cpu_ready >= $self->{warn2}) {
-        $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-    }
-    if ($total_cpu_ready >= $self->{crit2}) {
-        $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-    }
-    
+    foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+                                                  hostname => $entity_view->{name}, 
+                                                  state => $entity_view->{'runtime.connectionState'}->val,
+                                                  power => $entity_view->{'runtime.powerState'}->val,
+                                                  status => $self->{disconnect_status},
+                                                  powerstatus => $self->{nopoweredon_status},
+                                                  multiple => $multiple) == 0);
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
+        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
+        my $total_cpu_ready = centreon::esxd::common::simplify_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"}[0] / ($self->{obj_esxd}->{perfcounter_speriod} * 1000) * 100);
+        
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits;
+        my $extra_label = '';
+        $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
+        foreach my $entry (({ value => $total_cpu_average, label => 'usage', output => 'Total Average CPU usage %s %%',
+                              perf_label => 'cpu_total', perf_min => 0, perf_max => 100, perf_unit => '%' }, 
+                            { value => $total_cpu_mhz_average, label => 'usagemhz', output => 'Total Average CPU %s Mhz',
+                              perf_label => 'cpu_total_MHz', perf_min => 0, perf_unit => 'MHz'}, 
+                            { value => $total_cpu_ready, label => 'ready', output => 'CPU ready %s %%',
+                              perf_label => 'cpu_ready', perf_min => 0, perf_unit => '%' })) {
+            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $entry->{value}, threshold => [ { label => 'critical_' . $entry->{label}, exit_litteral => 'critical' }, { label => 'warning_' . $entry->{label}, exit_litteral => 'warning' } ]);
+            push @exits, $exit;
+ 
+            my $output = sprintf($entry->{output}, $entry->{value});
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+            
+            $self->{manager}->{output}->perfdata_add(label => $entry->{perf_label} . $extra_label, unit => $entry->{perf_unit},
+                                          value => $entry->{value},
+                                          warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_' . $entry->{label}),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_in' . $entry->{label}),
+                                          min => $entry->{perf_min}, max => $entry->{perf_max});
+        }
+        
+        $long_msg .= ' on last ' . int($self->{obj_esxd}->{perfcounter_speriod} / 60) . ' min';
 
-    $output = "CPU ready '$total_cpu_ready%', Total Average CPU usage '$total_cpu_average%', Total Average CPU '" . $total_cpu_mhz_average . "MHz' on last " . int($self->{obj_esxd}->{perfcounter_speriod} / 60) . "min | cpu_ready=$total_cpu_ready%;$self->{warn2};$self->{crit2};0; cpu_total=$total_cpu_average%;$self->{warn};$self->{crit};0;100 cpu_total_MHz=" . $total_cpu_mhz_average . "MHz";
-
-    foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
+        $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' $long_msg");
+        my $exit = $self->{manager}->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{manager}->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                                   short_msg => "'$entity_view->{name}' $short_msg"
+                                                   );
+        }
+        if ($multiple == 0) {
+            $self->{manager}->{output}->output_add(short_msg => "'$entity_view->{name}' $long_msg");
+        }
+        
+        foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
                    my ($cidb, $cib) = split /:/, $b;
                                $cia = -1 if (!defined($cia) || $cia eq "");
                                $cib = -1 if (!defined($cib) || $cib eq "");
-                   $cia <=> $cib} keys %$values) {
-        my ($counter_id, $instance) = split /:/, $id;
-        next if ($self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} != $counter_id);
-        if ($instance ne "") {
-            $output .= " cpu" . $instance . "_MHz=" . centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$id}[0])) . "MHz";
+                   $cia <=> $cib} keys %{$values->{$entity_value}}) {
+            my ($counter_id, $instance) = split /:/, $id;
+            next if ($self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} != $counter_id);
+            if ($instance ne "") {
+                $self->{manager}->{output}->perfdata_add(label => 'cpu_' . $instance . '_MHz' . $extra_label, unit => 'MHz',
+                                                         value => centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$id}[0])),
+                                                         min => 0);
+            }
         }
     }
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
 
 1;

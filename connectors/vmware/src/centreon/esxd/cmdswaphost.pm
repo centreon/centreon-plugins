@@ -94,7 +94,8 @@ sub run {
                         $result, 
                         [{'label' => 'mem.swapinRate.average', 'instances' => ['']},
                          {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
-                        $self->{obj_esxd}->{perfcounter_speriod});
+                        $self->{obj_esxd}->{perfcounter_speriod},
+                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
     
     if ($multiple == 1) {
@@ -110,8 +111,8 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};                       
 
         # KBps
-        my $swap_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0])) * 1024;
-        my $swap_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0])) * 1024;
+        my $swap_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0])) * 1024;
+        my $swap_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0])) * 1024;
 
         my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $swap_in, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $swap_out, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);

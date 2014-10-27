@@ -406,9 +406,9 @@ sub is_connected {
 }
 
 sub is_running {
-    my ($power_state) = @_;
+    my (%options) = @_;
     
-    if ($power_state !~ /^poweredOn$/i) {
+    if ($options{power} !~ /^poweredOn$/i) {
         return 0;
     }
     return 1;
@@ -428,19 +428,27 @@ sub datastore_state {
 }
 
 sub vm_state {
-    my ($obj_esxd, $vm, $connection_state, $power_state, $nocheck_ps) = @_;
+    my (%options) = @_;
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{host_state_error};
+    my $power_status = defined($options{powerstatus}) ? $options{powerstatus} : $options{connector}->{centreonesxd_config}->{vm_state_error};
     
-    if ($connection_state !~ /^connected$/i) {
-        my $output = "VM '" . $vm . "' not connected. Current Connection State: '$connection_state'.";
-        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{vm_state_error},
-                                               short_msg => $output);
+    if ($options{state} !~ /^connected$/i) {
+        my $output = "VM '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";
+        if ($options{multiple} == 0 || 
+            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+            $manager_display->{output}->output_add(severity => $status,
+                                                   short_msg => $output);
+        }
         return 0;
     }
     
-    if (!defined($nocheck_ps) && $power_state !~ /^poweredOn$/i) {    
-        my $output = "VM '" . $vm . "' not running. Current Power State: '$power_state'.";
-        $manager_display->{output}->output_add(severity => $obj_esxd->{centreonesxd_config}->{vm_state_error},
-                                               short_msg => $output);
+    if (!defined($options{nocheck_ps}) && $options{power} !~ /^poweredOn$/i) {
+        my $output = "VM '" . $options{hostname} . "' not running. Current Power State: '$options{power}'.";
+        if ($options{multiple} == 0 || 
+            !$manager_display->{output}->is_status(value => $power_status, compare => 'ok', litteral => 1)) {
+            $manager_display->{output}->output_add(severity => $power_status,
+                                                   short_msg => $output);
+        }
         return 0;
     }
     

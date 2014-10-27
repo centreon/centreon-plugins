@@ -20,7 +20,6 @@ sub getCommandName {
     return $self->{commandName};
 }
 
-
 sub checkArgs {
     my ($self, %options) = @_;
 

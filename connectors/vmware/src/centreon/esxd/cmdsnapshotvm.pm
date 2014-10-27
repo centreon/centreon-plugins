@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'snapshotvm';
     
     bless $self, $class;
@@ -22,155 +21,145 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($vm, $filter, $warn, $crit) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($vm) || $vm eq "") {
-        $self->{logger}->writeLogError("ARGS error: need vm hostname");
+    if (defined($options{arguments}->{vm_hostname}) && $options{arguments}->{vm_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: vm hostname cannot be null");
         return 1;
     }
-    if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (defined($crit) && $crit ne "" && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
-        return 1;
-    }
-    if (defined($warn) && defined($crit) && $warn ne "" && $crit ne "" && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
-        return 1;
+    foreach my $label (('warning', 'critical')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lvm} = $_[0];
-    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
-    $self->{warning} = ((defined($_[2]) and $_[2] ne '') ? $_[2] : 86400 * 3);
-    $self->{critical} = ((defined($_[3]) and $_[3] ne '') ? $_[3] : 86400 * 5);
-    $self->{consolidate} = (defined($_[4]) && $_[4] == 1) ? 1 : 0;
-    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
-    $self->{skip_not_running} = (defined($_[6]) && $_[6] == 1) ? 1 : 0;
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning', 'critical')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
     if ($self->{obj_esxd}->{module_date_parse_loaded} == 0) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Need to install Date::Parse CPAN Module.\n");
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Need to install Date::Parse CPAN Module");
         return ;
     }
 
     my %filters = ();
-
-    if ($self->{filter} == 0) {
-        $filters{name} =  qr/^\Q$self->{lvm}\E$/;
+    my $multiple = 0;
+    if (defined($self->{vm_hostname}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{vm_hostname}\E$/;
+    } elsif (!defined($self->{vm_hostname})) {
+        $filters{name} = qr/.*/;
     } else {
-        $filters{name} = qr/$self->{lvm}/;
+        $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties;
     push @properties, 'snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState';
-    if ($self->{consolidate} == 1) {
+    if (defined($self->{check_consolidation}) == 1) {
         push @properties, 'runtime.consolidationNeeded';
     }
 
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
+    return if (!defined($result));
+
+    my %vm_consolidate = ();
+    my %vm_errors = (warning => {}, critical => {});    
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
     }
-
-    my $status = 0; # OK
-    my $output = "";
-    my $output_append = '';
-    my $output_warning = '';
-    my $output_warning_append = '';
-    my $output_critical = '';
-    my $output_critical_append = '';
-    my $output_unknown = '';
-    my $output_unknown_append = '';
-    my $output_ok_unit = 'Snapshot(s) OK';
-    my $consolidate_vms = '';
-    my $consolidate_vms_append = '';
-    my ($num_warning, $num_critical) = (0, 0);
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All snapshots are ok"));
+    } else {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("Snapshot(s) OK"));
+    }
+    foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+                                                  hostname => $entity_view->{name}, 
+                                                  state => $entity_view->{'runtime.connectionState'}->val,
+                                                  status => $self->{disconnect_status},
+                                                  nocheck_ps => 1,
+                                                  multiple => $multiple) == 0);
     
-    foreach my $virtual (@$result) {
-        if (!centreon::esxd::common::is_connected($virtual->{'runtime.connectionState'}->val)) {
-            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
-                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                                                    "'" . $virtual->{name} . "' not connected");
-            }
-            next;
-        }
-        
-        if ($self->{skip_not_running} == 1 && 
-            !centreon::esxd::common::is_running($virtual->{'runtime.powerState'}->val)) {
-            next;
-        }
+        next if (defined($self->{nopoweredon_skip}) && 
+                 !centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
     
-        if ($self->{consolidate} == 1 && defined($virtual->{'runtime.consolidationNeeded'}) && $virtual->{'runtime.consolidationNeeded'} =~ /^true|1$/i) {
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-            $consolidate_vms .= $consolidate_vms_append . '[' . $virtual->{'name'} . ']';
-            $consolidate_vms_append = ', ';
+        if (defined($self->{check_consolidation}) && defined($entity_view->{'runtime.consolidationNeeded'}) && $entity_view->{'runtime.consolidationNeeded'} =~ /^true|1$/i) {
+            $vm_consolidate{$entity_view->{name}} = 1;
         }
 
-        if (!defined($virtual->{'snapshot.rootSnapshotList'})) {
-            next;
-        }
+        next if (!defined($entity_view->{'snapshot.rootSnapshotList'}));
     
-        foreach my $snapshot (@{$virtual->{'snapshot.rootSnapshotList'}}) {
+        foreach my $snapshot (@{$entity_view->{'snapshot.rootSnapshotList'}}) {
             # 2012-09-21T14:16:17.540469Z
             my $create_time = Date::Parse::str2time($snapshot->createTime);
             if (!defined($create_time)) {
-                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                        "Can't Parse date '" . $snapshot->createTime . "' for vm [" . $virtual->{'name'} . "]");
+                $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                       short_msg => "Can't Parse date '" . $snapshot->createTime . "' for vm '" . $entity_view->{name} . "'");
                 next;
             }
-            if (time() - $create_time >= $self->{critical}) {
-                centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                    "[" . $virtual->{'name'}. "]");
-                $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                $num_critical++;
-                last;
-            } elsif (time() - $create_time >= $self->{warning}) {
-                centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                    "[" . $virtual->{'name'}. "]");
-                $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                $num_warning++;
-                last;
+            
+            my $diff_time = time() - $create_time;
+            my $days = int($diff_time / 60 / 60 / 24);
+            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $diff_time, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            
+            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $vm_errors{$exit}->{$entity_view->{name}} = 1;
+                $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' snapshot create time: " . $snapshot->createTime);
             }
         }
     }
 
-    my $perfdata = 'num_warning=' . $num_warning . ' num_critical=' . $num_critical;
-    if ($output_unknown ne "") {
-        $output .= $output_append . "UNKNOWN - $output_unknown";
-        $output_append = ". ";
+    $self->{manager}->{output}->perfdata_add(label => 'num_warning',
+                                             value => scalar(keys %{$vm_errors{warning}}),
+                                             min => 0);
+    $self->{manager}->{output}->perfdata_add(label => 'num_critical',
+                                             value => scalar(keys %{$vm_errors{critical}}),
+                                             min => 0);
+    if (scalar(keys %{$vm_errors{warning}}) > 0) {
+        $self->{manager}->{output}->output_add(severity => 'WARNING',
+                                               short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{warning} / 86400), 
+                                                                    join('] [', sort keys %{$vm_errors{warning}})));
     }
-    if ($consolidate_vms ne "") {
-        $output .= $output_append . "CRITICAL - VMs need consolidation : " . $consolidate_vms;
-        $output_append = ". ";
+    if (scalar(keys %{$vm_errors{critical}}) > 0) {
+        $self->{manager}->{output}->output_add(severity => 'CRITICAL',
+                                               short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{critical} / 86400), 
+                                                                    join('] [', sort keys %{$vm_errors{critical}})));
     }
-    if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - Snapshots for VM older than " . ($self->{critical} / 86400) . " days: $output_critical";
-        $output_append = ". ";
+    if (scalar(keys %vm_consolidate) > 0) {
+         $self->{manager}->{output}->output_add(severity => 'CRITICAL',
+                                               short_msg => sprintf('VMs need consolidation: [%s]',
+                                                                    join('] [', sort keys %vm_consolidate)));
     }
-    if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - Snapshots for VM older than " . ($self->{warning} / 86400) . " days: $output_warning";
-    }
-    if ($status == 0) {
-        if ($self->{filter} == 1) {
-            $output .= $output_append . "All snapshots are ok";
-        } else {
-            $output .= $output_append . $output_ok_unit;
-        }
-    }
-
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
 }
 
 1;

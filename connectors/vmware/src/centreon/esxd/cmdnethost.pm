@@ -242,7 +242,7 @@ sub run {
                                           min => 0, max => $interface_speed);
         }
         
-        $self->{manager}->{output}->output_add(long_msg => "$entity_view->{name}' $long_msg");
+        $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' $long_msg");
         my $exit = $self->{manager}->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{manager}->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{manager}->{output}->output_add(severity => $exit,
