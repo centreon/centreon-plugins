@@ -37,7 +37,7 @@ package apps::vmware::connector::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -68,6 +68,7 @@ sub new {
                          'uptime-host'      => 'apps::vmware::connector::mode::uptimehost',
                          );
 
+    $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';
     return $self;
 }
 

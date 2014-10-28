@@ -198,7 +198,6 @@ sub is_custommode {
     }
 }
 
-
 sub version {
     my $self = shift;    
     $self->{output}->add_option_msg(short_msg => "Plugin Version: " . $self->{version});

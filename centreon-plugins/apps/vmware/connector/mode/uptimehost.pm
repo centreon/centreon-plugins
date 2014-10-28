@@ -39,11 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::vmware::connector::lib::common;
-use ZMQ::LibZMQ3;
-use ZMQ::Constants qw(:all);
-use UUID;
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -51,36 +46,19 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "connector-hostname:s"    => { name => 'connector_hostname' },
-                                  "connector-port:s"        => { name => 'connector_port', default => 5700 },
-                                  "container:s"             => { name => 'container', default => 'default' },
+                                {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
-                                  "timeout:s"               => { name => 'timeout', default => 50 },
                                 });
-    $self->{json_send} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{connector_hostname}) ||
-        $self->{option_results}->{connector_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
-        $self->{option_results}->{timeout} > 0) {
-        $self->{timeout} = $self->{option_results}->{timeout};
-    } else {
-        $self->{timeout} = 50;
-    }
     
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -96,58 +74,13 @@ sub check_options {
     }
 }
 
-sub build_request {
-    my ($self, %options) = @_;
-    
-    $self->{json_send}->{identity} = 'client-' . unpack('H*', $options{uuid});
-    $self->{json_send}->{command} = 'uptimehost';
-    foreach (keys %{$self->{option_results}}) {
-        $self->{json_send}->{$_} = $self->{option_results}->{$_};
-    }
-}
-
 sub run {
     my ($self, %options) = @_;
+    $self->{connector} = $options{custom};
 
-    my $uuid;
-    my $context = zmq_init();
-    $self->{requester} = zmq_socket($context, ZMQ_DEALER);
-    if (!defined($self->{requester})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot create socket: $!");
-        $self->{output}->option_exit();
-    }
-    
-    my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
-    UUID::generate($uuid);
-    zmq_setsockopt($self->{requester}, ZMQ_IDENTITY, "client-" . $uuid);
-    zmq_setsockopt($self->{requester}, ZMQ_LINGER, 0); # we discard
-    zmq_connect($self->{requester}, 'tcp://' . $self->{option_results}->{connector_hostname} . ':' . $self->{option_results}->{connector_port});
-    
-    $self->build_request(uuid => $uuid);
-    
-    zmq_sendmsg($self->{requester}, "REQCLIENT " . JSON->new->utf8->encode($self->{json_send}), ZMQ_NOBLOCK);
-    
-    my @poll = (
-        {
-            socket  => $self->{requester},
-            events  => ZMQ_POLLIN,
-            callback => sub {
-               my $response = zmq_recvmsg($self->{requester});
-               zmq_close($self->{requester});
-               apps::vmware::connector::lib::common::connector_response($self, response => $response);
-               $self->{output}->display();
-               $self->{output}->exit();
-            },
-        },
-    );
-    
-    zmq_poll(\@poll, $self->{timeout} * 1000);    
-    zmq_close($self->{requester});
-    
-    $self->{output}->output_add(severity => 'UNKNOWN',
-                                short_msg => sprintf("Cannot get response (timeout received)"));
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{connector}->add_params(params => $self->{option_results},
+                                   command => 'uptimehost');
+    $self->{connector}->run();
 }
 
 1;
@@ -159,18 +92,6 @@ __END__
 Check ESX swap rate usage.
 
 =over 8
-
-=item B<--connector-hostname>
-
-Connector hostname (required).
-
-=item B<--connector-port>
-
-Connector port (default: 5700).
-
-=item B<--container>
-
-Container to use (it depends of the connector configuration).
 
 =item B<--esx-hostname>
 
@@ -184,10 +105,6 @@ ESX hostname is a regexp.
 =item B<--disconnect-status>
 
 Status if ESX host disconnected (default: 'unknown').
-
-=item B<--timeout>
-
-Set global execution timeout (Default: 50)
 
 =item B<--warning>
 
