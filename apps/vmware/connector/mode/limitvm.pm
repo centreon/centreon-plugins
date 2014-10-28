@@ -39,10 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use apps::vmware::connector::lib::common;
-use ZMQ::LibZMQ3;
-use ZMQ::Constants qw(:all);
-use UUID;
 
 sub new {
     my ($class, %options) = @_;
@@ -52,9 +48,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "connector-hostname:s"    => { name => 'connector_hostname' },
-                                  "connector-port:s"        => { name => 'connector_port', default => 5700 },
-                                  "container:s"             => { name => 'container', default => 'default' },
                                   "vm-hostname:s"           => { name => 'vm_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
@@ -63,27 +56,13 @@ sub new {
                                   "disk-limitset-status:s"      => { name => 'disk_limitset_status', default => 'critical' },
                                   "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
                                   "check-disk-limit"        => { name => 'check_disk_limit' },
-                                  "timeout:s"               => { name => 'timeout', default => 50 },
                                 });
-    $self->{json_send} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{connector_hostname}) ||
-        $self->{option_results}->{connector_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
-        $self->{option_results}->{timeout} > 0) {
-        $self->{timeout} = $self->{option_results}->{timeout};
-    } else {
-        $self->{timeout} = 50;
-    }
 
     if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
@@ -103,58 +82,13 @@ sub check_options {
     }
 }
 
-sub build_request {
-    my ($self, %options) = @_;
-    
-    $self->{json_send}->{identity} = 'client-' . unpack('H*', $options{uuid});
-    $self->{json_send}->{command} = 'limitvm';
-    foreach (keys %{$self->{option_results}}) {
-        $self->{json_send}->{$_} = $self->{option_results}->{$_};
-    }
-}
-
 sub run {
     my ($self, %options) = @_;
+    $self->{connector} = $options{custom};
 
-    my $uuid;
-    my $context = zmq_init();
-    $self->{requester} = zmq_socket($context, ZMQ_DEALER);
-    if (!defined($self->{requester})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot create socket: $!");
-        $self->{output}->option_exit();
-    }
-    
-    my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
-    UUID::generate($uuid);
-    zmq_setsockopt($self->{requester}, ZMQ_IDENTITY, "client-" . $uuid);
-    zmq_setsockopt($self->{requester}, ZMQ_LINGER, 0); # we discard
-    zmq_connect($self->{requester}, 'tcp://' . $self->{option_results}->{connector_hostname} . ':' . $self->{option_results}->{connector_port});
-    
-    $self->build_request(uuid => $uuid);
-    
-    zmq_sendmsg($self->{requester}, "REQCLIENT " . JSON->new->utf8->encode($self->{json_send}), ZMQ_NOBLOCK);
-    
-    my @poll = (
-        {
-            socket  => $self->{requester},
-            events  => ZMQ_POLLIN,
-            callback => sub {
-               my $response = zmq_recvmsg($self->{requester});
-               zmq_close($self->{requester});
-               apps::vmware::connector::lib::common::connector_response($self, response => $response);
-               $self->{output}->display();
-               $self->{output}->exit();
-            },
-        },
-    );
-    
-    zmq_poll(\@poll, $self->{timeout} * 1000);    
-    zmq_close($self->{requester});
-    
-    $self->{output}->output_add(severity => 'UNKNOWN',
-                                short_msg => sprintf("Cannot get response (timeout received)"));
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{connector}->add_params(params => $self->{option_results},
+                                   command => 'limitvm');
+    $self->{connector}->run();
 }
 
 1;
@@ -163,21 +97,9 @@ __END__
 
 =head1 MODE
 
-Check virtual machine tools.
+Check virtual machine limits.
 
 =over 8
-
-=item B<--connector-hostname>
-
-Connector hostname (required).
-
-=item B<--connector-port>
-
-Connector port (default: 5700).
-
-=item B<--container>
-
-Container to use (it depends of the connector configuration).
 
 =item B<--vm-hostname>
 
@@ -196,10 +118,6 @@ Status if VM disconnected (default: 'unknown').
 
 Skip check if VM is not poweredOn.
 
-=item B<--timeout>
-
-Set global execution timeout (Default: 50)
-
 =item B<--cpu-limitset-status>
 
 Status if cpu limit is set (default: critical).
@@ -214,7 +132,7 @@ Status if disk limit is set (default: critical).
 
 =item B<--check-disk-limit>
 
-Check disk limits (since vsphere 5.0)?
+Check disk limits (since vsphere 5.0).
 
 =back
 
