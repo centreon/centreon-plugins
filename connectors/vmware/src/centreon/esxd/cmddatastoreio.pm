@@ -9,8 +9,7 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
-    $self->{commandName} = 'datastore-io';
+    $self->{commandName} = 'datastoreio';
     
     bless $self, $class;
     return $self;
@@ -22,79 +21,131 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($ds, $warn, $crit) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($ds) || $ds eq "") {
-        $self->{logger}->writeLogError("ARGS error: need datastore name");
+    if (defined($options{arguments}->{datastore_name}) && $options{arguments}->{datastore_name} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: datastore name cannot be null");
         return 1;
     }
-    if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (defined($crit) && $crit ne "" && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
-        return 1;
-    }
-    if (defined($warn) && defined($crit) && $warn ne "" && $crit ne "" && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
-        return 1;
+    foreach my $label (('warning', 'critical')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{ds} = $_[0];
-    $self->{warn} = (defined($_[1]) ? $_[1] : '');
-    $self->{crit} = (defined($_[2]) ? $_[2] : '');
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning', 'critical')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
-        my $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
-        return ;
-    }
-
-    my %filters = ('summary.name' => $self->{ds});
-    my @properties = ('summary.name', 'summary.accessible');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
-    if (!defined($result)) {
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Can't retrieve perf counters");
         return ;
     }
     
-    return if (centreon::esxd::common::datastore_state($self->{obj_esxd}, $self->{ds}, $$result[0]->{'summary.accessible'}) == 0);
-
+    my %filters = ();
+    my $multiple = 0;
+    if (defined($self->{datastore_name}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{datastore_name}\E$/;
+    } elsif (!defined($self->{datastore_name})) {
+        $filters{name} = qr/.*/;
+    } else {
+        $filters{name} = qr/$self->{datastore_name}/;
+    }
+    my @properties = ('summary.name', 'summary.accessible');
+ 
+    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
+    return if (!defined($result));
+    
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $result, 
                         [{'label' => 'datastore.read.average', 'instances' => ['']},
                          {'label' => 'datastore.write.average', 'instances' => ['']}],
-                        $self->{obj_esxd}->{perfcounter_speriod});
+                        $self->{obj_esxd}->{perfcounter_speriod},
+                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
-
-    my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.read.average'}->{'key'} . ":"}[0]));    
-    my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.write.average'}->{'key'} . ":"}[0]));
-
-    my $status = 0; # OK
-    my $output = '';
     
-    if ((defined($self->{warn}) && $self->{warn} ne "") && 
-        ($read_counter >= $self->{warn} || $write_counter >= $self->{warn})) {
-        $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
     }
-    if ((defined($self->{crit}) && $self->{crit} ne "") && 
-        ($read_counter >= $self->{crit} || $write_counter >= $self->{crit})) {
-        $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All datastore rates are ok"));
     }
+    
+    foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
+                                                         name => $entity_view->{'summary.name'}, 
+                                                         state => $entity_view->{'summary.accessible'},
+                                                         status => $self->{disconnect_status},
+                                                         multiple => $multiple) == 0);
+        my $entity_value = $entity_view->{mo_ref}->{value};
+    
+        # in KBps
+        my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.read.average'}->{'key'} . ":"}[0])) * 1024;    
+        my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.write.average'}->{'key'} . ":"}[0])) * 1024;
 
-    $output = "Rate of reading data : " . centreon::esxd::common::simplify_number($read_counter / 1024 * 8) . " Mb/s,  Rate of writing data : " . centreon::esxd::common::simplify_number($write_counter / 1024 * 8) . " Mb/s";
-    $output .= "|read_rate=" . ($read_counter * 1024 * 8) . "b/s write_rate=" . (($write_counter * 1024 * 8)) . "b/s";
-
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
+        my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+        my ($read_value, $read_unit) = $self->{manager}->{perfdata}->change_bytes(value => $read_counter);
+        my ($write_value, $write_unit) = $self->{manager}->{perfdata}->change_bytes(value => $write_counter);
+        
+        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Rate of reading data: %s Rate of writing data: %s", 
+                                            $entity_view->{'summary.name'},
+                                            $read_value . " " . $read_unit . "/s",
+                                            $write_value . " " . $write_unit . "/s"));
+        if ($multiple == 0 ||
+            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+             $self->{manager}->{output}->output_add(severity => $exit,
+                                                    short_msg => sprintf("'%s' Rate of reading data: %s Rate of writing data: %s", 
+                                            $entity_view->{'summary.name'},
+                                            $read_value . " " . $read_unit . "/s",
+                                            $write_value . " " . $write_unit . "/s"));
+        }
+        
+        my $extra_label = '';
+        $extra_label = '_' . $entity_view->{'summary.name'} if ($multiple == 1);
+        $self->{manager}->{output}->perfdata_add(label => 'read_rate' . $extra_label, unit => 'B/s',
+                                                 value => $read_counter,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                                 min => 0);
+        $self->{manager}->{output}->perfdata_add(label => 'write_rate' . $extra_label, unit => 'B/s',
+                                                 value => $write_counter,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                                 min => 0);
+    }
 }
 
 1;

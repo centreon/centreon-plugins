@@ -388,18 +388,18 @@ sub performance_errors {
 }
 
 sub is_accessible {
-    my ($accessible) = @_;
+    my (%options) = @_;
      
-    if ($accessible !~ /^true|1$/) {
+    if ($options{accessible} !~ /^true|1$/) {
         return 0;
     }
     return 1;
 }
 
 sub is_connected {
-    my ($connection_state) = @_;
+    my (%options) = @_;
      
-    if ($connection_state !~ /^connected$/i) {
+    if ($options{state} !~ /^connected$/i) {
         return 0;
     }
     return 1;
@@ -415,12 +415,16 @@ sub is_running {
 }
 
 sub datastore_state {
-    my ($obj_esxd, $ds, $accessible) = @_;
+    my (%options) = @_;
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{datastore_state_error};
     
-    if ($accessible !~ /^true|1$/) {
-        my $output = "Datastore '" . $ds . "' not accessible. Can be disconnected.";
-        my $status = errors_mask(0, $obj_esxd->{centreonesxd_config}->{datastore_state_error});
-        $obj_esxd->print_response(get_status($status) . "|$output\n");
+    if ($options{state} !~ /^true|1$/) {
+        my $output = "Datastore '" . $options{name} . "' not accessible. Current connection state: '$options{state}'.";
+        if ($options{multiple} == 0 || 
+            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+            $manager_display->{output}->output_add(severity => $status,
+                                                   short_msg => $output);
+        }
         return 0;
     }
     

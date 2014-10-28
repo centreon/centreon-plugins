@@ -9,8 +9,7 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
-    $self->{commandName} = 'datastore-iops';
+    $self->{commandName} = 'datastoreiops';
     
     bless $self, $class;
     return $self;
@@ -22,87 +21,87 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($ds, $filter, $warn, $crit, $details_value) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($ds) || $ds eq "") {
-        $self->{logger}->writeLogError("ARGS error: need datastore name");
+    if (defined($options{arguments}->{datastore_name}) && $options{arguments}->{datastore_name} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: datastore name cannot be null");
         return 1;
     }
-    if (defined($details_value) && $details_value ne "" && $details_value !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: details-value must be a positive number");
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (defined($warn) && $warn ne "" && $warn !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be a positive number");
-        return 1;
-    }
-    if (defined($crit) && $crit ne "" && $crit !~ /^-?(?:\d+\.?|\.\d)\d*\z/) {
-        $self->{logger}->writeLogError("ARGS error: crit threshold must be a positive number");
-        return 1;
-    }
-    if (defined($warn) && defined($crit) && $warn ne "" && $crit ne "" && $warn > $crit) {
-        $self->{logger}->writeLogError("ARGS error: warn threshold must be lower than crit threshold");
-        return 1;
+    foreach my $label (('warning', 'critical')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{ds} = $_[0];
-    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
-    $self->{warn} = (defined($_[2]) ? $_[2] : '');
-    $self->{crit} = (defined($_[3]) ? $_[3] : '');
-    $self->{details_value} = (defined($_[4]) ? $_[4] : 50);
-    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning', 'critical')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    my $status = 0; # OK
-    my $output = '';
-    my $output_append = '';
-    my $output_warning = '';
-    my $output_warning_append = '';
-    my $output_critical = '';
-    my $output_critical_append = '';
-    my $output_unknown = '';
-    my $output_unknown_append = '';
-    my $perfdata = '';
-
     if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
-        $status = centreon::esxd::common::errors_mask(0, 'UNKNOWN');
-        $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|Can't retrieve perf counters.\n");
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "Can't retrieve perf counters");
         return ;
     }
 
     my %filters = ();
-    if ($self->{filter} == 0) {
-        $filters{name} =  qr/^\Q$self->{ds}\E$/;
+    my $multiple = 0;
+    if (defined($self->{datastore_name}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{datastore_name}\E$/;
+    } elsif (!defined($self->{datastore_name})) {
+        $filters{name} = qr/.*/;
     } else {
-        $filters{name} = qr/$self->{ds}/;
+        $filters{name} = qr/$self->{datastore_name}/;
     }
-
     my @properties = ('summary.accessible', 'summary.name', 'vm', 'info');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
+    return if (!defined($result));
+    
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All Datastore IOPS counters are ok"));
     }
     
     #my %uuid_list = ();
     my %disk_name = ();
     my %datastore_lun = ();
     foreach (@$result) {
-        if (!centreon::esxd::common::is_accessible($_->{'summary.accessible'})) {
-            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
-                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                                                    "'" . $_->{'summary.name'} . "' not accessible. Can be disconnected");
-            }
-            next;
-        }
+        next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
+                                                         name => $_->{'summary.name'}, 
+                                                         state => $_->{'summary.accessible'},
+                                                         status => $self->{disconnect_status},
+                                                         multiple => $multiple) == 0);
     
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
@@ -133,15 +132,13 @@ sub run {
 
     @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
-    if (!defined($result2)) {
-        return ;
-    }
+    return if (!defined($result2));
     
     # Remove disconnected or not running vm
     my %ref_ids_vm = ();
     for(my $i = $#{$result2}; $i >= 0; --$i) {
-        if (!centreon::esxd::common::is_connected(${$result2}[$i]->{'runtime.connectionState'}->val) || 
-            !centreon::esxd::common::is_running(${$result2}[$i]->{'runtime.powerState'}->val)) {
+        if (!centreon::esxd::common::is_connected(state => ${$result2}[$i]->{'runtime.connectionState'}->val) || 
+            !centreon::esxd::common::is_running(power => ${$result2}[$i]->{'runtime.powerState'}->val)) {
             splice @$result2, $i, 1;
             next;
         }
@@ -153,7 +150,8 @@ sub run {
                         $result2, 
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{obj_esxd}->{perfcounter_speriod}, 1, 1);                  
+                        $self->{obj_esxd}->{perfcounter_speriod},
+                        skip_undef_counter => 1, multiples => 1);                  
     
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
 
@@ -161,9 +159,7 @@ sub run {
         my ($vm_id, $id, $disk_name) = split(/:/);
         
         # RDM Disk. We skip. Don't know how to manage it right now.
-        if (!defined($disk_name{$disk_name})) {
-            next;
-        }
+        next if (!defined($disk_name{$disk_name}));
         
         my $tmp_value = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$_}[0] /  $self->{obj_esxd}->{perfcounter_speriod}));
         $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
@@ -178,62 +174,65 @@ sub run {
         my $total_read_counter = $datastore_lun{$_}{'disk.numberRead.summation'};
         my $total_write_counter = $datastore_lun{$_}{'disk.numberWrite.summation'};
         
-        if (defined($self->{crit}) && $self->{crit} ne "" && ($total_read_counter >= $self->{crit})) {
-            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "'$total_read_counter' read iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberRead.summation', $datastore_lun{$_}, \%ref_ids_vm));
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($total_read_counter >= $self->{warn})) {
-            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "'$total_read_counter' read on '" . $_ . "'" . $self->vm_iops_details('disk.numberRead.summation', $datastore_lun{$_}, \%ref_ids_vm));
-            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' read iops on '%s'", 
+                                               $total_read_counter, $_));
+        if ($multiple == 0 ||
+            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+             $self->{manager}->{output}->output_add(severity => $exit,
+                                                    short_msg => sprintf("'%s' read iops on '%s'", 
+                                               $total_read_counter, $_));
+             $self->vm_iops_details(label => 'disk.numberRead.summation', 
+                                    type => 'read',
+                                    detail => $datastore_lun{$_}, 
+                                    ref_vm => \%ref_ids_vm);
         }
-        if (defined($self->{crit}) && $self->{crit} ne "" && ($total_write_counter >= $self->{crit})) {
-            centreon::esxd::common::output_add(\$output_critical, \$output_critical_append, ", ",
-                "'$total_write_counter' write iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberWrite.summation', $datastore_lun{$_}, \%ref_ids_vm));
-            $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-        } elsif (defined($self->{warn}) && $self->{warn} ne "" && ($total_write_counter >= $self->{warn})) {
-            centreon::esxd::common::output_add(\$output_warning, \$output_warning_append, ", ",
-                "'$total_write_counter' write iops on '" . $_ . "'" . $self->vm_iops_details('disk.numberWrite.summation', $datastore_lun{$_}, \%ref_ids_vm));
-            $status = centreon::esxd::common::errors_mask($status, 'WARNING');
+        $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' write iops on '%s'", 
+                                               $total_write_counter, $_));
+        if ($multiple == 0 ||
+            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+             $self->{manager}->{output}->output_add(severity => $exit,
+                                                    short_msg => sprintf("'%s' write iops on '%s'", 
+                                               $total_write_counter, $_));
+             $self->vm_iops_details(label => 'disk.numberWrite.summation',
+                                    type => 'write',
+                                    detail => $datastore_lun{$_}, 
+                                    ref_vm => \%ref_ids_vm)
         }
         
-        if ($self->{filter} == 1) {
-            $perfdata .= " 'riops_" . $_ . "'=" . $total_read_counter . "iops;$self->{warn};$self->{crit};0; 'wiops_" . $_ . "'=" . $total_write_counter . "iops;$self->{warn};$self->{crit};0;";
-        } else {
-            $perfdata .= " 'riops=" . $total_read_counter . "iops;$self->{warn};$self->{crit};0; wiops=" . $total_write_counter . "iops;$self->{warn};$self->{crit};0;";
-        }
+        my $extra_label = '';
+        $extra_label = '_' . $_ if ($multiple == 1);
+        $self->{manager}->{output}->perfdata_add(label => 'riops' . $extra_label, unit => 'iops',
+                                                 value => $total_read_counter,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                                 min => 0);
+        $self->{manager}->{output}->perfdata_add(label => 'wiops' . $extra_label, unit => 'iops',
+                                                 value => $total_write_counter,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                                 min => 0);
     }
-
-    if ($output_unknown ne "") {
-        $output .= $output_append . "UNKNOWN - $output_unknown";
-        $output_append = ". ";
-    }
-    if ($output_critical ne "") {
-        $output .= $output_append . "CRITICAL - $output_critical";
-        $output_append = ". ";
-    }
-    if ($output_warning ne "") {
-        $output .= $output_append . "WARNING - $output_warning";
-    }
-    if ($status == 0) {
-        $output = "All Datastore IOPS counters are ok";
-    }
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output|$perfdata\n");
 }
 
 sub vm_iops_details {
-    my ($self, $label, $ds_details, $ref_ids_vm) = @_;
-    my $details = '';
+    my ($self, %options) = @_;
     
-    foreach my $value (keys %$ds_details) {
-        # Dont need to display vm with iops < 1
-        if ($value =~ /^vm.*?$label$/ && $ds_details->{$value} >= $self->{details_value}) {
-            my ($vm_ids) = split(/_/, $value);
-            $details .= " ['" . $ref_ids_vm->{$vm_ids} . "' " . $ds_details->{$value} . ']';
+    $self->{manager}->{output}->output_add(long_msg => sprintf("  VM IOPs details: "));
+    my $num = 0;
+    foreach my $value (keys %{$options{detail}}) {
+        # display only for high iops
+        if ($value =~ /^vm.*?$options{label}$/ && $options{detail}->{$value} >= $self->{detail_iops_min}) {
+            my ($vm_id) = split(/_/, $value);
+            $num++;
+            $self->{manager}->{output}->output_add(long_msg => sprintf("    '%s' %s iops", $options{ref_vm}->{$vm_id}, $options{detail}->{$value})); 
         }
     }
     
-    return $details;
+    if ($num == 0) {
+        $self->{manager}->{output}->output_add(long_msg => sprintf("    no vm with iops >= %s", $self->{detail_iops_min}));
+    }
 }
 
 1;

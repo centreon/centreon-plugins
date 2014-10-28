@@ -113,15 +113,6 @@ sub print_usage () {
     print "   --vsphere         vsphere name (default: none)\n";
     print "   -u (--usage)       What to check. The list and args (required)\n";
     print "\n";
-    print "'datastore-usage':\n";
-    print "   --datastore       Datastore name to check (required)\n";
-    print "   -w (--warning)    Warning Threshold (default 80)\n";
-    print "   -c (--critical)   Critical Threshold (default 90)\n";
-    print "   --units           Threshold units: %, MB (default is MB)\n";
-    print "   --free            Threshold is for free size\n";
-    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
-    print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
-    print "\n";
     print "'datastore-iops':\n";
     print "   --datastore       Datastore name to check (required)\n";
     print "   -w (--warning)    Warning Threshold (default none)\n";
@@ -129,11 +120,6 @@ sub print_usage () {
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
     print "   --details-value   Only display VMs with iops higher than the following value (permits to see VMs with high values) (default 50)\n";
-    print "\n";
-    print "'datastore-io':\n";
-    print "   --datastore       Datastore name to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in kBps (default none)\n";
-    print "   -c (--critical)   Critical Threshold in kBps (default none)\n";
     print "\n";
     print "'datastore-snapshots':\n";
     print "   --datastore       Datastore name to check (required)\n";
@@ -155,14 +141,6 @@ sub print_usage () {
     print "   --vm              VM to check (required)\n";
     print "   -w (--warning)    Warning Threshold in IOPS (default none)\n";
     print "   -c (--critical)   Critical Threshold in IOPS (default none)\n";
-    print "\n";
-    print "'thinprovisioningvm':\n";
-    print "   --vm              VM to check (required)\n";
-    print "   --filter          Use regexp for --vm option (can check multiples vm at once)\n";
-    print "   --on              Warn or critical if thinprovisioning set\n";
-    print "   --crit            Critical\n";
-    print "   --warn            Warn\n";
-    print "   --skip-errors     Status OK if vms are disconnected (when you checks multiples)\n";
     print "\n";
 }
 
