@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{obj_esxd} = shift;
     $self->{commandName} = 'thinprovisioningvm';
     
     bless $self, $class;
@@ -22,95 +21,119 @@ sub getCommandName {
 }
 
 sub checkArgs {
-    my $self = shift;
-    my ($vm, $warn, $crit) = @_;
+    my ($self, %options) = @_;
 
-    if (!defined($vm) || $vm eq "") {
-        $self->{logger}->writeLogError("ARGS error: need vm name");
+    if (defined($options{arguments}->{vm_hostname}) && $options{arguments}->{vm_hostname} eq "") {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: vm hostname cannot be null");
         return 1;
+    }
+    if (defined($options{arguments}->{thinprovisioning_status}) && $options{arguments}->{thinprovisioning_status} ne '') {
+        my ($entry, $status) = split /,/, $options{arguments}->{thinprovisioning_status};
+        if ($entry !~ /^(notactive|active)$/) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Wrong thinprovisioning-status option. Can only be 'active' or 'noactive'. Not: '" . $entry . "'.");
+            return 1;
+        }
+        if ($options{manager}->{output}->is_litteral_status(status => $status) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Wrong thinprovisioning-status option. Not a good status: '" . $status . "'.");
+            return 1;
+        }
     }
     return 0;
 }
 
 sub initArgs {
-    my $self = shift;
-    $self->{lvm} = $_[0];
-    $self->{filter} = (defined($_[1]) && $_[1] == 1) ? 1 : 0;
-    $self->{on} = ((defined($_[2]) and $_[2] ne '') ? $_[2] : 0);
-    $self->{warn} = ((defined($_[3]) and $_[3] ne '') ? $_[3] : 0);
-    $self->{crit} = ((defined($_[4]) and $_[4] ne '') ? $_[4] : 0);
-    $self->{skip_errors} = (defined($_[5]) && $_[5] == 1) ? 1 : 0;
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    $self->{manager} = centreon::esxd::common::init_response();
+    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+}
+
+sub set_connector {
+    my ($self, %options) = @_;
+    
+    $self->{obj_esxd} = $options{connector};
+}
+
+sub display_verbose {
+    my ($self, %options) = @_;
+    
+    foreach my $vm (sort keys %{$options{vms}}) {
+        $self->{manager}->{output}->output_add(long_msg => $vm);
+        foreach my $disk (sort keys %{$options{vms}->{$vm}}) {
+            $self->{manager}->{output}->output_add(long_msg => '    ' . $disk);
+        }
+    }
 }
 
 sub run {
     my $self = shift;
+    
     my %filters = ();
-
-    if ($self->{filter} == 0) {
-        $filters{name} =  qr/^\Q$self->{lvm}\E$/;
+    my $multiple = 0;
+    if (defined($self->{vm_hostname}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{vm_hostname}\E$/;
+    } elsif (!defined($self->{vm_hostname})) {
+        $filters{name} = qr/.*/;
     } else {
-        $filters{name} = qr/$self->{lvm}/;
+        $filters{name} = qr/$self->{vm_hostname}/;
     }
-    my @properties = ('name', 'config.hardware.device', 'runtime.connectionState');
+    my @properties = ('name', 'config.hardware.device', 'runtime.connectionState', 'runtime.powerState');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
-    if (!defined($result)) {
-        return ;
+    return if (!defined($result));
+    
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("All thinprovisoning virtualdisks are ok."));
+    } else {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => sprintf("Thinprovisoning virtualdisks are ok."));
     }
     
-    my $status = 0; # OK
-    my $output = '';
-    my $output_append = '';
-    my $output_unknown = '';
-    my $output_unknown_append = '';
-
-    foreach my $virtual (@$result) {
-        if (!centreon::esxd::common::is_connected($virtual->{'runtime.connectionState'}->val)) {
-            if ($self->{skip_errors} == 0 || $self->{filter} == 0) {
-                $status = centreon::esxd::common::errors_mask($status, 'UNKNOWN');
-                centreon::esxd::common::output_add(\$output_unknown, \$output_unknown_append, ", ",
-                                                    "'" . $virtual->{name} . "' not connected");
-            }
-            next;
-        }
+    my $disks_vm = {};
+    my %maps_match = ('active' => { regexp => '^1$', output => 'VirtualDisks thinprovisioning actived' },
+                      'notactive' => { regexp => '^(?!(1)$)', output => 'VirtualDisks thinprovisioning not actived' });
+    my $num = 0;
+    my ($entry, $status);
+    if (defined($self->{thinprovisioning_status}) && $self->{thinprovisioning_status} ne '') {
+        ($entry, $status) = split /,/, $self->{thinprovisioning_status};
+    }
     
-        my $output_disk = '';
-        foreach (@{$virtual->{'config.hardware.device'}}) {         
-            if ($_->isa('VirtualDisk')) {
-                if ($self->{on} == 1 && $self->{warn} == 1 && $_->backing->thinProvisioned == 1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                    $output_disk .= ' [' . $_->backing->fileName . ']';
-                }
-                if ($self->{on} == 1 && $self->{crit} == 1 && $_->backing->thinProvisioned == 1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                    $output_disk .= ' [' . $_->backing->fileName . ']';
-                }
-                if ($self->{on} == 0 && $self->{warn} == 1 && $_->backing->thinProvisioned != 1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'WARNING');
-                    $output_disk .= ' [' . $_->backing->fileName . ']';
-                }
-                if ($self->{on} == 0 && $self->{crit} == 1 && $_->backing->thinProvisioned != 1) {
-                    $status = centreon::esxd::common::errors_mask($status, 'CRITICAL');
-                    $output_disk .= ' [' . $_->backing->fileName . ']';
-                }
-            }
-        }
+    foreach my $entity_view (@$result) {
+        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+                                                  hostname => $entity_view->{name}, 
+                                                  state => $entity_view->{'runtime.connectionState'}->val,
+                                                  status => $self->{disconnect_status},
+                                                  nocheck_ps => 1,
+                                                  multiple => $multiple) == 0);
+    
+        next if (defined($self->{nopoweredon_skip}) && 
+                 !centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
         
-        if ($output_disk ne '') {
-            centreon::esxd::common::output_add(\$output, \$output_append, ", ",
-                                               'VM ' . $virtual->{name} . ':' . $output_disk);
+        foreach (@{$entity_view->{'config.hardware.device'}}) {         
+            if ($_->isa('VirtualDisk')) {
+                if (defined($entry) && $_->backing->thinProvisioned =~ /$maps_match{$entry}->{regexp}/) {
+                    $num++;
+                    $disks_vm->{$entity_view->{name}} = {} if (!defined($disks_vm->{$entity_view->{name}}));
+                    $disks_vm->{$entity_view->{name}}->{$_->backing->fileName} = 1;
+                }
+            }
         }
     }
 
-    if ($output ne "" && $self->{on} == 1) {
-        $output = "VirtualDisks thinprovisioning actived - $output.";
-    } elsif ($output ne "" && $self->{on} == 0) {
-        $output = "VirtualDisks thinprovisioning not actived - $output.";
+    if ($num > 0) {
+        $self->{manager}->{output}->output_add(severity => $status,
+                                               short_msg => sprintf('%d %s', $num, $maps_match{$entry}->{output}));
+        $self->display_verbose(vms => $disks_vm);
     }
-    if ($status == 0) {
-        $output .= $output_append . "Thinprovisoning virtualdisks are ok.";
-    }
-    
-    $self->{obj_esxd}->print_response(centreon::esxd::common::get_status($status) . "|$output\n");
 }
 
 1;
