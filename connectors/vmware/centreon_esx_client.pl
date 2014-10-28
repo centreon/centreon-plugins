@@ -113,14 +113,6 @@ sub print_usage () {
     print "   --vsphere         vsphere name (default: none)\n";
     print "   -u (--usage)       What to check. The list and args (required)\n";
     print "\n";
-    print "'datastore-iops':\n";
-    print "   --datastore       Datastore name to check (required)\n";
-    print "   -w (--warning)    Warning Threshold (default none)\n";
-    print "   -c (--critical)   Critical Threshold (default none)\n";
-    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
-    print "   --skip-errors     Status OK if a datastore is not accessible (when you checks multiples)\n";
-    print "   --details-value   Only display VMs with iops higher than the following value (permits to see VMs with high values) (default 50)\n";
-    print "\n";
     print "'datastore-snapshots':\n";
     print "   --datastore       Datastore name to check (required)\n";
     print "   -w (--warning)    Warning Threshold in bytes for all snapshots (default none)\n";
@@ -129,18 +121,6 @@ sub print_usage () {
     print "   --critical2       Critical Threshold in bytes for one snapshot (default none)\n";
     print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
     print "   --skip-errors     Status OK if not enough permissions or others errors (when you checks multiples)\n";
-    print "\n";
-    print "'datastoreshost':\n";
-    print "   -e (--esx-host)   Esx Host to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in ms (latency) (default none)\n";
-    print "   -c (--critical)   Critical Threshold in ms (latency) (default none)\n";
-    print "   --datastore       Datastores to check (can use a regexp with --filter)\n";
-    print "   --filter          Use regexp for --datastore option (can check multiples datastores at once)\n";
-    print "\n";
-    print "'datastoresvm':\n";
-    print "   --vm              VM to check (required)\n";
-    print "   -w (--warning)    Warning Threshold in IOPS (default none)\n";
-    print "   -c (--critical)   Critical Threshold in IOPS (default none)\n";
     print "\n";
 }
 
