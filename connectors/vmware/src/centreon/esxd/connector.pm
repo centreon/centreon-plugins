@@ -200,6 +200,7 @@ sub run {
     zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $connector->{whoaim});
     zmq_setsockopt($backend, ZMQ_LINGER, 0); # we discard  
     zmq_connect($backend, 'ipc://routing.ipc');
+    centreon::esxd::common::response(token => 'READY', endpoint => $backend, stdout => '');
     
     # Initialize poll set
     my @poll = (
