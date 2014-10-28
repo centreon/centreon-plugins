@@ -65,6 +65,9 @@ sub new {
                     {
                       "connector-hostname:s@"    => { name => 'connector_hostname' },
                       "connector-port:s@"        => { name => 'connector_port' },
+                      "vsphere-address:s@"       => { name => 'vsphere_address' },
+                      "vsphere-username:s@"      => { name => 'vsphere_username' },
+                      "vsphere-password:s@"      => { name => 'vsphere_password' },
                       "container:s@"             => { name => 'container' },
                       "timeout:s@"               => { name => 'timeout' },                      
                     });
@@ -114,7 +117,10 @@ sub check_options {
     $self->{connector_port} = (defined($self->{option_results}->{connector_port})) ? shift(@{$self->{option_results}->{connector_port}}) : 5700;
     $self->{container} = (defined($self->{option_results}->{container})) ? shift(@{$self->{option_results}->{container}}) : 'default';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : undef;
-    
+    $self->{vsphere_address} = (defined($self->{option_results}->{vsphere_address})) ? shift(@{$self->{option_results}->{vsphere_address}}) : undef;
+    $self->{vsphere_username} = (defined($self->{option_results}->{vsphere_username})) ? shift(@{$self->{option_results}->{vsphere_username}}) : undef;
+    $self->{vsphere_password} = (defined($self->{option_results}->{vsphere_password})) ? shift(@{$self->{option_results}->{vsphere_password}}) : undef;
+
     if (!defined($self->{connector_hostname})) {
         $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
         $self->{output}->option_exit();
@@ -201,7 +207,10 @@ sub run {
     $self->{json_send}->{identity} = 'client-' . unpack('H*', $self->{uuid});
     $self->{json_send}->{connector_hostname} = $self->{connector_hostname};
     $self->{json_send}->{connector_port} = $self->{connector_port};
-    $self->{json_send}->{container} = $self->{container};    
+    $self->{json_send}->{container} = $self->{container};
+    $self->{json_send}->{vsphere_address} = $self->{vsphere_address};
+    $self->{json_send}->{vsphere_username} = $self->{vsphere_username};
+    $self->{json_send}->{vsphere_password} = $self->{vsphere_password};
     
     # Init
     my $context = zmq_init();
@@ -275,6 +284,18 @@ Connector port (default: 5700).
 =item B<--container>
 
 Container to use (it depends of the connector configuration).
+
+=item B<--vsphere-address>
+
+Address of vpshere/ESX to connect.
+
+=item B<--vsphere-username>
+
+Username of vpshere/ESX connection (with --vsphere-address).
+
+=item B<--vsphere-password>
+
+Password of vpshere/ESX connection (with --vsphere-address).
 
 =item B<--timeout>
 
