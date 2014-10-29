@@ -35,7 +35,7 @@ my @load_modules = (
     'centreon::esxd::cmddatastoreio',
     'centreon::esxd::cmddatastoreiops',
     'centreon::esxd::cmddatastorehost',
-    'centreon::esxd::cmddatastoresnapshots',
+    'centreon::esxd::cmddatastoresnapshot',
     'centreon::esxd::cmddatastorevm',
     'centreon::esxd::cmddatastoreusage',
     'centreon::esxd::cmdgetmap',
