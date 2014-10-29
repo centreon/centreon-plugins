@@ -164,7 +164,7 @@ sub reqclient {
             $self->{modules_registry}->{$result->{command}}->initArgs(arguments => $result);
             $self->{modules_registry}->{$result->{command}}->run();
             
-            centreon::esxd::common::response(token => 'RESPSERVER2', endpoint => $backend, reinit => 'ipc://routing.ipc');
+            centreon::esxd::common::response(token => 'RESPSERVER2', endpoint => $backend, reinit => 'ipc:///tmp/centreonesxd/routing.ipc');
             zmq_close($backend);
             exit(0);
         }
@@ -198,7 +198,7 @@ sub run {
     $backend = zmq_socket($context, ZMQ_DEALER);
     zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $connector->{whoaim});
     zmq_setsockopt($backend, ZMQ_LINGER, 0); # we discard  
-    zmq_connect($backend, 'ipc://routing.ipc');
+    zmq_connect($backend, 'ipc:///tmp/centreonesxd/routing.ipc');
     centreon::esxd::common::response(token => 'READY', endpoint => $backend, stdout => '');
     
     # Initialize poll set

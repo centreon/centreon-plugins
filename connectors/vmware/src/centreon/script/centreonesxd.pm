@@ -451,6 +451,24 @@ sub create_vsphere_child {
     $self->{centreonesxd_config}->{vsphere_server}->{$self->{whoaim}}->{pid} = $child_vpshere_pid;
 }
 
+sub bind_ipc {
+    my ($self, %options) = @_;
+    
+    if (zmq_bind($options{socket}, 'ipc://' . $options{ipc_file}) == -1) {
+        $self->{logger}->writeLogError("Cannot bind ipc '$options{ipc_file}': $!");
+        # try create dir
+        $self->{logger}->writeLogError("Maybe dirctory not exist. We try to create it!!!");
+        if (!mkdir(dirname($options{ipc_file}))) {
+            zmq_close($options{socket});
+            exit(1);
+        }
+        if (zmq_bind($options{socket}, 'ipc://' . $options{ipc_file}) == -1) {
+            zmq_close($options{socket});
+            exit(1);
+        }
+    }
+}
+
 sub run {
     $centreonesxd = shift;
 
@@ -462,16 +480,15 @@ sub run {
 
     my $context = zmq_init();
     $frontend = zmq_socket($context, ZMQ_ROUTER);
-
-    zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
-    zmq_bind($frontend, 'tcp://*:5700');
-    zmq_bind($frontend, 'ipc://routing.ipc');
-    
     if (!defined($frontend)) {
         $centreonesxd->{logger}->writeLogError("Can't setup server: $!");
         exit(1);
     }
-    
+
+    zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
+    zmq_bind($frontend, 'tcp://*:5700');
+    $centreonesxd->bind_ipc(socket => $frontend, ipc_file => '/tmp/centreonesxd/routing.ipc');
+
     foreach (keys %{$centreonesxd->{centreonesxd_config}->{vsphere_server}}) {
         $centreonesxd->{counter_stats}->{$_} = 0;
         $centreonesxd->create_vsphere_child(vsphere_name => $_, dynamic => 0);
