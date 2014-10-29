@@ -82,14 +82,14 @@ sub check {
         $self->{components}->{psu}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
-                                                        $psu_dn, ${$thresholds->{overall_status}->{$psu_operstate}}[0],
+                                                        $psu_dn, ${$thresholds->{operability}->{$psu_operstate}}[0],
                                                         ${$thresholds->{presence}->{$psu_presence}}[0]
                                     ));
-        $exit = $self->get_severity(section => 'psu', threshold => 'overall_status', value => $psu_operstate);
+        $exit = $self->get_severity(section => 'psu', threshold => 'operability', value => $psu_operstate);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' state is '%s'.",
-                                                             $psu_dn, ${$thresholds->{overall_status}->{$psu_operstate}}[0]
+                                                             $psu_dn, ${$thresholds->{operability}->{$psu_operstate}}[0]
                                                              )
                                         );
         }

@@ -82,14 +82,14 @@ sub check {
         $self->{components}->{iocard}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
-                                                        $iocard_dn, ${$thresholds->{overall_status}->{$iocard_operstate}}[0],
+                                                        $iocard_dn, ${$thresholds->{operability}->{$iocard_operstate}}[0],
                                                         ${$thresholds->{presence}->{$iocard_presence}}[0]
                                     ));
-        $exit = $self->get_severity(section => 'iocard', threshold => 'overall_status', value => $iocard_operstate);
+        $exit = $self->get_severity(section => 'iocard', threshold => 'operability', value => $iocard_operstate);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' state is '%s'.",
-                                                             $iocard_dn, ${$thresholds->{overall_status}->{$iocard_operstate}}[0]
+                                                             $iocard_dn, ${$thresholds->{operability}->{$iocard_operstate}}[0]
                                                              )
                                         );
         }
