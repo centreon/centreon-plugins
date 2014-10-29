@@ -53,6 +53,7 @@ sub new {
                          'datastore-host'       => 'apps::vmware::connector::mode::datastorehost',
                          'datastore-io'         => 'apps::vmware::connector::mode::datastoreio',
                          'datastore-iops'       => 'apps::vmware::connector::mode::datastoreiops',
+                         'datastore-snapshot'   => 'apps::vmware::connector::mode::datastoresnapshot',
                          'datastore-usage'      => 'apps::vmware::connector::mode::datastoreusage',
                          'datastore-vm'         => 'apps::vmware::connector::mode::datastorevm', 
                          'getmap'               => 'apps::vmware::connector::mode::getmap',
