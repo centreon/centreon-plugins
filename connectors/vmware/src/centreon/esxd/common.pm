@@ -93,6 +93,32 @@ sub connect_vsphere {
     return 0;
 }
 
+sub heartbeat {
+    my (%options) = @_;
+    my $stime;
+    
+    eval {
+        $stime = $options{connector}->{session1}->get_service_instance()->CurrentTime();
+        $options{connector}->{keeper_session_time} = time();
+    };
+    if ($@) {
+        $options{connector}->{logger}->writeLogError("$@");
+        # Try a second time
+        eval {
+            $stime = $options{connector}->{session1}->get_service_instance()->CurrentTime();
+            $options{connector}->{keeper_session_time} = time();
+        };
+        if ($@) {
+            $options{connector}->{logger}->writeLogError("$@");
+            $options{connector}->{logger}->writeLogError("'" . $options{connector}->{whoaim} . "' Ask a new connection");
+            # Ask a new connection
+            $options{connector}->{last_time_check} = time();
+        }
+    }
+    
+    $options{connector}->{logger}->writeLogInfo("'" . $options{connector}->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
+}
+
 sub simplify_number {
     my ($number, $cnt) = @_;
     $cnt = 2 if (!defined($cnt));

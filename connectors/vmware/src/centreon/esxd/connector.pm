@@ -1,4 +1,3 @@
-#!/usr/bin/perl -w
 
 package centreon::esxd::connector;
 
@@ -271,20 +270,7 @@ sub run {
         ###
         if (defined($connector->{keeper_session_time}) && 
             (time() - $connector->{keeper_session_time}) > ($connector->{config_vsphere_session_heartbeat} * 60)) {
-            my $stime;
-
-            eval {
-                $stime = $connector->{session1}->get_service_instance()->CurrentTime();
-                $connector->{keeper_session_time} = time();
-            };
-            if ($@) {
-                $connector->{logger}->writeLogError("$@");
-                $connector->{logger}->writeLogError("'" . $connector->{whoaim} . "' Ask a new connection");
-                # Ask a new connection
-                $connector->{last_time_check} = time();
-            } else {
-                $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
-            }
+            centreon::esxd::common::heartbeat(connector => $connector);
         }
 
         my $data_element;
