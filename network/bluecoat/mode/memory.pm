@@ -99,8 +99,8 @@ sub run {
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $mem_total);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory used : %s - size : %s - percent : " . $prct_used . " %", 
-                                                     $used_value . " " . $used_unit, $total_value . " " . $total_unit));
+                                short_msg => sprintf("Memory used : %.2f $used_unit - size : %.2f $total_unit - percent : %.2f %%",
+                                                     $used_value, $total_value, $total_unit));
     
     $self->{output}->perfdata_add(label => 'used',
                                   value => sprintf("%.2f", $mem_used),
