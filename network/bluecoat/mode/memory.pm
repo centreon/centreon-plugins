@@ -94,18 +94,19 @@ sub run {
     }
     
     my $prct_used = sprintf("%.2f", $mem_used * 100 / $mem_total);
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $mem_used);
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $mem_total);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory used : %.2f $used_unit - size : %.2f $total_unit - percent : %.2f %%",
-                                                     $used_value, $total_value, $total_unit));
+                                short_msg => sprintf("Memory used : %s - size : %s - percent : %.2f %%",
+                                                     $used_value . ' ' . $used_unit, $total_value . ' ' . $total_unit, 
+                                                     $prct_used));
     
-    $self->{output}->perfdata_add(label => 'used',
-                                  value => sprintf("%.2f", $mem_used),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $mem_total),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $mem_total),
+    $self->{output}->perfdata_add(label => 'used', unit => 'B',
+                                  value => $mem_used,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $mem_total, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $mem_total, cast_int => 1),
                                   min => 0, max => $mem_total);
     
     $self->{output}->display();
