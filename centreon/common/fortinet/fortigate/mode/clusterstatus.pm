@@ -64,6 +64,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "one-node-status:s" => { name => 'one_node_status', default => 'critical' },
                                 });
 
     return $self;
@@ -72,6 +73,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{one_node_status}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong one-node-status status option '" . $self->{option_results}->{one_node_status} . "'.");
+        $self->{output}->option_exit();
+    }
 }
     
 sub run {
@@ -119,6 +125,12 @@ sub run {
                                                     $self->{result}->{$oid_fgHaStatsSerial}->{$key}, $maps_sync_status{$sync_status}));
             }
         }
+        
+        if (scalar(keys %{$self->{result}->{$oid_fgHaStatsSerial}}) == 1 &&
+            !$self->{output}->is_status(value => $self->{option_results}->{one_node_status}, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $self->{option_results}->{one_node_status},
+                                        short_msg => sprintf("Cluster with one node only"));
+        }
     }
 
     $self->{output}->display();
@@ -134,6 +146,10 @@ __END__
 Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
+
+=item B<--one-node-status>
+
+Status if only one node (default: 'critical').
 
 =back
 
