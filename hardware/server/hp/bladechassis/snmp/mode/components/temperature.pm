@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 my %present_map = (
@@ -62,9 +62,9 @@ my %map_temp_type = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    return if ($self->check_exclude('temperatures'));
+    return if ($self->check_exclude(section => 'temperature'));
     
     my $oid_cpqRackCommonEnclosureTempSensorIndex = '.1.3.6.1.4.1.232.22.2.3.1.2.1.3';
     my $oid_cpqRackCommonEnclosureTempSensorEnclosureName = '.1.3.6.1.4.1.232.22.2.3.1.2.1.4';
@@ -77,31 +77,40 @@ sub check {
     my $result = $self->{snmp}->get_table(oid => $oid_cpqRackCommonEnclosureTempSensorIndex);
     return if (scalar(keys %$result) <= 0);
 
-    my $result2 = $self->{snmp}->get_leef(oids => [$oid_cpqRackCommonEnclosureTempSensorEnclosureName, 
+	$self->{snmp}->load(oids => [$oid_cpqRackCommonEnclosureTempSensorEnclosureName, 
                                                    $oid_cpqRackCommonEnclosureTempLocation,
                                                    $oid_cpqRackCommonEnclosureTempCurrent, $oid_cpqRackCommonEnclosureTempThreshold,
                                                    $oid_cpqRackCommonEnclosureTempCondition, $oid_cpqRackCommonEnclosureTempType],
                                           instances => [keys %$result]);
+	my $result2 = $self->{snmp}->get_leef();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        $key =~ /(\d+)$/;
+        $key =~ /\.(\d+)$/;
         my $temp_index = $1;
-        my $temp_name = $result->{$oid_cpqRackCommonEnclosureTempSensorEnclosureName . '.' . $temp_index};
-        my $temp_location = $result->{$oid_cpqRackCommonEnclosureTempLocation . '.' . $temp_index};
-        my $temp_current = $result->{$oid_cpqRackCommonEnclosureTempCurrent . '.' . $temp_index};
-        my $temp_threshold = $result->{$oid_cpqRackCommonEnclosureTempThreshold . '.' . $temp_index};
-        my $temp_condition = $result->{$oid_cpqRackCommonEnclosureTempCondition . '.' . $temp_index};
-        my $temp_type = $result->{$oid_cpqRackCommonEnclosureTempType . '.' . $temp_index};
+        my $temp_name = $result2->{$oid_cpqRackCommonEnclosureTempSensorEnclosureName . '.' . $temp_index};
+        my $temp_location = $result2->{$oid_cpqRackCommonEnclosureTempLocation . '.' . $temp_index};
+        my $temp_current = $result2->{$oid_cpqRackCommonEnclosureTempCurrent . '.' . $temp_index};
+        my $temp_threshold = $result2->{$oid_cpqRackCommonEnclosureTempThreshold . '.' . $temp_index};
+        my $temp_condition = $result2->{$oid_cpqRackCommonEnclosureTempCondition . '.' . $temp_index};
+        my $temp_type = $result2->{$oid_cpqRackCommonEnclosureTempType . '.' . $temp_index};
         
-        $self->{components}->{temperatures}->{total}++;
+		if ($temp_current == -1) {
+			$self->{output}->output_add(long_msg => sprintf("Skipping instance $temp_index: current -1"));
+			next;
+		}
+        
+        next if ($self->check_exclude(section => 'temperature', instance => $temp_index));
+		
+        $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Temperature %d status is %s [name: %s, location: %s] (value = %s, threshold = %s%s).",
-                                    $temp_index, ${$conditions{$temp_condition}}[0],
+                                    $temp_index, $map_conditions{$temp_condition},
                                     $temp_name, $temp_location,
                                     $temp_current, $temp_threshold,
                                     defined($map_temp_type{$temp_type}) ? ", status type = " . $map_temp_type{$temp_type} : ''));
-        if ($temp_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$temp_condition}}[1],
+        my $exit = $self->get_severity(section => 'temperature', value => $map_conditions{$temp_condition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature %d status is %s",
-                                          $temp_index, ${$conditions{$temp_condition}}[0]));
+                                          $temp_index, $map_conditions{$temp_condition}));
         }
         
         $self->{output}->perfdata_add(label => "temp_" . $temp_index, unit => 'C',

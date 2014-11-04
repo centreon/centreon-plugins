@@ -57,9 +57,9 @@ my %device_type = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{network} = {name => 'network connectors', total => 0};
+    $self->{components}->{network} = {name => 'network connectors', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking network connectors");
-    return if ($self->check_exclude('network'));
+    return if ($self->check_exclude(section => 'network'));
     
     my $oid_cpqRackNetConnectorPresent = '.1.3.6.1.4.1.232.22.2.6.1.1.1.13';
     my $oid_cpqRackNetConnectorIndex = '.1.3.6.1.4.1.232.22.2.6.1.1.1.3';
@@ -91,6 +91,8 @@ sub check {
         my $nc_part = $result->{$oid_cpqRackNetConnectorPartNumber . '.' . $_};
         my $nc_spare = $result->{$oid_cpqRackNetConnectorSparePartNumber . '.' . $_};
         my $nc_device = $result->{$oid_cpqRackNetConnectorDeviceType . '.' . $_};
+        
+        next if ($self->check_exclude(section => 'network', instance => $nc_index));
         
         $self->{components}->{network}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Network Connector %d (%s) type '%s' is present [serial: %s, part: %s, spare: %s].",
