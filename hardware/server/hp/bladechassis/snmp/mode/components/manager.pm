@@ -38,6 +38,14 @@ package hardware::server::hp::bladechassis::snmp::mode::components::manager;
 use strict;
 use warnings;
 
+my %map_conditions = (
+    0 => 'other', # maybe on standby mode only!!
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
+);
+
 my %conditions = (
     0 => ['other', 'UNKNOWN'], # maybe on standby mode only!!
     1 => ['other', 'CRITICAL'], 
@@ -45,6 +53,7 @@ my %conditions = (
     3 => ['degraded', 'WARNING'], 
     4 => ['failed', 'CRITICAL'],
 );
+
 my %map_role = (
     1 => 'Standby',
     2 => 'Active',
@@ -53,8 +62,8 @@ my %map_role = (
 sub check {
     my ($self, %options) = @_;
     
-    $self->{components}->{managers} = {name => 'managers', total => 0};
-    return if ($self->check_exclude('managers'));
+    $self->{components}->{manager} = {name => 'managers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'manager'));
 
     # No check if OK
     if ((!defined($options{force}) || $options{force} != 1) && $self->{output}->is_status(compare => 'ok', litteral => 1)) {
@@ -87,14 +96,17 @@ sub check {
         my $man_role = $result2->{$oid_cpqRackCommonEnclosureManagerRole . '.' . $instance};
         my $man_condition = $result2->{$oid_cpqRackCommonEnclosureManagerCondition . '.' . $instance};
         
-        $self->{components}->{managers}->{total}++;
+        next if ($self->check_exclude(section => 'manager', instance => $instance));
+
+        $self->{components}->{manager}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Enclosure management module %d is %s, status is %s [serial: %s, part: %s, spare: %s].", 
-                                    $instance, ${$conditions{$man_condition}}[0], $map_role{$man_role},
+                                    $instance, $map_conditions{$man_condition}, $map_role{$man_role},
                                     $man_serial, $man_part, $man_spare));
-        if ($man_role == 2 && $man_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$man_condition}}[1],
+        my $exit = $self->get_severity(section => 'manager', value => $map_conditions{$man_condition});
+        if ($man_role == 2 && !$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Enclosure management module %d is %s, status is %s", 
-                                            $instance, ${$conditions{$man_condition}}[0], $map_role{$man_role}));
+                                            $instance, $map_conditions{$man_condition}, $map_role{$man_role}));
         }
     }
 }

@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::enclosure;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 sub check {
@@ -59,14 +59,15 @@ sub check {
                                                   $oid_cpqRackCommonEnclosureCondition], nothing_quit => 1);
 
     $self->{output}->output_add(long_msg => sprintf("Enclosure overall health condition is %s [part: %s, spare: %s, sn: %s, fw: %s].", 
-                                ${$conditions{$result->{$oid_cpqRackCommonEnclosureCondition}}}[0],
+                                $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}},
                                 $result->{$oid_cpqRackCommonEnclosurePartNumber},
                                 $result->{$oid_cpqRackCommonEnclosureSparePartNumber},
                                 $result->{$oid_cpqRackCommonEnclosureSerialNum},
                                 $result->{$oid_cpqRackCommonEnclosureFWRev}));
-    if ($result->{$oid_cpqRackCommonEnclosureCondition} != 2) {
-        $self->{output}->output_add(severity =>  ${$conditions{$result->{$oid_cpqRackCommonEnclosureCondition}}}[1],
-                                    short_msg => sprintf("Enclosure overall health condition is %s", ${$conditions{$result->{$oid_cpqRackCommonEnclosureCondition}}}[0]));
+    my $exit = $self->get_severity(section => 'enclosure', value => $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Enclosure overall health condition is %s", $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}}));
     }
 }
 

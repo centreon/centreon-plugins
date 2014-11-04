@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::fuse;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 my %present_map = (
@@ -55,9 +55,9 @@ my %present_map = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fuses} = {name => 'fuses', total => 0};
+    $self->{components}->{fuse} = {name => 'fuses', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking fuse");
-    return if ($self->check_exclude('fuse'));
+    return if ($self->check_exclude(section => 'fuse'));
     
     my $oid_cpqRackCommonEnclosureFusePresent = '.1.3.6.1.4.1.232.22.2.3.1.4.1.6';
     my $oid_cpqRackCommonEnclosureFuseIndex = '.1.3.6.1.4.1.232.22.2.3.1.4.1.3';
@@ -70,9 +70,11 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
+        
+        next if ($present_map{$result->{$key}} ne 'present' && 
+                 $self->absent_problem(section => 'fuse', instance => $oid_end));
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqRackCommonEnclosureFuseIndex . "." . $oid_end, $oid_cpqRackCommonEnclosureFuseEnclosureName . "." . $oid_end,
@@ -85,14 +87,17 @@ sub check {
         my $fuse_location = $result->{$oid_cpqRackCommonEnclosureFuseLocation . '.' . $_};
         my $fuse_condition = $result->{$oid_cpqRackCommonEnclosureFuseCondition . '.' . $_};
         
-        $self->{components}->{fuses}->{total}++;
+        next if ($self->check_exclude(section => 'fuse', instance => $fuse_index));
+        
+        $self->{components}->{fuse}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fuse %d status is %s [name: %s, location: %s].",
-                                    $fuse_index, ${$conditions{$fuse_condition}}[0],
+                                    $fuse_index, $map_conditions{$fuse_condition},
                                     $fuse_name, $fuse_location));
-        if ($fuse_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$fuse_condition}}[1],
+        my $exit = $self->get_severity(section => 'fuse', value => $map_conditions{$fuse_condition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fuse %d status is %s",
-                                            $fuse_index, ${$conditions{$fuse_condition}}[0]));
+                                            $fuse_index, $map_conditions{$fuse_condition}));
         }
     }
 }
