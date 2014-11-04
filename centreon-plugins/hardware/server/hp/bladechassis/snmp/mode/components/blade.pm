@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::blade;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 my %present_map = (
@@ -55,9 +55,9 @@ my %present_map = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{blades} = {name => 'blades', total => 0};
+    $self->{components}->{blade} = {name => 'blades', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking blades");
-    return if ($self->check_exclude('blades'));
+    return if ($self->check_exclude(section => 'blade'));
     
     my $oid_cpqRackServerBladePresent = '.1.3.6.1.4.1.232.22.2.4.1.1.1.12';
     my $oid_cpqRackServerBladeIndex = '.1.3.6.1.4.1.232.22.2.4.1.1.1.3';
@@ -72,10 +72,12 @@ sub check {
     return if (scalar(keys %$result) <= 0);
     my @get_oids = ();
     my @oids_end = ();
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {       
         $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
+        
+        next if ($present_map{$result->{$key}} ne 'present' && 
+                 $self->absent_problem(section => 'blade', instance => $oid_end));
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqRackServerBladeIndex . "." . $oid_end, $oid_cpqRackServerBladeName . "." . $oid_end,
@@ -94,23 +96,27 @@ sub check {
         my $blade_productid = $result->{$oid_cpqRackServerBladeProductId . '.' . $_};
         my $blade_diago = defined($result->{$oid_cpqRackServerBladeFaultDiagnosticString . '.' . $_}) ? $result->{$oid_cpqRackServerBladeFaultDiagnosticString . '.' . $_} : '';
         
-        $self->{components}->{blades}->{total}++;
+        next if ($self->check_exclude(section => 'blade', instance => $blade_index));
+        
+        $self->{components}->{blade}->{total}++;
         if ($blade_status eq '') {
             $self->{output}->output_add(long_msg => sprintf("Skipping Blade %d (%s, %s). Cant get status.",
                                         $blade_index, $blade_name, $blade_productid));
             next;
         }
+        
         $self->{output}->output_add(long_msg => sprintf("Blade %d (%s, %s) status is %s [part: %s, spare: %s]%s.",
                                     $blade_index, $blade_name, $blade_productid,
-                                    ${$conditions{$blade_status}}[0],
+                                    $map_conditions{$blade_status},
                                     $blade_part, $blade_spare,
                                     ($blade_diago ne '') ? " (Diagnostic '$blade_diago')" : ''
                                     ));
-        if ($blade_status != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$blade_status}}[1],
+        my $exit = $self->get_severity(section => 'blade', value => $map_conditions{$blade_status});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Blade %d (%s, %s) status is %s",
                                             $blade_index, $blade_name, $blade_productid,
-                                            ${$conditions{$blade_status}}[0]
+                                            $map_conditions{$blade_status}
                                        ));
         }
     }

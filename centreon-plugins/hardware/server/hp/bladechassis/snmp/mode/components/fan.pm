@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::fan;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 my %present_map = (
@@ -55,9 +55,9 @@ my %present_map = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0};
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude('fans'));
+    return if ($self->check_exclude(section => 'fan'));
     
     my $oid_cpqRackCommonEnclosureFanPresent = '.1.3.6.1.4.1.232.22.2.3.1.3.1.8';
     my $oid_cpqRackCommonEnclosureFanIndex = '.1.3.6.1.4.1.232.22.2.3.1.3.1.3';
@@ -70,14 +70,17 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
+        
+        next if ($present_map{$result->{$key}} ne 'present' && 
+                 $self->absent_problem(section => 'fan', instance => $oid_end));
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqRackCommonEnclosureFanIndex . "." . $oid_end, $oid_cpqRackCommonEnclosureFanPartNumber . "." . $oid_end,
                 $oid_cpqRackCommonEnclosureFanSparePartNumber . "." . $oid_end, $oid_cpqRackCommonEnclosureFanCondition . "." . $oid_end;
     }
+
     $result = $self->{snmp}->get_leef(oids => \@get_oids);
     foreach (@oids_end) {
         my $fan_index = $result->{$oid_cpqRackCommonEnclosureFanIndex . '.' . $_};
@@ -85,13 +88,15 @@ sub check {
         my $fan_part = $result->{$oid_cpqRackCommonEnclosureFanPartNumber . '.' . $_};
         my $fan_spare = $result->{$oid_cpqRackCommonEnclosureFanSparePartNumber . '.' . $_};
         
-        $self->{components}->{fans}->{total}++;
+        next if ($self->check_exclude(section => 'fan', instance => $fan_index));
+        $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan %d condition is %s [part: %s, spare: %s].", 
-                                    $fan_index, ${$conditions{$fan_condition}}[0],
+                                    $fan_index, $map_conditions{$fan_condition},
                                     $fan_part, $fan_spare));
-        if ($fan_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$fan_condition}}[1],
-                                        short_msg => sprintf("Fan %d condition is %s", $fan_index, ${$conditions{$fan_condition}}[0]));
+        my $exit = $self->get_severity(section => 'fan', value => $map_conditions{$fan_condition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan %d condition is %s", $fan_index, $map_conditions{$fan_condition}));
         }
     }
 }

@@ -38,11 +38,11 @@ package hardware::server::hp::bladechassis::snmp::mode::components::psu;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL'],
+my %map_conditions = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
 my %present_map = (
@@ -85,9 +85,9 @@ sub check {
     # We dont check 'cpqRackPowerEnclosureTable' (the overall power system status)
     # We check 'cpqRackPowerSupplyTable' (unitary)
 
-    $self->{components}->{psu} = {name => 'power supplies', total => 0};
+    $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if ($self->check_exclude('psu'));
+    return if ($self->check_exclude(section => 'psu'));
     
     my $oid_cpqRackPowerSupplyPresent = '.1.3.6.1.4.1.232.22.2.5.1.1.1.16';
     my $oid_cpqRackPowerSupplyIndex = '.1.3.6.1.4.1.232.22.2.5.1.1.1.3';
@@ -106,9 +106,11 @@ sub check {
     my @get_oids = ();
     my @oids_end = ();
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
         $key =~ /\.([0-9]+)$/;
         my $oid_end = $1;
+        
+        next if ($present_map{$result->{$key}} ne 'present' && 
+                 $self->absent_problem(section => 'psu', instance => $oid_end));
         
         push @oids_end, $oid_end;
         push @get_oids, $oid_cpqRackPowerSupplyIndex . "." . $oid_end, $oid_cpqRackPowerSupplySerialNum . "." . $oid_end,
@@ -131,18 +133,22 @@ sub check {
         my $psu_intemp = $result->{$oid_cpqRackPowerSupplyIntakeTemp . '.' . $_};
         my $psu_exhtemp = $result->{$oid_cpqRackPowerSupplyExhaustTemp . '.' . $_};
         
+        next if ($self->check_exclude(section => 'psu', instance => $psu_index));
+        
         $total_watts += $psu_pwrout;
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("PSU %d status is %s [serial: %s, part: %s, spare: %s] (input line status %s) (status %s).",
-                                    $psu_index, ${$conditions{$psu_condition}}[0],
+                                    $psu_index, $map_conditions{$psu_condition},
                                     $psu_serial, $psu_part, $psu_spare,
                                     $inputline_status_map{$psu_inputlinestatus},
                                     $psu_status_map{$psu_status}
                                     ));
-        if ($psu_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$psu_condition}}[1],
+        
+        my $exit = $self->get_severity(section => 'psu', value => $map_conditions{$psu_condition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("PSU %d status is %s",
-                                           $psu_index, ${$conditions{$psu_condition}}[0]));
+                                           $psu_index, $map_conditions{$psu_condition}));
         }
         
         $self->{output}->perfdata_add(label => "psu_" . $psu_index . "_power", unit => 'W',
