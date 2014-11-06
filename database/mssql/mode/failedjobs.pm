@@ -103,8 +103,9 @@ sub run {
         my $job_name = $$row[0];
         my $run_status = $$row[1];
         my $run_date = $$row[2];
+        $run_date =~ s/(\d{4})(\d{2})(\d{2})/$1-$2-$3/;
         my $run_time = $$row[3];
-        $self->{output}->output_add(long_msg => sprintf("Job %s status %s [Date : %s] [Runtime : %s]", $job_name, $states{$run_status}, $run_date, $run_time));
+        $self->{output}->output_add(long_msg => sprintf("Job %s status %s [Date : %s] [Runtime : %ss]", $job_name, $states{$run_status}, $run_date, $run_time));
         if ($run_status == 0) {
             $count_failed++;
             $self->{output}->output_add(severity => 'Critical',
@@ -118,9 +119,9 @@ sub run {
     }
 
     $self->{output}->perfdata_add(label => 'failed_jobs',
-                                          value => $count_failed,
-                                          min => 0,
-                                          max => $count);
+                                  value => $count_failed,
+                                  min => 0,
+                                  max => $count);
 
     $self->{output}->display();
     $self->{output}->exit();
