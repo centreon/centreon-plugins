@@ -110,9 +110,9 @@ sub run {
             }
             $self->{output}->perfdata_add(label => sprintf("used_%s",$database),
                                           unit => 'B',
-                                          value => $use,
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                          value => sprintf("%d",$use),
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
                                           min => 0,
                                           max => $size);
         }
