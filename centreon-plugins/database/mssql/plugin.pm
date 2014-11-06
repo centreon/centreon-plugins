@@ -48,17 +48,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-#                         'availability-group-states'            => 'database::mssql::mode::availabilitygroupstates',
-#                         'availability-group-synchronization'   => 'database::mssql::mode::availabilitygroupsync',
                          'blocked-processes'                    => 'database::mssql::mode::blockedprocesses',
                          'cache-hitratio'                       => 'database::mssql::mode::cachehitratio',
                          'connected-users'                      => 'database::mssql::mode::connectedusers',
                          'connection-time'                      => 'database::mssql::mode::connectiontime',
-#                         'database-size'                        => 'database::mssql::mode::databasesize',
+                         'databases-size'                       => 'database::mssql::mode::databasessize',
                          'locks-waits'                          => 'database::mssql::mode::lockswaits',
                          'transactions'                         => 'database::mssql::mode::transactions',
+                         'failed-jobs'                          => 'database::mssql::mode::failedjobs',
 #                         'backup-age'                           => 'database::mssql::mode::backupage',
-#                         'failed-jobs'                          => 'database::mssql::mode::failedjobs',
+#                         'availability-group-states'            => 'database::mssql::mode::availabilitygroupstates',
+#                         'availability-group-synchronization'   => 'database::mssql::mode::availabilitygroupsync',
                          );
 
     return $self;
