@@ -50,7 +50,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
-                                  "filter-database:s"       => { name => 'filter_database', },
+                                  "filter:s"                => { name => 'filter', },
                                   "free"                    => { name => 'free', },
                                 });
 
@@ -86,7 +86,7 @@ sub run {
 
     my @databases_selected;
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter_database}) && $$row[0] !~ /$self->{option_results}->{filter_database}/); 
+        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/); 
         push @databases_selected, $$row[0];
     }
 

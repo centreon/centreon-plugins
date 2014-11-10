@@ -53,7 +53,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-job:s"            => { name => 'filter_job', },
+                                  "filter:s"                => { name => 'filter', },
                                   "skip"                    => { name => 'skip', },
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
@@ -89,7 +89,7 @@ sub run {
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter_job}) && $$row[0] !~ /$self->{option_results}->{filter_job}/);
+        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
         $count++;
         my $job_name = $$row[0];
         my $run_status = $$row[1];
@@ -130,7 +130,7 @@ Check MSSQL failed jobs.
 
 =over 8
 
-=item B<--filter-job>
+=item B<--filter>
 
 Filter job.
 
