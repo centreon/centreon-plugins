@@ -29,7 +29,7 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Stephane Duret <sduret@merethis.com>
+# Authors : Kevin Duret <kduret@merethis.com>
 #
 ####################################################################################
 
@@ -39,8 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
-use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +51,7 @@ sub new {
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
                                   "filter-database:s"       => { name => 'filter_database', },
+                                  "free"                    => { name => 'free', },
                                 });
 
     return $self;
@@ -101,20 +100,36 @@ sub run {
             my $free = convert_bytes($free_brut);
             my $use = $size - $free;
             my $percent_use = ($use / $size) * 100;
+            my $percent_free = 100 - $percent_use;
             my ($use_value, $use_unit) = $self->{perfdata}->change_bytes(value => $use);
-            $self->{output}->output_add(long_msg => sprintf("DB '%s' Size: %s Used: %.2f %s (%.2f%%)", $database, $size_brut, $use_value, $use_unit, $percent_use));
-            my $exit_code = $self->{perfdata}->threshold_check(value => $percent_use, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit_code,
-                                            short_msg => sprintf("DB '%s' Size: %s Used: %.2f %s (%.2f%%)", $database, $size_brut, $use_value, $use_unit, $percent_use));
+            $self->{output}->output_add(long_msg => sprintf("DB '%s' Size: %s Used: %.2f %s (%.2f%%) Free: %s (%.2f%%)", $database, $size_brut, $use_value, $use_unit, $percent_use, $free_brut, $percent_free));
+            if (defined($self->{option_results}->{free})) {
+                my $exit_code = $self->{perfdata}->threshold_check(value => $percent_free, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+                    $self->{output}->output_add(severity => $exit_code,
+                                                short_msg => sprintf("DB '%s' Size: %s Free: %s (%.2f%%)", $database, $size_brut, $free_brut, $percent_use));
+                }
+                $self->{output}->perfdata_add(label => sprintf("db_%s_free",$database),
+                                              unit => 'B',
+                                              value => sprintf("%d",$free),
+                                              warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
+                                              critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
+                                              min => 0,
+                                              max => sprintf("%d",$size));
+            } else {
+                my $exit_code = $self->{perfdata}->threshold_check(value => $percent_use, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+                    $self->{output}->output_add(severity => $exit_code,
+                                                short_msg => sprintf("DB '%s' Size: %s Used: %.2f %s (%.2f%%)", $database, $size_brut, $use_value, $use_unit, $percent_use));
+                }
+                $self->{output}->perfdata_add(label => sprintf("db_%s_used",$database),
+                                              unit => 'B',
+                                              value => sprintf("%d",$use),
+                                              warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
+                                              critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
+                                              min => 0,
+                                              max => sprintf("%d",$size));
             }
-            $self->{output}->perfdata_add(label => sprintf("used_%s",$database),
-                                          unit => 'B',
-                                          value => sprintf("%d",$use),
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
-                                          min => 0,
-                                          max => $size);
         }
     }
 
@@ -159,6 +174,10 @@ Threshold critical in percent used.
 =item B<--filter>
 
 Filter database.
+
+=item B<--free>
+
+Check free space instead of used space.
 
 =back
 

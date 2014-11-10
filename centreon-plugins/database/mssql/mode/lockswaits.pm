@@ -50,7 +50,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
-                                  "filter:s"                => { name => 'filter', },
+                                  "filter-database:s"       => { name => 'filter_database', },
                                 });
 
     return $self;
@@ -77,7 +77,7 @@ sub run {
     
     $self->{sql}->connect();
     my $query = "SELECT 
-                    cntr_value
+                    instance_name, cntr_value
                 FROM
                     sys.dm_os_performance_counters
                 WHERE
@@ -92,21 +92,20 @@ sub run {
     my $locks = 0;
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "0 Locks Waits/sec.");
+                                short_msg => "0 Locks Waits/s.");
     foreach my $row (@$result) {
-        print $$row[0];
-        next if (defined($self->{option_results}->{filter}) && 
-                 $$row[0] !~ /$self->{option_results}->{filter}/);
-        $locks++;
+        next if (defined($self->{option_results}->{filter_database}) && 
+                 $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        $locks += $$row[1];
     }
     my $exit_code = $self->{perfdata}->threshold_check(value => $locks, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(long_msg => sprintf( "%i Locks Waits/sec.", $locks));
     if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("%i Locks Waits/sec.", $locks));
+                                    short_msg => sprintf("%i Locks Waits/s.", $locks));
     }
-    $self->{output}->perfdata_add(label => 'locks_waits_per_sec',
+    $self->{output}->perfdata_add(label => 'locks_waits',
                                   value => $locks,
+                                  unit => '/s',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -127,15 +126,15 @@ Check MSSQL locks-waits per second
 
 =item B<--warning>
 
-Threshold warning number of lock-waits/seconds.
+Threshold warning number of lock-waits per second.
 
 =item B<--critical>
 
-Threshold critical number of lock-waits/seconds..
+Threshold critical number of lock-waits per second.
 
-=item B<--filter>
+=item B<--filter-database>
 
-Filter database to checks.
+Filter database to check.
 
 =back
 

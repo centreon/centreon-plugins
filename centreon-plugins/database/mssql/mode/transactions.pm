@@ -39,8 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
-use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -89,9 +87,10 @@ sub run {
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $transactions, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i transaction(s) per second.", $transactions));
-    $self->{output}->perfdata_add(label => 'transactions_per_second',
+                                  short_msg => sprintf("%i transactions/s.", $transactions));
+    $self->{output}->perfdata_add(label => 'transactions',
                                   value => $transactions,
+                                  unit => '/s',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
