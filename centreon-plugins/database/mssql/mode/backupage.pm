@@ -50,7 +50,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-database:s"       => { name => 'filter_database', },
+                                  "filter:s"                => { name => 'filter', },
                                   "skip"                    => { name => 'skip', },
                                   "skip-no-backup"          => { name => 'skip_no_backup', },
                                 });
@@ -99,7 +99,7 @@ sub run {
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter_database}) && $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
         $count++;
         #dbt_backup_start: 0x1686303d8 (dtdays=40599, dttime=7316475)    Feb 27 2011  6:46:28:250AM
         my $last_backup = $$row[2];
@@ -157,7 +157,7 @@ Check MSSQL backup age.
 
 =over 8
 
-=item B<--filter-database>
+=item B<--filter>
 
 Filter database.
 

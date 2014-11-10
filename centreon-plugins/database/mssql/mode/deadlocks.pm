@@ -50,7 +50,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
-                                  "filter-database:s"       => { name => 'filter_database', },
+                                  "filter:s"                => { name => 'filter', },
                                 });
 
     return $self;
@@ -94,8 +94,7 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => "0 dead locks/s.");
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter_database}) && 
-                 $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
         $locks += $$row[1];
     }
     my $exit_code = $self->{perfdata}->threshold_check(value => $locks, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -133,7 +132,7 @@ Threshold warning number of dead locks per second.
 
 Threshold critical number of dead locks per second.
 
-=item B<--filter-database>
+=item B<--filter>
 
 Filter database to check.
 
