@@ -42,11 +42,6 @@ use warnings;
 use Time::HiRes;
 use Time::Local;
 
-my %states = (
-    0 => 'failed',
-    1 => 'success',
-);
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);

@@ -55,6 +55,8 @@ sub new {
                                 { 
                                   "filter-job:s"            => { name => 'filter_job', },
                                   "skip"                    => { name => 'skip', },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                 });
 
     return $self;
@@ -97,14 +99,16 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Date : %s] [Runtime : %ss]", $job_name, $states{$run_status}, $run_date, $run_time));
         if ($run_status == 0) {
             $count_failed++;
-            $self->{output}->output_add(severity => 'Critical',
-                                        short_msg => sprintf("Job '%s' status %s", $job_name, $states{$run_status}));
         }
     }
 
+    my $exit_code = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     if(!defined($self->{option_results}->{skip}) && $count == 0) {
         $self->{output}->output_add(severity => 'Unknown',
                                     short_msg => "No job found.");
+    } elsif (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit_code,
+                                    short_msg => sprintf("%d failed job(s)", $count_failed));
     }
 
     $self->{output}->perfdata_add(label => 'failed_jobs',
@@ -133,6 +137,14 @@ Filter job.
 =item B<--skip>
 
 Skip error if no job found.
+
+=item B<--warning>
+
+Threshold warning.
+
+=item B<--critical>
+
+Threshold critical.
 
 =back
 
