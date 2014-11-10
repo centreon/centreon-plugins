@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Stephane Duret <sduret@merethis.com>
+# Authors : Kevin Duret <kduret@merethis.com>
 #
 ####################################################################################
 
-package database::mssql::mode::connectedusers;
+package database::mssql::mode::deadlocks;
 
 use base qw(centreon::plugins::mode);
 
@@ -50,6 +50,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "filter-database:s"       => { name => 'filter_database', },
                                 });
 
     return $self;
@@ -73,20 +74,43 @@ sub run {
     my ($self, %options) = @_;
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
-
+    
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT count(*) FROM master..sysprocesses WHERE spid >= '51'});
-    my $users = $self->{sql}->fetchrow_array();
+    my $query = "SELECT 
+                    instance_name, cntr_value
+                FROM
+                    sys.dm_os_performance_counters
+                WHERE
+                    object_name = 'SQLServer:Locks'
+                AND
+                    counter_name = 'Number of Deadlocks/sec%'
+                ";
+    
+    $self->{sql}->query(query => $query);
+    my $result = $self->{sql}->fetchall_arrayref();
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $users, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i Connected user(s).", $users));
-    $self->{output}->perfdata_add(label => 'connected_users',
-                                  value => $users,
+    my $locks = 0;
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => "0 dead locks/s.");
+    foreach my $row (@$result) {
+        next if (defined($self->{option_results}->{filter_database}) && 
+                 $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        $locks += $$row[1];
+    }
+    my $exit_code = $self->{perfdata}->threshold_check(value => $locks, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(long_msg => sprintf( "%i dead locks/s.", $locks));
+    if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit_code,
+                                    short_msg => sprintf("%i dead locks/s.", $locks));
+    }
+    $self->{output}->perfdata_add(label => 'dead_locks',
+                                  value => $locks,
+                                  unit => '/s',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -97,17 +121,21 @@ __END__
 
 =head1 MODE
 
-Check MSSQL connected users.
+Check MSSQL dead locks per second
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning.
+Threshold warning number of dead locks per second.
 
 =item B<--critical>
 
-Threshold critical.
+Threshold critical number of dead locks per second.
+
+=item B<--filter-database>
+
+Filter database to check.
 
 =back
 
