@@ -43,6 +43,9 @@ use warnings;
 my %states = (
     0 => 'failed',
     1 => 'success',
+    2 => 'Retry',
+    3 => 'Canceled',
+    4 => 'Running',
 );
 
 sub new {
@@ -57,6 +60,7 @@ sub new {
                                   "skip"                    => { name => 'skip', },
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "lookback:s"              => { name => 'lookback', },
                                 });
 
     return $self;
@@ -80,7 +84,18 @@ sub run {
     my $count = 0;
     my $count_failed = 0;
 
-    my $query = "SELECT j.[name] AS [JobName], run_status, h.run_date AS LastRunDate, h.run_time AS LastRunTime
+    my $query = "SELECT j.[name] AS [JobName], run_status, h.run_date AS LastRunDate, h.run_time AS LastRunTime,
+                 CASE
+                    WHEN h.[run_date] IS NULL OR h.[run_time] IS NULL THEN NULL
+                    ELSE datediff(Minute, CAST(
+                        CAST(h.[run_date] AS CHAR(8))
+                        + ' '
+                        + STUFF(
+                            STUFF(RIGHT('000000' + CAST(h.[run_time] AS VARCHAR(6)),  6)
+                                , 3, 0, ':')
+                                , 6, 0, ':')
+                        AS DATETIME), current_timestamp)
+                 END AS [MinutesSinceStart]
                  FROM msdb.dbo.sysjobhistory h 
                  INNER JOIN msdb.dbo.sysjobs j ON h.job_id = j.job_id 
                  WHERE j.enabled = 1 
@@ -90,6 +105,7 @@ sub run {
     my $result = $self->{sql}->fetchall_arrayref();
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
+        next if (defined($self->{option_results}->{lookback}) && $$row[4] > $self->{option_results}->{lookback});
         $count++;
         my $job_name = $$row[0];
         my $run_status = $$row[1];
@@ -145,6 +161,10 @@ Threshold warning.
 =item B<--critical>
 
 Threshold critical.
+
+=item B<--lookback>
+
+Check job history in minutes.
 
 =back
 
