@@ -39,8 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
-use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -82,7 +80,7 @@ sub run {
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $blocked, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i Blocked process(es).", $blocked));
+                                  short_msg => sprintf("%i blocked process(es).", $blocked));
     $self->{output}->perfdata_add(label => 'blocked_processes',
                                   value => $blocked,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),

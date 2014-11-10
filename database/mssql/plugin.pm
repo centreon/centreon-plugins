@@ -56,7 +56,8 @@ sub new {
                          'locks-waits'                          => 'database::mssql::mode::lockswaits',
                          'transactions'                         => 'database::mssql::mode::transactions',
                          'failed-jobs'                          => 'database::mssql::mode::failedjobs',
-#                         'backup-age'                           => 'database::mssql::mode::backupage',
+                         'dead-locks'                           => 'database::mssql::mode::deadlocks',
+                         'backup-age'                           => 'database::mssql::mode::backupage',
 #                         'availability-group-states'            => 'database::mssql::mode::availabilitygroupstates',
 #                         'availability-group-synchronization'   => 'database::mssql::mode::availabilitygroupsync',
                          );

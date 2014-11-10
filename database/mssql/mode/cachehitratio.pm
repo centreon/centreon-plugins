@@ -39,8 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
-use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -98,7 +96,8 @@ sub run {
     $self->{output}->output_add(severity => $exit_code,
                                   short_msg => sprintf("Buffer cache hit ratio is %.2f%%", $hitratio));
     $self->{output}->perfdata_add(label => 'cache_hitratio',
-                                  value => $hitratio,
+                                  value => sprintf("%d",$hitratio),
+                                  unit => '%',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
