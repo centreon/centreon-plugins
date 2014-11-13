@@ -42,7 +42,7 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0};
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'temperature'));
 
     my $oid_sysChassisTempEntry = '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1';
@@ -59,7 +59,7 @@ sub check {
         my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_sysChassisTempTemperature . '.' . $instance},
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-    	$self->{components}->{temperatures}->{total}++;
+    	$self->{components}->{temperature}->{total}++;
     	$self->{output}->output_add(severity => $exit_code,long_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit_code,short_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));

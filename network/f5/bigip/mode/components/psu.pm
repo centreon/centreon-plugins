@@ -47,7 +47,7 @@ my %map_status = (
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{psu} = {name => 'psus', total => 0};
+    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking power supplies");
     return if ($self->check_exclude(section => 'psu'));
     
