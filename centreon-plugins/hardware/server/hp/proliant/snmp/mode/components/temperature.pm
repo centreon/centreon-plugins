@@ -52,6 +52,11 @@ my %location_map = (
     11 => "ambient",
     12 => "chassis",
     13 => "bridgeCard",
+    14 => "managementBoard",
+    15 => "backplane",
+    16 => "networkSlot",
+    17 => "bladeSlot",
+    18 => "virtual",
 );
 
 my %conditions = (
