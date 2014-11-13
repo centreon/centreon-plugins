@@ -42,8 +42,8 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
-    return if ($self->check_exclude('temperatures'));
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0};
+    return if ($self->check_exclude(section => 'temperature'));
 
     my $oid_sysChassisTempEntry = '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1';
     my $oid_sysChassisTempTemperature = '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1.2';
@@ -54,7 +54,7 @@ sub check {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         next if ($key !~ /^$oid_sysChassisTempTemperature\.(\d+)$/);
         my $instance = $1;
-        next if ($self->check_exclude(section => 'temperatures', instance => $instance));
+        next if ($self->check_exclude(section => 'temperature', instance => $instance));
 	
         my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_sysChassisTempTemperature . '.' . $instance},
                                                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
