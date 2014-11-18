@@ -107,7 +107,11 @@ sub init {
     }
 
     if (defined($options{help})) {
-        $self->{options}->add_help(package => $self->{modes}{$self->{mode_name}}, sections => 'MODE');
+        if (defined($self->{mode_name}) && $self->{mode_name} ne '') {
+            $self->{options}->add_help(package => $self->{modes}{$self->{mode_name}}, sections => 'MODE');
+        } else {
+            $self->{options}->add_help(package => $self->{dynmode_name}, sections => 'MODE');
+        }
         $self->{options}->display_help();
         $self->{output}->option_exit();
     }
