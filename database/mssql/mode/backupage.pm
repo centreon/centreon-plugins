@@ -53,6 +53,8 @@ sub new {
                                   "filter:s"                => { name => 'filter', },
                                   "skip"                    => { name => 'skip', },
                                   "skip-no-backup"          => { name => 'skip_no_backup', },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                 });
 
     return $self;
