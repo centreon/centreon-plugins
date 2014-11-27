@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,7 +52,7 @@ sub new {
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
                                 });
-
+	$self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -67,6 +68,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+	$self->{statefile_cache}->check_options(%options);
 }
 
 sub run {
@@ -76,20 +78,35 @@ sub run {
 
     $self->{sql}->connect();
     $self->{sql}->query(query => q{SELECT cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'transactions/sec' AND instance_name = '_Total'});
-    my $transaction1 = $self->{sql}->fetchrow_array();
+    my $transactions = $self->{sql}->fetchrow_array();
 
+	$self->{statefile_cache}->read(statefile => 'mssql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
     sleep 1;
 
-    $self->{sql}->query(query => q{SELECT cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'transactions/sec' AND instance_name = '_Total'});
-    my $transaction2 = $self->{sql}->fetchrow_array();
+	my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+	my $old_transactions = $self->{statefile_cache}->get(name => 'transactions');
 
-    my $transactions = $transaction2 - $transaction1 ;
+	my $new_datas = {};
+	$new_datas->{last_timestamp} = time();
+	$new_datas->{transactions} = $transactions;
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $transactions, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+	$self->{statefile_cache}->write(data => $new_datas);
+	if (!defined($old_timestamp) || !defined($old_transactions)) {
+		$self->{output}->output_add(severity => 'OK',
+									short_msg => "Buffer creation...");
+		$self->{output}->display();
+		$self->{output}->exit();
+	}
+	my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
+	$delta_time = 1 if ($delta_time == 0);
+
+    my $transactionsPerSec = ($transactions - $old_transactions) / $delta_time ;
+
+    my $exit_code = $self->{perfdata}->threshold_check(value => $transactionsPerSec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i transactions/s.", $transactions));
+                                  short_msg => sprintf("%.2f transactions/s.", $transactionsPerSec));
     $self->{output}->perfdata_add(label => 'transactions',
-                                  value => $transactions,
+                                  value => sprintf("%.2f", $transactionsPerSec),
                                   unit => '/s',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
