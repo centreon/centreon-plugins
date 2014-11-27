@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes;
+use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -83,13 +84,14 @@ sub run {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => $msg_error);
     } else {
-        my $seconds = sprintf("%.3f", $now2 - $now);
-        my $exit_code = $self->{perfdata}->threshold_check(value => $seconds, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+		my $milliseconds = $now2 - $now;
+        $milliseconds = floor($milliseconds * 1000);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $milliseconds, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Connection established in %.3fs.", $seconds));
+                                    short_msg => sprintf("Connection established in %.3fs.", $milliseconds / 1000));
         $self->{output}->perfdata_add(label => 'connection_time',
-                                      value => $seconds,
-                                      unit => 's',
+                                      value => $milliseconds,
+                                      unit => 'ms',
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
@@ -111,11 +113,11 @@ Check MSSQL connection time.
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Threshold warning in milliseconds.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Threshold critical in milliseconds.
 
 =back
 
