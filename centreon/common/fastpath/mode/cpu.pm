@@ -109,7 +109,7 @@ sub run {
 		$self->{output}->display();
     	$self->{output}->exit();
 	}
-	if ($cpu_usage =~ /^.*\((\S+)%\).*\((\S+)%\).*\((\S+)%\)/) {
+	if ($cpu_usage =~ /^.*\(\s*(\S+)%\).*\(\s*(\S+)%\).*\(\s*(\S+)%\)/) {
 		my $cpu5sec = $1;
 		my $cpu1min = $2;
 		my $cpu5min = $3;
