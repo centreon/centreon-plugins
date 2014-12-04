@@ -29,7 +29,7 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Kevin Duret <kduret@merethis.com>
 #
 ####################################################################################
 
@@ -46,8 +46,8 @@ my $oid_boxServicesFanSpeed = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.6.1.4
 my $oid_boxServicesPowSuppliesEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.7.1';
 my $oid_boxServicesPowSupplyItemState = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.7.1.3';
 my $oid_boxServicesTempSensorsEntry = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1';
-my $oid_boxServicesTempSensorState = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.4';
-my $oid_boxServicesTempSensorTemperature = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.5';
+my $oid_boxServicesTempSensorTemperature1 = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.4'; # oid for 6200 series
+my $oid_boxServicesTempSensorTemperature2 = '.1.3.6.1.4.1.674.10895.5000.2.6132.1.1.43.1.8.1.5';
 
 my $thresholds = {
     psu => [
@@ -313,19 +313,19 @@ sub check_temperature {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_boxServicesTempSensorsEntry}})) {
 		my $instance;
-        if ($oid =~ /^$oid_boxServicesTempSensorState\.(.*)/) {
+        if ($oid =~ /^$oid_boxServicesTempSensorTemperature1\.(.*)/) {
 			$instance = $1;
- 		} elsif ($oid =~ /^$oid_boxServicesTempSensorTemperature\.(.*)\.(.*)/) {
+ 		} elsif ($oid =~ /^$oid_boxServicesTempSensorTemperature2\.(.*)\.(.*)/) {
 			$instance = $1 . '.' . $2;
 		} else {
 			next;
 		}
         my $temperature;
-		# Fix for 6248
-		if (defined($self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorTemperature . '.' . $instance})) {
-			$temperature = $self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorTemperature . '.' . $instance};
+
+		if (defined($self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorTemperature1 . '.' . $instance})) {
+			$temperature = $self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorTemperature1 . '.' . $instance};
 		} else {
-			$temperature = $self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorState . '.' . $instance};
+			$temperature = $self->{results}->{$oid_boxServicesTempSensorsEntry}->{$oid_boxServicesTempSensorTemperature2 . '.' . $instance};
 		}
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
