@@ -63,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check dell N4000 series in SNMP.
+Check Dell N4000 series in SNMP.
 
 =cut
