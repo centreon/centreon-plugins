@@ -29,7 +29,7 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Kevin Duret <kduret@merethis.com>
 #
 ####################################################################################
 
