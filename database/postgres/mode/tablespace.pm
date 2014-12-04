@@ -50,7 +50,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', default => ''},
                                   "critical:s"              => { name => 'critical', default => ''},
-                                  "tablespace:s"            => { name => 'tablespace', }, # tablespace nema to check
+                                  "tablespace:s"            => { name => 'tablespace', }, # tablespace name to check
                                 });
     
     return $self;
@@ -86,7 +86,6 @@ sub run {
     my $result = $self->{sql}->fetchrow_array();
     
     if (defined($result)) {
-        
         my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $result);
         $self->{output}->output_add(severity => $exit_code,
@@ -122,6 +121,10 @@ Threshold warning in bytes, maximum size allowed.
 =item B<--critical>
 
 Threshold critical in bytes, maximum size allowed.
+
+=item B<--tablespace>
+
+The of the tablespace to check.
 
 =back
 
