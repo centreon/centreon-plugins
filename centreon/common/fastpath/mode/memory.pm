@@ -101,6 +101,7 @@ sub run {
 	
 	$self->{output}->perfdata_add(label => "used",
                                   value => $memory_used,
+                                  unit => 'B',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memory_available, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memory_available, cast_int => 1),
                                   min => 0, max => $memory_available);
