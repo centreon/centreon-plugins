@@ -110,7 +110,7 @@ __END__
 
 =head1 MODE
 
-Check the overall status of generic Dell.
+Check the overall status of Dell Powerconnect 3000.
 
 =over 8
 
