@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::dell::mode::globalstatus;
+package centreon::common::dell::powerconnect3000::mode::globalstatus;
 
 use base qw(centreon::plugins::mode);
 
