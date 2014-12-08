@@ -47,12 +47,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-						  'global-status'   => 'centreon::common::dell::mode::globalstatus',
-                          'environment' 	=> 'centreon::common::fastpath::mode::environment',
-						  'memory' 			=> 'centreon::common::fastpath::mode::memory',
-						  'cpu'      		=> 'centreon::common::fastpath::mode::cpu',
-						  'traffic'         => 'snmp_standard::mode::traffic',
-						  'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+                          'global-status'   => 'centreon::common::dell::powerconnect3000::mode::globalstatus',
+                          'environment'     => 'centreon::common::fastpath::mode::environment',
+                          'memory'          => 'centreon::common::fastpath::mode::memory',
+                          'cpu'             => 'centreon::common::fastpath::mode::cpu',
+                          'traffic'         => 'snmp_standard::mode::traffic',
+                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          );
 
     return $self;
