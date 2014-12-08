@@ -159,6 +159,8 @@ sub run {
         $self->check_fan();
     } elsif ($self->{option_results}->{component} eq 'psu') {
         $self->check_psu();
+	} elsif ($self->{option_results}->{component} eq 'temperature') {
+        $self->check_temperature();
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
