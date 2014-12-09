@@ -38,37 +38,47 @@ package storage::emc::DataDomain::mode::components::psu;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['ok', 'OK'],
-    2 => ['unknown', 'UNKNOWN'], 
-    3 => ['fail', 'CRITICAL'], 
-);
+my %map_psu_status = ();
+my ($oid_powerModuleDescription, $oid_powerModuleStatus);
+my $oid_powerModuleEntry = '.1.3.6.1.4.1.19746.1.1.1.1.1.1';
 
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{psus} = {name => 'power supplies', total => 0};
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if ($self->check_exclude('psu'));
+    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'psu'));
     
-    my $oid_powerModuleEntry = '.1.3.6.1.4.1.19746.1.1.1.1.1.1';
-    my $oid_powerModuleStatus = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_powerModuleEntry);
-    return if (scalar(keys %$result) <= 0);
+    if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
+        $oid_powerModuleDescription = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.3';
+        $oid_powerModuleStatus = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.4';
+        %map_psu_status = (0 => 'absent', 1 => 'ok', 2 => 'failed', 3 => 'faulty', 4 => 'acnone',
+                           99 => 'unknown');
+    } else {
+        $oid_powerModuleDescription = ''; # none
+        $oid_powerModuleStatus = '.1.3.6.1.4.1.19746.1.1.1.1.1.1.4';
+        %map_psu_status = (1 => 'ok', 2 => 'unknown', 3 => 'failed');
+    }
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_powerModuleStatus\.(\d+)\.(\d+)$/);
-        my ($enclosure_id, $module_index) = ($1, $2);
-    
-        my $psu_status = $result->{$oid_powerModuleStatus . '.' . $enclosure_id . '.' . $module_index};
+    foreach my $oid (keys %{$self->{results}->{$oid_powerModuleEntry}}) {
+        next if ($oid !~ /^$oid_powerModuleStatus\.(.*)$/);
+        my $instance = $1;
+        my $psu_descr = defined($self->{results}->{$oid_powerModuleEntry}->{$oid_powerModuleDescription . '.' . $instance}) ? 
+                            centreon::plugins::misc::trim($self->{results}->{$oid_powerModuleEntry}->{$oid_powerModuleDescription . '.' . $instance}) : 'unknown';
+        my $psu_status = defined($map_psu_status{$self->{results}->{$oid_powerModuleEntry}->{$oid}}) ?
+                            $map_psu_status{$self->{results}->{$oid_powerModuleEntry}->{$oid}} : 'unknown';
 
-        $self->{components}->{psus}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is %s.", 
-                                                        $enclosure_id . '/' . $module_index, ${$conditions{$psu_status}}[0]));
-        if (!$self->{output}->is_status(litteral => 1, value => ${$conditions{$psu_status}}[1], compare => 'ok')) {
-            $self->{output}->output_add(severity => ${$conditions{$psu_status}}[1],
-                                        short_msg => sprintf("Power Supply '%s' status is %s", $enclosure_id . '/' . $module_index, ${$conditions{$psu_status}}[0]));
+        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($psu_status =~ /absent/i && 
+                 $self->absent_problem(section => 'psu', instance => $instance));
+        
+        $self->{components}->{psu}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is '%s' [description = %s]",
+                                    $instance, $psu_status, $instance));
+        my $exit = $self->get_severity(section => 'psu', value => $psu_status);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Power Supply '%s' status is '%s'", $instance, $psu_status));
         }
     }
 }
