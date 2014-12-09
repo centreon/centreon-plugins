@@ -33,33 +33,54 @@
 #
 ####################################################################################
 
-package storage::violin::3000::snmp::plugin;
+package storage::emc::DataDomain::mode::components::disk;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use centreon::plugins::misc;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+my $oid_diskPropState;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'hardware' => 'centreon::common::violin::snmp::mode::hardware',
-                         );
+my %map_disk_status = (
+    1 => 'ok',
+    2 => 'unknown',
+    3 => 'absent',
+    4 => 'failed',
+);
 
-    return $self;
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking disks");
+    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'disk'));
+    
+    my $oid_diskPropState;
+    if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
+        $oid_diskPropState = '.1.3.6.1.4.1.19746.1.6.1.1.1.8';
+    } else {
+        $oid_diskPropState = '.1.3.6.1.4.1.19746.1.6.1.1.1.7';
+    }
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_diskPropState}})) {
+        $oid =~ /^$oid_diskPropState\.(.*)$/;
+        my $instance = $1;
+        my $disk_status = defined($map_disk_status{$self->{results}->{$oid_diskPropState}->{$oid}}) ?
+                            $map_disk_status{$self->{results}->{$oid_diskPropState}->{$oid}} : 'unknown';
+
+        next if ($self->check_exclude(section => 'disk', instance => $instance));
+        next if ($disk_status =~ /absent/i && 
+                 $self->absent_problem(section => 'disk', instance => $instance));
+        
+        $self->{components}->{disk}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is '%s'",
+                                    $instance, $disk_status));
+        my $exit = $self->get_severity(section => 'fan', value => $disk_status);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Disk '%s' status is '%s'", $instance, $disk_status));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Violin 3000 series in SNMP.
-Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
-
-=cut

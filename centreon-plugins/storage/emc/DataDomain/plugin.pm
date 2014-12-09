@@ -47,8 +47,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'environment'      => 'storage::emc::DataDomain::mode::environment',
-                         'nvram-battery'    => 'storage::emc::DataDomain::mode::nvrambattery',
+                         'hardware'         => 'storage::emc::DataDomain::mode::hardware',
+                         'filesystem-usage' => 'storage::emc::DataDomain::mode::filesystem',
                          );
 
     return $self;

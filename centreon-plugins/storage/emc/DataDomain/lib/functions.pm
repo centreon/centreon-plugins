@@ -33,33 +33,14 @@
 #
 ####################################################################################
 
-package storage::violin::3000::snmp::plugin;
+package storage::emc::DataDomain::lib::functions;
 
-use strict;
-use warnings;
-use base qw(centreon::plugins::script_snmp);
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'hardware' => 'centreon::common::violin::snmp::mode::hardware',
-                         );
-
-    return $self;
+sub get_version {
+    my (%options) = @_;
+    
+    return $1 if (defined($options{value}) && $options{value} =~ /(\d+\.\d+\.\d+)/);
+    return undef;
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Violin 3000 series in SNMP.
-Please use plugin SNMP Linux for system checks ('cpu', 'memory', 'traffic',...).
-
-=cut
+    
