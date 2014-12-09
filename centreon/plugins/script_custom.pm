@@ -57,6 +57,7 @@ sub new {
                                                 'custommode:s'    => { name => 'custommode_name' },
                                                 'list-custommode' => { name => 'list_custommode' },
                                                 'multiple'        => { name => 'multiple' },
+                                                'sanity-options'  => { name => 'sanity_options' },
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -97,6 +98,9 @@ sub init {
     }
     if (defined($self->{list_custommode})) {
         $self->list_custommode();
+    }
+    if (defined($self->{sanity_options})) {
+        $self->{options}->set_sanity();
     }
 
     # Output HELP
@@ -250,17 +254,25 @@ __END__
 
 Choose a mode.
 
+=item B<--dyn-mode>
+
+Specify a mode with the path (separated by '::').
+
 =item B<--list-mode>
 
 List available modes.
+
+=item B<--mode-version>
+
+Check minimal version of mode. If not, unknown error.
 
 =item B<--version>
 
 Display plugin version.
 
-=item B<--dyn-mode>
+=item B<--sanity-options>
 
-Specify a mode with the path (separated by '::').
+Check unknown options (for debug purpose).
 
 =item B<--custommode>
 
