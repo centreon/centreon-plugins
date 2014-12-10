@@ -42,6 +42,12 @@ use warnings;
 
 my $oid_arrayFanEntry_speed = '.1.3.6.1.4.1.35897.1.2.2.3.18.1.3';
 
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_arrayFanEntry_speed };
+}
+
 sub check {
     my ($self) = @_;
 

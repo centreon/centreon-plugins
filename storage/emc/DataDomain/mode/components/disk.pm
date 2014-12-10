@@ -46,6 +46,8 @@ my %map_disk_status = (
     2 => 'unknown',
     3 => 'absent',
     4 => 'failed',
+    5 => 'spare',     # since OS 5.4
+    6 => 'available', # since OS 5.4
 );
 
 sub check {

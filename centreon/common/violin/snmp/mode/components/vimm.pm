@@ -53,6 +53,13 @@ my %map_vimm_present = (
     2 => 'absent',
 );
 
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_arrayVimmEntry_present };
+    push @{$options{request}}, { oid => $oid_arrayVimmEntry_failed };
+}
+
 sub check {
     my ($self) = @_;
 

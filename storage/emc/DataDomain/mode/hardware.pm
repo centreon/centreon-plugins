@@ -76,6 +76,8 @@ my $thresholds = {
     ],
     disk => [
         ['ok', 'OK'],
+        ['spare', 'OK'],
+        ['available', 'OK'],
         ['unknown', 'UNKNOWN'],
         ['absent', 'OK'],
         ['failed', 'CRITICAL'],
