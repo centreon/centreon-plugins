@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::violin::snmp::mode::hardware;
+package hardware::sensors::sensorip::snmp::mode::sensors;
 
 use base qw(centreon::plugins::mode);
 
@@ -42,45 +42,21 @@ use warnings;
 use centreon::plugins::misc;
 
 my $thresholds = {
-    vimm => [
-        ['not failed', 'OK'],
-        ['failed', 'CRITICAL'],
+    sp => [
+        ['noStatus', 'UNKNOWN'],
+        ['normal', 'OK'],
+        ['warning', 'WARNING'],
+        ['critical', 'CRITICAL'],
+        ['sensorError', 'CRITICAL'],
     ],
-    ca => [
-        ['ON', 'CRITICAL'],
-        ['OFF', 'OK'],
-    ],
-    psu => [
-        ['OFF', 'CRITICAL'],
-        ['Absent', 'OK'],
-        ['ON', 'OK'],
-    ],
-    fan => [
-        ['OFF', 'CRITICAL'],
-        ['Absent', 'OK'],
-        ['Low', 'OK'],
-        ['Medium', 'OK'],
-        ['High', 'WARNING'],
-    ],
-    gfc => [
-        ['Online', 'OK'],
-        ['Unconfigured', 'OK'],
-        ['Unknown', 'UNKNOWN'],
-        ['Not\s*Supported', 'WARNING'],
-        ['Dead', 'CRITICAL'],
-        ['Lost', 'CRITICAL'],
-        ['Failover\s*Failed', 'CRITICAL'],
-        ['Failover', 'WARNING'],
-    ],
-    lfc => [
-        ['Online', 'OK'],
-        ['Unconfigured', 'OK'],
-        ['Unknown', 'UNKNOWN'],
-        ['Not\s*Supported', 'WARNING'],
-        ['Dead', 'CRITICAL'],
-        ['Lost', 'CRITICAL'],
-        ['Failover\s*Failed', 'CRITICAL'],
-        ['Failover', 'WARNING'],
+    switch => [
+        ['noStatus', 'UNKNOWN'],
+        ['normal', 'OK'],
+        ['highCritical', 'CRITICAL'],
+        ['lowCritical', 'CRITICAL'],
+        ['sensorError', 'CRITICAL'],
+        ['relayOn', 'OK'],
+        ['relayOff', 'OK'],
     ],
 };
 
@@ -136,11 +112,15 @@ sub check_options {
     $self->{numeric_threshold} = {};
     foreach my $option (('warning', 'critical')) {
         foreach my $val (@{$self->{option_results}->{$option}}) {
-            if ($val !~ /^(.*?),(.*)$/) {
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();
             }
-            my ($section, $regexp, $value) = ('temperature', $1, $2);
+            my ($section, $regexp, $value) = ($1, $2, $3);
+            if ($section !~ /(humidity|temperature)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: battery or temperature).");
+                $self->{output}->option_exit();
+            }
             my $position = 0;
             if (defined($self->{numeric_threshold}->{$section})) {
                 $position = scalar(@{$self->{numeric_threshold}->{$section}});
@@ -159,12 +139,12 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-
+    
     my $snmp_request = [];
-    my @components = ('ca', 'psu', 'fan', 'vimm', 'temperature', 'gfc', 'lfc');
+    my @components = ('sp', 'temperature', 'humidity', 'switch');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::violin::snmp::mode::components::$_";
+            my $mod_name = "hardware::sensors::sensorip::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
@@ -180,12 +160,12 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::violin::snmp::mode::components::$_";
+            my $mod_name = "hardware::sensors::sensorip::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }
     }
-
+    
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
@@ -248,7 +228,7 @@ sub get_severity_numeric {
     my ($self, %options) = @_;
     my $status = 'OK'; # default
     my $thresholds = { warning => undef, critical => undef };
-    
+    my $checked = 0;
     
     if (defined($self->{numeric_threshold}->{$options{section}})) {
         my $exits = [];
@@ -256,13 +236,13 @@ sub get_severity_numeric {
             if ($options{instance} =~ /$_->{regexp}/) {
                 push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
                 $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
-
+                $checked = 1;
             }
         }
         $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
     }
     
-    return ($status, $thresholds->{warning}, $thresholds->{critical});
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
 }
 
 sub get_severity {
@@ -287,49 +267,30 @@ sub get_severity {
     return $status;
 }
 
-sub convert_index {
-    my ($self, %options) = @_;
-
-    my @results = ();
-    my $separator = 32;
-    my $result = '';
-    foreach (split /\./, $options{value}) {
-        if ($_ < $separator) {
-            push @results, $result;
-            $result = '';
-        } else {
-            $result .= chr;
-        }
-    }
-    
-    push @results, $result;
-    return @results;
-}
-
 1;
 
 __END__
 
 =head1 MODE
 
-Check components (Fans, Power Supplies, Temperatures, Chassis alarm, vimm, global fc, local fc).
+Check sensor components (Sensor Probe status, Temperatures, Humidity, Switch).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'psu', 'fan', 'ca', 'vimm', 'lfc', 'gfc', 'temperature'.
+Can be: 'sp', 'temperature', 'humidity', 'switch'.
 
 =item B<--exclude>
 
 Exclude some parts (comma seperated list) (Example: --exclude=psu)
-Can also exclude specific instance: --exclude='psu#41239F00647-A#'
+Can also exclude specific instance: --exclude='humidty#0#'
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fan#41239F00647-fan02#
+Can be specific or global: --absent-problem=temperature#2#
 
 =item B<--no-component>
 
@@ -340,17 +301,17 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='gfc,CRITICAL,^(?!(Online)$)'
+Example: --threshold-overload='temperature,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: regexp,treshold)
-Example: --warning='41239F00647-vimm46,20' --warning='41239F00647-vimm5.*,30'
+Set warning threshold for temperatures and humidity (syntax: type,regexp,treshold)
+Example: --warning='temperature,.*,30' --warning='humidity,.*,90'
 
 =item B<--critical>
 
-Set critical threshold for temperatures (syntax: regexp,treshold)
-Example: --critical='41239F00647-vimm46,25' --warning='41239F00647-vimm5.*,35'
+Set critical threshold for temperature and humidity (syntax: type,regexp,treshold)
+Example: --critical='temperature,.*,40'
 
 =back
 

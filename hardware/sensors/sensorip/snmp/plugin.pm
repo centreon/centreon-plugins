@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,45 +33,32 @@
 #
 ####################################################################################
 
-package centreon::common::violin::snmp::mode::components::ca;
-
-use base qw(centreon::plugins::mode);
+package hardware::sensors::sensorip::snmp::plugin;
 
 use strict;
 use warnings;
+use base qw(centreon::plugins::script_snmp);
 
-my $oid_chassisSystemLedAlarm = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.7';
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
 
-sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_chassisSystemLedAlarm };
-}
+    $self->{version} = '1.0';
+    %{$self->{modes}} = (
+                         'sensors' => 'hardware::sensors::sensorip::snmp::mode::sensors',
+                         );
 
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking chassis alarm");
-    $self->{components}->{ca} = {name => 'chassis alarm', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'ca'));
-
-    foreach my $oid (keys %{$self->{results}->{$oid_chassisSystemLedAlarm}}) {
-        $oid =~ /^$oid_chassisSystemLedAlarm\.(.*)$/;
-        my ($dummy, $array_name) = $self->convert_index(value => $1);
-        my $instance = $array_name;
-        my $ca_state = $self->{results}->{$oid_chassisSystemLedAlarm}->{$oid};
-
-        next if ($self->check_exclude(section => 'ca', instance => $instance));
-        
-        $self->{components}->{ca}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Chassis alarm '%s' is %s.",
-                                    $instance, $ca_state));
-        my $exit = $self->get_severity(section => 'ca', value => $ca_state);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Chassis alarm '%s' is %s", $instance, $ca_state));
-        }
-    }
+    return $self;
 }
 
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check Sensor-IP sensors in SNMP.
+
+=cut
