@@ -44,6 +44,14 @@ my $oid_chassisSystemTempAmbient = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.21';
 my $oid_chassisSystemTempController = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.21';
 my $oid_arrayVimmEntry_temp = '.1.3.6.1.4.1.35897.1.2.2.3.16.1.12';
 
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_arrayVimmEntry_temp };
+    push @{$options{request}}, { oid => $oid_chassisSystemTempAmbient };
+    push @{$options{request}}, { oid => $oid_chassisSystemTempController };
+}
+
 sub temperature {
     my ($self, %options) = @_;
     my $oid = $options{oid};

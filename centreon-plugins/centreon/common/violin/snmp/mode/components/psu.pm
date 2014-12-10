@@ -43,6 +43,13 @@ use warnings;
 my $oid_chassisSystemPowerPSUA = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.17';
 my $oid_chassisSystemPowerPSUB = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.18';
 
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_chassisSystemPowerPSUA };
+    push @{$options{request}}, { oid => $oid_chassisSystemPowerPSUB };
+}
+
 sub psu {
     my ($self, %options) = @_;
     my $oid = $options{oid};

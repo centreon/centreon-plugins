@@ -45,6 +45,12 @@ my $oid_wwn = '.1.3.6.1.4.1.35897.1.2.1.10.1.3';
 my $oid_enable = '.1.3.6.1.4.1.35897.1.2.1.10.1.4';
 my $oid_portState = '.1.3.6.1.4.1.35897.1.2.1.10.1.8';
 
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_globalTargetFcEntry };
+}
+
 sub check {
     my ($self) = @_;
 
