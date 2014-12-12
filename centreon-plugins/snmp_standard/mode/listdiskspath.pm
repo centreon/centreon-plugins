@@ -166,7 +166,7 @@ sub manage_selection {
             }
         }
         
-        if (scalar(@{$self->{diskpath_id_selected}}) <= 0) {
+        if (scalar(@{$self->{diskpath_id_selected}}) <= 0 && !defined($options{disco})) {
             if (defined($self->{option_results}->{diskpath})) {
                 $self->{output}->add_option_msg(short_msg => "No disk path found for name '" . $self->{option_results}->{diskpath} . "'.");
             } else {
@@ -188,7 +188,7 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
+    $self->manage_selection(disco => 1);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{diskpath_id_selected}}) {
         if (defined($result)) {

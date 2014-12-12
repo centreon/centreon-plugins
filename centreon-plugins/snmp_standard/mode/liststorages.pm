@@ -224,7 +224,7 @@ sub manage_selection {
             }
         }
         
-        if (scalar(@{$self->{storage_id_selected}}) <= 0) {
+        if (scalar(@{$self->{storage_id_selected}}) <= 0 && !defined($options{disco})) {
             if (defined($self->{option_results}->{storage})) {
                 $self->{output}->add_option_msg(short_msg => "No storage found for name '" . $self->{option_results}->{storage} . "'.");
             } else {
@@ -246,7 +246,7 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
+    $self->manage_selection(disco => 1);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
