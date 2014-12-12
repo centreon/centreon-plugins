@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::memory;
+package centreon::common::emc::navisphere::mode::spcomponents::memory;
 
 use strict;
 use warnings;

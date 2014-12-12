@@ -77,7 +77,7 @@ sub check {
         $self->{components}->{disk}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is '%s'",
                                     $instance, $disk_status));
-        my $exit = $self->get_severity(section => 'fan', value => $disk_status);
+        my $exit = $self->get_severity(section => 'disk', value => $disk_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Disk '%s' status is '%s'", $instance, $disk_status));
