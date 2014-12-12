@@ -279,7 +279,7 @@ sub manage_selection {
         }    
     }
     
-    if (scalar(keys %{$self->{device_id_selected}}) <= 0) {
+    if (scalar(keys %{$self->{device_id_selected}}) <= 0 && !defined($options{disco})) {
         if (defined($self->{option_results}->{device})) {
             $self->{output}->add_option_msg(short_msg => "No device found '" . $self->{option_results}->{device} . "' (or counter values are 0).");
         } else {
@@ -301,7 +301,7 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->manage_selection();
+    $self->manage_selection(disco => 1);
     foreach (sort keys %{$self->{device_id_selected}}) {
         $self->{output}->add_disco_entry(name => $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $_},
                                          deviceid => $_);
