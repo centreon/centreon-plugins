@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::iomodule;
+package centreon::common::emc::navisphere::mode::spcomponents::iomodule;
 
 use strict;
 use warnings;

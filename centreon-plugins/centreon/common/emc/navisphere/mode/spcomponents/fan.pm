@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::fan;
+package centreon::common::emc::navisphere::mode::spcomponents::fan;
 
 use strict;
 use warnings;

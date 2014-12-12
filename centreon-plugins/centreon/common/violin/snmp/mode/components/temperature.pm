@@ -64,7 +64,7 @@ sub temperature {
 
     return if ($self->check_exclude(section => 'temperature', instance => $instance));
         
-    $self->{components}->{psu}->{total}++;
+    $self->{components}->{temperature}->{total}++;
     $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %s degree centigrade.",
                                 $instance, $temperature));
     my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temperature);

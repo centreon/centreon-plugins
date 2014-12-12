@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::cable;
+package centreon::common::emc::navisphere::mode::spcomponents::cable;
 
 use strict;
 use warnings;
