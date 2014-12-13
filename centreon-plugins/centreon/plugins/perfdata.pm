@@ -72,7 +72,7 @@ sub get_perfdata_for_output {
         $perf_value{start} = $perf_value{start} * $options{total} / 100 if ($perf_value{infinite_neg} == 0);
         $perf_value{end} = $perf_value{end} * $options{total} / 100 if ($perf_value{infinite_pos} == 0);
         $perf_value{start} = sprintf("%.2f", $perf_value{start}) if ($perf_value{infinite_neg} == 0 && (!defined($options{cast_int}) || $options{cast_int} != 1));
-        $perf_value{end} = sprintf("%.2f", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && !defined($options{cast_int}) || $options{cast_int} != 1));
+        $perf_value{end} = sprintf("%.2f", $perf_value{end}) if ($perf_value{infinite_pos} == 0 && (!defined($options{cast_int}) || $options{cast_int} != 1));
     }
     
     $perf_value{start} = int($perf_value{start}) if ($perf_value{infinite_neg} == 0 && defined($options{cast_int}) && $options{cast_int} == 1);
