@@ -89,7 +89,7 @@ sub run {
         my $mem_usage = $result2->{$oid_jnxJsSPUMonitoringMemoryUsage . '.' . $instance};
     
         my $exit_code = $self->{perfdata}->threshold_check(value => $mem_usage, 
-                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("Memory '%d' usage is: %s%%", $instance, $mem_usage));
         $self->{output}->perfdata_add(label => 'mem_' . $instance, unit => '%',

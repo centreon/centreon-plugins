@@ -138,12 +138,12 @@ sub run {
         
         $total_size += $size;
         my $exit_code = $self->{perfdata}->threshold_check(value => $size, 
-                                                           threshold => [ { label => 'critical_one', 'exit_litteral' => 'critical' }, { label => 'warning_one', exit_litteral => 'warning' } ]);
+                                                           threshold => [ { label => 'critical_one', exit_litteral => 'critical' }, { label => 'warning_one', exit_litteral => 'warning' } ]);
         my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
         $self->{output}->output_add(long_msg => sprintf("%s: %s", $name, $size_value . ' ' . $size_unit));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("'%d' size is %s", $name, $size_value . ' ' . $size_unit));
+                                        short_msg => sprintf("'%s' size is %s", $name, $size_value . ' ' . $size_unit));
         }
         $self->{output}->perfdata_add(label => $name, unit => 'B',
                                       value => $size,
@@ -154,7 +154,7 @@ sub run {
  
     # Total Size
     my $exit_code = $self->{perfdata}->threshold_check(value => $total_size, 
-                                                       threshold => [ { label => 'critical_total', 'exit_litteral' => 'critical' }, { label => 'warning_total', exit_litteral => 'warning' } ]);
+                                                       threshold => [ { label => 'critical_total', exit_litteral => 'critical' }, { label => 'warning_total', exit_litteral => 'warning' } ]);
     my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     $self->{output}->output_add(long_msg => sprintf("Total: %s", $size_value . ' ' . $size_unit));
     if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
