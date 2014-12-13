@@ -57,7 +57,7 @@ my $maps_counters = {
                         threshold_use => 'used_prct',
                         output_error_template => '%s',
                         perfdatas => [
-                            { value => 'used', label => 'used', template => '%d',
+                            { value => 'used', label => 'used', cast_int => 1,
                               unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
                               label_extra_instance => 1, instance_use => 'display' },
                         ],
