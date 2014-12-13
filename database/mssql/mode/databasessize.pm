@@ -104,18 +104,18 @@ sub run {
             my ($use_value, $use_unit) = $self->{perfdata}->change_bytes(value => $use);
             $self->{output}->output_add(long_msg => sprintf("DB '%s' Size: %s Used: %.2f %s (%.2f%%) Free: %s (%.2f%%)", $database, $size_brut, $use_value, $use_unit, $percent_use, $free_brut, $percent_free));
             if (defined($self->{option_results}->{free})) {
-                my $exit_code = $self->{perfdata}->threshold_check(value => $percent_free, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                my $exit_code = $self->{perfdata}->threshold_check(value => $percent_free, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
                 if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
                     $self->{output}->output_add(severity => $exit_code,
                                                 short_msg => sprintf("DB '%s' Size: %s Free: %s (%.2f%%)", $database, $size_brut, $free_brut, $percent_use));
                 }
                 $self->{output}->perfdata_add(label => sprintf("db_%s_free",$database),
                                               unit => 'B',
-                                              value => sprintf("%d",$free),
+                                              value => int($free),
                                               warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
                                               critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
                                               min => 0,
-                                              max => sprintf("%d",$size));
+                                              max => int($size));
             } else {
                 my $exit_code = $self->{perfdata}->threshold_check(value => $percent_use, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
                 if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
@@ -124,11 +124,11 @@ sub run {
                 }
                 $self->{output}->perfdata_add(label => sprintf("db_%s_used",$database),
                                               unit => 'B',
-                                              value => sprintf("%d",$use),
+                                              value => int($use),
                                               warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
                                               critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
                                               min => 0,
-                                              max => sprintf("%d",$size));
+                                              max => int($size));
             }
         }
     }

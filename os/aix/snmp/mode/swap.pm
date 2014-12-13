@@ -132,16 +132,16 @@ sub run {
             my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $swap_total);
             my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
             my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $swap_total - $total_used);
-            my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $swap_name,
+                                            short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,
                                                 $total_size_value . " " . $total_size_unit,
                                                 $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
                                                 $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_})));
             }
             
-            $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%d%%)", $swap_name,
+            $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,
                                                 $total_size_value . " " . $total_size_unit,
                                                 $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
                                                 $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $swap_total)));
