@@ -52,6 +52,7 @@ sub new {
                          'connected-users'      => 'database::oracle::mode::connectedusers',
                          'datacache-hitratio'   => 'database::oracle::mode::datacachehitratio',
                          'corrupted-blocks'     => 'database::oracle::mode::corruptedblocks',
+                         'rman-backup-problems' => 'database::oracle::mode::rmanbackupproblems',
                          );
 
     return $self;
