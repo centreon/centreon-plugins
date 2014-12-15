@@ -83,7 +83,7 @@ sub run {
     my $free = $total_size - $used;
     
     my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_resMemUsage},
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
@@ -96,7 +96,7 @@ sub run {
                                         $free_value . " " . $free_unit, (100 - $result->{$oid_resMemUsage})));
 
     $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => sprintf("%d", $used),
+                                  value => int($used),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0, max => $total_size);

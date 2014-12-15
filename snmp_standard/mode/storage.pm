@@ -183,8 +183,8 @@ sub run {
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%d)", 
-                                                                $name_storage, $total_size));
+            $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
+                                                                $name_storage, int($total_size)));
             next;
         }
         
@@ -247,7 +247,7 @@ sub run {
                                       value => $value_perf,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                      min => 0, max => sprintf("%d", $total_size - $reserved_value));
+                                      min => 0, max => int($total_size - $reserved_value));
     }
 
     if ($num_disk_check == 0) {
