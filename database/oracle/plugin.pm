@@ -51,6 +51,7 @@ sub new {
                          'connection-time'      => 'database::oracle::mode::connectiontime',
                          'connected-users'      => 'database::oracle::mode::connectedusers',
                          'datacache-hitratio'   => 'database::oracle::mode::datacachehitratio',
+                         'corrupted-blocks'     => 'database::oracle::mode::corruptedblocks',
                          );
 
     return $self;
