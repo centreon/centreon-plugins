@@ -62,6 +62,7 @@ sub new {
                                 {
                                   "warning:s"   => { name => 'warning' },
                                   "critical:s"  => { name => 'critical' },
+                                  "filter:s"    => { name => 'filter' },
                                 });
 
     return $self;
@@ -132,6 +133,11 @@ sub run {
             $self->{output}->output_add(long_msg => "Marker supply '$descr': no level but some space remaining."); 
             next;
         }
+        if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
+            $instance !~ /$self->{option_results}->{filter}/) {
+            $self->{output}->output_add(long_msg => "Skipping marker supply '$descr' (instance: $instance): filter."); 
+            next;
+        }
         
         my $prct_value = $current_value;
         if ($unit_managed{$unit} == 1) {
@@ -139,7 +145,7 @@ sub run {
         }
         
         my $exit = $self->{perfdata}->threshold_check(value => $prct_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
-        $self->{output}->output_add(long_msg => sprintf("Marker supply '%s': %.2f %%", $descr, $prct_value));
+        $self->{output}->output_add(long_msg => sprintf("Marker supply '%s': %.2f %% [instance: '%s']", $descr, $prct_value, $hrDeviceIndex . '.' . $prtMarkerSuppliesIndex));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Marker supply '%s': %.2f %%", $descr, $prct_value));
@@ -149,7 +155,7 @@ sub run {
         if ($result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance} != 0) {
             $label = $result2->{$oid_prtMarkerColorantValue . '.' . $hrDeviceIndex . '.' . $result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance}};
             if (defined($perf_label->{$label})) {
-                $label .= '#' . $hrDeviceIndex . '#' . $result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance};
+                $label .= '#' . $hrDeviceIndex . '#' . $prtMarkerSuppliesIndex;
             }
         }
         $perf_label->{$label} = 1;
@@ -182,6 +188,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--filter>
+
+Filter maker supply instance.
 
 =back
 

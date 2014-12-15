@@ -114,9 +114,9 @@ sub run {
             next;
         }
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Total requests = %d.", $value));
+                                    short_msg => sprintf("Total requests = %s", $value));
         $self->{output}->perfdata_add(label => 'total_requests',
                                       value => $value,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),

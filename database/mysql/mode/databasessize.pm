@@ -92,13 +92,13 @@ sub run {
         next if (defined($self->{option_results}->{filter}) && 
                  $$row[0] !~ /$self->{option_results}->{filter}/);
     
-        my $exit_code = $self->{perfdata}->threshold_check(value => $$row[1], threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $$row[1], threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
         my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $$row[1]);
-        $self->{output}->output_add(long_msg => sprintf("DB '" . $$row[0] . "' size: %.3f%s", $value, $value_unit));
+        $self->{output}->output_add(long_msg => sprintf("DB '" . $$row[0] . "' size: %s%s", $value, $value_unit));
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("DB '" . $$row[0] . "' size: %.3f%s", $value, $value_unit));
+                                        short_msg => sprintf("DB '" . $$row[0] . "' size: %s%s", $value, $value_unit));
         }
         $self->{output}->perfdata_add(label => $$row[0] . '_size',
                                       value => $$row[1],

@@ -52,10 +52,11 @@ sub new {
     
     $self->{options}->add_options(
                                    arguments => {
-                                                'mode:s'         => { name => 'mode' },
+                                                'mode:s'         => { name => 'mode_name' },
                                                 'dyn-mode:s'     => { name => 'dynmode_name' },
                                                 'list-mode'      => { name => 'list_mode' },
                                                 'mode-version:s' => { name => 'mode_version' },
+                                                'sanity-options' => { name => 'sanity_options' },
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -63,9 +64,10 @@ sub new {
     $self->{default} = undef;
     
     $self->{options}->parse_options();
-    $self->{mode_name} = $self->{options}->get_option(argument => 'mode');
-    $self->{list_mode} = $self->{options}->get_option(argument => 'list_mode');
-    $self->{mode_version} = $self->{options}->get_option(argument => 'mode_version');
+    $self->{option_results} = $self->{options}->get_options();
+    foreach (keys %{$self->{option_results}}) {
+        $self->{$_} = $self->{option_results}->{$_};
+    }
     $self->{options}->clean();
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
@@ -89,6 +91,9 @@ sub init {
     if (defined($self->{list_mode})) {
         $self->list_mode();
     }
+    if (defined($self->{sanity_options})) {
+        $self->{options}->set_sanity();
+    }
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -105,7 +110,7 @@ sub init {
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
                                                error_msg => "Cannot load module --dyn-mode.");
-        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
+        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mode' or '--dyn-mode' option.");
         $self->{output}->option_exit();
@@ -217,6 +222,10 @@ Check minimal version of mode. If not, unknown error.
 =item B<--version>
 
 Display plugin version.
+
+=item B<--sanity-options>
+
+Check unknown options (for debug purpose).
 
 =back
 

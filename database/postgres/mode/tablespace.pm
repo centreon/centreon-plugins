@@ -89,7 +89,7 @@ sub run {
         my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $result);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf('Tablespace "%s" size is %d %s',$self->{option_results}->{tablespace}, $value, $value_unit));
+                                    short_msg => sprintf('Tablespace "%s" size is %s %s',$self->{option_results}->{tablespace}, $value, $value_unit));
         
         $self->{output}->perfdata_add(label => $self->{option_results}->{tablespace},
                                       value => $result,

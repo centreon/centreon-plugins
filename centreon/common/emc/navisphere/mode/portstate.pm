@@ -61,12 +61,6 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub check_logged {
-    my ($self, %options) = @_;
-    
-    
-}
-
 sub check_port {
     my ($self, %options) = @_;
     

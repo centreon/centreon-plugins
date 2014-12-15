@@ -74,7 +74,7 @@ sub check {
         my $exit = $self->get_severity(section => 'temperature', value => $map_states_temperature{$temperature_state});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $voltage_name, $map_states_temperature{$temperature_state}));
+                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $temperature_name, $map_states_temperature{$temperature_state}));
         }
 
     	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', 
