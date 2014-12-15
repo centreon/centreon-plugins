@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::battery;
+package centreon::common::emc::navisphere::mode::spcomponents::battery;
 
 use strict;
 use warnings;

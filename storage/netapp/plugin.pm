@@ -47,20 +47,20 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpuload' => 'storage::netapp::mode::cpuload',
-                         'diskfailed' => 'storage::netapp::mode::diskfailed',
-                         'fan' => 'storage::netapp::mode::fan',
-                         'filesys' => 'storage::netapp::mode::filesys',
-                         'globalstatus' => 'storage::netapp::mode::globalstatus',
-                         'list-filesys' => 'storage::netapp::mode::listfilesys',
-                         'ndmpsessions' => 'storage::netapp::mode::ndmpsessions',
-                         'nvram' => 'storage::netapp::mode::nvram',
-                         'partnerstatus' => 'storage::netapp::mode::partnerstatus',
-                         'psu' => 'storage::netapp::mode::psu',
-                         'shelf' => 'storage::netapp::mode::shelf',
-                         'snapmirrorlag' => 'storage::netapp::mode::snapmirrorlag',
-                         'temperature' => 'storage::netapp::mode::temperature',
-                         'volumeoptions' => 'storage::netapp::mode::volumeoptions',
+                         'cpuload'          => 'storage::netapp::mode::cpuload',
+                         'diskfailed'       => 'storage::netapp::mode::diskfailed',
+                         'fan'              => 'storage::netapp::mode::fan',
+                         'filesys'          => 'storage::netapp::mode::filesys',
+                         'global-status'    => 'storage::netapp::mode::globalstatus',
+                         'list-filesys'     => 'storage::netapp::mode::listfilesys',
+                         'ndmpsessions'     => 'storage::netapp::mode::ndmpsessions',
+                         'nvram'            => 'storage::netapp::mode::nvram',
+                         'partnerstatus'    => 'storage::netapp::mode::partnerstatus',
+                         'psu'              => 'storage::netapp::mode::psu',
+                         'shelf'            => 'storage::netapp::mode::shelf',
+                         'snapmirrorlag'    => 'storage::netapp::mode::snapmirrorlag',
+                         'temperature'      => 'storage::netapp::mode::temperature',
+                         'volumeoptions'    => 'storage::netapp::mode::volumeoptions',
                          );
 
     return $self;

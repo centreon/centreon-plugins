@@ -58,6 +58,7 @@ sub new {
                                                 'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
                                                 'list-sqlmode'   => { name => 'list_sqlmode' },
                                                 'multiple'       => { name => 'multiple' },
+                                                'sanity-options' => { name => 'sanity_options' },
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -99,6 +100,9 @@ sub init {
     if (defined($self->{list_sqlmode})) {
         $self->list_sqlmode();
     }
+    if (defined($self->{sanity_options})) {
+        $self->{options}->set_sanity();
+    }
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -122,7 +126,7 @@ sub init {
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
                                                error_msg => "Cannot load module --dyn-mode.");
-        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
+        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mode' or '--dyn-mode' option.");
         $self->{output}->option_exit();
@@ -256,21 +260,25 @@ __END__
 
 Choose a mode.
 
+=item B<--dyn-mode>
+
+Specify a mode with the path (separated by '::').
+
 =item B<--list-mode>
 
 List available modes.
-
-=item B<--version>
-
-Display plugin version.
 
 =item B<--mode-version>
 
 Check minimal version of mode. If not, unknown error.
 
-=item B<--dyn-mode>
+=item B<--version>
 
-Specify a mode with the path (separated by '::').
+Display plugin version.
+
+=item B<--sanity-options>
+
+Check unknown options (for debug purpose).
 
 =item B<--sqlmode>
 

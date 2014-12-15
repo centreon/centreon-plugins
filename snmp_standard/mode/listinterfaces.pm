@@ -210,7 +210,7 @@ sub manage_selection {
             }
         }
         
-        if (scalar(@{$self->{interface_id_selected}}) <= 0) {
+        if (scalar(@{$self->{interface_id_selected}}) <= 0 && !defined($options{disco})) {
             if (defined($self->{option_results}->{interface})) {
                 $self->{output}->add_option_msg(short_msg => "No interface found for name '" . $self->{option_results}->{interface} . "'.");
             } else {
@@ -232,7 +232,7 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
+    $self->manage_selection(disco => 1);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);

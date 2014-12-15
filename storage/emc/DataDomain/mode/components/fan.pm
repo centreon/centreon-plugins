@@ -39,47 +39,57 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my %conditions = (
-    0 => ['not found', 'UNKNOWN'], 
-    1 => ['ok', 'OK'], 
-    2 => ['failed', 'CRITICAL'], 
+my %map_fan_status = (
+    0 => 'notfound',
+    1 => 'ok',
+    2 => 'failed',
 );
-my %level_map = (
+my %level_map = ( 
     0 => 'unknown',
     1 => 'low',
     2 => 'normal',
     3 => 'high',
-);
+); 
+
+my ($oid_fanDescription, $oid_fanLevel, $oid_fanStatus);
+my $oid_fanPropertiesEntry = '.1.3.6.1.4.1.19746.1.1.3.1.1.1';
 
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude('fans'));
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fan'));
     
-    my $oid_fanPropertiesEntry = '.1.3.6.1.4.1.19746.1.1.3.1.1.1';
-    my $oid_fanDescription = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.3';
-    my $oid_fanLevel = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.4';
-    my $oid_fanStatus = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.5';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_fanPropertiesEntry);
-    return if (scalar(keys %$result) <= 0);
+    if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
+        $oid_fanDescription = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.4';
+        $oid_fanLevel = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.5';
+        $oid_fanStatus = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.6';
+    } else {
+        $oid_fanDescription = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.3';
+        $oid_fanLevel = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.4';
+        $oid_fanStatus = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.5';
+    }
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fanStatus\.(\d+)\.(\d+)$/);
-        my ($enclosure_id, $fan_index) = ($1, $2);
-    
-        my $fan_descr = centreon::plugins::misc::trim($result->{$oid_fanDescription . '.' . $enclosure_id . '.' . $fan_index});
-        my $fan_level = $result->{$oid_fanLevel . '.' . $enclosure_id . '.' . $fan_index};
-        my $fan_status = $result->{$oid_fanStatus . '.' . $enclosure_id . '.' . $fan_index};
+    foreach my $oid (keys %{$self->{results}->{$oid_fanPropertiesEntry}}) {
+        next if ($oid !~ /^$oid_fanStatus\.(.*)$/);
+        my $instance = $1;
+        my $fan_descr = centreon::plugins::misc::trim($self->{results}->{$oid_fanPropertiesEntry}->{$oid_fanDescription . '.' . $instance});
+        my $fan_status = defined($map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}}) ?
+                            $map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}} : 'unknown';
+        my $fan_level = $self->{results}->{$oid_fanPropertiesEntry}->{$oid_fanLevel . '.' . $instance};
 
-        $self->{components}->{fans}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s [enclosure = %d, index = %d, level = %s].", 
-                                    $fan_descr, ${$conditions{$fan_status}}[0], $enclosure_id, $fan_index, $level_map{$fan_level}));
-        if (!$self->{output}->is_status(litteral => 1, value => ${$conditions{$fan_status}}[1], compare => 'ok')) {
-            $self->{output}->output_add(severity => ${$conditions{$fan_status}}[1],
-                                        short_msg => sprintf("Fan '%s' status is %s", $fan_descr, ${$conditions{$fan_status}}[0]));
+        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($fan_status =~ /notfound/i && 
+                 $self->absent_problem(section => 'fan', instance => $instance));
+        
+        $self->{components}->{fan}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance = %s, level = %s]",
+                                    $fan_descr, $fan_status, $instance, $level_map{$fan_level}));
+        my $exit = $self->get_severity(section => 'fan', value => $fan_status);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan '%s' status is '%s'", $fan_descr, $fan_status));
         }
     }
 }

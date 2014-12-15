@@ -120,7 +120,7 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
+    $self->manage_selection(disco => 1);
     foreach my $instance (sort @{$self->{pool_id_selected}}) {        
         my $name = $self->{result_names}->{$oid_ltmPoolStatusName . '.' . $instance};
         

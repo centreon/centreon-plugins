@@ -56,6 +56,16 @@ sub new {
     return $self;
 }
 
+sub set_sanity {
+    my ($self, %options) = @_;
+    
+    Getopt::Long::Configure('no_pass_through');
+    $SIG{__WARN__} = sub { 
+        $self->{output}->add_option_msg(short_msg => $_[0]);
+        $self->{output}->option_exit(nolabel => 1);
+    };
+}
+
 sub set_output {
     my ($self, %options) = @_;
     
