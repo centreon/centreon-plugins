@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,45 +33,53 @@
 #
 ####################################################################################
 
-package storage::netapp::plugin;
+package storage::netapp::mode::components::communication;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+my %map_com_states = (
+    1 => 'initializing', 
+    2 => 'transitioning', 
+    3 => 'active', 
+    4 => 'inactive',
+    5 => 'reconfiguring',
+    6 => 'nonexistent',
+);
+my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
+my $oid_enclContactState = '.1.3.6.1.4.1.789.1.21.1.2.1.2';
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'cpuload'          => 'storage::netapp::mode::cpuload',
-                         'diskfailed'       => 'storage::netapp::mode::diskfailed',
-                         'fan'              => 'storage::netapp::mode::fan',
-                         'filesys'          => 'storage::netapp::mode::filesys',
-                         'global-status'    => 'storage::netapp::mode::globalstatus',
-                         'list-filesys'     => 'storage::netapp::mode::listfilesys',
-                         'ndmpsessions'     => 'storage::netapp::mode::ndmpsessions',
-                         'nvram'            => 'storage::netapp::mode::nvram',
-                         'partnerstatus'    => 'storage::netapp::mode::partnerstatus',
-                         'psu'              => 'storage::netapp::mode::psu',
-                         'shelf'            => 'storage::netapp::mode::shelf',
-                         'snapmirrorlag'    => 'storage::netapp::mode::snapmirrorlag',
-                         'temperature'      => 'storage::netapp::mode::temperature',
-                         'volumeoptions'    => 'storage::netapp::mode::volumeoptions',
-                         );
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_enclContactState };
+}
 
-    return $self;
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking communications");
+    $self->{components}->{communication} = {name => 'communications', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'communication'));
+
+    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
+        my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
+        my $com_state = $map_com_states{$self->{results}->{$oid_enclContactState}->{$oid_enclContactState . '.' . $i}};
+
+        next if ($self->check_exclude(section => 'communication', instance => $shelf_addr));
+        
+        $self->{components}->{communication}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Shelve '%s' communication state is '%s'", 
+                                                          $shelf_addr, $com_state));
+        my $exit = $self->get_severity(section => 'communication', value => $com_state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Shelve '%s' communication state is '%s'", 
+                                                          $shelf_addr, $com_state));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Netapp in SNMP (Some Check needs ONTAP 8.x).
-
-=cut
