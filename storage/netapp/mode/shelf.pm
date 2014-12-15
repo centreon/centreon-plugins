@@ -41,45 +41,45 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my %com_states = (
-    1 => ['initializing', 'WARNING'], 
-    2 => ['transitioning', 'WARNING'], 
-    3 => ['active', 'OK'], 
-    4 => ['inactive', 'CRITICAL'],
-    5 => ['reconfiguring', 'WARNING'],
-    6 => ['nonexistent', 'CRITICAL'],
-);
+my $thresholds = {
+    communication => [
+        ['initializing', 'WARNING'],
+        ['transitioning', 'WARNING'],
+        ['inactive', 'CRITICAL'],
+        ['reconfiguring', 'WARNING'],
+        ['nonexistent', 'CRITICAL'],
+        ['active', 'OK'],
+    ],
+    fan => [
+        ['failed', 'CRITICAL'],
+        ['ok', 'OK'],
+    ],
+    psu => [
+        ['failed', 'CRITICAL'],
+        ['ok', 'OK'],
+    ],
+    electronics => [
+        ['failed', 'CRITICAL'],
+        ['ok', 'OK'],
+    ],
+    voltage => [
+        ['under critical threshold', 'CRITICAL'],
+        ['under warning threshold', 'WARNING'],
+        ['over critical threshold', 'CRITICAL'],
+        ['over warning threshold', 'WARNING'],
+        ['ok', 'OK'],
+    ],
+    temperature => [
+        ['under critical threshold', 'CRITICAL'],
+        ['under warning threshold', 'WARNING'],
+        ['over critical threshold', 'CRITICAL'],
+        ['over warning threshold', 'WARNING'],
+        ['ok', 'OK'],
+    ],
+};
 
-my $oid_enclNumber = '.1.3.6.1.4.1.789.1.21.1.1.0';
-my $oid_enclContactState = '.1.3.6.1.4.1.789.1.21.1.2.1.2';
+my $oid_enclNumber = '.1.3.6.1.4.1.789.1.21.1.1';
 my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
-my $oid_enclPowerSuppliesPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.13';
-my $oid_enclPowerSuppliesFailed = '.1.3.6.1.4.1.789.1.21.1.2.1.15';
-my $oid_enclFansPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.17';
-my $oid_enclFansFailed = '.1.3.6.1.4.1.789.1.21.1.2.1.18';
-my $oid_enclFansSpeed = '.1.3.6.1.4.1.789.1.21.1.2.1.62';
-my $oid_enclTempSensorsPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.20';
-my $oid_enclTempSensorsOverTempFail = '.1.3.6.1.4.1.789.1.21.1.2.1.21';
-my $oid_enclTempSensorsOverTempWarn = '.1.3.6.1.4.1.789.1.21.1.2.1.22';
-my $oid_enclTempSensorsUnderTempFail = '.1.3.6.1.4.1.789.1.21.1.2.1.23';
-my $oid_enclTempSensorsUnderTempWarn = '.1.3.6.1.4.1.789.1.21.1.2.1.24';
-my $oid_enclTempSensorsCurrentTemp = '.1.3.6.1.4.1.789.1.21.1.2.1.25';
-my $oid_enclTempSensorsOverTempFailThr = '.1.3.6.1.4.1.789.1.21.1.2.1.26';
-my $oid_enclTempSensorsOverTempWarnThr = '.1.3.6.1.4.1.789.1.21.1.2.1.27';
-my $oid_enclTempSensorsUnderTempFailThr = '.1.3.6.1.4.1.789.1.21.1.2.1.28';
-my $oid_enclTempSensorsUnderTempWarnThr = '.1.3.6.1.4.1.789.1.21.1.2.1.29';
-my $oid_enclElectronicsPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.31';
-my $oid_enclElectronicsFailed = '.1.3.6.1.4.1.789.1.21.1.2.1.33';
-my $oid_enclVoltSensorsPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.35';
-my $oid_enclVoltSensorsOverVoltFail = '.1.3.6.1.4.1.789.1.21.1.2.1.36';
-my $oid_enclVoltSensorsOverVoltWarn = '.1.3.6.1.4.1.789.1.21.1.2.1.37';
-my $oid_enclVoltSensorsUnderVoltFail = '.1.3.6.1.4.1.789.1.21.1.2.1.38';
-my $oid_enclVoltSensorsUnderVoltWarn = '.1.3.6.1.4.1.789.1.21.1.2.1.39';
-my $oid_enclVoltSensorsCurrentVolt = '.1.3.6.1.4.1.789.1.21.1.2.1.40';
-my $oid_enclVoltSensorsOverVoltFailThr = '.1.3.6.1.4.1.789.1.21.1.2.1.41';
-my $oid_enclVoltSensorsOverVoltWarnThr = '.1.3.6.1.4.1.789.1.21.1.2.1.42';
-my $oid_enclVoltSensorsUnderVoltFailThr = '.1.3.6.1.4.1.789.1.21.1.2.1.43';
-my $oid_enclVoltSensorsUnderVoltWarnThr = '.1.3.6.1.4.1.789.1.21.1.2.1.44';
 
 sub new {
     my ($class, %options) = @_;
@@ -90,9 +90,14 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "exclude:s"               => { name => 'exclude' },
-                                  "component:s"             => { name => 'component', default => 'all' },
+                                  "component:s"             => { name => 'component', default => '.*' },
+                                  "absent-problem:s"        => { name => 'absent' },
                                   "no-component:s"          => { name => 'no_component' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
+    
     $self->{components} = {};
     $self->{no_components} = undef;
     return $self;
@@ -109,6 +114,46 @@ sub check_options {
             $self->{no_components} = 'critical';
         }
     }
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
+    
+    $self->{numeric_threshold} = {};
+    foreach my $option (('warning', 'critical')) {
+        foreach my $val (@{$self->{option_results}->{$option}}) {
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my ($section, $regexp, $value) = ($1, $2, $3);
+            if ($section !~ /(voltage|temperature|fan)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: fan, voltage or temperature).");
+                $self->{output}->option_exit();
+            }
+            my $position = 0;
+            if (defined($self->{numeric_threshold}->{$section})) {
+                $position = scalar(@{$self->{numeric_threshold}->{$section}});
+            }
+            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
+        }
+    }
 }
 
 sub run {
@@ -116,44 +161,36 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $result = $self->{snmp}->get_leef(oids => [$oid_enclNumber], nothing_quit => 1);
-    $self->{snmp}->load(oids => [$oid_enclContactState, $oid_enclChannelShelfAddr, $oid_enclPowerSuppliesPresent, $oid_enclPowerSuppliesFailed,
-                                 $oid_enclFansPresent, $oid_enclFansFailed, $oid_enclFansSpeed, $oid_enclTempSensorsPresent, $oid_enclTempSensorsOverTempFail, $oid_enclTempSensorsOverTempWarn,
-                                 $oid_enclTempSensorsUnderTempFail, $oid_enclTempSensorsUnderTempWarn, $oid_enclTempSensorsCurrentTemp,
-                                 $oid_enclTempSensorsOverTempFailThr, $oid_enclTempSensorsOverTempWarnThr, $oid_enclTempSensorsUnderTempFailThr, 
-                                 $oid_enclTempSensorsUnderTempWarnThr, $oid_enclElectronicsPresent, $oid_enclElectronicsFailed, $oid_enclVoltSensorsPresent,
-                                 $oid_enclVoltSensorsOverVoltFail, $oid_enclVoltSensorsOverVoltWarn, $oid_enclVoltSensorsUnderVoltFail, $oid_enclVoltSensorsUnderVoltWarn,
-                                 $oid_enclVoltSensorsCurrentVolt, $oid_enclVoltSensorsOverVoltFailThr, $oid_enclVoltSensorsOverVoltWarnThr, $oid_enclVoltSensorsUnderVoltFailThr,
-                                 $oid_enclVoltSensorsUnderVoltWarnThr], 
-                        begin => 1, end => $result->{$oid_enclNumber});
-    $self->{result} = $self->{snmp}->get_leef();
+    my $snmp_request = [];
+    my @components = ('communication', 'psu', 'fan', 'temperature', 'voltage', 'electronics');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "storage::netapp::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
     
-    $self->{number_shelf} = $result->{$oid_enclNumber};
-    
-    if ($self->{option_results}->{component} eq 'all') {    
-        $self->check_communication();
-        $self->check_fan();
-        $self->check_psu();
-        $self->check_temperature();
-        $self->check_electronics();
-        $self->check_voltage();
-    } elsif ($self->{option_results}->{component} eq 'communication') {
-        $self->check_communication();
-    } elsif ($self->{option_results}->{component} eq 'psu') {
-        $self->check_psu();
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        $self->check_fan();
-    } elsif ($self->{option_results}->{component} eq 'temperature') {
-        $self->check_temperature();
-    } elsif ($self->{option_results}->{component} eq 'voltage') {
-        $self->check_voltage();
-    } elsif ($self->{option_results}->{component} eq 'electronics') {
-        $self->check_electronics();
-    } else {
+    if (scalar(@{$snmp_request}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
-    }    
+    }
     
+    push @{$snmp_request}, ({ oid => $oid_enclNumber }, { oid => $oid_enclChannelShelfAddr });
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    $self->{number_shelf} = defined($self->{results}->{$oid_enclNumber}->{$oid_enclNumber . '.0'}) ? $self->{results}->{$oid_enclNumber}->{$oid_enclNumber . '.0'} : -1;
+    $self->{shelf_addr} = $self->{results}->{$oid_enclChannelShelfAddr};
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "storage::netapp::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
+    }
+
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
@@ -167,10 +204,9 @@ sub run {
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok [%s] [%s shelves].", 
+                                short_msg => sprintf("All %s components are ok [%s].", 
                                                      $total_components,
-                                                     $display_by_component,
-                                                     $self->{number_shelf})
+                                                     $display_by_component)
                                 );
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
@@ -198,262 +234,62 @@ sub check_exclude {
     return 0;
 }
 
-sub check_communication {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking communications");
-    $self->{components}->{communication} = {name => 'communications', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'communication'));
-
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $com_state = $self->{result}->{$oid_enclContactState . '.' . $i};
-     
-        next if ($self->check_exclude(section => 'communication', instance => $shelf_addr));
-        $self->{components}->{communication}->{total}++;
-     
-        $self->{output}->output_add(long_msg => sprintf("Shelve '%s' communication state is '%s'", 
-                                                          $shelf_addr, ${$com_states{$com_state}}[0]));
-        if (${$com_states{$com_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$com_states{$com_state}}[0],
-                                        short_msg => sprintf("Shelve '%s' communication state is '%s'", 
-                                                            $shelf_addr, ${$com_states{$com_state}}[0]));
-        }
-    }
-}
-
-sub check_fan {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
-
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $present = $self->{result}->{$oid_enclFansPresent . '.' . $i};
-        my $failed = $self->{result}->{$oid_enclFansFailed . '.' . $i};
-        my @current_speed = split /,/, $self->{result}->{$oid_enclFansSpeed . '.' . $i};
-        
-        foreach my $num (split /,/, $present) {
-            $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
-            my $current_value = ($current_speed[$num - 1] =~ /(^|\s)([0-9]+)/) ? $2 : '';
-            
-            next if ($self->check_exclude(section => 'fan', instance => $shelf_addr . '.' . $num));
-            $self->{components}->{fan}->{total}++;
-            
-            if ($failed =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' Fan '%s' is failed", 
-                                                                $shelf_addr, $num));
-            } else {
-                $self->{output}->output_add(long_msg => sprintf("Shelve '%s' Fan '%s' is ok", 
-                                                                $shelf_addr, $num));
-            }
-            
-            if ($current_value ne '') {
-                $self->{output}->perfdata_add(label => "speed_" . $i . "_" . $num, unit => 'rpm',
-                                              value => $current_value,
-                                              min => 0);
-            }
-        }
-    }
-}
-
-sub check_psu {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
-
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $present = $self->{result}->{$oid_enclPowerSuppliesPresent . '.' . $i};
-        my $failed = $self->{result}->{$oid_enclPowerSuppliesFailed . '.' . $i};
-        
-        foreach my $num (split /,/, $present) {
-            $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
-            
-            next if ($self->check_exclude(section => 'psu', instance => $shelf_addr . '.' . $num));
-            $self->{components}->{psu}->{total}++;
-
-            if ($failed =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' PSU '%s' is failed", 
-                                                                $shelf_addr, $num));
-            } else {
-                $self->{output}->output_add(long_msg => sprintf("Shelve '%s' PSU '%s' is ok", 
-                                                                $shelf_addr, $num));
-            }
-        }
-    }
-}
-
-sub check_electronics {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking electronics");
-    $self->{components}->{electronics} = {name => 'electronics', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'electronics'));
-
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $present = $self->{result}->{$oid_enclElectronicsPresent . '.' . $i};
-        my $failed = $self->{result}->{$oid_enclElectronicsFailed . '.' . $i};
-        
-        foreach my $num (split /,/, $present) {
-            $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
-            
-            next if ($self->check_exclude(section => 'electronics', instance => $shelf_addr . '.' . $num));
-            $self->{components}->{electronics}->{total}++;
-
-            if ($failed =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' electronics '%s' is failed", 
-                                                                $shelf_addr, $num));
-            } else {
-                $self->{output}->output_add(long_msg => sprintf("Shelve '%s' electronics '%s' is ok", 
-                                                                $shelf_addr, $num));
-            }
-        }
-    }
-}
-
-sub check_voltage {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking voltages");
-    $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'voltage'));
+sub absent_problem {
+    my ($self, %options) = @_;
     
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $present = $self->{result}->{$oid_enclVoltSensorsPresent . '.' . $i};
-        my @current_volt = split /,/, $self->{result}->{$oid_enclVoltSensorsCurrentVolt . '.' . $i};
-        
-        my $warn_under = $self->{result}->{$oid_enclVoltSensorsUnderVoltWarn . '.' . $i};
-        my $crit_under = $self->{result}->{$oid_enclVoltSensorsUnderVoltFail . '.' . $i};
-        my $warn_over = $self->{result}->{$oid_enclVoltSensorsOverVoltWarn . '.' . $i};
-        my $crit_over = $self->{result}->{$oid_enclVoltSensorsOverVoltFail . '.' . $i};
-
-        my @warn_under_thr = split /,/, $self->{result}->{$oid_enclVoltSensorsUnderVoltWarnThr . '.' . $i};
-        my @crit_under_thr = split /,/, $self->{result}->{$oid_enclVoltSensorsUnderVoltFailThr . '.' . $i};
-        my @warn_over_thr = split /,/, $self->{result}->{$oid_enclVoltSensorsOverVoltWarnThr . '.' . $i};
-        my @crit_over_thr = split /,/, $self->{result}->{$oid_enclVoltSensorsOverVoltFailThr . '.' . $i};
-
-        foreach my $num (split /,/, $present) {
-            $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
-            
-            my $wu_thr = (defined($warn_under_thr[$num - 1]) && $warn_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
-            my $cu_thr = (defined($crit_under_thr[$num - 1]) && $crit_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
-            my $wo_thr = (defined($warn_over_thr[$num - 1]) && $warn_over_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
-            my $co_thr = (defined($crit_over_thr[$num - 1]) && $crit_over_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
-            my $current_value = ($current_volt[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
-            
-            next if ($self->check_exclude(section => 'voltage', instance => $shelf_addr . '.' . $num));
-            $self->{components}->{voltage}->{total}++;
-            
-            if ($crit_under =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' voltage sensor '%s' is under critical threshold [current = %s < %s]", 
-                                                                $shelf_addr, $num, $current_value, $cu_thr));
-            } elsif ($warn_under =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'WARNING', 
-                                            long_msg => sprintf("Shelve '%s' voltage sensor '%s' is under warning threshold [current = %s < %s]", 
-                                                                $shelf_addr, $num, $current_value, $wu_thr));
-            } elsif ($crit_over =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' voltage sensor '%s' is over critical threshold [current = %s > %s]", 
-                                                                $shelf_addr, $num, $current_value, $co_thr));
-            } elsif ($warn_over =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'WARNING', 
-                                            long_msg => sprintf("Shelve '%s' voltage sensor '%s' is over warning threshold [current = %s > %s]", 
-                                                                $shelf_addr, $num, $current_value, $wo_thr));
-            } else {
-                $self->{output}->output_add(long_msg => sprintf("Shelve '%s' voltage sensor '%s' is ok [current = %s]", 
-                                                                $shelf_addr, $num, $current_value));
-            }
-            
-            $self->{output}->perfdata_add(label => "volt_" . $i . "_" . $num, unit => 'mV',
-                                          value => $current_value,
-                                          warning => ($wu_thr ne '' || $wo_thr ne '') ? ($wu_thr . ':' . $wo_thr) : '',
-                                          critical => ($cu_thr ne '' || $co_thr ne '') ? ($cu_thr . ':' . $co_thr) : '');
-        }
+    if (defined($self->{option_results}->{absent}) && 
+        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
+                                                         $options{section}, $options{instance}));
     }
+
+    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
+    $self->{components}->{$options{section}}->{skip}++;
+    return 1;
 }
 
-sub check_temperature {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
-
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{result}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $present = $self->{result}->{$oid_enclTempSensorsPresent . '.' . $i};
-        my @current_temp = split /,/, $self->{result}->{$oid_enclTempSensorsCurrentTemp . '.' . $i};
-        
-        my $warn_under = $self->{result}->{$oid_enclTempSensorsUnderTempWarn . '.' . $i};
-        my $crit_under = $self->{result}->{$oid_enclTempSensorsUnderTempFail . '.' . $i};
-        my $warn_over = $self->{result}->{$oid_enclTempSensorsOverTempWarn . '.' . $i};
-        my $crit_over = $self->{result}->{$oid_enclTempSensorsOverTempFail . '.' . $i};
-        
-        my @warn_under_thr = split /,/, $self->{result}->{$oid_enclTempSensorsUnderTempWarnThr . '.' . $i};
-        my @crit_under_thr = split /,/, $self->{result}->{$oid_enclTempSensorsUnderTempFailThr . '.' . $i};
-        my @warn_over_thr = split /,/, $self->{result}->{$oid_enclTempSensorsOverTempWarnThr . '.' . $i};
-        my @crit_over_thr = split /,/, $self->{result}->{$oid_enclTempSensorsOverTempFailThr . '.' . $i};
-
-        foreach my $num (split /,/, $present) {
-            $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
-            
-            $warn_under_thr[$num - 1] =~ /(-*[0-9]+)C/;
-            my $wu_thr = $1;
-            $crit_under_thr[$num - 1] =~ /(-*[0-9]+)C/;
-            my $cu_thr = $1;
-            $warn_over_thr[$num - 1] =~ /(-*[0-9]+)C/;
-            my $wo_thr = $1;
-            $crit_over_thr[$num - 1] =~ /(-*[0-9]+)C/;
-            my $co_thr = $1;
-            $current_temp[$num - 1] =~ /(-*[0-9]+)C/;
-            my $current_value = $1;
-            
-            next if ($self->check_exclude(section => 'temperature', instance => $shelf_addr . '.' . $num));
-            $self->{components}->{temperature}->{total}++;
-
-            if ($crit_under =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' temperature sensor '%s' is under critical threshold [current = %s < %s]", 
-                                                                $shelf_addr, $num, $current_value, $cu_thr));
-            } elsif ($warn_under =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'WARNING', 
-                                            long_msg => sprintf("Shelve '%s' temperature sensor '%s' is under warning threshold [current = %s < %s]", 
-                                                                $shelf_addr, $num, $current_value, $wu_thr));
-            } elsif ($crit_over =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'CRITICAL', 
-                                            long_msg => sprintf("Shelve '%s' temperature sensor '%s' is over critical threshold [current = %s > %s]", 
-                                                                $shelf_addr, $num, $current_value, $co_thr));
-            } elsif ($warn_over =~ /(^|,|\s)$num(,|\s|$)/) {
-                $self->{output}->output_add(severity => 'WARNING', 
-                                            long_msg => sprintf("Shelve '%s' temperature sensor '%s' is over warning threshold [current = %s > %s]", 
-                                                                $shelf_addr, $num, $current_value, $wo_thr));
-            } else {
-                $self->{output}->output_add(long_msg => sprintf("Shelve '%s' temperature sensor '%s' is ok [current = %s]", 
-                                                                $shelf_addr, $num, $current_value));
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
+    
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{regexp}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
             }
-            
-            $self->{output}->perfdata_add(label => "temp_" . $i . "_" . $num, unit => 'C',
-                                          value => $current_value,
-                                          warning => $wu_thr . ':' . $wo_thr,
-                                          critical => $cu_thr . ':' . $co_thr);
+        }
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
+    }
+    
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
         }
     }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -468,18 +304,39 @@ Check Shelves hardware (temperatures, voltages, electronics, fan, power supplies
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'psu', 'fan', 'communication', 'voltage', 'temperature', 'electronics'.
 
 =item B<--exclude>
 
 Exclude some parts (comma seperated list) (Example: --exclude=psu)
-Can also exclude specific instance: --exclude='psu#0b.00.99.1#'
+Can also exclude specific instance: --exclude='psu#41239F00647-A#'
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=fan#41239F00647-fan02#
 
 =item B<--no-component>
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='gfc,CRITICAL,^(?!(Online)$)'
+
+=item B<--warning>
+
+Set warning threshold for temperatures (syntax: regexp,treshold)
+Example: --warning='41239F00647-vimm46,20' --warning='41239F00647-vimm5.*,30'
+
+=item B<--critical>
+
+Set critical threshold for temperatures (syntax: regexp,treshold)
+Example: --critical='41239F00647-vimm46,25' --warning='41239F00647-vimm5.*,35'
 
 =back
 
