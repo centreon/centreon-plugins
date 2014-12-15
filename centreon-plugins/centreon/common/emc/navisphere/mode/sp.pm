@@ -42,12 +42,12 @@ use warnings;
 use centreon::common::emc::navisphere::mode::spcomponents::fan;
 use centreon::common::emc::navisphere::mode::spcomponents::lcc;
 use centreon::common::emc::navisphere::mode::spcomponents::psu;
-use centreon::common::emc::navisphere::spcomponents::battery;
-use centreon::common::emc::navisphere::spcomponents::memory;
-use centreon::common::emc::navisphere::spcomponents::cpu;
-use centreon::common::emc::navisphere::spcomponents::iomodule;
-use centreon::common::emc::navisphere::spcomponents::cable;
-use centreon::common::emc::navisphere::spcomponents::sp;
+use centreon::common::emc::navisphere::mode::spcomponents::battery;
+use centreon::common::emc::navisphere::mode::spcomponents::memory;
+use centreon::common::emc::navisphere::mode::spcomponents::cpu;
+use centreon::common::emc::navisphere::mode::spcomponents::iomodule;
+use centreon::common::emc::navisphere::mode::spcomponents::cable;
+use centreon::common::emc::navisphere::mode::spcomponents::sp;
 
 sub new {
     my ($class, %options) = @_;

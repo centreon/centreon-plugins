@@ -765,6 +765,31 @@ sub get_port {
     return $self->{snmp_params}->{RemotePort};
 }
 
+sub map_instance {
+    my ($self, %options) = @_;
+    
+    my $results = {};
+    foreach my $name (keys %{$options{mapping}}) {
+        my $entry = $options{mapping}->{$name}->{oid} . '.' . $options{instance};
+        if (defined($options{results}->{$entry})) {
+            $results->{$name} = $options{results}->{$entry};
+        } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
+            $results->{$name} = $options{results}->{$options{mapping}->{$name}->{oid}}->{$entry};
+        } elsif (defined($options{mapping}->{$name}->{location}) && 
+                defined($options{results}->{$options{mapping}->{$name}->{location}}->{$entry})) {
+            $results->{$name} = $options{results}->{$options{mapping}->{$name}->{location}}->{$entry};
+        } else {
+            $results->{$name} = defined($options{default}) ? $options{default} : undef;
+        }
+        
+        if (defined($options{mapping}->{$name}->{map})) {
+            $results->{$name} = defined($options{mapping}->{$name}->{map}->{$results->{$name}}) ? $options{mapping}->{$name}->{map}->{$results->{$name}} : (defined($options{default}) ? $options{default} : 'unknown');
+        }
+    }
+    
+    return $results;
+}
+
 sub oid_lex_sort {
     my $self = shift;
 

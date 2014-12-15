@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::emc::clariion::mode::spcomponents::psu;
+package centreon::common::emc::navisphere::mode::spcomponents::psu;
 
 use strict;
 use warnings;
