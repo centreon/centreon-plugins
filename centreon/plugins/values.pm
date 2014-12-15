@@ -181,6 +181,7 @@ sub perfdata {
     
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
+    my $cast_int = defined($options{cast_int}) ? $options{cast_int} : 0;
     
     foreach my $perf (@{$self->{perfdatas}}) {
         my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
@@ -209,9 +210,9 @@ sub perfdata {
         }
 
         $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
-                                      value => sprintf($template, $self->{result_values}->{$perf->{value}}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total),
+                                      value => $cast_int == 1 ? int($self->{result_values}->{$perf->{value}}) : sprintf($template, $self->{result_values}->{$perf->{value}}),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total, cast_int => $cast_int),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total, cast_int => $cast_int),
                                       min => $min, max => $max);
     }
 }

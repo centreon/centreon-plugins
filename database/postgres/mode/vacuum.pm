@@ -67,6 +67,10 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'dbname', value => $self->{option_results}->{dbname})) eq 'postgres') {
+       $self->{output}->add_option_msg(short_msg => "Invalid db.");
+       $self->{output}->option_exit();
+    }
 
     
 }
@@ -84,6 +88,9 @@ sub run {
     if ($data_source =~ /.*;database=(.*)/) {
        if ($1 eq 'postgres') {
           $self->{output}->add_option_msg(short_msg => "Cannot use system 'postgres' database ; you must use a real database.");
+          $self->{output}->option_exit();
+       } elsif ($1 eq '') {
+          $self->{output}->add_option_msg(short_msg => "Database must be specified.");
           $self->{output}->option_exit();
        }
     } else { 
