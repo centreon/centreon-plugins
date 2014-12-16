@@ -94,7 +94,7 @@ sub run {
     my $exit_code = $self->{perfdata}->threshold_check(value => $hitratio, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
                                   short_msg => sprintf("Buffer cache hit ratio is %.2f%%", $hitratio));
-    $self->{output}->perfdata_add(label => 'cache_hitratio',
+    $self->{output}->perfdata_add(label => 'sga_data_buffer_hit_ratio',
                                   value => sprintf("%d",$hitratio),
                                   unit => '%',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),

@@ -53,6 +53,7 @@ sub new {
                          'datacache-hitratio'   => 'database::oracle::mode::datacachehitratio',
                          'corrupted-blocks'     => 'database::oracle::mode::corruptedblocks',
                          'rman-backup-problems' => 'database::oracle::mode::rmanbackupproblems',
+                         'tablespace-usage'     => 'database::oracle::mode::tablespaceusage',
                          );
 
     return $self;
