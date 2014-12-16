@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,47 +33,55 @@
 #
 ####################################################################################
 
-package storage::netapp::plugin;
+package storage::netapp::mode::components::raid;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+my %map_raid_states = (
+    1 => 'active',
+    2 => 'reconstructionInProgress',
+    3 => 'parityReconstructionInProgress',
+    4 => 'parityVerificationInProgress',
+    5 => 'scrubbingInProgress',
+    6 => 'failed',
+    9 => 'prefailed',
+    10 => 'offline',
+);
+my $oid_raidPStatus = '.1.3.6.1.4.1.789.1.6.10.1.2';
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'cp-statistics'    => 'storage::netapp::mode::cpstatistics',
-                         'cpuload'          => 'storage::netapp::mode::cpuload',
-                         'diskfailed'       => 'storage::netapp::mode::diskfailed',
-                         'fan'              => 'storage::netapp::mode::fan',
-                         'filesys'          => 'storage::netapp::mode::filesys',
-                         'global-status'    => 'storage::netapp::mode::globalstatus',
-                         'list-filesys'     => 'storage::netapp::mode::listfilesys',
-                         'ndmpsessions'     => 'storage::netapp::mode::ndmpsessions',
-                         'nvram'            => 'storage::netapp::mode::nvram',
-                         'partnerstatus'    => 'storage::netapp::mode::partnerstatus',
-                         'psu'              => 'storage::netapp::mode::psu',
-                         'share-calls'      => 'storage::netapp::mode::sharecalls',
-                         'shelf'            => 'storage::netapp::mode::shelf',
-                         'snapmirrorlag'    => 'storage::netapp::mode::snapmirrorlag',
-                         'temperature'      => 'storage::netapp::mode::temperature',
-                         'volumeoptions'    => 'storage::netapp::mode::volumeoptions',
-                         );
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_raidPStatus };
+}
 
-    return $self;
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking raids");
+    $self->{components}->{raid} = {name => 'raids', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'raid'));
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raidPStatus}})) {
+        $oid =~ /^$oid_raidPStatus\.(.*)$/;
+        my $instance = $1;
+        my $raid_state = $map_raid_states{$self->{results}->{$oid_raidPStatus}->{$oid}};
+
+        next if ($self->check_exclude(section => 'raid', instance => $instance));
+        
+        $self->{components}->{raid}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Raid '%s' state is '%s'", 
+                                                        $instance, $raid_state));
+        my $exit = $self->get_severity(section => 'raid', value => $raid_state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Raid '%s' state is '%s'", 
+                                                             $instance, $raid_state));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Netapp in SNMP (Some Check needs ONTAP 8.x).
-
-=cut
