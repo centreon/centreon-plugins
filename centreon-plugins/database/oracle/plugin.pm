@@ -48,14 +48,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time'      => 'database::oracle::mode::connectiontime',
-                         'connected-users'      => 'database::oracle::mode::connectedusers',
-                         'datacache-hitratio'   => 'database::oracle::mode::datacachehitratio',
-                         'corrupted-blocks'     => 'database::oracle::mode::corruptedblocks',
-                         'rman-backup-problems' => 'database::oracle::mode::rmanbackupproblems',
-                         'rman-backup-age'      => 'database::oracle::mode::rmanbackupage',
-                         'databases-online'     => 'database::oracle::mode::databasesonline',
-                         'tablespace-usage'     => 'database::oracle::mode::tablespaceusage',
+                         'connection-time'          => 'database::oracle::mode::connectiontime',
+                         'connected-users'          => 'database::oracle::mode::connectedusers',
+                         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+                         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+                         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
+                         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
+                         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
+                         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
                          );
 
     return $self;
