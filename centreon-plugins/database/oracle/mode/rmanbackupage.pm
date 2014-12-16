@@ -169,7 +169,7 @@ __END__
 
 =head1 MODE
 
-Check Oracle rman backup problems.
+Check Oracle rman backup age.
 
 =over 8
 
