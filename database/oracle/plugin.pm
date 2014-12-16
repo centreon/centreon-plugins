@@ -53,6 +53,8 @@ sub new {
                          'datacache-hitratio'   => 'database::oracle::mode::datacachehitratio',
                          'corrupted-blocks'     => 'database::oracle::mode::corruptedblocks',
                          'rman-backup-problems' => 'database::oracle::mode::rmanbackupproblems',
+                         'rman-backup-age'      => 'database::oracle::mode::rmanbackupage',
+                         'databases-online'     => 'database::oracle::mode::databasesonline',
                          'tablespace-usage'     => 'database::oracle::mode::tablespaceusage',
                          );
 
