@@ -306,6 +306,31 @@ sub minimal_version {
     return 1;
 }
 
+sub change_seconds {
+    my %options = @_;
+    my ($str, $str_append) = ('', '');
+    my $periods = [
+                    { unit => 'y', value => 31556926 },
+                    { unit => 'M', value => 2629743 },
+                    { unit => 'w', value => 604800 },
+                    { unit => 'd', value => 86400 },
+                    { unit => 'h', value => 3600 },
+                    { unit => 'm', value => 60 },
+                    { unit => 's', value => 1 },
+    ];
+
+    foreach (@$periods) {
+        my $count = int($options{value} / $_->{value});
+
+        next if ($count == 0);
+        $str .= $str_append . $count . $_->{unit};
+        $options{value} = $options{value} % $_->{value};
+        $str_append = ' ';
+    }
+
+    return $str;
+}
+
 1;
 
 __END__
