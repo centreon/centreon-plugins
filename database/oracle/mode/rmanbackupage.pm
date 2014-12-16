@@ -98,7 +98,6 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    my $retention = $self->{option_results}->{retention};
     my $query = q{SELECT object_type, count(*) as num,
                     ((max(start_time) - date '1970-01-01')*24*60*60 - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,3))*3600 - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,1) || SUBSTR(TZ_OFFSET(DBTIMEZONE),5,2))*60) as last_time
                     FROM v$rman_status
