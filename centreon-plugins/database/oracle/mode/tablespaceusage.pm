@@ -268,15 +268,12 @@ sub run {
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
 
-#    use Data::Dumper;
-#    print Dumper(@$result);    
     foreach my $row (@$result) {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
         next if (defined($self->{option_results}->{filter}) && $name !~ /$self->{option_results}->{filter}/);
         next if (defined($self->{option_results}->{skip}) && $status =~ /offline/i);
         $status = lc $status;
         $type = lc $type;
-        #print $$row[0]."\n";
         my ($percent_used, $percent_free, $used, $free, $size);
         if ((!defined($bytes_max)) || ($bytes_max == 0)) {
             $percent_used = ($bytes - $bytes_free) / $bytes * 100;
