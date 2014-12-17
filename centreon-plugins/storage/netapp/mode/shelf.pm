@@ -50,6 +50,15 @@ my $thresholds = {
         ['nonexistent', 'CRITICAL'],
         ['active', 'OK'],
     ],
+    raid => [
+        ['initializing', 'WARNING'],
+        ['reconstructionInProgress', 'WARNING'],
+        ['parityVerificationInProgress', 'OK'],
+        ['scrubbingInProgress', 'OK'],
+        ['prefailed', 'CRITICAL'],
+        ['failed', 'CRITICAL'],
+        ['active', 'OK'],
+    ],
     fan => [
         ['failed', 'CRITICAL'],
         ['ok', 'OK'],
@@ -162,7 +171,7 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $snmp_request = [];
-    my @components = ('communication', 'psu', 'fan', 'temperature', 'voltage', 'electronics');
+    my @components = ('communication', 'psu', 'fan', 'temperature', 'voltage', 'electronics', 'raid');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "storage::netapp::mode::components::$_";
@@ -305,7 +314,7 @@ Check Shelves hardware (temperatures, voltages, electronics, fan, power supplies
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'psu', 'fan', 'communication', 'voltage', 'temperature', 'electronics'.
+Can be: 'psu', 'fan', 'communication', 'voltage', 'temperature', 'electronics', 'raid'.
 
 =item B<--exclude>
 
