@@ -48,6 +48,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'tnsping'                  => 'database::oracle::mode::tnsping',
                          'connection-time'          => 'database::oracle::mode::connectiontime',
                          'connected-users'          => 'database::oracle::mode::connectedusers',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
