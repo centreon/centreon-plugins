@@ -2,21 +2,22 @@
 User Guide
 ==========
 
------------
+***********
 Description
------------
+***********
 
 "centreon-plugins" is a free and open source project to monitor systems.
 The project can be used with Centreon, Icinga and all monitoring softwares compatible nagios plugins.
 
 The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
 
-------------
+************
 Installation
-------------
+************
 
+-------------
 Debian Wheezy
-^^^^^^^^^^^^^
+-------------
 
 Get the last version of "centreon-plugins" from the repository:
 ::
@@ -36,8 +37,9 @@ You can install other packages to use more plugins:
 
 To use 'memcached' functionnality, you need to install the following CPAN module (no debian package): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
   
+-------------
 Centos/Rhel 6
-^^^^^^^^^^^^^
+-------------
 
 Get the last version of "centreon-plugins" from the repository:
 ::
@@ -57,9 +59,9 @@ You can install other packages to use more plugins:
 
 To use 'memcached' functionnality, you need to install the following CPAN module (package available in 'rpmforge'): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
 
------------
+***********
 Basic Usage
------------
+***********
 
 We'll use a basic example to show you how to monitor a system. I have finished the install section and i want to monitor a Linux in SNMP.
 First, i need to find the plugin to use in the list:
@@ -125,9 +127,9 @@ I can set threshold with options ``--warning`` and ``--critical``:
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --warning=1,2,3 --critical=2,3,4
   OK: Load average: 0.00, 0.00, 0.00 | 'load1'=0.00;0:1;0:2;0; 'load5'=0.00;0:2;0:3;0; 'load15'=0.00;0:3;0:4;0;
   
-===
+***
 FAQ
-===
+***
 
 --------------------
 What can i monitor ?
@@ -382,7 +384,7 @@ You can set the memcached server with the option ``--memcached``:
 
 .. tip::
   Local file is used if the memcached server is not responding.
-  
+
 ------------------------------------
 What does ``--dyn-mode`` option do ?
 ------------------------------------
@@ -417,9 +419,9 @@ For example, we want to execute the mode only if the version >= 2.x:
   $  perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --mode-version='2.x'
   UNKNOWN: Not good version for plugin mode. Excepted at least: 2.x. Get: 1.0
 
-===============
+***************
 Troubleshooting
-===============
+***************
 
 ----
 SNMP
@@ -511,9 +513,9 @@ The problem can be:
 * A prerequisite cpan module is missing. You need to install it
 * The cpan module cannot be loaded because of its path. Perl modules must be installed on some specific paths 
 
-===============
+***************
 Command Samples
-===============
+***************
 
 -------
 Windows
@@ -554,46 +556,4 @@ Warning if traffic in/out used > 80% and critical if traffic in/out used > 90%. 
   Interface 'eth0' Traffic In : 1.87Kb/s (0.00 %), Out : 266.32b/s (0.00 %)
   Interface 'eth1' Traffic In : 976.65b/s (0.00 %), Out : 1.02Kb/s (0.00 %)
 
-===============
-Command Samples
-===============
-
--------
-Windows
--------
-
-Check all disks in SNMP
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Warning if space used > 80% and critical if space used > 90%:
-::
-
-  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=80 --critical=90
-  OK: All storages are ok. | used_C:'=38623698944B;0:108796887040;0:122396497920;0;135996108800 used_D:'=38623698944B;0:108796887040;0:122396497920;0;135996108800
-  Storage 'C:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
-  Storage 'D:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
-
-Warning if space free < 5G and critical if space free < 5G:
-::
-
-  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=5497558138880 --critical=2199023255552 --units='B' --free
-  OK: All storages are ok. | 'free_C:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800 'free_D:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800
-  Storage 'C:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
-  Storage 'D:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
-  
------
-Linux
------
-
-Check all interface traffics in SNMP
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Warning if traffic in/out used > 80% and critical if traffic in/out used > 90%. It also skips errors from down interface (option ``--skip``):
-::
-
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --regexp --skip --warning-in=80 --critical-in=90 --warning-out=80 --critical-out=90
-  OK: All traffic are ok | 'traffic_in_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_out_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_in_eth0'=1872.00b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth0'=266.32b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_in_eth1'=976.65b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth1'=1021.68b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000
-  Interface 'lo' Traffic In : 126.58b/s (0.00 %), Out : 126.58b/s (0.00 %)
-  Interface 'eth0' Traffic In : 1.87Kb/s (0.00 %), Out : 266.32b/s (0.00 %)
-  Interface 'eth1' Traffic In : 976.65b/s (0.00 %), Out : 1.02Kb/s (0.00 %)
 

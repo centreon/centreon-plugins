@@ -9,6 +9,6 @@ published by the Free Software Foundation.
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    user_guide
