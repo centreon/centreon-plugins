@@ -51,7 +51,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Centreon'
+project = u'Centreon Plugins'
 copyright = u'2014, Merethis'
 
 # The version info for the project you're documenting, acts as replacement for
