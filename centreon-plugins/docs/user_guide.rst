@@ -361,6 +361,44 @@ There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP O
 
   $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
+-------------------------------------------------
+How to use memcached server for retention datas ?
+-------------------------------------------------
+
+Some plugins need to store datas. Two ways to store it:
+
+* File on a disk (by default)
+* Memcached server
+
+To use 'memcached', you must have a memcached server and the CPAN 'Memcached::libmemcached' module installed.
+You can set the memcached server with the option ``--memcached``:
+::
+
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --skip --skip-speed0 --memcached=127.0.0.1
+  OK: All traffic are ok | 'traffic_in_lo'=197.40b/s;;;0;10000000 'traffic_out_lo'=197.40b/s;;;0;10000000 'traffic_in_eth0'=14539.11b/s;;;0;1000000000 'traffic_out_eth0'=399.59b/s;;;0;1000000000 'traffic_in_eth1'=13883.82b/s;;;0;1000000000 'traffic_out_eth1'=1688.66b/s;;;0;1000000000
+  Interface 'lo' Traffic In : 197.40b/s (0.00 %), Out : 197.40b/s (0.00 %)
+  Interface 'eth0' Traffic In : 14.54Kb/s (0.00 %), Out : 399.59b/s (0.00 %)
+  Interface 'eth1' Traffic In : 13.88Kb/s (0.00 %), Out : 1.69Kb/s (0.00 %)
+
+.. tip::
+  Local file is used if the memcached server is not responding.
+  
+------------------------------------
+What does ``--dyn-mode`` option do ?
+------------------------------------
+
+With the option, you can used a mode with a plugin. It commonly used for database checks.
+For example, i have an application which stores some monitoring information on a database. The developer can use another plugin to create the check (no need to do the SQL connections,... It saves time):
+::
+
+  $ perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::mysql::mode::pollerdelay --host=10.30.3.75 --username='test' --password='testpw' --verbose
+  OK: All poller delay for last update are ok | 'delay_Central'=2s;0:300;0:600;0; 'delay_Poller-Engine'=2s;0:300;0:600;0;
+  Delay for last update of Central is 2 seconds
+  Delay for last update of Poller-Engine is 2 seconds
+
+.. warning::
+  A mode using the following system must notice it (in the help description). So you should open the file with an editor and read at the end the description.
+
 ===============
 Troubleshooting
 ===============
@@ -433,3 +471,15 @@ Some plugins need to set the option ``--custommode``. You can know the value to 
   
   $ perl centreon_plugins.pl --plugin=storage::ibm::DS3000::cli::plugin --custommode=smcli --list-mode
 
+I get the error: "UNKNOWN: Cannot write statefile .*"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You must create the directory (with write permissions) to let the plugin stores some datas on disk.
+
+I get the error: "UNKNOWN: Cannot load module 'xxx'."
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The problem can be:
+
+* A prerequisite cpan module is missing. You need to install it
+* The cpan module cannot be loaded because of its path. Perl modules must be installed on some specific paths 
