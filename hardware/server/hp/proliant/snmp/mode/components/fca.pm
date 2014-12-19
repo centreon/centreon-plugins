@@ -204,7 +204,8 @@ sub host_array_controller {
 
         my $fca_index = $1;
         my $fca_status = $result2->{$oid_cpqFcaHostCntlrStatus . '.' . $instance};
-        my $fca_model = defined($model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}}) ? $model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}}  : 'unknown';
+        my $fca_model = (defined($result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}) && defined($model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}})) ? 
+                            $model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}}  : 'unknown';
         my $fca_slot = $result2->{$oid_cpqFcaHostCntlrSlot . '.' . $instance};
         my $fca_condition = $result2->{$oid_cpqFcaHostCntlrCondition . '.' . $instance};
         
