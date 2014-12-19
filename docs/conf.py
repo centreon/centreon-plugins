@@ -227,7 +227,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'centreon', u'Centreon Documentation',
+    ('index', 'centreon', u'Centreon Plugins Documentation',
      [u'Merethis'], 1)
 ]
 
