@@ -399,6 +399,24 @@ For example, i have an application which stores some monitoring information on a
 .. warning::
   A mode using the following system must notice it (in the help description). So you should open the file with an editor and read at the end the description.
 
+------------------------------------
+How can i check the plugin version ?
+------------------------------------
+
+You can check the version of plugins and modes with option ``--version``:
+::
+
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --version
+  Plugin Version: 0.1
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --version
+  Mode Version: 1.0
+
+You can also use the option ``--mode-version`` to execute the mode only if there is the good version.
+For example, we want to execute the mode only if the version >= 2.x:
+
+  $  perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --mode-version='2.x'
+  UNKNOWN: Not good version for plugin mode. Excepted at least: 2.x. Get: 1.0
+
 ===============
 Troubleshooting
 ===============
@@ -458,6 +476,15 @@ The mapping between 'snmpwalk' options and centreon plugin options:
 -------------
 Miscellaneous
 -------------
+
+I use an option but it doesn't seem to work
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before opening a ticket on the forge, please use the option ``--sanity-options``. It checks if you have misspell an option:
+::
+
+  $ perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
+  Unknown option: regex
 
 I get the error: "UNKNOWN: Need to specify '--custommode'."
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
