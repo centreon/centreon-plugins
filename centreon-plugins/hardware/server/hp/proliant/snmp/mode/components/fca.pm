@@ -204,7 +204,7 @@ sub host_array_controller {
 
         my $fca_index = $1;
         my $fca_status = $result2->{$oid_cpqFcaHostCntlrStatus . '.' . $instance};
-        my $fca_model = $result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance};
+        my $fca_model = defined($model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}}) ? $model_map{$result2->{$oid_cpqFcaHostCntlrModel . '.' . $instance}}  : 'unknown';
         my $fca_slot = $result2->{$oid_cpqFcaHostCntlrSlot . '.' . $instance};
         my $fca_condition = $result2->{$oid_cpqFcaHostCntlrCondition . '.' . $instance};
         
@@ -212,7 +212,7 @@ sub host_array_controller {
         $self->{components}->{fcahostctl}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("fca host controller %s [slot: %s, model: %s, status: %s] condition is %s.", 
-                                    $fca_index, $fca_slot, $model_map{$fca_model}, $hostctlstatus_map{$fca_status},
+                                    $fca_index, $fca_slot, $fca_model, $hostctlstatus_map{$fca_status},
                                     ${$conditions{$fca_condition}}[0]));
         if (${$conditions{$fca_condition}}[1] ne 'OK') {
             $self->{output}->output_add(severity => ${$conditions{$fca_condition}}[1],
