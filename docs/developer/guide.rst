@@ -55,25 +55,29 @@ Once the directory is created, create the plugin file inside it :
   touch plugin.pm
 
 Then, edit plugin.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it :
-::
+
+.. code-block:: perl
 
   # ...
   # Authors : <your name> <<your email>>
 
 Next, describe your **package** name : it matches your plugin directory.
-::
+
+.. code-block:: perl
 
   package path::to::plugin;
 
 Declare used libraries (**strict** and **warnings** are mandatory). Centreon libraries are described later :
-::
+
+.. code-block:: perl
 
   use strict;
   use warnings;
   use base qw(**centreon_library**);
 
 The plugin need a **new** function to instantiate the object :
-::
+
+.. code-block:: perl
 
   sub new {
         my ($class, %options) = @_;
@@ -86,12 +90,14 @@ The plugin need a **new** function to instantiate the object :
   }
 
 Plugin version must be declared in the **new** function :
-::
+
+.. code-block:: perl
 
   $self->{version} = '0.1';
 
 Several modes can be declared in the **new** function :
-::
+
+.. code-block:: perl
 
   %{$self->{modes}} = (
                         'mode1'    => '<plugin_path>::mode::mode1',
@@ -100,12 +106,14 @@ Several modes can be declared in the **new** function :
                         );
 
 Then, Declare the module :
-::
+
+.. code-block:: perl
 
   1;
 
 A description of the plugin is needed to generate the documentation :
-::
+
+.. code-block:: perl
 
   __END__
   
@@ -120,7 +128,7 @@ A description of the plugin is needed to generate the documentation :
   you can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
 
 .. tip::
-  plugin has ".pm" extension because it's a perl module. So don't forget to add **1;** at then end of the file
+  plugin has ".pm" extension because it's a perl module. So don't forget to add **1;** at the end of the file
 
 
 -------------
@@ -134,25 +142,29 @@ Once **plugin.pm** is created and modes are declared in it, create modes in the 
   touch mode1.pm
 
 Then, edit mode1.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it :
-::
+
+.. code-block:: perl
 
   # ...
   # Authors : <your name> <<your email>>
 
 Next, describe your **package** name : it matches your mode directory.
-::
+
+.. code-block:: perl
 
   package path::to::plugin::mode::mode1;
 
 Declare used libraries (always the same) :
-::
+
+.. code-block:: perl
 
   use strict;
   use warnings;
   use base qw(centreon::plugins::mode);
 
 The mode need a **new** function to instantiate the object :
-::
+
+.. code-block:: perl
 
   sub new {
         my ($class, %options) = @_;
@@ -165,12 +177,14 @@ The mode need a **new** function to instantiate the object :
   }
 
 Mode version must be declared in the **new** function :
-::
+
+.. code-block:: perl
 
   $self->{version} = '1.0';
 
 Several options can be declared in the **new** function :
-::
+
+.. code-block:: perl
 
   $options{options}->add_options(arguments =>
                                 {
@@ -189,7 +203,8 @@ This the description of arguments of this example :
   You can have more informations about options format here : http://perldoc.perl.org/Getopt/Long.html
 
 The mode need a **check_options** function to validate options :
-::
+
+.. code-block:: perl
 
   sub check_options {
     my ($self, %options) = @_;
@@ -198,7 +213,8 @@ The mode need a **check_options** function to validate options :
   }
 
 For example, Warning and Critical thresholds must be validate in **check_options** function :
-::
+
+.. code-block:: perl
 
   if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -213,7 +229,8 @@ In this example, help is printed if thresholds have not a correct format.
 
 Then comes the **run** function, where you perform measurement, check thresholds, display output and format perfdatas.
 This is an example to check a snmp value :
-::
+
+.. code-block:: perl
 
   sub run {
     my ($self, %options) = @_;
@@ -307,7 +324,7 @@ Parameters
 +=================+=================+=============+=========================================================+
 | severity        | String          |    OK       | Status of the output.                                   |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
-| separator       | String          |    '-'      | Separator between status and output string.             |
+| separator       | String          |    \-       | Separator between status and output string.             |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 | short_msg       | String          |             | Short output (first line).                              |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
@@ -318,7 +335,8 @@ Example
 ^^^^^^^
 
 This is an example of how to manage output :
-::
+
+.. code-block:: perl
 
   $self->{output}->output_add(severity  => 'OK',
                               short_msg => 'All is ok');
@@ -369,7 +387,8 @@ Example
 ^^^^^^^
 
 This is an example of how to add performance data :
-::
+
+.. code-block:: perl
 
   $self->{output}->output_add(severity  => 'OK',
                               short_msg => 'Memory is ok');  
@@ -425,7 +444,8 @@ Example
 ^^^^^^^
 
 This is an example of how to manage performance data for output :
-::
+
+.. code-block:: perl
 
   my $format_warning_perfdata  = $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => 1000000000, cast_int => 1);
   my $format_critical_perfdata = $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => 1000000000, cast_int => 1);
@@ -464,7 +484,8 @@ Example
 ^^^^^^^
 
 This example checks if warning threshold is correct :
-::
+
+.. code-block:: perl
 
   if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
     $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -497,7 +518,8 @@ Example
 ^^^^^^^
 
 This example checks if performance data reached thresholds :
-::
+
+.. code-block:: perl
 
   $self->{perfdata}->threshold_validate(label => 'warning', value => 80);
   $self->{perfdata}->threshold_validate(label => 'critical', value => 90);
@@ -538,7 +560,8 @@ Example
 ^^^^^^^
 
 This example change bytes to human readable unit :
-::
+
+.. code-block:: perl
 
   my ($value, $unit) = $self->{perfdata}->change_bytes(value => 100000);
 
@@ -555,7 +578,8 @@ Snmp
 
 This library allows you to use snmp protocol in your plugin.
 To use it, Add the following line at the beginning of your **plugin.pm** :
-::
+
+.. code-block:: perl
 
   use base qw(centreon::plugins::script_snmp);
 
@@ -585,7 +609,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get 2 snmp values :
-::
+
+.. code-block:: perl
 
   my $oid_hrSystemUptime = '.1.3.6.1.2.1.25.1.1.0';
   my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
@@ -625,7 +650,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get 4 instances of a snmp table by using **load** function :
-::
+
+.. code-block:: perl
 
   my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
 
@@ -637,7 +663,8 @@ This is an example of how to get 4 instances of a snmp table by using **load** f
   print Dumper($result);
 
 This is an example of how to get multiple instances dynamically (memory modules of dell hardware) by using **load** function :
-::
+
+.. code-block:: perl
 
   my $oid_memoryDeviceStatus = '.1.3.6.1.4.1.674.10892.1.1100.50.1.5';
   my $oid_memoryDeviceLocationName = '.1.3.6.1.4.1.674.10892.1.1100.50.1.8';
@@ -686,7 +713,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get a snmp table :
-::
+
+.. code-block:: perl
 
   my $oid_rcDeviceError            = '.1.3.6.1.4.1.15004.4.2.1';
   my $oid_rcDeviceErrWatchdogReset = '.1.3.6.1.4.1.15004.4.2.1.2.0';
@@ -725,7 +753,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get 2 snmp tables :
-::
+
+.. code-block:: perl
 
   my $oid_sysDescr        = ".1.3.6.1.2.1.1.1";
   my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";
@@ -756,7 +785,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get hostname parameter :
-::
+
+.. code-block:: perl
 
   my $hostname = $self->{snmp}->get_hostname();
 
@@ -778,7 +808,8 @@ Example
 ^^^^^^^
 
 This is an example of how to get port parameter :
-::
+
+.. code-block:: perl
 
   my $port = $self->{snmp}->get_port();
 
@@ -804,9 +835,11 @@ Example
 ^^^^^^^
 
 This example prints sorted OIDs :
-::
+
+.. code-block:: perl
 
   foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$my_oid}})) {
     print $oid;
   }
+
 
