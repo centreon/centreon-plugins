@@ -41,9 +41,10 @@ use strict;
 use warnings;
 
 my %oids_hrStorageTable = (
-    'hrstoragedescr' => '.1.3.6.1.2.1.25.2.3.1.3',
-    'hrfsmountpoint' => '.1.3.6.1.2.1.25.3.8.1.2',
-    'hrstoragetype' => '.1.3.6.1.2.1.25.2.3.1.2',
+    'hrstoragedescr'    => '.1.3.6.1.2.1.25.2.3.1.3',
+    'hrfsmountpoint'    => '.1.3.6.1.2.1.25.3.8.1.2',
+    'hrfsstorageindex'  => '.1.3.6.1.2.1.25.3.8.1.7',
+    'hrstoragetype'     => '.1.3.6.1.2.1.25.2.3.1.2',
 );
 
 my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
@@ -176,12 +177,35 @@ sub manage_selection {
     $self->{datas} = {};
     $self->{datas}->{oid_filter} = $self->{option_results}->{oid_filter};
     $self->{datas}->{oid_display} = $self->{option_results}->{oid_display};
-    my $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{$self->{option_results}->{oid_filter}});
-    my $total_storage = 0;
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-        $total_storage = $1;
+    $self->{datas}->{all_ids} = [];
+    
+    my $request = [];
+    my $added = {};
+    foreach (($self->{option_results}->{oid_filter}, $self->{option_results}->{oid_display} )) {
+        next if (defined($added->{$_}));
+        $added->{$_} = 1;
+        if (/hrFSMountPoint/i) {
+            push @{$request}, ({ oid => $oids_hrStorageTable{hrfsmountpoint} }, { oid => $oids_hrStorageTable{hrfsstorageindex} });
+        } else {
+            push @{$request}, { oid => $oids_hrStorageTable{hrstoragedescr} };
+        }
+    }
+
+    my $result = $self->{snmp}->get_multiple_table(oids => $request);
+    foreach ((['filter', $self->{option_results}->{oid_filter}], ['display', $self->{option_results}->{oid_display}])) {
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{ $oids_hrStorageTable{$$_[1]} }})) {
+            next if ($key !~ /\.([0-9]+)$/);
+            # get storage index
+            my $storage_index = $1;
+            if ($$_[1] =~ /hrFSMountPoint/i) {
+                $storage_index = $result->{ $oids_hrStorageTable{hrfsstorageindex} }->{$oids_hrStorageTable{hrfsstorageindex} . '.' . $storage_index};
+            }
+            if ($$_[0] eq 'filter') {
+                push @{$self->{datas}->{all_ids}}, $storage_index;
+            }
+
+            $self->{datas}->{$$_[1] . "_" . $storage_index} = $self->{output}->to_utf8($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
+        }
     }
     
     if (scalar(keys %{$self->{datas}}) <= 0) {
@@ -201,12 +225,12 @@ sub manage_selection {
         # get by ID
         push @{$self->{storage_id_selected}}, $self->{option_results}->{storage}; 
         my $name = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $self->{option_results}->{storage}};
-        if (!defined($name)) {
+        if (!defined($name) && !defined($options{disco})) {
             $self->{output}->add_option_msg(short_msg => "No storage found for id '" . $self->{option_results}->{storage} . "'.");
             $self->{output}->option_exit();
         }
     } else {
-        for (my $i = 0; $i <= $total_storage; $i++) {
+        foreach my $i (@{$self->{datas}->{all_ids}}) {
             my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $i};
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{storage})) {
@@ -247,7 +271,10 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection(disco => 1);
-    my $result = $self->get_additional_information();
+    my $result;
+    if (scalar(@{$self->{storage_id_selected}}) > 0) {
+        $result = $self->get_additional_information()
+    }
     foreach (sort @{$self->{storage_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         my $storage_type = $result->{$oid_hrStorageType . "." . $_};
