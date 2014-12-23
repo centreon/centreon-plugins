@@ -509,6 +509,16 @@ The problem can be:
 * A prerequisite cpan module is missing. You need to install it
 * The cpan module cannot be loaded because of its path. Perl modules must be installed on some specific paths 
 
+I can't see help messages
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+"centreon-plugins" files must unix format (no windows carriage returns). You can change it with the following command:
+::
+
+  $ find . -name "*.p[ml]" -type f -exec dos2unix \{\} \; 
+
+.. Warning:: Execute the command in "centreon-plugins" directory.
+
 ***************
 Command Samples
 ***************
