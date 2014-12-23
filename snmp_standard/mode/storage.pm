@@ -43,9 +43,10 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 my %oids_hrStorageTable = (
-    'hrstoragedescr' => '.1.3.6.1.2.1.25.2.3.1.3',
-    'hrfsmountpoint' => '.1.3.6.1.2.1.25.3.8.1.2',
-    'hrstoragetype' => '.1.3.6.1.2.1.25.2.3.1.2',
+    'hrstoragedescr'    => '.1.3.6.1.2.1.25.2.3.1.3',
+    'hrfsmountpoint'    => '.1.3.6.1.2.1.25.3.8.1.2',
+    'hrfsstorageindex'  => '.1.3.6.1.2.1.25.3.8.1.7',
+    'hrstoragetype'     => '.1.3.6.1.2.1.25.2.3.1.2',
 );
 my %storage_types_manage = (
     '.1.3.6.1.2.1.25.2.1.1'  => 'hrStorageOther',
@@ -173,7 +174,7 @@ sub run {
     my $num_disk_check = 0;
     foreach (sort @{$self->{storage_id_selected}}) {
         # Skipped disks
-        my $storage_type = $self->{statefile_cache}->get(name => "type_" . $_);
+        my $storage_type = $self->{statefile_cache}->get(name => "hrstoragetype_" . $_);
         next if (!defined($storage_type) || 
                 ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
 
@@ -267,30 +268,39 @@ sub reload_cache {
     $datas->{oid_display} = $self->{option_results}->{oid_display};
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
-    my $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{$self->{option_results}->{oid_filter}});
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        push @{$datas->{all_ids}}, $1;
-        $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-    }
     
+    my $request = [ { oid => $oids_hrStorageTable{hrstoragetype} } ];
+    my $added = {};
+    foreach (($self->{option_results}->{oid_filter}, $self->{option_results}->{oid_display} )) {
+        next if (defined($added->{$_}));
+        $added->{$_} = 1;
+        if (/hrFSMountPoint/i) {
+            push @{$request}, ({ oid => $oids_hrStorageTable{hrfsmountpoint} }, { oid => $oids_hrStorageTable{hrfsstorageindex} });
+        } else {
+            push @{$request}, { oid => $oids_hrStorageTable{hrstoragedescr} };
+        }
+    }
+
+    my $result = $self->{snmp}->get_multiple_table(oids => $request);
+    foreach ((['filter', $self->{option_results}->{oid_filter}], ['display', $self->{option_results}->{oid_display}], ['type', 'hrstoragetype'])) {
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{ $oids_hrStorageTable{$$_[1]} }})) {
+            next if ($key !~ /\.([0-9]+)$/);
+            # get storage index
+            my $storage_index = $1;
+            if ($$_[1] =~ /hrFSMountPoint/i) {
+                $storage_index = $result->{ $oids_hrStorageTable{hrfsstorageindex} }->{$oids_hrStorageTable{hrfsstorageindex} . '.' . $storage_index};
+            }            
+            if ($$_[0] eq 'filter') {
+                push @{$datas->{all_ids}}, $storage_index;
+            }
+
+            $datas->{$$_[1] . "_" . $storage_index} = $self->{output}->to_utf8($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
+        }
+    }
+
     if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
         $self->{output}->option_exit();
-    }
-
-    if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-        $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{$self->{option_results}->{oid_display}});
-        foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-            next if ($key !~ /\.([0-9]+)$/);
-            $datas->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-        }
-    }
-    
-    $result = $self->{snmp}->get_table(oid => $oids_hrStorageTable{hrstoragetype});
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        $datas->{"type_" . $1} = $result->{$key};
     }
 
     $self->{statefile_cache}->write(data => $datas);
@@ -329,6 +339,7 @@ sub manage_selection {
         foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
+            
             if (!defined($self->{option_results}->{storage})) {
                 push @{$self->{storage_id_selected}}, $i; 
                 next;
@@ -352,13 +363,13 @@ sub manage_selection {
             }
             $self->{output}->option_exit();
         }
-    }
+    }    
 }
 
 sub get_display_value {
     my ($self, %options) = @_;
     my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
-
+    
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
