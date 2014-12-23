@@ -165,27 +165,30 @@ sub run {
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
                         instances => $self->{storage_id_selected}, nothing_quit => 1);
     my $result = $self->{snmp}->get_leef();
-
-    if (!defined($self->{option_results}->{storage}) || defined($self->{option_results}->{use_regexp})) {
+    my $multiple = 0;
+    if (scalar(@{$self->{storage_id_selected}}) > 1) {
+        $multiple = 1;
+    }
+    
+    if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All storages are ok.');
     }
 
-    my $num_disk_check = 0;
     foreach (sort @{$self->{storage_id_selected}}) {
-        # Skipped disks
-        my $storage_type = $self->{statefile_cache}->get(name => "hrstoragetype_" . $_);
-        next if (!defined($storage_type) || 
-                ($storage_types_manage{$storage_type} !~ /$self->{option_results}->{filter_storage_type}/i));
-
         my $name_storage = $self->get_display_value(id => $_);
-        $num_disk_check++;
 
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
-                                                                $name_storage, int($total_size)));
+            if ($multiple == 0) {
+                $self->{output}->add_option_msg(severity => 'UNKNOWN',
+                                                short_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
+                                                                     $name_storage, int($total_size)));
+            } else {
+                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
+                                                                    $name_storage, int($total_size)));
+            }
             next;
         }
         
@@ -223,7 +226,7 @@ sub run {
                                             $total_size_value . " " . $total_size_unit,
                                             $total_used_value . " " . $total_used_unit, $prct_used,
                                             $total_free_value . " " . $total_free_unit, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{storage}) && !defined($self->{option_results}->{use_regexp}))) {
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
                                             $total_size_value . " " . $total_size_unit,
@@ -238,7 +241,7 @@ sub run {
             $value_perf = $total_free;
         }
         my $extra_label = '';
-        $extra_label = '_' . $name_storage if (!defined($self->{option_results}->{storage}) || defined($self->{option_results}->{use_regexp}));
+        $extra_label = '_' . $name_storage if ($multiple == 1);
         my %total_options = ();
         if ($self->{option_results}->{units} eq '%') {
             $total_options{total} = $total_size - $reserved_value;
@@ -249,11 +252,6 @@ sub run {
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
                                       min => 0, max => int($total_size - $reserved_value));
-    }
-
-    if ($num_disk_check == 0) {
-        $self->{output}->add_option_msg(short_msg => "Not a disk with a good 'type'.");
-        $self->{output}->option_exit();
     }
 
     $self->{output}->display();
@@ -306,6 +304,17 @@ sub reload_cache {
     $self->{statefile_cache}->write(data => $datas);
 }
 
+sub filter_type {
+    my ($self, %options) = @_;
+    
+    my $storage_type = $self->{statefile_cache}->get(name => "hrstoragetype_" . $options{id});
+    if (defined($storage_type) && 
+        ($storage_types_manage{$storage_type} =~ /$self->{option_results}->{filter_storage_type}/i)) {
+        return 1;
+    }
+    return 0;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -329,41 +338,33 @@ sub manage_selection {
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{storage})) {
         # get by ID
-        push @{$self->{storage_id_selected}}, $self->{option_results}->{storage}; 
-        my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $self->{option_results}->{storage});
-        if (!defined($name)) {
-            $self->{output}->add_option_msg(short_msg => "No storage found for id '" . $self->{option_results}->{storage} . "'.");
-            $self->{output}->option_exit();
-        }
+        my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $self->{option_results}->{storage});
+        push @{$self->{storage_id_selected}}, $self->{option_results}->{storage} if (defined($name) && $self->filter_type(id => $self->{option_results}->{storage}));
     } else {
         foreach my $i (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $i);
             next if (!defined($filter_name));
             
             if (!defined($self->{option_results}->{storage})) {
-                push @{$self->{storage_id_selected}}, $i; 
+                push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
                 next;
             }
             if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{storage}/i) {
-                push @{$self->{storage_id_selected}}, $i; 
+                push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
             }
             if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{storage}/) {
-                push @{$self->{storage_id_selected}}, $i; 
+                push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
             }
             if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{storage}) {
-                push @{$self->{storage_id_selected}}, $i; 
+                push @{$self->{storage_id_selected}}, $i if ($self->filter_type(id => $i));
             }
         }
-        
-        if (scalar(@{$self->{storage_id_selected}}) <= 0) {
-            if (defined($self->{option_results}->{storage})) {
-                $self->{output}->add_option_msg(short_msg => "No storage found for name '" . $self->{option_results}->{storage} . "' (maybe you should reload cache file).");
-            } else {
-                $self->{output}->add_option_msg(short_msg => "No storage found (maybe you should reload cache file).");
-            }
-            $self->{output}->option_exit();
-        }
-    }    
+    }
+    
+    if (scalar(@{$self->{storage_id_selected}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No storage found. Can be: filters, cache file.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub get_display_value {
@@ -423,11 +424,11 @@ Time in seconds before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSRemoteMountPoint).
+Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
 =item B<--oid-display>
 
-Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSRemoteMountPoint).
+Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
 =item B<--display-transform-src>
 
