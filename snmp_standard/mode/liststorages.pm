@@ -313,11 +313,11 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--oid-filter>
 
-Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSRemoteMountPoint).
+Choose OID used to filter storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
 =item B<--oid-display>
 
-Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSRemoteMountPoint).
+Choose OID used to display storage (default: hrStorageDescr) (values: hrStorageDescr, hrFSMountPoint).
 
 =item B<--display-transform-src>
 
