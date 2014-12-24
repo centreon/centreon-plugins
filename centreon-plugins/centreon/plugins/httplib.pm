@@ -39,6 +39,8 @@ package centreon::plugins::httplib;
 use strict;
 use warnings;
 use LWP::UserAgent;
+use HTTP::Cookies;
+use URI;
 
 sub get_port {
     my ($self, %options) = @_;
@@ -56,16 +58,37 @@ sub get_port {
 
 sub connect {
     my ($self, %options) = @_;
-    my $ua = LWP::UserAgent->new( keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
+    my $method = defined($options{method}) ? $options{method} : 'GET';
     my $connection_exit = defined($options{connection_exit}) ? $options{connection_exit} : 'unknown';
     
+    my $ua = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout},
+                                 requests_redirectable => [ 'GET', 'HEAD', 'POST' ]);
+    if (defined($options{cookies_file})) {
+        $ua->cookie_jar(HTTP::Cookies->new(file => $options{cookies_file},
+                                           autosave => 1));
+    }
+    
     my ($response, $content);
-    my $req;
-
+    my ($req, $url);
     if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^[0-9]+$/) {
-        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path});
+        $url = $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname}.':'. $self->{option_results}->{port} . $self->{option_results}->{url_path};
     } else {
-        $req = HTTP::Request->new( GET => $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path});
+        $url = $self->{option_results}->{proto}. "://" . $self->{option_results}->{hostname} . $self->{option_results}->{url_path};
+    }
+
+    my $uri = URI->new($url);
+    if (defined($options{query_form_get})) {
+        $uri->query_form($options{query_form_get});
+    }
+    $req = HTTP::Request->new($method => $uri);
+
+    if ($method eq 'POST') {
+        my $uri_post = URI->new();
+        if (defined($options{query_form_post})) {
+            $uri->query_form($options{query_form_post});
+        }
+        $req->content_type('application/x-www-form-urlencoded');
+        $req->content($uri_post->query);
     }
    
     if (defined($options{headers})) {
