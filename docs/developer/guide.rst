@@ -75,7 +75,7 @@ Declare used libraries (**strict** and **warnings** are mandatory). Centreon lib
   use warnings;
   use base qw(**centreon_library**);
 
-The plugin need a **new** function to instantiate the object :
+The plugin need a **new** constructor to instantiate the object :
 
 .. code-block:: perl
 
@@ -89,13 +89,13 @@ The plugin need a **new** function to instantiate the object :
         return $self;
   }
 
-Plugin version must be declared in the **new** function :
+Plugin version must be declared in the **new** constructor :
 
 .. code-block:: perl
 
   $self->{version} = '0.1';
 
-Several modes can be declared in the **new** function :
+Several modes can be declared in the **new** constructor :
 
 .. code-block:: perl
 
@@ -161,7 +161,7 @@ Declare used libraries (always the same) :
   use warnings;
   use base qw(centreon::plugins::mode);
 
-The mode needs a **new** function to instantiate the object :
+The mode needs a **new** constructor to instantiate the object :
 
 .. code-block:: perl
 
@@ -175,13 +175,13 @@ The mode needs a **new** function to instantiate the object :
         return $self;
   }
 
-Mode version must be declared in the **new** function :
+Mode version must be declared in the **new** constructor :
 
 .. code-block:: perl
 
   $self->{version} = '1.0';
 
-Several options can be declared in the **new** function :
+Several options can be declared in the **new** constructor :
 
 .. code-block:: perl
 
@@ -201,7 +201,7 @@ This the description of arguments of this example :
 .. tip::
   You can have more informations about options format here : http://perldoc.perl.org/Getopt/Long.html
 
-The mode need a **check_options** function to validate options :
+The mode need a **check_options** method to validate options :
 
 .. code-block:: perl
 
@@ -211,7 +211,7 @@ The mode need a **check_options** function to validate options :
     ...
   }
 
-For example, Warning and Critical thresholds must be validate in **check_options** function :
+For example, Warning and Critical thresholds must be validate in **check_options** method :
 
 .. code-block:: perl
 
@@ -226,7 +226,7 @@ For example, Warning and Critical thresholds must be validate in **check_options
 
 In this example, help is printed if thresholds have not a correct format.
 
-Then comes the **run** function, where you perform measurement, check thresholds, display output and format perfdatas.
+Then comes the **run** method, where you perform measurement, check thresholds, display output and format perfdatas.
 This is an example to check a snmp value :
 
 .. code-block:: perl
@@ -255,7 +255,7 @@ This is an example to check a snmp value :
   }
 
 In this example, we check a snmp OID that we compare to wargning and critical thresholds.
-There are the function which we use :
+There are the methods which we use :
 
 * get_leef        : get a snmp value from an OID
 * threshold_check : compare snmp value to warning and critical thresholds
@@ -313,7 +313,7 @@ output_add
 Description
 ^^^^^^^^^^^
 
-Add string to output (print it with **display** function).
+Add string to output (print it with **display** method).
 If status is different than 'ok', output associated with 'ok' status is not printed.
 
 Parameters
@@ -359,7 +359,7 @@ perfdata_add
 Description
 ^^^^^^^^^^^
 
-Add performance data to output (print it with **display** function).
+Add performance data to output (print it with **display** method).
 Performance data are displayed after '|'.
 
 Parameters
@@ -598,7 +598,7 @@ Parameters
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 |  Parameter      |    Type         |   Default   |          Description                                    |
 +=================+=================+=============+=========================================================+
-| **oids**        | String array    |             | Array of OIDs to check (Can be set by load function).   |
+| **oids**        | String array    |             | Array of OIDs to check (Can be set by 'load' method).   |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 | dont_quit       | Int (0 or 1)    |     0       | Don't quit even if an snmp error occured.               |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
@@ -627,7 +627,7 @@ load
 Description
 ^^^^^^^^^^^
 
-Load a range of oids to use with **get_leef** function.
+Load a range of oids to use with **get_leef** method.
 
 Parameters
 ^^^^^^^^^^
@@ -649,7 +649,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to get 4 instances of a snmp table by using **load** function :
+This is an example of how to get 4 instances of a snmp table by using **load** method :
 
 .. code-block:: perl
 
@@ -662,7 +662,7 @@ This is an example of how to get 4 instances of a snmp table by using **load** f
   use Data::Dumper;
   print Dumper($result);
 
-This is an example of how to get multiple instances dynamically (memory modules of dell hardware) by using **load** function :
+This is an example of how to get multiple instances dynamically (memory modules of dell hardware) by using **load** method :
 
 .. code-block:: perl
 
@@ -739,7 +739,7 @@ Parameters
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
 |  Parameter      |        Type          |   Default      |          Description                                         |
 +=================+======================+================+==============================================================+
-| **oids**        |  Hash table          |                | Hash table of OIDs to check (Can be set by load function).   |
+| **oids**        |  Hash table          |                | Hash table of OIDs to check (Can be set by 'load' method).   |
 |                 |                      |                | Keys can be : "oid", "start", "end".                         |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
 | dont_quit       |  Int (0 or 1)        |       0        | Don't quit even if an snmp error occured.                    |
@@ -847,12 +847,12 @@ This example prints sorted OIDs :
 Misc
 ----
 
-This library provides a set of miscellaneous functions.
-To use it, you can directly use the path of the function :
+This library provides a set of miscellaneous methods.
+To use it, you can directly use the path of the method :
 
 .. code-block:: perl
 
-  centreon::plugins::misc::<my_function>;
+  centreon::plugins::misc::<my_method>;
 
 
 trim
@@ -875,7 +875,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use trim function :
+This is an example of how to use **trim** method :
 
 .. code-block:: perl
 
@@ -912,7 +912,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use change_seconds function :
+This is an example of how to use **change_seconds** method :
 
 .. code-block:: perl
 
@@ -955,7 +955,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use backtick function :
+This is an example of how to use **backtick** method :
 
 .. code-block:: perl
 
@@ -1000,7 +1000,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use execute function.
+This is an example of how to use **execute** method.
 We suppose --remote option is enable :
 
 .. code-block:: perl
@@ -1046,7 +1046,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use windows_execute function.
+This is an example of how to use **windows_execute** method.
 
 .. code-block:: perl
 
@@ -1063,7 +1063,7 @@ Output displays ip configuration on a Windows host.
 Statefile
 ---------
 
-This library provides a set of functions to use a cache file.
+This library provides a set of methods to use a cache file.
 To use it, Add the following line at the beginning of your **mode** :
 
 .. code-block:: perl
@@ -1095,7 +1095,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use read function :
+This is an example of how to use **read** method :
 
 .. code-block:: perl
 
@@ -1131,7 +1131,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use get function :
+This is an example of how to use **get** method :
 
 .. code-block:: perl
 
@@ -1167,7 +1167,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use write function :
+This is an example of how to use **write** method :
 
 .. code-block:: perl
 
@@ -1188,7 +1188,7 @@ Then, you can take a look to '/var/lib/centreon/centplugins/my_cache_file', time
 Http
 ----
 
-This library provides a set of functions to use HTTP protocol.
+This library provides a set of methodss to use HTTP protocol.
 To use it, Add the following line at the beginning of your **mode** :
 
 .. code-block:: perl
@@ -1230,12 +1230,12 @@ Strip whitespace from the beginning and end of a string.
 Parameters
 ^^^^^^^^^^
 
-This function use plugin options previously defined.
+This method use plugin options previously defined.
 
 Example
 ^^^^^^^
 
-This is an example of how to use connect function.
+This is an example of how to use **connect** method.
 We suppose these options are defined :
 * --hostname = 'google.com'
 * --urlpath  = '/'
@@ -1281,7 +1281,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use connect function.
+This is an example of how to use **connect** method.
 
 In plugin.pm :
 
@@ -1319,7 +1319,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use query function :
+This is an example of how to use **query** method :
 
 .. code-block:: perl
 
@@ -1348,7 +1348,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use fetchrow_array function :
+This is an example of how to use **fetchrow_array** method :
 
 .. code-block:: perl
 
@@ -1376,7 +1376,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use fetchrow_array function :
+This is an example of how to use **fetchrow_array** method :
 
 .. code-block:: perl
 
@@ -1415,7 +1415,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use fetchrow_hashref function :
+This is an example of how to use **fetchrow_hashref** method :
 
 .. code-block:: perl
 
