@@ -1334,6 +1334,100 @@ This is an example of how to use query function :
 Output displays count of MySQL slow queries.
 
 
+fetchrow_array
+--------------
+
+Description
+^^^^^^^^^^^
+
+Return Array from sql query.
+
+Parameters
+^^^^^^^^^^
+
+None.
+
+Example
+^^^^^^^
+
+This is an example of how to use fetchrow_array function :
+
+.. code-block:: perl
+
+  $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
+  my ($dummy, $result) = $self->{sql}->fetchrow_array();
+
+  print 'Uptime : '.$result."\n";
+
+Output displays MySQL uptime.
 
 
+fetchall_arrayref
+-----------------
+
+Description
+^^^^^^^^^^^
+
+Return Array from sql query.
+
+Parameters
+^^^^^^^^^^
+
+None.
+
+Example
+^^^^^^^
+
+This is an example of how to use fetchrow_array function :
+
+.. code-block:: perl
+
+  $self->{sql}->query(query => q{
+        SELECT SUM(DECODE(name, 'physical reads', value, 0)),
+            SUM(DECODE(name, 'physical reads direct', value, 0)),
+            SUM(DECODE(name, 'physical reads direct (lob)', value, 0)),
+            SUM(DECODE(name, 'session logical reads', value, 0))
+        FROM sys.v_$sysstat
+  });
+  my $result = $self->{sql}->fetchall_arrayref();
+
+  my $physical_reads = @$result[0]->[0];
+  my $physical_reads_direct = @$result[0]->[1];
+  my $physical_reads_direct_lob = @$result[0]->[2];
+  my $session_logical_reads = @$result[0]->[3];
+
+  print $physical_reads."\n";
+
+Output displays physical reads on Oracle database.
+
+
+fetchrow_hashref
+----------------
+
+Description
+^^^^^^^^^^^
+
+Return Hash table from sql query.
+
+Parameters
+^^^^^^^^^^
+
+None.
+
+Example
+^^^^^^^
+
+This is an example of how to use fetchrow_hashref function :
+
+.. code-block:: perl
+
+  $self->{sql}->query(query => q{
+    SELECT datname FROM pg_database
+  });
+
+  while ((my $row = $self->{sql}->fetchrow_hashref())) {
+    print $row->{datname}."\n";
+  }
+
+Output displays databaes of Postgres database.
 
