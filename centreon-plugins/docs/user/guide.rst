@@ -481,7 +481,7 @@ I use an option but it doesn't seem to work
 Before opening a ticket on the forge, please use the option ``--sanity-options``. It checks if you have misspell an option:
 ::
 
-  $ perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
   Unknown option: regex
 
 I get the error: "UNKNOWN: Need to specify '--custommode'."
@@ -515,7 +515,7 @@ I can't see help messages
 "centreon-plugins" files must unix format (no windows carriage returns). You can change it with the following command:
 ::
 
-  $ find . -name "*.p[ml]" -type f -exec dos2unix \{\} \; 
+  $ find . -name "*.p[ml]" -type f -exec dos2unix \{\} \;
 
 .. Warning:: Execute the command in "centreon-plugins" directory.
 
