@@ -1301,3 +1301,39 @@ In your mode :
 
 Then, you are connected to the MySQL database.
 
+query
+-----
+
+Description
+^^^^^^^^^^^
+
+Send query to database.
+
+Parameters
+^^^^^^^^^^
+
++-------------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter        |    Type         |   Default   |          Description                                    |
++===================+=================+=============+=========================================================+
+| query             | String          |             | SQL query to send.                                      |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use query function :
+
+.. code-block:: perl
+
+  $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
+  my ($name, $result) = $self->{sql}->fetchrow_array();
+  
+  print 'Name : '.$name."\n";
+  print 'Value : '.$value."\n";
+
+Output displays count of MySQL slow queries.
+
+
+
+
+
