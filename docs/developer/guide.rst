@@ -28,7 +28,7 @@ Root directories are organized by section :
 * Operating System  : os
 * Storage equipment : storage
 
-According to the monitored object, there exists an organization which can use :
+According to the monitored object, it exists an organization which can use :
 
 * Type
 * Constructor
@@ -38,12 +38,12 @@ According to the monitored object, there exists an organization which can use :
 For example, if you want to add a plugin to monitor Linux by SNMP, you need to create this directory :
 ::
 
-  mkdir -p os/linux/snmp
+  $ mkdir -p os/linux/snmp
 
 You also need to create a "mode" directory for futures modes :
 ::
 
-  mkdir os/linux/snmp/mode
+  $ mkdir os/linux/snmp/mode
 
 ---------------
 Plugin creation
@@ -52,7 +52,7 @@ Plugin creation
 Once the directory is created, create the plugin file inside it :
 ::
 
-  touch plugin.pm
+  $ touch plugin.pm
 
 Then, edit plugin.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it :
 
@@ -83,7 +83,7 @@ The plugin need a **new** function to instantiate the object :
         my ($class, %options) = @_;
         my $self = $class->SUPER::new(package => __PACKAGE__, %options);
         bless $self, $class;
-
+        
         ...
         
         return $self;
@@ -130,7 +130,6 @@ A description of the plugin is needed to generate the documentation :
 .. tip::
   plugin has ".pm" extension because it's a perl module. So don't forget to add **1;** at the end of the file
 
-
 -------------
 Mode creation
 -------------
@@ -162,7 +161,7 @@ Declare used libraries (always the same) :
   use warnings;
   use base qw(centreon::plugins::mode);
 
-The mode need a **new** function to instantiate the object :
+The mode needs a **new** function to instantiate the object :
 
 .. code-block:: perl
 
@@ -282,7 +281,6 @@ A description of the mode and its arguments is needed to generate the documentat
   <Add a plugin description here>.
 
   =cut
-
 
 ---------------
 Commit and push
