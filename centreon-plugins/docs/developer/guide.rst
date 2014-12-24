@@ -266,12 +266,14 @@ There are the function which we use :
 * exit            : exit
 
 Then, declare the module :
-::
+
+.. code-block:: perl
 
   1;
 
 A description of the mode and its arguments is needed to generate the documentation :
-::
+
+.. code-block:: perl
 
   __END__
 
@@ -842,4 +844,460 @@ This example prints sorted OIDs :
     print $oid;
   }
 
+
+----
+Misc
+----
+
+This library provides a set of miscellaneous functions.
+To use it, you can directly use the path of the function :
+
+.. code-block:: perl
+
+  centreon::plugins::misc::<my_function>;
+
+
+trim
+----
+
+Description
+^^^^^^^^^^^
+
+Strip whitespace from the beginning and end of a string.
+
+Parameters
+^^^^^^^^^^
+
++-----------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter      |    Type         |   Default   |          Description                                    |
++=================+=================+=============+=========================================================+
+| **-**           | String          |             | String to strip.                                        |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use trim function :
+
+.. code-block:: perl
+
+  my $word = '  Hello world !  ';
+  my $trim_word =  centreon::plugins::misc::trim($word);
+
+  print $word."\n";
+  print $trim_word."\n";
+
+Output displays :
+::
+
+    Hello world !  
+  Hello world !
+
+
+change_seconds
+--------------
+
+Description
+^^^^^^^^^^^
+
+Convert seconds to human readable text.
+
+Parameters
+^^^^^^^^^^
+
++-----------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter      |    Type         |   Default   |          Description                                    |
++=================+=================+=============+=========================================================+
+| **-**           | Int             |             | Number of seconds to convert.                           |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use change_seconds function :
+
+.. code-block:: perl
+
+  my $seconds = 3750;
+  my $human_readable_time =  centreon::plugins::misc::change_seconds($seconds);
+
+  print 'Human readable time : '.$human_readable_time."\n";
+
+Output displays :
+::
+
+  Human readable time : 1h 2m 30s
+
+
+backtick
+--------
+
+Description
+^^^^^^^^^^^
+
+Execute system command.
+
+Parameters
+^^^^^^^^^^
+
++-----------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter      |    Type         |   Default   |          Description                                    |
++=================+=================+=============+=========================================================+
+| **command**     | String          |             | Command to execute.                                     |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+| arguments       | String array    |             | Command arguments.                                      |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+| timeout         | Int             |     30      | Command timeout.                                        |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+| wait_exit       | Int (0 or 1)    |     0       | Command process ignore SIGCHLD signals.                 |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+| redirect_stderr | Int (0 or 1)    |     0       | Print errors in output.                                 |
++-----------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use backtick function :
+
+.. code-block:: perl
+
+  my ($error, $stdout, $exit_code) = centreon::plugins::misc::backtick(
+                                      command => 'ls /home',
+                                      timeout => 5,
+                                      wait_exit => 1
+                                      );
+
+  print $stdout."\n";
+
+Output displays files in '/home' directory.
+
+
+execute
+-------
+
+Description
+^^^^^^^^^^^
+
+Execute command remotely.
+
+Parameters
+^^^^^^^^^^
+
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+|  Parameter       |    Type         |   Default   |          Description                                            |
++==================+=================+=============+=================================================================+
+| **output**       | Object          |             | Plugin output ($self->{output}).                                |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| **options**      | Object          |             | Plugin options ($self->{option_results}) to get remote options. |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| sudo             | String          |             | Use sudo command.                                               |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| **command**      | String          |             | Command to execute.                                             |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| command_path     | String          |             | Command path.                                                   |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| command_options  | String          |             | Command arguments.                                              |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use execute function.
+We suppose --remote option is enable :
+
+.. code-block:: perl
+
+  my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+                                                options => $self->{option_results},
+                                                sudo => 1,
+                                                command => 'ls /home',
+                                                command_path => '/bin/',
+                                                command_options => '-l');
+
+Output displays files in /home using ssh on a remote host.
+
+
+windows_execute
+---------------
+
+Description
+^^^^^^^^^^^
+
+Execute command on Windows.
+
+Parameters
+^^^^^^^^^^
+
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+|  Parameter       |    Type         |   Default   |          Description                                            |
++==================+=================+=============+=================================================================+
+| **output**       | Object          |             | Plugin output ($self->{output}).                                |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| **command**      | String          |             | Command to execute.                                             |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| command_path     | String          |             | Command path.                                                   |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| command_options  | String          |             | Command arguments.                                              |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| timeout          | Int             |             | Command timeout.                                                |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+| no_quit          | Int             |             | Don't quit even if an error occured.                            |
++------------------+-----------------+-------------+-----------------------------------------------------------------+
+
+
+Example
+^^^^^^^
+
+This is an example of how to use windows_execute function.
+
+.. code-block:: perl
+
+  my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
+                                                        timeout => 10,
+                                                        command => 'ipconfig',
+                                                        command_path => '',
+                                                        command_options => '/all');
+
+Output displays ip configuration on a Windows host.
+
+
+---------
+Statefile
+---------
+
+This library provides a set of functions to use a cache file.
+To use it, Add the following line at the beginning of your **mode** :
+
+.. code-block:: perl
+
+  use centreon::plugins::statefile;
+
+
+read
+----
+
+Description
+^^^^^^^^^^^
+
+Read cache file.
+
+Parameters
+^^^^^^^^^^
+
++-------------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter        |    Type         |   Default   |          Description                                    |
++===================+=================+=============+=========================================================+
+| **statefile**     | String          |             | Name of the cache file.                                 |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+| **statefile_dir** | String          |             | Directory of the cache file.                            |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+| memcached         | String          |             | Memcached server to use.                                |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use read function :
+
+.. code-block:: perl
+
+  $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+  $self->{statefile_value}->check_options(%options);
+  $self->{statefile_value}->read(statefile => 'my_cache_file',
+                                 statefile_dir => '/var/lib/centreon/centplugins'
+                                );
+
+  use Data::Dumper;
+  print Dumper($self->{statefile_value});
+
+Output displays cache file and its parameters.
+
+
+get
+---
+
+Description
+^^^^^^^^^^^
+
+Get data from cache file.
+
+Parameters
+^^^^^^^^^^
+
++-------------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter        |    Type         |   Default   |          Description                                    |
++===================+=================+=============+=========================================================+
+| name              | String          |             | Get a value from cache file.                            |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use get function :
+
+.. code-block:: perl
+
+  $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+  $self->{statefile_value}->check_options(%options);
+  $self->{statefile_value}->read(statefile => 'my_cache_file',
+                                 statefile_dir => '/var/lib/centreon/centplugins'
+                                );
+
+  my $value = $self->{statefile_value}->get(name => 'property1');
+  print $value."\n";
+
+Output displays value for 'property1' of the cache file.
+
+
+write
+-----
+
+Description
+^^^^^^^^^^^
+
+Write data to cache file.
+
+Parameters
+^^^^^^^^^^
+
++-------------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter        |    Type         |   Default   |          Description                                    |
++===================+=================+=============+=========================================================+
+| data              | String          |             | Data to write in cache file.                            |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use write function :
+
+.. code-block:: perl
+
+  $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+  $self->{statefile_value}->check_options(%options);
+  $self->{statefile_value}->read(statefile => 'my_cache_file',
+                                 statefile_dir => '/var/lib/centreon/centplugins'
+                                );
+
+  my $new_datas = {};
+  $new_datas->{last_timestamp} = time();
+  $self->{statefile_value}->write(data => $new_datas);
+
+Then, you can take a look to '/var/lib/centreon/centplugins/my_cache_file', timestamp is written in it.
+
+
+----
+Http
+----
+
+This library provides a set of functions to use HTTP protocol.
+To use it, Add the following line at the beginning of your **mode** :
+
+.. code-block:: perl
+
+  use centreon::plugins::httplib;
+
+Some options must be set in **plugin.pm** :
+
++-----------------+-----------------+---------------------------------------------------------+
+|  Option         |    Type         |          Description                                    |
++=================+=================+=========================================================+
+| **hostname**    | String          | IP Addr/FQDN of the webserver host.                     |
++-----------------+-----------------+---------------------------------------------------------+
+| **port**        | String          | HTTP port.                                              |
++-----------------+-----------------+---------------------------------------------------------+
+| **proto**       | String          | Used protocol ('http' or 'https').                      |
++-----------------+-----------------+---------------------------------------------------------+
+| credentials     |                 | Use credentials.                                        | 
++-----------------+-----------------+---------------------------------------------------------+
+| ntlm            |                 | Use NTLM authentication (if credentials is used).       |
++-----------------+-----------------+---------------------------------------------------------+
+| username        | String          | Username (if credentials is used).                      |
++-----------------+-----------------+---------------------------------------------------------+
+| password        | String          | User password (if credentials is used).                 |
++-----------------+-----------------+---------------------------------------------------------+
+| proxyurl        | String          | Proxy to use.                                           |
++-----------------+-----------------+---------------------------------------------------------+
+| url_path        | String          | URL to connect (start to '/').                          |
++-----------------+-----------------+---------------------------------------------------------+
+
+connect
+-------
+
+Description
+^^^^^^^^^^^
+
+Strip whitespace from the beginning and end of a string.
+
+Parameters
+^^^^^^^^^^
+
+This function use plugin options previously defined.
+
+Example
+^^^^^^^
+
+This is an example of how to use connect function.
+We suppose these options are defined :
+* --hostname = 'google.com'
+* --urlpath  = '/'
+* --proto    = 'http'
+* --port     = 80
+
+.. code-block:: perl
+
+  my $webcontent = centreon::plugins::httplib::connect($self);
+  print $webcontent;
+
+Output displays content of the webpage '\http://google.com/'.
+
+
+---
+Dbi
+---
+
+This library allows you to connect to databases.
+To use it, Add the following line at the beginning of your **plugin.pm** :
+
+.. code-block:: perl
+
+  use base qw(centreon::plugins::script_sql);
+
+connect
+-------
+
+Description
+^^^^^^^^^^^
+
+Connect to databases.
+
+Parameters
+^^^^^^^^^^
+
++-------------------+-----------------+-------------+---------------------------------------------------------+
+|  Parameter        |    Type         |   Default   |          Description                                    |
++===================+=================+=============+=========================================================+
+| dontquit          | Int (0 or 1)    |     0       | Don't quit even if errors occured.                      |
++-------------------+-----------------+-------------+---------------------------------------------------------+
+
+Example
+^^^^^^^
+
+This is an example of how to use connect function.
+
+In plugin.pm :
+
+.. code-block:: perl
+
+  $self->{sqldefault}->{dbi} = ();
+  $self->{sqldefault}->{dbi} = { data_source => 'mysql:host=127.0.0.1;port=3306' };
+
+In your mode :
+
+.. code-block:: perl
+
+  $self->{sql} = $options{sql};
+  my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
+
+Then, you are connected to the MySQL database.
 
