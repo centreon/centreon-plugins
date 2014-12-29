@@ -1441,9 +1441,9 @@ Simple SNMP request
 Description
 -----------
 
-This example explains how to check a single SNMP value on a PfSense firewall (memory dropped packets).
-We use cache file because it's a SNMP counter. So we need to get the value between 2 checks.
-We get the value and compare it to warning and critical thresholds.
+| This example explains how to check a single SNMP value on a PfSense firewall (memory dropped packets).
+| We use cache file because it's a SNMP counter. So we need to get the value between 2 checks.
+| We get the value and compare it to warning and critical thresholds.
 
 Plugin file
 -----------
