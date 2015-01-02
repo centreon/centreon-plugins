@@ -1428,7 +1428,7 @@ This is an example of how to use **fetchrow_hashref** method :
     print $row->{datname}."\n";
   }
 
-Output displays databaes of Postgres database.
+Output displays Postgres databases.
 
 
 *****************
