@@ -12,3 +12,4 @@ Sommaire :
    :maxdepth: 2
 
    user/index
+   developer/index
