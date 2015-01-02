@@ -1429,3 +1429,365 @@ This is an example of how to use **fetchrow_hashref** method :
 
 Output displays databaes of Postgres database.
 
+
+*****************
+Complete examples
+*****************
+
+-------------------
+Simple SNMP request
+-------------------
+
+Description
+-----------
+
+| This example explains how to check a single SNMP value on a PfSense firewall (memory dropped packets).
+| We use cache file because it's a SNMP counter. So we need to get the value between 2 checks.
+| We get the value and compare it to warning and critical thresholds.
+
+Plugin file
+-----------
+
+First, create the plugin directory and the plugin file :
+::
+
+  $ mkdir -p apps/pfsense/snmp
+  $ touch apps/pfsense/snmp/plugin.pm
+
+.. tip::
+  PfSense is a firewall application and we check it using SNMP protocol
+  
+Then, edit **plugin.pm** and add the following lines :
+
+.. code-block:: perl
+
+  ################################################################################
+  # Copyright 2005-2014 MERETHIS
+  # Centreon is developped by : Julien Mathis and Romain Le Merlus under
+  # GPL Licence 2.0.
+  #
+  # This program is free software; you can redistribute it and/or modify it under
+  # the terms of the GNU General Public License as published by the Free Software
+  # Foundation ; either version 2 of the License.
+  #
+  # This program is distributed in the hope that it will be useful, but WITHOUT ANY
+  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  # PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License along with
+  # this program; if not, see <http://www.gnu.org/licenses>.
+  #
+  # Linking this program statically or dynamically with other modules is making a
+  # combined work based on this program. Thus, the terms and conditions of the GNU
+  # General Public License cover the whole combination.
+  #
+  # As a special exception, the copyright holders of this program give MERETHIS
+  # permission to link this program with independent modules to produce an executable,
+  # regardless of the license terms of these independent modules, and to copy and
+  # distribute the resulting executable under terms of MERETHIS choice, provided that
+  # MERETHIS also meet, for each linked independent module, the terms  and conditions
+  # of the license of that module. An independent module is a module which is not
+  # derived from this program. If you modify this program, you may extend this
+  # exception to your version of the program, but you are not obliged to do so. If you
+  # do not wish to do so, delete this exception statement from your version.
+  #
+  # For more information : contact@centreon.com
+  # Authors : your name <your@mail>
+  #
+  ####################################################################################
+
+  # Path to the plugin  
+  package apps::pfsense::snmp::plugin;
+  
+  # Needed libraries
+  use strict;
+  use warnings;
+  # Use this library to check using SNMP protocol
+  use base qw(centreon::plugins::script_snmp);
+
+.. tip::
+  Don't forget to edit 'Authors' line.
+
+Add **new** method to instantiate the plugin :
+
+.. code-block:: perl
+
+  sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    # $options->{options} = options object
+
+    # Plugin version
+    $self->{version} = '0.1';
+
+    # Modes association
+    %{$self->{modes}} = (
+                         # Mode name => path to the mode
+                         'memory-dropped-packets'   => 'apps::pfsense::snmp::mode::memorydroppedpackets',
+                         );
+
+    return $self;
+  }
+
+Declare this plugin as a perl module :
+
+.. code-block:: perl
+
+  1;
+
+Add a description to the plugin :
+
+.. code-block:: perl
+
+  __END__
+  
+  =head1 PLUGIN DESCRIPTION
+  
+  Check pfSense in SNMP.
+  
+  =cut
+
+.. tip::
+
+  This description is printed with '--help' option.
+
+
+Mode file
+---------
+
+Then, create the mode directory and the mode file :
+::
+
+  $ mkdir apps/pfsense/snmp/mode
+  $ touch apps/pfsense/snmp/mode/memorydroppedpackets.pm
+
+Edit **memorydroppedpackets.pm** and add the following lines :
+
+.. code-block:: perl
+
+  ################################################################################
+  # Copyright 2005-2014 MERETHIS
+  # Centreon is developped by : Julien Mathis and Romain Le Merlus under
+  # GPL Licence 2.0.
+  #
+  # This program is free software; you can redistribute it and/or modify it under
+  # the terms of the GNU General Public License as published by the Free Software
+  # Foundation ; either version 2 of the License.
+  #
+  # This program is distributed in the hope that it will be useful, but WITHOUT ANY
+  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  # PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License along with
+  # this program; if not, see <http://www.gnu.org/licenses>.
+  #
+  # Linking this program statically or dynamically with other modules is making a
+  # combined work based on this program. Thus, the terms and conditions of the GNU
+  # General Public License cover the whole combination.
+  #
+  # As a special exception, the copyright holders of this program give MERETHIS
+  # permission to link this program with independent modules to produce an executable,
+  # regardless of the license terms of these independent modules, and to copy and
+  # distribute the resulting executable under terms of MERETHIS choice, provided that
+  # MERETHIS also meet, for each linked independent module, the terms  and conditions
+  # of the license of that module. An independent module is a module which is not
+  # derived from this program. If you modify this program, you may extend this
+  # exception to your version of the program, but you are not obliged to do so. If you
+  # do not wish to do so, delete this exception statement from your version.
+  #
+  # For more information : contact@centreon.com
+  # Authors : your name <your@mail>
+  #
+  ####################################################################################
+
+  # Path to the plugin
+  package apps::pfsense::snmp::mode::memorydroppedpackets;
+
+  # Needed library for modes
+  use base qw(centreon::plugins::mode);
+
+  # Needed libraries
+  use strict;
+  use warnings;
+
+  # Custom library
+  use POSIX;
+
+  # Needed library to use cache file
+  use centreon::plugins::statefile;
+
+Add **new** method to instantiate the mode :
+
+.. code-block:: perl
+
+  sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+
+    # Mode version
+    $self->{version} = '1.0';
+
+    # Declare options
+    $options{options}->add_options(arguments =>
+                                {
+                                  # option name        => variable name
+                                  "warning:s"          => { name => 'warning', },
+                                  "critical:s"         => { name => 'critical', },
+                                });
+
+    # Instantiate cache file
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    return $self;
+  }
+
+.. tip::
+
+  A default value can be added to options.
+  Example : "warning:s" => { name => 'warning', default => '80'},
+
+Add **check_options** method to validate options :
+
+.. code-block:: perl
+
+  sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+
+    # Validate threshold options with threshold_validate method
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
+
+    # Validate cache file options using check_options method of statefile library
+    $self->{statefile_value}->check_options(%options);
+  }
+
+Add **run** method to execute mode :
+
+.. code-block:: perl
+
+  sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+
+    # Get snmp options
+    $self->{snmp} = $options{snmp};
+    $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
+
+    # Snmp oid to request
+    my $oid_pfsenseMemDropPackets = '.1.3.6.1.4.1.12325.1.200.1.2.6.0';
+    my ($result, $value);
+
+    # Get snmp value for oid previsouly defined
+    $result = $self->{snmp}->get_leef(oids => [ $oid_pfsenseMemDropPackets ], nothing_quit => 1);
+    # $result is a hash table where keys are oids
+    $value = $result->{$oid_pfsenseMemDropPackets};
+
+    # Read the cache file
+    $self->{statefile_value}->read(statefile => 'pfsense_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+    # Get cache file values
+    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+    my $old_memDropPackets = $self->{statefile_value}->get(name => 'memDropPackets');
+
+    # Create a hash table with new values that will be write to cache file
+    my $new_datas = {};
+    $new_datas->{last_timestamp} = time();
+    $new_datas->{memDropPackets} = $value;
+
+    # Write new values to cache file
+    $self->{statefile_value}->write(data => $new_datas);
+
+    # If cache file didn't have any values, create it and wait another check to calculate value
+    if (!defined($old_timestamp) || !defined($old_memDropPackets)) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+
+    # Fix when PfSense reboot (snmp counters initialize to 0)
+    $old_memDropPackets = 0 if ($old_memDropPackets > $new_datas->{memDropPackets});
+
+    # Calculate time between 2 checks
+    my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0);
+
+    # Calculate value per second
+    my $memDropPacketsPerSec = ($new_datas->{memDropPackets} - $old_memDropPackets) / $delta_time;
+
+    # Calculate exit code by comparing value to thresholds
+    # Exit code can be : 'OK', 'WARNING', 'CRITICAL', 'UNKNOWN'
+    my $exit_code = $self->{perfdata}->threshold_check(value => $memDropPacketsPerSec,
+                                                       threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+    # Add a performance data
+    $self->{output}->perfdata_add(label => 'dropped_packets_Per_Sec',
+                                  value => sprintf("%.2f", $memDropPacketsPerSec),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+
+    # Add output
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("Dropped packets due to memory limitations : %.2f /s",
+                                    $memDropPacketsPerSec));
+
+    # Display output
+    $self->{output}->display();
+    $self->{output}->exit();
+  }
+
+Declare this plugin as a perl module :
+
+.. code-block:: perl
+
+  1;
+
+Add a description of the mode options :
+
+.. code-block:: perl
+
+  __END__
+  
+  =head1 MODE
+  
+  Check number of packets per second dropped due to memory limitations.
+  
+  =over 8
+  
+  =item B<--warning>
+  
+  Threshold warning for dropped packets in packets per second.
+  
+  =item B<--critical>
+  
+  Threshold critical for dropped packets in packets per second.
+  
+  =back
+  
+  =cut
+
+
+Command line
+------------
+
+This is an example of command line :
+::
+
+  $ perl centreon_plugins.pl --plugin apps::pfsense::snmp::plugin --mode memory-dropped-packets --hostname 192.168.0.1 --snmp-community 'public' --snmp-version '2c' --warning '1' --critical '2'
+
+Output may displays :
+::
+
+  OK: Dropped packets due to memory limitations : 0.00 /s | dropped_packets_Per_Sec=0.00;0;;1;2
+
+
+
