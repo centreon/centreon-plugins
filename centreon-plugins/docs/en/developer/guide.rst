@@ -19,7 +19,7 @@ Directory creation
 
 First of all, you need to create a directory on the git to store the new plugin.
 
-Root directories are organized by section :
+Root directories are organized by section:
 
 * Application       : apps
 * Database          : database
@@ -28,19 +28,19 @@ Root directories are organized by section :
 * Operating System  : os
 * Storage equipment : storage
 
-According to the monitored object, it exists an organization which can use :
+According to the monitored object, it exists an organization which can use:
 
 * Type
 * Constructor
 * Model
 * Monitoring Protocol
 
-For example, if you want to add a plugin to monitor Linux by SNMP, you need to create this directory :
+For example, if you want to add a plugin to monitor Linux by SNMP, you need to create this directory:
 ::
 
   $ mkdir -p os/linux/snmp
 
-You also need to create a "mode" directory for futures modes :
+You also need to create a "mode" directory for futures modes:
 ::
 
   $ mkdir os/linux/snmp/mode
@@ -49,12 +49,12 @@ You also need to create a "mode" directory for futures modes :
 Plugin creation
 ---------------
 
-Once the directory is created, create the plugin file inside it :
+Once the directory is created, create the plugin file inside it:
 ::
 
   $ touch plugin.pm
 
-Then, edit plugin.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it :
+Then, edit plugin.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it:
 
 .. code-block:: perl
 
@@ -67,7 +67,7 @@ Next, describe your **package** name : it matches your plugin directory.
 
   package path::to::plugin;
 
-Declare used libraries (**strict** and **warnings** are mandatory). Centreon libraries are described later :
+Declare used libraries (**strict** and **warnings** are mandatory). Centreon libraries are described later:
 
 .. code-block:: perl
 
@@ -75,7 +75,7 @@ Declare used libraries (**strict** and **warnings** are mandatory). Centreon lib
   use warnings;
   use base qw(**centreon_library**);
 
-The plugin need a **new** constructor to instantiate the object :
+The plugin need a **new** constructor to instantiate the object:
 
 .. code-block:: perl
 
@@ -89,13 +89,13 @@ The plugin need a **new** constructor to instantiate the object :
         return $self;
   }
 
-Plugin version must be declared in the **new** constructor :
+Plugin version must be declared in the **new** constructor:
 
 .. code-block:: perl
 
   $self->{version} = '0.1';
 
-Several modes can be declared in the **new** constructor :
+Several modes can be declared in the **new** constructor:
 
 .. code-block:: perl
 
@@ -105,13 +105,13 @@ Several modes can be declared in the **new** constructor :
                         ...
                         );
 
-Then, Declare the module :
+Then, Declare the module:
 
 .. code-block:: perl
 
   1;
 
-A description of the plugin is needed to generate the documentation :
+A description of the plugin is needed to generate the documentation:
 
 .. code-block:: perl
 
@@ -134,13 +134,13 @@ A description of the plugin is needed to generate the documentation :
 Mode creation
 -------------
 
-Once **plugin.pm** is created and modes are declared in it, create modes in the **mode directory** :
+Once **plugin.pm** is created and modes are declared in it, create modes in the **mode** directory:
 ::
 
   cd mode
   touch mode1.pm
 
-Then, edit mode1.pm to add **license terms** by copying it from an other plugin. Don't forget to put your name at the end of it :
+Then, edit mode1.pm to add **license terms** by copying it from an other mode. Don't forget to put your name at the end of it:
 
 .. code-block:: perl
 
@@ -161,7 +161,7 @@ Declare used libraries (always the same) :
   use warnings;
   use base qw(centreon::plugins::mode);
 
-The mode needs a **new** constructor to instantiate the object :
+The mode needs a **new** constructor to instantiate the object:
 
 .. code-block:: perl
 
@@ -175,13 +175,13 @@ The mode needs a **new** constructor to instantiate the object :
         return $self;
   }
 
-Mode version must be declared in the **new** constructor :
+Mode version must be declared in the **new** constructor:
 
 .. code-block:: perl
 
   $self->{version} = '1.0';
 
-Several options can be declared in the **new** constructor :
+Several options can be declared in the **new** constructor:
 
 .. code-block:: perl
 
@@ -192,7 +192,7 @@ Several options can be declared in the **new** constructor :
                                   "option3"   => { name => 'option3' },
                                 });
 
-This the description of arguments of this example :
+This the description of arguments of this example:
 
 * option1 : String value
 * option2 : String value with default value "value1"
@@ -201,7 +201,7 @@ This the description of arguments of this example :
 .. tip::
   You can have more informations about options format here : http://perldoc.perl.org/Getopt/Long.html
 
-The mode need a **check_options** method to validate options :
+The mode need a **check_options** method to validate options:
 
 .. code-block:: perl
 
@@ -211,7 +211,7 @@ The mode need a **check_options** method to validate options :
     ...
   }
 
-For example, Warning and Critical thresholds must be validate in **check_options** method :
+For example, Warning and Critical thresholds must be validate in **check_options** method:
 
 .. code-block:: perl
 
@@ -227,7 +227,7 @@ For example, Warning and Critical thresholds must be validate in **check_options
 In this example, help is printed if thresholds have not a correct format.
 
 Then comes the **run** method, where you perform measurement, check thresholds, display output and format perfdatas.
-This is an example to check a snmp value :
+This is an example to check a snmp value:
 
 .. code-block:: perl
 
@@ -254,8 +254,8 @@ This is an example to check a snmp value :
     $self->{output}->exit();
   }
 
-In this example, we check a snmp OID that we compare to wargning and critical thresholds.
-There are the methods which we use :
+In this example, we check a snmp OID that we compare to warning and critical thresholds.
+There are the methods which we use:
 
 * get_leef        : get a snmp value from an OID
 * threshold_check : compare snmp value to warning and critical thresholds
