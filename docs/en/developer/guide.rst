@@ -1208,11 +1208,11 @@ Some options must be set in **plugin.pm** :
 +-----------------+-----------------+---------------------------------------------------------+
 | credentials     |                 | Use credentials.                                        | 
 +-----------------+-----------------+---------------------------------------------------------+
-| ntlm            |                 | Use NTLM authentication (if credentials is used).       |
+| ntlm            |                 | Use NTLM authentication (if ``--credentials`` is used). |
 +-----------------+-----------------+---------------------------------------------------------+
-| username        | String          | Username (if credentials is used).                      |
+| username        | String          | Username (if ``--credentials`` is used).                |
 +-----------------+-----------------+---------------------------------------------------------+
-| password        | String          | User password (if credentials is used).                 |
+| password        | String          | User password (if ``--credentials`` is used).           |
 +-----------------+-----------------+---------------------------------------------------------+
 | proxyurl        | String          | Proxy to use.                                           |
 +-----------------+-----------------+---------------------------------------------------------+
@@ -1225,7 +1225,8 @@ connect
 Description
 ^^^^^^^^^^^
 
-Strip whitespace from the beginning and end of a string.
+Test a connection to an http url.
+Return content of the webpage.
 
 Parameters
 ^^^^^^^^^^
