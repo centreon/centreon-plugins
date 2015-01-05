@@ -4,8 +4,8 @@ Description
 
 This document introduces the best practices in the development of "centreon-plugins".
 
-As all plugins are written in Perl, “there is more than on way to do it”.
-But to not reinvent the wheel, you should first take a look at the “example” directory, you will get an overview of how to build your own plugin and associated modes.
+As all plugins are written in Perl, “there is more than one way to do it”.
+But to avoid reinventing the wheel, you should first take a look at the “example” directory, you will get an overview of how to build your own plugin and associated modes.
 
 The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
 
@@ -105,7 +105,7 @@ Several modes can be declared in the **new** constructor:
                         ...
                         );
 
-Then, Declare the module:
+Then, declare the module:
 
 .. code-block:: perl
 
@@ -125,10 +125,10 @@ A description of the plugin is needed to generate the documentation:
 
 
 .. tip::
-  you can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
+  You can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
 
 .. tip::
-  plugin has ".pm" extension because it's a perl module. So don't forget to add **1;** at the end of the file
+  The plugin has ".pm" extension because it's a Perl module. So don't forget to add **1;** at the end of the file.
 
 -------------
 Mode creation
@@ -147,13 +147,13 @@ Then, edit mode1.pm to add **license terms** by copying it from an other mode. D
   # ...
   # Authors : <your name> <<your email>>
 
-Next, describe your **package** name : it matches your mode directory.
+Next, describe your **package** name: it matches your mode directory.
 
 .. code-block:: perl
 
   package path::to::plugin::mode::mode1;
 
-Declare used libraries (always the same) :
+Declare used libraries (always the same):
 
 .. code-block:: perl
 
@@ -192,7 +192,7 @@ Several options can be declared in the **new** constructor:
                                   "option3"   => { name => 'option3' },
                                 });
 
-This the description of arguments of this example:
+Here is the description of arguments used in this example:
 
 * option1 : String value
 * option2 : String value with default value "value1"
@@ -224,9 +224,9 @@ For example, Warning and Critical thresholds must be validate in **check_options
        $self->{output}->option_exit();
   }
 
-In this example, help is printed if thresholds have not a correct format.
+In this example, help is printed if thresholds do not have a correct format.
 
-Then comes the **run** method, where you perform measurement, check thresholds, display output and format perfdatas.
+Then comes the **run** method, where you perform measurement, check thresholds, display output and format performance datas.
 This is an example to check a snmp value:
 
 .. code-block:: perl
@@ -257,20 +257,20 @@ This is an example to check a snmp value:
 In this example, we check a snmp OID that we compare to warning and critical thresholds.
 There are the methods which we use:
 
-* get_leef        : get a snmp value from an OID
-* threshold_check : compare snmp value to warning and critical thresholds
+* get_leef        : get a SNMP value from an OID
+* threshold_check : compare SNMP value to warning and critical thresholds
 * output_add      : add output
 * perfdata_add    : add perfdata to output
 * display         : display output
 * exit            : exit
 
-Then, declare the module :
+Then, declare the module:
 
 .. code-block:: perl
 
   1;
 
-A description of the mode and its arguments is needed to generate the documentation :
+A description of the mode and its arguments is needed to generate the documentation:
 
 .. code-block:: perl
 
@@ -286,9 +286,9 @@ A description of the mode and its arguments is needed to generate the documentat
 Commit and push
 ---------------
 
-Before commit the plugin, you need to create an **enhancement ticket** on the centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
+Before committing the plugin, you need to create an **enhancement ticket** on the centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
 
-Once plugin and modes are developed, you can commit and push your work :
+Once plugin and modes are developed, you can commit (commit messages in english) and push your work :
 ::
 
   git add path/to/plugin
@@ -305,7 +305,7 @@ This chapter describes centreon libraries which you can use in your development.
 Output
 ------
 
-This library allows you to change output of your plugin.
+This library allows you to build output of your plugin.
 
 output_add
 ----------
@@ -334,7 +334,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to manage output :
+This is an example of how to manage output:
 
 .. code-block:: perl
 
@@ -386,7 +386,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to add performance data :
+This is an example of how to add performance data:
 
 .. code-block:: perl
 
@@ -402,15 +402,15 @@ This is an example of how to add performance data :
 
   $self->{output}->display();
 
-Output displays :
+Output displays:
 ::
 
   OK - Memory is ok | 'memory_used'=30000000B;80000000;90000000;0;100000000
 
 
--------
-Perdata
--------
+--------
+Perfdata
+--------
 
 This library allows you to manage performance data.
 
@@ -443,7 +443,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to manage performance data for output :
+This is an example of how to manage performance data for output:
 
 .. code-block:: perl
 
@@ -483,7 +483,7 @@ Parameters
 Example
 ^^^^^^^
 
-This example checks if warning threshold is correct :
+This example checks if warning threshold is correct:
 
 .. code-block:: perl
 
@@ -493,7 +493,7 @@ This example checks if warning threshold is correct :
   }
 
 .. tip::
-  You can see the correct threshold format here : https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+  You can see the correct threshold format here: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
 threshold_check
 ---------------
@@ -517,7 +517,7 @@ Parameters
 Example
 ^^^^^^^
 
-This example checks if performance data reached thresholds :
+This example checks if performance data reached thresholds:
 
 .. code-block:: perl
 
@@ -559,7 +559,7 @@ Parameters
 Example
 ^^^^^^^
 
-This example change bytes to human readable unit :
+This example change bytes to human readable unit:
 
 .. code-block:: perl
 
@@ -576,8 +576,8 @@ Output displays :
 Snmp
 ----
 
-This library allows you to use snmp protocol in your plugin.
-To use it, Add the following line at the beginning of your **plugin.pm** :
+This library allows you to use SNMP protocol in your plugin.
+To use it, add the following line at the beginning of your **plugin.pm**:
 
 .. code-block:: perl
 
@@ -590,7 +590,7 @@ get_leef
 Description
 ^^^^^^^^^^^
 
-Return hash table table of SNMP values for multiple OIDs (Do not work with SNMP table).
+Return hash table table of SNMP values for multiple OIDs (do not work with SNMP table).
 
 Parameters
 ^^^^^^^^^^
@@ -608,7 +608,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to get 2 snmp values :
+This is an example of how to get 2 SNMP values:
 
 .. code-block:: perl
 
@@ -627,7 +627,7 @@ load
 Description
 ^^^^^^^^^^^
 
-Load a range of oids to use with **get_leef** method.
+Load a range of OIDs to use with **get_leef** method.
 
 Parameters
 ^^^^^^^^^^
@@ -649,7 +649,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to get 4 instances of a snmp table by using **load** method :
+This is an example of how to get 4 instances of a SNMP table by using **load** method:
 
 .. code-block:: perl
 
@@ -662,7 +662,7 @@ This is an example of how to get 4 instances of a snmp table by using **load** m
   use Data::Dumper;
   print Dumper($result);
 
-This is an example of how to get multiple instances dynamically (memory modules of dell hardware) by using **load** method :
+This is an example of how to get multiple instances dynamically (memory modules of Dell hardware) by using **load** method:
 
 .. code-block:: perl
 
@@ -702,7 +702,7 @@ Parameters
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
 | end             |  Int                 |                | Last OID to check.                                           |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
-| dont_quit       |  Int (0 or 1)        |       0        | Don't quit even if an snmp error occured.                    |
+| dont_quit       |  Int (0 or 1)        |       0        | Don't quit even if an SNMP error occured.                    |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
 | nothing_quit    |  Int (0 or 1)        |       0        | Quit if no value is returned.                                |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
@@ -712,7 +712,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to get a snmp table :
+This is an example of how to get a SNMP table:
 
 .. code-block:: perl
 
@@ -740,9 +740,9 @@ Parameters
 |  Parameter      |        Type          |   Default      |          Description                                         |
 +=================+======================+================+==============================================================+
 | **oids**        |  Hash table          |                | Hash table of OIDs to check (Can be set by 'load' method).   |
-|                 |                      |                | Keys can be : "oid", "start", "end".                         |
+|                 |                      |                | Keys can be: "oid", "start", "end".                          |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
-| dont_quit       |  Int (0 or 1)        |       0        | Don't quit even if an snmp error occured.                    |
+| dont_quit       |  Int (0 or 1)        |       0        | Don't quit even if an SNMP error occured.                    |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
 | nothing_quit    |  Int (0 or 1)        |       0        | Quit if no value is returned.                                |
 +-----------------+----------------------+----------------+--------------------------------------------------------------+
@@ -752,7 +752,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to get 2 snmp tables :
+This is an example of how to get 2 SNMP tables:
 
 .. code-block:: perl
 
@@ -784,7 +784,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to get hostname parameter :
+This is an example of how to get hostname parameter:
 
 .. code-block:: perl
 
@@ -807,7 +807,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to get port parameter :
+This is an example of how to get port parameter:
 
 .. code-block:: perl
 
@@ -834,7 +834,7 @@ Parameters
 Example
 ^^^^^^^
 
-This example prints sorted OIDs :
+This example prints sorted OIDs:
 
 .. code-block:: perl
 
@@ -848,7 +848,7 @@ Misc
 ----
 
 This library provides a set of miscellaneous methods.
-To use it, you can directly use the path of the method :
+To use it, you can directly use the path of the method:
 
 .. code-block:: perl
 
@@ -875,7 +875,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **trim** method :
+This is an example of how to use **trim** method:
 
 .. code-block:: perl
 
@@ -888,7 +888,6 @@ This is an example of how to use **trim** method :
 Output displays :
 ::
 
-    Hello world !  
   Hello world !
 
 
@@ -912,7 +911,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **change_seconds** method :
+This is an example of how to use **change_seconds** method:
 
 .. code-block:: perl
 
@@ -955,7 +954,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **backtick** method :
+This is an example of how to use **backtick** method:
 
 .. code-block:: perl
 
@@ -1001,7 +1000,7 @@ Example
 ^^^^^^^
 
 This is an example of how to use **execute** method.
-We suppose --remote option is enable :
+We suppose ``--remote`` option is enabled:
 
 .. code-block:: perl
 
@@ -1056,7 +1055,7 @@ This is an example of how to use **windows_execute** method.
                                                         command_path => '',
                                                         command_options => '/all');
 
-Output displays ip configuration on a Windows host.
+Output displays IP configuration on a Windows host.
 
 
 ---------
@@ -1064,7 +1063,7 @@ Statefile
 ---------
 
 This library provides a set of methods to use a cache file.
-To use it, Add the following line at the beginning of your **mode** :
+To use it, add the following line at the beginning of your **mode**:
 
 .. code-block:: perl
 
@@ -1095,7 +1094,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **read** method :
+This is an example of how to use **read** method:
 
 .. code-block:: perl
 
@@ -1131,7 +1130,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **get** method :
+This is an example of how to use **get** method:
 
 .. code-block:: perl
 
@@ -1167,7 +1166,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **write** method :
+This is an example of how to use **write** method:
 
 .. code-block:: perl
 
@@ -1181,7 +1180,7 @@ This is an example of how to use **write** method :
   $new_datas->{last_timestamp} = time();
   $self->{statefile_value}->write(data => $new_datas);
 
-Then, you can take a look to '/var/lib/centreon/centplugins/my_cache_file', timestamp is written in it.
+Then, you can read the result in '/var/lib/centreon/centplugins/my_cache_file', timestamp is written in it.
 
 
 ----
@@ -1189,13 +1188,13 @@ Http
 ----
 
 This library provides a set of methodss to use HTTP protocol.
-To use it, Add the following line at the beginning of your **mode** :
+To use it, add the following line at the beginning of your **mode**:
 
 .. code-block:: perl
 
   use centreon::plugins::httplib;
 
-Some options must be set in **plugin.pm** :
+Some options must be set in **plugin.pm**:
 
 +-----------------+-----------------+---------------------------------------------------------+
 |  Option         |    Type         |          Description                                    |
@@ -1256,7 +1255,7 @@ Dbi
 ---
 
 This library allows you to connect to databases.
-To use it, Add the following line at the beginning of your **plugin.pm** :
+To use it, add the following line at the beginning of your **plugin.pm**:
 
 .. code-block:: perl
 
@@ -1284,14 +1283,14 @@ Example
 
 This is an example of how to use **connect** method.
 
-In plugin.pm :
+In plugin.pm:
 
 .. code-block:: perl
 
   $self->{sqldefault}->{dbi} = ();
   $self->{sqldefault}->{dbi} = { data_source => 'mysql:host=127.0.0.1;port=3306' };
 
-In your mode :
+In your mode:
 
 .. code-block:: perl
 
@@ -1320,7 +1319,7 @@ Parameters
 Example
 ^^^^^^^
 
-This is an example of how to use **query** method :
+This is an example of how to use **query** method:
 
 .. code-block:: perl
 
@@ -1349,7 +1348,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use **fetchrow_array** method :
+This is an example of how to use **fetchrow_array** method:
 
 .. code-block:: perl
 
@@ -1367,7 +1366,7 @@ fetchall_arrayref
 Description
 ^^^^^^^^^^^
 
-Return Array from sql query.
+Return Array from SQL query.
 
 Parameters
 ^^^^^^^^^^
@@ -1377,7 +1376,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use **fetchrow_array** method :
+This is an example of how to use **fetchrow_array** method:
 
 .. code-block:: perl
 
@@ -1406,7 +1405,7 @@ fetchrow_hashref
 Description
 ^^^^^^^^^^^
 
-Return Hash table from sql query.
+Return Hash table from SQL query.
 
 Parameters
 ^^^^^^^^^^
@@ -1416,7 +1415,7 @@ None.
 Example
 ^^^^^^^
 
-This is an example of how to use **fetchrow_hashref** method :
+This is an example of how to use **fetchrow_hashref** method:
 
 .. code-block:: perl
 
@@ -1449,7 +1448,7 @@ Description
 Plugin file
 -----------
 
-First, create the plugin directory and the plugin file :
+First, create the plugin directory and the plugin file:
 ::
 
   $ mkdir -p apps/pfsense/snmp
@@ -1458,7 +1457,7 @@ First, create the plugin directory and the plugin file :
 .. tip::
   PfSense is a firewall application and we check it using SNMP protocol
   
-Then, edit **plugin.pm** and add the following lines :
+Then, edit **plugin.pm** and add the following lines:
 
 .. code-block:: perl
 
@@ -1509,7 +1508,7 @@ Then, edit **plugin.pm** and add the following lines :
 .. tip::
   Don't forget to edit 'Authors' line.
 
-Add **new** method to instantiate the plugin :
+Add **new** method to instantiate the plugin:
 
 .. code-block:: perl
 
@@ -1531,13 +1530,13 @@ Add **new** method to instantiate the plugin :
     return $self;
   }
 
-Declare this plugin as a perl module :
+Declare this plugin as a perl module:
 
 .. code-block:: perl
 
   1;
 
-Add a description to the plugin :
+Add a description to the plugin:
 
 .. code-block:: perl
 
@@ -1563,7 +1562,7 @@ Then, create the mode directory and the mode file :
   $ mkdir apps/pfsense/snmp/mode
   $ touch apps/pfsense/snmp/mode/memorydroppedpackets.pm
 
-Edit **memorydroppedpackets.pm** and add the following lines :
+Edit **memorydroppedpackets.pm** and add the following lines:
 
 .. code-block:: perl
 
@@ -1618,7 +1617,7 @@ Edit **memorydroppedpackets.pm** and add the following lines :
   # Needed library to use cache file
   use centreon::plugins::statefile;
 
-Add **new** method to instantiate the mode :
+Add **new** method to instantiate the mode:
 
 .. code-block:: perl
 
@@ -1648,7 +1647,7 @@ Add **new** method to instantiate the mode :
   A default value can be added to options.
   Example : "warning:s" => { name => 'warning', default => '80'},
 
-Add **check_options** method to validate options :
+Add **check_options** method to validate options:
 
 .. code-block:: perl
 
@@ -1670,7 +1669,7 @@ Add **check_options** method to validate options :
     $self->{statefile_value}->check_options(%options);
   }
 
-Add **run** method to execute mode :
+Add **run** method to execute mode:
 
 .. code-block:: perl
 
@@ -1746,13 +1745,13 @@ Add **run** method to execute mode :
     $self->{output}->exit();
   }
 
-Declare this plugin as a perl module :
+Declare this plugin as a perl module:
 
 .. code-block:: perl
 
   1;
 
-Add a description of the mode options :
+Add a description of the mode options:
 
 .. code-block:: perl
 
@@ -1780,12 +1779,12 @@ Add a description of the mode options :
 Command line
 ------------
 
-This is an example of command line :
+This is an example of command line:
 ::
 
   $ perl centreon_plugins.pl --plugin apps::pfsense::snmp::plugin --mode memory-dropped-packets --hostname 192.168.0.1 --snmp-community 'public' --snmp-version '2c' --warning '1' --critical '2'
 
-Output may displays :
+Output may display:
 ::
 
   OK: Dropped packets due to memory limitations : 0.00 /s | dropped_packets_Per_Sec=0.00;0;;1;2
