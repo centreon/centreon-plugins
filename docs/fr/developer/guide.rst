@@ -3,14 +3,14 @@ Description
 ***********
 
 Ce document présente les bonnes pratiques pour le développement de "centreon-plugins".
-Comme tous les plugins sont écrits en Perl, “il y plus d'une façon de faire”.
-Mais pour ne pas réinventer la roue, vous devriez d'abord regarder le dossier “example”, vous aurez alors un aperçu de comment construire votre propre plugin ainsi que ses modes associés.
+Comme tous les plugins sont écrits en Perl, "There's more than one way to do it".
+Afib de ne pas réinventer la roue, vous devriez d'abord regarder le dossier “example”. Vous aurez alors un aperçu de la méthodologie pour construire votre propre plugin ainsi que ses modes associés.
 
 La dernière version est disponible sur le dépôt git suivant: http://git.centreon.com/centreon-plugins.git
 
-***********
-Quick Start
-***********
+****************
+Démarrage rapide
+****************
 
 -------------------
 Création du dossier
@@ -27,19 +27,19 @@ Les répertoires racines sont oganisés par catégorie:
 * Système d'exploitation : os
 * Equipement de stockage : storage
 
-Selon l'objet supervisé, il existe une organisation qui peut utiliser :
+Selon l'objet supervisé, il existe une organisation qui peut être utilisé :
 
 * Type
 * Constructeur
 * Modèle
 * Protocole de supervision
 
-Par exemple, si vous voulez ajouter un plugin pour superviser Linux par SNMP, you devez créer ce dossier :
+Par exemple, si vous voulez ajouter un plugin pour superviser Linux par SNMP, vous devez créer ce dossier :
 ::
 
   $ mkdir -p os/linux/snmp
 
-You avez également besoin de créer une répertoire "mode" pour les futurs modes créés :
+Vous avez également besoin de créer une répertoire "mode" pour les futurs modes créés :
 ::
 
   $ mkdir os/linux/snmp/mode
@@ -48,12 +48,12 @@ You avez également besoin de créer une répertoire "mode" pour les futurs mode
 Création du plugin
 ------------------
 
-Une fois le dossier créé, créez le fichier du plugin à l'intérieur de celui-ci :
+Une fois le dossier créé, ajouter le fichier du plugin à l'intérieur de celui-ci :
 ::
 
   $ touch plugin.pm
 
-Ensuite, éditez plugin.pm pour ajouter les **conditions de licence** en les copiant à partir d'un autre plugin. N'oubliez pas d'ajouter votre nom à la fin de celles-ci :
+Ensuite, éditer le fichier plugin.pm pour ajouter les **conditions de licence** en les copiant à partir d'un autre plugin. N'oubliez pas d'ajouter votre nom à la fin de celles-ci :
 
 .. code-block:: perl
 
@@ -66,7 +66,7 @@ Renseigner votre nom de **package** : il correspond au dossier de votre plugin.
 
   package path::to::plugin;
 
-Déclarez les bibliothèques utilisés (**strict** et **warnings** sont obligatoires). Les bibliothèque Centreon sont décrites par la suite :
+Déclarer les bibliothèques utilisées (**strict** et **warnings** sont obligatoires). Les bibliothèques Centreon sont décrites par la suite :
 
 .. code-block:: perl
 
@@ -82,9 +82,9 @@ Le plugin a besoin d'un constructeur **new** pour instancier l'objet :
         my ($class, %options) = @_;
         my $self = $class->SUPER::new(package => __PACKAGE__, %options);
         bless $self, $class;
-        
+
         ...
-        
+
         return $self;
   }
 
@@ -104,7 +104,7 @@ Plusieurs modes peuvent être déclarés dans le constructeur **new** :
                         ...
                         );
 
-Ensuite, déclarez le module :
+Ensuite, déclarer le module :
 
 .. code-block:: perl
 
@@ -115,44 +115,44 @@ Une description du plugin est nécessaire pour générer la documentation :
 .. code-block:: perl
 
   __END__
-  
+
   =head1 PLUGIN DESCRIPTION
 
   <Add a plugin description here>.
-  
+
   =cut
 
 
 .. tip::
-  TODO you can copy-paste an other plugin.pm and adapt some lines (package, arguments...).
+  Vous pouvez copier/coller les éléments d'un autre plugin et adapter les lignes (paquets, arguments, ...).
 
 .. tip::
-  TODO plugin has ".pm" extension because it's a perl module. So don't forget to add **1;** at the end of the file
+  Le plugin possède une extension ".pm" car c'est un module PERL. Par conséquent, ne pas oublier d'ajouter un **1;**.
 
 ----------------
 Création du mode
 ----------------
 
-Une fois que **plugin.pm** est créé et que ses modes sont déclarés, créez les modes dans le dossier **mode** :
+Une fois que le fichier **plugin.pm** existe et que ses modes sont déclarés, créer les modes dans le dossier **mode** :
 ::
 
   cd mode
   touch mode1.pm
 
-Ensuite, éditez mode1.pm pour ajouter les **conditions de licence** en les copiant à partir d'un autre mode. N'oubliez pas d'ajouter votre nom à la fin de celles-ci :
+Ensuite, éditer mode1.pm pour ajouter les **conditions de licence** en les copiant à partir d'un autre mode. Ne pas oublier pas d'ajouter votre nom à la fin de celles-ci :
 
 .. code-block:: perl
 
   # ...
   # Authors : <your name> <<your email>>
 
-Décrivez votre nom de **package** : il correspond au dossier de votre mode.
+Décrire votre nom de **package** : il correspond au dossier de votre mode.
 
 .. code-block:: perl
 
   package path::to::plugin::mode::mode1;
 
-Déclarez les bibliothèques utilisées (toujours les mêmes) :
+Déclarer les bibliothèques utilisées (toujours les mêmes) :
 
 .. code-block:: perl
 
@@ -225,7 +225,7 @@ Par exemple, les seuils Dégradé (Warning) et Critique (Critical) doivent être
 
 Dans cet exemple, l'aide est affichée si les seuils spécifiés ne sont pas au bon format.
 
-Ensuite vient la méthode **run**, où vous effectuez le traitement, vérifiez les seuils, affichez le message de sortie et les données de performance.
+Ensuite vient la méthode **run** où sera effectué le traitement, vérifié les seuils et affichés le message de sortie et les données de performance.
 Voici un exemple pour vérifier une valeur SNMP :
 
 .. code-block:: perl
@@ -253,23 +253,23 @@ Voici un exemple pour vérifier une valeur SNMP :
     $self->{output}->exit();
   }
 
-Dans cet exemple, nous vérifions un OID SNMP que nous comparons aux seuils dégradé et critique.
-Voici les méthodes que nous utilisons :
+Dans cet exemple, un OID SNMP sera vérifié et comparé aux seuils Dégradé et Critique.
+Voici les méthodes utilisées :
 
-* get_leef        : obtient une valeur snmp à partir d'un OID
-* threshold_check : compare une valeur snmp à des seuils dégradé et critique
-* output_add      : ajoute des informations au message de sortie
-* perfdata_add    : ajout des données de performance au message de sortie
-* display         : affiche le message de sortie
-* exit            : sort du programme
+* get_leef        : pour obtenir une valeur snmp à partir d'un OID
+* threshold_check : pour comparer une valeur snmp à des seuils dégradé et critique
+* output_add      : pour ajouter des informations au message de sortie
+* perfdata_add    : pour ajouter des données de performance au message de sortie
+* display         : pour afficher le message de sortie
+* exit            : pour sortir du programme
 
-Ensuite, déclarez le module :
+Ensuite, déclarer le module :
 
 .. code-block:: perl
 
   1;
 
-Une description du mode et ses arguments est nécessaire pour générer la documentation :
+Une description du mode et de ses arguments est nécessaire pour générer la documentation :
 
 .. code-block:: perl
 
@@ -285,9 +285,9 @@ Une description du mode et ses arguments est nécessaire pour générer la docum
 Commit et push
 --------------
 
-Avant de commiter le plugin, you devez créer un **ticket amélioration** (enhancement) dans la forge centreon-plugins : http://forge.centreon.com/projects/centreon-plugins
+Avant de commiter le plugin, vous devez créer un **ticket amélioration** (enhancement) dans la forge centreon-plugins : http://forge.centreon.com/projects/centreon-plugins
 
-Une fois que le plugin et ses modes sont développés, vous pouvez commiter (messages de commit en anglais) et pusher votre travail :
+Une fois que le plugin et ses modes sont développés, vous pouvez commiter (messages de commit en anglais) et envoyer votre travail :
 ::
 
   git add path/to/plugin
@@ -312,25 +312,23 @@ output_add
 Description
 ^^^^^^^^^^^
 
-Ajoute une chaîne de caractères à la sortie (affichée avec la méthode **display**).
-Si le statut est différent de 'ok', le message de sortie associé à 'ok' n'est pas affiché.
-
-TODO Est ce que ca n'est pas plutôt "Lorsque plusieurs statut et messages sont ajoutés, seuls les dernières valeurs sont affichées lors de l'appel à display" ?
+Ajouter une chaîne de caractères à la sortie (affichée avec la méthode **display**).
+Si le statut est différent de 'OK', le message de sortie associé à 'OK' ne sera pas affiché.
 
 Paramètres
 ^^^^^^^^^^
 
-+-----------------+-----------------+-------------+---------------------------------------------------------------+
-|  Paramètre      |    Type         |   Défaut    |          Description                                          |
-+=================+=================+=============+===============================================================+
-| severity        | String          |    OK       | Statut du message de sortie.                                  |
-+-----------------+-----------------+-------------+---------------------------------------------------------------+
-| separator       | String          |    \-       | Séparateur entre le statut et le message de sortie            |
-+-----------------+-----------------+-------------+---------------------------------------------------------------+
-| short_msg       | String          |             | Message de sortie court (première ligne).                     |
-+-----------------+-----------------+-------------+---------------------------------------------------------------+
-| long_msg        | String          |             | Message de sortie long (utilisé avec l'option ``--verbose``). |
-+-----------------+-----------------+-------------+---------------------------------------------------------------+
++------------+---------+----------+---------------------------------------------------------------+
+|  Paramètre |    Type |   Défaut |          Description                                          |
++============+=========+==========+===============================================================+
+| severity   | String  |    OK    | Statut du message de sortie.                                  |
++------------+---------+----------+---------------------------------------------------------------+
+| separator  | String  |    \-    | Séparateur entre le statut et le message de sortie.           |
++------------+---------+----------+---------------------------------------------------------------+
+| short_msg  | String  |          | Message de sortie court (première ligne).                     |
++------------+---------+----------+---------------------------------------------------------------+
+| long_msg   | String  |          | Message de sortie long (utilisé avec l'option ``--verbose``). |
++------------+---------+----------+---------------------------------------------------------------+
 
 Exemple
 ^^^^^^^
@@ -347,7 +345,7 @@ Voici un exemple de gestion de la sortie du plugin :
 
   $self->{output}->display();
 
-La sortie affiche :
+La sortie affichera :
 ::
 
   CRITICAL - There is a critical problem
@@ -360,8 +358,8 @@ perfdata_add
 Description
 ^^^^^^^^^^^
 
-Ajoute une donnée de performance à la sortie (affichée avec la méthode **display**).
-Les données de performance sont affichées après le symbol '|'.
+Ajouter une donnée de performance à la sortie (affichée avec la méthode **display**).
+Les données de performance sont affichées après le symbole '|'.
 
 Paramètres
 ^^^^^^^^^^
@@ -375,9 +373,9 @@ Paramètres
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 | unit            | String          |             | Unité de la donnée de performance.                      |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
-| warning         | String          |             | Seuil dégradé.                                          |
+| warning         | String          |             | Seuil Dégradé.                                          |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
-| critical        | String          |             | Seuil critique.                                         |
+| critical        | String          |             | Seuil Critique.                                         |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 | min             | Int             |             | Valeur minimum de la donnée de performance.             |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
@@ -392,7 +390,7 @@ Voici un exemple d'ajout d'une donnée de performance :
 .. code-block:: perl
 
   $self->{output}->output_add(severity  => 'OK',
-                              short_msg => 'Memory is ok');  
+                              short_msg => 'Memory is ok');
   $self->{output}->perfdata_add(label    => 'memory_used',
                                 value    => 30000000,
                                 unit     => 'B',
@@ -403,7 +401,7 @@ Voici un exemple d'ajout d'une donnée de performance :
 
   $self->{output}->display();
 
-La sortie affiche :
+La sortie affichera :
 ::
 
   OK - Memory is ok | 'memory_used'=30000000B;80000000;90000000;0;100000000
@@ -421,9 +419,9 @@ get_perfdata_for_output
 Description
 ^^^^^^^^^^^
 
-Gère les seuils des données de performance pour la sortie.
+Gérer les seuils des données de performance pour la sortie.
 
-Parameters
+Paramètres
 ^^^^^^^^^^
 
 +-----------------+-----------------+-------------+--------------------------------------------------------------------------+
@@ -460,7 +458,7 @@ Voici un exemple de gestion des données de performance pour la sortie :
                                 max      => 1000000000);
 
 .. tip::
-  Dans cet exemple, au lieu d'afficher les seuils dégradé et critique en 'pourcentage', la fonction calcule et affiche celle-ci en 'bytes'.
+  Dans cet exemple, au lieu d'afficher les seuils Dégradé et Critique en 'pourcentage', la fonction calculera et affichera ceux-ci en 'bytes'.
 
 threshold_validate
 ------------------
@@ -468,7 +466,7 @@ threshold_validate
 Description
 ^^^^^^^^^^^
 
-Valide et associe un seuil à un label.
+Valider et associer un seuil à un label.
 
 Paramètres
 ^^^^^^^^^^
@@ -494,7 +492,7 @@ Voici un exemple vérifiant si le seuil dégradé est correct :
   }
 
 .. tip::
-  Vous pouvez voir les bon formats de seuils ici : https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+  Les bon formats de seuils sont consultables ici : https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
 threshold_check
 ---------------
@@ -502,7 +500,7 @@ threshold_check
 Description
 ^^^^^^^^^^^
 
-Vérifie la valeur d'une donnée de performance avec un seuil pour déterminer son statut.
+Vérifier la valeur d'une donnée de performance avec un seuil pour déterminer son statut.
 
 Paramètres
 ^^^^^^^^^^
@@ -529,10 +527,10 @@ Voici un exemple vérifiant si une donnée de performance a atteint certains seu
   my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
   $self->{output}->output_add(severity  => $exit,
-                              short_msg => sprint("Used memory is %i%%", $prct_used));  
+                              short_msg => sprint("Used memory is %i%%", $prct_used));
   $self->{output}->display();
 
-La sortie affiche :
+La sortie affichera :
 ::
 
   WARNING - Used memory is 85% |
@@ -543,8 +541,8 @@ change_bytes
 Description
 ^^^^^^^^^^^
 
-Convertit des bytes en unité de mesure lisible.
-Retourne une valeur et une unité.
+Convertir des bytes en unité de mesure lisible.
+Retourner une valeur et une unité.
 
 Paramètres
 ^^^^^^^^^^
@@ -560,7 +558,7 @@ Paramètres
 Exemple
 ^^^^^^^
 
-Voici un exemple de conversion des bytes en unité de mesure lisible:
+Voici un exemple de conversion des bytes en unité de mesure lisible :
 
 .. code-block:: perl
 
@@ -568,17 +566,17 @@ Voici un exemple de conversion des bytes en unité de mesure lisible:
 
   print $value.' '.$unit."\n";
 
-La sortie affiche:
+La sortie affichera :
 ::
 
   100 KB
 
 ----
-Snmp
+SNMP
 ----
 
 Cette bibliothèque vous permet d'utiliser le protocole SNMP dans votre plugin.
-Pour l'utiliser, vous devez ajouter la ligne suivant au début de votre **plugin.pm** :
+Pour l'utiliser, vous devez ajouter la ligne suivant au début de votre fichier **plugin.pm** :
 
 .. code-block:: perl
 
@@ -596,20 +594,20 @@ Retourne une table de hashage de valeurs SNMP pour plusieurs OIDs (ne fonctionne
 Paramètres
 ^^^^^^^^^^
 
-+-----------------+-----------------+-------------+----------------------------------------------------------------------------+
-|  Paramètre      |    Type         |   Défaut    |          Description                                                       |
-+=================+=================+=============+============================================================================+
-| **oids**        | String array    |             | Tableau d'OIDs à contrôler (Peut être spécifier avec la méthode ``load``). |
-+-----------------+-----------------+-------------+----------------------------------------------------------------------------+
-| dont_quit       | Int (0 or 1)    |     0       | Ne quitte pas même si une erreur snmp se produit.                          |
-+-----------------+-----------------+-------------+----------------------------------------------------------------------------+
-| nothing_quit    | Int (0 or 1)    |     0       | Quitte si aucune valeur n'est retournée.                                   |
-+-----------------+-----------------+-------------+----------------------------------------------------------------------------+
++--------------+--------------+----------+----------------------------------------------------------------------------+
+|  Paramètre   |    Type      |   Défaut |          Description                                                       |
++==============+==============+==========+============================================================================+
+| **oids**     | String array |          | Tableau d'OIDs à contrôler (Peut être spécifier avec la méthode ``load``). |
++--------------+--------------+----------+----------------------------------------------------------------------------+
+| dont_quit    | Int (0 or 1) |     0    | Ne pas quitter pas même si une erreur SNMP se produit.                     |
++--------------+--------------+----------+----------------------------------------------------------------------------+
+| nothing_quit | Int (0 or 1) |     0    | Quitter si aucune valeur n'est retournée.                                  |
++--------------+--------------+----------+----------------------------------------------------------------------------+
 
 Exemple
 ^^^^^^^
 
-Voici un exemple pour obtenir 2 valeurs SNMP :
+Voici un exemple pour récupérer 2 valeurs SNMP :
 
 .. code-block:: perl
 
@@ -628,7 +626,7 @@ load
 Description
 ^^^^^^^^^^^
 
-Charge une liste d'OIDs à utiliser avec la méthode **get_leef**.
+Charger une liste d'OIDs à utiliser avec la méthode **get_leef**.
 
 Paramètres
 ^^^^^^^^^^
@@ -642,9 +640,9 @@ Paramètres
 +-----------------+----------------------+--------------+----------------------------------------------------------------------------+
 | instance_regexp |  String              |              | Expression régulière pour obtenir les instances de l'option **instances**. |
 +-----------------+----------------------+--------------+----------------------------------------------------------------------------+
-| begin           |  Int                 |              | Instance de début                                                          |
+| begin           |  Int                 |              | Instance de début.                                                          |
 +-----------------+----------------------+--------------+----------------------------------------------------------------------------+
-| end             |  Int                 |              | Instance de fin                                                            |
+| end             |  Int                 |              | Instance de fin.                                                           |
 +-----------------+----------------------+--------------+----------------------------------------------------------------------------+
 
 Exemple
@@ -689,7 +687,7 @@ get_table
 Description
 ^^^^^^^^^^^
 
-Retourne une table de hashage de valeurs SNMP pour une table SNMP.
+Retourner une table de hashage de valeurs SNMP pour une table SNMP.
 
 Paramètres
 ^^^^^^^^^^
@@ -703,17 +701,17 @@ Paramètres
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
 | end             |  Int                 |                | Dernier OID à récupérer.                                        |
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
-| dont_quit       |  Int (0 or 1)        |       0        | Ne quitte pas même si une erreur snmp se produit.               |
+| dont_quit       |  Int (0 or 1)        |       0        | Ne pas quitter même si une erreur SNMP se produit.              |
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
-| nothing_quit    |  Int (0 or 1)        |       0        | Quitte si aucune valeur n'est retournée.                        |
+| nothing_quit    |  Int (0 or 1)        |       0        | Quitter si aucune valeur n'est retournée.                       |
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
-| return_type     |  Int (0 or 1)        |       0        | Retourne une table de hashage à un niveau au lieu de plusieurs. |
+| return_type     |  Int (0 or 1)        |       0        | Retourner une table de hashage à un niveau au lieu de plusieurs.|
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
 
 Exemple
 ^^^^^^^
 
-Voici un exemple pour obtenir une table SNMP :
+Voici un exemple pour récupérer une table SNMP :
 
 .. code-block:: perl
 
@@ -732,7 +730,7 @@ get_multiple_table
 Description
 ^^^^^^^^^^^
 
-Retourne une table de hashage de valeurs SNMP pour plusieurs tables SNMP.
+Retourner une table de hashage de valeurs SNMP pour plusieurs tables SNMP.
 
 Paramètres
 ^^^^^^^^^^
@@ -743,17 +741,17 @@ Paramètres
 | **oids**        |  Hash table          |                | Table de hashage des OIDs à récupérer (Peut être spécifié avec la méthode ``load``).  |
 |                 |                      |                | Les clés peuvent être : "oid", "start", "end".                                        |
 +-----------------+----------------------+----------------+---------------------------------------------------------------------------------------+
-| dont_quit       |  Int (0 or 1)        |       0        | Ne quitte pas même si une erreur snmp se produit.                                     |
+| dont_quit       |  Int (0 or 1)        |       0        | Ne pas quitter même si une erreur snmp se produit.                                    |
 +-----------------+----------------------+----------------+---------------------------------------------------------------------------------------+
-| nothing_quit    |  Int (0 or 1)        |       0        | Quitte si aucune valeur n'est retournée.                                              |
+| nothing_quit    |  Int (0 or 1)        |       0        | Quitter si aucune valeur n'est retournée.                                             |
 +-----------------+----------------------+----------------+---------------------------------------------------------------------------------------+
-| return_type     |  Int (0 or 1)        |       0        | Retourne une table de hashage à un niveau au lieu de plusieurs.                       |
+| return_type     |  Int (0 or 1)        |       0        | Retourner une table de hashage à un niveau au lieu de plusieurs.                      |
 +-----------------+----------------------+----------------+---------------------------------------------------------------------------------------+
 
 Exemple
 ^^^^^^^
 
-Voici un exemple pour obtenir 2 tables SNMP :
+Voici un exemple pour récupérer 2 tables SNMP :
 
 .. code-block:: perl
 
@@ -775,7 +773,7 @@ get_hostname
 Description
 ^^^^^^^^^^^
 
-Récupère le nom d'hôte en paramètre (utile pour obtenir le nom d'hôte dans un mode).
+Récupérer le nom d'hôte en paramètre (utile pour obtenir le nom d'hôte dans un mode).
 
 Paramètres
 ^^^^^^^^^^
@@ -798,7 +796,7 @@ get_port
 Description
 ^^^^^^^^^^^
 
-Récupère le port en paramètre (utile pour obtenir le port dans un mode).
+Récupérer le port en paramètre (utile pour obtenir le port dans un mode).
 
 Parameters
 ^^^^^^^^^^
@@ -821,7 +819,7 @@ oid_lex_sort
 Description
 ^^^^^^^^^^^
 
-Retourne des OIDs triés.
+Retourner des OIDs triés.
 
 Paramètres
 ^^^^^^^^^^
@@ -835,7 +833,7 @@ Paramètres
 Exemple
 ^^^^^^^
 
-Cet exemple afiche des OIDs triés :
+Cet exemple afichera des OIDs triés :
 
 .. code-block:: perl
 
@@ -862,7 +860,7 @@ trim
 Description
 ^^^^^^^^^^^
 
-Enlève les espaces de début et de fin d'une chaîne de caractères.
+Enlever les espaces de début et de fin d'une chaîne de caractères.
 
 Paramètres
 ^^^^^^^^^^
@@ -870,7 +868,7 @@ Paramètres
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 |  Paramètre      |    Type         |   Défaut    |          Description                                    |
 +=================+=================+=============+=========================================================+
-| **-**           | String          |             | TODO String to strip.                                   |
+| **-**           | String          |             | Chaîne à modifier.                                   |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 
 Exemple
@@ -886,7 +884,7 @@ Voici un exemple d'utilisation de la méthode **trim** :
   print $word."\n";
   print $trim_word."\n";
 
-La sortie affiche:
+La sortie affichera :
 ::
 
   Hello world !
@@ -898,7 +896,7 @@ change_seconds
 Description
 ^^^^^^^^^^^
 
-Convertit des secondes en unité de mesure lisible.
+Convertir des secondes en unité de mesure lisible.
 
 Paramètres
 ^^^^^^^^^^
@@ -921,7 +919,7 @@ Voici un exemple d'utilisation de la méthode **change_seconds** :
 
   print 'Human readable time : '.$human_readable_time."\n";
 
-La sortie affiche:
+La sortie affichera :
 ::
 
   Human readable time : 1h 2m 30s
@@ -933,7 +931,7 @@ backtick
 Description
 ^^^^^^^^^^^
 
-Exécute une commande système.
+Exécuter une commande système.
 
 Paramètres
 ^^^^^^^^^^
@@ -949,7 +947,7 @@ Paramètres
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 | wait_exit       | Int (0 or 1)    |     0       | Le processus de la commande ignore les signaux SIGCHLD. |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
-| redirect_stderr | Int (0 or 1)    |     0       | Affiche les erreurs dans la sortie.                     |
+| redirect_stderr | Int (0 or 1)    |     0       | Afficher les erreurs dans la sortie.                    |
 +-----------------+-----------------+-------------+---------------------------------------------------------+
 
 Exemple
@@ -967,7 +965,7 @@ Voici un exemple d'utilisation de la méthode **backtick** :
 
   print $stdout."\n";
 
-La sortie affiche les fichiers du répertoire '/home'.
+La sortie affichera les fichiers du répertoire '/home'.
 
 
 execute
@@ -976,7 +974,7 @@ execute
 Description
 ^^^^^^^^^^^
 
-Exécute une commande à distance.
+Exécuter une commande à distance.
 
 Paramètres
 ^^^^^^^^^^
@@ -988,7 +986,7 @@ Paramètres
 +------------------+-----------------+-------------+----------------------------------------------------------------------------------------------------+
 | **options**      | Object          |             | Options du plugin ($self->{option_results}) pour obtenir les informations de connexion à distance. |
 +------------------+-----------------+-------------+----------------------------------------------------------------------------------------------------+
-| sudo             | String          |             | Utilise la commande sudo.                                                                          |
+| sudo             | String          |             | Utiliser la commande sudo.                                                                         |
 +------------------+-----------------+-------------+----------------------------------------------------------------------------------------------------+
 | **command**      | String          |             | Commande à exécuter.                                                                               |
 +------------------+-----------------+-------------+----------------------------------------------------------------------------------------------------+
@@ -1001,7 +999,7 @@ Exemple
 ^^^^^^^
 
 Voici un exemple d'utilisation de la méthode **execute**.
-Nous supposons que l'option ``--remote`` est activée :
+Nous supposons que l'option ``--remote`` soit activée :
 
 .. code-block:: perl
 
@@ -1012,7 +1010,7 @@ Nous supposons que l'option ``--remote`` est activée :
                                                 command_path => '/bin/',
                                                 command_options => '-l');
 
-TODO Output displays files in /home using ssh on a remote host.
+La sortie affichera les fichier du répertoire /home d'un hôte distant à travers une connexion SSH.
 
 
 windows_execute
@@ -1021,7 +1019,7 @@ windows_execute
 Description
 ^^^^^^^^^^^
 
-Exécute une commande sur Windows.
+Exécuter une commande sur Windows.
 
 Paramètres
 ^^^^^^^^^^
@@ -1031,7 +1029,7 @@ Paramètres
 +==================+=================+=============+=================================================================+
 | **output**       | Object          |             | Sortie du plugin ($self->{output}).                             |
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
-| **command**      | String          |             | Command à exécuter.                                             |
+| **command**      | String          |             | Commande à exécuter.                                            |
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
 | command_path     | String          |             | Chemin de la commande.                                          |
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
@@ -1039,7 +1037,7 @@ Paramètres
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
 | timeout          | Int             |             | Timeout de la commande.                                         |
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
-| no_quit          | Int             |             | Ne quitte pas même si une erreur SNMP se produit.               |
+| no_quit          | Int             |             | Ne pas quitter même si une erreur SNMP se produit.              |
 +------------------+-----------------+-------------+-----------------------------------------------------------------+
 
 
@@ -1056,7 +1054,7 @@ Voici un exemple d'utilisation de la méthode **windows_execute**.
                                                         command_path => '',
                                                         command_options => '/all');
 
-La sortie affiche la configuration IP d'un hôte Windows.
+La sortie affichera la configuration IP d'un hôte Windows.
 
 
 ---------
@@ -1064,7 +1062,7 @@ Statefile
 ---------
 
 Cette bibliothèque fournit un ensemble de méthodes pour utiliser un fichier de cache.
-Pour l'utiliser, ajoutez la ligne suivante au début de votre **mode** :
+Pour l'utiliser, ajouter la ligne suivante au début de votre **mode** :
 
 .. code-block:: perl
 
@@ -1077,7 +1075,7 @@ read
 Description
 ^^^^^^^^^^^
 
-Lit un fichier de cache.
+Lire un fichier de cache.
 
 Paramètres
 ^^^^^^^^^^
@@ -1095,7 +1093,7 @@ Paramètres
 Exemple
 ^^^^^^^
 
-Voici un exemple d'utilisation de la méthode **read**:
+Voici un exemple d'utilisation de la méthode **read** :
 
 .. code-block:: perl
 
@@ -1108,7 +1106,7 @@ Voici un exemple d'utilisation de la méthode **read**:
   use Data::Dumper;
   print Dumper($self->{statefile_value});
 
-La sortie affiche le fichier de cache et ses paramètres.
+La sortie affichera le fichier de cache et ses paramètres.
 
 
 get
@@ -1125,7 +1123,7 @@ Paramètres
 +-------------------+-----------------+-------------+---------------------------------------------------------+
 |  Paramètre        |    Type         |   Défaut    |          Description                                    |
 +===================+=================+=============+=========================================================+
-| name              | String          |             | Récupére une valeur du fichier de cache.                |
+| name              | String          |             | Récupérer une valeur du fichier de cache.               |
 +-------------------+-----------------+-------------+---------------------------------------------------------+
 
 Exemple
@@ -1144,7 +1142,7 @@ Voici un exemple d'utilisation de la méthode **get** :
   my $value = $self->{statefile_value}->get(name => 'property1');
   print $value."\n";
 
-La sortie affiche la valeur associée à 'property1' du fichier de cache.
+La sortie affichera la valeur associée à 'property1' du fichier de cache.
 
 
 write
@@ -1153,7 +1151,7 @@ write
 Description
 ^^^^^^^^^^^
 
-Ecrit des données dans le fichier de cache.
+Ecrire des données dans le fichier de cache.
 
 Paramètres
 ^^^^^^^^^^
@@ -1185,11 +1183,11 @@ Ensuite, vous pouvez voir le résultat dans le fichier '/var/lib/centreon/centpl
 
 
 ----
-Http
+HTTP
 ----
 
 Cette bibliothèque fournit un ensemble de méthodes pour utiliser le protocole HTTP.
-Pour l'utiliser, ajoutez la ligne suivante au début de votre **mode** :
+Pour l'utiliser, ajouter la ligne suivante au début de votre **mode** :
 
 .. code-block:: perl
 
@@ -1204,11 +1202,11 @@ Certaines options doivent être spécifiées dans **plugin.pm** :
 +-----------------+-----------------+----------------------------------------------------------------------+
 | **port**        | String          | Port HTTP.                                                           |
 +-----------------+-----------------+----------------------------------------------------------------------+
-| **proto**       | String          | Protocole utilisé ('http' ou 'https').                               |
+| **proto**       | String          | Protocole utilisé ('HTTP' ou 'HTTPS').                               |
 +-----------------+-----------------+----------------------------------------------------------------------+
-| credentials     |                 | Utilise les informations d'authentification.                         | 
+| credentials     |                 | Utiliser les informations d'authentification.                        |
 +-----------------+-----------------+----------------------------------------------------------------------+
-| ntlm            |                 | Utilise l'authentification NTLM (si ``--credentials`` est utilisée). |
+| ntlm            |                 | Utiliser l'authentification NTLM (si ``--credentials`` est utilisée).|
 +-----------------+-----------------+----------------------------------------------------------------------+
 | username        | String          | Nom d'utilisateur (si ``--credentials`` est utilisée).               |
 +-----------------+-----------------+----------------------------------------------------------------------+
@@ -1225,8 +1223,8 @@ connect
 Description
 ^^^^^^^^^^^
 
-Teste la connexion vers une url http.
-Retourne le contenu de la page web.
+Tester la connexion vers une url HTTP.
+Retourner le contenu de la page web.
 
 Paramètres
 ^^^^^^^^^^
@@ -1248,15 +1246,15 @@ Nous supposons que ces options sont définies :
   my $webcontent = centreon::plugins::httplib::connect($self);
   print $webcontent;
 
-La sortie affiche le contenu de la page web '\http://google.com/'.
+La sortie affichera le contenu de la page web '\http://google.com/'.
 
 
 ---
-Dbi
+DBI
 ---
 
 Cette bibliothèque vous permet de vous connecter à une ou plusieurs bases de données.
-Pour l'utiliser, ajoutez la ligne suivante au début de votre **plugin.pm** :
+Pour l'utiliser, ajouter la ligne suivante au début de votre fichier **plugin.pm** :
 
 .. code-block:: perl
 
@@ -1268,25 +1266,26 @@ connect
 Description
 ^^^^^^^^^^^
 
-Se connecte à une ou plusieurs bases de données.
+Se connecter à une ou plusieurs bases de données.
 
 Paramètres
 ^^^^^^^^^^
 
-TODO, sans doute pas SNMP dans le tableau ci dessous.
-
-+-------------------+-----------------+-------------+---------------------------------------------------------+
-|  Paramètre        |    Type         |   Défaut    |          Description                                    |
-+===================+=================+=============+=========================================================+
-| dontquit          | Int (0 or 1)    |     0       | Ne quitte pas même si une erreur SNMP se produit.       |
-+-------------------+-----------------+-------------+---------------------------------------------------------+
++------------+--------------+----------+-----------------------------------------------------------+
+|  Paramètre |    Type      |   Défaut |          Description                                      |
++============+==============+==========+===========================================================+
+| dontquit   | Int (0 or 1) |     0    | Ne pas quitter même si une erreur de connexion se produit.|
++------------+--------------+----------+-----------------------------------------------------------+
 
 Exemple
 ^^^^^^^
 
 Voici un exemple d'utilisation de la méthode **connect**.
-
-TODO format de la chaîne de connexion ?
+Le format de la chaîne de connexion peut avoir les formes suivantes :
+::
+    DriverName:database_name
+    DriverName:database_name@hostname:port
+    DriverName:database=database_name;host=hostname;port=port
 
 Dans plugin.pm :
 
@@ -1295,7 +1294,7 @@ Dans plugin.pm :
   $self->{sqldefault}->{dbi} = ();
   $self->{sqldefault}->{dbi} = { data_source => 'mysql:host=127.0.0.1;port=3306' };
 
-Dans votre mode mode :
+Dans votre mode :
 
 .. code-block:: perl
 
@@ -1310,7 +1309,7 @@ query
 Description
 ^^^^^^^^^^^
 
-Exécute une requête SQL sur la base de données.
+Exécuter une requête SQL sur la base de données.
 
 Paramètres
 ^^^^^^^^^^
@@ -1330,11 +1329,11 @@ Voici un exemple d'utilisation de la méthode **query** :
 
   $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
   my ($name, $result) = $self->{sql}->fetchrow_array();
-  
+
   print 'Name : '.$name."\n";
   print 'Value : '.$value."\n";
 
-La sortie affiche le nombre de requêtes MySQL lentes.
+La sortie affichera le nombre de requêtes MySQL lentes.
 
 
 fetchrow_array
@@ -1343,7 +1342,7 @@ fetchrow_array
 Description
 ^^^^^^^^^^^
 
-Retourne une tableau à partir d'une requête sql.
+Retourner une tableau à partir d'une requête SQL.
 
 Paramètres
 ^^^^^^^^^^
@@ -1362,7 +1361,7 @@ Voici un exemple d'utilisation de la méthode **fetchrow_array** :
 
   print 'Uptime : '.$result."\n";
 
-La sortie affiche l'uptime MySQL.
+La sortie affichera l'uptime MySQL.
 
 
 fetchall_arrayref
@@ -1371,7 +1370,7 @@ fetchall_arrayref
 Description
 ^^^^^^^^^^^
 
-Retourne un tableau à partir d'une requête SQL.
+Retourner un tableau à partir d'une requête SQL.
 
 Paramètres
 ^^^^^^^^^^
@@ -1401,16 +1400,17 @@ Voici un exemple d'utilisation de la méthode **fetchrow_array** :
 
   print $physical_reads."\n";
 
-La sortie affiche les lectures physiques sur une base de données Oracle.
+La sortie affichera les lectures physiques sur une base de données Oracle.
 
 
 fetchrow_hashref
+
 ----------------
 
 Description
 ^^^^^^^^^^^
 
-Retourne une table de hashage à partir d'une requête SQL.
+Retourner une table de hashage à partir d'une requête SQL.
 
 Paramètres
 ^^^^^^^^^^
@@ -1432,7 +1432,7 @@ Voici un exemple d'utilisation de la méthode **fetchrow_hashref** :
     print $row->{datname}."\n";
   }
 
-La sortie affiche la liste des bases de données Postgres.
+La sortie affichera la liste des bases de données PostgreSQL.
 
 
 *****************
@@ -1447,27 +1447,27 @@ Description
 -----------
 
 | Cet exemple explique comment vérifier une valeur SNMP unique sur un pare-feu PfSense (paquets supprimés pour cause de surcharge mémoire).
-| Nous utilisons un fichier de cache car c'est un compteur SNMP. Nous avons donc besoin d'obtenir la valeur différentielle entre 2 contrôles.
-| Nous récupérons la valeur et la comparons aux seuils Dégradé et Critique.
+| Un fichier de cache sera utilisé car c'est un compteur SNMP. Il est nécessaire d'obtenir la valeur différentielle entre 2 contrôles.
+| La valeur récupérée sera comparée aux seuils Dégradé et Critique.
 
 Fichier du plugin
 -----------------
 
-Tout d'abord, créez le dossier du plugin, ainsi que le fichier du plugin :
+Tout d'abord, créer le dossier du plugin, ainsi que le fichier du plugin :
 ::
 
   $ mkdir -p apps/pfsense/snmp
   $ touch apps/pfsense/snmp/plugin.pm
 
 .. tip::
-  PfSense est un pare-feu applicatif et nous le contrôlons en utilisant le protocole SNMP
+  PfSense est un pare-feu applicatif et il sera contrôler en utilisant le protocole SNMP
 
-Ensuite, éditez **plugin.pm** et ajoutez les lignes suivantes :
+Ensuite, éditer le fichier **plugin.pm** et ajouter les lignes suivantes :
 
 .. code-block:: perl
 
   ################################################################################
-  # Copyright 2005-2014 MERETHIS
+  # Copyright 2005-2015 MERETHIS
   # Centreon is developped by : Julien Mathis and Romain Le Merlus under
   # GPL Licence 2.0.
   #
@@ -1511,9 +1511,9 @@ Ensuite, éditez **plugin.pm** et ajoutez les lignes suivantes :
   use base qw(centreon::plugins::script_snmp);
 
 .. tip::
-  N'oubliez pas de modifier la ligne 'Authors'.
+  N'oublier pas de modifier la ligne 'Authors'.
 
-Ajoutez la méthode **new** pour instancier le plugin :
+Ajouter la méthode **new** pour instancier le plugin :
 
 .. code-block:: perl
 
@@ -1535,13 +1535,13 @@ Ajoutez la méthode **new** pour instancier le plugin :
     return $self;
   }
 
-Déclarez ce plugin en tant que module perl :
+Déclarer ce plugin en tant que module perl :
 
 .. code-block:: perl
 
   1;
 
-Ajoutez une description au plugin :
+Ajouter une description au plugin :
 
 .. code-block:: perl
 
@@ -1561,18 +1561,18 @@ Ajoutez une description au plugin :
 Fichier du mode
 ---------------
 
-Ensuite, créez le répertoire du mode, ainsi que le fichier du mode :
+Ensuite, créer le répertoire du mode, ainsi que le fichier du mode :
 ::
 
   $ mkdir apps/pfsense/snmp/mode
   $ touch apps/pfsense/snmp/mode/memorydroppedpackets.pm
 
-Editez **memorydroppedpackets.pm** et ajoutez les lignes suivantes :
+Editer le fichier **memorydroppedpackets.pm** et ajouter les lignes suivantes :
 
 .. code-block:: perl
 
   ################################################################################
-  # Copyright 2005-2014 MERETHIS
+  # Copyright 2005-2015 MERETHIS
   # Centreon is developped by : Julien Mathis and Romain Le Merlus under
   # GPL Licence 2.0.
   #
@@ -1622,7 +1622,7 @@ Editez **memorydroppedpackets.pm** et ajoutez les lignes suivantes :
   # Bibliothèque nécessaire pour utiliser un fichier de cache
   use centreon::plugins::statefile;
 
-Ajoutez la méthode **new** pour instancier le mode :
+Ajouter la méthode **new** pour instancier le mode :
 
 .. code-block:: perl
 
@@ -1652,7 +1652,7 @@ Ajoutez la méthode **new** pour instancier le mode :
   Une valeur par défaut peut être ajoutée aux options.
   Exemple : "warning:s" => { name => 'warning', default => '80'},
 
-Ajoutez la méthode **check_options** pour valider les options :
+Ajouter la méthode **check_options** pour valider les options :
 
 .. code-block:: perl
 
@@ -1674,7 +1674,7 @@ Ajoutez la méthode **check_options** pour valider les options :
     $self->{statefile_value}->check_options(%options);
   }
 
-Ajoutez la méthode **run** pour exécuter le mode :
+Ajouter la méthode **run** pour exécuter le mode :
 
 .. code-block:: perl
 
@@ -1682,16 +1682,16 @@ Ajoutez la méthode **run** pour exécuter le mode :
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
 
-    # Récupération des options snmp
+    # Récupération des options SNMP
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
 
-    # oid snmp à requêter
+    # oid SNMP à requêter
     my $oid_pfsenseMemDropPackets = '.1.3.6.1.4.1.12325.1.200.1.2.6.0';
     my ($result, $value);
 
-    # Récupération de la valeur snmp pour l'oid précédemment défini
+    # Récupération de la valeur SNMP pour l'oid précédemment défini
     $result = $self->{snmp}->get_leef(oids => [ $oid_pfsenseMemDropPackets ], nothing_quit => 1);
     # $result est une table de hashage où les clés sont les oids
     $value = $result->{$oid_pfsenseMemDropPackets};
@@ -1710,7 +1710,7 @@ Ajoutez la méthode **run** pour exécuter le mode :
     # Ecriture des nouvelles valeurs dans le fichier de cache
     $self->{statefile_value}->write(data => $new_datas);
 
-    # Si le fichier de cache ne possédait aucune valeur, nous les créons et attendons un nouveau contrôle pour calculer la valeur
+    # Si le fichier de cache ne possède aucune valeur, nous les créons et attendons un nouveau contrôle pour calculer la valeur
     if (!defined($old_timestamp) || !defined($old_memDropPackets)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
@@ -1750,13 +1750,14 @@ Ajoutez la méthode **run** pour exécuter le mode :
     $self->{output}->exit();
   }
 
-Déclarez ce mode comme un module perl :
+Déclarer ce mode comme un module perl :
 
 .. code-block:: perl
 
   1;
 
-Ajoutez une description aux options du mode :
+
+Ajouter une description aux options du mode :
 
 .. code-block:: perl
 
@@ -1781,6 +1782,7 @@ Ajoutez une description aux options du mode :
   =cut
 
 
+
 Ligne de commande
 -----------------
 
@@ -1793,6 +1795,4 @@ La sortie pourrait afficher :
 ::
 
   OK: Dropped packets due to memory limitations : 0.00 /s | dropped_packets_Per_Sec=0.00;0;;1;2
-
-
 
