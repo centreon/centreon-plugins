@@ -83,9 +83,9 @@ The plugin need a **new** constructor to instantiate the object:
         my ($class, %options) = @_;
         my $self = $class->SUPER::new(package => __PACKAGE__, %options);
         bless $self, $class;
-        
+
         ...
-        
+
         return $self;
   }
 
@@ -116,11 +116,11 @@ A description of the plugin is needed to generate the documentation:
 .. code-block:: perl
 
   __END__
-  
+
   =head1 PLUGIN DESCRIPTION
 
   <Add a plugin description here>.
-  
+
   =cut
 
 
@@ -199,7 +199,7 @@ Here is the description of arguments used in this example:
 * option3 : Boolean value
 
 .. tip::
-  You can have more informations about options format here : http://perldoc.perl.org/Getopt/Long.html
+  You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
 
 The mode need a **check_options** method to validate options:
 
@@ -227,7 +227,7 @@ For example, Warning and Critical thresholds must be validate in **check_options
 In this example, help is printed if thresholds do not have a correct format.
 
 Then comes the **run** method, where you perform measurement, check thresholds, display output and format performance datas.
-This is an example to check a snmp value:
+This is an example to check a SNMP value:
 
 .. code-block:: perl
 
@@ -254,7 +254,7 @@ This is an example to check a snmp value:
     $self->{output}->exit();
   }
 
-In this example, we check a snmp OID that we compare to warning and critical thresholds.
+In this example, we check a SNMP OID that we compare to warning and critical thresholds.
 There are the methods which we use:
 
 * get_leef        : get a SNMP value from an OID
@@ -288,7 +288,7 @@ Commit and push
 
 Before committing the plugin, you need to create an **enhancement ticket** on the centreon-plugins forge : http://forge.centreon.com/projects/centreon-plugins
 
-Once plugin and modes are developed, you can commit (commit messages in english) and push your work :
+Once plugin and modes are developed, you can commit (commit messages in english) and push your work:
 ::
 
   git add path/to/plugin
@@ -299,7 +299,7 @@ Once plugin and modes are developed, you can commit (commit messages in english)
 Libraries reference
 *******************
 
-This chapter describes centreon libraries which you can use in your development.
+This chapter describes Centreon libraries which you can use in your development.
 
 ------
 Output
@@ -391,7 +391,7 @@ This is an example of how to add performance data:
 .. code-block:: perl
 
   $self->{output}->output_add(severity  => 'OK',
-                              short_msg => 'Memory is ok');  
+                              short_msg => 'Memory is ok');
   $self->{output}->perfdata_add(label    => 'memory_used',
                                 value    => 30000000,
                                 unit     => 'B',
@@ -528,10 +528,10 @@ This example checks if performance data reached thresholds:
   my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
   $self->{output}->output_add(severity  => $exit,
-                              short_msg => sprint("Used memory is %i%%", $prct_used));  
+                              short_msg => sprint("Used memory is %i%%", $prct_used));
   $self->{output}->display();
 
-Output displays :
+Output displays:
 ::
 
   WARNING - Used memory is 85% |
@@ -567,7 +567,7 @@ This example change bytes to human readable unit:
 
   print $value.' '.$unit."\n";
 
-Output displays :
+Output displays:
 ::
 
   100 KB
@@ -920,7 +920,7 @@ This is an example of how to use **change_seconds** method:
 
   print 'Human readable time : '.$human_readable_time."\n";
 
-Output displays :
+Output displays:
 ::
 
   Human readable time : 1h 2m 30s
@@ -1184,7 +1184,7 @@ Then, you can read the result in '/var/lib/centreon/centplugins/my_cache_file', 
 
 
 ----
-Http
+HTTP
 ----
 
 This library provides a set of methodss to use HTTP protocol.
@@ -1224,7 +1224,7 @@ connect
 Description
 ^^^^^^^^^^^
 
-Test a connection to an http url.
+Test a connection to an HTTP url.
 Return content of the webpage.
 
 Parameters
@@ -1251,7 +1251,7 @@ Output displays content of the webpage '\http://google.com/'.
 
 
 ---
-Dbi
+DBI
 ---
 
 This library allows you to connect to databases.
@@ -1282,6 +1282,11 @@ Example
 ^^^^^^^
 
 This is an example of how to use **connect** method.
+The format of the connection string can have the following forms:
+::
+    DriverName:database_name
+    DriverName:database_name@hostname:port
+    DriverName:database=database_name;host=hostname;port=port
 
 In plugin.pm:
 
@@ -1325,7 +1330,7 @@ This is an example of how to use **query** method:
 
   $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Slow_queries'});
   my ($name, $result) = $self->{sql}->fetchrow_array();
-  
+
   print 'Name : '.$name."\n";
   print 'Value : '.$value."\n";
 
@@ -1456,13 +1461,13 @@ First, create the plugin directory and the plugin file:
 
 .. tip::
   PfSense is a firewall application and we check it using SNMP protocol
-  
+
 Then, edit **plugin.pm** and add the following lines:
 
 .. code-block:: perl
 
   ################################################################################
-  # Copyright 2005-2014 MERETHIS
+  # Copyright 2005-2015 MERETHIS
   # Centreon is developped by : Julien Mathis and Romain Le Merlus under
   # GPL Licence 2.0.
   #
@@ -1496,9 +1501,9 @@ Then, edit **plugin.pm** and add the following lines:
   #
   ####################################################################################
 
-  # Path to the plugin  
+  # Path to the plugin
   package apps::pfsense::snmp::plugin;
-  
+
   # Needed libraries
   use strict;
   use warnings;
@@ -1541,11 +1546,11 @@ Add a description to the plugin:
 .. code-block:: perl
 
   __END__
-  
+
   =head1 PLUGIN DESCRIPTION
-  
+
   Check pfSense in SNMP.
-  
+
   =cut
 
 .. tip::
@@ -1556,7 +1561,7 @@ Add a description to the plugin:
 Mode file
 ---------
 
-Then, create the mode directory and the mode file :
+Then, create the mode directory and the mode file:
 ::
 
   $ mkdir apps/pfsense/snmp/mode
@@ -1567,7 +1572,7 @@ Edit **memorydroppedpackets.pm** and add the following lines:
 .. code-block:: perl
 
   ################################################################################
-  # Copyright 2005-2014 MERETHIS
+  # Copyright 2005-2015 MERETHIS
   # Centreon is developped by : Julien Mathis and Romain Le Merlus under
   # GPL Licence 2.0.
   #
@@ -1677,16 +1682,16 @@ Add **run** method to execute mode:
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
 
-    # Get snmp options
+    # Get SNMP options
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
 
-    # Snmp oid to request
+    # SNMP oid to request
     my $oid_pfsenseMemDropPackets = '.1.3.6.1.4.1.12325.1.200.1.2.6.0';
     my ($result, $value);
 
-    # Get snmp value for oid previsouly defined
+    # Get SNMP value for oid previsouly defined
     $result = $self->{snmp}->get_leef(oids => [ $oid_pfsenseMemDropPackets ], nothing_quit => 1);
     # $result is a hash table where keys are oids
     $value = $result->{$oid_pfsenseMemDropPackets};
@@ -1756,23 +1761,23 @@ Add a description of the mode options:
 .. code-block:: perl
 
   __END__
-  
+
   =head1 MODE
-  
+
   Check number of packets per second dropped due to memory limitations.
-  
+
   =over 8
-  
+
   =item B<--warning>
-  
+
   Threshold warning for dropped packets in packets per second.
-  
+
   =item B<--critical>
-  
+
   Threshold critical for dropped packets in packets per second.
-  
+
   =back
-  
+
   =cut
 
 
