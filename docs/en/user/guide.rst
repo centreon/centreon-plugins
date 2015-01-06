@@ -3,7 +3,7 @@ Description
 ***********
 
 "centreon-plugins" is a free and open source project to monitor systems.
-The project can be used with Centreon, Icinga and all monitoring softwares compatible nagios plugins.
+The project can be used with Centreon, Icinga and all monitoring softwares compatible Nagios plugins.
 
 The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
 
@@ -31,8 +31,8 @@ You can install other packages to use more plugins:
 
   # aptitude install libxml-libxml-perl libjson-perl libwww-perl libxml-xpath-perl libnet-telnet-perl libnet-ntp-perl libnet-dns-perl libdbi-perl libdbd-mysql-perl libdbd-pg-perl
 
-To use 'memcached' functionnality, you need to install the following CPAN module (no debian package): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
-  
+To use 'memcached' functionality, you need to install the following CPAN module (no debian package): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
+
 -------------
 Centos/Rhel 6
 -------------
@@ -53,7 +53,7 @@ You can install other packages to use more plugins:
 
   # yum install perl-XML-LibXML perl-JSON perl-libwww-perl perl-XML-XPath perl-Net-Telnet perl-Net-DNS perl-DBI perl-DBD-MySQL perl-DBD-Pg
 
-To use 'memcached' functionnality, you need to install the following CPAN module (package available in 'rpmforge'): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
+To use 'memcached' functionality, you need to install the following CPAN module (package available in 'rpmforge'): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
 
 ***********
 Basic Usage
@@ -122,7 +122,7 @@ I can set threshold with options ``--warning`` and ``--critical``:
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --warning=1,2,3 --critical=2,3,4
   OK: Load average: 0.00, 0.00, 0.00 | 'load1'=0.00;0:1;0:2;0; 'load5'=0.00;0:2;0:3;0; 'load15'=0.00;0:3;0:4;0;
-  
+
 ***
 FAQ
 ***
@@ -135,14 +135,14 @@ The option ``--list-plugin`` can be used to get the list of plugins and a short 
 
 Headers of the table mean:
 
-* Transport: The check has internal options for the transport
-* Protocol: what is used to get the monitoring datas
-* Experimental: The check is still in development
+* Transport: The check has internal options for the transport.
+* Protocol: what is used to get the monitoring datas.
+* Experimental: The check is still in development.
 
 +-------------+--------------------+----------------------------+--------------------------------------------+--------------+-------------------------------------------------------------+
 |             |                    |               Transport    |                  Protocol                  |              |                                                             |
 |  Category   |       Check        +-------+----------+---------+--------+--------+-------+-------+----------+ Experimental |                      Comment                                |
-|             |                    |  ssh  |  telnet  |  wsman  |  snmp  |  http  |  wmi  |  jmx  |  custom  |              |                                                             |
+|             |                    |  SSH  |  TELNET  |  WSMAN  |  SNMP  |  HTTP  |  WMI  |  JMX  |  custom  |              |                                                             |
 +=============+====================+=======+==========+=========+========+========+=======+=======+==========+==============+=============================================================+
 |             | Active Directory   |       |          |         |        |        |       |       |    *     |              | Use 'dcdiag' command. Must be installed on Windows.         |
 |             +--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+
@@ -223,7 +223,7 @@ Headers of the table mean:
 |             | UPS Standard       |       |          |         |   *    |        |       |       |          |              |                                                             |
 |             +--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+
 |             | UPS Powerware      |       |          |         |   *    |        |       |       |          |              |                                                             |
-+-------------+--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+            
++-------------+--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+
 |             | Alcatel Omniswitch |       |          |         |   *    |        |       |       |          |              |                                                             |
 |             +--------------------+-------+----------+---------+--------+--------+-------+-------+----------+--------------+-------------------------------------------------------------+
 |             | Arkoon             |       |          |         |   *    |        |       |       |          |              |                                                             |
@@ -317,12 +317,12 @@ Headers of the table mean:
 How can i remove perfdatas ?
 ----------------------------
 
-For example, i check tcp connections from a linux in SNMP with following command:
+For example, i check TCP connections from a linux in SNMP with following command:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=tcpcon --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
   OK: Total connections: 1 | 'total'=1;;;0; 'con_closed'=0;;;0; 'con_closeWait'=0;;;0; '  con_synSent'=0;;;0; 'con_established'=1;;;0; 'con_timeWait'=0;;;0; 'con_lastAck'=0;;;0  ; 'con_listen'=5;;;0; 'con_synReceived'=0;;;0; 'con_finWait1'=0;;;0; 'con_finWait2'=0;  ;;0; 'con_closing'=0;;;0;
-  
+
 There are too many perfdatas and i want to keep 'total' perfdata only. I use the option ``--filter-perfdata='total'``:
 ::
 
@@ -339,7 +339,7 @@ I can use regexp in ``--filter-perfdata`` option. So, i can exclude perfdata beg
 How can i set threshold: critical if value < X ?
 ------------------------------------------------
 
-"centreon-plugins" can manage nagios threshold ranges: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+"centreon-plugins" can manage Nagios threshold ranges: https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
 
 For example, i want to check that 'crond' is running (if there is less than 1 process, critical). I have two ways:
 ::
@@ -365,8 +365,8 @@ How to use memcached server for retention datas ?
 
 Some plugins need to store datas. Two ways to store it:
 
-* File on a disk (by default)
-* Memcached server
+* File on a disk (by default).
+* Memcached server.
 
 To use 'memcached', you must have a memcached server and the CPAN 'Memcached::libmemcached' module installed.
 You can set the memcached server with the option ``--memcached``:
@@ -437,8 +437,8 @@ I get the SNMP error: 'UNKNOWN:.*Timeout'
 
 The following error means:
 
-* Don't have network access to the target SNMP Server (a firewall can block UDP 161)
-* Wrong SNMP community name or SNMP version set
+* Don't have network access to the target SNMP Server (a firewall can block UDP 161).
+* Wrong SNMP community name or SNMP version set.
 
 I get the SNMP error: 'UNKNOWN:.*Cant get a single value'
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -446,22 +446,22 @@ I get the SNMP error: 'UNKNOWN:.*Cant get a single value'
 The following error means: SNMP access is working but you can't retrieve SNMP values.
 Very possible reasons:
 
-* SNMP value is not set yet (can be happened when a snmp server is just started)
-* SNMP value is not implemented by the constructor 
-* SNMP value is set on a specific Firmware or OS
+* SNMP value is not set yet (can be happened when a SNMP server is just started).
+* SNMP value is not implemented by the constructor.
+* SNMP value is set on a specific firmware or OS.
 
 Seems that process check is not working well for some arguments filter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In SNMP, there is a limit in argument length of 128 characters. 
-So, if you try to filter with an argument after 128 characters, it won't work. It can happen with java arguments.
+In SNMP, there is a limit in argument length of 128 characters.
+So, if you try to filter with an argument after 128 characters, it won't work. It can happen with Java arguments.
 To solve the problem, you should prefer a NRPE check.
 
 Can't access in SNMP v3
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 First, you need to validate SNMP v3 connection with snmpwalk. When it's working, you set SNMP v3 options in command line.
-The mapping between 'snmpwalk' options and centreon plugin options:
+The mapping between 'snmpwalk' options and "centreon-plugins" options:
 
 * -a => ``--authprotocol``
 * -A => ``--authpassphrase``
@@ -507,13 +507,13 @@ I get the error: "UNKNOWN: Cannot load module 'xxx'."
 
 The problem can be:
 
-* A prerequisite cpan module is missing. You need to install it
-* The cpan module cannot be loaded because of its path. Perl modules must be installed on some specific paths 
+* A prerequisite CPAN module is missing. You need to install it.
+* The CPAN module cannot be loaded because of its path. Perl modules must be installed on some specific paths.
 
 I can't see help messages
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-"centreon-plugins" files must unix format (no windows carriage returns). You can change it with the following command:
+"centreon-plugins" files must Unix format (no Windows carriage returns). You can change it with the following command:
 ::
 
   $ find . -name "*.p[ml]" -type f -exec dos2unix \{\} \;
