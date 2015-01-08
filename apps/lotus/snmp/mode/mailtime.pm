@@ -79,8 +79,6 @@ sub run {
     my $oid_lnMinimumMailDeliverTime = '.1.3.6.1.4.1.334.72.1.1.4.15.0';
 
     my $results = $self->{snmp}->get_leef(oids => [$oid_lnMinimumMailDeliverTime, $oid_lnMaximumMailDeliverTime, $oid_lnAverageMailDeliverTime], nothing_quit => 1);
-#    my $maxTime = $self->{snmp}->get_leef(oid => $oid_lnMaximumMailDeliverTime, nothing_quit => 1);
-#    my $avgTime = $self->{snmp}->get_leef(oid => $oid_lnAverageMailDeliverTime, nothing_quit => 1);
     
     my $exit_code = $self->{perfdata}->threshold_check(value => $results->{$oid_lnAverageMailDeliverTime}, 
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
