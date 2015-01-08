@@ -55,6 +55,11 @@ sub new {
     return $self;
 }
 
+sub check_options { 
+    my ($self, %options) = @_; 
+    $self->SUPER::init(%options);
+}
+
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object

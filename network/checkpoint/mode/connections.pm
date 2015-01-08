@@ -75,7 +75,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_fwNumCom = '.1.3.6.1.4.1.2620.1.1.25.3.0';
-    my $result = $self->{snmp}->get_leef(oids => $oid_fwNumCom, nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_fwNumCom], nothing_quit => 1);
     
     my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_fwNumCom}, 
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
