@@ -33,14 +33,14 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::mode::sip::showpeers;
+package apps::voip::asterisk::ami::mode::iax::showpeers;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use apps::voip::asterisk::lib::ami;
+use apps::voip::asterisk::ami::lib::ami;
 
 use Data::Dumper;
 
@@ -56,7 +56,6 @@ sub new {
                                   "port:s"            => { name => 'port', default => 5038 },
                                   "username:s"          => { name => 'username' },
                                   "password:s"          => { name => 'password' },
-                                  "trunkname:s"       => { name => 'trunkname' },
                                   "filter-name:s"     => { name => 'filter_name', },
                                   "timeout:s"         => { name => 'timeout', default => 20 },
                               });
@@ -87,88 +86,49 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-
-    apps::voip::asterisk::lib::ami::connect($self);
-
-    $self->{command} = 'sip show peers';
     
+    # Get data from asterisk
+    apps::voip::asterisk::lib::ami::connect($self);
+    $self->{command} = 'iax2 show peers';
     my @result = apps::voip::asterisk::lib::ami::action($self);
-
-    print "@result";
-
     apps::voip::asterisk::lib::ami::quit();
+    
+    # Compute data
+    foreach my $line (@result) {
+        next if ($line !~ /^(\w*)\/\w* .* (OK|Unreachable) \((.*)\)/);
+        my ($trunkname, $trunkstatus, $trunkvalue) = ($1, $2, $3);
 
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $trunkname !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
+            next;
+        }
+        	
+        $self->{result}->{$trunkname} = {name => $trunkname, status => $trunkstatus, value => $trunkvalue};
+    }
+    
+    # Send formated data to Centreon
+    my $msg;
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'Everything is OK');
 
+    foreach my $name (sort(keys %{$self->{result}})) {
+        $msg = sprintf("Trunk: %s %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{status});
+        $self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
+                                  value => $self->{result}->{$name}->{value},
+                                  # keep this lines for future upgrade of this plugin
+                                  #warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
+                                  #critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
+                                  min => 0);
+        if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $self->{result}->{$name}->{status},
+                                        short_msg => $msg);
+        }
+    }
 
+    $self->{output}->display();
+    $self->{output}->exit();
 }
-
-
-#    trunkname => $self->{option_results}->{trunkname});
-#    my @lines = split /\n/, $stdout;
-#    # Header not needed
-#    #shift @lines;
-#    foreach my $line (@lines) {
-#        next if ($line !~ /^(.*): (.*) \((.*)\)/);
-#        my ($trunkname, $trunkstatus, $trunkvalue) = ($1, $2, $3);
-#
-#        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-#            $trunkname !~ /$self->{option_results}->{filter_name}/) {
-#            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
-#            next;
-#        }
-#        #####
-#        # test
-#        #####
-#        if ($trunkname eq '009900524')
-#        {
-#        $self->{result}->{$trunkname} = {name => $trunkname, status => $trunkstatus, value => $trunkvalue};
-#        }
-#        else
-#        {
-#        $self->{result}->{$trunkname} = {name => $trunkname, status => 'Unknown', value => $trunkvalue};
-#        }
-#    }
-#}
-#
-#sub run {
-#    my ($self, %options) = @_;
-#    my $msg;
-#    $self->{output}->output_add(severity => 'OK',
-#                                short_msg => 'Everything is OK');
-#    $self->manage_selection();
-#
-#    foreach my $name (sort(keys %{$self->{result}})) {
-#        $msg = sprintf("Trunk: %s %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{status});
-#        $self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
-#                                  value => $self->{result}->{$name}->{value},
-#                                  #warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
-#                                  #critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-#                                  min => 0);
-#        if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1)) {
-#            $self->{output}->output_add(severity => $self->{result}->{$name}->{status},
-#                                        short_msg => $msg);
-#        }
-#    }
-#
-#    $self->{output}->display();
-#    $self->{output}->exit();
-#}
-#
-#sub disco_format {
-#    my ($self, %options) = @_;
-#
-#    $self->{output}->add_disco_format(elements => ['name']);
-#}
-#
-#sub disco_show {
-#    my ($self, %options) = @_;
-#
-#    $self->manage_selection();
-#    foreach my $name (sort(keys %{$self->{result}})) {
-#        $self->{output}->add_disco_entry(name => $name,
-#                                         );
-#    }
-#}
 
 1;
 
@@ -180,50 +140,13 @@ List partitions.
 
 =over 8
 
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
 =item B<--hostname>
 
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/partitions 2>&1').
+Hostname to query.
 
 =item B<--filter-name>
 
-Filter partition name (regexp can be used).
+Filter on trunkname (regexp can be used).
 
 =back
 
