@@ -172,7 +172,7 @@ sub connector_response {
     my $result;
     
     eval {
-        $result =  JSON->new->utf8->decode($json);
+        $result = JSON->new->utf8->decode($json);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json result: $@");

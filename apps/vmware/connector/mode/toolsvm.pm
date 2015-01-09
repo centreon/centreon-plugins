@@ -51,6 +51,7 @@ sub new {
                                   "vm-hostname:s"           => { name => 'vm_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
+                                  "display-description"     => { name => 'display_description' },
                                   "tools-notinstalled-status:s" => { name => 'tools_notinstalled_status', default => 'critical' },
                                   "tools-notrunning-status:s"   => { name => 'tools_notrunning_status', default => 'critical' },
                                   "tools-notup2date-status:s"   => { name => 'tools_notupd2date_status', default => 'warning' },
@@ -116,6 +117,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--display-description>
+
+Display virtual machine description.
 
 =item B<--tools-notinstalled-status>
 
