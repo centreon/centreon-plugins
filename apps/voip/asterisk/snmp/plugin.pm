@@ -33,12 +33,12 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::plugin;
+package apps::voip::asterisk::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
-#use base qw(centreon::plugins::script_snmp);
+#use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
@@ -49,7 +49,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'showpeers'    => 'apps::voip::asterisk::mode::sip::showpeers',
+                         'activecalls'    => 'apps::voip::asterisk::snmp::mode::activecalls',
+                         'activecallsbytrunk'    => 'apps::voip::asterisk::snmp::mode::activecallsbytrunk',
 			);
 
     return $self;
