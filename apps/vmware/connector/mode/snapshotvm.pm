@@ -52,6 +52,7 @@ sub new {
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
+                                  "display-description"     => { name => 'display_description' },
                                   "check-consolidation"     => { name => 'check_consolidation' },
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
@@ -113,6 +114,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--display-description>
+
+Display virtual machine description.
 
 =item B<--warning>
 

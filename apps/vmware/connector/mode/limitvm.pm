@@ -55,6 +55,7 @@ sub new {
                                   "memory-limitset-status:s"    => { name => 'memory_limitset_status', default => 'critical' },
                                   "disk-limitset-status:s"      => { name => 'disk_limitset_status', default => 'critical' },
                                   "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
+                                  "display-description"     => { name => 'display_description' },
                                   "check-disk-limit"        => { name => 'check_disk_limit' },
                                 });
     return $self;
@@ -117,6 +118,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--display-description>
+
+Display virtual machine description.
 
 =item B<--cpu-limitset-status>
 

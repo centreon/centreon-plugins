@@ -52,6 +52,7 @@ sub new {
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
+                                  "display-description"     => { name => 'display_description' },
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
                                 });
@@ -116,6 +117,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-status>
 
 Status if VM is not poweredOn (default: 'unknown').
+
+=item B<--display-description>
+
+Display virtual machine description.
 
 =item B<--warning>
 

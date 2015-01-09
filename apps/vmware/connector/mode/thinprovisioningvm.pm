@@ -51,6 +51,8 @@ sub new {
                                   "vm-hostname:s"           => { name => 'vm_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
+                                  "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
+                                  "display-description"     => { name => 'display_description' },
                                   "thinprovisioning-status:s"   => { name => 'thinprovisioning_status' },
                                 });
     return $self;
@@ -112,6 +114,10 @@ Status if VM disconnected (default: 'unknown').
 =item B<--nopoweredon-skip>
 
 Skip check if VM is not poweredOn.
+
+=item B<--display-description>
+
+Display virtual machine description.
 
 =item B<--thinprovisioning-status>
 
