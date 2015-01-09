@@ -39,8 +39,8 @@ sub initArgs {
     }
     $self->{manager} = centreon::esxd::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    $self->{manager}->{perfdata}->threshold_validate(label => 'warning', value => $options{arguments}->{warning});
-    $self->{manager}->{perfdata}->threshold_validate(label => 'critical', value => $options{arguments}->{critical});
+    $self->{manager}->{perfdata}->threshold_validate(label => 'warning', value => 0);
+    $self->{manager}->{perfdata}->threshold_validate(label => 'critical', value => 0);
 }
 
 sub set_connector {
@@ -95,6 +95,7 @@ sub run {
                                                                           description => $alarm->info->description, 
                                                                           status => $_->overallStatus->val};
             $dc_alarms->{$datacenter_view->name}->{$_->overallStatus->val}++;
+            $total_alarms->{$_->overallStatus->val}++;
         }
     }
 
