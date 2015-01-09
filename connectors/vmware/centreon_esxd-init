@@ -16,6 +16,7 @@ servicename=$(basename "$0")
 OPTIONS=""
 user=root
 timeout=60
+start_timeout=5
 
 pidfile=/var/run/centreon_esxd.pid
 
@@ -52,12 +53,27 @@ start() {
 	else
 		daemon --user $user ''$binary' '$OPTIONS' > /dev/null 2>&1 &'
 	fi
-	pid=$(pidofproc $binary)
-	RETVAL=$?
-	echo $pid > $pidfile
+    
+    sleep 2
+
+    i=0
+	while : ; do
+		if [ "$i" -gt $start_timeout ] ; then
+			failure $"service not launched"
+			echo
+			return 1
+		fi
+		pid=$(pidofproc $binary)
+		if [ -n "$pid" ] ; then
+			echo $pid > $pidfile
+			break
+		fi
+		sleep 1
+		i=$(($i + 1))
+	done
 	success $"service launched"
 	echo
-	return $RETVAL
+	return 0
 }
 
 stop() {
