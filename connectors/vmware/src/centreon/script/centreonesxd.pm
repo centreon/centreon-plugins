@@ -29,6 +29,7 @@ my $VERSION = "1.6.0";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
+    'centreon::esxd::cmdalarmdatacenter',
     'centreon::esxd::cmdcountvmhost',
     'centreon::esxd::cmdcpuhost',
     'centreon::esxd::cmdcpuvm',
