@@ -127,6 +127,8 @@ sub simplify_number {
 
 sub convert_number {
     my ($number) = shift(@_);
+    # Avoid error counter empty. But should manage it in code the 'undef'.
+    $number = 0 if (!defined($number));
     $number =~ s/\,/\./;
     return $number;
 }

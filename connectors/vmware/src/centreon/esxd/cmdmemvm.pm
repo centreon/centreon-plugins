@@ -124,6 +124,7 @@ sub run {
                                                   multiple => $multiple) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
         my $memory_size = $entity_view->{'summary.config.memorySizeMB'} * 1024 * 1024;
+        
         # in KB
         my $mem_consumed = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"}[0])) * 1024;
         my $mem_active = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.active.average'}->{'key'} . ":"}[0])) * 1024;
@@ -135,7 +136,7 @@ sub run {
         my $prct_used = $mem_consumed * 100 / $memory_size;
         my $prct_free = 100 - $prct_used;
         
-        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($total_value, $total_unit) = $self->{manager}->{perfdata}->change_bytes(value => $memory_size);
         my ($used_value, $used_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_consumed);
         my ($free_value, $free_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_free);
