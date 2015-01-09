@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::vmware::connector::mode::datastorevm;
+package apps::vmware::connector::mode::alarmdatacenter;
 
 use base qw(centreon::plugins::mode);
 
@@ -47,16 +47,12 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
-                                  "vm-hostname:s"           => { name => 'vm_hostname' },
+                                { 
+                                  "datacenter:s"            => { name => 'datacenter' },
                                   "filter"                  => { name => 'filter' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
-                                  "display-description"     => { name => 'display_description' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "datastore-name:s"        => { name => 'datastore_name' },
-                                  "filter-datastore:s"      => { name => 'filter_datastore' },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
+                                  "filter-time:s"           => { name => 'filter_time', },
                                 });
     return $self;
 }
@@ -65,22 +61,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $label (('warning', 'critical')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
     }
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{nopoweredon_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong nopoweredon-status option '" . $self->{option_results}->{nopoweredon_status} . "'.");
-        $self->{output}->option_exit();
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
     }
 }
 
@@ -89,7 +76,7 @@ sub run {
     $self->{connector} = $options{custom};
 
     $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'datastorevm');
+                                   command => 'alarmdatacenter');
     $self->{connector}->run();
 }
 
@@ -99,47 +86,30 @@ __END__
 
 =head1 MODE
 
-Check virtual machine IOPs on datastore(s).
+Check datacenter alarms (red an yellow).
 
 =over 8
 
-=item B<--vm-hostname>
+=item B<--datacenter>
 
-VM hostname to check.
-If not set, we check all VMs.
+Datacenter to check.
+If not set, we check all datacenters.
 
 =item B<--filter>
 
-VM hostname is a regexp.
+Datacenter is a regexp.
 
-=item B<--datastore-name>
+=item B<--filter-time>
 
-Datastore to check.
-If not set, we check all datastores.
-
-=item B<--filter-datastore>
-
-Datastore name is a regexp.
-
-=item B<--disconnect-status>
-
-Status if VM disconnected (default: 'unknown').
-
-=item B<--nopoweredon-status>
-
-Status if VM is not poweredOn (default: 'unknown').
-
-=item B<--display-description>
-
-Display virtual machine description.
+Don't check alarm older (value in seconds).
 
 =item B<--warning>
 
-Threshold warning in IOPs.
+Threshold warning in number of alarms.
 
 =item B<--critical>
 
-Threshold critical in IOPs.
+Threshold critical in number of alarms.
 
 =back
 
