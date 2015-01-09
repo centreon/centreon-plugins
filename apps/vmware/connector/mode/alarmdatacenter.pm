@@ -50,8 +50,6 @@ sub new {
                                 { 
                                   "datacenter:s"            => { name => 'datacenter' },
                                   "filter"                  => { name => 'filter' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
                                   "filter-time:s"           => { name => 'filter_time', },
                                 });
     return $self;
@@ -60,15 +58,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
 }
 
 sub run {
@@ -102,14 +91,6 @@ Datacenter is a regexp.
 =item B<--filter-time>
 
 Don't check alarm older (value in seconds).
-
-=item B<--warning>
-
-Threshold warning in number of alarms.
-
-=item B<--critical>
-
-Threshold critical in number of alarms.
 
 =back
 
