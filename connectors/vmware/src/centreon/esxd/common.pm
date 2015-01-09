@@ -304,7 +304,7 @@ sub generic_performance_values_historic {
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => 'Cannot get value for counters. Maybe you have call a wrong instance');
+                                                   short_msg => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running,...)');
             return undef;
         }
         foreach my $val (@$perfdata) {
@@ -500,6 +500,15 @@ sub host_state {
     }
     
     return 1;
+}
+
+sub strip_cr {
+    my (%options) = @_;
+    
+    $options{value} =~ s/^\s+.*\s+$//mg;
+    $options{value} =~ s/\r//mg;
+    $options{value} =~ s/\n/ -- /mg;
+    return $options{value};
 }
 
 sub stats_info {

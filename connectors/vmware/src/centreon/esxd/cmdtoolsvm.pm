@@ -76,7 +76,11 @@ sub display_verbose {
     
     $self->{manager}->{output}->output_add(long_msg => $options{label});
     foreach my $vm (sort keys %{$options{vms}}) {
-        $self->{manager}->{output}->output_add(long_msg => '    ' . $vm);
+        my $prefix = $vm;
+        if ($options{vms}->{$vm} ne '') {
+            $prefix .= ' [' . centreon::esxd::common::strip_cr(value => $options{vms}->{$vm}) . ']';
+        }
+        $self->{manager}->{output}->output_add(long_msg => '    ' . $prefix);
     }
 }
 
@@ -93,6 +97,10 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'summary.guest.toolsStatus', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
+    
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
 
@@ -122,11 +130,11 @@ sub run {
     
         my $tools_status = lc($entity_view->{'summary.guest.toolsStatus'}->val);
         if ($tools_status eq 'toolsnotinstalled') {
-            $not_installed{$entity_view->{name}} = 1;
+            $not_installed{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
         } elsif ($tools_status eq 'toolsnotrunning') {
-            $not_running{$entity_view->{name}} = 1;
+            $not_running{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
         } elsif ($tools_status eq 'toolsold') {
-            $not_up2date{$entity_view->{name}} = 1;
+            $not_up2date{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
         }
     }
     

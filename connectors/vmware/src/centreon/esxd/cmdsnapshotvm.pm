@@ -81,10 +81,12 @@ sub run {
     } else {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
-    my @properties;
-    push @properties, 'snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState';
+    my @properties = ('snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{check_consolidation}) == 1) {
         push @properties, 'runtime.consolidationNeeded';
+    }
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
     }
 
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
@@ -130,11 +132,16 @@ sub run {
             
             my $diff_time = time() - $create_time;
             my $days = int($diff_time / 60 / 60 / 24);
-            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $diff_time, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $diff_time, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             
+            my $prefix_msg = "'$entity_view->{name}'";
+            if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
+                $entity_view->{'config.annotation'} ne '') {
+                $prefix_msg .= ' [' . centreon::esxd::common::strip_cr(value => $entity_view->{'config.annotation'}) . ']';
+            }
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $vm_errors{$exit}->{$entity_view->{name}} = 1;
-                $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' snapshot create time: " . $snapshot->createTime);
+                $self->{manager}->{output}->output_add(long_msg => "$prefix_msg snapshot create time: " . $snapshot->createTime);
             }
         }
     }
@@ -157,8 +164,8 @@ sub run {
     }
     if (scalar(keys %vm_consolidate) > 0) {
          $self->{manager}->{output}->output_add(severity => 'CRITICAL',
-                                               short_msg => sprintf('VMs need consolidation: [%s]',
-                                                                    join('] [', sort keys %vm_consolidate)));
+                                                short_msg => sprintf('VMs need consolidation: [%s]',
+                                                                     join('] [', sort keys %vm_consolidate)));
     }
 }
 

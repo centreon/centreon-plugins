@@ -88,6 +88,9 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
 
@@ -150,16 +153,21 @@ sub run {
         }
         
         $long_msg .= ' on last ' . int($self->{obj_esxd}->{perfcounter_speriod} / 60) . ' min';
+        my $prefix_msg = "'$entity_view->{name}'";
+        if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
+            $entity_view->{'config.annotation'} ne '') {
+            $prefix_msg .= ' [' . centreon::esxd::common::strip_cr(value => $entity_view->{'config.annotation'}) . ']';
+        }
 
-        $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' $long_msg");
+        $self->{manager}->{output}->output_add(long_msg => "$prefix_msg $long_msg");
         my $exit = $self->{manager}->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{manager}->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                                   short_msg => "'$entity_view->{name}' $short_msg"
+                                                   short_msg => "$prefix_msg $short_msg"
                                                    );
         }
         if ($multiple == 0) {
-            $self->{manager}->{output}->output_add(short_msg => "'$entity_view->{name}' $long_msg");
+            $self->{manager}->{output}->output_add(short_msg => "$prefix_msg $long_msg");
         }
         
         foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
@@ -168,7 +176,7 @@ sub run {
                                $cib = -1 if (!defined($cib) || $cib eq "");
                    $cia <=> $cib} keys %{$values->{$entity_value}}) {
             my ($counter_id, $instance) = split /:/, $id;
-            next if ($self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} != $counter_id);
+            next if ($self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} != $counter_id);
             if ($instance ne "") {
                 $self->{manager}->{output}->perfdata_add(label => 'cpu_' . $instance . '_MHz' . $extra_label, unit => 'MHz',
                                                          value => centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$id}[0])),

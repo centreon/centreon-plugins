@@ -64,8 +64,12 @@ sub display_verbose {
     my ($self, %options) = @_;
     
     foreach my $vm (sort keys %{$options{vms}}) {
-        $self->{manager}->{output}->output_add(long_msg => $vm);
-        foreach my $disk (sort keys %{$options{vms}->{$vm}}) {
+        my $prefix = $vm;
+        if ($options{vms}->{$vm}->{description} ne '') {
+            $prefix .= ' [' . centreon::esxd::common::strip_cr(value => $options{vms}->{$vm}->{description}) . ']';
+        }
+        $self->{manager}->{output}->output_add(long_msg => $prefix);
+        foreach my $disk (sort keys %{$options{vms}->{$vm}->{disks}}) {
             $self->{manager}->{output}->output_add(long_msg => '    ' . $disk);
         }
     }
@@ -84,6 +88,10 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'config.hardware.device', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
+    
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
     
@@ -122,8 +130,10 @@ sub run {
             if ($_->isa('VirtualDisk')) {
                 if (defined($entry) && $_->backing->thinProvisioned =~ /$maps_match{$entry}->{regexp}/) {
                     $num++;
-                    $disks_vm->{$entity_view->{name}} = {} if (!defined($disks_vm->{$entity_view->{name}}));
-                    $disks_vm->{$entity_view->{name}}->{$_->backing->fileName} = 1;
+                    if (!defined($disks_vm->{$entity_view->{name}})) {
+                        $disks_vm->{$entity_view->{name}} = { disks => {}, description => (defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '') };
+                    }
+                    $disks_vm->{$entity_view->{name}}->{disks}->{$_->backing->fileName} = 1;
                 }
             }
         }

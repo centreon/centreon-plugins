@@ -90,16 +90,19 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'summary.config.memorySizeMB', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
     
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $result, 
-                        [{'label' => 'mem.active.average', 'instances' => ['']},
-                         {'label' => 'mem.overhead.average', 'instances' => ['']},
-                         {'label' => 'mem.vmmemctl.average', 'instances' => ['']},
-                         {'label' => 'mem.consumed.average', 'instances' => ['']},
-                         {'label' => 'mem.shared.average', 'instances' => ['']}],
+                        [{label => 'mem.active.average', instancess => ['']},
+                         {label => 'mem.overhead.average', instances => ['']},
+                         {label => 'mem.vmmemctl.average', instances => ['']},
+                         {label => 'mem.consumed.average', instances => ['']},
+                         {label => 'mem.shared.average', instances => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
@@ -137,16 +140,22 @@ sub run {
         my ($used_value, $used_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_consumed);
         my ($free_value, $free_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_free);
 
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
-                                            $entity_view->{name},
+        my $prefix_msg = "'$entity_view->{name}'";
+        if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
+            $entity_view->{'config.annotation'} ne '') {
+            $prefix_msg .= ' [' . centreon::esxd::common::strip_cr(value => $entity_view->{'config.annotation'}) . ']';
+        }
+        
+        $self->{manager}->{output}->output_add(long_msg => sprintf("%s Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
+                                            $prefix_msg,
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
                                             $free_value . " " . $free_unit, $prct_free));
         if ($multiple == 0 ||
             !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                                   short_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
-                                            $entity_view->{name},
+                                                   short_msg => sprintf("%s Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
+                                            $prefix_msg,
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
                                             $free_value . " " . $free_unit, $prct_free));

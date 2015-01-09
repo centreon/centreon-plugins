@@ -90,13 +90,17 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
+    
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
     
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                         $result, 
-                        [{'label' => 'mem.swapinRate.average', 'instances' => ['']},
-                         {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
+                        [{label => 'mem.swapinRate.average', instances => ['']},
+                         {label => 'mem.swapoutRate.average', instances => ['']}],
                         $self->{obj_esxd}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
@@ -129,15 +133,21 @@ sub run {
         my ($swap_in_value, $swap_in_unit) = $self->{manager}->{perfdata}->change_bytes(value => $swap_in);
         my ($swap_out_value, $swap_out_unit) = $self->{manager}->{perfdata}->change_bytes(value => $swap_out);
         
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Swap In: %s Swap Out: %s", 
-                                            $entity_view->{name},
+        my $prefix_msg = "'$entity_view->{name}'";
+        if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
+            $entity_view->{'config.annotation'} ne '') {
+            $prefix_msg .= ' [' . centreon::esxd::common::strip_cr(value => $entity_view->{'config.annotation'}) . ']';
+        }
+        
+        $self->{manager}->{output}->output_add(long_msg => sprintf("%s Swap In: %s Swap Out: %s", 
+                                            $prefix_msg,
                                             $swap_in_value . " " . $swap_in_unit . "/s",
                                             $swap_out_value . " " . $swap_out_unit . "/s"));
         if ($multiple == 0 ||
             !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
              $self->{manager}->{output}->output_add(severity => $exit,
-                                                    short_msg => sprintf("'%s' Swap In: %s Swap Out: %s", 
-                                            $entity_view->{name},
+                                                    short_msg => sprintf("%s Swap In: %s Swap Out: %s", 
+                                            $prefix_msg,
                                             $swap_in_value . " " . $swap_in_unit . "/s",
                                             $swap_out_value . " " . $swap_out_unit . "/s"));
         }

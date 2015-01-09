@@ -94,6 +94,9 @@ sub run {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
     my @properties = ('name', 'datastore', 'runtime.connectionState', 'runtime.powerState');
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
+    }
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
     return if (!defined($result));
     
@@ -166,6 +169,11 @@ sub run {
         next if (centreon::esxd::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0 &&
                  centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
+        my $prefix_msg = "'$entity_view->{name}'";
+        if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
+            $entity_view->{'config.annotation'} ne '') {
+            $prefix_msg .= ' [' . centreon::esxd::common::strip_cr(value => $entity_view->{'config.annotation'}) . ']';
+        }
         
         $finded |= 1;
         my %datastore_lun = ();
@@ -187,20 +195,20 @@ sub run {
             my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $self->{obj_esxd}->{perfcounter_speriod}));
 
             my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' read iops on '%s' is %s", 
-                                                   $entity_view->{name}, $_, $read_counter));
+            $self->{manager}->{output}->output_add(long_msg => sprintf("%s read iops on '%s' is %s", 
+                                                   $prefix_msg, $_, $read_counter));
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                  $self->{manager}->{output}->output_add(severity => $exit,
-                                                        short_msg => sprintf("'%s' read iops on '%s' is %s", 
-                                                   $entity_view->{name}, $_, $read_counter));
+                                                        short_msg => sprintf("%s read iops on '%s' is %s", 
+                                                   $prefix_msg, $_, $read_counter));
             }
             $exit = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' write iops on '%s' is %s", 
-                                                   $entity_view->{name}, $_, $write_counter));
+            $self->{manager}->{output}->output_add(long_msg => sprintf("%s write iops on '%s' is %s", 
+                                                   $prefix_msg, $_, $write_counter));
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                  $self->{manager}->{output}->output_add(severity => $exit,
-                                                        short_msg => sprintf("'%s' write iops on '%s' is %s", 
-                                                   $entity_view->{name}, $_, $write_counter));
+                                                        short_msg => sprintf("%s write iops on '%s' is %s", 
+                                                   $prefix_msg, $_, $write_counter));
             }
             
             my $extra_label = '';

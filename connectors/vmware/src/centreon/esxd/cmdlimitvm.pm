@@ -76,7 +76,11 @@ sub display_verbose {
     
     $self->{manager}->{output}->output_add(long_msg => $options{label});
     foreach my $vm (sort keys %{$options{vms}}) {
-        $self->{manager}->{output}->output_add(long_msg => '    ' . $vm);
+        my $prefix = $vm;
+        if ($options{vms}->{$vm} ne '') {
+            $prefix .= ' [' . centreon::esxd::common::strip_cr(value => $options{vms}->{$vm}) . ']';
+        }
+        $self->{manager}->{output}->output_add(long_msg => '    ' . $prefix);
     }
 }
 
@@ -92,10 +96,12 @@ sub run {
     } else {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
-    my @properties;
-    push @properties, 'name', 'runtime.connectionState', 'runtime.powerState', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit';
+    my @properties = ('name', 'runtime.connectionState', 'runtime.powerState', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit');
     if (defined($self->{check_disk_limit})) {
          push @properties, 'config.hardware.device';
+    }
+    if (defined($self->{display_description})) {
+        push @properties, 'config.annotation';
     }
 
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
@@ -128,12 +134,12 @@ sub run {
 
         # CPU Limit
         if (defined($entity_view->{'config.cpuAllocation.limit'}) && $entity_view->{'config.cpuAllocation.limit'} != -1) {
-            $cpu_limit{$entity_view->{name}} = 1;
+            $cpu_limit{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
         }
         
         # Memory Limit
         if (defined($entity_view->{'config.memoryAllocation.limit'}) && $entity_view->{'config.memoryAllocation.limit'} != -1) {
-            $memory_limit{$entity_view->{name}} = 1;
+            $memory_limit{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
         }
         
         # Disk
@@ -141,7 +147,7 @@ sub run {
             foreach my $device (@{$entity_view->{'config.hardware.device'}}) {
                 if ($device->isa('VirtualDisk')) {
                    if (defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
-                       $disk_limit{$entity_view->{name}} = 1;
+                       $disk_limit{$entity_view->{name}} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : '';
                        last;
                    }
                 }
