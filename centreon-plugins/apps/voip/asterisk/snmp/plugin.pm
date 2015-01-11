@@ -50,7 +50,6 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'activecalls'    => 'apps::voip::asterisk::snmp::mode::activecalls',
-                         'activecallsbytrunk'    => 'apps::voip::asterisk::snmp::mode::activecallsbytrunk',
 			);
 
     return $self;
