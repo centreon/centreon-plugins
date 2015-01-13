@@ -49,8 +49,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'sipshowpeers'    => 'apps::voip::asterisk::ami::mode::sip::showpeers',
-                         'iaxshowpeers'    => 'apps::voip::asterisk::ami::mode::iax::showpeers',
+                         'showpeers'    => 'apps::voip::asterisk::ami::mode::showpeers',
 			);
 
     return $self;
