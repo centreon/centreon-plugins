@@ -53,7 +53,7 @@ sub new {
 
   # Modes association
   %{$self->{modes}} = (
-                       # Mode name => path to the mode
+                       'temperature' => 'network::riverbed::steelhead::snmp::mode::temperature'
                        );
 
   return $self;
