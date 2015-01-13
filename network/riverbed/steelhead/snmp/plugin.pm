@@ -53,7 +53,8 @@ sub new {
 
   # Modes association
   %{$self->{modes}} = (
-                       'temperature' => 'network::riverbed::steelhead::snmp::mode::temperature'
+                       'temperature' => 'network::riverbed::steelhead::snmp::mode::temperature',
+                       'serviceuptime' => 'network::riverbed::steelhead::snmp::mode::serviceuptime'
                        );
 
   return $self;
