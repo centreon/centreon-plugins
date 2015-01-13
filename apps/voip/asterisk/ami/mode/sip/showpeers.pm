@@ -142,11 +142,27 @@ List partitions.
 
 =item B<--hostname>
 
-Hostname to query (need --remote).
+Hostname to query.
+
+=item B<--port>
+
+port to connect.
+
+=item B<--username>
+
+username for conection.
+
+=item B<--password>
+
+password for conection.
 
 =item B<--filter-name>
 
 Filter on trunkname (regexp can be used).
+
+=item B<--timeout>
+
+connection timeout.
 
 =back
 
