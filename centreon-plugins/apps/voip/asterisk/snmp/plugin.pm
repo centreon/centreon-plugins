@@ -37,7 +37,6 @@ package apps::voip::asterisk::snmp::plugin;
 
 use strict;
 use warnings;
-#use base qw(centreon::plugins::script_simple);
 use base qw(centreon::plugins::script_snmp);
 
 sub new {

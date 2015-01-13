@@ -114,7 +114,7 @@ __END__
 
 =head1 MODE
 
-Check system uptime.
+Check number of active calls.
 
 =over 8
 
