@@ -33,40 +33,62 @@
 #
 ####################################################################################
 
-# Path to the plugin
-package network::riverbed::steelhead::snmp::plugin;
+package network::riverbed::steelhead::snmp::mode::health;
 
-# Needed libraries
+use base qw(centreon::plugins::mode);
+
 use strict;
 use warnings;
-# Use this library to check using SNMP protocol
-use base qw(centreon::plugins::script_snmp);
+
+my %states = (
+    10000 => ['healthy', 'OK'],
+    30000 => ['degraded', 'WARNING'],
+    31000 => ['admissionControl', 'WARNING'],
+    50000 => ['critical', 'CRITICAL']
+);
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
-  # $options->{options} = options object
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-  # Plugin version
-  $self->{version} = '0.1';
+    $self->{version} = '1.0';
 
-  # Modes association
-  %{$self->{modes}} = (
-                       'temperature' => 'network::riverbed::steelhead::snmp::mode::temperature',
-                       'serviceuptime' => 'network::riverbed::steelhead::snmp::mode::serviceuptime',
-                       'health' => 'network::riverbed::steelhead::snmp::mode::health'
-                       );
+    return $self;
+}
 
-  return $self;
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    my $oid_systemHealth = '.1.3.6.1.4.1.17163.1.1.2.7.0';
+
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_systemHealth ], nothing_quit => 1);
+
+    $self->{output}->output_add(severity =>  ${$states{$result->{$oid_systemHealth}}}[1],
+                                short_msg => sprintf("System health is '%s'",
+                                                ${$states{$result->{$oid_systemHealth}}}[0]));
+
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Riverbed SteelHead WAN optimizer in SNMP.
+Check the current health of the system. The value is one amongst Healthy, Admission Control, Degraded or Critical (STEELHEAD-MIB).
+
+=over 8
+
+=back
 
 =cut
