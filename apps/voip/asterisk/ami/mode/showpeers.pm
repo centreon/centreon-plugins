@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::ami::mode::sip::showpeers;
+package apps::voip::asterisk::ami::mode::showpeers;
 
 use base qw(centreon::plugins::mode);
 
@@ -58,6 +58,7 @@ sub new {
                                   "password:s"          => { name => 'password' },
                                   "filter-name:s"     => { name => 'filter_name', },
                                   "timeout:s"         => { name => 'timeout', default => 20 },
+                                  "protocol:s"        => { name => 'protocol', },
                               });
     return $self;
 }
@@ -89,7 +90,14 @@ sub run {
     
     # Get data from asterisk
     apps::voip::asterisk::lib::ami::connect($self);
-    $self->{command} = 'sip show peers';
+    if ($self->{option_results}->{protocol} eq 'sip' || $self->{option_results}->{protocol} eq 'SIP')
+    {
+    	$self->{command} = 'sip show peers';
+    }
+    elif ($self->{option_results}->{protocol} eq 'iax' || $self->{option_results}->{protocol} eq 'IAX')
+    {
+    	$self->{command} = 'iax2 show peers';
+    }
     my @result = apps::voip::asterisk::lib::ami::action($self);
     apps::voip::asterisk::lib::ami::quit();
     
@@ -136,7 +144,7 @@ __END__
 
 =head1 MODE
 
-List partitions.
+Show peers for different protocols.
 
 =over 8
 
@@ -163,6 +171,10 @@ Filter on trunkname (regexp can be used).
 =item B<--timeout>
 
 connection timeout.
+
+=item B<--protocol>
+
+show peer for this protocol (sip or iax).
 
 =back
 
