@@ -94,7 +94,7 @@ sub run {
     {
     	$self->{command} = 'sip show peers';
     }
-    elif ($self->{option_results}->{protocol} eq 'iax' || $self->{option_results}->{protocol} eq 'IAX')
+    elsif ($self->{option_results}->{protocol} eq 'iax' || $self->{option_results}->{protocol} eq 'IAX')
     {
     	$self->{command} = 'iax2 show peers';
     }
@@ -103,8 +103,8 @@ sub run {
     
     # Compute data
     foreach my $line (@result) {
-        next if ($line !~ /^(\w*)\/\w* .* (OK|Unreachable) \((.*)\)/);
-        my ($trunkname, $trunkstatus, $trunkvalue) = ($1, $2, $3);
+        next if ($line !~ /^(\w*)\/\w* .* (OK|Unreachable) \((.*) (.*)\)/);
+        my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $trunkname !~ /$self->{option_results}->{filter_name}/) {
@@ -112,7 +112,7 @@ sub run {
             next;
         }
         	
-        $self->{result}->{$trunkname} = {name => $trunkname, status => $trunkstatus, value => $trunkvalue};
+        $self->{result}->{$trunkname} = {name => $trunkname, status => $trunkstatus, value => $trunkvalue, unit => $trunkunit};
     }
     
     # Send formated data to Centreon
@@ -123,7 +123,7 @@ sub run {
     foreach my $name (sort(keys %{$self->{result}})) {
         $msg = sprintf("Trunk: %s %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{status});
         $self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
-                                  value => $self->{result}->{$name}->{value},
+                                  value => $self->{result}->{$name}->{value}.$self->{result}->{$name}->{unit},
                                   # keep this lines for future upgrade of this plugin
                                   #warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
                                   #critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
