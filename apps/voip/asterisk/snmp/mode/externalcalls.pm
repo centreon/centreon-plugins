@@ -202,17 +202,17 @@ __END__
 
 =head1 MODE
 
-Check number of active calls (total and by trunk)
+Check number of external calls (total and by trunk)
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning for total number of calls.
+Threshold warning for total number of external calls.
 
 =item B<--critical>
 
-Threshold critical for total number of calls.
+Threshold critical for total number of external calls.
 
 =item B<--warnontrunk>
 
@@ -232,7 +232,7 @@ List of outgoing trunks' username.
 
 =item B<--filter-name>
 
-Filter on trunkname (regexp can be used).
+Filter on trunk's username (regexp can be used).
 
 =back
 
