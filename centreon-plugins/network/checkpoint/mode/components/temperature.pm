@@ -61,7 +61,7 @@ sub check {
     return if (scalar(keys %$result) <= 0); 
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_tempertureSensorValue\.(\d+)$/);
+        next if ($key !~ /^$oid_tempertureSensorValue\.(\d+).(\d+)$/);
         my $instance = $1;
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
