@@ -51,7 +51,7 @@ sub check {
     return if (scalar(keys %$result) <= 0);
 
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        $key =~ /^$oid_powerSupplyStatus\.(\d+)$/;
+        $key =~ /^$oid_powerSupplyStatus\.(\d+).(\d+)$/;
         my $instance = $1;
     
         next if ($self->check_exclude(section => 'psu', instance => $instance));
