@@ -70,6 +70,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Riverbed SteelHead WAN optimizer in SNMP.
+Check Riverbed SteelHead WAN optimizer using SNMP.
 
 =cut
