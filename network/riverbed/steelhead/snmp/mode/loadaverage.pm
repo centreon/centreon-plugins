@@ -103,7 +103,7 @@ sub run {
     my $cpu_load5 = $result->{$oid_cpuLoad5};
     my $cpu_load15 = $result->{$oid_cpuLoad15};
 
-    my $msg = sprintf("Load average: %s %, %s %, %s %", $cpu_load1, $cpu_load5, $cpu_load15);
+    my $msg = sprintf("Load averages: %s %% (1min), %s %% (5min), %s %% (15min)", $cpu_load1, $cpu_load5, $cpu_load15);
 
     $self->{output}->perfdata_add(label => 'load1',
                               value => $cpu_load1,
