@@ -57,6 +57,7 @@ sub new {
                        'serviceuptime' => 'network::riverbed::steelhead::snmp::mode::serviceuptime',
                        'health' => 'network::riverbed::steelhead::snmp::mode::health',
                        'servicestatus' => 'network::riverbed::steelhead::snmp::mode::servicestatus',
+                       'load-average' => 'network::riverbed::steelhead::snmp::mode::loadaverage',
                        );
 
   return $self;
