@@ -76,7 +76,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_serviceUptime = '.1.3.6.1.4.1.17163.1.1.2.4';
+    my $oid_serviceUptime = '.1.3.6.1.4.1.17163.1.1.2.4.0';
     my ($result, $value);
 
     $result = $self->{snmp}->get_leef(oids => [ $oid_serviceUptime ], nothing_quit => 1);
@@ -91,7 +91,7 @@ sub run {
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s",
+                                short_msg => sprintf("Service uptime is: %s",
                                     defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($value / 86400 / 100) . " days" ));
 
     $self->{output}->display();
