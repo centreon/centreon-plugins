@@ -54,9 +54,9 @@ sub new {
   # Modes association
   %{$self->{modes}} = (
                        'temperature' => 'network::riverbed::steelhead::snmp::mode::temperature',
-                       'serviceuptime' => 'network::riverbed::steelhead::snmp::mode::serviceuptime',
+                       'service-uptime' => 'network::riverbed::steelhead::snmp::mode::serviceuptime',
                        'health' => 'network::riverbed::steelhead::snmp::mode::health',
-                       'servicestatus' => 'network::riverbed::steelhead::snmp::mode::servicestatus',
+                       'service-status' => 'network::riverbed::steelhead::snmp::mode::servicestatus',
                        'load-average' => 'network::riverbed::steelhead::snmp::mode::loadaverage',
                        'bandwidth-passthrough' => 'network::riverbed::steelhead::snmp::mode::bwpassthrough',
                        );
