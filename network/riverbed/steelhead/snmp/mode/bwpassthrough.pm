@@ -147,7 +147,7 @@ sub run {
                               min => 0);
 
   $self->{output}->output_add(severity => $exit_code,
-                              short_msg => sprintf("Passthrough Wan2Lan: %s bytes/sec, passthrough Lan2Wan: %s bytes/sec.",
+                              short_msg => sprintf("Passthrough: Wan2Lan - %s bytes/sec, Lan2Wan - %s bytes/sec.",
                                   $bwPassThroughInPerSec, $bwPassThroughOutPerSec));
 
   $self->{output}->display();
