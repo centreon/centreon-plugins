@@ -33,11 +33,11 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::snmp::plugin;
+package apps::voip::asterisk::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
@@ -48,8 +48,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'activecalls'    => 'apps::voip::asterisk::snmp::mode::activecalls',
-                         'externalcalls'    => 'apps::voip::asterisk::snmp::mode::externalcalls',
+                         'showpeers'    => 'apps::voip::asterisk::ssh::mode::showpeers',
 			);
 
     return $self;
@@ -62,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Asterisk through SNMP
+Check Asterisk through AMI interface (ssh connection)
 
 =cut

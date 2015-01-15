@@ -62,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BlueMind through InfluxDB API
+Check Asterisk through AMI interface (AMI socket; telnet perl module required)
 
 =cut
