@@ -378,7 +378,7 @@ Vous pouvez renseigner le serveur memcached avec l'option ``--memcached``:
   Interface 'eth1' Traffic In : 13.88Kb/s (0.00 %), Out : 1.69Kb/s (0.00 %)
 
 .. tip::
-  Un fichier local est utilisé sir le serveur memcached ne répond pas.
+  Un fichier local est utilisé si le serveur memcached ne répond pas.
 
 --------------------------------------------
 Qu'est-ce que l'option ``--dyn-mode`` fait ?
