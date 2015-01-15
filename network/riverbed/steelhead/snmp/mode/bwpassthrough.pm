@@ -66,15 +66,22 @@ sub check_options {
   my ($self, %options) = @_;
   $self->SUPER::init(%options);
 
-  if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-     $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+  if (($self->{perfdata}->threshold_validate(label => 'warning_in', value => $self->{option_results}->{warning_in})) == 0) {
+     $self->{output}->add_option_msg(short_msg => "Wrong warning threshold for Wan2Lan'" . $self->{option_results}->{warning} . "'.");
      $self->{output}->option_exit();
   }
-  if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-     $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+  if (($self->{perfdata}->threshold_validate(label => 'critical_in', value => $self->{option_results}->{critical_in})) == 0) {
+     $self->{output}->add_option_msg(short_msg => "Wrong critical threshold for Wan2Lan'" . $self->{option_results}->{critical} . "'.");
      $self->{output}->option_exit();
   }
-
+  if (($self->{perfdata}->threshold_validate(label => 'warning_out', value => $self->{option_results}->{warning_in})) == 0) {
+     $self->{output}->add_option_msg(short_msg => "Wrong warning threshold for Wan2Lan'" . $self->{option_results}->{warning} . "'.");
+     $self->{output}->option_exit();
+  }
+  if (($self->{perfdata}->threshold_validate(label => 'critical_in', value => $self->{option_results}->{critical_in})) == 0) {
+     $self->{output}->add_option_msg(short_msg => "Wrong critical threshold for Wan2Lan'" . $self->{option_results}->{critical} . "'.");
+     $self->{output}->option_exit();
+  }
   $self->{statefile_value}->check_options(%options);
 }
 
@@ -119,27 +126,28 @@ sub run {
   my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
   $delta_time = 1 if ($delta_time == 0);
 
-  my $bwPassThroughInPerSec = ($new_datas->{bwPassThroughIn} - $old_bwPassThroughIn) / $delta_time;
-  my $bwPassThroughOutPerSec = ($new_datas->{bwPassThroughOut} - $old_bwPassThroughOut) / $delta_time;
+  my $bwPassThroughInPerSec = int(($new_datas->{bwPassThroughIn} - $old_bwPassThroughIn) / $delta_time);
+  my $bwPassThroughOutPerSec = int(($new_datas->{bwPassThroughOut} - $old_bwPassThroughOut) / $delta_time);
 
-  my $exit_code = $self->{perfdata}->threshold_check(value => $bwPassThroughInPerSec,
+  my $exit1 = $self->{perfdata}->threshold_check(value => $bwPassThroughInPerSec,
                                                      threshold => [ { label => 'critical_in', exit_litteral => 'critical' }, { label => 'warning_in', exit_litteral => 'warning' } ]);
-  my $exit_code = $self->{perfdata}->threshold_check(value => $bwPassThroughOutPerSec,
+  my $exit2 = $self->{perfdata}->threshold_check(value => $bwPassThroughOutPerSec,
                                                    threshold => [ { label => 'critical_out', exit_litteral => 'critical' }, { label => 'warning_out', exit_litteral => 'warning' } ]);
+  my $exit_code = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
-  $self->{output}->perfdata_add(label => 'bandwidth_passthrough_in_Per_Sec',
+  $self->{output}->perfdata_add(label => 'Traffic_In',
                                 value => $bwPassThroughInPerSec,
                                 warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_in'),
                                 critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_in'),
                                 min => 0);
-  $self->{output}->perfdata_add(label => 'bandwidth_passthrough_out_Per_Sec',
+  $self->{output}->perfdata_add(label => 'Traffic_Out',
                               value => $bwPassThroughOutPerSec,
-                              warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_in'),
-                              critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_in'),
+                              warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_out'),
+                              critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_out'),
                               min => 0);
 
   $self->{output}->output_add(severity => $exit_code,
-                              short_msg => sprintf("Passthrough Wan2Lan: %s bytes, passthrough Lan2Wan: %s bytes.",
+                              short_msg => sprintf("Passthrough Wan2Lan: %s bytes/sec, passthrough Lan2Wan: %s bytes/sec.",
                                   $bwPassThroughInPerSec, $bwPassThroughOutPerSec));
 
   $self->{output}->display();
