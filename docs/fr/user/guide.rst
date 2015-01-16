@@ -364,7 +364,7 @@ Comment utiliser un serveur memcached pour la rétention des données ?
 
 Quelques plugins ont besoin de stocker des données. Il y a deux solutions pour cela :
 
-* Un fichier sur le disque (par default).
+* Un fichier sur le disque (par defaut).
 * Un serveur memcached.
 
 Pour utiliser 'memcached', vous devez avoir un serveur memcached et le module CPAN 'Memcached::libmemcached' installé.
