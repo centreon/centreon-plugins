@@ -33,12 +33,16 @@
 #%# capabilities=autoconf
 
 use strict;
+use File::Basename;
 
 my $ret = undef;
 if (! eval "require Net::Telnet;")
 {
     $ret = "Net::Telnet not found";
 }
+
+my $DIRNAME=dirname($0);
+my $conffile=$DIRNAME."/asterisk_centreon.conf";
 
 my $command;
 if ( (defined($ARGV[0])) && ($ARGV[0] ne '') )
@@ -60,7 +64,7 @@ my $port = exists $ENV{'port'} ? $ENV{'port'} : "5038";
 
 my ($username, $secret);
 
-open FILE, "asterisk-centreon.conf" or die $!;
+open FILE, $conffile or die $!;
 while (my $confline = <FILE>)
 {
 	     ($username, $secret) = split(' ', $confline);
