@@ -33,13 +33,14 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::ssh::mode::showpeers;
+package apps::voip::asterisk::remote::mode::showpeers;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use apps::voip::asterisk::remote::lib::ami;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,7 +52,10 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
+                                  "port:s"            => { name => 'port', default => 5038 },
+                                  "username:s"          => { name => 'username' },
+                                  "password:s"          => { name => 'password' },
+                                  "remote:s"            => { name => 'remote', default => 'ssh' },
                                   "ssh-option:s@"     => { name => 'ssh_option' },
                                   "ssh-path:s"        => { name => 'ssh_path' },
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
@@ -68,30 +72,58 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the --hostname option");
+        $self->{output}->option_exit();
+    }
+
+    if ($self->{option_results}->{remote} eq 'ami')
+    {
+    	if (!defined($self->{option_results}->{username})) {
+	        $self->{output}->add_option_msg(short_msg => "Please set the --username option");
+	        $self->{output}->option_exit();
+	    }
+	
+	    if (!defined($self->{option_results}->{password})) {
+	        $self->{output}->add_option_msg(short_msg => "Please set the --password option");
+	        $self->{output}->option_exit();
+	    }
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    my $asterisk_command;
+    my @result;
+    
     if ($self->{option_results}->{protocol} eq 'sip' || $self->{option_results}->{protocol} eq 'SIP')
     {
-    	$asterisk_command = 'sip show peers';
+    	$self->{asterisk_command} = 'sip show peers';
     }
     elsif ($self->{option_results}->{protocol} eq 'iax' || $self->{option_results}->{protocol} eq 'IAX')
     {
-    	$asterisk_command = 'iax2 show peers';
+    	$self->{asterisk_command} = 'iax2 show peers';
     }
     
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    if ($self->{option_results}->{remote} eq 'ami')
+    {
+    	apps::voip::asterisk::remote::lib::ami::connect($self);
+        @result = apps::voip::asterisk::remote::lib::ami::action($self);
+        apps::voip::asterisk::remote::lib::ami::quit();
+    }
+    else
+    {
+    	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => "'".$asterisk_command."'",
-                                                  trunkname => $self->{option_results}->{trunkname});
-    my @lines = split /\n/, $stdout;
+                                                  command_options => "'".$self->{asterisk_command}."'",
+                                                  );
+        @result = split /\n/, $stdout;
+    }
 
-    foreach my $line (@lines) {
+    # Compute data
+    foreach my $line (@result) {
         next if ($line !~ /^(\w*)\/\w* .* (OK|Unreachable) \((.*) (.*)\)/);
         my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
 
@@ -108,6 +140,7 @@ sub manage_selection {
 sub run {
     my ($self, %options) = @_;
 
+    # Send formated data to Centreon
     my $msg;
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'Everything is OK');
@@ -144,11 +177,23 @@ Show peers for different protocols.
 
 =item B<--remote>
 
-Execute command remotely in 'ssh'.
+Execute command remotely; can be 'ami' or 'ssh' (default: ssh).
 
 =item B<--hostname>
 
-Hostname to query (need --remote).
+Hostname to query (need --remote option).
+
+=item B<--port>
+
+AMI remote port (default: 5038).
+
+=item B<--username>
+
+AMI username.
+
+=item B<--password>
+
+AMI password.
 
 =item B<--ssh-option>
 
@@ -181,7 +226,7 @@ Filter on trunkname (regexp can be used).
 
 =item B<--protocol>
 
-show peer for this protocol (sip or iax).
+show peer for the choosen protocol (sip or iax).
 
 =back
 

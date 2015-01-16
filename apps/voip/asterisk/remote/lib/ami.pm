@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::lib::ami;
+package apps::voip::asterisk::remote::lib::ami;
 
 use strict;
 use warnings;
@@ -104,7 +104,7 @@ sub action {
    my ($self) = @_;
 
    $ami_handle->print("Action: command");
-   $ami_handle->print("Command: $self->{command}");
+   $ami_handle->print("Command: $self->{asterisk_command}");
    $ami_handle->print("");
    
    
