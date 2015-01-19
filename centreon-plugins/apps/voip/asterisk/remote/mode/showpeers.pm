@@ -53,9 +53,9 @@ sub new {
                                 {
                                   "hostname:s"        => { name => 'hostname' },
                                   "port:s"            => { name => 'port', default => 5038 },
-                                  "username:s"          => { name => 'username' },
-                                  "password:s"          => { name => 'password' },
-                                  "remote:s"            => { name => 'remote', default => 'ssh' },
+                                  "username:s"        => { name => 'username' },
+                                  "password:s"        => { name => 'password' },
+                                  "remote:s"          => { name => 'remote', default => 'ssh' },
                                   "ssh-option:s@"     => { name => 'ssh_option' },
                                   "ssh-path:s"        => { name => 'ssh_path' },
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
@@ -64,6 +64,8 @@ sub new {
                                   "command-path:s"    => { name => 'command_path', default => '/home/centreon/bin' },
                                   "protocol:s"        => { name => 'protocol', },
                                   "filter-name:s"     => { name => 'filter_name', },
+                                  "warning:s"         => { name => 'warning', },
+                                  "critical:s"        => { name => 'critical', },
                                 });
     $self->{result} = {};
     return $self;
@@ -89,6 +91,15 @@ sub check_options {
 	        $self->{output}->add_option_msg(short_msg => "Please set the --password option");
 	        $self->{output}->option_exit();
 	    }
+    }
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
     }
 }
 
@@ -124,40 +135,73 @@ sub manage_selection {
 
     # Compute data
     foreach my $line (@result) {
-        next if ($line !~ /^(\w*)\/\w* .* (OK|Unreachable) \((.*) (.*)\)/);
-        my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
-
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $trunkname !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
-            next;
+        if ($line =~ /^(\w*)\/\w* .* (OK) \((.*) (.*)\)/)
+        {
+	        my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
+	
+	        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+	            $trunkname !~ /$self->{option_results}->{filter_name}/)
+	        {
+	            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
+	            next;
+	        }
+	        
+	        $self->{result}->{$trunkname} = {name => $trunkname, status => 'OK',
+	        	                             realstatus => $trunkstatus,
+	        	                             value => $trunkvalue,
+	        	                             unit => $trunkunit};
         }
-        	
-        $self->{result}->{$trunkname} = {name => $trunkname, status => $trunkstatus, value => $trunkvalue, unit => $trunkunit};
+        elsif ($line =~ /^(\w*)\/\w* .* (Unreachable)/)
+        {
+        	my ($trunkname, $trunkstatus) = ($1, $2);
+        	$self->{result}->{$trunkname} = {name => $trunkname, status => 'CRITICAL', realstatus => $trunkstatus};
+        }
+        else
+        {
+        	next;
+        }
+        
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    # Send formated data to Centreon
     my $msg;
+    my $old_status = 'ok';
+    
+    # Send formated data to Centreon
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'Everything is OK');
     
     $self->manage_selection();
 
     foreach my $name (sort(keys %{$self->{result}})) {
-        $msg = sprintf("Trunk: %s %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{status});
-        $self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
-                                  value => $self->{result}->{$name}->{value}.$self->{result}->{$name}->{unit},
-                                  # keep this lines for future upgrade of this plugin
-                                  #warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
-                                  #critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-                                  min => 0);
-        if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1)) {
+        if (defined($self->{result}->{$name}->{value}) && defined($self->{result}->{$name}->{unit}))
+        {
+        	$self->{result}->{$name}->{status} = $self->{perfdata}->threshold_check(value => $self->{result}->{$name}->{value}, 
+                                                               threshold => [{ label => 'critical', exit_litteral => 'critical' },
+                                                               	             { label => 'warning', exit_litteral => 'warning' }]);
+        	$self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
+                                          value => $self->{result}->{$name}->{value}.$self->{result}->{$name}->{unit},
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                          min => 0);
+        }
+        
+        if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1))
+        {
+            $msg = sprintf("Trunk: %s", $self->{result}->{$name}->{name});
             $self->{output}->output_add(severity => $self->{result}->{$name}->{status},
                                         short_msg => $msg);
+            if ($self->{result}->{$name}->{realstatus} eq 'Unreachable')
+            {
+            	$self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{realstatus}));
+            }
+            else
+            {
+            	$self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{value}));
+            }
         }
     }
 
@@ -174,6 +218,14 @@ __END__
 Show peers for different protocols.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning.
+
+=item B<--critical>
+
+Threshold critical.
 
 =item B<--remote>
 
