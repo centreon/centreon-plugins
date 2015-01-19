@@ -101,7 +101,7 @@ sub run {
   $bw_inn = $result->{$oid_bwPassThroughIn};
   $bw_out = $result->{$oid_bwPassThroughOut};
 
-  $self->{statefile_value}->read(statefile => 'pfsense_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+  $self->{statefile_value}->read(statefile => 'steelhead_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
   my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
   my $old_bwPassThroughIn = $self->{statefile_value}->get(name => 'bwPassThroughIn');
   my $old_bwPassThroughOut = $self->{statefile_value}->get(name => 'bwPassThroughOut');
