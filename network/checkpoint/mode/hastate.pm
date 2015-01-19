@@ -67,7 +67,7 @@ sub run {
     
     my $oid_haInstalled = '.1.3.6.1.4.1.2620.1.5.2.0';
     my $oid_haState = '.1.3.6.1.4.1.2620.1.5.6.0';
-    my $oid_haStatCode = '.1.3.6.1.4.1.2620.1.5.101';
+    my $oid_haStatCode = '.1.3.6.1.4.1.2620.1.5.101.0';
     my $oid_haStarted = '.1.3.6.1.4.1.2620.1.5.5.0';
     
     my $result = $self->{snmp}->get_leef(oids => [$oid_haInstalled, $oid_haState, $oid_haStatCode, $oid_haStarted], nothing_quit => 1);
