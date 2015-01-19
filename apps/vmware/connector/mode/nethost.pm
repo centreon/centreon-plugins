@@ -57,7 +57,7 @@ sub new {
                                   "critical-in:s"           => { name => 'critical_in', },
                                   "warning-out:s"           => { name => 'warning_out', },
                                   "critical-out:s"          => { name => 'critical_out', },
-                                  "link-down-status:s"      => { name => 'link_down_status', },
+                                  "link-down-status:s"      => { name => 'link_down_status', default => 'critical' },
                                 });
     return $self;
 }
