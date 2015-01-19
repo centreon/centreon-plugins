@@ -33,12 +33,11 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::ami::plugin;
+package apps::voip::asterisk::remote::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_simple);
-#use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
@@ -49,7 +48,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'showpeers'    => 'apps::voip::asterisk::ami::mode::showpeers',
+                         'showpeers'    => 'apps::voip::asterisk::remote::mode::showpeers',
 			);
 
     return $self;
@@ -62,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BlueMind through InfluxDB API
+Check Asterisk through AMI interface (AMI socket; telnet perl module required)
 
 =cut
