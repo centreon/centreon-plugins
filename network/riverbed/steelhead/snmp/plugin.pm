@@ -59,6 +59,7 @@ sub new {
                        'service-status' => 'network::riverbed::steelhead::snmp::mode::servicestatus',
                        'load-average' => 'network::riverbed::steelhead::snmp::mode::loadaverage',
                        'bandwidth-passthrough' => 'network::riverbed::steelhead::snmp::mode::bwpassthrough',
+                       'bandwidth-optimization' => 'network::riverbed::steelhead::snmp::mode::bwoptimization',
                        'disk-utilization' => 'network::riverbed::steelhead::snmp::mode::diskutilization',
                        'connections' => 'network::riverbed::steelhead::snmp::mode::connections',
                        );
