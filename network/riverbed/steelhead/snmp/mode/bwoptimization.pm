@@ -130,8 +130,7 @@ sub run {
                               min => 0);
 
   $self->{output}->output_add(severity => 'OK',
-                              short_msg => sprintf("Optimized: Wan2Lan on Lan - %s bytes/sec, Wan2Lan on Wan - %s bytes/sec,
-                                Lan2Wan on Lan - %s bytes/sec, Lan2Wan on Wan - %s bytes/sec.",
+                              short_msg => sprintf("Optimized: Wan2Lan on Lan - %s bytes/sec, Wan2Lan on Wan - %s bytes/sec, Lan2Wan on Lan - %s bytes/sec, Lan2Wan on Wan - %s bytes/sec.",
                                   $bwHCAggInLanPerSec, $bwHCAggInWanPerSec, $bwHCAggOutLanPerSec, $bwHCAggOutWanPerSec));
 
   $self->{output}->display();
