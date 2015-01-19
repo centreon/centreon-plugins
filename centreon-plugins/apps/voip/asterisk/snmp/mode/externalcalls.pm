@@ -87,6 +87,10 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critontrunk} . "'.");
        $self->{output}->option_exit();
     }
+    if (!defined($self->{option_results}->{trunkusernamelist})) {
+       $self->{output}->add_option_msg(short_msg => "trunkusernamelist must be defined.");
+       $self->{output}->option_exit();
+    }
     
     $self->{statefile_value}->check_options(%options);
 }
@@ -128,9 +132,6 @@ sub run {
         	}
         }
     }
-    
-	#$result = $self->{snmp}->get_leef(oids => [ $oid_astConfigCallsActive ], nothing_quit => 1);
-    #my $astConfigCallsActive = $result->{$oid_astConfigCallsActive};
     
     # compute status based on total number of active calls
     my $exit_code = $self->{perfdata}->threshold_check(value => $astConfigCallsActive, 

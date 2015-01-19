@@ -62,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BlueMind through InfluxDB API
+Check Asterisk through SNMP
 
 =cut
