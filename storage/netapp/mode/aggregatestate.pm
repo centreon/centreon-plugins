@@ -176,15 +176,15 @@ Check state and status from aggregates.
 
 =item B<--warn>
 
-Return Warning (need '--option' also).
+Return Warning.
 
 =item B<--crit>
 
-Return Critical (need '--option' also).
+Return Critical.
 
 =item B<--name>
 
-Set the aggregat name.
+Set the aggregate name.
 
 =item B<--regexp>
 
