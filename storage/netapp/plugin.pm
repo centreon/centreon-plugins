@@ -63,6 +63,8 @@ sub new {
                          'snapmirrorlag'    => 'storage::netapp::mode::snapmirrorlag',
                          'temperature'      => 'storage::netapp::mode::temperature',
                          'volumeoptions'    => 'storage::netapp::mode::volumeoptions',
+                         'aggregatestate'   => 'storage::netapp::mode::aggregatestate',
+                         'snapshotage'      => 'storage::netapp::mode::snapshotage',
                          );
 
     return $self;
