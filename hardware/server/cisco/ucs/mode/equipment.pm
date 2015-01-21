@@ -45,6 +45,7 @@ use hardware::server::cisco::ucs::mode::components::psu;
 use hardware::server::cisco::ucs::mode::components::iocard;
 use hardware::server::cisco::ucs::mode::components::chassis;
 use hardware::server::cisco::ucs::mode::components::blade;
+use hardware::server::cisco::ucs::mode::components::fex;
 
 sub new {
     my ($class, %options) = @_;
@@ -102,6 +103,7 @@ sub global {
     hardware::server::cisco::ucs::mode::components::iocard::check($self);
     hardware::server::cisco::ucs::mode::components::chassis::check($self);
     hardware::server::cisco::ucs::mode::components::blade::check($self);
+    hardware::server::cisco::ucs::mode::components::fex::check($self);
 }
 
 sub component {
@@ -117,6 +119,8 @@ sub component {
         hardware::server::cisco::ucs::mode::components::chassis::check($self);
     } elsif ($self->{option_results}->{component} eq 'blade') {
         hardware::server::cisco::ucs::mode::components::blade::check($self);
+    } elsif ($self->{option_results}->{component} eq 'fex') {
+        hardware::server::cisco::ucs::mode::components::fex::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
@@ -211,14 +215,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power supplies, chassis, io cards, blades).
+Check Hardware (Fans, Power supplies, chassis, io cards, blades, fabric extenders).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade'
+Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex'
 
 =item B<--exclude>
 
