@@ -59,7 +59,7 @@ sub new {
                                   "state:s"         => { name => 'state', default => 'online' },
                                   "status:s"        => { name => 'status', default => 'ok|mirrored' },
                                 });
-    $self->{aggregat_id_selected} = [];
+    $self->{aggregate_id_selected} = [];
     $self->{status} = 'OK';
     
     return $self;
@@ -87,20 +87,20 @@ sub manage_selection {
         
         # Get all without a name
         if (!defined($self->{option_results}->{name})) {
-            push @{$self->{aggregat_id_selected}}, $instance; 
+            push @{$self->{aggregate_id_selected}}, $instance; 
             next;
         }
         
         if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{aggregat_id_selected}}, $instance; 
+            push @{$self->{aggregate_id_selected}}, $instance; 
         }
         if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{aggregat_id_selected}}, $instance;
+            push @{$self->{aggregate_id_selected}}, $instance;
         }
     }
 
-    if (scalar(@{$self->{aggregat_id_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No aggregat found for name '" . $self->{option_results}->{name} . "'.");
+    if (scalar(@{$self->{aggregate_id_selected}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No aggregate found for name '" . $self->{option_results}->{name} . "'.");
         $self->{output}->option_exit();
     }
 }
@@ -111,17 +111,17 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_aggrState, $oid_aggrStatus], instances => $self->{aggregat_id_selected});
+    $self->{snmp}->load(oids => [$oid_aggrState, $oid_aggrStatus], instances => $self->{aggregate_id_selected});
     my $result = $self->{snmp}->get_leef();
     
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All aggregat status are ok.');
+                                    short_msg => 'All aggregates status are ok.');
     }
     
     my $failed_state = 0;
     my $failed_status = 0;
-    foreach my $instance (sort @{$self->{aggregat_id_selected}}) {
+    foreach my $instance (sort @{$self->{aggregate_id_selected}}) {
         my $name = $self->{result_names}->{$oid_aggrName . '.' . $instance};
         my $aggr_state = $result->{$oid_aggrState . '.' . $instance};
         my $aggr_status = $result->{$oid_aggrStatus . '.' . $instance};
