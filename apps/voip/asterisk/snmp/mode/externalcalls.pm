@@ -104,7 +104,7 @@ sub run {
     my (@callsbytrunk, @error_msg, @msg);
     
     # explode trunk list
-    my @trunkusernamelist = split(';',$self->{option_results}->{trunkusernamelist});
+    my @trunkusernamelist = split(',',$self->{option_results}->{trunkusernamelist});
 	foreach my $trunk (@trunkusernamelist)
 	{
 		if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
