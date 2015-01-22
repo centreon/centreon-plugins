@@ -143,7 +143,7 @@ Check TCP connection time
 
 =item B<--hostname>
 
-IP Addr/FQDN of the imap host
+IP Addr/FQDN of the host
 
 =item B<--port>
 
