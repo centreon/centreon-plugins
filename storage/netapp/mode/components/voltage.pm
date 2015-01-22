@@ -83,14 +83,15 @@ sub check {
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_enclTable}, instance => $i);
         my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my @current_volt = split /,/, $result->{enclVoltSensorsCurrentVolt};
+        my @current_volt = defined($result->{enclVoltSensorsCurrentVolt}) ? split /,/, $result->{enclVoltSensorsCurrentVolt} : ();
         
-        my @warn_under_thr = split /,/, $result->{enclVoltSensorsUnderVoltWarnThr};
-        my @crit_under_thr = split /,/, $result->{enclVoltSensorsUnderVoltFailThr};
-        my @warn_over_thr = split /,/, $result->{enclVoltSensorsOverVoltWarnThr};
-        my @crit_over_thr = split /,/, $result->{enclVoltSensorsOverVoltFailThr};
+        my @warn_under_thr = defined($result->{enclVoltSensorsUnderVoltWarnThr}) ? split /,/, $result->{enclVoltSensorsUnderVoltWarnThr} : ();
+        my @crit_under_thr = defined($result->{enclVoltSensorsUnderVoltFailThr}) ? split /,/, $result->{enclVoltSensorsUnderVoltFailThr} : ();
+        my @warn_over_thr = defined($result->{enclVoltSensorsOverVoltWarnThr}) ? split /,/, $result->{enclVoltSensorsOverVoltWarnThr} : ();
+        my @crit_over_thr = defined($result->{enclVoltSensorsOverVoltFailThr}) ? split /,/, $result->{enclVoltSensorsOverVoltFailThr} : ();
 
-        foreach my $num (split /,/, $result->{enclVoltSensorsPresent}) {
+        my @values = defined($result->{enclVoltSensorsPresent}) ? split /,/, $result->{enclVoltSensorsPresent} : ();
+        foreach my $num (@values) {
             $num = centreon::plugins::misc::trim($num);
             next if ($num !~ /[0-9]/);
     
