@@ -64,12 +64,12 @@ sub check {
         my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
         my $present = $self->{results}->{$oid_enclFansPresent}->{$oid_enclFansPresent . '.' . $i};
         my $failed = $self->{results}->{$oid_enclFansFailed}->{$oid_enclFansFailed . '.' . $i};
-        my @current_speed = split /,/, $self->{results}->{$oid_enclFansSpeed}->{$oid_enclFansSpeed . '.' . $i};
+        my @current_speed = defined($self->{results}->{$oid_enclFansSpeed}->{$oid_enclFansSpeed . '.' . $i}) ? split /,/, $self->{results}->{$oid_enclFansSpeed}->{$oid_enclFansSpeed . '.' . $i} : ();
         
         foreach my $num (split /,/, $present) {
             $num = centreon::plugins::misc::trim($num);
             next if ($num !~ /[0-9]/);
-            my $current_value = ($current_speed[$num - 1] =~ /(^|\s)([0-9]+)/) ? $2 : '';
+            my $current_value = (defined($current_speed[$num - 1]) && $current_speed[$num - 1] =~ /(^|\s)([0-9]+)/) ? $2 : '';
             
             next if ($self->check_exclude(section => 'fan', instance => $shelf_addr . '.' . $num));
             $self->{components}->{fan}->{total}++;
