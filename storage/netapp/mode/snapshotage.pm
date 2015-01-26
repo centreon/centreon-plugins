@@ -114,7 +114,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_slvName, $oid_slvMonth,$oid_slvDay,$oid_slvHour,$oid_slvMinutes,$oid_slvVolumeName],
+    $self->{snmp}->load(oids => [$oid_slvName, $oid_slvMonth, $oid_slvDay, $oid_slvHour, $oid_slvMinutes, $oid_slvVolumeName],
                         instances => $self->{snapshot_id_selected},
                         instance_regexp => '(\d+\.\d+)$');
     my $result = $self->{snmp}->get_leef();
@@ -124,7 +124,7 @@ sub run {
                                     short_msg => 'All snapshot age are ok.');
     }
 
-    my $count=0;
+    my $count = 0;
     my $now = time();
     foreach my $instance (sort @{$self->{snapshot_id_selected}}) {
         $count++;
