@@ -359,6 +359,15 @@ There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP O
 
   $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
+----------------------------------------
+How can i check ipv6 equipment in SNMP ?
+----------------------------------------
+
+To check ipv6 equipment, use the following syntax (``udp6:[xxxx]``):
+::
+
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --hostname='udp6:[fe80::250:56ff:feb5:6ae0]' --mode=storage --snmp-version=2c --snmp-community=public
+
 -------------------------------------------------
 How to use memcached server for retention datas ?
 -------------------------------------------------

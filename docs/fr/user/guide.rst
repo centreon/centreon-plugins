@@ -349,6 +349,15 @@ Par exemple, je veux vérifier que 'crond' fonctionne (s'il y a moins de 1 proce
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=processcount --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --process-name=crond --critical=@0:0
   CRITICAL: Number of current processes running: 0 | 'nbproc'=0;;@0:0;0;
 
+-------------------------------------------------------
+Comment puis-je vérifier des équipements ipv6 en SNMP ?
+-------------------------------------------------------
+
+Vous pouvez vérifier des équipements ipv6 en SNMP via la syntaxe suivante (``udp6:[xxxx]``):
+::
+
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --hostname='udp6:[fe80::250:56ff:feb5:6ae0]' --mode=storage --snmp-version=2c --snmp-community=public
+
 ------------------------------------------------------------
 Comment puis-je vérifier la valeur d'un OID SNMP générique ?
 ------------------------------------------------------------
