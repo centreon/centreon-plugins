@@ -26,7 +26,7 @@ sub init_response {
 sub response {
     my (%options) = @_;
 
-    my $stdout;
+    my $stdout = '';
     if (!defined($options{stdout})) {
         local *STDOUT;
         $manager_display->{output}->{option_results}->{output_json} = 1;
