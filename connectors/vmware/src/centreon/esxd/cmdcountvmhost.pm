@@ -139,11 +139,13 @@ sub run {
                                             $labels->[0]));
             }
             
-            $self->{manager}->{output}->perfdata_add(label => $labels->[0] . $extra_label,
-                                                 value => $vm_states{$labels->[0]},
-                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => $labels->[1]),
-                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => $labels->[2]),
-                                                 min => 0, max => $vm_states{poweredoff} + $vm_states{suspended} + $vm_states{poweredon});
+            if ($multiple == 1) {
+                $self->{manager}->{output}->perfdata_add(label => $labels->[0] . $extra_label,
+                                                         value => $vm_states{$labels->[0]},
+                                                         warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => $labels->[1]),
+                                                         critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => $labels->[2]),
+                                                         min => 0, max => $vm_states{poweredoff} + $vm_states{suspended} + $vm_states{poweredon});
+            }
         }
     }
 }

@@ -156,6 +156,19 @@ sub run {
                                                short_msg => sprintf('%d VM with VMTools not installed', scalar(keys %not_installed)));
         $self->display_verbose(label => 'vmtools not installed:', vms => \%not_installed);
     }
+    
+    if ($multiple == 1) {
+        my $total = scalar(keys %not_up2date) + scalar(keys %not_running) + scalar(keys %not_installed);
+        $self->{manager}->{output}->perfdata_add(label => 'not_updated',
+                                                 value => scalar(keys %not_up2date),
+                                                 min => 0, max => $total);
+        $self->{manager}->{output}->perfdata_add(label => 'not_running',
+                                                 value => scalar(keys %not_running),
+                                                 min => 0, max => $total);
+        $self->{manager}->{output}->perfdata_add(label => 'not_installed',
+                                                 value => scalar(keys %not_installed),
+                                                 min => 0, max => $total);
+    }
 }
 
 1;
