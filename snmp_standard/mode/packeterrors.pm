@@ -89,40 +89,14 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    # 'discard' treshold
-    if (($self->{perfdata}->threshold_validate(label => 'warning-in-discard', value => $self->{option_results}->{warning_in_discard})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'in discard' threshold '" . $self->{option_results}->{warning_in_discard} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-in-discard', value => $self->{option_results}->{critical_in_discard})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'in discard' threshold '" . $self->{option_results}->{critical_in_discard} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-out-discard', value => $self->{option_results}->{warning_out_discard})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'out discard' threshold '" . $self->{option_results}->{warning_out_disard} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-out-discard', value => $self->{option_results}->{critical_out_discard})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'out discard' threshold '" . $self->{option_results}->{critical_out_discard} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    # 'errror' treshold
-    if (($self->{perfdata}->threshold_validate(label => 'warning-in-error', value => $self->{option_results}->{warning_in_error})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'in error' threshold '" . $self->{option_results}->{warning_in_error} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-in-error', value => $self->{option_results}->{critical_in_error})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'in error' threshold '" . $self->{option_results}->{critical_in_error} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-out-error', value => $self->{option_results}->{warning_out_error})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'out error' threshold '" . $self->{option_results}->{warning_out_disard} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-out-error', value => $self->{option_results}->{critical_out_error})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'out error' threshold '" . $self->{option_results}->{critical_out_error} . "'.");
-        $self->{output}->option_exit();
+    foreach my $label (('warning_in_discard', 'critical_in_discard', 'warning_out_discard', 'critical_out_discard',
+                        'warning_in_error', 'critical_in_error', 'warning_out_error', 'critical_out_error')) {
+        my ($label_opt) = $label;
+        $label_opt =~ tr/_/-/;
+        if (($self->{perfdata}->threshold_validate(label => $label_opt, value => $self->{option_results}->{$label})) == 0) {            
+            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
@@ -189,7 +163,7 @@ sub run {
         }
     }
 
-    my $result = $self->{snmp}->get_leef();
+    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
     $new_datas->{last_timestamp} = time();
     my $buffer_creation = 0;
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
@@ -276,14 +250,19 @@ sub run {
         my $total_in_packets = ($new_datas->{'in_ucast_' . $_} - $old_datas->{in_ucast}) + ($new_datas->{'in_bcast_' . $_} - $old_datas->{in_bcast}) + ($new_datas->{'in_mcast_' . $_} - $old_datas->{in_mcast});
         my $total_out_packets = ($new_datas->{'out_ucast_' . $_} - $old_datas->{out_ucast}) + ($new_datas->{'out_bcast_' . $_} - $old_datas->{out_bcast}) + ($new_datas->{'out_mcast_' . $_} - $old_datas->{out_mcast});
         
-        my $in_discard_absolute_per_sec = ($new_datas->{'in_discard_' . $_} - $old_datas->{in_discard}) / $time_delta;
-        my $in_error_absolute_per_sec = ($new_datas->{'in_error_' . $_} - $old_datas->{in_error}) / $time_delta;
-        my $out_discard_absolute_per_sec = ($new_datas->{'out_discard_' . $_} - $old_datas->{out_discard}) / $time_delta;
-        my $out_error_absolute_per_sec = ($new_datas->{'out_error_' . $_} - $old_datas->{out_error}) / $time_delta;
-        my $in_discard_prct = ($total_in_packets == 0) ? 0 : ($new_datas->{'in_discard_' . $_} - $old_datas->{in_discard}) * 100 / $total_in_packets;
-        my $in_error_prct = ($total_in_packets == 0) ? 0 : ($new_datas->{'in_error_' . $_} - $old_datas->{in_error}) * 100 / $total_in_packets;
-        my $out_discard_prct = ($total_out_packets == 0) ? 0 : ($new_datas->{'out_discard_' . $_} - $old_datas->{out_discard}) * 100 / $total_out_packets;
-        my $out_error_prct = ($total_out_packets == 0) ? 0 : ($new_datas->{'out_error_' . $_} - $old_datas->{out_error}) * 100 / $total_out_packets;
+        my $delta_in_discard = defined($new_datas->{'in_discard_' . $_}) ? ($new_datas->{'in_discard_' . $_} - $old_datas->{in_discard}) : 0;
+        my $delta_in_error = defined($new_datas->{'in_error_' . $_}) ? ($new_datas->{'in_error_' . $_} - $old_datas->{in_error}) : 0;
+        my $delta_out_discard = defined($new_datas->{'out_discard_' . $_}) ? ($new_datas->{'out_discard_' . $_} - $old_datas->{out_discard}) : 0;
+        my $delta_out_error = defined($new_datas->{'out_error_' . $_}) ? ($new_datas->{'out_error_' . $_} - $old_datas->{out_error}) : 0;
+        
+        my $in_discard_absolute_per_sec = $delta_in_discard / $time_delta;
+        my $in_error_absolute_per_sec = $delta_in_error / $time_delta;
+        my $out_discard_absolute_per_sec = $delta_out_discard / $time_delta;
+        my $out_error_absolute_per_sec = $delta_out_error / $time_delta;
+        my $in_discard_prct = sprintf("%.2f", ($total_in_packets == 0) ? 0 : $delta_in_discard * 100 / $total_in_packets);
+        my $in_error_prct = sprintf("%.2f", ($total_in_packets == 0) ? 0 : $delta_in_error * 100 / $total_in_packets);
+        my $out_discard_prct = sprintf("%.2f", ($total_out_packets == 0) ? 0 : $delta_out_discard * 100 / $total_out_packets);
+        my $out_error_prct = sprintf("%.2f", ($total_out_packets == 0) ? 0 : $delta_out_error * 100 / $total_out_packets);
        
         ###########
         # Manage Output
@@ -294,44 +273,52 @@ sub run {
         my $exit4 = $self->{perfdata}->threshold_check(value => $out_error_prct, threshold => [ { label => 'critical-out-error', 'exit_litteral' => 'critical' }, { label => 'warning-out-error', exit_litteral => 'warning' } ]);
 
         my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4 ]);
-        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Packets In Discard : %.2f %% (%d), In Error : %.2f %% (%d), Out Discard: %.2f %% (%d), Out Error: %.2f %% (%d)", $display_value,
-                                       $in_discard_prct, $new_datas->{'in_discard_' . $_} - $old_datas->{in_discard},
-                                       $in_error_prct, $new_datas->{'in_error_' . $_} - $old_datas->{in_error},
-                                       $out_discard_prct, $new_datas->{'out_discard_' . $_} - $old_datas->{out_discard},
-                                       $out_error_prct, $new_datas->{'out_error_' . $_} - $old_datas->{out_error}
+        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Packets In Discard : %s, In Error : %s, Out Discard: %s, Out Error: %s", $display_value,
+                                       defined($new_datas->{'in_discard_' . $_}) ? $in_discard_prct . ' % (' . $delta_in_discard . ')' : 'unknown',
+                                       defined($new_datas->{'in_error_' . $_}) ? $in_error_prct . ' % (' .  $delta_in_error . ')' : 'unknown',
+                                       defined($new_datas->{'out_discard_' . $_}) ? $out_discard_prct . ' % (' .  $delta_out_discard . ')' : 'unknown',
+                                       defined($new_datas->{'out_error_' . $_}) ? $out_error_prct . ' % (' .  $delta_out_error . ')' : 'unknown'
                                        ));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{interface}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Packets In Discard : %.2f %% (%d), In Error : %.2f %% (%d), Out Discard: %.2f %% (%d), Out Error: %.2f %% (%d)", $display_value,
-                                       $in_discard_prct, $new_datas->{'in_discard_' . $_} - $old_datas->{in_discard},
-                                       $in_error_prct, $new_datas->{'in_error_' . $_} - $old_datas->{in_error},
-                                       $out_discard_prct, $new_datas->{'out_discard_' . $_} - $old_datas->{out_discard},
-                                       $out_error_prct, $new_datas->{'out_error_' . $_} - $old_datas->{out_error}
+                                        short_msg => sprintf("Interface '%s' Packets In Discard : %s, In Error : %s, Out Discard: %s, Out Error: %s", $display_value,
+                                       defined($new_datas->{'in_discard_' . $_}) ? $in_discard_prct . ' % (' . $delta_in_discard . ')' : 'unknown',
+                                       defined($new_datas->{'in_error_' . $_}) ? $in_error_prct . ' % (' .  $delta_in_error . ')' : 'unknown',
+                                       defined($new_datas->{'out_discard_' . $_}) ? $out_discard_prct . ' % (' .  $delta_out_discard . ')' : 'unknown',
+                                       defined($new_datas->{'out_error_' . $_}) ? $out_error_prct . ' % (' .  $delta_out_error . ')' : 'unknown'
                                        ));
         }
 
         my $extra_label = '';
         $extra_label = '_' . $display_value if (!defined($self->{option_results}->{interface}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'packets_discard_in' . $extra_label, unit => '%',
-                                      value => sprintf("%.2f", $in_discard_prct),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in-discard'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in-discard'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => 'packets_error_in' . $extra_label, unit => '%',
-                                      value => sprintf("%.2f", $in_error_prct),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in-error'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in-error'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => 'packets_discard_out' . $extra_label, unit => '%',
-                                      value => sprintf("%.2f", $out_discard_prct),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out-discard'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out-discard'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => 'packets_error_out' . $extra_label, unit => '%',
-                                      value => sprintf("%.2f", $out_error_prct),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out-error'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out-error'),
-                                      min => 0, max => 100);
+        if (defined($new_datas->{'in_discard_' . $_})) {
+            $self->{output}->perfdata_add(label => 'packets_discard_in' . $extra_label, unit => '%',
+                                          value => $in_discard_prct,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in-discard'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in-discard'),
+                                          min => 0, max => 100);
+        }
+        if (defined($new_datas->{'in_error_' . $_})) {
+            $self->{output}->perfdata_add(label => 'packets_error_in' . $extra_label, unit => '%',
+                                          value => $in_error_prct,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in-error'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in-error'),
+                                          min => 0, max => 100);
+        }
+        if (defined($new_datas->{'out_discard_' . $_})) {
+            $self->{output}->perfdata_add(label => 'packets_discard_out' . $extra_label, unit => '%',
+                                          value => $out_discard_prct,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out-discard'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out-discard'),
+                                          min => 0, max => 100);
+        }
+        if (defined($new_datas->{'out_error_' . $_})) {
+            $self->{output}->perfdata_add(label => 'packets_error_out' . $extra_label, unit => '%',
+                                          value => $out_error_prct,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out-error'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out-error'),
+                                          min => 0, max => 100);
+        }
     }
 
     $self->{statefile_value}->write(data => $new_datas);    
