@@ -96,6 +96,7 @@ sub run {
     #my %uuid_list = ();
     my %disk_name = ();
     my %datastore_lun = ();
+    my $ds_checked = 0;
     foreach (@$result) {
         next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
                                                          name => $_->{'summary.name'}, 
@@ -106,6 +107,7 @@ sub run {
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
             # Not need. We are on Datastore level (not LUN level)
+            $ds_checked = 1;
             foreach my $extent (@{$_->info->vmfs->extent}) {
                 $disk_name{$extent->diskName} = $_->info->vmfs->name;
                 if (!defined($datastore_lun{$_->info->vmfs->name})) {
@@ -116,6 +118,12 @@ sub run {
         #if ($_->info->isa('NasDatastoreInfo')) {
             # Zero disk Info
         #}
+    }
+    
+    if ($ds_checked == 0) {
+        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => "No Vmfs datastore(s) checked. Cannot get iops from Nas datastore(s)");
+        return ;
     }
     
     my @vm_array = ();

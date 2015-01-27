@@ -72,11 +72,13 @@ sub run {
     foreach my $datastore (@$result) {
         if (defined($self->{disco_show})) {
             $self->{manager}->{output}->add_disco_entry(name => $datastore->summary->name,
-                                                        accessible => $datastore->summary->accessible);
+                                                        accessible => $datastore->summary->accessible,
+                                                        type => $datastore->summary->type);
         } else {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("  %s [%s]", 
+            $self->{manager}->{output}->output_add(long_msg => sprintf("  %s [%s] [%s]", 
                                                                         $datastore->summary->name, 
-                                                                        $datastore->summary->accessible));
+                                                                        $datastore->summary->accessible,
+                                                                        $datastore->summary->type));
         }
     }
     
