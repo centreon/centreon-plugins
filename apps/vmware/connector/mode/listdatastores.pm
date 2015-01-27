@@ -73,7 +73,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'accessible']);
+    $self->{output}->add_disco_format(elements => ['name', 'accessible', 'type']);
 }
 
 sub disco_show {
