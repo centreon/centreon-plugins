@@ -181,7 +181,7 @@ sub list_mode {
     $self->{options}->display_help();
     
     $self->{output}->add_option_msg(long_msg => "Modes Available:");
-    foreach (keys %{$self->{modes}}) {
+    foreach (sort keys %{$self->{modes}}) {
         $self->{output}->add_option_msg(long_msg => "   " . $_);
     }
     $self->{output}->option_exit(nolabel => 1);
