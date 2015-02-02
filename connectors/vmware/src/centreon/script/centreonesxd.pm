@@ -30,6 +30,7 @@ my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
     'centreon::esxd::cmdalarmdatacenter',
+    'centreon::esxd::cmdalarmhost',
     'centreon::esxd::cmdcountvmhost',
     'centreon::esxd::cmdcpuhost',
     'centreon::esxd::cmdcpuvm',

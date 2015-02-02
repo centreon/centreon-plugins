@@ -175,6 +175,11 @@ sub run {
             $self->{manager}->{output}->output_add(severity => 'OK',
                                                    short_msg => sprintf("'%s' %s health checks are green", $entity_view->{name}, $OKCount));
         }
+        my $extra_label = '';
+        $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
+        $self->{manager}->{output}->perfdata_add(label => 'problems' . $extra_label,
+                                                 value => $CAlertCount + $WAlertCount,
+                                                 min => 0, max => $OKCount + $CAlertCount + $WAlertCount);
     }
 }
 

@@ -1,5 +1,5 @@
 
-package centreon::esxd::cmdalarmdatacenter;
+package centreon::esxd::cmdalarmhost;
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ sub new {
     my $class = shift;
     my $self  = {};
     $self->{logger} = shift;
-    $self->{commandName} = 'alarmdatacenter';
+    $self->{commandName} = 'alarmhost';
     
     bless $self, $class;
     return $self;
@@ -23,9 +23,9 @@ sub getCommandName {
 sub checkArgs {
     my ($self, %options) = @_;
 
-    if (defined($options{arguments}->{datacenter}) && $options{arguments}->{datacenter} eq "") {
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
         $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: datacenter cannot be null");
+                                                short_msg => "Argument error: esx hostname cannot be null");
         return 1;
     }
     return 0;
@@ -61,23 +61,23 @@ sub run {
         return ;
     }
     
-    if (defined($self->{datacenter}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{datacenter}\E$/;
-    } elsif (!defined($self->{datacenter})) {
+    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
+        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
+    } elsif (!defined($self->{esx_hostname})) {
         $filters{name} = qr/.*/;
     } else {
-        $filters{name} = qr/$self->{datacenter}/;
+        $filters{name} = qr/$self->{esx_hostname}/;
     }
     
     my @properties = ('name', 'triggeredAlarmState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datacenter', \%filters, \@properties);
+    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
     $self->{manager}->{output}->output_add(severity => 'OK',
-                                          short_msg => sprintf("No current alarms on datacenter(s)"));
+                                          short_msg => sprintf("No current alarms on host(s)"));
     
     my $alarmMgr = centreon::esxd::common::get_view($self->{obj_esxd}, $self->{obj_esxd}->{session1}->get_service_content()->alarmManager, undef);
     my $total_alarms = { red => 0, yellow => 0 };
@@ -116,7 +116,7 @@ sub run {
     }    
     
     foreach my $dc_name (keys %{$dc_alarms}) {
-        $self->{manager}->{output}->output_add(long_msg => sprintf("Checking datacenter %s", $dc_name));
+        $self->{manager}->{output}->output_add(long_msg => sprintf("Checking host %s", $dc_name));
         $self->{manager}->{output}->output_add(long_msg => sprintf("    %s warn alarm(s) found(s) - %s critical alarm(s) found(s)", 
                                                     $dc_alarms->{$dc_name}->{yellow},  $dc_alarms->{$dc_name}->{red}));
         foreach my $alert (keys %{$dc_alarms->{$dc_name}->{alarms}}) {
