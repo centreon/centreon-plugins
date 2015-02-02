@@ -47,7 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'alarm-datacenter'     => 'apps::vmware::connector::mode::alarmdatacenter', 
+                         'alarm-datacenter'     => 'apps::vmware::connector::mode::alarmdatacenter',
+                         'alarm-host'           => 'apps::vmware::connector::mode::alarmhost',
                          'countvm-host'         => 'apps::vmware::connector::mode::countvmhost', 
                          'cpu-host'             => 'apps::vmware::connector::mode::cpuhost', 
                          'cpu-vm'               => 'apps::vmware::connector::mode::cpuvm',
