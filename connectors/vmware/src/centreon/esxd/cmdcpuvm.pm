@@ -148,7 +148,7 @@ sub run {
             $self->{manager}->{output}->perfdata_add(label => $entry->{perf_label} . $extra_label, unit => $entry->{perf_unit},
                                           value => $entry->{value},
                                           warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_' . $entry->{label}),
-                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_in' . $entry->{label}),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_' . $entry->{label}),
                                           min => $entry->{perf_min}, max => $entry->{perf_max});
         }
         

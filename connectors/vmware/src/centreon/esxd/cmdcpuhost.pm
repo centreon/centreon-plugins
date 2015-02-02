@@ -84,7 +84,7 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
 
-    my @properties = ('name', 'runtime.connectionState');
+    my @properties = ('name', 'runtime.connectionState', 'summary.hardware.numCpuCores', 'summary.hardware.cpuMhz');
     my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
     return if (!defined($result));
 
@@ -94,7 +94,8 @@ sub run {
     my @instances = ('*');
     my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
                             $result, 
-                            [{'label' => 'cpu.usage.average', 'instances' => \@instances}],
+                            [{'label' => 'cpu.usage.average',    'instances' => \@instances},
+                             {'label' => 'cpu.usagemhz.average', 'instances' => \@instances}],
                             $self->{obj_esxd}->{perfcounter_speriod}, 
                             skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
@@ -111,6 +112,7 @@ sub run {
                                                     multiple => $multiple) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
         my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
+        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
         
         my $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_cpu_average, 
                                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -131,6 +133,9 @@ sub run {
                                                  warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                                  critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                                  min => 0, max => 100);
+        $self->{manager}->{output}->perfdata_add(label => 'cpu_total_MHz' . $extra_label, unit => 'MHz',
+                                                 value => $total_cpu_mhz_average,
+                                                 min => 0, max => $entity_view->{'summary.hardware.numCpuCores'} * $entity_view->{'summary.hardware.cpuMhz'});
 
         foreach my $id (sort { my ($cida, $cia) = split /:/, $a;
                        my ($cidb, $cib) = split /:/, $b;
