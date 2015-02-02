@@ -85,19 +85,30 @@ sub run {
     $self->{sql}->connect();
 
     my $count = 0;
-    my $count_failed = 0;
+    my $query = 'SELECT
+              a.name, a.recovery_model,
+              DATEDIFF(SS, MAX(b.backup_finish_date), GETDATE()),
+              DATEDIFF(SS, MAX(b.backup_start_date), MAX(b.backup_finish_date))
+            FROM master.dbo.sysdatabases a LEFT OUTER JOIN msdb.dbo.backupset b
+            ON b.database_name = a.name
+            GROUP BY a.name
+            ORDER BY a.name
+    ';
 
-    my $query = "SELECT D.name AS [database_name], D.recovery_model, BS1.last_backup, BS1.last_duration
+    if (($self->{sql}->is_version_minimum(version => '9.x'))) {
+        $query = "SELECT D.name AS [database_name], D.recovery_model, BS1.last_backup, BS1.last_duration
                  FROM sys.databases D
                  LEFT JOIN (
                     SELECT BS.[database_name],
-                    DATEDIFF(HH,MAX(BS.[backup_finish_date]),GETDATE()) AS last_backup,
-                    DATEDIFF(MI,MAX(BS.[backup_start_date]),MAX(BS.[backup_finish_date])) AS last_duration
+                    DATEDIFF(SS,MAX(BS.[backup_finish_date]),GETDATE()) AS last_backup,
+                    DATEDIFF(SS,MAX(BS.[backup_start_date]),MAX(BS.[backup_finish_date])) AS last_duration
                     FROM msdb.dbo.backupset BS
                     WHERE BS.type = 'D'
                     GROUP BY BS.[database_name]
                 ) BS1 ON D.name = BS1.[database_name]
-                ORDER BY D.[name];";
+                ORDER BY D.[name]";
+    }
+
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
     foreach my $row (@$result) {
@@ -106,24 +117,23 @@ sub run {
         #dbt_backup_start: 0x1686303d8 (dtdays=40599, dttime=7316475)    Feb 27 2011  6:46:28:250AM
         my $last_backup = $$row[2];
         my $backup_duration = $$row[3];
-        my $backup_age;
-        if (!defined($last_backup) || $last_backup =~ /dbt_backup_start: \w+\s+\(dtdays=0, dttime=0\) \(uninitialized\)/) {
+        if (!defined($last_backup)) {
             if (!defined($self->{option_results}->{skip_no_backup})) {
-                $self->{output}->output_add(severity => 'Critical',
+                $self->{output}->output_add(severity => 'CRITICAL',
                                             short_msg => sprintf("No backup found for DB '%s'", $$row[0]));
             }
-            next;
-        } elsif ($last_backup =~ /dbt_backup_start: \w+\s+\(dtdays=\d+, dttime=\d+\)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+):(\d+):(\d+):\d+([AP])/) {
-            my %months = ("Jan" => 0, "Feb" => 1, "Mar" => 2, "Apr" => 3, "May" => 4, "Jun" => 5, "Jul" => 6, "Aug" => 7, "Sep" => 8, "Oct" => 9, "Nov" => 10, "Dec" => 11);
-            $backup_age = ( Time::HiRes::time() - Time::Local::timelocal($6, $5, $4 + ($7 eq "A" ? 0 : 12), $2, $months{$1}, $3 - 1900)) / 3600;
-            $self->{output}->output_add(long_msg => sprintf("DB '%s' backup age : %ds [Duration : %ds]", $$row[0], $backup_age, $backup_duration));
-            my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        } else {
+            $self->{output}->output_add(long_msg => sprintf("DB '%s' backup age : %ds [Duration : %ds]", $$row[0], $last_backup, $backup_duration));
+            my $exit_code = $self->{perfdata}->threshold_check(value => $last_backup, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit_code,
-                                            short_msg => sprintf("DB '%s' backup age: %ds [Duration : %ds]", $$row[0], $backup_age, $backup_duration));
+                                            short_msg => sprintf("DB '%s' backup age: %ds [Duration : %ds]", $$row[0], $last_backup, $backup_duration));
+            
+            }
+            
             $self->{output}->perfdata_add(label => sprintf("db_%s_backup_age",$$row[0]),
                                           unit => 's',
-                                          value => $backup_age,
+                                          value => $last_backup,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                           min => 0);
@@ -131,18 +141,16 @@ sub run {
                                           unit => 's',
                                           value => $backup_duration,
                                           min => 0);
-            }
-            next;
-        } else {
-            $self->{output}->output_add(severity => 'Unknown',
-                                        short_msg => sprintf("Could not parse backup age for DB '%s'", $$row[0]));
-            next;
         }
     }
 
-    if(!defined($self->{option_results}->{skip}) && $count == 0) {
-        $self->{output}->output_add(severity => 'Unknown',
-                                    short_msg => "No backup found.");
+    if ($count == 0) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "No backup found");
+        if (!defined($self->{option_results}->{skip})) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => "No backup found");
+        }
     }
 
     $self->{output}->display();
