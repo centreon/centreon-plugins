@@ -39,6 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+
 use IO::Socket;
 use IO::Select;
 use Net::DHCP::Packet;
@@ -53,8 +54,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
-         "hostname:s"   => { name => 'hostname' },
-         "timeout:s"    => { name => 'timeout', default => '3'},
+         "serverip:s"    => { name => 'serverip' },
+         "timeout:s"     => { name => 'timeout', default => '3'},
+         "macaddr:s"     => { name => 'macaddr', default => '999999000000'},
          });
     return $self;
 }
@@ -62,56 +64,51 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{timeout})) {
-          $self->{output}->add_option_msg(short_msg => "Please set the timeout option");
-          $self->{output}->option_exit();
-      }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my ($discover, $socket, $listen, $response, $discresponse, $buf);
+    my ($discover, $socket, $listen, $response, $discresponse, $buf, $serverip);
 
     #Create DHCP Discover Packet
     $discover = Net::DHCP::Packet->new(
                         Xid => int(rand(0xFFFFFFFF)),
                         Flags => 0x8000,
-                        Chaddr => '999999000000',
+                        Chaddr => $self->{option_results}->{macaddr},
                         DHO_HOST_NAME() => 'perl test',
                         DHO_VENDOR_CLASS_IDENTIFIER() => 'foo',
                         DHO_DHCP_MESSAGE_TYPE() => DHCPDISCOVER(),
     );
 
-
     #Create UDP Socket
     socket($socket, AF_INET, SOCK_DGRAM, getprotobyname('udp'));
     setsockopt($socket, SOL_SOCKET, SO_REUSEADDR, 1);
     setsockopt($socket, SOL_SOCKET, SO_BROADCAST, 1);
-    my $distipaddr = sockaddr_in(67, INADDR_BROADCAST);
+    my $remoteipaddr = sockaddr_in(67, INADDR_BROADCAST);
     my $str = $discover->serialize();
     my $binding = bind($socket, sockaddr_in('68', INADDR_ANY));
 
     #Send UDP Packet
-    send($socket, $str, 0, $distipaddr);
+    send($socket, $str, 0, $remoteipaddr);
 
     #Wait DHCP OFFER Packet
     my $wait = IO::Select->new($socket);
     while (my ($found) = $wait->can_read($self->{option_results}->{timeout})) {
         my $srcpaddr = recv($socket, my $data, 4096, 0);
         $response = new Net::DHCP::Packet($data);
-        $discresponse = $response->toString();
+        #$discresponse = $response->toString();
     }
+
+
+    foreach my $k (keys(%{$response})) {
+       print "Clef=$k Valeur=$response{$k}\n";
+   }
 
     close $socket;
 
     #Output
-    if ($discresponse !~ /siaddr = $self->{option_results}->{hostname}/) {
+    if ($discresponse !~ /siaddr = $self->{option_results}->{serverip}/) {
         $self->{output}->output_add(severity => 'CRITICAL',
                                                 short_msg => sprintf("No DHCP Server found"));
     } elsif ( $discresponse =~ /yiaddr = 0.0.0.0/ ) {
@@ -146,3 +143,4 @@ Connection timeout in seconds (Default: 3)
 =back
 
 =cut
+
