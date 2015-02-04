@@ -39,7 +39,7 @@ use strict;
 use warnings;
 
 my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
+    ['^(?!(Present|Valid|Empty)$)' => 'CRITICAL'],
 );
 
 sub check {

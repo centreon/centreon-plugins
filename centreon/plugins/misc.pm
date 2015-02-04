@@ -103,8 +103,12 @@ sub execute {
             push @$args, $rvalue if (defined($rvalue));
         }
         
-        push @$args, $options{options}->{hostname};
-        
+        if (defined($options{options}->{ssh_address}) && $options{options}->{ssh_address} ne '') {
+            push @$args, $options{options}->{ssh_address};
+        } else {
+            push @$args, $options{options}->{hostname};
+        }
+		
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));

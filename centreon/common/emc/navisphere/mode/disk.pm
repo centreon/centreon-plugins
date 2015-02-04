@@ -178,7 +178,6 @@ my @states = (
     ['^unformatted$' , 'WARNING'],
     ['^failed$'      , 'CRITICAL'],
     ['^off$'         , 'CRITICAL'],
-    ['^empty$'       , 'CRITICAL'],
     ['^unsupported$' , 'CRITICAL'],
     ['^.*$'          , 'CRITICAL'], 
 );

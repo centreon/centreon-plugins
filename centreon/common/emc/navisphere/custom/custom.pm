@@ -60,6 +60,11 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
+                      "remote"            => { name => 'remote' },
+                      "ssh-address:s"     => { name => 'ssh_address' },
+                      "ssh-option:s@"     => { name => 'ssh_option' },
+                      "ssh-path:s"        => { name => 'ssh_path' },
+                      "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                       "navicli-command:s"       => { name => 'navicli_command', default => 'navicli' },
                       "navicli-path:s"          => { name => 'navicli_path', default => '/opt/Navisphere/bin' },
                       "naviseccli-command:s"    => { name => 'naviseccli_command', default => 'naviseccli' },
@@ -230,6 +235,26 @@ my navisphere manage
 =head1 NAVISPHERE OPTIONS
 
 =over 8
+
+=item B<--remote>
+
+Execute command remotely in 'ssh'.
+
+=item B<--ssh-address>
+
+Specify ssh address target (default: use hostname option)
+
+=item B<--ssh-option>
+
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine" --ssh-option='-p=52").
+
+=item B<--ssh-path>
+
+Specify ssh command path (default: none)
+
+=item B<--ssh-command>
+
+Specify ssh command (default: 'ssh'). Useful to use 'plink'.
 
 =item B<--navicli-path>
 
