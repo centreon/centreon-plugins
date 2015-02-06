@@ -48,7 +48,8 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'metaservice'  => 'apps::centreon::local::mode::metaservice',
-                         'partitioning' => 'apps::centreon::local::mode::partitioning'
+                         'partitioning' => 'apps::centreon::mysql::mode::partitioning',
+                         'retention-broker' => 'apps::centreon::local::mode::retentionbroker',
                          );
 
     return $self;
