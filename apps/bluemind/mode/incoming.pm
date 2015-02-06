@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2014 CENTREON
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 #
@@ -18,18 +18,18 @@
 # combined work based on this program. Thus, the terms and conditions of the GNU
 # General Public License cover the whole combination.
 #
-# As a special exception, the copyright holders of this program give MERETHIS
+# As a special exception, the copyright holders of this program give CENTREON
 # permission to link this program with independent modules to produce an timeelapsedutable,
 # regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that
-# MERETHIS also meet, for each linked independent module, the terms  and conditions
+# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
+# CENTREON also meet, for each linked independent module, the terms  and conditions
 # of the license of that module. An independent module is a module which is not
 # derived from this program. If you modify this program, you may extend this
 # exception to your version of the program, but you are not obliged to do so. If you
 # do not wish to do so, delete this exception statement from your version.
 #
 # For more information : contact@centreon.com
-# Author : Mathieu Cinquin <mcinquin@merethis.com>
+# Author : Mathieu Cinquin <mcinquin@centreon.com>
 #
 ####################################################################################
 
@@ -39,20 +39,24 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::influxdbapi;
+use centreon::plugins::httplib;
 use centreon::plugins::statefile;
+
+use JSON;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "http" },
+            "port:s"            => { name => 'port', default => '8086'},
+            "proto:s"           => { name => 'proto', default => 'http' },
+            "urlpath:s"         => { name => 'url_path', default => "/db" },
             "database:s"        => { name => 'database' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -97,7 +101,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{statefile_value}->read(statefile => 'bluemind_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::influxdbapi::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'bluemind_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     my $new_datas = {};
@@ -111,10 +115,24 @@ sub run {
         $self->{output}->exit();
     }
 
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/".$self->{option_results}->{database}."/series";
     $self->{option_results}->{query} = 'select sum("success") as "success_sum", sum("failure") as "failure_sum" from lmtpd.deliveries where time > '.$old_timestamp.'s and time < now()';
 
-    my $webcontent = centreon::plugins::influxdbapi::connect($self);
+    my $query_form_get = { q => $self->{option_results}->{query}, p => $self->{option_results}->{password}, u => $self->{option_results}->{username} };
+    my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get);
 
+    my $json = JSON->new;
+
+    my $webcontent;
+
+    eval {
+        $webcontent = $json->decode($jsoncontent);
+    };
+
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
+    }
 
     my $hwebcontent;
     for my $ref (@{ $webcontent }) {
@@ -176,7 +194,15 @@ IP Addr/FQDN of the Bluemind host
 
 =item B<--port>
 
-Port used by InfluxDB API
+Port used by InfluxDB API (Default: '8086')
+
+=item B<--proto>
+
+Specify https if needed (Default: 'http')
+
+=item B<--urlpath>
+
+Set path to get influxdb information (Default: '/db')
 
 =item B<--database>
 
@@ -192,7 +218,7 @@ Specify password for API authentification
 
 =item B<--timeout>
 
-Threshold for HTTP timeout
+Threshold for HTTP timeout (Default: 3)
 
 =item B<--warning>
 

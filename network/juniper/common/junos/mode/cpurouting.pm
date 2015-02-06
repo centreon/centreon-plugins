@@ -82,12 +82,11 @@ sub run {
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
     my $routing_engine_find = 0;
-    my $oid_routing_engine;
+    my @oids_routing_engine = ();
     foreach my $oid (keys %$result) {        
         if ($result->{$oid} =~ /routing/i) {
             $routing_engine_find = 1;
-            $oid_routing_engine = $oid;
-            last;
+            push @oids_routing_engine, $oid;
         }
     }
     
@@ -95,37 +94,51 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Cannot find operating with 'routing' in description.");
         $self->{output}->option_exit();
     }
+    my $multiple = 0;
+    if (scalar(@oids_routing_engine) > 1) {
+        $multiple = 1;
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => sprintf("All CPU(s) average usages are ok"));
+    }
     
     $self->{snmp}->load(oids => [$oid_jnxOperatingCPU, $oid_jnxOperating1MinLoadAvg, $oid_jnxOperating5MinLoadAvg, $oid_jnxOperating15MinLoadAvg],
-                        instances => [$oid_routing_engine],
+                        instances => \@oids_routing_engine,
                         instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
     my $result2 = $self->{snmp}->get_leef();
     
-    $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
-    my $instance = $1;
-    my $cpu_usage = $result2->{$oid_jnxOperatingCPU . '.' . $instance};
-    my $cpu_load1 = $result2->{$oid_jnxOperating1MinLoadAvg . '.' . $instance};
-    my $cpu_load5 = $result2->{$oid_jnxOperating5MinLoadAvg . '.' . $instance};
-    my $cpu_load15 = $result2->{$oid_jnxOperating15MinLoadAvg . '.' . $instance};
-    
-    my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_usage, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU(s) average usage is: %s%%", $cpu_usage));
-    $self->{output}->perfdata_add(label => 'cpu', unit => '%',
-                                  value => $cpu_usage,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
-    $self->{output}->perfdata_add(label => 'load1',
-                                  value => $cpu_load1,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load5',
-                                  value => $cpu_load5,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'load15',
-                                  value => $cpu_load15,
-                                  min => 0);
+    foreach my $oid_routing_engine (@oids_routing_engine) {
+        $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
+        my $instance = $1;
+        my $description = $result->{$oid_jnxOperatingDescr . '.' . $instance};
+        my $cpu_usage = $result2->{$oid_jnxOperatingCPU . '.' . $instance};
+        my $cpu_load1 = $result2->{$oid_jnxOperating1MinLoadAvg . '.' . $instance};
+        my $cpu_load5 = $result2->{$oid_jnxOperating5MinLoadAvg . '.' . $instance};
+        my $cpu_load15 = $result2->{$oid_jnxOperating15MinLoadAvg . '.' . $instance};
+        
+        my $exit_code = $self->{perfdata}->threshold_check(value => $cpu_usage, 
+                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(long_msg => sprintf("CPU(s) '%s' average usage is: %s%%", $description, $cpu_usage));
+        if ($multiple == 0 || !$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit_code,
+                                        short_msg => sprintf("CPU(s) '%s' average usage is: %s%%", $description, $cpu_usage));
+        }
+        my $extra_label = '';
+        $extra_label = '_' . $description if ($multiple == 1);
+        $self->{output}->perfdata_add(label => 'cpu' . $extra_label, unit => '%',
+                                      value => $cpu_usage,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(label => 'load1' . $extra_label,
+                                      value => $cpu_load1,
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'load5' . $extra_label,
+                                      value => $cpu_load5,
+                                      min => 0);
+        $self->{output}->perfdata_add(label => 'load15' . $extra_label,
+                                      value => $cpu_load15,
+                                      min => 0);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
