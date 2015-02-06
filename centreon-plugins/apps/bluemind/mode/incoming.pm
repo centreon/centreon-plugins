@@ -194,7 +194,15 @@ IP Addr/FQDN of the Bluemind host
 
 =item B<--port>
 
-Port used by InfluxDB API
+Port used by InfluxDB API (Default: '8086')
+
+=item B<--proto>
+
+Specify https if needed (Default: 'http')
+
+=item B<--urlpath>
+
+Set path to get influxdb information (Default: '/db')
 
 =item B<--database>
 
@@ -210,7 +218,7 @@ Specify password for API authentification
 
 =item B<--timeout>
 
-Threshold for HTTP timeout
+Threshold for HTTP timeout (Default: 3)
 
 =item B<--warning>
 
