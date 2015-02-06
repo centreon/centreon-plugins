@@ -67,6 +67,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco 2800 series in SNMP.
+Check Cisco Meeting place in SNMP.
 
 =cut
