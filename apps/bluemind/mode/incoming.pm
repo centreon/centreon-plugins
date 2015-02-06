@@ -39,20 +39,24 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::influxdbapi;
+use centreon::plugins::httplib;
 use centreon::plugins::statefile;
+
+use JSON;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "http" },
+            "port:s"            => { name => 'port', default => '8086'},
+            "proto:s"           => { name => 'proto', default => 'http' },
+            "urlpath:s"         => { name => 'url_path', default => "/db" },
             "database:s"        => { name => 'database' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -97,7 +101,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{statefile_value}->read(statefile => 'bluemind_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::influxdbapi::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'bluemind_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     my $new_datas = {};
@@ -111,10 +115,24 @@ sub run {
         $self->{output}->exit();
     }
 
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/".$self->{option_results}->{database}."/series";
     $self->{option_results}->{query} = 'select sum("success") as "success_sum", sum("failure") as "failure_sum" from lmtpd.deliveries where time > '.$old_timestamp.'s and time < now()';
 
-    my $webcontent = centreon::plugins::influxdbapi::connect($self);
+    my $query_form_get = { q => $self->{option_results}->{query}, p => $self->{option_results}->{password}, u => $self->{option_results}->{username} };
+    my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get);
 
+    my $json = JSON->new;
+
+    my $webcontent;
+
+    eval {
+        $webcontent = $json->decode($jsoncontent);
+    };
+
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
+    }
 
     my $hwebcontent;
     for my $ref (@{ $webcontent }) {
