@@ -80,12 +80,11 @@ sub run {
     
     my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
     my $routing_engine_find = 0;
-    my $oid_routing_engine;
+    my @oids_routing_engine = ();
     foreach my $oid (keys %$result) {        
         if ($result->{$oid} =~ /routing/i) {
             $routing_engine_find = 1;
-            $oid_routing_engine = $oid;
-            last;
+            push @oids_routing_engine, $oid;
         }
     }
     
@@ -94,35 +93,53 @@ sub run {
         $self->{output}->option_exit();
     }
     
+    my $multiple = 0;
+    if (scalar(@oids_routing_engine) > 1) {
+        $multiple = 1;
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => sprintf("All memory usages are ok"));
+    }
+    
     $self->{snmp}->load(oids => [$oid_jnxOperatingBuffer, $oid_jnxOperatingMemory],
-                        instances => [$oid_routing_engine],
+                        instances => \@oids_routing_engine,
                         instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
     my $result2 = $self->{snmp}->get_leef();
     
-    $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
-    my $instance = $1;
-    my $total_size = $result2->{$oid_jnxOperatingMemory . '.' . $instance} * 1024 * 1024;
-    my $prct_used = $result2->{$oid_jnxOperatingBuffer . '.' . $instance};
-    my $prct_free = 100 - $prct_used;
-    my $memory_used = $total_size * $prct_used / 100;
-    my $memory_free = $total_size - $memory_used;
+    foreach my $oid_routing_engine (@oids_routing_engine) {
+        $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
+        my $instance = $1;
+        my $description = $result->{$oid_jnxOperatingDescr . '.' . $instance};
+        my $total_size = $result2->{$oid_jnxOperatingMemory . '.' . $instance} * 1024 * 1024;
+        my $prct_used = $result2->{$oid_jnxOperatingBuffer . '.' . $instance};
+        my $prct_free = 100 - $prct_used;
+        my $memory_used = $total_size * $prct_used / 100;
+        my $memory_free = $total_size - $memory_used;
+            
+        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+        my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
+        my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
         
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
-    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                        $total_value . " " . $total_unit,
-                                        $used_value . " " . $used_unit, $prct_used,
-                                        $free_value . " " . $free_unit, $prct_free));
-    
-    $self->{output}->perfdata_add(label => "used",
-                                  value => $memory_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                  min => 0, max => $total_size);
+        $self->{output}->output_add(long_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                                            $description, $total_value . " " . $total_unit,
+                                            $used_value . " " . $used_unit, $prct_used,
+                                            $free_value . " " . $free_unit, $prct_free));
+        if ($multiple == 0 || !$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                                            $description, $total_value . " " . $total_unit,
+                                            $used_value . " " . $used_unit, $prct_used,
+                                            $free_value . " " . $free_unit, $prct_free));
+        }
+        
+        my $extra_label = '';
+        $extra_label = '_' . $description if ($multiple == 1);
+        $self->{output}->perfdata_add(label => "used" . $extra_label,
+                                      value => $memory_used,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+                                      min => 0, max => $total_size);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
