@@ -62,6 +62,7 @@ sub new {
                                   "warning"                     => { name => 'warning', },
                                   "standbyignore"               => { name => 'standbyignore', },
                                   "resources:s"                 => { name => 'resources', },
+                                  "ignore-stopped-clone:s"      => { name => 'ignore_stopped_clone', },
                                   "ignore-failed-actions:s@"    => { name => 'ignore_failed_actions', },
                                 });
     $self->{threshold} = 'CRITICAL';
@@ -121,10 +122,19 @@ sub parse_output {
         } elsif ($line =~ /\s*([0-9a-zA-Z_\-]+)\s+\(\S+\)\:\s+Stopped/) {
             $self->{output}->output_add(severity => $self->{threshold}, 
                                         short_msg => "Resource '$1' Stopped");
-        } elsif ($line =~ m/\s*stopped\:\s*\[(.*)\]/i) {
+        } elsif ($line =~ m/\s*stopped\:\s*\[\s*(.*)\s*\]/i) {
             # Check Master/Slave stopped
-            $self->{output}->output_add(severity => $self->{threshold}, 
-                                        short_msg => "$1 Stopped");
+            my @stopped = ();
+            foreach my $node (split /\s+/, $1) {
+                if (!defined($self->{option_results}->{ignore_stopped_clone}) || $self->{option_results}->{ignore_stopped_clone} eq '' ||
+                    $node !~ /$self->{option_results}->{ignore_stopped_clone}/) {
+                    push @stopped, $node;
+                }
+            }
+            if (scalar(@stopped) > 0) {
+                $self->{output}->output_add(severity => $self->{threshold},
+                                            short_msg => join(' ', @stopped) . " Stopped");
+            }
         } elsif ($line =~ /^Failed actions\:/) {
             # Check Failed Actions          
             my $error = 0;
@@ -201,6 +211,10 @@ Ignore any node(s) in standby, by default return threshold choosen.
 
 If resources not started on the node specified, send a warning message:
 (format: <rsc_name>:<node>,<rsc_name>:<node>,...)
+
+=item B<--ignore-stopped-clone>
+
+Stopped clone resource on nodes (that match) are skipped.
 
 =item B<--ignore-failed-actions>
 
