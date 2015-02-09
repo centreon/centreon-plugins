@@ -51,7 +51,7 @@ sub new {
                                 {
                                  "rrd-config-file:s"    => { name => 'rrd_config_file', default => 'central-rrd.xml' },
                                  "sql-config-file:s"    => { name => 'sql_config_file', default => 'central-broker.xml' },
-                                 "config-path"          => { name => 'config_path', default => '/etc/centreon-broker/' },
+                                 "config-path:s"          => { name => 'config_path', default => '/etc/centreon-broker/' },
                                 });
     return $self;
 }
