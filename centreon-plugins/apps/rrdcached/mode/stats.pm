@@ -144,21 +144,21 @@ __END__
 
 =head1 MODE
 
-Check if one of centreon-broker output is dead and failover file is present. CRITICAL STATE ONLY
+Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command)
 
 =over 8
 
-=item B<--rrd-config-file>
+=item B<--warning>
 
-Specify the name of your master rrd config-file (default: central-rrd.xml)
+Warning number of cached RRD updates (One update can include several values)
 
-=item B<--sql-config-file>
+=item B<--critical>
 
-Specify the name of your master sql config file (default: central-broker.xml)
+Critical number of cached RRD updates (One update can include several values)
 
-=item B<--config-path>
+=item B<--socket-path>
 
-Specify the path to your broker config files (defaut: /etc/centreon-broker/)
+Path to the socket (default is /var/rrdtool/rrdcached/rrdcached.sock)
 
 =back
 
