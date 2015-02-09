@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use XML::LibXML;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,7 +52,7 @@ sub new {
                                 {
                                  "rrd-config-file:s"    => { name => 'rrd_config_file', default => 'central-rrd.xml' },
                                  "sql-config-file:s"    => { name => 'sql_config_file', default => 'central-broker.xml' },
-                                 "config-path"          => { name => 'config_path', default => '/etc/centreon-broker/' },
+                                 "config-path:s"          => { name => 'config_path', default => '/etc/centreon-broker/' },
                                 });
     return $self;
 }
@@ -59,6 +60,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    print $self->{option_results}->{config_path};
+    print Dumper(\$self);
     if ($self->{option_results}->{config_path} !~ /\/$/) {
         $self->{output}->add_option_msg(short_msg => "Please set the last / the path to your config-path option");
         $self->{output}->option_exit();
