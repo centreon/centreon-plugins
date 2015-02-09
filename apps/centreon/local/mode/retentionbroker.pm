@@ -40,7 +40,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use XML::LibXML;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -60,8 +59,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    print $self->{option_results}->{config_path};
-    print Dumper(\$self);
     if ($self->{option_results}->{config_path} !~ /\/$/) {
         $self->{output}->add_option_msg(short_msg => "Please set the last / the path to your config-path option");
         $self->{output}->option_exit();
