@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2015 CENTREON
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 #
@@ -18,18 +18,18 @@
 # combined work based on this program. Thus, the terms and conditions of the GNU
 # General Public License cover the whole combination.
 #
-# As a special exception, the copyright holders of this program give MERETHIS
+# As a special exception, the copyright holders of this program give CENTREON
 # permission to link this program with independent modules to produce an executable,
 # regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting executable under terms of MERETHIS choice, provided that
-# MERETHIS also meet, for each linked independent module, the terms  and conditions
+# distribute the resulting executable under terms of CENTREON choice, provided that
+# CENTREON also meet, for each linked independent module, the terms  and conditions
 # of the license of that module. An independent module is a module which is not
 # derived from this program. If you modify this program, you may extend this
 # exception to your version of the program, but you are not obliged to do so. If you
 # do not wish to do so, delete this exception statement from your version.
 #
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : David Sabatie <dsabatie@centreon.com>
 #
 ####################################################################################
 
@@ -49,10 +49,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
+
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
                                   "force-oid:s"        => { name => 'force_oid', },
@@ -73,7 +73,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    
+
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -81,9 +81,9 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-    
+
     my ($result, $value);
-    
+
     if (defined($self->{option_results}->{force_oid})) {
         $result = $self->{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
         $value = $result->{$self->{option_results}->{force_oid}};
@@ -91,8 +91,16 @@ sub run {
         $result = $self->{snmp}->get_leef(oids => [ $oid_astConfigCallsActive ], nothing_quit => 1);
         $value = $result->{$oid_astConfigCallsActive};
     }
-    
-    my $exit_code = $self->{perfdata}->threshold_check(value => $value, 
+
+    if (!defined($value)) {
+        $self->{output}->output_add(severity => $self->{option_results}->{state_no_channels},
+                                    short_msg => sprintf("No information available for active channel")
+                                   );
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+
+    my $exit_code = $self->{perfdata}->threshold_check(value => $value,
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->perfdata_add(label => 'Calls',
                                   value => $value,
