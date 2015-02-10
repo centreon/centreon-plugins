@@ -152,7 +152,7 @@ __END__
 
 =head1 MODE
 
-Check if one of centreon-broker output is dead and failover file is present. CRITICAL STATE ONLY
+Check if one of centreon-broker output is slow and temporary files are presents. CRITICAL STATE ONLY
 
 =over 8
 
