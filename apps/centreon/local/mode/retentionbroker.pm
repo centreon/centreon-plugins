@@ -29,7 +29,7 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Florian Asche <info@florian-asche.de>
+# Authors : Simon BOMM <sbomm@centreon.com>
 #
 ####################################################################################
 
@@ -52,6 +52,7 @@ sub new {
                                  "rrd-config-file:s"    => { name => 'rrd_config_file', default => 'central-rrd.xml' },
                                  "sql-config-file:s"    => { name => 'sql_config_file', default => 'central-broker.xml' },
                                  "config-path:s"          => { name => 'config_path', default => '/etc/centreon-broker/' },
+                                 "broker-retention-dir:s" => { name => 'broker_retention_dir', default => '/var/lib/centreon-broker/' },
                                 });
     return $self;
 }
@@ -63,32 +64,83 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the last / the path to your config-path option");
         $self->{output}->option_exit();
     }
+    if (! -e $self->{option_results}->{broker_retention_dir}) {
+        $self->{output}->add_option_msg(short_msg => "Directory specified with --broker-retention-dir does not exist !");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
     
     my $parser = XML::LibXML->new();
-    
+    my $count = 0;
+    my $filename;
+    my $filesize;
     my @configFiles;
+    my @retentionFiles;
+
     push @configFiles, $self->{option_results}->{config_path}.$self->{option_results}->{rrd_config_file}, $self->{option_results}->{config_path}.$self->{option_results}->{sql_config_file};
     
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'No retention files, centreon-broker outputs are OK');
-
-     
+   
     foreach my $file (@configFiles) {
         my $config = $parser->parse_file($file);
         foreach my $data ($config->findnodes('/centreonBroker/output/path')) {
             next if ($data->to_literal =~ m/rrdcached/);
+            
+            $filename = $data->to_literal;
+            $filename  =~ s/^.*\/(.*)$/$1/;
+
             if (-f $data->to_literal) {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Retention on : %s", $data->to_literal)
-                                            );
+                                            short_msg => sprintf("%s ", $filename)
+                                           );
+                 push @retentionFiles, $filename;
             }
+        }    
+   } 
+    
+   opendir(my $dh, $self->{option_results}->{broker_retention_dir});
+   
+   while (my $file = readdir($dh)) {               
+       
+       foreach my $filename (@retentionFiles) {
+   
+           next if $file =~ m/^\./ or $file =~ m/stats/;
+           
+           if ($file eq $filename) {            
+               
+               my $countRet = 1;
+               $filesize = -s $self->{option_results}->{broker_retention_dir}.$filename;
+               $filesize = $filesize / 1024;
+               $self->{output}->output_add(long_msg => sprintf("%s exists (size: %i MB)", $file, $filesize));
+               my $filePart = $self->{option_results}->{broker_retention_dir}.$filename.".".$countRet;
+               
+               if (-f $filePart) {
+                   $filesize = -s $filePart;
+                   $filesize = $filesize / 1024;
+                   $self->{output}->output_add(long_msg => sprintf("%s exists (size: %i MB)", $filename.".".$countRet, $filesize));
+                   
+                   while(-f $filePart) {
+                       $countRet++;
+                       $filePart = $self->{option_results}->{broker_retention_dir}.$filePart.$countRet;
+                       
+                       if (-f $filePart) {
+                           $self->{output}->output_add(long_msg => sprintf("%s exists (size: %i MB)", $filename.".".$countRet, $filesize));
+                       }
 
-        }
-    }
+                   }
+    
+               }
+                           
+           }
+       
+       }
+    
+    } 
+
 
     $self->{output}->display();
     $self->{output}->exit();
