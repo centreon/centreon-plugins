@@ -40,7 +40,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use XML::LibXML;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
