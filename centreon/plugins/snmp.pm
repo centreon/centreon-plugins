@@ -350,9 +350,6 @@ sub get_multiple_table {
         $self->{maxrepetitions} =~ /^\d+$/) {
         $repeat_count = $self->{maxrepetitions};
     }
-    
-    $repeat_count = floor($repeat_count / (scalar(keys %{$working_oids})));
-    $repeat_count = 1 if ($repeat_count == 0);
         
     # Quit if base not the same or 'ENDOFMIBVIEW' value. Need all oid finish otherwise we continue :)
     while (1) {
@@ -375,7 +372,9 @@ sub get_multiple_table {
         if ($self->is_snmpv1()) {
             $self->{session}->getnext($vb);
         } else {
-            $self->{session}->getbulk(0, $repeat_count, $vb);
+            my $current_repeat_count = floor($repeat_count / (scalar(keys %{$working_oids})));
+            $current_repeat_count = 1 if ($current_repeat_count == 0);
+            $self->{session}->getbulk(0, $current_repeat_count, $vb);
         }
         
         # Error

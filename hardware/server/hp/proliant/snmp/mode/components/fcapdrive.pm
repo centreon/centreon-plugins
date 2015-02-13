@@ -69,8 +69,8 @@ my $oid_cpqFcaPhyDrvStatus = '.1.3.6.1.4.1.232.16.2.5.1.1.6';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaLogDrvEntry, start => $mapping->{cpqFcaLogDrvFaultTol}->{oid}, end => $mapping->{cpqFcaLogDrvStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqFcaLogDrvCondition };
+    push @{$options{request}}, { oid => $oid_cpqFcaPhyDrvCondition };
+    push @{$options{request}}, { oid => $oid_cpqFcaPhyDrvStatus };
 }
 
 sub check {
