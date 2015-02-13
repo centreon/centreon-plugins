@@ -38,13 +38,13 @@ package hardware::server::hp::proliant::snmp::mode::components::daacc;
 use strict;
 use warnings;
 
-my %map_daacc_status = {
+my %map_daacc_status = (
     1 => 'other',
     2 => 'invalid',
     3 => 'enabled',
     4 => 'tmpDisabled',
     5 => 'permDisabled',
-};
+);
 my %map_daacc_condition = (
     1 => 'other', 
     2 => 'ok', 

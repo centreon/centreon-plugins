@@ -74,8 +74,8 @@ my $oid_cpqScsiLogDrvStatus = '.1.3.6.1.4.1.232.5.2.3.1.1.5';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $cpqScsiLogDrvStatus };
-    push @{$options{request}}, { oid => $cpqScsiLogDrvCondition };
+    push @{$options{request}}, { oid => $oid_cpqScsiLogDrvStatus };
+    push @{$options{request}}, { oid => $oid_cpqScsiLogDrvCondition };
 }
 
 sub check {
@@ -86,7 +86,7 @@ sub check {
     return if ($self->check_exclude(section => 'scsildrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqScsiLogDrvCondition}})) {
-        next if ($oid !~ /^$mapping->{cpqScsiLogDrvCondition}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping2->{cpqScsiLogDrvCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqScsiLogDrvStatus}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqScsiLogDrvCondition}, instance => $instance);
