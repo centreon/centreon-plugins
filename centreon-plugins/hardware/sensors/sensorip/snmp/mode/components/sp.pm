@@ -66,7 +66,7 @@ sub check {
 
     return if ($self->check_exclude(section => 'sp', instance => $instance));
     return if ($sp_status =~ /noStatus/i && 
-             $self->absent_problem(section => 'sp', instance => $instance));
+               $self->absent_problem(section => 'sp', instance => $instance));
     
     $self->{components}->{sp}->{total}++;
     $self->{output}->output_add(long_msg => sprintf("Sensor probe '%s' status is '%s'",

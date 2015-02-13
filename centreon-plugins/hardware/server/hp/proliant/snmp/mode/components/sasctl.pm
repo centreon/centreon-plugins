@@ -33,57 +33,62 @@
 #
 ####################################################################################
 
-package hardware::server::hp::proliant::snmp::mode::components::cpu;
+package hardware::server::hp::proliant::snmp::mode::components::sasctl;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
-my %map_cpu_status = (
-    1 => 'unknown',
+my %map_controller_status = (
+    1 => 'other',
     2 => 'ok',
-    3 => 'degraded',
-    4 => 'failed',
-    5 => 'disabled',
+    3 => 'failed',
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+my %map_controller_condition = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
+);
+
+# In 'CPQSCSI-MIB.mib'
 my $mapping = {
-    cpqSeCpuSlot => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.2' },
-    cpqSeCpuName => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.3' },
-    cpqSeCpuStatus => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.16.1.5', map => \%map_cpu_status },
-    cpqSeCpuSocketNumber => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.9' },
+    cpqSasHbaStatus => { oid => '.1.3.6.1.4.1.232.5.5.1.1.1.4', map => \%map_controller_status },
+    cpqSasHbaCondition => { oid => '.1.3.6.1.4.1.232.5.5.1.1.1.5', map => \%map_controller_condition },
+    cpqSasHbaSlot => { oid => '.1.3.6.1.4.1.232.5.5.1.1.1.6' },
 };
-my $oid_cpqSeCpuEntry = '.1.3.6.1.4.1.232.1.2.2.1.1';
+my $oid_cpqSasHbaEntry = '.1.3.6.1.4.1.232.5.5.1.1.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSeCpuEntry, start => $mapping->{cpqSeCpuSlot}->{oid}, end => $mapping->{cpqSeCpuSocketNumber}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqSasHbaEntry, start => $mapping->{cpqSasHbaStatus}->{oid}, end => $mapping->{cpqSasHbaSlot}->{oid} };
 }
 
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking cpu");
-    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSeCpuEntry}})) {
-        next if ($oid !~ /^$mapping->{cpqSeCpuStatus}->{oid}\.(.*)$/);
+    $self->{output}->output_add(long_msg => "Checking sas controllers");
+    $self->{components}->{sasctl} = {name => 'sas controllers', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sasctl'));
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSasHbaEntry}})) {
+        next if ($oid !~ /^$mapping->{cpqSasHbaCondition}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSeCpuEntry}, instance => $instance);
-        
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
-        $self->{components}->{cpu}->{total}++;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSasHbaEntry}, instance => $instance);
 
-        $self->{output}->output_add(long_msg => sprintf("cpu '%s' [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 
-                                    $instance, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuName}, $result->{cpqSeCpuSocketNumber},
-                                    $result->{cpqSeCpuStatus}));
-        my $exit = $self->get_severity(section => 'cpu', value => $result->{cpqSeCpuStatus});
+        next if ($self->check_exclude(section => 'sasctl', instance => $instance));
+        $self->{components}->{sasctl}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("sas controller '%s' [slot: %s, status: %s] condition is %s.", 
+                                    $instance, $result->{cpqSasHbaSlot}, $result->{cpqSasHbaStatus},
+                                    $result->{cpqSasHbaCondition}));
+        my $exit = $self->get_severity(section => 'sasctl', value => $result->{cpqSasHbaCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("cpu '%s' is %s", 
-                                            $instance, $result->{cpqSeCpuStatus}));
+                                        short_msg => sprintf("sas controller '%s' is %s", 
+                                            $instance, $result->{cpqSasHbaCondition}));
         }
     }
 }

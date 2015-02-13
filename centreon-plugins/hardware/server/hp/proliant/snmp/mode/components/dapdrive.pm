@@ -33,72 +33,68 @@
 #
 ####################################################################################
 
-package hardware::server::hp::proliant::snmp::mode::components::pc;
+package hardware::server::hp::proliant::snmp::mode::components::dapdrive;
 
 use strict;
 use warnings;
 
-my %map_pc_condition = (
+my %map_dapdrive_condition = (
     1 => 'other', 
     2 => 'ok', 
     3 => 'degraded', 
     4 => 'failed',
 );
-
-my %map_present = (
+my %map_dapdrive_status = (
     1 => 'other',
-    2 => 'absent',
-    3 => 'present',
+    2 => 'ok',
+    3 => 'failed',
+    4 => 'predictiveFailure',
+    5 => 'erasing',
+    6 => 'eraseDone',
+    7 => 'eraseQueued',
 );
-
-my %map_redundant = (
-    1 => 'other',
-    2 => 'not redundant',
-    3 => 'redundant',
-);
-
-# In MIB 'CPQHLTH-MIB.mib'
+# In 'CPQIDA-MIB.mib'
 my $mapping = {
-    cpqHePwrConvPresent => { oid => '.1.3.6.1.4.1.232.6.2.13.3.1.3', map => \%map_present },
-    cpqHePwrConvRedundant => { oid => '.1.3.6.1.4.1.232.6.2.13.3.1.6', map => \%map_redundant },
-    cpqHePwrConvRedundantGroupId => { oid => '.1.3.6.1.4.1.232.6.2.13.3.1.7' },
-    cpqHePwrConvCondition => { oid => '.1.3.6.1.4.1.232.6.2.13.3.1.8', map => \%map_pc_condition },
+    cpqDaPhyDrvStatus => { oid => '.1.3.6.1.4.1.232.3.2.5.1.1.6', map => \%map_dapdrive_status },
 };
-my $oid_cpqHePowerConverterEntry = '.1.3.6.1.4.1.232.6.2.13.3.1';
+my $mapping2 = {
+    cpqDaPhyDrvCondition => { oid => '.1.3.6.1.4.1.232.3.2.5.1.1.37', map => \%map_dapdrive_condition },
+};
+my $oid_cpqDaPhyDrvCondition = '.1.3.6.1.4.1.232.3.2.5.1.1.37';
+my $oid_cpqDaPhyDrvStatus = '.1.3.6.1.4.1.232.3.2.5.1.1.6';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqHePowerConverterEntry, start => $mapping->{cpqHePwrConvPresent}->{oid}, end => $mapping->{cpqHePwrConvCondition}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqDaPhyDrvStatus };
+    push @{$options{request}}, { oid => $oid_cpqDaPhyDrvCondition };
 }
 
 sub check {
     my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking power converters");
-    $self->{components}->{pc} = {name => 'power converters', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'pc'));
     
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHePowerConverterEntry}})) {
-        next if ($oid !~ /^$mapping->{cpqHePwrConvPresent}->{oid}\.(.*)$/);
+    $self->{output}->output_add(long_msg => "Checking da physical drives");
+    $self->{components}->{dapdrive} = {name => 'da physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'dapdrive'));
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqDaPhyDrvCondition}})) {
+        next if ($oid !~ /^$mapping2->{cpqDaPhyDrvCondition}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHePowerConverterEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqDaPhyDrvStatus}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqDaPhyDrvCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'pc', instance => $instance));
-        next if ($result->{cpqHePwrConvPresent} !~ /present/i && 
-                 $self->absent_problem(section => 'pc', instance => $instance));
-        
-        $self->{components}->{pc}->{total}++;
+        next if ($self->check_exclude(section => 'dapdrive', instance => $instance));
+        $self->{components}->{dapdrive}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("powerconverter '%s' status is %s [redundance: %s, redundant group: %s].",
-                                    $instance, $result->{cpqHePwrConvCondition},
-                                    $result->{cpqHePwrConvRedundant}, $result->{cpqHePwrConvRedundantGroupId}
-                                    ));
-        my $exit = $self->get_severity(section => 'pc', value => $result->{cpqHePwrConvCondition});
+        $self->{output}->output_add(long_msg => sprintf("da physical drive '%s' [status: %s] condition is %s.", 
+                                    $instance,
+                                    $result->{cpqDaPhyDrvStatus},
+                                    $result2->{cpqDaPhyDrvCondition}));
+        my $exit = $self->get_severity(section => 'dapdrive', value => $result2->{cpqDaPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("powerconverter '%s' status is %s",
-                                           $instance, $result->{cpqHePwrConvCondition}));
+                                        short_msg => sprintf("da physical drive '%s' is %s", 
+                                                $instance, $result2->{cpqDaPhyDrvCondition}));
         }
     }
 }
