@@ -38,7 +38,13 @@ package hardware::server::hp::proliant::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-my %location_map = (
+my %map_temperature_condition = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
+);
+my %map_location = (
     1 => "other",
     2 => "unknown",
     3 => "system",
@@ -59,60 +65,63 @@ my %location_map = (
     18 => "virtual",
 );
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL']
-);
+# In MIB 'CPQSTDEQ-MIB.mib'
+my $mapping = {
+    cpqHeTemperatureLocale => { oid => '.1.3.6.1.4.1.232.6.2.6.8.1.3', map => \%map_location },
+    cpqHeTemperatureCelsius => { oid => '.1.3.6.1.4.1.232.6.2.6.8.1.4' },
+    cpqHeTemperatureThreshold => { oid => '.1.3.6.1.4.1.232.6.2.6.8.1.5' },
+    cpqHeTemperatureCondition => { oid => '.1.3.6.1.4.1.232.6.2.6.8.1.6', map => \%map_temperature_condition },
+};
+my $oid_cpqHeTemperatureEntry = '.1.3.6.1.4.1.232.6.2.6.8.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_cpqHeTemperatureEntry, start => $mapping->{cpqHeTemperatureLocale}->{oid}, end => $mapping->{cpqHeTemperatureCondition}->{oid} };
+}
 
 sub check {
     my ($self) = @_;
-    # In MIB 'CPQSTDEQ-MIB.mib'
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'temperature'));
     
-    my $oid_cpqHeTemperatureEntry = '.1.3.6.1.4.1.232.6.2.6.8.1';
-    my $oid_cpqHeTemperatureCondition = '.1.3.6.1.4.1.232.6.2.6.8.1.6';
-    my $oid_cpqHeTemperatureLocale = '.1.3.6.1.4.1.232.6.2.6.8.1.3';
-    my $oid_cpqHeTemperatureCelsius = '.1.3.6.1.4.1.232.6.2.6.8.1.4';
-    my $oid_cpqHeTemperatureThreshold = '.1.3.6.1.4.1.232.6.2.6.8.1.5';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqHeTemperatureEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        # work when we have condition
-        next if ($key !~ /^$oid_cpqHeTemperatureCondition/);
-        # Chassis + index
-        $key =~ /(\d+)\.(\d+)$/;
-        my $temp_chassis = $1;
-        my $temp_index = $2;
-        my $instance = $temp_chassis . "." . $temp_index;
-    
-        my $temp_condition = $result->{$key};
-        my $temp_current = $result->{$oid_cpqHeTemperatureCelsius . '.' . $instance};
-        my $temp_threshold = $result->{$oid_cpqHeTemperatureThreshold . '.' . $instance};
-        my $temp_locale = $result->{$oid_cpqHeTemperatureLocale . '.' . $instance};
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHeTemperatureEntry}})) {
+        next if ($oid !~ /^$mapping->{cpqHeTemperatureCondition}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHeTemperatureEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'temperature', instance => $temp_chassis . '.' . $temp_index));
+        next if ($self->check_exclude(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("%s %s temperature is %dC (%d max) (status is %s).", 
-                                    $temp_index, $location_map{$temp_locale}, $temp_current,
-                                    $temp_threshold,
-                                    ${$conditions{$temp_condition}}[0]));
-        if (${$conditions{$temp_condition}}[1] ne 'OK') {
+        $self->{output}->output_add(long_msg => sprintf("'%s' %s temperature is %dC (%d max) (status is %s).", 
+                                    $instance, $result->{cpqHeTemperatureLocale}, $result->{cpqHeTemperatureCelsius},
+                                    $result->{cpqHeTemperatureThreshold},
+                                    $result->{cpqHeTemperatureCondition}));
+        my $exit = $self->get_severity(section => 'temperature', value => $result->{cpqHeTemperatureCondition});
+        if (!$self->{output}->is_status(value => $temperature, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
             $self->{output}->output_add(severity => ${$conditions{$temp_condition}}[1],
-                                        short_msg => sprintf("temperature %d %s status is %s", 
-                                            $temp_index, $location_map{$temp_locale}, ${$conditions{$temp_condition}}[0]));
+                                        short_msg => sprintf("temperature '%s' %s status is %s", 
+                                            $instance, $result->{cpqHeTemperatureLocale}, $result->{cpqHeTemperatureCondition}));
         }
         
-        $self->{output}->perfdata_add(label => "temp_" . $temp_index . "_" . $location_map{$temp_locale}, unit => 'C',
-                                      value => $temp_current,
-                                      critical => (($temp_threshold != -1) ? $temp_threshold : -1));
+        if (defined($result->{cpqHeTemperatureCelsius}) && $result->{cpqHeTemperatureCelsius} != -1) {
+            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{cpqHeTemperatureCelsius});
+            if ($checked == 0) {
+                my $warn_th = '';
+                my $crit_th = $result->{cpqHeTemperatureThreshold} != -1 ? $result->{cpqHeTemperatureThreshold} : '';
+                $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
+                $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
+                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
+            }
+            $self->{output}->perfdata_add(label => "temp_" . $instance . "_" . $result->{cpqHeTemperatureLocale}, unit => 'C',
+                                          value => $result->{cpqHeTemperatureCelsius},
+                                          warning => $warn,
+                                          critical => $crit);
+        }
     }
 }
 

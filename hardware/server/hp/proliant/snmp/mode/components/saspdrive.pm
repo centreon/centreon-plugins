@@ -33,57 +33,67 @@
 #
 ####################################################################################
 
-package hardware::server::hp::proliant::snmp::mode::components::cpu;
+package hardware::server::hp::proliant::snmp::mode::components::saspdrive;
 
 use strict;
 use warnings;
 
-my %map_cpu_status = (
-    1 => 'unknown',
-    2 => 'ok',
-    3 => 'degraded',
-    4 => 'failed',
-    5 => 'disabled',
+my %map_pdrive_status = (
+    1 => "other",
+    2 => "ok",
+    3 => "predictiveFailure",
+    4 => "offline",
+    5 => "failed",
+    6 => "missingWasOk",
+    7 => "missingWasPredictiveFailure",
+    8 => "missingWasOffline",
+    9 => "missingWasFailed",
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+my %map_pdrive_condition = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
+);
+
+# In 'CPQSCSI-MIB.mib'
 my $mapping = {
-    cpqSeCpuSlot => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.2' },
-    cpqSeCpuName => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.3' },
-    cpqSeCpuStatus => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.16.1.5', map => \%map_cpu_status },
-    cpqSeCpuSocketNumber => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.9' },
+    cpqSasPhyDrvStatus => { oid => '.1.3.6.1.4.1.232.5.5.2.1.1.5', map => \%map_pdrive_status },
+    cpqSasPhyDrvCondition => { oid => '.1.3.6.1.4.1.232.5.5.2.1.1.6', map => \%map_pdrive_condition },
 };
-my $oid_cpqSeCpuEntry = '.1.3.6.1.4.1.232.1.2.2.1.1';
+my $oid_cpqSasPhyDrvEntry = '.1.3.6.1.4.1.232.5.5.2.1.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSeCpuEntry, start => $mapping->{cpqSeCpuSlot}->{oid}, end => $mapping->{cpqSeCpuSocketNumber}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqSasPhyDrvEntry, start => $mapping->{cpqSasPhyDrvStatus}->{oid}, end => $mapping->{cpqSasPhyDrvCondition}->{oid} };
 }
 
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking cpu");
-    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSeCpuEntry}})) {
-        next if ($oid !~ /^$mapping->{cpqSeCpuStatus}->{oid}\.(.*)$/);
+    $self->{output}->output_add(long_msg => "Checking sas physical drives");
+    $self->{components}->{saspdrive} = {name => 'sas physical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'saspdrive'));
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSasPhyDrvEntry}})) {
+        next if ($oid !~ /^$mapping->{cpqSasPhyDrvCondition}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSeCpuEntry}, instance => $instance);
-        
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
-        $self->{components}->{cpu}->{total}++;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSasPhyDrvEntry}, instance => $instance);
 
-        $self->{output}->output_add(long_msg => sprintf("cpu '%s' [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 
-                                    $instance, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuName}, $result->{cpqSeCpuSocketNumber},
-                                    $result->{cpqSeCpuStatus}));
-        my $exit = $self->get_severity(section => 'cpu', value => $result->{cpqSeCpuStatus});
+        next if ($self->check_exclude(section => 'saspdrive', instance => $instance));
+        $self->{components}->{saspdrive}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("sas physical drive '%s' [status: %s] condition is %s.", 
+                                    $instance,
+                                    $result->{cpqSasPhyDrvStatus},
+                                    $result->{cpqSasPhyDrvCondition}));
+        my $exit = $self->get_severity(section => 'saspdrive', value => $result->{cpqSasPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("cpu '%s' is %s", 
-                                            $instance, $result->{cpqSeCpuStatus}));
+                                        short_msg => sprintf("sas physical drive '%s' is %s", 
+                                                $instance, $result->{cpqSasPhyDrvCondition}));
         }
     }
 }
