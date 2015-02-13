@@ -100,9 +100,8 @@ sub check {
                                     $result->{cpqHeTemperatureThreshold},
                                     $result->{cpqHeTemperatureCondition}));
         my $exit = $self->get_severity(section => 'temperature', value => $result->{cpqHeTemperatureCondition});
-        if (!$self->{output}->is_status(value => $temperature, compare => 'ok', litteral => 1)) {
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-            $self->{output}->output_add(severity => ${$conditions{$temp_condition}}[1],
                                         short_msg => sprintf("temperature '%s' %s status is %s", 
                                             $instance, $result->{cpqHeTemperatureLocale}, $result->{cpqHeTemperatureCondition}));
         }

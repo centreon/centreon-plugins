@@ -344,7 +344,7 @@ sub run {
                       'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "hardware::server::hp::proliant::snmp::mode::components::components::$_";
+            my $mod_name = "hardware::server::hp::proliant::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');

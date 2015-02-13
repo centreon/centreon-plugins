@@ -75,7 +75,7 @@ sub load {
     
     push @{$options{request}}, { oid => $oid_cpqNicIfLogMapEntry, start => $mapping->{cpqNicIfLogMapCondition}->{oid}, end => $mapping->{cpqNicIfLogMapStatus}->{oid} };
     push @{$options{request}}, { oid => $oid_cpqNicIfLogMapDescription };
-    push @{$options{request}}, { oid => $cpqNicIfLogMapAdapterCount };
+    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapAdapterCount };
 }
 
 sub check {
@@ -103,7 +103,7 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("logical nic '%s' is %s (%s)", 
-                                            $nic_index, $result3->{cpqNicIfLogMapCondition}));
+                                            $instance, $result3->{cpqNicIfLogMapCondition}));
         }
     }
 }
