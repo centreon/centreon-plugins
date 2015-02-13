@@ -33,57 +33,62 @@
 #
 ####################################################################################
 
-package hardware::server::hp::proliant::snmp::mode::components::cpu;
+package hardware::server::hp::proliant::snmp::mode::components::ideldrive;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
-my %map_cpu_status = (
-    1 => 'unknown',
+# In 'CPQIDE-MIB.mib'
+my %map_ldrive_status = (
+    1 => 'other',
     2 => 'ok',
     3 => 'degraded',
-    4 => 'failed',
-    5 => 'disabled',
+    4 => 'rebuilding',
+    5 => 'failed',
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+my %map_ldrive_condition = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
+);
+
 my $mapping = {
-    cpqSeCpuSlot => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.2' },
-    cpqSeCpuName => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.3' },
-    cpqSeCpuStatus => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.16.1.5', map => \%map_cpu_status },
-    cpqSeCpuSocketNumber => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.9' },
+    cpqIdeLogicalDriveStatus => { oid => '.1.3.6.1.4.1.232.14.2.6.1.1.5', map => \%map_ldrive_status },
+    cpqIdeLogicalDriveCondition => { oid => '.1.3.6.1.4.1.232.14.2.6.1.1.6', map => \%map_ldrive_condition },
 };
-my $oid_cpqSeCpuEntry = '.1.3.6.1.4.1.232.1.2.2.1.1';
+my $oid_cpqIdeLogicalDriveEntry = '.1.3.6.1.4.1.232.14.2.6.1.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSeCpuEntry, start => $mapping->{cpqSeCpuSlot}->{oid}, end => $mapping->{cpqSeCpuSocketNumber}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqIdeLogicalDriveEntry, start => $mapping->{cpqIdeLogicalDriveStatus}->{oid}, end => $mapping->{cpqIdeLogicalDriveCondition}->{oid} };
 }
 
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking cpu");
-    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSeCpuEntry}})) {
-        next if ($oid !~ /^$mapping->{cpqSeCpuStatus}->{oid}\.(.*)$/);
+    $self->{output}->output_add(long_msg => "Checking ide logical drives");
+    $self->{components}->{ideldrive} = {name => 'ide logical drives', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'ideldrive'));
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqIdeLogicalDriveEntry}})) {
+        next if ($oid !~ /^$mapping->{cpqIdeLogicalDriveCondition}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSeCpuEntry}, instance => $instance);
-        
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
-        $self->{components}->{cpu}->{total}++;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqIdeLogicalDriveEntry}, instance => $instance);
 
-        $self->{output}->output_add(long_msg => sprintf("cpu '%s' [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 
-                                    $instance, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuSlot}, $result->{cpqSeCpuName}, $result->{cpqSeCpuSocketNumber},
-                                    $result->{cpqSeCpuStatus}));
-        my $exit = $self->get_severity(section => 'cpu', value => $result->{cpqSeCpuStatus});
+        next if ($self->check_exclude(section => 'ideldrive', instance => $instance));
+        $self->{components}->{ideldrive}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("ide logical drive '%s' is %s [condition: %s]", 
+                                                $instance, $result->{cpqIdeLogicalDriveStatus}, $result->{cpqIdeLogicalDriveCondition}));
+        my $exit = $self->get_severity(section => 'ideldrive', value => $result->{cpqIdeLogicalDriveStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("cpu '%s' is %s", 
-                                            $instance, $result->{cpqSeCpuStatus}));
+                                        short_msg => sprintf("ide logical drive '%s' is %s", 
+                                                $instance, $result->{cpqIdeLogicalDriveStatus}));
         }
     }
 }

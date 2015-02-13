@@ -38,26 +38,26 @@ package hardware::server::hp::proliant::snmp::mode::components::psu;
 use strict;
 use warnings;
 
-my %conditions = (
-    1 => ['other', 'CRITICAL'], 
-    2 => ['ok', 'OK'], 
-    3 => ['degraded', 'WARNING'], 
-    4 => ['failed', 'CRITICAL']
+my %map_psu_condition = (
+    1 => 'other', 
+    2 => 'ok', 
+    3 => 'degraded', 
+    4 => 'failed',
 );
 
-my %present_map = (
+my %map_present = (
     1 => 'other',
     2 => 'absent',
     3 => 'present',
 );
 
-my %redundant_map = (
+my %map_redundant = (
     1 => 'other',
     2 => 'not redundant',
     3 => 'redundant',
 );
 
-my %psustatus = (
+my %map_psu_status = (
     1  => 'noError',
     2  => 'generalFailure',
     3  => 'bistFailure',
@@ -76,74 +76,64 @@ my %psustatus = (
     16 => 'calibrationTableInvalid',
 );
 
+# In MIB 'CPQHLTH-MIB.mib'
+my $mapping = {
+    cpqHeFltTolPowerSupplyPresent => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.3', map => \%map_present },
+    cpqHeFltTolPowerSupplyCondition => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.4', map => \%map_psu_condition },
+    cpqHeFltTolPowerSupplyStatus => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.5', map => \%map_psu_status },
+    cpqHeFltTolPowerSupplyMainVoltage => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.6' },
+    cpqHeFltTolPowerSupplyCapacityUsed => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.7' },
+    cpqHeFltTolPowerSupplyCapacityMaximum => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.8' },
+    cpqHeFltTolPowerSupplyRedundant => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.9' },
+};
+my $mapping2 = {
+    cpqHeFltTolPowerSupplyRedundantPartner => { oid => '.1.3.6.1.4.1.232.6.2.9.3.1.17' },
+};
+my $oid_cpqHeFltTolPowerSupplyEntry = '.1.3.6.1.4.1.232.6.2.9.3.1';
+my $oid_cpqHeFltTolPowerSupplyRedundantPartner = '.1.3.6.1.4.1.232.6.2.9.3.1.17';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_cpqHeFltTolPowerSupplyEntry, start => $mapping->{cpqHeFltTolPowerSupplyPresent}->{oid}, end => $mapping->{cpqHeFltTolPowerSupplyRedundant}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqHeFltTolPowerSupplyRedundantPartner };
+}
+
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CPQHLTH-MIB.mib'
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'psu'));
     
-    my $oid_cpqHeFltTolPowerSupplyPresent = '.1.3.6.1.4.1.232.6.2.9.3.1.3';
-    my $oid_cpqHeFltTolPowerSupplyChassis = '.1.3.6.1.4.1.232.6.2.9.3.1.1';
-    my $oid_cpqHeFltTolPowerSupplyBay = '.1.3.6.1.4.1.232.6.2.9.3.1.2';
-    my $oid_cpqHeFltTolPowerSupplyCondition = '.1.3.6.1.4.1.232.6.2.9.3.1.4';
-    my $oid_cpqHeFltTolPowerSupplyStatus = '.1.3.6.1.4.1.232.6.2.9.3.1.5';
-    my $oid_cpqHeFltTolPowerSupplyRedundant = '.1.3.6.1.4.1.232.6.2.9.3.1.9';
-    my $oid_cpqHeFltTolPowerSupplyCapacityUsed = '.1.3.6.1.4.1.232.6.2.9.3.1.7'; # Watts
-    my $oid_cpqHeFltTolPowerSupplyCapacityMaximum = '.1.3.6.1.4.1.232.6.2.9.3.1.8';
-    my $oid_cpqHeFltTolPowerSupplyMainVoltage = '.1.3.6.1.4.1.232.6.2.9.3.1.6'; # Volts
-    my $oid_cpqHeFltTolPowerSupplyRedundantPartner = '.1.3.6.1.4.1.232.6.2.9.3.1.17';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqHeFltTolPowerSupplyPresent);
-    return if (scalar(keys %$result) <= 0);
-    my @get_oids = ();
-    my @oids_end = ();
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        # Chassis + Bay
-        $key =~ /(\d+)\.(\d+)$/;
-        my $oid_end = $1 . '.' . $2;
-        
-        next if ($present_map{$result->{$key}} ne 'present' &&
-                 $self->absent_problem(section => 'psu', instance => $1 . '.' . $2));
-        
-        push @oids_end, $oid_end;
-        push @get_oids,
-                $oid_cpqHeFltTolPowerSupplyCondition . "." . $oid_end, $oid_cpqHeFltTolPowerSupplyStatus . "." . $oid_end,
-                $oid_cpqHeFltTolPowerSupplyRedundant . "." . $oid_end, $oid_cpqHeFltTolPowerSupplyCapacityUsed . "." . $oid_end,
-                $oid_cpqHeFltTolPowerSupplyCapacityMaximum . "." . $oid_end, $oid_cpqHeFltTolPowerSupplyMainVoltage . "." . $oid_end,
-                $oid_cpqHeFltTolPowerSupplyRedundantPartner . "." . $oid_end;
-    }
-    $result = $self->{snmp}->get_leef(oids => \@get_oids);
-    foreach (@oids_end) {
-        my ($psu_chassis, $psu_bay) = split /\./;
-        my $psu_condition = $result->{$oid_cpqHeFltTolPowerSupplyCondition . '.' . $_};
-        my $psu_status = $result->{$oid_cpqHeFltTolPowerSupplyStatus . '.' . $_};
-        my $psu_redundant = $result->{$oid_cpqHeFltTolPowerSupplyRedundant . '.' . $_};
-        my $psu_redundantpartner = defined($result->{$oid_cpqHeFltTolPowerSupplyRedundantPartner . '.' . $_}) ? $result->{$oid_cpqHeFltTolPowerSupplyRedundantPartner . '.' . $_} : 'undefined';
-        my $psu_capacityused = $result->{$oid_cpqHeFltTolPowerSupplyCapacityUsed . '.' . $_};
-        my $psu_capacitymaximum = $result->{$oid_cpqHeFltTolPowerSupplyCapacityMaximum . '.' . $_};
-        my $psu_voltage = $result->{$oid_cpqHeFltTolPowerSupplyMainVoltage . '.' . $_};
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHeFltTolPowerSupplyEntry}})) {
+        next if ($oid !~ /^$mapping->{cpqHeFltTolPowerSupplyPresent}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHeFltTolPowerSupplyEntry}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqHeFltTolPowerSupplyRedundantPartner}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $psu_chassis . '.' . $psu_bay));
+        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($result->{cpqHeFltTolPowerSupplyPresent} !~ /present/i && 
+                 $self->absent_problem(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("powersupply %d status is %s [chassis: %s, redundance: %s, redundant partner: %s] (status %s).",
-                                    $psu_bay, ${$conditions{$psu_condition}}[0],
-                                    $psu_chassis, $redundant_map{$psu_redundant}, $psu_redundantpartner,
-                                    $psustatus{$psu_status}
+        $self->{output}->output_add(long_msg => sprintf("powersupply '%s' status is %s [redundance: %s, redundant partner: %s] (status %s).",
+                                    $instance, $result->{cpqHeFltTolPowerSupplyCondition},
+                                    $result->{cpqHeFltTolPowerSupplyRedundant}, $result2->{cpqHeFltTolPowerSupplyRedundantPartner},
+                                    $result->{cpqHeFltTolPowerSupplyStatus}
                                     ));
-        if ($psu_condition != 2) {
-            $self->{output}->output_add(severity =>  ${$conditions{$psu_condition}}[1],
-                                        short_msg => sprintf("powersupply %d status is %s",
-                                           $psu_bay, ${$conditions{$psu_condition}}[0]));
+        my $exit = $self->get_severity(section => 'psu', value => $result->{cpqHeFltTolPowerSupplyCondition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity =>  $exit,
+                                        short_msg => sprintf("powersupply '%s' status is %s",
+                                           $instance, $result->{cpqHeFltTolPowerSupplyCondition}));
         }
         
-        $self->{output}->perfdata_add(label => "psu_" . $psu_bay . "_power", unit => 'W',
-                                      value => $psu_capacityused,
-                                      critical => $psu_capacitymaximum);
-        $self->{output}->perfdata_add(label => "psu_" . $psu_bay . "_voltage", unit => 'V',
-                                      value => $psu_voltage);
+        $self->{output}->perfdata_add(label => "psu_power_" . $instance, unit => 'W',
+                                      value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
+                                      critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum});
+        $self->{output}->perfdata_add(label => "psu__voltage" . $instance, unit => 'V',
+                                      value => $result->{cpqHeFltTolPowerSupplyMainVoltage});
     }
 }
 

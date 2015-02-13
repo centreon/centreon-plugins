@@ -40,17 +40,208 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use hardware::server::hp::proliant::snmp::mode::components::cpu;
-use hardware::server::hp::proliant::snmp::mode::components::psu;
-use hardware::server::hp::proliant::snmp::mode::components::pc;
-use hardware::server::hp::proliant::snmp::mode::components::fan;
-use hardware::server::hp::proliant::snmp::mode::components::temperature;
-use hardware::server::hp::proliant::snmp::mode::components::network;
-use hardware::server::hp::proliant::snmp::mode::components::ida;
-use hardware::server::hp::proliant::snmp::mode::components::fca;
-use hardware::server::hp::proliant::snmp::mode::components::ide;
-use hardware::server::hp::proliant::snmp::mode::components::sas;
-use hardware::server::hp::proliant::snmp::mode::components::scsi;
+
+my $thresholds = {
+    cpu => [
+        ['unknown', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+        ['disabled', 'OK'],
+    ],
+    idectl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    ideldrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['rebuilding', 'WARNING'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    idepdrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    pc => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    psu => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    sasctl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    sasldrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['rebuilding', 'WARNING'],
+        ['failed', 'CRITICAL'],
+        ['offline', 'CRITICAL'],
+    ],
+    saspdrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    scsictl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    scsildrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+        ['unconfigured', 'OK'],
+        ['recovering', 'WARNING'],
+        ['readyForRebuild', 'WARNING'],
+        ['rebuilding', 'WARNING'],
+        ['wrongDrive', 'CRITICAL'],
+        ['badConnect', 'CRITICAL'],
+        ['disabled', 'OK'],
+    ],
+    scsipdrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    fcahostctl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    fcaexternalctl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    fcaexternalacc => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    fcaexternalaccbattery => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+        ['recharging', 'WARNING'],
+        ['not present', 'OK'],
+    ],
+    fcaldrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['failed', 'CRITICAL'],
+        ['rebuilding', 'WARNING'],
+        ['expanding', 'WARNING'],
+        ['recovering', 'WARNING'],
+        ['unconfigured', 'OK'],
+        ['readyForRebuild', 'WARNING'],
+        ['wrongDrive', 'CRITICAL'],
+        ['badConnect', 'CRITICAL'],
+        ['overheating', 'CRITICAL'],
+        ['notAvailable', 'WARNING'],
+        ['hardError', 'CRITICAL'],
+        ['queuedForExpansion', 'WARNING'],
+        ['shutdown', 'WARNING'],
+    ],
+    fcapdrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    dactl => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    daacc => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    daaccbattery => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+        ['recharging', 'WARNING'],
+        ['not present', 'OK'],
+    ],
+    daldrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['failed', 'CRITICAL'],
+        ['rebuilding', 'WARNING'],
+        ['expanding', 'WARNING'],
+        ['recovering', 'WARNING'],
+        ['unconfigured', 'OK'],
+        ['readyForRebuild', 'WARNING'],
+        ['wrongDrive', 'CRITICAL'],
+        ['badConnect', 'CRITICAL'],
+        ['overheating', 'CRITICAL'],
+        ['notAvailable', 'WARNING'],
+        ['hardError', 'CRITICAL'],
+        ['queuedForExpansion', 'WARNING'],
+        ['shutdown', 'WARNING'],
+    ],
+    dapdrive => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    fan => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    pnic => [
+        ['other', 'UNKNOWN'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    lnic => [
+        ['other', 'OK'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+    temperature => [
+        ['other', 'OK'],
+        ['ok', 'OK'],
+        ['degraded', 'WARNING'],
+        ['failed', 'CRITICAL'],
+    ],
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -62,8 +253,11 @@ sub new {
                                 { 
                                   "exclude:s"        => { name => 'exclude' },
                                   "absent-problem:s" => { name => 'absent' },
-                                  "component:s"      => { name => 'component', default => 'all' },
+                                  "component:s"      => { name => 'component', default => '.*' },
                                   "no-component:s"   => { name => 'no_component' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
 
     $self->{product_name} = undef;
@@ -86,122 +280,50 @@ sub check_options {
             $self->{no_components} = 'critical';
         }
     }
-}
-
-sub global {
-    my ($self, %options) = @_;
- 
-    $self->get_system_information();
-    hardware::server::hp::proliant::snmp::mode::components::cpu::check($self);
-    hardware::server::hp::proliant::snmp::mode::components::psu::check($self);
-    hardware::server::hp::proliant::snmp::mode::components::pc::check($self);
-    hardware::server::hp::proliant::snmp::mode::components::fan::check($self);
-    hardware::server::hp::proliant::snmp::mode::components::temperature::check($self);
-    hardware::server::hp::proliant::snmp::mode::components::network::physical_nic($self);
-    hardware::server::hp::proliant::snmp::mode::components::network::logical_nic($self);
-    hardware::server::hp::proliant::snmp::mode::components::ida::array_controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::ida::array_accelerator($self);
-    hardware::server::hp::proliant::snmp::mode::components::ida::logical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::ida::physical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::fca::host_array_controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::fca::external_array_controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::fca::external_array_accelerator($self);
-    hardware::server::hp::proliant::snmp::mode::components::fca::logical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::fca::physical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::ide::controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::ide::logical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::ide::physical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::sas::controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::sas::logical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::sas::physical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::scsi::controller($self);
-    hardware::server::hp::proliant::snmp::mode::components::scsi::logical_drive($self);
-    hardware::server::hp::proliant::snmp::mode::components::scsi::physical_drive($self);
-    
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
+     $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok - Product Name: %s, Serial: %s, Rom Version: %s", 
-                                                    $total_components,
-                                                    $display_by_component,
-                                                    $self->{product_name}, $self->{serial}, $self->{romversion})
-                                );
-                                
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
+    $self->{numeric_threshold} = {};
+    foreach my $option (('warning', 'critical')) {
+        foreach my $val (@{$self->{option_results}->{$option}}) {
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my ($section, $regexp, $value) = ($1, $2, $3);
+            if ($section !~ /(temperature)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: battery or temperature).");
+                $self->{output}->option_exit();
+            }
+            my $position = 0;
+            if (defined($self->{numeric_threshold}->{$section})) {
+                $position = scalar(@{$self->{numeric_threshold}->{$section}});
+            }
+            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
+        }
     }
-}
-
-sub component {
-    my ($self, %options) = @_;
-    
-    if ($self->{option_results}->{component} eq 'cpu') {
-        hardware::server::hp::proliant::snmp::mode::components::cpu::check($self);
-    } elsif ($self->{option_results}->{component} eq 'psu') {
-        hardware::server::hp::proliant::snmp::mode::components::psu::check($self);
-    } elsif ($self->{option_results}->{component} eq 'pc') {
-        hardware::server::hp::proliant::snmp::mode::components::pc::check($self);
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        hardware::server::hp::proliant::snmp::mode::components::fan::check($self);
-    } elsif ($self->{option_results}->{component} eq 'temperature') {
-        hardware::server::hp::proliant::snmp::mode::components::temperature::check($self);
-    } elsif ($self->{option_results}->{component} eq 'network') {
-        hardware::server::hp::proliant::snmp::mode::components::network::physical_nic($self);
-        hardware::server::hp::proliant::snmp::mode::components::network::logical_nic($self);
-    } elsif ($self->{option_results}->{component} eq 'storage') {
-        hardware::server::hp::proliant::snmp::mode::components::ida::array_controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::ida::array_accelerator($self);
-        hardware::server::hp::proliant::snmp::mode::components::ida::logical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::ida::physical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::fca::host_array_controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::fca::external_array_controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::fca::external_array_accelerator($self);
-        hardware::server::hp::proliant::snmp::mode::components::fca::logical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::fca::physical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::ide::controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::ide::logical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::ide::physical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::sas::controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::sas::logical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::sas::physical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::scsi::controller($self);
-        hardware::server::hp::proliant::snmp::mode::components::scsi::logical_drive($self);
-        hardware::server::hp::proliant::snmp::mode::components::scsi::physical_drive($self);
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
+    if ($self->{option_results}->{component} =~ /storage/i) {
+        $self->{option_results}->{component} = '^(sas|ide|fca|da|scsi).*';
     }
-    
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok.", 
-                                                     $total_components,
-                                                     $display_by_component)
-                                );
-
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
+    if ($self->{option_results}->{component} =~ /network/i) {
+        $self->{option_results}->{component} = '^(pnic|lnic)$';
     }
 }
 
@@ -209,11 +331,62 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
+    
+    $self->get_system_information();
+    $self->{output}->output_add(long_msg => sprintf("Product Name: %s, Serial: %s, Rom Version: %s", 
+                                                    $self->{product_name}, $self->{serial}, $self->{romversion})
+                                );
 
-    if ($self->{option_results}->{component} eq 'all') {
-        $self->global();
-    } else {
-        $self->component();
+    my $snmp_request = [];
+    my @components = ('cpu', 'idectl', 'ideldrive', 'idepdrive', 'pc', 'psu',
+                      'sasctl', 'sasldrive', 'saspdrive', 'scsictl', 'scsildrive', 'scsipdrive',
+                      'fcahostctl', 'fcaexternalctl', 'fcaexternalacc', 'fcaldrive', 'fcapdrive',
+                      'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "hardware::server::hp::proliant::snmp::mode::components::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
+    
+    if (scalar(@{$snmp_request}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "hardware::server::hp::proliant::snmp::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
+    }
+    
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %s components are ok [%s].", 
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
     }
 
     $self->{output}->display();
@@ -266,6 +439,50 @@ sub absent_problem {
     return 1;
 }
 
+
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
+    
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{regexp}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
+            }
+        }
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
+    }
+    
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
+}
+
 1;
 
 __END__
@@ -279,7 +496,8 @@ Check Hardware (CPUs, Power Supplies, Power converters, Fans).
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'cpu', 'psu', 'pc', 'fan', 'network', 'temperature', 'storage'.
+Can be: 'cpu', 'psu', 'pc', 'fan', 'temperature', 'lnic', 'pnic',...
+There are some magic words like: 'network', 'storage'.
 
 =item B<--exclude>
 
@@ -295,6 +513,22 @@ Can be specific or global: --absent-problem=fan#1.2#,cpu
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='temperature,CRITICAL,^(?!(ok)$)'
+
+=item B<--warning>
+
+Set warning threshold for temperatures (syntax: type,regexp,treshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for temperatures (syntax: type,regexp,treshold)
+Example: --critical='temperature,.*,40'
 
 =back
 
