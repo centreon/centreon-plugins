@@ -172,21 +172,23 @@ __END__
 
 Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command)
 
-(!!) Please add monitoring-engine user to rrdcached group (!!)
-
 =over 8
 
-=item B<--socket-type>
+=item B<--tcp>
 
-Specify 'tcp' or 'unix' following your rrdcached socket configuration (default: unix)
+Specify this option if TCP socket is used
 
 =item B<--host>
 
-Host where the socket is (should be set if --socket-type eq tcp) (default: 127.0.0.1)
+Host where the socket is (should be set if --tcp is used) (default: 127.0.0.1)
 
 =item B<--port>
 
-Port where the socket is listening (should be set if --socket-type eq tcp) (default: 42217)
+Port where the socket is listening (default: 42217)
+
+=item B<--unix>
+
+Specify this option if UNIX socket is used
 
 =item B<--socket-path>
 
