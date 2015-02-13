@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use IO::Socket;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,15 +50,14 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                 "host:s"    => { name => 'host', default => '127.0.0.1' },
-                                 "port:s"    => { name => 'port', default => '42217' },
-                                 "unix-socket-path:s"    => { name => 'unix_socket_path', default => '/var/rrdtool/rrdcached/rrdcached.sock' },
-                                 "warning-update:s"    => { name => 'warning_update', default => '3000' },
+                                 "host:s"               => { name => 'host', default => '127.0.0.1' },
+                                 "port:s"               => { name => 'port', default => '42217' },
+                                 "unix-socket-path:s"   => { name => 'unix_socket_path', default => '/var/rrdtool/rrdcached/rrdcached.sock' },
+                                 "warning-update:s"     => { name => 'warning_update', default => '3000' },
                                  "critical-update:s"    => { name => 'critical_update', default => '5000' },
-                                 "warning-queue:s"    => { name => 'warning_queue', default => '70' },
-                                 "critical-queue:s"    => { name => 'critical_queue', default => '100' },
-                                 "tcp"  => { name => 'tcp' },
-                                 "unix" => { name => 'unix' },
+                                 "warning-queue:s"      => { name => 'warning_queue', default => '70' },
+                                 "critical-queue:s"     => { name => 'critical_queue', default => '100' },
+                                 "socket-type:s"        => { name => 'socket_type', default => 'unix' },
                                 });
     return $self;
 }
@@ -65,7 +65,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
+    
     if (($self->{perfdata}->threshold_validate(label => 'warning-update', value => $self->{option_results}->{warning_update})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning-update threshold '" . $self->{warning} . "'.");
        $self->{output}->option_exit();
@@ -82,14 +82,6 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical-queue threshold '" . $self->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    if ((defined($self->{option_results}->{tcp})) && (!defined($self->{option_results}->{host}) || !defined($self->{option_results}->{port}))) {
-        $self->{output}->add_option_msg(short_msg => "Please define host and port options when __tcp option is used");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{unix})) && (!defined($self->{option_results}->{unix_socket_path}))) {
-        $self->{output}->add_option_msg(short_msg => "Please define host and port option when --unix option is used");
-        $self->{output}->option_exit();
-    }
 }
 
 sub run {
@@ -99,8 +91,8 @@ sub run {
     my @tab;
     my $queueLenght;
     my $socket;
-
-    if (defined($self->{option_results}->{tcp})) {
+     
+    if ($self->{option_results}->{socket_type} eq 'tcp') {
         $socket = IO::Socket::INET->new(
         PeerHost => $self->{option_results}->{host},
         PeerPort => $self->{option_results}->{port},
@@ -113,16 +105,14 @@ sub run {
                 Peer => $SOCK_PATH,
             );
     }
-
+    
     if (!defined($socket)) {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => "Can't connect to socket, is rrdcached running ? is your socket path/address:port correct ?");
         $self->{output}->display();
         $self->{output}->exit();
     } else { 
-        
         $socket->send("STATS\n");
-        
         while ($data = <$socket>) {
             if ($data =~ /(\d+) Statistics follow/) {
                 my $stats_number = $1;
@@ -136,10 +126,11 @@ sub run {
             next if $data !~ m/(^UpdatesR|Data|Queue)/;
             push @tab,$data;
             $socket->send("QUIT\n");
+                    
         } 
-        
+      
         close($socket);
-         
+
         foreach my $line (@tab) {
             my ($key, $value) = split (/:\s*/, $line,2);
             push @stat, $value;
@@ -147,7 +138,6 @@ sub run {
         }
         chomp($stat[0]);  
         my $updatesNotWritten = $stat[1] - $stat[2];
-    
     
         my $exit1 = $self->{perfdata}->threshold_check(value => $updatesNotWritten, threshold => [ { label => 'critical-update', 'exit_litteral' => 'critical' }, { label => 'warning-update', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{perfdata}->threshold_check(value => $stat[0], threshold => [ { label => 'critical-queue', 'exit_litteral' => 'critical' }, { label => 'warning-queue', exit_litteral => 'warning' } ]);
@@ -171,7 +161,7 @@ sub run {
                       
         $self->{output}->display();
         $self->{output}->exit();
-    }
+     }
 }
 
 1;
@@ -182,23 +172,21 @@ __END__
 
 Check Updates cache of rrdcached daemon (compute delta between UpdatesReceived and DataSetsWritten from the rrdcached socket STATS command)
 
+(!!) Please add monitoring-engine user to rrdcached group (!!)
+
 =over 8
 
-=item B<--tcp>
+=item B<--socket-type>
 
-Specify this option if TCP socket is used
+Specify 'tcp' or 'unix' following your rrdcached socket configuration (default: unix)
 
 =item B<--host>
 
-Host where the socket is (should be set if --tcp is used) (default: 127.0.0.1)
+Host where the socket is (should be set if --socket-type eq tcp) (default: 127.0.0.1)
 
 =item B<--port>
 
-Port where the socket is listening (default: 42217)
-
-=item B<--unix>
-
-Specify this option if UNIX socket is used
+Port where the socket is listening (should be set if --socket-type eq tcp) (default: 42217)
 
 =item B<--socket-path>
 
