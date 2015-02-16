@@ -41,9 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use centreon::plugins::statefile;
-
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -146,8 +144,8 @@ sub run {
         }
     }
 
-    my $success_incoming_mails = $hwebcontent->{qw(lmtpd.deliveries)}->[0]->{success_sum} // '0';
-    my $failure_incoming_mails = $hwebcontent->{qw(lmtpd.deliveries)}->[0]->{failure_sum} // '0';
+    my $success_incoming_mails = defined($hwebcontent->{qw(lmtpd.deliveries)}->[0]->{success_sum}) ? $hwebcontent->{qw(lmtpd.deliveries)}->[0]->{success_sum} : '0';
+    my $failure_incoming_mails = defined($hwebcontent->{qw(lmtpd.deliveries)}->[0]->{failure_sum}) ? $hwebcontent->{qw(lmtpd.deliveries)}->[0]->{failure_sum} : '0';
 
     # If not present: failure and success incoming mails are 0
     if (!defined($success_incoming_mails)) {
