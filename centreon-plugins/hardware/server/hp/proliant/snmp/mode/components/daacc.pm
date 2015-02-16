@@ -108,11 +108,11 @@ sub check {
                                         short_msg => sprintf("da controller accelerator '%s' is %s", 
                                             $instance, $result3->{cpqDaAccelCondition}));
         }
-        $exit = $self->get_severity(section => 'daaccbattery', value => $result3->{cpqDaAccelBattery});
+        $exit = $self->get_severity(section => 'daaccbattery', value => $result2->{cpqDaAccelBattery});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("da controller accelerator '%s' battery is %s", 
-                                            $instance, $result3->{cpqDaAccelBattery}));
+                                            $instance, $result2->{cpqDaAccelBattery}));
         }
     }
 }
