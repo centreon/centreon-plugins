@@ -50,7 +50,7 @@ my %map_cpu_status = (
 my $mapping = {
     cpqSeCpuSlot => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.2' },
     cpqSeCpuName => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.3' },
-    cpqSeCpuStatus => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.16.1.5', map => \%map_cpu_status },
+    cpqSeCpuStatus => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.6', map => \%map_cpu_status },
     cpqSeCpuSocketNumber => { oid => '.1.3.6.1.4.1.232.1.2.2.1.1.9' },
 };
 my $oid_cpqSeCpuEntry = '.1.3.6.1.4.1.232.1.2.2.1.1';
