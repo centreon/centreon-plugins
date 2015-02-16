@@ -47,7 +47,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::hp::proliant::snmp::mode::hardware',
+                         'global-status'    => 'hardware::server::hp::proliant::snmp::mode::globalstatus',
+                         'hardware'         => 'hardware::server::hp::proliant::snmp::mode::hardware',
                          );
 
     return $self;
