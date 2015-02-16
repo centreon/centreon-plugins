@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2022 MERETHIS
+# Copyright 2005-2015 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::centreon::local::mode::retentionbrokervpa;
+package apps::centreon::local::mode::retentionbroker;
 
 use base qw(centreon::plugins::mode);
 
@@ -71,48 +71,59 @@ sub run {
     my ($self, %options) = @_;
     my $parser = XML::LibXML->new();
     my @broker_retention_dir_files;
-    my @broker_retention_sql_files;
-    my @broker_retention_perfdata_files;
-    my @broker_retention_rrd_files;
-    my $broker_retention_perfdata_files_count;
-    my $broker_retention_sql_files_count;
-    my $broker_retention_rrd_files_count;
     my $broker_retention_sql_size=0;
     my $broker_retention_perfdata_size=0;
     my $broker_retention_rrd_size=0;
+    my $broker_rrd_retention_rrd_size=0;
     my $count = 0;
-    my @configFiles;
 
-    push @configFiles, $self->{option_results}->{config_path}.$self->{option_results}->{rrd_config_file}, $self->{option_results}->{config_path}.$self->{option_results}->{sql_config_file};
+    my $xml_rrd_config_file = $self->{option_results}->{config_path}.$self->{option_results}->{rrd_config_file};
+    my $xml_sql_config_file = $self->{option_results}->{config_path}.$self->{option_results}->{sql_config_file};
+    my $obj_rrd_config_file = $parser->parse_file($xml_rrd_config_file);	
+    my $obj_sql_config_file = $parser->parse_file($xml_sql_config_file);	
+
     $self->{output}->output_add(severity => 'OK', short_msg => 'Centreon-broker retention OK');
-	
-    my $filename;
-    foreach my $file (@configFiles) {
-        my $config = $parser->parse_file($file);
-        foreach my $data ($config->findnodes('/centreonBroker/output/path')) {
-            next if ($data->to_literal =~ m/rrdcached/);
-            $filename = $data->to_literal;
-            $filename  =~ s/^.*\/(.*)$/$1/;
-            if (-f $data->to_literal) {
-                $self->{output}->output_add(severity => 'CRITICAL', short_msg => sprintf("%s ", $filename));
-            }
-        }    
-    } 
-    
+
+    my $central_broker_master_sql_failover_path;
+    my $central_broker_master_rrd_failover_path;
+    my $central_broker_master_perfdata_failover_path;
+    my $central_broker_rrd_rrd_failover_path;
+    foreach my $data ($obj_sql_config_file->findnodes('/centreonBroker/output/path')) {
+        next if ($data->to_literal =~ m/rrdcached/);
+        my $filename = $data->to_literal;
+        $filename  =~ s/^.*\/(.*)$/$1/;
+        if ($filename =~ m/sql/) {
+            $central_broker_master_sql_failover_path = $filename;
+        }
+        if ($filename =~ m/rrd/) {
+            $central_broker_master_rrd_failover_path = $filename;
+        }
+        if ($filename =~ m/perfdata/) {
+            $central_broker_master_perfdata_failover_path = $filename;
+        }
+    }
+
+    foreach my $data ($obj_rrd_config_file->findnodes('/centreonBroker/output/path')) {
+        next if ($data->to_literal =~ m/rrdcached/);
+        $central_broker_rrd_rrd_failover_path = $data->to_literal;
+        $central_broker_rrd_rrd_failover_path  =~ s/^.*\/(.*)$/$1/;
+    }
+
     opendir(my $dh, $self->{option_results}->{broker_retention_dir}); 
     my $file = readdir($dh);
-  
     while ($file = readdir($dh)) {               
         next if $file =~ m/^\./ or $file =~ m/stats/;
         push @broker_retention_dir_files, $file;
     } 
 
-    @broker_retention_sql_files = grep(/sql/, @broker_retention_dir_files);  
-    @broker_retention_perfdata_files = grep(/perfdata/, @broker_retention_dir_files);
-    @broker_retention_rrd_files = grep(/rrd/, @broker_retention_dir_files);
-    $broker_retention_sql_files_count = scalar(@broker_retention_sql_files);
-    $broker_retention_perfdata_files_count = scalar(@broker_retention_perfdata_files);
-    $broker_retention_rrd_files_count = scalar(@broker_retention_rrd_files);
+    my @broker_retention_sql_files = grep(/$central_broker_master_sql_failover_path/, @broker_retention_dir_files);  
+    my @broker_retention_perfdata_files = grep(/$central_broker_master_perfdata_failover_path/, @broker_retention_dir_files);
+    my @broker_retention_rrd_files = grep(/$central_broker_master_rrd_failover_path/, @broker_retention_dir_files);
+    my @broker_rrd_retention_rrd_files = grep(/$central_broker_rrd_rrd_failover_path/, @broker_retention_dir_files);
+    my $broker_retention_sql_files_count = scalar(@broker_retention_sql_files);
+    my $broker_retention_perfdata_files_count = scalar(@broker_retention_perfdata_files);
+    my $broker_retention_rrd_files_count = scalar(@broker_retention_rrd_files);
+    my $broker_rrd_retention_rrd_files_count = scalar(@broker_rrd_retention_rrd_files);
 
     foreach my $sql_file(@broker_retention_sql_files){
         $broker_retention_sql_size += -s $self->{option_results}->{broker_retention_dir}.$sql_file;
@@ -123,28 +134,33 @@ sub run {
     foreach my $rrd_file(@broker_retention_rrd_files){
         $broker_retention_rrd_size += -s $self->{option_results}->{broker_retention_dir}.$rrd_file;
     }
-
-    
-    if(length($broker_retention_sql_size)>=4){
-        $broker_retention_sql_size = $broker_retention_sql_size / 1024;
-    }
-    if(length($broker_retention_perfdata_size)>=4){
-        $broker_retention_perfdata_size = $broker_retention_perfdata_size / 1024;
-    }
-    if(length($broker_retention_rrd_size)>=4){
-        $broker_retention_rrd_size = $broker_retention_rrd_size / 1024;
+    foreach my $rrd_rrd_file(@broker_rrd_retention_rrd_files){
+        $broker_rrd_retention_rrd_size += -s $self->{option_results}->{broker_retention_dir}.$rrd_rrd_file;
     }
 
-    if (($broker_retention_rrd_files_count > 1) || ($broker_retention_sql_files_count) > 1 || ($broker_retention_rrd_files_count > 1)) {
+    if(length($broker_retention_sql_size)!=0){
+        $broker_retention_sql_size = $broker_retention_sql_size / 1024 / 1024;
+    }
+    if(length($broker_retention_perfdata_size)!=0){
+        $broker_retention_perfdata_size = $broker_retention_perfdata_size / 1024 / 1024;
+    }
+    if(length($broker_retention_rrd_size)!=0){
+        $broker_retention_rrd_size = $broker_retention_rrd_size / 1024 /1024;
+    }
+    if(length($broker_rrd_retention_rrd_size)!=0){
+        $broker_rrd_retention_rrd_size = $broker_rrd_retention_rrd_size / 1024 /1024;
+    }
+
+    if (($broker_retention_rrd_files_count > 1) || ($broker_retention_sql_files_count) > 1 || ($broker_retention_rrd_files_count > 1) || ($broker_rrd_retention_rrd_files_count > 1)) {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'There is some retention files check your broker output',
-                                    long_msg => sprintf("sql_retention_files '%s' (size:'%d'MB) \nperfdata_retention_files '%s' (size:'%d'MB) \nrrd_retention_files '%s' (size:'%d'MB)",
-                                    $broker_retention_sql_files_count, $broker_retention_sql_size,  $broker_retention_perfdata_files_count, $broker_retention_perfdata_size, $broker_retention_rrd_files_count, $broker_retention_rrd_size,
+                                    short_msg => 'There are some retention files check your broker output',
+                                    long_msg => sprintf("sql_retention_files '%s' (size:'%.2f'MB) \nperfdata_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) ",
+                                    $broker_retention_sql_files_count, $broker_retention_sql_size,  $broker_retention_perfdata_files_count, $broker_retention_perfdata_size, $broker_retention_rrd_files_count, $broker_retention_rrd_size, $broker_rrd_retention_rrd_files_count, $broker_rrd_retention_rrd_size,
                                    ));
     }
 
-        $self->{output}->display(force_long_output => 1);
-        $self->{output}->exit();
+    $self->{output}->display(force_long_output => 1);
+    $self->{output}->exit();
 
 }
 

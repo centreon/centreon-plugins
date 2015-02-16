@@ -53,6 +53,7 @@ sub new {
                                 {
                                   "memcached:s"           => { name => 'memcached' },
                                   "statefile-dir:s"       => { name => 'statefile_dir', default => $default_dir },
+                                  "statefile-suffix:s"    => { name => 'statefile_suffix', default => '' },
                                   "statefile-concat-cwd"  => { name => 'statefile_concat_cwd' },
                                   "statefile-storable"    => { name => 'statefile_storable' },
                                 });
@@ -66,6 +67,7 @@ sub new {
     $self->{memcached} = undef;
     
     $self->{statefile_dir} = undef;
+    $self->{statefile_suffix} = undef;
     
     return $self;
 }
@@ -90,12 +92,14 @@ sub check_options {
                                                error_msg => "Cannot load module 'Storable'.");
         $self->{storable} = 1;
     }
+    $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
 }
 
 sub read {
     my ($self, %options) = @_;
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
-    $self->{statefile} =  defined($options{statefile}) ? $options{statefile} : $self->{statefile};
+    $self->{statefile} =  defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
+                            $self->{statefile};
 
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
@@ -217,6 +221,10 @@ Memcached server to use (only one server).
 =item B<--statefile-dir>
 
 Directory for statefile (Default: '/var/lib/centreon/centplugins').
+
+=item B<--statefile-suffix>
+
+Add a suffix for the statefile name (Default: '').
 
 =item B<--statefile-concat-cwd>
 
