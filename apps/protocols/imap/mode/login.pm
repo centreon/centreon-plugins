@@ -89,7 +89,7 @@ sub run {
     apps::protocols::imap::lib::imap::connect($self, connection_exit => 'critical');  
     apps::protocols::imap::lib::imap::quit();
 
-    my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
+    my $timeelapsed = tv_interval($timing0, [gettimeofday]);
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
