@@ -67,6 +67,7 @@ sub new {
     $self->{memcached} = undef;
     
     $self->{statefile_dir} = undef;
+    $self->{statefile_suffix} = undef;
     
     return $self;
 }
@@ -91,13 +92,14 @@ sub check_options {
                                                error_msg => "Cannot load module 'Storable'.");
         $self->{storable} = 1;
     }
+    $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
 }
 
 sub read {
     my ($self, %options) = @_;
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
-    $self->{statefile} =  defined($options{statefile}) ? $options{statefile} . $options{option_results}->{statefile_suffix} : 
-                            $self->{statefile} . $options{option_results}->{statefile_suffix};
+    $self->{statefile} =  defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
+                            $self->{statefile} . $self->{statefile_suffix};
 
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
