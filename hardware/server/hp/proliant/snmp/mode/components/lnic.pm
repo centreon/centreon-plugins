@@ -90,13 +90,13 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqNicIfLogMapDescription}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqNicIfLogMapAdapterCount}, instance => $instance);
-        my $result3 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqNicIfLogMapEntry}, instance => $instance);
+        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_cpqNicIfLogMapEntry}, instance => $instance);
 
         next if ($self->check_exclude(section => 'lnic', instance => $instance));
         $self->{components}->{lnic}->{total}++;
 
         $self->{output}->output_add(long_msg => printf("logical nic '%s' [adapter count: %s, description: %s, status: %s] condition is %s.", 
-                                    $instance, $result->{cpqNicIfLogMapAdapterCount}, centreon::plugins::misc::trim($result->{cpqNicIfLogMapDescription}),
+                                    $instance, $result2->{cpqNicIfLogMapAdapterCount}, centreon::plugins::misc::trim($result->{cpqNicIfLogMapDescription}),
                                     $result3->{cpqNicIfLogMapStatus},
                                     $result3->{cpqNicIfLogMapCondition}));
         my $exit = $self->get_severity(section => 'lnic', value => $result3->{cpqNicIfLogMapCondition});
