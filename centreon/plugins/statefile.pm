@@ -99,7 +99,7 @@ sub read {
     my ($self, %options) = @_;
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
     $self->{statefile} =  defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
-                            $self->{statefile} . $self->{statefile_suffix};
+                            $self->{statefile};
 
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
