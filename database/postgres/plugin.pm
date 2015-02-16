@@ -80,6 +80,10 @@ sub init {
         @{$self->{sqldefault}->{dbi}} = ();
         @{$self->{sqldefault}->{psqlcmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{db_host}}); $i++) {
+            if (!defined($options_result->{db_name}[$i]) || $options_result->{db_name}[$i] eq '') {
+                $self->{output}->add_option_msg(short_msg => "Need to specify database argument.");
+                $self->{output}->option_exit();
+            }
             $self->{sqldefault}->{dbi}[$i] = { data_source => 'Pg:host=' . $options_result->{db_host}[$i] };
             $self->{sqldefault}->{psqlcmd}[$i] = { host => $options_result->{db_host}[$i] };
             if (defined($options_result->{db_port}[$i])) {
