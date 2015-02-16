@@ -280,7 +280,8 @@ sub check_options {
             $self->{no_components} = 'critical';
         }
     }
-     $self->{overload_th} = {};
+    
+    $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
