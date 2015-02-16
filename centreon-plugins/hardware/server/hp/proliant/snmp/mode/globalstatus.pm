@@ -79,7 +79,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ('global', $2, $3);
+        my ($section, $status, $filter) = ('global', $1, $2);
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
