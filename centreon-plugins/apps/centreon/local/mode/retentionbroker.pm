@@ -151,7 +151,7 @@ sub run {
         $broker_rrd_retention_rrd_size = $broker_rrd_retention_rrd_size / 1024 /1024;
     }
 
-    if (($broker_retention_rrd_files_count > 1) || ($broker_retention_sql_files_count) > 1 || ($broker_retention_rrd_files_count > 1) || ($broker_rrd_retention_rrd_files_count > 1)) {
+    if (($broker_retention_rrd_files_count > 0) || ($broker_retention_sql_files_count > 0) || ($broker_retention_rrd_files_count > 0) || ($broker_rrd_retention_rrd_files_count > 1)) {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => 'There are some retention files check your broker output',
                                     long_msg => sprintf("sql_retention_files '%s' (size:'%.2f'MB) \nperfdata_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) ",
