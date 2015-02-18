@@ -85,7 +85,6 @@ sub new {
                                 {
                                 });
 
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);  
     foreach (keys %{$maps_counters}) {
         $options{options}->add_options(arguments => {
                                                      'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
@@ -161,14 +160,14 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $request = [$oid_dedupRatio, $oid_compRatio, $saveRatio];
+    my $request = [$oid_dedupRatio, $oid_compRatio, $oid_saveRatio];
     
     $self->{results} = $self->{snmp}->get_leef(oids => $request, nothing_quit => 1);
     
     $self->{global} = {};
     $self->{global}->{dedup} = defined($self->{results}->{$oid_dedupRatio}) ? $self->{results}->{$oid_dedupRatio} / 100 : 0;
     $self->{global}->{comp} = defined($self->{results}->{$oid_compRatio}) ? $self->{results}->{$oid_compRatio} / 100 : 0;
-    $self->{global}->{save} = defined($self->{results}->{$saveRatio}) ? $self->{results}->{$saveRatio} / 100 : 0;
+    $self->{global}->{save} = defined($self->{results}->{$oid_saveRatio}) ? $self->{results}->{$oid_saveRatio} / 100 : 0;
 }
 
 1;
