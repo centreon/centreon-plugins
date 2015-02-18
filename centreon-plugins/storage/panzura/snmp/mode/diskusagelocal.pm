@@ -96,7 +96,8 @@ sub run {
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
 
-    $self->{output}->output_add(long_msg => sprintf("Disk Local Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Disk Local Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
                                             $free_value . " " . $free_unit, $prct_free));
