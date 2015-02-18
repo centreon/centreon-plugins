@@ -130,7 +130,7 @@ sub run {
                                                   multiple => $multiple) == 0);
     
         next if (defined($self->{nopoweredon_skip}) && 
-                 !centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
+                 centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
 
         # CPU Limit
         if (defined($entity_view->{'config.cpuAllocation.limit'}) && $entity_view->{'config.cpuAllocation.limit'} != -1) {

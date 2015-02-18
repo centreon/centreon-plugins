@@ -124,7 +124,7 @@ sub run {
                                                   multiple => $multiple) == 0);
     
         next if (defined($self->{nopoweredon_skip}) && 
-                 !centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
+                 centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
         
         foreach (@{$entity_view->{'config.hardware.device'}}) {         
             if ($_->isa('VirtualDisk')) {

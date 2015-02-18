@@ -113,7 +113,7 @@ sub run {
                                                   multiple => $multiple) == 0);
     
         next if (defined($self->{nopoweredon_skip}) && 
-                 !centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
+                 centreon::esxd::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
     
         if (defined($self->{check_consolidation}) && defined($entity_view->{'runtime.consolidationNeeded'}) && $entity_view->{'runtime.consolidationNeeded'} =~ /^true|1$/i) {
             $vm_consolidate{$entity_view->{name}} = 1;
