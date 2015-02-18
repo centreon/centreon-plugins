@@ -105,7 +105,7 @@ sub run {
 
     if (defined($self->{option_results}->{average})) {    
         my $result2 = $self->{snmp}->get_table(oid => $oid_CountCpu);
-        if (scalar(keys %$result2)<=0){
+        if (scalar(keys %$result2) <= 0){
             $self->{output}->output_add(severity => 'unknown',
                                         short_msg => 'Unable to get number of CPUs');
             $self->{output}->display();
