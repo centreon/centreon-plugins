@@ -280,7 +280,7 @@ __END__
 =head1 MODE
 
 Check usage on partitions (UCD-SNMP-MIB).
-Need to enable "includeAllDisk 10%" on snmpd.conf.
+Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
