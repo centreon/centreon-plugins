@@ -68,8 +68,10 @@ sub new {
             "header:s@"             => { name => 'header' },
             "timeout:s"             => { name => 'timeout', default => 10 },
             
-            "warning:s"               => { name => 'warning' },
-            "critical:s"              => { name => 'critical' },
+            "warning-numeric:s"       => { name => 'warning_numeric' },
+            "critical-numeric:s"      => { name => 'critical_numeric' },
+            "warning-string:s"        => { name => 'warning_string' },
+            "critical-string:s"       => { name => 'critical_string' },
             "warning-time:s"          => { name => 'warning_time' },
             "critical-time:s"         => { name => 'critical_time' },
             "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
@@ -85,6 +87,9 @@ sub new {
     $self->{values_ok} = [];
     $self->{values_warning} = [];
     $self->{values_critical} = [];
+    $self->{values_string_ok} = [];
+    $self->{values_string_warning} = [];
+    $self->{values_string_critical} = [];
     return $self;
 }
 
@@ -95,20 +100,20 @@ sub check_options {
     if (!defined($self->{option_results}->{threshold_value}) || $self->{option_results}->{threshold_value} !~ /^(count|values)$/) {
         $self->{option_results}->{threshold_value} = 'count';
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'warning-numeric', value => $self->{option_results}->{warning_numeric})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning-numeric threshold '" . $self->{option_results}->{warning_numeric} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+    if (($self->{perfdata}->threshold_validate(label => 'critical-numeric', value => $self->{option_results}->{critical_numeric})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical-numeric threshold '" . $self->{option_results}->{critical_numeric} . "'.");
        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning-time', value => $self->{option_results}->{warning_time})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning_time} . "'.");
+       $self->{output}->add_option_msg(short_msg => "Wrong warning-time threshold '" . $self->{option_results}->{warning_time} . "'.");
        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-time', value => $self->{option_results}->{critical_time})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical_time} . "'.");
+       $self->{output}->add_option_msg(short_msg => "Wrong critical-time threshold '" . $self->{option_results}->{critical_time} . "'.");
        $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{service_soap})) {
@@ -159,7 +164,7 @@ sub display_output {
     my ($self, %options) = @_;
     
     foreach my $severity (('ok', 'warning', 'critical')) {
-        next if (scalar(@{$self->{'values_' . $severity}}) == 0);
+        next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
         my $format = $self->{option_results}->{'format_' . $severity};
         while ($format =~ /%{(.*?)}/g) {
             my $replace = '';
@@ -214,15 +219,15 @@ sub lookup {
     
     if ($self->{option_results}->{threshold_value} eq 'count') {
         my $exit = lc($self->{perfdata}->threshold_check(value => $self->{count}, 
-                                                         threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]));
+                                                         threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
         push @{$self->{'values_' . $exit}}, $self->{count};
         $self->{'count_' . $exit}++;
     }
     
     $self->{output}->perfdata_add(label => 'count',
                                   value => $self->{count},
-                                  warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning') : undef,
-                                  critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical') : undef,
+                                  warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                                  critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
                                   min => 0);
     
     my $count = 0;
@@ -231,14 +236,24 @@ sub lookup {
         if ($value =~ /^[0-9.]+$/) {
             if ($self->{option_results}->{threshold_value} eq 'values') {
                 my $exit = lc($self->{perfdata}->threshold_check(value => $value, 
-                                            threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]));
+                                            threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
             }
             $self->{output}->perfdata_add(label => 'element_' . $count,
                                           value => $value,
-                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning') : undef,
-                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical') : undef);
+                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
+        } else {
+            if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' && 
+                $value =~ /$self->{option_results}->{critical_string}/) {
+                push @{$self->{values_string_critical}}, $value;
+            } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' && 
+                     $value =~ /$self->{option_results}->{warning_string}/) {
+                push @{$self->{values_string_warning}}, $value;
+            } else {
+                push @{$self->{values_string_ok}}, $value;
+            }
         }
     }
     
@@ -342,11 +357,11 @@ THRESHOLD OPTIONS:
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-numeric>
 
 Threshold warning (Default: on total matching elements)
 
-=item B<--critical>
+=item B<--critical-numeric>
 
 Threshold critical (Default: on total matching elements)
 
@@ -354,6 +369,14 @@ Threshold critical (Default: on total matching elements)
 
 Which value to use (Default: 'count')
 Can be: 'values' (only check numeric values)
+
+=item B<--warning-string>
+
+Threshold warning if the string match
+
+=item B<--critical-numeric>
+
+Threshold critical if the string match
 
 =item B<--warning-time>
 
