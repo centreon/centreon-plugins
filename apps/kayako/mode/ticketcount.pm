@@ -367,6 +367,22 @@ Count tickets of kayako
 
 =over 8
 
+=item B<--hostname>
+
+IP Addr/FQDN of the webserver host (required)
+
+=item B<--port>
+
+Port used by Apache
+
+=item B<--proto>
+
+Specify https if needed
+
+=item B<--proxyurl>
+
+Proxy URL if any
+
 =item B<--kayako-api-url>
 
 This is the URL you should dispatch all GET, POST, PUT & DELETE requests to. (required)
@@ -388,6 +404,11 @@ Time in seconds before reloading cache file (default: 180).
 Filter the tickets by the specified department id, you can specify multiple id's by separating the values using a comma. Example: 1,2,3 .
 You must define at least one id. (required)
 
+=item B<--priority-id>
+
+Filter the tickets by the specified ticket priority id, you can specify multiple id's by separating the values using a comma. Example: 1,2,3 .
+By default, all ticket priority are included.
+
 =item B<--staff-id>
 
 Filter the tickets by the specified owner staff id, you can specify multiple id's by separating the values using a comma. Example: 1,2,3 .
@@ -397,11 +418,6 @@ By default, all staff users are included.
 
 Filter the tickets by the specified ticket status id, you can specify multiple id's by separating the values using a comma. Example: 1,2,3 .
 By default, the filter is on unresolved ticket statuses.
-
-=item B<--priority-id>
-
-Filter the tickets by the specified ticket priority id, you can specify multiple id's by separating the values using a comma. Example: 1,2,3 .
-By default, all ticket priority are included. 
 
 =item B<--warning>
 
