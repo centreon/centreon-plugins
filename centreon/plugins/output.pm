@@ -68,8 +68,8 @@ sub new {
     $self->{is_output_xml} = 0;
     $self->{is_output_json} = 0;
     $self->{errors} = {OK => 0, WARNING => 1, CRITICAL => 2, UNKNOWN => 3, PENDING => 4};
-    $self->{myerrors} = {0 => "OK", 1 => "WARNING", 3 => "CRITICAL", 7 => "UNKNOWN"};
-    $self->{myerrors_mask} = {CRITICAL => 3, WARNING => 1, UNKNOWN => 7, OK => 0};
+    $self->{myerrors} = {0 => "OK", 1 => "WARNING", 3 => "UNKNOWN", 7 => "CRITICAL"};
+    $self->{myerrors_mask} = {CRITICAL => 7, WARNING => 1, UNKNOWN => 3, OK => 0};
     $self->{global_short_concat_outputs} = {OK => undef, WARNING => undef, CRITICAL => undef, UNKNOWN => undef, UNQUALIFIED_YET => undef};
     $self->{global_short_outputs} = {OK => [], WARNING => [], CRITICAL => [], UNKNOWN => [], UNQUALIFIED_YET => []};
     $self->{global_long_output} = [];
