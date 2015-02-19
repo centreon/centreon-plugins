@@ -34,7 +34,7 @@
 # Based on De Bodt Lieven plugin
 ####################################################################################
 
-package apps::protocols::http::mode::soapcontent;
+package apps::protocols::http::mode::jsoncontent;
 
 use base qw(centreon::plugins::mode);
 
@@ -42,7 +42,8 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::httplib;
-use XML::XPath;
+use JSON::Path;
+use JSON;
 
 sub new {
     my ($class, %options) = @_;
@@ -52,7 +53,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "service-soap:s"        => { name => 'service_soap' },
             "data:s"                => { name => 'data' },
             "lookup:s@"             => { name => 'lookup' },
             "hostname:s"            => { name => 'hostname' },
@@ -111,14 +111,6 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical_time} . "'.");
        $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{service_soap})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify service-soap.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{data})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify data.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify hostname.");
         $self->{output}->option_exit();
@@ -144,15 +136,19 @@ sub check_options {
 sub load_request {
     my ($self, %options) = @_;
     
-    local $/ = undef;
-    if (!open(FILE, "<", $self->{option_results}->{data})) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
-        $self->{output}->display();
-        $self->{output}->exit();
+    $self->{method} = 'GET';
+    if (defined($self->{option_results}->{data})) {
+        local $/ = undef;
+        if (!open(FILE, "<", $self->{option_results}->{data})) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
+        $self->{json_request} = <FILE>;
+        close FILE;
+        $self->{method} = 'POST';
     }
-    $self->{soap_request} = <FILE>;
-    close FILE;
 }
 
 sub display_output {
@@ -177,19 +173,22 @@ sub display_output {
 
 sub lookup {
     my ($self, %options) = @_;
-    my ($xpath, $nodeset);
+    my ($xpath, @values);
     
+    my $json = JSON->new;
+    my $content;
     eval {
-        $xpath = XML::XPath->new(xml => $self->{soap_response});
+        $content = $json->decode($self->{json_response});
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot load SOAP response");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
     
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
         eval {
-            $nodeset = $xpath->find($xpath_find);
+            my $jpath = JSON::Path->new($xpath_find);
+            @values = $jpath->values($content);
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup: $@");
@@ -197,18 +196,10 @@ sub lookup {
         }
         
         $self->{output}->output_add(long_msg => "Lookup XPath $xpath_find:");
-        foreach my $node ($nodeset->get_nodelist()) {
+        foreach my $value (@values) {
             $self->{count}++;
-            my $node_type = ref($node);
-            $self->{output}->output_add(long_msg => "   Node type: $node_type");
-            if ($node_type eq 'XML::XPath::Node::Text') {
-                $self->{output}->output_add(long_msg => '   Node value: ' . $node->string_value);
-                push @{$self->{values}}, $node->string_value;
-            }
-            if ($node_type eq 'XML::XPath::Node::Attribute') {
-                $self->{output}->output_add(long_msg => '   Node value: ' . $node->toString);
-                push @{$self->{values}}, $node->getNodeValue;
-            }
+            $self->{output}->output_add(long_msg => '   Node value: ' . $value);
+            push @{$self->{values}}, $value;
         }
     }
     
@@ -254,13 +245,13 @@ sub run {
     $self->load_request();
 
     my $timing0 = [gettimeofday];
-    $self->{soap_response} = centreon::plugins::httplib::connect($self, headers => $self->{headers}, method => 'POST', query_form_post => $self->{soap_request});
+    $self->{json_response} = centreon::plugins::httplib::connect($self, headers => $self->{headers}, method => $self->{method}, query_form_post => $self->{json_request});
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
-    $self->{output}->output_add(long_msg => $self->{soap_response});
+    $self->{output}->output_add(long_msg => $self->{json_response});
     if (!defined($self->{option_results}->{lookup}) || scalar(@{$self->{option_results}->{lookup}}) == 0) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "SOAP request success");
+                                    short_msg => "JSON webservice request success");
     } else {
         $self->lookup();
     }
@@ -289,26 +280,22 @@ __END__
 
 =head1 MODE
 
-Check SOAP content. Send the soap request with option '--data'. Example:
-centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction' 
---header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com' --urlpath='/get/payment'
---lookup='//numeric/text()'
+Check JSON webservice. Can send the json request with option '--data'. Example:
+centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=json-content --data='/home/user/request.json' --hostname='myws.site.com' --urlpath='/get/payment'
+--lookup='$..expiration'
 
-SOAP OPTIONS:
+JSON OPTIONS:
 
 =over 8
 
-=item B<--service-soap>
-
-Service Soap Action (Required)
-
 =item B<--data>
 
-Set file with SOAP request (Required)
+Set file with JSON request
 
 =item B<--lookup>
 
-What to lookup in XML response (XPath string) (can be multiple)
+What to lookup in JSON response (JSON XPath string) (can be multiple)
+See: http://goessner.net/articles/JsonPath/
 
 =back
 
