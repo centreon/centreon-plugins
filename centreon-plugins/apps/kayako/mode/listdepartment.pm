@@ -140,6 +140,22 @@ List departmentf of kayako
 
 =over 8
 
+=item B<--hostname>
+
+IP Addr/FQDN of the webserver host (required)
+
+=item B<--port>
+
+Port used by Apache
+
+=item B<--proto>
+
+Specify https if needed
+
+=item B<--proxyurl>
+
+Proxy URL if any
+
 =item B<--kayako-api-url>
 
 This is the URL you should dispatch all GET, POST, PUT & DELETE requests to.
