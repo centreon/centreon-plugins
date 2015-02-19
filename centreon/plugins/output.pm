@@ -54,6 +54,7 @@ sub new {
                                   "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
                                   "range-perfdata:s"        => { name => 'range_perfdata' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
+                                  "change-perfdata:s@"      => { name => 'change_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
                                   "output-xml"              => { name => 'output_xml' },
@@ -75,6 +76,7 @@ sub new {
     $self->{global_long_output} = [];
     $self->{perfdatas} = [];
     $self->{explode_perfdatas} = {};
+    $self->{change_perfdata} = {};
     $self->{explode_perfdata_total} = 0;
     $self->{range_perfdata} = 0;
     $self->{global_status} = 0;
@@ -132,6 +134,16 @@ sub check_options {
             }
         }
     }
+    
+    if (defined($self->{option_results}->{change_perfdata})) {
+        foreach (@{$self->{option_results}->{change_perfdata}}) {
+            if (! /^(.+?),(.+)$/) {
+                $self->add_option_msg(short_msg => "Wrong change-perfdata option '" . $_ . "' (syntax: match,substitute)");
+                $self->option_exit();
+            }
+            $self->{change_perfdata}->{$1} = $2;
+        }
+    }
 }
 
 sub add_option_msg {
@@ -183,7 +195,7 @@ sub output_add {
 
 sub perfdata_add {
     my ($self, %options) = @_;
-    my $perfdata = {'label' => '', 'value' => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
+    my $perfdata = {label => '', value => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
     foreach (keys %options) {
         next if (!defined($options{$_}));
         $perfdata->{$_} = $options{$_};
@@ -192,8 +204,19 @@ sub perfdata_add {
     push @{$self->{perfdatas}}, $perfdata;
 }
 
-sub explode_perfdatas {
+sub change_perfdatas {
     my ($self, %options) = @_;
+    
+    if ($self->{option_results}->{change_perfdata}) {
+        foreach (@{$self->{perfdatas}}) {
+            foreach my $filter (keys %{$self->{change_perfdata}}) {
+                if ($_->{label} =~ /$filter/) {
+                    eval "\$_->{label} =~ s{$filter}{$self->{change_perfdata}->{$filter}}";
+                    last;
+                }
+            }
+        }
+    }
     
     return if ($self->{explode_perfdata_total} == 0);
     foreach (@{$self->{perfdatas}}) {
@@ -262,7 +285,7 @@ sub output_json {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        $self->explode_perfdatas();
+        $self->change_perfdatas();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -350,7 +373,7 @@ sub output_xml {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        $self->explode_perfdatas();
+        $self->change_perfdatas();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -396,7 +419,7 @@ sub output_txt {
         print "\n";
     } else {
         print "|";
-        $self->explode_perfdatas();
+        $self->change_perfdatas();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -738,7 +761,12 @@ Filter perfdata that match the regexp.
 =item B<--explode-perfdata-max>
 
 Put max perfdata (if it exist) in a specific perfdata 
-(without values: same with '_max' suffix)
+(without values: same with '_max' suffix) (Multiple options)
+
+=item B<--change-perfdata>
+
+Change perfdata name (Multiple option)
+Syntax: regexp_matching,regexp_substitute
 
 =item B<--range-perfdata>
 

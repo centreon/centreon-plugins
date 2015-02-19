@@ -69,30 +69,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-bytes', value => $self->{option_results}->{warning_bytes})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-bytes threshold '" . $self->{option_results}->{warning_bytes} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-bytes', value => $self->{option_results}->{critical_bytes})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes threshold '" . $self->{option_results}->{critical_bytes} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-access', value => $self->{option_results}->{warning_access})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-access threshold '" . $self->{option_results}->{warning_access} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-access', value => $self->{option_results}->{critical_access})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-access threshold '" . $self->{option_results}->{critical_access} . "'.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify hostname.");
         $self->{output}->option_exit();
@@ -123,15 +99,13 @@ sub run {
 
     if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
         $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
-        $self->{output}->display();
-        $self->{output}->exit();
+                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
     } else {
-        $self->{output}->output_add(severity => 'Critical',
-                                short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
     }
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
