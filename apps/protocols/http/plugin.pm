@@ -47,8 +47,9 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-            'response-time'     => 'apps::protocols::http::mode::responsetime',
             'expected-content'  => 'apps::protocols::http::mode::expectedcontent',
+            'response-time'     => 'apps::protocols::http::mode::responsetime',
+            'soap-content'      => 'apps::protocols::http::mode::soapcontent',
 			);
 
 	return $self;

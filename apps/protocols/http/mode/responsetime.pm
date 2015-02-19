@@ -111,7 +111,7 @@ sub run {
     $self->{output}->output_add(long_msg => $webcontent);
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Response time %.3fs", $timeelapsed));
     $self->{output}->perfdata_add(label => "time",
