@@ -48,6 +48,7 @@ sub new {
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
             'expected-content'  => 'apps::protocols::http::mode::expectedcontent',
+            'json-content'      => 'apps::protocols::http::mode::jsoncontent',
             'response-time'     => 'apps::protocols::http::mode::responsetime',
             'soap-content'      => 'apps::protocols::http::mode::soapcontent',
 			);
