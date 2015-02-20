@@ -96,6 +96,10 @@ sub run {
     } else {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
+    if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
+        $filters{'config.annotation'} = qr/$self->{filter_description}/;
+    }
+    
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState', 'config.cpuAllocation.limit', 'config.memoryAllocation.limit');
     if (defined($self->{check_disk_limit})) {
          push @properties, 'config.hardware.device';

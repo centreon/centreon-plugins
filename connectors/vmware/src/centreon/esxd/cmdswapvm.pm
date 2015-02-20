@@ -89,6 +89,10 @@ sub run {
     } else {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
+    if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
+        $filters{'config.annotation'} = qr/$self->{filter_description}/;
+    }
+    
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{display_description})) {
         push @properties, 'config.annotation';

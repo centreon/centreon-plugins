@@ -81,6 +81,10 @@ sub run {
     } else {
         $filters{name} = qr/$self->{vm_hostname}/;
     }
+    if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
+        $filters{'config.annotation'} = qr/$self->{filter_description}/;
+    }
+    
     my @properties = ('snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{check_consolidation}) == 1) {
         push @properties, 'runtime.consolidationNeeded';
