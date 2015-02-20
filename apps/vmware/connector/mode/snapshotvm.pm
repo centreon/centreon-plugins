@@ -50,6 +50,7 @@ sub new {
                                 {
                                   "vm-hostname:s"           => { name => 'vm_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "filter-description:s"    => { name => 'filter_description' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
                                   "display-description"     => { name => 'display_description' },
@@ -106,6 +107,10 @@ If not set, we check all VMs.
 =item B<--filter>
 
 VM hostname is a regexp.
+
+=item B<--filter-description>
+
+Filter also virtual machines description (can be a regexp).
 
 =item B<--disconnect-status>
 
