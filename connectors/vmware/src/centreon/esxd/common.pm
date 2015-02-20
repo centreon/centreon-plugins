@@ -504,6 +504,13 @@ sub host_state {
     return 1;
 }
 
+sub substitute_name {
+    my (%options) = @_;
+    
+    $options{value} =~ s/%2f/\//g;
+    return $options{value};
+}
+
 sub strip_cr {
     my (%options) = @_;
     
