@@ -60,6 +60,7 @@ sub new {
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
     
+    $self->{error} = 0;
     $self->{output} = $options{output};
     $self->{datas} = {};
     $self->{storable} = 0;
@@ -95,11 +96,22 @@ sub check_options {
     $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
 }
 
+sub error {
+     my ($self) = shift;
+     
+     if (@_) {
+        $self->{error} = $_[0];
+     }
+     return $self->{error};
+}
+
 sub read {
     my ($self, %options) = @_;
+    $self->{statefile_suffix} = defined($options{statefile_suffix}) ? $options{statefile_suffix} : $self->{statefile_suffix};
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
-    $self->{statefile} =  defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
+    $self->{statefile} = defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
                             $self->{statefile};
+    $self->{no_quit} = defined($options{no_quit}) && $options{no_quit} == 1 ? 1 : 0;
 
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
@@ -118,13 +130,20 @@ sub read {
     
     if (! -e $self->{statefile_dir} . "/" . $self->{statefile}) {
         if (! -w $self->{statefile_dir}) {
+            $self->error(1);
             $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on directory.");
-            $self->{output}->option_exit();
+            if ($self->{no_quit} == 0) {
+                $self->{output}->option_exit();
+            }
         }
         return 0;
     } elsif (! -w $self->{statefile_dir} . "/" . $self->{statefile}) {
+        $self->error(1);
         $self->{output}->add_option_msg(short_msg => "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on file.");
-        $self->{output}->option_exit();
+        if ($self->{no_quit} == 0) {
+            $self->{output}->option_exit();
+        }
+        return 1;
     } elsif (! -s $self->{statefile_dir} . "/" . $self->{statefile}) {
         # Empty file. Not a problem. Maybe plugin not manage not values
         return 0;

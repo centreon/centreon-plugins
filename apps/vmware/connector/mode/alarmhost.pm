@@ -51,6 +51,7 @@ sub new {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
                                   "filter-time:s"           => { name => 'filter_time', },
+                                  "memory"                  => { name => 'memory', },
                                 });
     return $self;
 }
@@ -91,6 +92,10 @@ Datacenter is a regexp.
 =item B<--filter-time>
 
 Don't check alarm older (value in seconds).
+
+=item B<--memory>
+
+Check new alarms only.
 
 =back
 
