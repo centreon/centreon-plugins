@@ -75,6 +75,7 @@ sub new {
                          'thinprovisioning-vm'  => 'apps::vmware::connector::mode::thinprovisioningvm',
                          'tools-vm'             => 'apps::vmware::connector::mode::toolsvm',
                          'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
+                         'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
                          );
 
     $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';
