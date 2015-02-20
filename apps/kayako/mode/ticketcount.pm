@@ -154,7 +154,7 @@ sub check_options {
         } else {
             my ($mday,$mon,$year) = split(/-/, $self->{option_results}->{'end_date'});
 			$end = $self->{option_results}->{'end_date'};
-            $self->{option_results}->{'end_date'} = timelocal(0,0,0,$mday+1,$mon-1,$year);
+            $self->{option_results}->{'end_date'} = timelocal(59,59,23,$mday,$mon-1,$year);
         }
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
