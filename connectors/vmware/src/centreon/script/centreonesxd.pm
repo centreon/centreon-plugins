@@ -84,6 +84,7 @@ sub new {
             datastore_state_error => 'UNKNOWN',
             vm_state_error => 'UNKNOWN',
             host_state_error => 'UNKNOWN',
+            retention_dir => '/var/lib/centreon/centplugins',
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
                 #              'username' => 'XXXXX',

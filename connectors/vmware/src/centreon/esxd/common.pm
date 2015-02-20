@@ -444,7 +444,7 @@ sub is_running {
 
 sub datastore_state {
     my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{datastore_state_error};
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{datastore_state_error};
     
     if ($options{state} !~ /^true|1$/) {
         my $output = "Datastore '" . $options{name} . "' not accessible. Current connection state: '$options{state}'.";
@@ -461,8 +461,8 @@ sub datastore_state {
 
 sub vm_state {
     my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{host_state_error};
-    my $power_status = defined($options{powerstatus}) ? $options{powerstatus} : $options{connector}->{centreonesxd_config}->{vm_state_error};
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{host_state_error};
+    my $power_status = defined($options{powerstatus}) ? $options{powerstatus} : $options{connector}->{vm_state_error};
     
     if ($options{state} !~ /^connected$/i) {
         my $output = "VM '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";
@@ -489,7 +489,7 @@ sub vm_state {
 
 sub host_state {
     my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{centreonesxd_config}->{host_state_error};
+    my $status = defined($options{status}) ? $options{status} : $options{connector}->{host_state_error};
     
     if ($options{state} !~ /^connected$/i) {
         my $output = "Host '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";

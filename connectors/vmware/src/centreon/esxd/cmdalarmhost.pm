@@ -4,6 +4,8 @@ package centreon::esxd::cmdalarmhost;
 use strict;
 use warnings;
 use centreon::esxd::common;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my $class = shift;
@@ -51,6 +53,15 @@ sub set_connector {
 
 sub run {
     my $self = shift;
+    
+    if (defined($self->{memory})) {
+        $self->{statefile_cache} = centreon::plugins::statefile->new(output => $self->{manager}->{output});
+        $self->{statefile_cache}->read(statefile_dir => $self->{obj_esxd}->{retention_dir},
+                                       statefile => "cache_vmware_connector_" . $self->{obj_esxd}->{whoaim} . "_" . (defined($self->{esx_hostname}) ? md5_hex($self->{esx_hostname}) : md5_hex('.*')),
+                                       statefile_suffix => '',
+                                       no_quit => 1);
+        return if ($self->{statefile_cache}->error() == 1);
+    }
 
     my %filters = ();
     my $multiple = 0;
@@ -82,6 +93,7 @@ sub run {
     my $alarmMgr = centreon::esxd::common::get_view($self->{obj_esxd}, $self->{obj_esxd}->{session1}->get_service_content()->alarmManager, undef);
     my $total_alarms = { red => 0, yellow => 0 };
     my $dc_alarms = {};
+    my $new_datas = {};
     foreach my $datacenter_view (@$result) {
         $dc_alarms->{$datacenter_view->name} = { red => 0, yellow => 0, alarms => {} };
         next if (!defined($datacenter_view->triggeredAlarmState));
@@ -91,6 +103,9 @@ sub run {
                 my $time_sec = Date::Parse::str2time($_->time);
                 next if (time() - $time_sec > $self->{filter_time});
             }
+            $new_datas->{$_->key} = 1;
+            next if (defined($self->{memory}) && defined($self->{statefile_cache}->get(name => $_->key)));
+
             my $entity = centreon::esxd::common::get_view($self->{obj_esxd}, $_->entity, ['name']);
             my $alarm = centreon::esxd::common::get_view($self->{obj_esxd}, $_->alarm, ['info']);
             
@@ -137,6 +152,10 @@ sub run {
         $self->{manager}->{output}->perfdata_add(label => 'alarm_critical' . $extra_label,
                                                  value => $dc_alarms->{$dc_name}->{red},
                                                  min => 0);
+    }
+
+    if (defined($self->{memory})) {
+        $self->{statefile_cache}->write(data => $new_datas);
     }
 }
 

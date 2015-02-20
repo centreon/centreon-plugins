@@ -46,6 +46,10 @@ sub new {
     $connector->{config_vsphere_url} = $options{config}->{vsphere_server}->{$options{name}}->{url};
     $connector->{config_vsphere_user} = $options{config}->{vsphere_server}->{$options{name}}->{username};
     $connector->{config_vsphere_pass} = $options{config}->{vsphere_server}->{$options{name}}->{password};
+    $connector->{retention_dir} = $options{config}->{retention_dir};
+    $connector->{datastore_state_error} = $options{config}->{datastore_state_error};
+    $connector->{vm_state_error} = $options{config}->{vm_state_error};
+    $connector->{host_state_error} = $options{config}->{host_state_error};
     
     return $connector;
 }
