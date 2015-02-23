@@ -168,7 +168,7 @@ Specify the name of your master sql config file (default: central-broker.xml)
 
 Specify the path to your broker config files (defaut: /etc/centreon-broker/)
 
-=item B<--broker-retention-dir>
+=item B<--broker-temporary-dir>
 
 Specify the path to your broker retention directory (defaut: /var/lib/centreon-broker/)
 
