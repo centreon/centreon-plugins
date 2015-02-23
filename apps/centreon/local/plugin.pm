@@ -49,7 +49,7 @@ sub new {
     %{$self->{modes}} = (
                          'metaservice'  => 'apps::centreon::local::mode::metaservice',
                          'retention-broker' => 'apps::centreon::local::mode::retentionbroker',
-                         'temporarybroker' => 'apps::centreon::local::mode::temporarybroker',
+                         'temporary-broker' => 'apps::centreon::local::mode::temporarybroker',
                          );
 
     return $self;
