@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::centreon::local::plugin;
+package apps::centreon::mysql::plugin;
 
 use strict;
 use warnings;
@@ -47,9 +47,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'metaservice'  => 'apps::centreon::local::mode::metaservice',
-                         'retention-broker' => 'apps::centreon::local::mode::retentionbroker',
-                         'temporarybroker' => 'apps::centreon::local::mode::temporarybroker',
+                         'partitioning' => 'apps::centreon::mysql::mode::partitioning',
+                         'pollerdelay'  => 'apps::centreon::mysql::mode::pollerdelay',
                          );
 
     return $self;
