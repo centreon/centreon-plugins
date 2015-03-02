@@ -144,6 +144,7 @@ sub check_options {
             }
         }
     }
+    $self->{headers}->{SOAPAction} = $self->{option_results}->{service_soap};
 }
 
 sub load_request {

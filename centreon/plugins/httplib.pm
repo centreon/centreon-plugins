@@ -82,20 +82,30 @@ sub connect {
     }
     $req = HTTP::Request->new($method => $uri);
 
-    if ($method eq 'POST') {
-        my $uri_post = URI->new();
-        if (defined($options{query_form_post})) {
-            $uri->query_form($options{query_form_post});
-        }
-        $req->content_type('application/x-www-form-urlencoded');
-        $req->content($uri_post->query);
-    }
-   
+    my $content_type_forced;
     if (defined($options{headers})) {
         foreach my $key (keys %{$options{headers}}) {
-            $req->header($key => $options{headers}->{$key});
+            if ($key !~ /content-type/i) {
+                $req->header($key => $options{headers}->{$key});
+            } else {
+                $content_type_forced = $options{headers}->{$key};
+            }
         }
     }
+    
+    if ($method eq 'POST') {
+        if (defined($content_type_forced)) {
+            $req->content_type($content_type_forced);
+            $req->content($options{query_form_post});
+        } else {
+            my $uri_post = URI->new();
+            if (defined($options{query_form_post})) {
+                $uri_post->query_form($options{query_form_post});
+            }
+            $req->content_type('application/x-www-form-urlencoded');
+            $req->content($uri_post->query);
+        }
+    }    
     
     if (defined($self->{option_results}->{credentials}) && defined($self->{option_results}->{ntlm})) {
         $ua->credentials($self->{option_results}->{hostname} . ':' . $self->{option_results}->{port}, '', $self->{option_results}->{username}, $self->{option_results}->{password});
