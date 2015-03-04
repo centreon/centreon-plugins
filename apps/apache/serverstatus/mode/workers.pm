@@ -111,7 +111,7 @@ sub run {
     my $prct_busy = $BusyWorkers / $srvLimit * 100;
     
     my $exit = $self->{perfdata}->threshold_check(value => $prct_busy,
-                                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                 threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Busy workers: %d Idle workers: %d (Server Limit: %d - %d %% Busy)", $BusyWorkers, $IdleWorkers, $srvLimit, $prct_busy));
     $self->{output}->perfdata_add(label => "idle_workers",
@@ -120,10 +120,9 @@ sub run {
                                   max => $srvLimit);
     $self->{output}->perfdata_add(label => "busy_workers",
                                   value => $BusyWorkers,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0,
-                                  max => $srvLimit);
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $srvLimit, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $srvLimit, cast_int => 1),
+                                  min => 0, max => $srvLimit);
 
     $self->{output}->display();
     $self->{output}->exit();
