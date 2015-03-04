@@ -375,7 +375,7 @@ Can be: 'values' (only check numeric values)
 
 Threshold warning if the string match
 
-=item B<--critical-numeric>
+=item B<--critical-string>
 
 Threshold critical if the string match
 
