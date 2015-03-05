@@ -133,15 +133,15 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
+    my $extra_message = '';
     
-    $self->manage_selection();    
     if (defined($self->{option_results}->{retention})) {
-        $self->{output}->output_add(long_msg => sprintf("No error found with these options since %s seconds.", $self->{option_results}->{retention}));
-        $self->{output}->output_add(short_msg => sprintf("No error found since %s seconds.", $self->{option_results}->{retention}));
-    } else {
-        $self->{output}->output_add(long_msg => "No error found with these options.");
-        $self->{output}->output_add(short_msg => "No error found.");
+        $extra_message = ' since ' . $self->{option_results}->{retention} . ' seconds';
     }
+    
+    $self->manage_selection();
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("No error found since %s seconds%s.", $extra_message));
     
     my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
@@ -166,7 +166,7 @@ sub run {
 
     if ($total_error != 0) {
         $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("%s error(s) found(s)", $total_error));
+                                    short_msg => sprintf("%s error(s) found(s)%s", $total_error, $extra_message));
     }
     
     $self->{output}->display();
