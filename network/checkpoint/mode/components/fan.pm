@@ -44,41 +44,44 @@ my %map_states_fan = (
     2 => 'reading error',
 );
 
+my $mapping = {
+    fanSpeedSensorName => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.2.1.2' },
+    fanSpeedSensorValue => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.2.1.3' },
+    fanSpeedSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.2.1.6', map => \%map_states_fan },
+};
+my $oid_fanSpeedSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.2.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_fanSpeedSensorEntry, start => $mapping->{fanSpeedSensorName}->{oid}, end => $mapping->{fanSpeedSensorStatus}->{oid} };
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'fan'));
-    
-    my $oid_fanSpeedSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.2.1';
-    my $oid_fanSpeedSensorStatus = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.6';
-    my $oid_fanSpeedSensorValue = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.3';
-    my $oid_fanSpeedSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.2.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_fanSpeedSensorEntry);
-    return if (scalar(keys %$result) <= 0);
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fanSpeedSensorStatus\.(\d+).(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanSpeedSensorEntry}})) {
+        next if ($oid !~ /^$mapping->{fanSpeedSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanSpeedSensorEntry}, instance => $instance);
     
         next if ($self->check_exclude(section => 'fan', instance => $instance));
-          
-        my $fan_name = $result->{$oid_fanSpeedSensorName . '.' . $instance};
-        my $fan_state = $result->{$oid_fanSpeedSensorStatus . '.' . $instance};
 
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' sensor out of range status is '%s'",
-                                    $fan_name, $map_states_fan{$fan_state}));
-        my $exit = $self->get_severity(section => 'fan', value => $map_states_fan{$fan_state});
+                                    $result->{fanSpeedSensorName}, $result->{fanSpeedSensorStatus}));
+        my $exit = $self->get_severity(section => 'fan', value => $result->{fanSpeedSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' sensor out of range status is '%s'", $fan_name, $map_states_fan{$fan_state}));
+                                        short_msg => sprintf("Fan '%s' sensor out of range status is '%s'", $result->{fanSpeedSensorName}, $result->{fanSpeedSensorStatus}));
         }
 
-        $self->{output}->perfdata_add(label => $fan_name , unit => 'rpm',
-                                      value => sprintf("%d", $result->{$oid_fanSpeedSensorValue . '.' . $instance}));
+        $self->{output}->perfdata_add(label => $result->{fanSpeedSensorName}, unit => 'rpm',
+                                      value => sprintf("%d", $result->{fanSpeedSensorValue}));
     }
 }
 
