@@ -44,6 +44,18 @@ my %map_states_temperature = (
     2 => 'reading error',
 );
 
+my $mapping = {
+    tempertureSensorName => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.2' },
+    tempertureSensorValue => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.3' },
+    tempertureSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.1.1.6', map => \%map_states_temperature },
+};
+my $oid_tempertureSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.1.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_tempertureSensorEntry, start => $mapping->{tempertureSensorName}->{oid}, end => $mapping->{tempertureSensorStatus}->{oid} };
+}
 
 sub check {
     my ($self) = @_;
@@ -51,34 +63,25 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'temperature'));
-
-    my $oid_tempertureSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.1.1';
-    my $oid_tempertureSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.1.1.2';
-    my $oid_tempertureSensorValue = '.1.3.6.1.4.1.2620.1.6.7.8.1.1.3';
-    my $oid_tempertureSensorStatus = '.1.3.6.1.4.1.2620.1.6.7.8.1.1.6';
    
-    my $result = $self->{snmp}->get_table(oid => $oid_tempertureSensorEntry);
-    return if (scalar(keys %$result) <= 0); 
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_tempertureSensorValue\.(\d+).(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_tempertureSensorEntry}})) {
+        next if ($oid !~ /^$mapping->{tempertureSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_tempertureSensorEntry}, instance => $instance);
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
-        my $temperature_name = $result->{$oid_tempertureSensorName . '.' . $instance};
-        my $temperature_state = $result->{$oid_tempertureSensorStatus . '.' . $instance};
     	
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s'",
-                                        $temperature_name, $map_states_temperature{$temperature_state}));
-        my $exit = $self->get_severity(section => 'temperature', value => $map_states_temperature{$temperature_state});
+                                        $result->{tempertureSensorName}, $result->{tempertureSensorStatus}));
+        my $exit = $self->get_severity(section => 'temperature', value => $result->{tempertureSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $temperature_name, $map_states_temperature{$temperature_state}));
+                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $result->{tempertureSensorName}, $result->{tempertureSensorStatus}));
         }
 
-    	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', 
-                                      value => sprintf("%.2f", $result->{$oid_tempertureSensorValue . '.' . $instance}));
+    	$self->{output}->perfdata_add(label => $result->{tempertureSensorName} , unit => 'C', 
+                                      value => sprintf("%.2f", $result->{tempertureSensorValue}));
     }
 }
 

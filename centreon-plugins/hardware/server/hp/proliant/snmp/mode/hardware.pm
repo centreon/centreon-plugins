@@ -496,7 +496,7 @@ Check Hardware (CPUs, Power Supplies, Power converters, Fans).
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'cpu', 'psu', 'pc', 'fan', 'temperature', 'lnic', 'pnic',...
 There are some magic words like: 'network', 'storage'.
 
