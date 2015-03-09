@@ -192,11 +192,12 @@ sub connect {
     );
 
     if (!defined($self->{instance})) {
+        my $err_msg = sprintf("Cannot connect: %s", defined($DBI::errstr) ? $DBI::errstr : "(no error string)");
         if ($dontquit == 0) {
-            $self->{output}->add_option_msg(short_msg => "Cannot connect: " . $DBI::errstr);
+            $self->{output}->add_option_msg(short_msg => $err_msg);
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
         }
-        return (-1, "Cannot connect: " . $DBI::errstr);
+        return (-1, $err_msg);
     }
     
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
