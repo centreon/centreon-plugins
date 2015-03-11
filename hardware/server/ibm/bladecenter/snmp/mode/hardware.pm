@@ -41,6 +41,16 @@ use strict;
 use warnings;
 
 my $thresholds = {
+    chassisstatus => [
+        ['testSucceeded', 'OK'],
+        ['testFailed', 'CRITICAL'],
+    ],
+    systemhealth => [
+        ['normal', 'OK'],
+        ['systemLevel', 'WARNING'],
+        ['nonCritical', 'WARNING'],
+        ['critical', 'CRITICAL'],
+    ],
     powermodule => [
         ['unknown', 'UNKNOWN'],
         ['good', 'OK'],
@@ -161,7 +171,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [];
-    my @components = ('ambient', 'powermodule', 'blade', 'blower');
+    my @components = ('ambient', 'powermodule', 'blade', 'blower', 'systemhealth', 'chassisstatus');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "hardware::server::ibm::bladecenter::snmp::mode::components::$_";
@@ -294,14 +304,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Ambient temperatures, Blowers, Power modules, Blades).
+Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Health, Chassis status).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'ambient', 'powermodule', 'blower', 'blade'.
+Can be: 'ambient', 'powermodule', 'blower', 'blade', 'systemhealth', 'chassisstatus'.
 
 =item B<--exclude>
 
