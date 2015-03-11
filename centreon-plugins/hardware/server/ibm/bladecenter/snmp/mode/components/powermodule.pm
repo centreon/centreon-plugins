@@ -77,7 +77,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerModuleHealthEntry}, instance => $instance);
         
         next if ($self->check_exclude(section => 'powermodule', instance => $instance));
-         next if ($result->{powerModuleExists} =~ /No/i && 
+        next if ($result->{powerModuleExists} =~ /No/i && 
                  $self->absent_problem(section => 'powermodule', instance => $instance));
         $self->{components}->{powermodule}->{total}++;
 

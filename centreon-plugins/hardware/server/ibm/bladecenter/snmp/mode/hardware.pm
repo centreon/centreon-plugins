@@ -173,7 +173,7 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "ardware::server::ibm::bladecenter::snmp::mode::components::$_";
+            my $mod_name = "hardware::server::ibm::bladecenter::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }

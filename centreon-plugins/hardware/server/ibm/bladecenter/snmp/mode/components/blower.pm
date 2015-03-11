@@ -72,12 +72,12 @@ sub check {
     $self->{components}->{blower} = {name => 'blowers', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'blower'));
 
-    while (my $i = 0; $i < $count; $i++) {
+    for (my $i = 0; $i < $count; $i++) {
         my $instance = $i + 1;
-        next if (!defined($map_blower_state{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}));
-        my $blower_state = $map_blower_state{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'};
-        my $blower_speed = defined($map_blower_state{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $map_blower_state{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'} : undef;
-        my $ctrl_state = defined($map_blower_state{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_blower_state{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'} : undef;
+        next if (!defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}));
+        my $blower_state = $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}};
+        my $blower_speed = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}} : undef;
+        my $ctrl_state = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}} : undef;
     
         next if ($self->check_exclude(section => 'blower', instance => $instance));
         next if ($blower_state =~ /No Blower/i && 
