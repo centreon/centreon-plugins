@@ -92,16 +92,22 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeSystemStatusEntry}, instance => $instance);
         
         next if ($self->check_exclude(section => 'blade', instance => $result->{bladeId}));
-         next if ($result->{bladeExists} =~ /No/i && 
+        next if ($result->{bladeExists} =~ /No/i && 
                  $self->absent_problem(section => 'blade', instance => $result->{bladeId}));
         $self->{components}->{blade}->{total}++;
-
+        
+        if ($result->{bladePowerState} =~ /off/) {
+            $self->{output}->output_add(long_msg => sprintf("Blade '%s' power state is %s", 
+                                                            $result->{bladeId}, $result->{bladePowerState}));
+            next;
+        }
+        
         $self->{output}->output_add(long_msg => sprintf("Blade '%s' state is %s [power state: %s]", 
                                     $result->{bladeId}, $result->{bladeHealthState}, $result->{bladePowerState}));
         my $exit = $self->get_severity(section => 'blade', value => $result->{bladeHealthState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power module '%s' state is %s", 
+                                        short_msg => sprintf("Blade '%s' state is %s", 
                                             $result->{bladeId}, $result->{bladeHealthState}));
         }
     }
