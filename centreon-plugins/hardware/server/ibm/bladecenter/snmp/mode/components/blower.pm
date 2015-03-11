@@ -76,7 +76,7 @@ sub check {
         my $instance = $i + 1;
         next if (!defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}));
         my $blower_state = $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}};
-        my $blower_speed = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}} : undef;
+        my $blower_speed = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'} : 'unknown';
         my $ctrl_state = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_controller_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}} : undef;
     
         next if ($self->check_exclude(section => 'blower', instance => $instance));
@@ -84,6 +84,20 @@ sub check {
                  $self->absent_problem(section => 'blower', instance => $instance));
         $self->{components}->{blower}->{total}++;
 
+        if ($blower_speed =~ /^(\d+)%/) {
+            $blower_speed = $1;
+            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'blower', instance => $instance, value => $blower_speed);
+            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit2,
+                                            short_msg => sprintf("Blower speed '%s' is %s %%", $instance, $blower_speed));
+            }
+            $self->{output}->perfdata_add(label => "blower_speed_" . $instance, unit => '%',
+                                          value => $blower_speed,
+                                          warning => $warn,
+                                          critical => $crit,
+                                          min => 0, max => 100);
+        }
+        
         $self->{output}->output_add(long_msg => sprintf("Blower '%s' state is %s (%d %%).", 
                                     $instance, $blower_state, $blower_speed));
         my $exit = $self->get_severity(section => 'blower', value => $blower_state);
@@ -91,20 +105,6 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Blower '%s' state is %s", 
                                             $instance, $blower_state));
-        }
-        
-        if (defined($blower_speed) && $blower_speed =~ /^(\d+)%/) {
-            my $value = $1;
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'blower', instance => $instance, value => $value);
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Blower speed '%s' is %s %%", $instance, $value));
-            }
-            $self->{output}->perfdata_add(label => "blower_speed_" . $instance, unit => '%',
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0, max => 100);
         }
         
         next if ($self->check_exclude(section => 'blowerctrl', instance => $instance));
