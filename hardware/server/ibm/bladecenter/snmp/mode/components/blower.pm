@@ -77,10 +77,10 @@ sub check {
         next if (!defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}));
         my $blower_state = $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_state + $i) . '.0'}};
         my $blower_speed = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}} : undef;
-        my $ctrl_state = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_blower_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}} : undef;
+        my $ctrl_state = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_controller_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}} : undef;
     
         next if ($self->check_exclude(section => 'blower', instance => $instance));
-        next if ($blower_state =~ /No Blower/i && 
+        next if ($blower_speed =~ /No Blower/i && 
                  $self->absent_problem(section => 'blower', instance => $instance));
         $self->{components}->{blower}->{total}++;
 
@@ -112,7 +112,7 @@ sub check {
                  $self->absent_problem(section => 'blowerctrl', instance => $instance));
         $self->{output}->output_add(long_msg => sprintf("Blower controller '%s' state is %s.", 
                                     $instance, $ctrl_state));
-        $exit = $self->get_severity(section => 'blower', value => $ctrl_state);
+        $exit = $self->get_severity(section => 'blowerctrl', value => $ctrl_state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Blower controller '%s' state is %s", 
