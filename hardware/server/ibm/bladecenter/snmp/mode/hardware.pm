@@ -137,7 +137,7 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /(blower|ambient|blade)/) {
+            if ($section !~ /(blower|ambient)/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: battery or temperature).");
                 $self->{output}->option_exit();
             }
@@ -322,7 +322,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='powermodule,CRITICAL,^(?!(good)$)'
+Example: --threshold-overload='blade,OK,unknown'
 
 =item B<--warning>
 
@@ -332,7 +332,7 @@ Example: --warning='ambient,mm,30' --warning='ambient,frontpanel,35'
 =item B<--critical>
 
 Set critical threshold for temperatures (syntax: type,regexp,treshold)
-Example: --critical='blower,1.speed,6000' --critical='blade,1.4Temp,30'
+Example: --critical='blower,1,50'
 
 =back
 
