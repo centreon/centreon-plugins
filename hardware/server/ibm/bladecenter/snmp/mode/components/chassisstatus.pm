@@ -71,7 +71,7 @@ my $oids = {
     bistRemoteControlFirmware       => '.1.3.6.1.4.1.2.3.51.2.2.5.2.28.0',
     bistPhysicalNetworkLink         => '.1.3.6.1.4.1.2.3.51.2.2.5.2.29.0',
     bistLogicalNetworkLink          => '.1.3.6.1.4.1.2.3.51.2.2.5.2.30.0',
-}
+};
 
 my %map_test_state = (
     0 => 'testSucceeded',
@@ -98,13 +98,13 @@ sub check {
             next;
         }
         
-        my $value = $map_test_state{$oids->{$name}};
+        my $value = $map_test_state{$self->{results}->{$oid_mmBistAndChassisStatus}->{$oids->{$name}}};
         next if ($self->check_exclude(section => 'chassisstatus', instance => $name));
         $self->{components}->{chassisstatus}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Chassis status '%s' state is %s", 
                                                         $name, $value));
-        my $exit = $self->get_severity(section => 'systemhealth', value => $value);
+        my $exit = $self->get_severity(section => 'chassisstatus', value => $value);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Chassis status '%s' state is %s", 
