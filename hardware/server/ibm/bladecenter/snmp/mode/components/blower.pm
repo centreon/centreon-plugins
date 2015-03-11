@@ -107,6 +107,8 @@ sub check {
                                             $instance, $blower_state));
         }
         
+        next if (!defined($ctrl_state));
+        
         next if ($self->check_exclude(section => 'blowerctrl', instance => $instance));
         next if ($ctrl_state =~ /notPresent/i && 
                  $self->absent_problem(section => 'blowerctrl', instance => $instance));
