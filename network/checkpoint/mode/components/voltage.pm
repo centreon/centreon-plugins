@@ -80,7 +80,7 @@ sub check {
                                         short_msg => sprintf("Voltage '%s' sensor out of range status is '%s'", $result->{voltageSensorName}, $result->{voltageSensorStatus}));
         }
         $self->{output}->perfdata_add(label => $result->{voltageSensorName} , unit => 'V', 
-                                      value => sprintf("%d", $result->{voltageSensorValue}));
+                                      value => sprintf("%.2f", $result->{voltageSensorValue}));
 
     }
 }
