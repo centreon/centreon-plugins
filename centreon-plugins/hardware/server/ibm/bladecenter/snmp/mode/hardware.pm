@@ -52,6 +52,13 @@ my $thresholds = {
         ['good', 'OK'],
         ['warning', 'WARNING'],
         ['bad', 'CRITICAL'],
+    ],    
+    blowerctrl => [
+        ['unknown', 'UNKNOWN'],
+        ['operational', 'OK'],
+        ['flashing', 'WARNING'],
+        ['communicationError', 'CRITICAL'],
+        ['notPresent', 'UNKNOWN'],
     ],
     blade => [
         ['unknown', 'UNKNOWN'],
