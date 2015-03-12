@@ -78,10 +78,10 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => "SELECT count(*) as num, instance_name FROM " . $self->{option_results}->{centreon_storage_database} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3') GROUP BY instance_name");
+    $self->{sql}->query(query => "SELECT name, count(NULLIF(log_id, 0)) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".instances LEFT JOIN " . $self->{option_results}->{centreon_storage_database} . ".logs ON logs.ctime > " . $options{time} . " AND logs.msg_type IN ('2', '3') AND logs.instance_name = instances.name WHERE deleted = '0' GROUP BY instance_name");
     my $total_notifications = 0;
-    while (($row = $self->{sql}->fetchrow_hashref())) {
-        $self->{output}->output_add(long_msg => sprintf("%d sent notifications from %s", $row->{num}, $row->{instance}));
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        $self->{output}->output_add(long_msg => sprintf("%d sent notifications from %s", $row->{num}, $row->{name}));
         $total_notifications += $row->{num};
     }
 
