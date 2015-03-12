@@ -84,10 +84,10 @@ sub execute {
     my $total_problems_by_poller = {};
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (!defined($total_problems_by_poller->{$row->{name}})) {
-            $total_problems_by_poller->{$row->{name}} = { 0_1 => { label_perf => 'host_down', label => 'host down', num => 0 },
-                                                          1_1 => { label_perf => 'service_warning', label => 'service warning', num => 0 },
-                                                          1_2 => { label_perf => 'service_critical', label => 'service critical', num => 0 },
-                                                          1_3 => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }};
+            $total_problems_by_poller->{$row->{name}} = { '0_1' => { label_perf => 'host_down', label => 'host down', num => 0 },
+                                                          '1_1' => { label_perf => 'service_warning', label => 'service warning', num => 0 },
+                                                          '1_2' => { label_perf => 'service_critical', label => 'service critical', num => 0 },
+                                                          '1_3' => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }};
         }
 
         if ($row->{num} != 0 && defined($total_problems_by_poller->{$row->{name}}->{$row->{msg_type} . '_' . $row->{status}})) {
