@@ -78,14 +78,18 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => "SELECT count(*) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3')");
-    my $row = $self->{sql}->fetchrow_hashref();
+    $self->{sql}->query(query => "SELECT count(*) as num, instance_name FROM " . $self->{option_results}->{centreon_storage_database} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3') GROUP BY instance_name");
+    my $total_notifications = 0;
+    while (($row = $self->{sql}->fetchrow_hashref())) {
+        $self->{output}->output_add(long_msg => sprintf("%d sent notifications from %s", $row->{num}, $row->{instance}));
+        $total_notifications += $row->{num};
+    }
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $row->{num}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit_code = $self->{perfdata}->threshold_check(value => $total_notifications, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                               short_msg => sprintf("%d notification sent", $row->{num}));
-    $self->{output}->perfdata_add(label => 'notifications',
-                                  value => $row->{num},
+                                short_msg => sprintf("%d total sent notifications", $total_notifications));
+    $self->{output}->perfdata_add(label => 'total',
+                                  value => $total_notifications,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
