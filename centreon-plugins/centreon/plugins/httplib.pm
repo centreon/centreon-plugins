@@ -116,6 +116,14 @@ sub connect {
     if (defined($self->{option_results}->{proxyurl})) {
         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
+
+	if (defined($self->{option_results}->{ssl}) && $self->{option_results}->{ssl} ne '') {
+		use IO::Socket::SSL;
+		my $context = new IO::Socket::SSL::SSL_Context(
+			SSL_version => $self->{option_results}->{ssl},
+		);
+		IO::Socket::SSL::set_default_context($context);
+    }
     
     $response = $ua->request($req);
 
