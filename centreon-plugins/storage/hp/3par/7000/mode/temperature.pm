@@ -49,15 +49,15 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-								  "hostname:s"              => { name => 'hostname' },
+                                  "hostname:s"              => { name => 'hostname' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "sudo"                    => { name => 'sudo' },
                                   "ssh-option:s@"           => { name => 'ssh_option' },
                                   "ssh-path:s"              => { name => 'ssh_path' },
                                   "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
                                   "no-component:s"          => { name => 'no_component' },
-								  "sensor:s"				=> { name => 'sensor' },
-								  "regexp"					=> { name => 'regexp' },
+                                  "sensor:s"                => { name => 'sensor' },
+                                  "regexp"                  => { name => 'regexp' },
                                 });
     $self->{components} = {};
     $self->{no_components} = undef;
@@ -68,7 +68,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-	if (!defined($self->{option_results}->{hostname})) {
+    if (!defined($self->{option_results}->{hostname})) {
        $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
        $self->{output}->option_exit(); 
     }
@@ -85,8 +85,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-	$self->{option_results}->{remote} = 1;
-	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $self->{option_results}->{remote} = 1;
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => "shownodeenv",
@@ -94,39 +94,39 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
 
 
-	my $total_components = 0;
-	my $nodeID = 0;
-	my @temperatures = split(/\n/,$stdout);
-	foreach my $temperature (@temperatures) {
-		if ($temperature =~ /^Node\s(\d+)$/) {
-			$nodeID = $1;
-		}
-		if ($temperature =~ /^(.+)\s(\d+)\sC\s+(\d+)\sC\s+(\d+)/) {
-			my $measurement = $1;
-			my $readTemp = $2;
-			my $loTemp = $3;
-			my $hiTemp= $4;
-			$measurement =~ s/^\s+//;
-			$measurement =~ s/\s+$//;
-			$total_components++;
+    my $total_components = 0;
+    my $nodeID = 0;
+    my @temperatures = split(/\n/,$stdout);
+    foreach my $temperature (@temperatures) {
+        if ($temperature =~ /^Node\s(\d+)$/) {
+            $nodeID = $1;
+        }
+        if ($temperature =~ /^(.+)\s(\d+)\sC\s+(\d+)\sC\s+(\d+)/) {
+            my $measurement = $1;
+            my $readTemp = $2;
+            my $loTemp = $3;
+            my $hiTemp= $4;
+            $measurement =~ s/^\s+//;
+            $measurement =~ s/\s+$//;
+            $total_components++;
 
-			next if (defined($self->{option_results}->{sensor}) && defined($self->{option_results}->{regexp}) && ($measurement !~ /$self->{option_results}->{sensor}/i));
-			next if (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{regexp}) && ($measurement != $self->{option_results}->{sensor}));
-			
+            next if (defined($self->{option_results}->{sensor}) && defined($self->{option_results}->{regexp}) && ($measurement !~ /$self->{option_results}->{sensor}/i));
+            next if (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{regexp}) && ($measurement != $self->{option_results}->{sensor}));
+            
 $self->{output}->output_add(long_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
-			if (($readTemp > $hiTemp) || ($readTemp < $loTemp)){
-				$self->{output}->output_add(severity => 'critical',
-                                			short_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
-			}
-			$self->{output}->perfdata_add(label	=>	$measurement.'_temperature',
-										  unit 	=>	'C',
-										  value	=>	$readTemp);
-		}
-	}
+            if (($readTemp > $hiTemp) || ($readTemp < $loTemp)){
+                $self->{output}->output_add(severity => 'critical',
+                                            short_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
+            }
+            $self->{output}->perfdata_add(label    =>    $measurement.'_temperature',
+                                          unit     =>    'C',
+                                          value    =>    $readTemp);
+        }
+    }
 
-	$self->{output}->output_add(severity => 'OK',
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All %d temperatures are ok.", $total_components));
-	 
+     
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(severity => $self->{no_components},
                                     short_msg => 'No components are checked.');

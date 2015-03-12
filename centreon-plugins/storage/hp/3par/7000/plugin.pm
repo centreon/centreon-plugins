@@ -48,15 +48,15 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'physicaldisk'	=> 'storage::hp::3par::7000::mode::physicaldisk',
-						 'psu'			=> 'storage::hp::3par::7000::mode::psu',
+                         'psu'			=> 'storage::hp::3par::7000::mode::psu',
                          'node'         => 'storage::hp::3par::7000::mode::node',
-						 'battery'		=> 'storage::hp::3par::7000::mode::battery', 
-						 'wsapi'		=> 'storage::hp::3par::7000::mode::wsapi',
-						 'cim'			=> 'storage::hp::3par::7000::mode::cim',
-						 'temperature'	=> 'storage::hp::3par::7000::mode::temperature',
-						 'storage'		=> 'storage::hp::3par::7000::mode::storage',
-						 'iscsi'		=> 'storage::hp::3par::7000::mode::iscsi',
-						 'volume'		=> 'storage::hp::3par::7000::mode::volume',
+                         'battery'		=> 'storage::hp::3par::7000::mode::battery', 
+                         'wsapi'		=> 'storage::hp::3par::7000::mode::wsapi',
+                         'cim'			=> 'storage::hp::3par::7000::mode::cim',
+                         'temperature'	=> 'storage::hp::3par::7000::mode::temperature',
+                         'storage'		=> 'storage::hp::3par::7000::mode::storage',
+                         'iscsi'		=> 'storage::hp::3par::7000::mode::iscsi',
+                         'volume'		=> 'storage::hp::3par::7000::mode::volume',
 						);
 
     return $self;

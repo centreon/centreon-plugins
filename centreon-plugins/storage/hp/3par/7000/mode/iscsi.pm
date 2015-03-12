@@ -40,10 +40,10 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my %states = (	
-	'ready'		=> 'OK', 
-	'loss_sync'	=> 'WARNING', 
-	'offline'	=> 'CRITICAL', 
+my %states = (    
+    'ready'      => 'OK', 
+    'loss_sync'  => 'WARNING', 
+    'offline'    => 'CRITICAL', 
 );
 
 sub new {
@@ -54,7 +54,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-								  "hostname:s"              => { name => 'hostname' },
+                                  "hostname:s"              => { name => 'hostname' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "sudo"                    => { name => 'sudo' },
                                   "ssh-option:s@"           => { name => 'ssh_option' },
@@ -71,9 +71,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-	if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
-       $self->{output}->option_exit(); 
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
+        $self->{output}->option_exit(); 
     }
     
     if (defined($self->{option_results}->{no_component})) {
@@ -88,8 +88,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-	$self->{option_results}->{remote} = 1;
-	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $self->{option_results}->{remote} = 1;
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => "showport",
@@ -97,27 +97,27 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
 
 
-	my $total_components = 0;
-	my @iscsis = split("\n",$stdout);
-	foreach my $iscsi (@iscsis) {
-		if ($iscsi =~ /(\S+)\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)/) {
-			my $iscsiNsp = $1;
-			my $iscsiState = $2;
-			my $iscsiType = $3;
-			if($iscsiType eq 'iscsi') {
-				$self->{output}->output_add(long_msg => sprintf("Interface '%s' is '%s'", $iscsiNsp, $iscsiState));
-				if ($states{lc($iscsiState)} ne 'OK'){
-					$self->{output}->output_add(severity => $states{lc($iscsiState)},
-        	                        			short_msg => sprintf("Interface '%s' is '%s'", $iscsiNsp, $iscsiState));
-				}
-				$total_components++;
-			}
-		}
-	}
+    my $total_components = 0;
+    my @iscsis = split("\n",$stdout);
+    foreach my $iscsi (@iscsis) {
+        if ($iscsi =~ /(\S+)\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)/) {
+            my $iscsiNsp = $1;
+            my $iscsiState = $2;
+            my $iscsiType = $3;
+            if($iscsiType eq 'iscsi') {
+                $self->{output}->output_add(long_msg => sprintf("Interface '%s' is '%s'", $iscsiNsp, $iscsiState));
+                if ($states{lc($iscsiState)} ne 'OK'){
+                    $self->{output}->output_add(severity => $states{lc($iscsiState)},
+                                                short_msg => sprintf("Interface '%s' is '%s'", $iscsiNsp, $iscsiState));
+                }
+                $total_components++;
+            }
+        }
+    }
 
-	$self->{output}->output_add(severity => 'OK',
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All %d ISCSIs are ok.", $total_components));
-	 
+     
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(severity => $self->{no_components},
                                     short_msg => 'No components are checked.');
@@ -169,5 +169,3 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 =back
 
 =cut
-    
-

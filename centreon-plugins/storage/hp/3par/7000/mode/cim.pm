@@ -48,13 +48,13 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-								  "hostname:s"              => { name => 'hostname' },
+                                  "hostname:s"              => { name => 'hostname' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "sudo"                    => { name => 'sudo' },
                                   "ssh-option:s@"           => { name => 'ssh_option' },
                                   "ssh-path:s"              => { name => 'ssh_path' },
                                   "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-								  "no-cim:s"				=> { name => 'no_cim' },
+                                  "no-cim:s"                => { name => 'no_cim' },
                                 });
     $self->{no_cim} = undef;
     return $self;
@@ -64,9 +64,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-	if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
-       $self->{output}->option_exit(); 
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
+        $self->{output}->option_exit(); 
     }
     
     if (defined($self->{option_results}->{no_cim})) {
@@ -81,8 +81,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-	$self->{option_results}->{remote} = 1;
-	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $self->{option_results}->{remote} = 1;
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => "showcim",
@@ -90,34 +90,34 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
 
 
-	my @results = split("\n",$stdout);
-	my $total_cim = 0;
-	foreach my $result (@results) {
-		if ($result =~ /(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+\S+/) {
-			$total_cim++;
-			my $serviceStatus = $1;
-			my $serviceState = $2;
-			my $slpState = $3;
-			my $slpPort = $4;
-			my $httpState = $5;
-			my $httpPort = $6;
-			my $httpsState = $7;
+    my @results = split("\n",$stdout);
+    my $total_cim = 0;
+    foreach my $result (@results) {
+        if ($result =~ /(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+\S+/) {
+            $total_cim++;
+            my $serviceStatus = $1;
+            my $serviceState = $2;
+            my $slpState = $3;
+            my $slpPort = $4;
+            my $httpState = $5;
+            my $httpPort = $6;
+            my $httpsState = $7;
             my $httpsPort = $8;
 
-			$self->{output}->output_add(long_msg => sprintf("CIM service is '%s' and '%s' [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s]",
-										$serviceStatus, $serviceState, $slpPort, $slpState, $httpPort, $httpState, $httpsPort ,$httpsState));
-			if ((lc($serviceStatus) ne 'enabled') || (lc($serviceState) ne 'active')){
-				$self->{output}->output_add(severity => 'critical',
-											short_msg => sprintf("CIM service is '%s' and '%s' [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s]",
+            $self->{output}->output_add(long_msg => sprintf("CIM service is '%s' and '%s' [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s]",
                                         $serviceStatus, $serviceState, $slpPort, $slpState, $httpPort, $httpState, $httpsPort ,$httpsState));
-			}
-		}
-	}
+            if ((lc($serviceStatus) ne 'enabled') || (lc($serviceState) ne 'active')){
+                $self->{output}->output_add(severity => 'critical',
+                                            short_msg => sprintf("CIM service is '%s' and '%s' [SLP on port %d is %s] [HTTP on port %d is %s] [HTTPS on port %d is %s]",
+                                        $serviceStatus, $serviceState, $slpPort, $slpState, $httpPort, $httpState, $httpsPort ,$httpsState));
+            }
+        }
+    }
 
-	$self->{output}->output_add(severity => 'OK',
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'CIM service is ok.');
-	
-	if (defined($self->{option_results}->{no_cim}) && $total_cim == 0) {
+    
+    if (defined($self->{option_results}->{no_cim}) && $total_cim == 0) {
         $self->{output}->output_add(severity => $self->{no_cim},
                                     short_msg => 'No CIM service is checked.');
     }
@@ -168,5 +168,3 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 =back
 
 =cut
-    
-
