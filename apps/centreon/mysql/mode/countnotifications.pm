@@ -75,10 +75,10 @@ sub check_options {
 }
 
 sub execute {
-    my ($self, %options) = @
+    my ($self, %options) = @_;
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => "SELECT count(*) as num FROM " . $self->{option_results}->{centreon_storage} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3')");
+    $self->{sql}->query(query => "SELECT count(*) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3')");
     my $row = $self->{sql}->fetchrow_hashref();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $row->{num}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -98,7 +98,7 @@ sub run {
 
     $self->{statefile_cache}->read(statefile => 'mysql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
     my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-    $new_datas->{last_timestamp} = time();
+    my $new_datas = { last_timestamp => time() };
     $self->{statefile_cache}->write(data => $new_datas);
     
     if (!defined($old_timestamp)) {
