@@ -62,7 +62,7 @@ sub check {
     return if ($self->check_exclude(section => 'systemhealth'));
 
     my $value = $map_systemhealth_state{$self->{results}->{$oid_systemHealthStat}->{$oid_systemHealthStat . '.0'}};
-    $self->{components}->{powermodule}->{total}++;
+    $self->{components}->{systemhealth}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("System health state is %s", 
                                                     $value));
