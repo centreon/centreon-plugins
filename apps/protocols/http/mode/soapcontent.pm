@@ -67,6 +67,7 @@ sub new {
             "expected-string:s"     => { name => 'expected_string' },
             "header:s@"             => { name => 'header' },
             "timeout:s"             => { name => 'timeout', default => 10 },
+			"ssl:s"					=> { name => 'ssl', },
             
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },
@@ -432,6 +433,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 10)
+
+=item B<--ssl>
+
+Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 =item B<--header>
 
