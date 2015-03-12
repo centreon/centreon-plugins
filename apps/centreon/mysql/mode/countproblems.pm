@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::centreon::mysql::mode::countnotifications;
+package apps::centreon::mysql::mode::countproblems;
 
 use base qw(centreon::plugins::mode);
 
@@ -78,23 +78,56 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => "SELECT name, count(NULLIF(log_id, 0)) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".instances LEFT JOIN " . $self->{option_results}->{centreon_storage_database} . ".logs ON logs.ctime > " . $options{time} . " AND logs.msg_type IN ('2', '3') AND logs.instance_name = instances.name WHERE deleted = '0' GROUP BY name");
-    my $total_notifications = 0;
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $self->{output}->output_add(long_msg => sprintf("%d sent notifications from %s", $row->{num}, $row->{name}));
-        $total_notifications += $row->{num};
-        $self->{output}->perfdata_add(label => 'notifications_' . $row->{name},
-                                      value => $row->{num},
-                                      min => 0);
-    }
+    $self->{sql}->query(query => "SELECT name, msg_type, status, count(NULLIF(log_id, 0)) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".instances LEFT JOIN " . $self->{option_results}->{centreon_storage_database} . ".logs ON logs.ctime > " . $options{time} . " AND logs.msg_type IN ('0', '1') AND type = '1' AND status NOT IN ('0') AND logs.instance_name = instances.name WHERE deleted = '0' GROUP BY name, msg_type, status");
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $total_notifications, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $total_problems = { total => 0, hosts => 0, services => 0 };
+    my $total_problems_by_poller = {};
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        if (!defined($total_problems_by_poller->{$row->{name}})) {
+            $total_problems_by_poller->{$row->{name}} = { 0_1 => { label_perf => 'host_down', label => 'host down', num => 0 },
+                                                          1_1 => { label_perf => 'service_warning', label => 'service warning', num => 0 },
+                                                          1_2 => { label_perf => 'service_critical', label => 'service critical', num => 0 },
+                                                          1_3 => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }};
+        }
+
+        if ($row->{num} != 0 && defined($total_problems_by_poller->{$row->{name}}->{$row->{msg_type} . '_' . $row->{status}})) {
+            $total_problems_by_poller->{$row->{name}}->{$row->{msg_type} . '_' . $row->{status}}->{num} = $row->{num};
+            if ($row->{msg_type} == 0) {
+                $total_problems->{hosts} += $row->{num};
+            } else {
+                $total_problems->{services} += $row->{num};
+            }
+            $total_problems->{total} += $row->{num};
+        }        
+    }
+    
+    $self->{output}->output_add(long_msg => sprintf("%d total hosts problems", $total_problems->{services}));
+    $self->{output}->output_add(long_msg => sprintf("%d total services problems", $total_problems->{services}));
+    foreach my $poller (sort keys %{$total_problems_by_poller}) {
+        foreach my $id (sort keys %{$total_problems_by_poller->{$poller}}) {
+            $self->{output}->output_add(long_msg => sprintf("%d %s problems on %s", 
+                                                            $total_problems_by_poller->{$poller}->{$id}->{num},
+                                                            $total_problems_by_poller->{$poller}->{$id}->{label},
+                                                            $poller));
+            $self->{output}->perfdata_add(label => $total_problems_by_poller->{$poller}->{$id}->{label_perf} . "_" . $poller,
+                                          value => $total_problems_by_poller->{$poller}->{$id}->{num},
+                                          min => 0);
+        }
+    }
+                                      
+    my $exit_code = $self->{perfdata}->threshold_check(value => $total_problems->{total}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%d total sent notifications", $total_notifications));
+                                short_msg => sprintf("%d total problems", $total_problems->{total}));
     $self->{output}->perfdata_add(label => 'total',
-                                  value => $total_notifications,
+                                  value => $total_problems->{total},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+    $self->{output}->perfdata_add(label => 'total_hosts',
+                                  value => $total_problems->{hosts},
+                                  min => 0);
+    $self->{output}->perfdata_add(label => 'total_services',
+                                  value => $total_problems->{services},
                                   min => 0);
 }
 
@@ -125,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check the number of notifications (works only with centreon-broker).
+Check the number of problems (works only with centreon-broker).
 The mode should be used with mysql plugin and dyn-mode option.
 
 =over 8
