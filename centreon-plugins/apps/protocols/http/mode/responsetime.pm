@@ -63,6 +63,7 @@ sub new {
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout', default => '3' },
+		 "ssl:s"		=> { name => 'ssl', },
          });
     return $self;
 }
@@ -172,6 +173,10 @@ Proxy URL if any
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--ssl>
+
+Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 =item B<--warning>
 
