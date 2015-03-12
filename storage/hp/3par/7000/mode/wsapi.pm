@@ -48,13 +48,13 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-								  "hostname:s"              => { name => 'hostname' },
+                                  "hostname:s"              => { name => 'hostname' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "sudo"                    => { name => 'sudo' },
                                   "ssh-option:s@"           => { name => 'ssh_option' },
                                   "ssh-path:s"              => { name => 'ssh_path' },
                                   "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-								  "no-wsapi:s"          	=> { name => 'no_wsapi' },
+                                  "no-wsapi:s"              => { name => 'no_wsapi' },
                                 });
     $self->{no_wsapi} = undef;
     return $self;
@@ -64,9 +64,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-	if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
-       $self->{output}->option_exit(); 
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
+        $self->{output}->option_exit(); 
     }
     
     if (defined($self->{option_results}->{no_wsapi})) {
@@ -81,8 +81,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-	$self->{option_results}->{remote} = 1;
-	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $self->{option_results}->{remote} = 1;
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => "showwsapi",
@@ -90,32 +90,32 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
 
 
-	my @results = split("\n",$stdout);
-	my $total_wsapi = 0;
-	foreach my $result (@results) {
-		if ($result =~ /(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+\S+/) {
-			$total_wsapi++;
-			my $serviceStatus = $1;
-			my $serviceState = $2;
-			my $httpState = $3;
-			my $httpPort = $4;
-			my $httpsState = $5;
+    my @results = split("\n",$stdout);
+    my $total_wsapi = 0;
+    foreach my $result (@results) {
+        if ($result =~ /(\S+)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\S+)\s+(\d+)\s+\S+/) {
+            $total_wsapi++;
+            my $serviceStatus = $1;
+            my $serviceState = $2;
+            my $httpState = $3;
+            my $httpPort = $4;
+            my $httpsState = $5;
             my $httpsPort = $6;
 
-			$self->{output}->output_add(long_msg => sprintf("WSAPI service is '%s' and '%s' [HTTP on port %d is %s] [HTTPS on port %d is %s]",
-										$serviceStatus, $serviceState, $httpPort, $httpState, $httpsPort ,$httpsState));
-			if ((lc($serviceStatus) ne 'enabled') || (lc($serviceState) ne 'active')){
-				$self->{output}->output_add(severity => 'critical',
-											short_msg => sprintf("WSAPI service is '%s' and '%s' [HTTP on port %d is %s] [HTTPS on port %d is %s]",
+            $self->{output}->output_add(long_msg => sprintf("WSAPI service is '%s' and '%s' [HTTP on port %d is %s] [HTTPS on port %d is %s]",
                                         $serviceStatus, $serviceState, $httpPort, $httpState, $httpsPort ,$httpsState));
-			}
-		}
-	}
+            if ((lc($serviceStatus) ne 'enabled') || (lc($serviceState) ne 'active')){
+                $self->{output}->output_add(severity => 'critical',
+                                            short_msg => sprintf("WSAPI service is '%s' and '%s' [HTTP on port %d is %s] [HTTPS on port %d is %s]",
+                                        $serviceStatus, $serviceState, $httpPort, $httpState, $httpsPort ,$httpsState));
+            }
+        }
+    }
 
-	$self->{output}->output_add(severity => 'OK',
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'WSAPI service is ok.');
-	
-	if (defined($self->{option_results}->{no_wsapi}) && $total_wsapi == 0) {
+    
+    if (defined($self->{option_results}->{no_wsapi}) && $total_wsapi == 0) {
         $self->{output}->output_add(severity => $self->{no_wsapi},
                                     short_msg => 'No WSAPI service is checked.');
     }
@@ -166,5 +166,3 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 =back
 
 =cut
-    
-

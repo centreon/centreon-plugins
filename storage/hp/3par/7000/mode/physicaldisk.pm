@@ -40,11 +40,11 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my %states = (	
-	'normal'	=> 'OK', 
-	'new'		=> 'OK', 
-	'degraded'	=> 'WARNING', 
-	'failed'	=> 'CRITICAL', 
+my %states = (    
+    'normal'    => 'OK', 
+    'new'       => 'OK', 
+    'degraded'  => 'WARNING', 
+    'failed'    => 'CRITICAL', 
 );
 
 sub new {
@@ -55,7 +55,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-								  "hostname:s"              => { name => 'hostname' },
+                                  "hostname:s"              => { name => 'hostname' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "sudo"                    => { name => 'sudo' },
                                   "ssh-option:s@"           => { name => 'ssh_option' },
@@ -72,9 +72,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-	if (!defined($self->{option_results}->{hostname})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
-       $self->{output}->option_exit(); 
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify a hostname.");
+        $self->{output}->option_exit(); 
     }
     
     if (defined($self->{option_results}->{no_component})) {
@@ -89,8 +89,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-	$self->{option_results}->{remote} = 1;
-	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+    $self->{option_results}->{remote} = 1;
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => "showpd -showcols Id,State",
@@ -98,25 +98,25 @@ sub run {
                                                   command_options => $self->{option_results}->{command_options});
 
 
-	my $total_components = 0;
-	my @disks = split("\n",$stdout);
-	foreach my $disk (@disks) {
-		if ($disk =~ /(\d+)\s+(\S+)/) {
-			$total_components++;
-			my $diskId = $1;
-			my $diskState = $2;
+    my $total_components = 0;
+    my @disks = split("\n",$stdout);
+    foreach my $disk (@disks) {
+        if ($disk =~ /(\d+)\s+(\S+)/) {
+            $total_components++;
+            my $diskId = $1;
+            my $diskState = $2;
 
-			$self->{output}->output_add(long_msg => sprintf("Physical Disk '%d' state is '%s'", $diskId, $diskState));
-			if ($states{$diskState} ne 'OK'){
-				$self->{output}->output_add(severity => $states{$diskState},
-                                			short_msg => sprintf("Physical Disk '%d' state is '%s'.", $diskId, $diskState));
-			}
-		}
-	}
+            $self->{output}->output_add(long_msg => sprintf("Physical Disk '%d' state is '%s'", $diskId, $diskState));
+            if ($states{$diskState} ne 'OK'){
+                $self->{output}->output_add(severity => $states{$diskState},
+                                            short_msg => sprintf("Physical Disk '%d' state is '%s'.", $diskId, $diskState));
+            }
+        }
+    }
 
-	$self->{output}->output_add(severity => 'OK',
+    $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All %d physical disks are ok.", $total_components));
-	 
+     
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(severity => $self->{no_components},
                                     short_msg => 'No components are checked.');
@@ -168,5 +168,3 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 =back
 
 =cut
-    
-
