@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2015 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,16 +29,17 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Kevin Duret <kduret@merethis.com>
+# Authors : Quentin Garnier <qgarnier@centreon.com>
 #
 ####################################################################################
 
-package apps::centreon::mysql::mode::pollerdelay;
+package apps::centreon::mysql::mode::countnotifications;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -48,9 +49,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"       => { name => 'warning', default => 300 },
-                                  "critical:s"      => { name => 'critical', default => 600 },
+                                  "warning:s"                   => { name => 'warning' },
+                                  "critical:s"                  => { name => 'critical' },
+                                  "centreon-storage-database:s" => { name => 'centreon_storage_database', default => 'centreon_storage' },
                                 });
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -60,13 +63,32 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical}. "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical}. "'.");
+        $self->{output}->option_exit();
     }
+    
+    $self->{statefile_cache}->check_options(%options);
+}
+
+sub execute {
+    my ($self, %options) = @
+
+    $self->{sql}->connect();
+    $self->{sql}->query(query => "SELECT count(*) as num FROM " . $self->{option_results}->{centreon_storage} . ".logs WHERE ctime > " . $options{time} . " AND msg_type IN ('2', '3')");
+    my $row = $self->{sql}->fetchrow_hashref();
+
+    my $exit_code = $self->{perfdata}->threshold_check(value => $row->{num}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                               short_msg => sprintf("%d notification sent", $row->{num}));
+    $self->{output}->perfdata_add(label => 'notifications',
+                                  value => $row->{num},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
 }
 
 sub run {
@@ -74,33 +96,16 @@ sub run {
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{
-        SELECT instance_id,name,last_alive,running FROM centreon_storage.instances;
-    });
-    my $result = $self->{sql}->fetchall_arrayref();
+    $self->{statefile_cache}->read(statefile => 'mysql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
+    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+    $new_datas->{last_timestamp} = time();
+    $self->{statefile_cache}->write(data => $new_datas);
     
-    my $timestamp = time();
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All poller delay for last update are ok"));
-    foreach my $row (@{$result}) {
-    	if ($$row[3] == 0) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("%s is not running", $$row[1]));
-            next;
-        }
-        my $delay = $timestamp - $$row[2];
-        my $exit_code = $self->{perfdata}->threshold_check(value => abs($delay), threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(long_msg => sprintf("Delay for last update of %s is %d seconds", $$row[1], $delay));
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Delay for last update of %s is %d seconds", $$row[1], $delay));
-        }
-        $self->{output}->perfdata_add(label => sprintf("delay_%s", $$row[1]), unit => 's',
-                                      value => $delay,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+    if (!defined($old_timestamp)) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");   
+    } else {
+        $self->execute(time => $old_timestamp);
     }
 
     $self->{output}->display();
@@ -113,18 +118,22 @@ __END__
 
 =head1 MODE
 
-Check the delay of the last update from a poller to the Central server.
+Check the number of notifications (works only with centreon-broker).
 The mode should be used with mysql plugin and dyn-mode option.
 
 =over 8
 
+=item B<--centreon-storage-database>
+
+Centreon storage database name (default: 'centreon_storage').
+
 =item B<--warning>
 
-Threshold warning in seconds.
+Threshold warning.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Threshold critical.
 
 =back
 
