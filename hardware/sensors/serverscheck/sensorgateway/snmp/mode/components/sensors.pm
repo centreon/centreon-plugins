@@ -33,53 +33,56 @@
 #
 ####################################################################################
 
-package hardware::server::ibm::bladecenter::snmp::mode::components::ambient;
+package hardware::sensors::serverscheck::sensorgateway::snmp::mode::components::sensors;
 
 use strict;
 use warnings;
 
-# In MIB 'mmblade.mib'
-my $oid_temperature = '.1.3.6.1.4.1.2.3.51.2.2.1';
-my $oids = {
-    mm          => '.1.3.6.1.4.1.2.3.51.2.2.1.1.2.0',
-    frontpanel  => '.1.3.6.1.4.1.2.3.51.2.2.1.5.1.0',
-    frontpanel2 => '.1.3.6.1.4.1.2.3.51.2.2.1.5.2.0',
-};
+my $oid_control = '.1.3.6.1.4.1.17095.3';
+my $list_oids = {
+    1 => 1,
+    2 => 5,
+    3 => 9,
+    4 => 13,
+    5 => 17,
+}
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperature };
+    push @{$options{request}}, { oid => $oid_control };
 }
 
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking ambient");
-    $self->{components}->{ambient} = {name => 'ambient', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'ambient'));
+    $self->{output}->output_add(long_msg => "Checking sensors");
+    $self->{components}->{sensors} = {name => 'sensors', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'sensors'));
 
-    foreach my $temp (('mm', 'frontpanel', 'frontpanel2')) {
-        if (!defined($self->{results}->{$oid_temperature}->{$oids->{$temp}}) || 
-            $self->{results}->{$oid_temperature}->{$oids->{$temp}} !~ /([0-9\.]+)/) {
-            $self->{output}->output_add(long_msg => sprintf("skip ambient '%s': no values", 
-                                                             $temp));
+    foreach my $i (keys %{$list_oids}) {
+        if (!defined($self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'}) || 
+            $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'} !~ /([0-9\.]+)/) {
+            $self->{output}->output_add(long_msg => sprintf("skip sensor '%s': no values", 
+                                                             $i));
             next;
         }
         
-        my $value = $1;
-        next if ($self->check_exclude(section => 'ambient', instance => $temp));
-        $self->{components}->{ambient}->{total}++;
+        my $name = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i}) . '.0'}
+        my $value = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'};
         
-        $self->{output}->output_add(long_msg => sprintf("ambient '%s' is %s degree centigrade.", 
-                                                        $temp, $value));
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'ambient', instance => $temp, value => $value);
+        next if ($self->check_exclude(section => 'sensors', instance => $temp));
+        $self->{components}->{sensors}->{total}++;
+        
+        $self->{output}->output_add(long_msg => sprintf("sensor '%s' value is %s.", 
+                                                        $name, $value));
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $name, value => $value);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("ambient '%s' is %s degree centigrade", 
-                                                        $temp, $value));
+                                        short_msg => sprintf("sensor '%s' value is %s", 
+                                                             $name, $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $temp, unit => 'C',
+        $self->{output}->perfdata_add(label => $name,
                                       value => $value,
                                       warning => $warn,
                                       critical => $crit);
