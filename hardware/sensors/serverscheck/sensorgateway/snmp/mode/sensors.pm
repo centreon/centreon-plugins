@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,56 +33,18 @@
 #
 ####################################################################################
 
-package hardware::server::ibm::bladecenter::snmp::mode::hardware;
+package hardware::sensors::serverscheck::sensorgateway::snmp::mode::sensors;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
+# After
 my $thresholds = {
-    chassisstatus => [
-        ['testSucceeded', 'OK'],
-        ['testFailed', 'CRITICAL'],
-    ],
-    systemhealth => [
-        ['normal', 'OK'],
-        ['systemLevel', 'WARNING'],
-        ['nonCritical', 'WARNING'],
-        ['critical', 'CRITICAL'],
-    ],
-    powermodule => [
-        ['unknown', 'UNKNOWN'],
-        ['good', 'OK'],
-        ['warning', 'WARNING'],
-        ['notAvailable', 'UNKNOWN'],
-    ],
-    blower => [
-        ['unknown', 'UNKNOWN'],
-        ['good', 'OK'],
-        ['warning', 'WARNING'],
-        ['bad', 'CRITICAL'],
-    ],    
-    blowerctrl => [
-        ['unknown', 'UNKNOWN'],
-        ['operational', 'OK'],
-        ['flashing', 'WARNING'],
-        ['communicationError', 'CRITICAL'],
-        ['notPresent', 'UNKNOWN'],
-    ],
-    blade => [
-        ['unknown', 'UNKNOWN'],
-        ['good', 'OK'],
-        ['warning', 'WARNING'],
-        ['critical', 'CRITICAL'],
-        ['kernelMode', 'WARNING'],
-        ['discovering', 'WARNING'],
-        ['commError', 'CRITICAL'],
-        ['noPower', 'WARNING'],
-        ['flashing', 'WARNING'],
-        ['initFailure', 'CRITICAL'],
-        ['insufficientPower', 'CRITICAL'],
-        ['powerDenied', 'CRITICAL'],
+    output => [
+        ['open', 'CRITICAL'],
+        ['close', 'OK'],
     ],
 };
 
@@ -94,28 +56,23 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "absent-problem:s" => { name => 'absent' },
-                                  "component:s"      => { name => 'component', default => '.*' },
-                                  "no-component:s"   => { name => 'no_component' },
+                                  "exclude:s"               => { name => 'exclude' },
+                                  "component:s"             => { name => 'component', default => '.*' },
+                                  "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                   "warning:s@"              => { name => 'warning' },
                                   "critical:s@"             => { name => 'critical' },
                                 });
 
-    $self->{product_name} = undef;
-    $self->{serial} = undef;
-    $self->{romversion} = undef;
     $self->{components} = {};
     $self->{no_components} = undef;
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (defined($self->{option_results}->{no_component})) {
         if ($self->{option_results}->{no_component} ne '') {
             $self->{no_components} = $self->{option_results}->{no_component};
@@ -147,8 +104,8 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /(blower|ambient)/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: blower or ambient).");
+            if ($section !~ /(sensors)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: sensors).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -169,12 +126,12 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-
+    
     my $snmp_request = [];
-    my @components = ('ambient', 'powermodule', 'blade', 'blower', 'systemhealth', 'chassisstatus');
+    my @components = ('sensors');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "hardware::server::ibm::bladecenter::snmp::mode::components::$_";
+            my $mod_name = "hardware::sensors::serverscheck::sensorgateway::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
@@ -190,7 +147,7 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "hardware::server::ibm::bladecenter::snmp::mode::components::$_";
+            my $mod_name = "hardware::sensors::serverscheck::sensorgateway::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }
@@ -238,22 +195,6 @@ sub check_exclude {
     }
     return 0;
 }
-
-sub absent_problem {
-    my ($self, %options) = @_;
-    
-    if (defined($self->{option_results}->{absent}) && 
-        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
-                                                         $options{section}, $options{instance}));
-    }
-
-    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
-    $self->{components}->{$options{section}}->{skip}++;
-    return 1;
-}
-
 
 sub get_severity_numeric {
     my ($self, %options) = @_;
@@ -304,24 +245,19 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Health, Chassis status).
+Check sensors components (Sensor Probes).
 
 =over 8
 
 =item B<--component>
 
-Which component to check (Default: 'all').
-Can be: 'ambient', 'powermodule', 'blower', 'blade', 'systemhealth', 'chassisstatus'.
+Which component to check (Default: '.*').
+Can be: 'sensors'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=blower,powermodule)
-Can also exclude specific instance: --exclude=blower#1#,powermodule#2#
-
-=item B<--absent-problem>
-
-Return an error if an entity is not 'notAvailable' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=powermodule#2#
+Exclude some parts (comma seperated list) (Example: --exclude=sensors)
+Can also exclude specific instance: --exclude='sensors#Inter#'
 
 =item B<--no-component>
 
@@ -332,18 +268,19 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='blade,OK,unknown'
+Example: --threshold-overload='output,CRITICAL,^(?!(off)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: type,regexp,treshold)
-Example: --warning='ambient,mm,30' --warning='ambient,frontpanel,35' 
+Set warning threshold for temperatures and humidity (syntax: type,regexp,treshold)
+Example: --warning='sensors,.*,30' --warning='sensors,.*,90'
 
 =item B<--critical>
 
-Set critical threshold for temperatures (syntax: type,regexp,treshold)
-Example: --critical='blower,1,50'
+Set critical threshold for temperature and humidity (syntax: type,regexp,treshold)
+Example: --critical='sensors,.*,40'
 
 =back
 
 =cut
+    
