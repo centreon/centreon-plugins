@@ -45,7 +45,7 @@ my $list_oids = {
     3 => 9,
     4 => 13,
     5 => 17,
-}
+};
 
 sub load {
     my (%options) = @_;
@@ -60,7 +60,7 @@ sub check {
     $self->{components}->{sensors} = {name => 'sensors', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'sensors'));
 
-    foreach my $i (keys %{$list_oids}) {
+    foreach my $i (sort keys %{$list_oids}) {
         if (!defined($self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'}) || 
             $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'} !~ /([0-9\.]+)/) {
             $self->{output}->output_add(long_msg => sprintf("skip sensor '%s': no values", 
@@ -68,15 +68,15 @@ sub check {
             next;
         }
         
-        my $name = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i}) . '.0'}
+        my $name = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i}) . '.0'};
         my $value = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'};
         
-        next if ($self->check_exclude(section => 'sensors', instance => $temp));
+        next if ($self->check_exclude(section => 'sensors', instance => $name));
         $self->{components}->{sensors}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("sensor '%s' value is %s.", 
                                                         $name, $value));
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $name, value => $value);
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensors', instance => $name, value => $value);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("sensor '%s' value is %s", 
