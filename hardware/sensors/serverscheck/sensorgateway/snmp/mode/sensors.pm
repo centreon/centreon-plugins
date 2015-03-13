@@ -273,12 +273,12 @@ Example: --threshold-overload='output,CRITICAL,^(?!(off)$)'
 =item B<--warning>
 
 Set warning threshold for temperatures and humidity (syntax: type,regexp,treshold)
-Example: --warning='sensors,.*,30' --warning='sensors,.*,90'
+Example: --warning='sensors,Int. Temp,30' --warning='sensors,Fuel Level,50:'
 
 =item B<--critical>
 
 Set critical threshold for temperature and humidity (syntax: type,regexp,treshold)
-Example: --critical='sensors,.*,40'
+Example: --warning='sensors,Int. Temp,35' --warning='sensors,Fuel Level,40:'
 
 =back
 
