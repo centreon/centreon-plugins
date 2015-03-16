@@ -113,7 +113,7 @@ sub run {
             next if (defined($self->{option_results}->{sensor}) && defined($self->{option_results}->{regexp}) && ($measurement !~ /$self->{option_results}->{sensor}/i));
             next if (defined($self->{option_results}->{sensor}) && !defined($self->{option_results}->{regexp}) && ($measurement != $self->{option_results}->{sensor}));
             
-$self->{output}->output_add(long_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
+            $self->{output}->output_add(long_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
             if (($readTemp > $hiTemp) || ($readTemp < $loTemp)){
                 $self->{output}->output_add(severity => 'critical',
                                             short_msg => sprintf("Temperature '%s' on node '%d' is '%dC' [Max temperature: '%dC'] [Min temperature: '%dC'", $measurement, $nodeID, $readTemp, $hiTemp, $loTemp));
