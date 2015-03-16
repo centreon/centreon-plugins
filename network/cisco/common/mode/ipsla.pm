@@ -44,7 +44,7 @@ use centreon::plugins::values;
 use Math::Complex;
 
 my $maps_counters = {
-    0_status  => { class => 'centreon::plugins::values', obj => undef, threshold => 0,
+    '0_status'  => { class => 'centreon::plugins::values', obj => undef, threshold => 0,
                    set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
                                         { name => 'rttMonCtrlAdminTag' },
@@ -61,7 +61,7 @@ my $maps_counters = {
                         closure_custom_threshold_check => \&custom_status_threshold,
                     }
                  },
-    1_NumberOverThresholds  => { class => 'centreon::plugins::values', obj => undef,
+    '1_NumberOverThresholds'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OverThresholds_1' }, { name => 'OverThresholds_2' }, { name => 'OverThresholds_times' },
@@ -76,7 +76,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    2_AverageDelaySD   => { class => 'centreon::plugins::values', obj => undef,
+    '2_AverageDelaySD'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSumSD_1' }, { name => 'OWSumSD_2' }, { name => 'OWSumSD_times' },
@@ -92,7 +92,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    3_AverageDelayDS   => { class => 'centreon::plugins::values', obj => undef,
+    '3_AverageDelayDS'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' }, { name => 'OWSumDS_times' },
@@ -108,7 +108,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    4_PacketLossRatio  => { class => 'centreon::plugins::values', obj => undef,
+    '4_PacketLossRatio'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'StatsPacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
@@ -128,7 +128,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    5_PercentagePacketsPositiveJitter   => { class => 'centreon::plugins::values', obj => undef,
+    '5_PercentagePacketsPositiveJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'NumOfPositiveSD_1' }, { name => 'NumOfPositiveSD_2' }, { name => 'NumOfPositiveSD_times' },
@@ -144,7 +144,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    6_AverageJitterPerPacketPositiveJitter   => { class => 'centreon::plugins::values', obj => undef,
+    '6_AverageJitterPerPacketPositiveJitter'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'SumOfPositiveSD_1' }, { name => 'SumOfPositiveSD_2' }, { name => 'SumOfPositiveSD_times' },
@@ -160,7 +160,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    7_PercentagePacketsNegativeJitter   => { class => 'centreon::plugins::values', obj => undef,
+    '7_PercentagePacketsNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'NumOfNegativeSD_1' }, { name => 'NumOfNegativeSD_2' }, { name => 'NumOfNegativeSD_times' },
@@ -176,7 +176,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    8_AverageJitterPerPacketNegativeJitter   => { class => 'centreon::plugins::values', obj => undef,
+    '8_AverageJitterPerPacketNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'SumOfNegativeSD_1' }, { name => 'SumOfNegativeSD_2' }, { name => 'SumOfNegativeSD_times' },
@@ -192,7 +192,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    9_AverageJitter   => { class => 'centreon::plugins::values', obj => undef,
+    '9_AverageJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'sumOfPositiveDS_1' }, { name => 'sumOfPositiveDS_2' }, { name => 'sumOfPositiveDS_times' },
@@ -214,7 +214,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    10_RTTStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
+    '10_RTTStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'RTTSum2High_1' }, { name => 'RTTSum2High_2' }, { name => 'RTTSum2High_times' },
@@ -232,7 +232,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    11_DelaySource2DestinationStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
+    '11_DelaySource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSum2SDHigh_1' }, { name => 'OWSum2SDHigh_2' },  { name => 'OWSum2SDHigh_times' },
@@ -251,7 +251,7 @@ my $maps_counters = {
                     }
                },
                
-    12_DelayDestination2SourceStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
+    '12_DelayDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSum2DSHigh_1' }, { name => 'OWSum2DSHigh_2' }, { name => 'OWSum2DSHigh_times' },
@@ -269,7 +269,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    13_JitterSource2DestinationStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
+    '13_JitterSource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'Sum2PositivesSDHigh_1' }, { name => 'Sum2PositivesSDHigh_2' }, { name => 'Sum2PositivesSDHigh_times' },
@@ -289,7 +289,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    14_JitterDestination2SourceStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
+    '14_JitterDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'Sum2PositivesDSHigh_1' }, { name => 'Sum2PositivesDSHigh_2' }, { name => 'Sum2PositivesDSHigh_times' },
@@ -408,12 +408,12 @@ sub custom_status_calc {
 sub custom_NumberOverThresholds_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'OverThresholds');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OverThresholds');
     return 0;
 }
 
@@ -421,12 +421,12 @@ sub custom_NumberOverThresholds_calc {
 sub custom_AverageDelaySD_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'OWSumSD') / get_my_delta(name => 'NumOfOW');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW');
     return 0;
 }
 
@@ -434,12 +434,12 @@ sub custom_AverageDelaySD_calc {
 sub custom_AverageDelayDS_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'OWSumDS') / get_my_delta(name => 'NumOfOW');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW');
     return 0;
 }
 
@@ -447,14 +447,14 @@ sub custom_AverageDelayDS_calc {
 sub custom_PacketLossRatio_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = ((get_my_delta(name => 'PacketLossDS') + get_my_delta(name => 'PacketLossSD') + get_my_delta(name => 'PacketMIA')) * 100 ) / 
-                                       (get_my_delta(name => 'PacketLossSD') + get_my_delta(name => 'PacketLossDS') + get_my_delta(name => 'PacketMIA') + 
-                                        get_my_delta(name => 'PacketLateArrival') + get_my_delta(name => 'PacketOutOfSequence') + get_my_delta(name => 'NumOfRTT'));
+    $self->{result_values}->{value} = ((get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketMIA')) * 100 ) / 
+                                       (get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketMIA') + 
+                                        get_my_delta($self, %options, name => 'PacketLateArrival') + get_my_delta($self, %options, name => 'PacketOutOfSequence') + get_my_delta($self, %options, name => 'NumOfRTT'));
     return 0;
 }
 
@@ -462,12 +462,12 @@ sub custom_PacketLossRatio_calc {
 sub custom_PercentagePacketsPositiveJitter_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'NumOfPositiveSD') / get_my_delta(name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositiveSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -475,12 +475,12 @@ sub custom_PercentagePacketsPositiveJitter_calc {
 sub custom_AverageJitterPerPacketPositiveJitter_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'SumOfPositiveSD') / get_my_delta(name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositiveSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -488,12 +488,12 @@ sub custom_AverageJitterPerPacketPositiveJitter_calc {
 sub custom_PercentagePacketsNegativeJitter_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'NumOfNegativeSD') / get_my_delta(name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativeSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -501,12 +501,12 @@ sub custom_PercentagePacketsNegativeJitter_calc {
 sub custom_AverageJitterPerPacketNegativeJitter_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta(name => 'SumOfNegativeSD') / get_my_delta(name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativeSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -514,13 +514,13 @@ sub custom_AverageJitterPerPacketNegativeJitter_calc {
 sub custom_AverageJitter_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = (get_my_delta(name => 'sumOfPositiveDS') + get_my_delta(name => 'sumOfNegativeDS') + get_my_delta(name => 'sumOfPositiveSD') + get_my_delta(name => 'sumOfNegativeSD')) / 
-                                      (get_my_delta(name => 'numOfPositiveDS) + get_my_delta(name => 'numOfNegativeDS') + get_my_delta(name => 'numOfPositiveSD') + get_my_delta(name => 'numOfNegativeSD'));
+    $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'sumOfPositiveDS') + get_my_delta($self, %options, name => 'sumOfNegativeDS') + get_my_delta($self, %options, name => 'sumOfPositiveSD') + get_my_delta($self, %options, name => 'sumOfNegativeSD')) / 
+                                      (get_my_delta($self, %options, name => 'numOfPositiveDS') + get_my_delta($self, %options, name => 'numOfNegativeDS') + get_my_delta($self, %options, name => 'numOfPositiveSD') + get_my_delta($self, %options, name => 'numOfNegativeSD'));
     return 0;
 }
 
@@ -528,13 +528,13 @@ sub custom_AverageJitter_calc {
 sub custom_RTTStandardDeviation_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'RTTSum2High') * 2 ** 32 + get_my_delta(name => 'RTTSum2Low')) 
-                                                / get_my_delta(name => 'NumOfRTT')) - (get_my_delta(name => 'RTTSum') / get_my_delta(name => 'NumOfRTT')) ** 2
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'RTTSum2High') * 2 ** 32 + get_my_delta($self, %options, name => 'RTTSum2Low')) 
+                                                / get_my_delta($self, %options, name => 'NumOfRTT')) - (get_my_delta($self, %options, name => 'RTTSum') / get_my_delta($self, %options, name => 'NumOfRTT')) ** 2
                                       );
     return 0;
 }
@@ -543,13 +543,13 @@ sub custom_RTTStandardDeviation_calc {
 sub custom_DelaySource2DestinationStandardDeviation_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'OWSum2SDHigh') * 2 ** 32 + get_my_delta(name => 'OWSum2SDLow')) / 
-                                                get_my_delta(name => 'NumOfOW')) - (get_my_delta(name => 'OWSumSD') / get_my_delta(name => 'NumOfOW')) ** 2
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2SDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2SDLow')) / 
+                                                get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
                                       );
     return 0;
 }
@@ -558,13 +558,13 @@ sub custom_DelaySource2DestinationStandardDeviation_calc {
 sub custom_DelayDestination2SourceStandardDeviation_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'OWSum2DSHigh') * 2 ** 32 + get_my_delta(name => 'OWSum2DSLow')) / 
-                                                get_my_delta(name => 'NumOfOW')) - (get_my_delta(name => 'OWSumDS') / get_my_delta(name => 'NumOfOW')) ** 2
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2DSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2DSLow')) / 
+                                                get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
                                       );
     return 0;
 }
@@ -573,15 +573,15 @@ sub custom_DelayDestination2SourceStandardDeviation_calc {
 sub custom_JitterSource2DestinationStandardDeviation_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'Sum2PositivesSDHigh') * 2 ** 32 + get_my_delta(name => 'Sum2PositivesSDLow') + get_my_delta(name => 'Sum2NegativesSDHigh') * 2 ** 32 + get_my_delta(name => 'Sum2NegativesSDLow')) 
-                                        / (get_my_delta(name => 'NumOfPositivesSD') + get_my_delta(name => 'NumOfNegativesSD'))) - 
-                                        ((get_my_delta(name => 'SumOfPositivesSD') + get_my_delta(name => 'SumOfNegativesSD')) / 
-                                        (get_my_delta(name => 'NumOfPositivesSD') + get_my_delta(name => 'NumOfNegativesSD'))) ** 2
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesSDLow') + get_my_delta($self, %options, name => 'Sum2NegativesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesSDLow')) 
+                                        / (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'))) - 
+                                        ((get_my_delta($self, %options, name => 'SumOfPositivesSD') + get_my_delta($self, %options, name => 'SumOfNegativesSD')) / 
+                                        (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'))) ** 2
                                       );
     return 0;
 }
@@ -590,15 +590,15 @@ sub custom_JitterSource2DestinationStandardDeviation_calc {
 sub custom_JitterDestination2SourceStandardDeviation_calc {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
-        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+    if ($options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'} !~ /active/ && 
+        $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
         
-    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'Sum2PositivesDSHigh') * 2 ** 32 + get_my_delta(name => 'Sum2PositivesDSLow') + get_my_delta(name => 'Sum2NegativesDSHigh') * 2 ** 32 + get_my_delta(name => 'Sum2NegativesDSLow')) 
-                                        / (get_my_delta(name => 'NumOfPositivesDS') + get_my_delta(name => 'NumOfNegativesDS'))) - 
-                                        ((get_my_delta(name => 'SumOfPositivesDS') + get_my_delta(name => 'SumOfNegativesDS')) / 
-                                        (get_my_delta(name => 'NumOfPositivesDS') + get_my_delta(name => 'NumOfNegativesDS'))) ** 2
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesDSLow') + get_my_delta($self, %options, name => 'Sum2NegativesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesDSLow')) 
+                                        / (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'))) - 
+                                        ((get_my_delta($self, %options, name => 'SumOfPositivesDS') + get_my_delta($self, %options, name => 'SumOfNegativesDS')) / 
+                                        (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'))) ** 2
                                       );
     return 0;
 }
@@ -858,35 +858,36 @@ sub manage_selection {
     
     $self->{datas} = {};
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonCtrlAdminEntry}})) {
-        next if ($oid !~ /^$oid_rttMonCtrlAdminEntry\.(.*)$/);
+        next if ($oid !~ /^$mapping->{rttMonCtrlAdminTag}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
-        if (defined($self->{datas}->{$result->{rttMonCtrlAdminTag}})) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rttMonCtrlAdminTag} . "': duplicate (please change the tag name).");
+        my $tag_name = $self->{datas}->{$result->{rttMonCtrlAdminTag}};
+        if (defined($tag_name)) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $tag_name . "': duplicate (please change the tag name).");
             next;
         }
         if (defined($self->{option_results}->{filter_tag}) && $self->{option_results}->{filter_tag} ne '' &&
-            $result->{rttMonCtrlAdminTag} !~ /$self->{option_results}->{filter_tag}/);
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rttMonCtrlAdminTag} . "': no matching filter.");
+            $tag_name !~ /$self->{option_results}->{filter_tag}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $tag_name . "': no matching filter.");
             next;
         }
-        $self->{datas}->{$result->{rttMonCtrlAdminTag}} = { %{$result} };
+        $self->{datas}->{$tag_name} = { %{$result} };
         $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_rttMonEchoAdminPrecision}, instance => $instance);
-        $self->{datas}->{$result->{rttMonCtrlAdminTag}} = { %{$result}, %{$self->{datas}->{$result->{rttMonCtrlAdminTag}}} };
+        $self->{datas}->{$tag_name} = { %{$result}, %{$self->{datas}->{$tag_name}} };
         
         # there are two entries with rotation: 1 -> last hour, 2 -> current hour.
-        foreach my %key (keys %{$oids_jitter_stats}) {
-            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_1'} = 0;
-            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_2'} = 0;
+        foreach my $key (keys %{$oids_jitter_stats}) {
+            $self->{datas}->{$tag_name}->{$key . '_1'} = 0;
+            $self->{datas}->{$tag_name}->{$key . '_2'} = 0;
             my $i = 1;
             my $instances = [];
             foreach my $oid2 ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
                 next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.\d+.(\d+)/);
                 push @{$instances}, $1;
-                $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
+                $self->{datas}->{$tag_name}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
                 $i++;
             }
-            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_times'} = join('_', @{$instances});
+            $self->{datas}->{$tag_name}->{$key . '_times'} = join('_', @{$instances});
         }        
     }
     
