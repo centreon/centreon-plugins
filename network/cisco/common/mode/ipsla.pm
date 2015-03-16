@@ -111,7 +111,7 @@ my $maps_counters = {
     '4_PacketLossRatio'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'StatsPacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
+                                        { name => 'PacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
                                         { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_times' },
                                         { name => 'PacketMIA_1' }, { name => 'PacketMIA_2' }, { name => 'PacketMIA_times' },
                                         { name => 'PacketLateArrival_1' }, { name => 'PacketLateArrival_2' }, { name => 'PacketLateArrival_times' },
@@ -131,7 +131,7 @@ my $maps_counters = {
     '5_PercentagePacketsPositiveJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'NumOfPositiveSD_1' }, { name => 'NumOfPositiveSD_2' }, { name => 'NumOfPositiveSD_times' },
+                                        { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
                                         { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
                         closure_custom_calc => \&custom_PercentagePacketsPositiveJitter_calc,
@@ -147,7 +147,7 @@ my $maps_counters = {
     '6_AverageJitterPerPacketPositiveJitter'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'SumOfPositiveSD_1' }, { name => 'SumOfPositiveSD_2' }, { name => 'SumOfPositiveSD_times' },
+                                        { name => 'SumOfPositivesSD_1' }, { name => 'SumOfPositivesSD_2' }, { name => 'SumOfPositivesSD_times' },
                                         { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
                         closure_custom_calc => \&custom_AverageJitterPerPacketPositiveJitter_calc,
@@ -163,7 +163,7 @@ my $maps_counters = {
     '7_PercentagePacketsNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'NumOfNegativeSD_1' }, { name => 'NumOfNegativeSD_2' }, { name => 'NumOfNegativeSD_times' },
+                                        { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
                                         { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
                         closure_custom_calc => \&custom_PercentagePacketsNegativeJitter_calc,
@@ -179,7 +179,7 @@ my $maps_counters = {
     '8_AverageJitterPerPacketNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'SumOfNegativeSD_1' }, { name => 'SumOfNegativeSD_2' }, { name => 'SumOfNegativeSD_times' },
+                                        { name => 'SumOfNegativesSD_1' }, { name => 'SumOfNegativesSD_2' }, { name => 'SumOfNegativesSD_times' },
                                         { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
                         closure_custom_calc => \&custom_AverageJitterPerPacketNegativeJitter_calc,
@@ -195,14 +195,14 @@ my $maps_counters = {
     '9_AverageJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'sumOfPositiveDS_1' }, { name => 'sumOfPositiveDS_2' }, { name => 'sumOfPositiveDS_times' },
-                                        { name => 'sumOfNegativeDS_1' }, { name => 'sumOfNegativeDS_2' }, { name => 'sumOfNegativeDS_times' },
-                                        { name => 'sumOfPositiveSD_1' }, { name => 'sumOfPositiveSD_2' }, { name => 'sumOfPositiveSD_times' },
-                                        { name => 'sumOfNegativeSD_1' }, { name => 'sumOfNegativeSD_2' }, { name => 'sumOfNegativeSD_times' },
-                                        { name => 'numOfPositiveDS_1' }, { name => 'numOfPositiveDS_2' }, { name => 'numOfPositiveDS_times' },
-                                        { name => 'numOfNegativeDS_1' }, { name => 'numOfNegativeDS_2' }, { name => 'numOfNegativeDS_times' },
-                                        { name => 'numOfPositiveSD_1' }, { name => 'numOfPositiveSD_2' }, { name => 'numOfPositiveSD_times' },
-                                        { name => 'numOfNegativeSD_1' }, { name => 'numOfNegativeSD_2' }, { name => 'numOfNegativeSD_times' },
+                                        { name => 'sumOfPositivesDS_1' }, { name => 'sumOfPositivesDS_2' }, { name => 'sumOfPositivesDS_times' },
+                                        { name => 'sumOfNegativesDS_1' }, { name => 'sumOfNegativesDS_2' }, { name => 'sumOfNegativesDS_times' },
+                                        { name => 'sumOfPositivesSD_1' }, { name => 'sumOfPositivesSD_2' }, { name => 'sumOfPositivesSD_times' },
+                                        { name => 'sumOfNegativesSD_1' }, { name => 'sumOfNegativesSD_2' }, { name => 'sumOfNegativesSD_times' },
+                                        { name => 'numOfPositivesDS_1' }, { name => 'numOfPositivesDS_2' }, { name => 'numOfPositivesDS_times' },
+                                        { name => 'numOfNegativesDS_1' }, { name => 'numOfNegativesDS_2' }, { name => 'numOfNegativesDS_times' },
+                                        { name => 'numOfPositivesSD_1' }, { name => 'numOfPositivesSD_2' }, { name => 'numOfPositivesSD_times' },
+                                        { name => 'numOfNegativesSD_1' }, { name => 'numOfNegativesSD_2' }, { name => 'numOfNegativesSD_times' },
                                       ],
                         closure_custom_calc => \&custom_AverageJitter_calc,
                         closure_custom_output => \&custom_generic_output,
@@ -274,7 +274,7 @@ my $maps_counters = {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'Sum2PositivesSDHigh_1' }, { name => 'Sum2PositivesSDHigh_2' }, { name => 'Sum2PositivesSDHigh_times' },
                                         { name => 'Sum2PositivesSDLow_1' }, { name => 'Sum2PositivesSDLow_2' }, { name => 'Sum2PositivesSDLow_times' },
-                                        { name => 'Sum2NegativesSDHigh_1' }, { name => 'Sum2NegativesSdHigh_2' }, { name => 'Sum2NegativesSdHigh_times' },
+                                        { name => 'Sum2NegativesSDHigh_1' }, { name => 'Sum2NegativesSDHigh_2' }, { name => 'Sum2NegativesSDHigh_times' },
                                         { name => 'Sum2NegativesSDLow_1' }, { name => 'Sum2NegativesSDLow_2' }, { name => 'Sum2NegativesSDLow_times' },
                                         { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
                                         { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
@@ -467,7 +467,7 @@ sub custom_PercentagePacketsPositiveJitter_calc {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositiveSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -480,7 +480,7 @@ sub custom_AverageJitterPerPacketPositiveJitter_calc {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositiveSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -493,7 +493,7 @@ sub custom_PercentagePacketsNegativeJitter_calc {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativeSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -506,7 +506,7 @@ sub custom_AverageJitterPerPacketNegativeJitter_calc {
         return -2;
     }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativeSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
 }
 
@@ -519,8 +519,8 @@ sub custom_AverageJitter_calc {
         return -2;
     }
         
-    $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'sumOfPositiveDS') + get_my_delta($self, %options, name => 'sumOfNegativeDS') + get_my_delta($self, %options, name => 'sumOfPositiveSD') + get_my_delta($self, %options, name => 'sumOfNegativeSD')) / 
-                                      (get_my_delta($self, %options, name => 'numOfPositiveDS') + get_my_delta($self, %options, name => 'numOfNegativeDS') + get_my_delta($self, %options, name => 'numOfPositiveSD') + get_my_delta($self, %options, name => 'numOfNegativeSD'));
+    $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'sumOfPositivesDS') + get_my_delta($self, %options, name => 'sumOfNegativesDS') + get_my_delta($self, %options, name => 'sumOfPositivesSD') + get_my_delta($self, %options, name => 'sumOfNegativesSD')) / 
+                                      (get_my_delta($self, %options, name => 'numOfPositivesDS') + get_my_delta($self, %options, name => 'numOfNegativesDS') + get_my_delta($self, %options, name => 'numOfPositivesSD') + get_my_delta($self, %options, name => 'numOfNegativesSD'));
     return 0;
 }
 
@@ -620,8 +620,8 @@ my $oid_rttMonLatestRttOperEntry    = '.1.3.6.1.4.1.9.9.42.1.2.10.1';
 #    SumOfNegativeSD/NumOfRTT (Average Jitter per Packet that had Negative Jitter)
 #    
 # Average Jitter (unit: ms):
-#  jitterSum = sumOfPositiveDS + sumOfNegativeDS + sumOfPositiveSD + sumOfNegativeSD;
-#  jitterNum = numOfPositiveDS + numOfNegativeDS + numOfPositiveSD + numOfNegativeSD;
+#  jitterSum = sumOfPositivesDS + sumOfNegativesDS + sumOfPositivesSD + sumOfNegativesSD;
+#  jitterNum = numOfPositivesDS + numOfNegativesDS + numOfPositivesSD + numOfNegativesSD;
 #  avgJitter = jitterSum/jitterNum;
 
 # Delays (unit: ms):
@@ -641,7 +641,7 @@ my $oid_rttMonLatestRttOperEntry    = '.1.3.6.1.4.1.9.9.42.1.2.10.1';
 
 my $oid_rttMonJitterStatsEntry  = '.1.3.6.1.4.1.9.9.42.1.3.5.1';
 my $oids_jitter_stats = {
-    StatsNumOfRTT          => '.1.3.6.1.4.1.9.9.42.1.3.5.1.4',
+    NumOfRTT          => '.1.3.6.1.4.1.9.9.42.1.3.5.1.4',
     OverThresholds         => '.1.3.6.1.4.1.9.9.42.1.3.5.1.3',
     RTTSum                 => '.1.3.6.1.4.1.9.9.42.1.3.5.1.5',
     RTTSum2Low             => '.1.3.6.1.4.1.9.9.42.1.3.5.1.6',
@@ -672,6 +672,10 @@ my $oids_jitter_stats = {
     PacketOutOfSequence    => '.1.3.6.1.4.1.9.9.42.1.3.5.1.36',
     PacketMIA              => '.1.3.6.1.4.1.9.9.42.1.3.5.1.37',
     PacketLateArrival      => '.1.3.6.1.4.1.9.9.42.1.3.5.1.38',
+    OWSum2SDLow            => '.1.3.6.1.4.1.9.9.42.1.3.5.1.42',
+    OWSum2SDHigh           => '.1.3.6.1.4.1.9.9.42.1.3.5.1.43',
+    OWSum2DSLow            => '.1.3.6.1.4.1.9.9.42.1.3.5.1.47',
+    OWSum2DSHigh           => '.1.3.6.1.4.1.9.9.42.1.3.5.1.48',
     MaxOfICPIF             => '.1.3.6.1.4.1.9.9.42.1.3.5.1.59',
     MaxOfMOS               => '.1.3.6.1.4.1.9.9.42.1.3.5.1.57',
 };
@@ -687,8 +691,8 @@ my %map_admin_status = (
     1 => 'active', 2 => 'notInService', 3 => 'notReady', 4 => 'createAndGo', 5 => 'createAndWait', 6 => 'destroy',
 );
 my %map_admin_precision = (
-    1 => 'milliseconds',
-    2 => 'microseconds',
+    1 => 'ms',
+    2 => 'us',
 );
 my %map_rtt_oper_sense = (
     0 => 'other', 1 => 'ok', 2 => 'disconnected', 3 => 'overThreshold', 4 => 'timeout', 5 => 'busy',
@@ -861,8 +865,8 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{rttMonCtrlAdminTag}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
-        my $tag_name = $self->{datas}->{$result->{rttMonCtrlAdminTag}};
-        if (defined($tag_name)) {
+        my $tag_name = $result->{rttMonCtrlAdminTag};
+        if (defined($self->{datas}->{$tag_name})) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $tag_name . "': duplicate (please change the tag name).");
             next;
         }
@@ -873,6 +877,8 @@ sub manage_selection {
         }
         $self->{datas}->{$tag_name} = { %{$result} };
         $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_rttMonEchoAdminPrecision}, instance => $instance);
+        $self->{datas}->{$tag_name} = { %{$result}, %{$self->{datas}->{$tag_name}} };
+        $result = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_rttMonLatestRttOperEntry}, instance => $instance);
         $self->{datas}->{$tag_name} = { %{$result}, %{$self->{datas}->{$tag_name}} };
         
         # there are two entries with rotation: 1 -> last hour, 2 -> current hour.
