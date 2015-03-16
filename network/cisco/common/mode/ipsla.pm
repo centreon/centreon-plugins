@@ -41,6 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use centreon::plugins::values;
+use Math::Complex;
 
 my $maps_counters = {
     0_status  => { class => 'centreon::plugins::values', obj => undef, threshold => 0,
@@ -54,201 +55,553 @@ my $maps_counters = {
                                         { name => 'rttMonLatestRttOperSense' },
                                         { name => 'rttMonLatestRttOperApplSpecificSense' },
                                       ],
-                        output_template => 'CP timer : %s',
+                        closure_custom_calc => \&custom_status_calc,
+                        closure_custom_output => \&custom_status_output,
+                        closure_custom_perfdata => \&custom_status_perfdata,
+                        closure_custom_threshold_check => \&custom_status_threshold,
                     }
                  },
-    1_overThresholds  => { class => 'centreon::plugins::values', obj => undef,
+    1_NumberOverThresholds  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'OverThresholds_1' }, { name => 'OverThresholds_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'OverThresholds_1' }, { name => 'OverThresholds_2' }, { name => 'OverThresholds_times' },
                                       ],
-                        output_template => 'CP timer : %s',
+                        closure_custom_calc => \&custom_NumberOverThresholds_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Number Over Thresholds : %s',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'timer_absolute', template => '%d', min => 0 },
+                            { label => 'number_over_thresholds', value => 'value', template => '%s',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
-    2_delaySD   => { class => 'centreon::plugins::values', obj => undef,
+    2_AverageDelaySD   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'OWSumSD_1' }, { name => 'OWSumSD_2' },
-                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'OWSumSD_1' }, { name => 'OWSumSD_2' }, { name => 'OWSumSD_times' },
+                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' }, { name => 'NumOfOW_times' },
                                       ],
-                        output_template => 'CP snapshot : %s',
+                        closure_custom_calc => \&custom_AverageDelaySD_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Average Delay SD : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'snapshot_absolute', template => '%d', min => 0 },
+                            { label => 'average_delay_sd', value => 'value', template => '%.2f',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
-    3_delayDS   => { class => 'centreon::plugins::values', obj => undef,
+    3_AverageDelayDS   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' },
-                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' }, { name => 'OWSumDS_times' },
+                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' }, { name => 'NumOfOW_times' },
                                       ],
-                        output_template => 'CP low water mark : %s',
+                        closure_custom_calc => \&custom_AverageDelayDS_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Average Delay DS : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowerwater_absolute', template => '%d', min => 0 },
+                            { label => 'average_delay_ds', value => 'value', template => '%.2f',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     4_PacketLossRatio  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'StatsPacketLossDS_1' }, { name => 'PacketLossDS_2' },
-                                        { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_2' },
-                                        { name => 'PacketMIA_1' }, { name => 'PacketMIA_2' },
-                                        { name => 'PacketLateArrival_1' }, { name => 'PacketLateArrival_2' },
-                                        { name => 'PacketOutOfSequence_1' }, { name => 'PacketOutOfSequence_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'StatsPacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
+                                        { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_times' },
+                                        { name => 'PacketMIA_1' }, { name => 'PacketMIA_2' }, { name => 'PacketMIA_times' },
+                                        { name => 'PacketLateArrival_1' }, { name => 'PacketLateArrival_2' }, { name => 'PacketLateArrival_times' },
+                                        { name => 'PacketOutOfSequence_1' }, { name => 'PacketOutOfSequence_2' }, { name => 'PacketOutOfSequence_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
-                        output_template => 'CP high water mark : %s',
+                        closure_custom_calc => \&custom_PacketLossRatio_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Packet Loss Ratio : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'highwater_absolute', template => '%d', min => 0 },
+                            { label => 'packet_loss_ratio', value => 'value', template => '%.2f',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     5_PercentagePacketsPositiveJitter   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'NumOfPositiveSD_1' }, { name => 'NumOfPositiveSD_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'NumOfPositiveSD_1' }, { name => 'NumOfPositiveSD_2' }, { name => 'NumOfPositiveSD_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
-                        output_template => 'CP nv-log full : %s',
+                        closure_custom_calc => \&custom_PercentagePacketsPositiveJitter_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Percentage of Packets that had Positive Jitter : %.2f %%',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'logfull_absolute', template => '%d', min => 0 },
+                            { label => 'prct_jitter_per_packet_positive_jitter', value => 'value', template => '%.2f', unit => '%',
+                              label_extra_instance => 1, min => 0, max => 100 },
                         ],
                     }
                },
     6_AverageJitterPerPacketPositiveJitter   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'SumOfPositiveSD_1' }, { name => 'SumOfPositiveSD_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'SumOfPositiveSD_1' }, { name => 'SumOfPositiveSD_2' }, { name => 'SumOfPositiveSD_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
-                        output_template => 'CP back-to-back : %s',
+                        closure_custom_calc => \&custom_AverageJitterPerPacketPositiveJitter_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Average Jitter per Packet that had Positive Jitter : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'back_absolute', template => '%d', min => 0 },
+                            { label => 'average_jitter_per_packet_positive_jitter', value => 'value', template => '%.2f',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     7_PercentagePacketsNegativeJitter   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'NumOfNegativeSD_1' }, { name => 'NumOfNegativeSD_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'NumOfNegativeSD_1' }, { name => 'NumOfNegativeSD_2' }, { name => 'NumOfNegativeSD_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
-                        output_template => 'CP flush unlogged write data : %s',
+                        closure_custom_calc => \&custom_PercentagePacketsNegativeJitter_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Percentage of Packets that had Negative Jitter : %.2f %%',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'flush_absolute', template => '%d', min => 0 },
+                            { label => 'prct_jitter_per_packet_negative_jitter', value => 'value', template => '%.2f', unit => '%',
+                              label_extra_instance => 1, min => 0, max => 100 },
                         ],
                     }
                },
     8_AverageJitterPerPacketNegativeJitter   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'SumOfNegativeSD_1' }, { name => 'SumOfNegativeSD_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'SumOfNegativeSD_1' }, { name => 'SumOfNegativeSD_2' }, { name => 'SumOfNegativeSD_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
                                       ],
-                        output_template => 'CP sync requests : %s',
+                        closure_custom_calc => \&custom_AverageJitterPerPacketNegativeJitter_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Average Jitter per Packet that had Negative Jitter : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'sync_absolute', template => '%d', min => 0 },
+                            { label => 'average_jitter_per_packet_negative_jitter', value => 'value', template => '%.2f',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     9_AverageJitter   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'sumOfPositiveDS_1' }, { name => 'sumOfPositiveDS_2' },
-                                        { name => 'sumOfNegativeDS_1' }, { name => 'sumOfNegativeDS_2' },
-                                        { name => 'sumOfPositiveSD_1' }, { name => 'sumOfPositiveSD_2' },
-                                        { name => 'sumOfNegativeSD_1' }, { name => 'sumOfNegativeSD_2' },
-                                        { name => 'numOfPositiveDS_1' }, { name => 'numOfPositiveDS_2' },
-                                        { name => 'numOfNegativeDS_1' }, { name => 'numOfNegativeDS_2' },
-                                        { name => 'numOfPositiveSD_1' }, { name => 'numOfPositiveSD_2' },
-                                        { name => 'numOfNegativeSD_1' }, { name => 'numOfNegativeSD_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'sumOfPositiveDS_1' }, { name => 'sumOfPositiveDS_2' }, { name => 'sumOfPositiveDS_times' },
+                                        { name => 'sumOfNegativeDS_1' }, { name => 'sumOfNegativeDS_2' }, { name => 'sumOfNegativeDS_times' },
+                                        { name => 'sumOfPositiveSD_1' }, { name => 'sumOfPositiveSD_2' }, { name => 'sumOfPositiveSD_times' },
+                                        { name => 'sumOfNegativeSD_1' }, { name => 'sumOfNegativeSD_2' }, { name => 'sumOfNegativeSD_times' },
+                                        { name => 'numOfPositiveDS_1' }, { name => 'numOfPositiveDS_2' }, { name => 'numOfPositiveDS_times' },
+                                        { name => 'numOfNegativeDS_1' }, { name => 'numOfNegativeDS_2' }, { name => 'numOfNegativeDS_times' },
+                                        { name => 'numOfPositiveSD_1' }, { name => 'numOfPositiveSD_2' }, { name => 'numOfPositiveSD_times' },
+                                        { name => 'numOfNegativeSD_1' }, { name => 'numOfNegativeSD_2' }, { name => 'numOfNegativeSD_times' },
                                       ],
-                        output_template => 'CP low virtual buffers : %s',
+                        closure_custom_calc => \&custom_AverageJitter_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Average Jitter : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowvbuf_absolute', template => '%d', min => 0 },
+                            { label => 'average_jitter', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     10_RTTStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'RTTSum2High_1' }, { name => 'RTTSum2High_2' },
-                                        { name => 'RTTSum2Low_1' }, { name => 'RTTSum2Low_2' },
-                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' },
-                                        { name => 'RTTSum_1' }, { name => 'RTTSum_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'RTTSum2High_1' }, { name => 'RTTSum2High_2' }, { name => 'RTTSum2High_times' },
+                                        { name => 'RTTSum2Low_1' }, { name => 'RTTSum2Low_2' }, { name => 'RTTSum2Low_times' },
+                                        { name => 'NumOfRTT_1' }, { name => 'NumOfRTT_2' }, { name => 'NumOfRTT_times' },
+                                        { name => 'RTTSum_1' }, { name => 'RTTSum_2' }, { name => 'RTTSum_times' },
                                       ],
-                        output_template => 'CP deferred : %s',
+                        closure_custom_calc => \&custom_RTTStandardDeviation_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'Round-Trip Time Standard Deviation : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'deferred_absolute', template => '%d', min => 0 },
+                            { label => 'rtt_standard_deviation', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     11_DelaySource2DestinationStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'OWSum2SDHigh_1' }, { name => 'OWSum2SDHigh_2' },
-                                        { name => 'OWSum2SDLow_1' }, { name => 'OWSum2SDLow_2' },
-                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },
-                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'OWSum2SDHigh_1' }, { name => 'OWSum2SDHigh_2' },  { name => 'OWSum2SDHigh_times' },
+                                        { name => 'OWSum2SDLow_1' }, { name => 'OWSum2SDLow_2' },  { name => 'OWSum2SDLow_times' },
+                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },  { name => 'NumOfOW_times' },
+                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' },  { name => 'OWSumDS_times' },
                                       ],
-                        output_template => 'CP low datavecs : %s',
+                        closure_custom_calc => \&custom_DelaySource2DestinationStandardDeviation_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'One-Way Delay Source to Destination Standard Deviation : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowdatavecs_absolute', template => '%d', min => 0 },
+                            { label => 'delay_src2dest_stdev', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
+               
     12_DelayDestination2SourceStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'OWSum2DSHigh_1' }, { name => 'OWSum2DSHigh_2' },
-                                        { name => 'OWSum2DSLow_1' }, { name => 'OWSum2DSLow_2' },
-                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },
-                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'OWSum2DSHigh_1' }, { name => 'OWSum2DSHigh_2' }, { name => 'OWSum2DSHigh_times' },
+                                        { name => 'OWSum2DSLow_1' }, { name => 'OWSum2DSLow_2' }, { name => 'OWSum2DSLow_times' },
+                                        { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' }, { name => 'NumOfOW_times' },
+                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' }, { name => 'OWSumDS_times' },
                                       ],
-                        output_template => 'CP low datavecs : %s',
+                        closure_custom_calc => \&custom_DelayDestination2SourceStandardDeviation_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'One-Way Delay Destination to Source Standard Deviation : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowdatavecs_absolute', template => '%d', min => 0 },
+                            { label => 'delay_dest2src_stdev', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     13_JitterSource2DestinationStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'Sum2PositivesSDHigh_1' }, { name => 'Sum2PositivesSDHigh_2' },
-                                        { name => 'Sum2PositivesSDLow_1' }, { name => 'Sum2PositivesSDLow_2' },
-                                        { name => 'Sum2NegativesSDHigh_1' }, { name => 'Sum2NegativesSdHigh_2' },
-                                        { name => 'Sum2NegativesSDLow_1' }, { name => 'Sum2NegativesSDLow_2' },
-                                        { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' },
-                                        { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'Sum2PositivesSDHigh_1' }, { name => 'Sum2PositivesSDHigh_2' }, { name => 'Sum2PositivesSDHigh_times' },
+                                        { name => 'Sum2PositivesSDLow_1' }, { name => 'Sum2PositivesSDLow_2' }, { name => 'Sum2PositivesSDLow_times' },
+                                        { name => 'Sum2NegativesSDHigh_1' }, { name => 'Sum2NegativesSdHigh_2' }, { name => 'Sum2NegativesSdHigh_times' },
+                                        { name => 'Sum2NegativesSDLow_1' }, { name => 'Sum2NegativesSDLow_2' }, { name => 'Sum2NegativesSDLow_times' },
+                                        { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
+                                        { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
                                         ],
-                        output_template => 'CP low datavecs : %s',
+                        closure_custom_calc => \&custom_JitterSource2DestinationStandardDeviation_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'One-Way Jitter Source to Destination Standard Deviation : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowdatavecs_absolute', template => '%d', min => 0 },
+                            { label => 'jitter_src2dest_stdev', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
     14_JitterDestination2SourceStandardDeviation   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
-                                        { name => 'Sum2PositivesDSHigh_1' }, { name => 'Sum2PositivesDSHigh_2' },
-                                        { name => 'Sum2PositivesDSLow_1' }, { name => 'Sum2PositivesDSLow_2' },
-                                        { name => 'Sum2NegativesDSHigh_1' }, { name => 'Sum2NegativesDSHigh_2' },
-                                        { name => 'Sum2NegativesDSLow_1' }, { name => 'Sum2NegativesDSLow_2' },
-                                        { name => 'NumOfPositivesDS_1' }, { name => 'NumOfPositivesDS_2' },
-                                        { name => 'NumOfNegativesDS_1' }, { name => 'NumOfNegativesDS_2' },
+                        key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
+                                        { name => 'Sum2PositivesDSHigh_1' }, { name => 'Sum2PositivesDSHigh_2' }, { name => 'Sum2PositivesDSHigh_times' },
+                                        { name => 'Sum2PositivesDSLow_1' }, { name => 'Sum2PositivesDSLow_2' }, { name => 'Sum2PositivesDSLow_times' },
+                                        { name => 'Sum2NegativesDSHigh_1' }, { name => 'Sum2NegativesDSHigh_2' }, { name => 'Sum2NegativesDSHigh_times' },
+                                        { name => 'Sum2NegativesDSLow_1' }, { name => 'Sum2NegativesDSLow_2' }, { name => 'Sum2NegativesDSLow_times' },
+                                        { name => 'NumOfPositivesDS_1' }, { name => 'NumOfPositivesDS_2' }, { name => 'NumOfPositivesDS_times' },
+                                        { name => 'NumOfNegativesDS_1' }, { name => 'NumOfNegativesDS_2' }, { name => 'NumOfNegativesDS_times' },
                                         ],
-                        output_template => 'CP low datavecs : %s',
+                        closure_custom_calc => \&custom_JitterDestination2SourceStandardDeviation_calc,
+                        closure_custom_output => \&custom_generic_output,
+                        output_template => 'One-Way Jitter Destination to Source Standard Deviation : %.2f',
+                        threshold_use => 'value',
                         perfdatas => [
-                            { value => 'lowdatavecs_absolute', template => '%d', min => 0 },
+                            { label => 'jitter_dest2src_stdev', value => 'value', template => '%.2f', unit => 'ms',
+                              label_extra_instance => 1 },
                         ],
                     }
                },
 };
+
+my $ipsla;
+my $thresholds = {
+    opersense => [
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    applspecificsense => [
+        ['.*', 'OK'],
+    ],
+};
+
+###### Common func ######
+
+sub get_my_delta {
+    my ($self, %options) = @_;
+    
+    my $value;
+    my ($old_time1, $old_time2) = split /_/, $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_times'};
+    my ($new_time1, $new_time2) = split /_/, $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_times'};
+    if ($old_time1 == $new_time1) {
+        $value = $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_1'} - $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_1'} +
+                 $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_2'} - $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_2'};
+    } else {
+        $value = $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_1'} - $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_2'} +
+                 $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_2'};
+    }
+    return $value;
+}
+
+sub custom_generic_output {
+    my ($self, %options) = @_;
+    
+    return sprintf($self->{output_template}, $self->{result_values}->{value});
+}
+
+###### STATUS ######
+
+sub custom_status_perfdata {
+    my ($self, %options) = @_;
+    
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{rttMonCtrlAdminTag};
+    }
+    $self->{output}->perfdata_add(label => 'completion_time' . $extra_label, unit => $self->{result_values}->{rttMonEchoAdminPrecision},
+                                  value => $self->{result_values}->{rttMonLatestRttOperCompletionTime},
+                                  min => 0);
+}
+
+sub custom_status_threshold {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/) {
+        return $status;
+    }
+   
+    $status = $ipsla->get_severity(section => $self->{result_values}->{section}, value => $self->{result_values}->{opersense});
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    my $msg = 'Status : ';
+    
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/) {
+        $msg .= 'not active (' . $self->{result_values}->{rttMonCtrlAdminStatus} . ')';
+        return $msg;
+    }
+    $msg .= "operation sense is '" . $self->{result_values}->{opersense} . "'";
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{rttMonCtrlAdminStatus} = $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminStatus'};
+    $self->{result_values}->{rttMonCtrlAdminTag} = $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminTag'};
+    $self->{result_values}->{rttMonCtrlAdminRttType} = $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'};
+    $self->{result_values}->{rttMonCtrlAdminThreshold} = $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminThreshold'};
+    $self->{result_values}->{rttMonEchoAdminPrecision} = $options{new_datas}->{$self->{instance} . '_rttMonEchoAdminPrecision'};
+    $self->{result_values}->{rttMonLatestRttOperCompletionTime} = $options{new_datas}->{$self->{instance} . '_rttMonLatestRttOperCompletionTime'};
+    $self->{result_values}->{rttMonLatestRttOperSense} = $options{new_datas}->{$self->{instance} . '_rttMonLatestRttOperSense'};
+    $self->{result_values}->{rttMonLatestRttOperApplSpecificSense} = $options{new_datas}->{$self->{instance} . '_rttMonLatestRttOperApplSpecificSense'};
+    $self->{result_values}->{opersense} = $self->{result_values}->{rttMonLatestRttOperSense};
+    $self->{result_values}->{section} = 'opersense';
+    if ($self->{result_values}->{opersense} =~ /applicationSpecific/i) {
+        $self->{result_values}->{opersense} = $self->{result_values}->{rttMonLatestRttOperApplSpecificSense};
+        $self->{result_values}->{section} = 'applspecificsense';
+    }
+    return 0;
+}
+
+####### 1 - Number Over Thresholds #######
+sub custom_NumberOverThresholds_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'OverThresholds');
+    return 0;
+}
+
+####### 2 - Average Delay SD #######
+sub custom_AverageDelaySD_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'OWSumSD') / get_my_delta(name => 'NumOfOW');
+    return 0;
+}
+
+####### 3 - Average Delay DS #######
+sub custom_AverageDelayDS_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'OWSumDS') / get_my_delta(name => 'NumOfOW');
+    return 0;
+}
+
+####### 4 - Packet Loss Ratio   #######
+sub custom_PacketLossRatio_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = ((get_my_delta(name => 'PacketLossDS') + get_my_delta(name => 'PacketLossSD') + get_my_delta(name => 'PacketMIA')) * 100 ) / 
+                                       (get_my_delta(name => 'PacketLossSD') + get_my_delta(name => 'PacketLossDS') + get_my_delta(name => 'PacketMIA') + 
+                                        get_my_delta(name => 'PacketLateArrival') + get_my_delta(name => 'PacketOutOfSequence') + get_my_delta(name => 'NumOfRTT'));
+    return 0;
+}
+
+####### 5 - Percentage of Packets that had Positive Jitter   #######
+sub custom_PercentagePacketsPositiveJitter_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'NumOfPositiveSD') / get_my_delta(name => 'NumOfRTT');
+    return 0;
+}
+
+####### 6 - Average Jitter per Packet that had Positive Jitter   #######
+sub custom_AverageJitterPerPacketPositiveJitter_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'SumOfPositiveSD') / get_my_delta(name => 'NumOfRTT');
+    return 0;
+}
+
+####### 7 - Percentage of Packets that had Negative Jitter   #######
+sub custom_PercentagePacketsNegativeJitter_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'NumOfNegativeSD') / get_my_delta(name => 'NumOfRTT');
+    return 0;
+}
+
+####### 8 - Average Jitter per Packet that had Negative Jitter   #######
+sub custom_AverageJitterPerPacketNegativeJitter_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = get_my_delta(name => 'SumOfNegativeSD') / get_my_delta(name => 'NumOfRTT');
+    return 0;
+}
+
+####### 9 - Average Jitter   #######
+sub custom_AverageJitter_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = (get_my_delta(name => 'sumOfPositiveDS') + get_my_delta(name => 'sumOfNegativeDS') + get_my_delta(name => 'sumOfPositiveSD') + get_my_delta(name => 'sumOfNegativeSD')) / 
+                                      (get_my_delta(name => 'numOfPositiveDS) + get_my_delta(name => 'numOfNegativeDS') + get_my_delta(name => 'numOfPositiveSD') + get_my_delta(name => 'numOfNegativeSD'));
+    return 0;
+}
+
+####### 10 - Round-Trip Time Standard Deviation   #######
+sub custom_RTTStandardDeviation_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'RTTSum2High') * 2 ** 32 + get_my_delta(name => 'RTTSum2Low')) 
+                                                / get_my_delta(name => 'NumOfRTT')) - (get_my_delta(name => 'RTTSum') / get_my_delta(name => 'NumOfRTT')) ** 2
+                                      );
+    return 0;
+}
+
+####### 11 - One-Way Delay Source to Destination Standard Deviation  #######
+sub custom_DelaySource2DestinationStandardDeviation_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'OWSum2SDHigh') * 2 ** 32 + get_my_delta(name => 'OWSum2SDLow')) / 
+                                                get_my_delta(name => 'NumOfOW')) - (get_my_delta(name => 'OWSumSD') / get_my_delta(name => 'NumOfOW')) ** 2
+                                      );
+    return 0;
+}
+
+####### 12 - One-Way Delay Destination to Source Standard Deviation  #######
+sub custom_DelayDestination2SourceStandardDeviation_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'OWSum2DSHigh') * 2 ** 32 + get_my_delta(name => 'OWSum2DSLow')) / 
+                                                get_my_delta(name => 'NumOfOW')) - (get_my_delta(name => 'OWSumDS') / get_my_delta(name => 'NumOfOW')) ** 2
+                                      );
+    return 0;
+}
+
+####### 13 - One-Way Jitter Source to Destination Standard Deviation #######
+sub custom_JitterSource2DestinationStandardDeviation_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'Sum2PositivesSDHigh') * 2 ** 32 + get_my_delta(name => 'Sum2PositivesSDLow') + get_my_delta(name => 'Sum2NegativesSDHigh') * 2 ** 32 + get_my_delta(name => 'Sum2NegativesSDLow')) 
+                                        / (get_my_delta(name => 'NumOfPositivesSD') + get_my_delta(name => 'NumOfNegativesSD'))) - 
+                                        ((get_my_delta(name => 'SumOfPositivesSD') + get_my_delta(name => 'SumOfNegativesSD')) / 
+                                        (get_my_delta(name => 'NumOfPositivesSD') + get_my_delta(name => 'NumOfNegativesSD'))) ** 2
+                                      );
+    return 0;
+}
+
+####### 14 - JitterDestination2SourceStandardDeviation #######
+sub custom_JitterDestination2SourceStandardDeviation_calc {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/ && 
+        $self->{result_values}->{rttMonCtrlAdminRttType} !~ /jitter/) {
+        return -2;
+    }
+        
+    $self->{result_values}->{value} = sqrt ( ((get_my_delta(name => 'Sum2PositivesDSHigh') * 2 ** 32 + get_my_delta(name => 'Sum2PositivesDSLow') + get_my_delta(name => 'Sum2NegativesDSHigh') * 2 ** 32 + get_my_delta(name => 'Sum2NegativesDSLow')) 
+                                        / (get_my_delta(name => 'NumOfPositivesDS') + get_my_delta(name => 'NumOfNegativesDS'))) - 
+                                        ((get_my_delta(name => 'SumOfPositivesDS') + get_my_delta(name => 'SumOfNegativesDS')) / 
+                                        (get_my_delta(name => 'NumOfPositivesDS') + get_my_delta(name => 'NumOfNegativesDS'))) ** 2
+                                      );
+    return 0;
+}
 
 my $oid_rttMonCtrlAdminEntry        = '.1.3.6.1.4.1.9.9.42.1.2.1.1';
 my $oid_rttMonEchoAdminPrecision    = '.1.3.6.1.4.1.9.9.42.1.2.2.1.37';
@@ -373,7 +726,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-tag:s"      => { name => 'filter_tag', default => '.*' },
+                                    "filter-tag:s"          => { name => 'filter_tag', default => '.*' },
+                                    "threshold-overload:s@" => { name => 'threshold_overload' },
                                 });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);  
@@ -402,8 +756,24 @@ sub check_options {
         next if (defined($maps_counters->{$_}->{threshold}) && $maps_counters->{$_}->{threshold} == 0);
         $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
     }
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
     
     $self->{statefile_value}->check_options(%options);
+    # to be used on custom function
+    $ipsla = $self;
 }
 
 sub run {
@@ -420,22 +790,22 @@ sub run {
     $self->{new_datas}->{last_timestamp} = time();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{device_id_selected}}) == 1) {
+    if (scalar(keys %{$self->{datas}}) == 1) {
         $multiple = 0;
     }
     
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All CP statistics are ok');
+                                    short_msg => 'All RTT controls are ok');
     }
 
-    foreach my $id (sort keys %{$self->{device_id_selected}}) {     
+    foreach my $id (sort keys %{$self->{datas}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
         foreach (sort keys %{$maps_counters}) {
             $maps_counters->{$_}->{obj}->set(instance => $id);
         
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{device_id_selected}->{$id},
+            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{datas}->{$id},
                                                                      new_datas => $self->{new_datas});
 
             if ($value_check != 0) {
@@ -458,16 +828,16 @@ sub run {
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
+        $self->{output}->output_add(long_msg => "RTT '" . $self->{datas}->{$id}->{rttMonCtrlAdminTag} . "' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $short_msg"
+                                        short_msg => "RTT '" . $self->{datas}->{$id}->{rttMonCtrlAdminTag} . "' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
+            $self->{output}->output_add(short_msg => "RTT '" . $self->{datas}->{$id}->{rttMonCtrlAdminTag} . "' $long_msg");
         }
     }
     
@@ -506,14 +876,17 @@ sub manage_selection {
         
         # there are two entries with rotation: 1 -> last hour, 2 -> current hour.
         foreach my %key (keys %{$oids_jitter_stats}) {
-            $self->{datas}->{$key . '_1'} = 0;
-            $self->{datas}->{$key . '_2'} = 0;
+            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_1'} = 0;
+            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_2'} = 0;
             my $i = 1;
+            my $instances = [];
             foreach my $oid2 ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
-                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\./);
-                $self->{datas}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
+                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.\d+.(\d+)/);
+                push @{$instances}, $1;
+                $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
                 $i++;
             }
+            $self->{datas}->{$result->{rttMonCtrlAdminTag}}->{$key . '_times'} = join('_', @{$instances});
         }        
     }
     
@@ -521,6 +894,28 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     } 
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -537,17 +932,27 @@ Check RTT Controls (CISCO-RTT-MON)
 
 Filter tag (Default: '.*')
 
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='opersense,CRITICAL,^(?!(ok)$)'
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'timer', 'snapshot', 'lowerwater', 'highwater', 
-'logfull', 'back', 'flush', 'sync', 'lowvbuf', 'deferred', 'lowdatavecs'.
+Can be: 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
+'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
+'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
+'JitterSource2DestinationStandardDeviation', 'JitterDestination2SourceStandardDeviation'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'timer', 'snapshot', 'lowerwater', 'highwater', 
-'logfull', 'back', 'flush', 'sync', 'lowvbuf', 'deferred', 'lowdatavecs'.
+Can be: 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
+'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
+'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
+'JitterSource2DestinationStandardDeviation', 'JitterDestination2SourceStandardDeviation'.
 
 =back
 
