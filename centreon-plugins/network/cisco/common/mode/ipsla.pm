@@ -441,8 +441,13 @@ sub custom_AverageDelaySD_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'OWSumSD'));
+    my $num_of_ow = get_my_delta($self, %options, name => 'NumOfOW');
+    if ($num_of_ow == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumSD') / $num_of_ow;
     return 0;
 }
 
@@ -455,8 +460,13 @@ sub custom_AverageDelayDS_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'OWSumDS'));
+    my $num_of_ow = get_my_delta($self, %options, name => 'NumOfOW');
+    if ($num_of_ow == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumDS') / $num_of_ow;
     return 0;
 }
 
@@ -469,10 +479,15 @@ sub custom_PacketLossRatio_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'PacketLossDS'));
-        
-    $self->{result_values}->{value} = ((get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketMIA')) * 100 ) / 
-                                       (get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketMIA') + 
+    my $divide = (get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketMIA') + 
                                         get_my_delta($self, %options, name => 'PacketLateArrival') + get_my_delta($self, %options, name => 'PacketOutOfSequence') + get_my_delta($self, %options, name => 'NumOfRTT'));
+    if ($divide == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
+    
+    $self->{result_values}->{value} = ((get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketMIA')) * 100 ) / 
+                                       $divide;
     return 0;
 }
 
@@ -485,8 +500,13 @@ sub custom_PercentagePacketsPositiveJitter_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesSD'));
+    my $num_of_rtt = get_my_delta($self, %options, name => 'NumOfRTT');
+    if ($num_of_rtt == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositivesSD') / $num_of_rtt;
     return 0;
 }
 
@@ -499,8 +519,13 @@ sub custom_AverageJitterPerPacketPositiveJitter_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'SumOfPositivesSD'));
+    my $num_of_rtt = get_my_delta($self, %options, name => 'NumOfRTT');
+    if ($num_of_rtt == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositivesSD') / $num_of_rtt;
     return 0;
 }
 
@@ -513,8 +538,13 @@ sub custom_PercentagePacketsNegativeJitter_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfNegativesSD'));
+    my $num_of_rtt = get_my_delta($self, %options, name => 'NumOfRTT');
+    if ($num_of_rtt == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativesSD') / $num_of_rtt;
     return 0;
 }
 
@@ -527,8 +557,13 @@ sub custom_AverageJitterPerPacketNegativeJitter_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'SumOfNegativesSD'));
+    my $num_of_rtt = get_my_delta($self, %options, name => 'NumOfRTT');
+    if ($num_of_rtt == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
-    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
+    $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativesSD') / $num_of_rtt;
     return 0;
 }
 
@@ -541,9 +576,14 @@ sub custom_AverageJitter_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'SumOfPositivesDS'));
-        
+    my $divide = (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS') + get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'));
+    if ($divide == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
+
     $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'SumOfPositivesDS') + get_my_delta($self, %options, name => 'SumOfNegativesDS') + get_my_delta($self, %options, name => 'SumOfPositivesSD') + get_my_delta($self, %options, name => 'SumOfNegativesSD')) / 
-                                      (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS') + get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'));
+                                      $divide;
     return 0;
 }
 
@@ -556,9 +596,14 @@ sub custom_RTTStandardDeviation_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfRTT'));
+    my $num_of_rtt = get_my_delta($self, %options, name => 'NumOfRTT');
+    if ($num_of_rtt == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'RTTSum2High') * 2 ** 32 + get_my_delta($self, %options, name => 'RTTSum2Low')) 
-                                                / get_my_delta($self, %options, name => 'NumOfRTT')) - (get_my_delta($self, %options, name => 'RTTSum') / get_my_delta($self, %options, name => 'NumOfRTT')) ** 2
+                                                / $num_of_rtt) - (get_my_delta($self, %options, name => 'RTTSum') / $num_of_rtt) ** 2
                                       );
     return 0;
 }
@@ -572,9 +617,14 @@ sub custom_DelaySource2DestinationStandardDeviation_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfOW'));
+    my $num_of_ow = get_my_delta($self, %options, name => 'NumOfOW');
+    if ($num_of_ow == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2SDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2SDLow')) / 
-                                                get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
+                                                $num_of_ow) - (get_my_delta($self, %options, name => 'OWSumSD') / $num_of_ow) ** 2
                                       );
     return 0;
 }
@@ -588,9 +638,14 @@ sub custom_DelayDestination2SourceStandardDeviation_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfOW'));
+    my $num_of_ow = get_my_delta($self, %options, name => 'NumOfOW');
+    if ($num_of_ow == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2DSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2DSLow')) / 
-                                                get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
+                                                $num_of_ow) - (get_my_delta($self, %options, name => 'OWSumDS') / $num_of_ow) ** 2
                                       );
     return 0;
 }
@@ -604,11 +659,16 @@ sub custom_JitterSource2DestinationStandardDeviation_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesSD'));
+    my $divide = (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'));
+    if ($divide == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesSDLow') + get_my_delta($self, %options, name => 'Sum2NegativesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesSDLow')) 
-                                        / (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'))) - 
+                                        / $divide) - 
                                         ((get_my_delta($self, %options, name => 'SumOfPositivesSD') + get_my_delta($self, %options, name => 'SumOfNegativesSD')) / 
-                                        (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'))) ** 2
+                                        $divide) ** 2
                                       );
     return 0;
 }
@@ -622,11 +682,16 @@ sub custom_JitterDestination2SourceStandardDeviation_calc {
         return -2;
     }
     return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesDS'));
+    my $divide = (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'));
+    if ($divide == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesDSLow') + get_my_delta($self, %options, name => 'Sum2NegativesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesDSLow')) 
-                                        / (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'))) - 
+                                        / $divide) - 
                                         ((get_my_delta($self, %options, name => 'SumOfPositivesDS') + get_my_delta($self, %options, name => 'SumOfNegativesDS')) / 
-                                        (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'))) ** 2
+                                        $divide) ** 2
                                       );
     return 0;
 }
