@@ -84,10 +84,10 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_AverageDelaySD_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Average Delay SD : %.2f',
+                        output_template => 'Average Delay SD : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
-                            { label => 'average_delay_sd', value => 'value', template => '%.2f',
+                            { label => 'average_delay_sd', value => 'value', template => '%.2f', unit => 'ms',
                               label_extra_instance => 1 },
                         ],
                     }
@@ -100,10 +100,10 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_AverageDelayDS_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Average Delay DS : %.2f',
+                        output_template => 'Average Delay DS : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
-                            { label => 'average_delay_ds', value => 'value', template => '%.2f',
+                            { label => 'average_delay_ds', value => 'value', template => '%.2f', unit => 'ms',
                               label_extra_instance => 1 },
                         ],
                     }
@@ -112,7 +112,7 @@ my $maps_counters = {
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'PacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
-                                        { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_times' },
+                                        { name => 'PacketLossSD_1' }, { name => 'PacketLossSD_2' }, { name => 'PacketLossSD_times' },
                                         { name => 'PacketMIA_1' }, { name => 'PacketMIA_2' }, { name => 'PacketMIA_times' },
                                         { name => 'PacketLateArrival_1' }, { name => 'PacketLateArrival_2' }, { name => 'PacketLateArrival_times' },
                                         { name => 'PacketOutOfSequence_1' }, { name => 'PacketOutOfSequence_2' }, { name => 'PacketOutOfSequence_times' },
@@ -120,11 +120,11 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_PacketLossRatio_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Packet Loss Ratio : %.2f',
+                        output_template => 'Packet Loss Ratio : %.2f %%',
                         threshold_use => 'value',
                         perfdatas => [
-                            { label => 'packet_loss_ratio', value => 'value', template => '%.2f',
-                              label_extra_instance => 1 },
+                            { label => 'packet_loss_ratio', value => 'value', template => '%.2f', unit => '%',
+                              label_extra_instance => 1, min => 0, max => 100 },
                         ],
                     }
                },
@@ -136,11 +136,11 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_PercentagePacketsPositiveJitter_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Percentage of Packets that had Positive Jitter : %.2f %%',
+                        output_template => 'Percentage of Packets that had Positive Jitter : %.2f',
                         threshold_use => 'value',
                         perfdatas => [
-                            { label => 'prct_jitter_per_packet_positive_jitter', value => 'value', template => '%.2f', unit => '%',
-                              label_extra_instance => 1, min => 0, max => 100 },
+                            { label => 'prct_jitter_per_packet_positive_jitter', value => 'value', template => '%.2f',
+                              label_extra_instance => 1, },
                         ],
                     }
                },
@@ -168,11 +168,11 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_PercentagePacketsNegativeJitter_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Percentage of Packets that had Negative Jitter : %.2f %%',
+                        output_template => 'Percentage of Packets that had Negative Jitter : %.2f',
                         threshold_use => 'value',
                         perfdatas => [
-                            { label => 'prct_jitter_per_packet_negative_jitter', value => 'value', template => '%.2f', unit => '%',
-                              label_extra_instance => 1, min => 0, max => 100 },
+                            { label => 'prct_jitter_per_packet_negative_jitter', value => 'value', template => '%.2f',
+                              label_extra_instance => 1,  },
                         ],
                     }
                },
@@ -195,18 +195,18 @@ my $maps_counters = {
     '9_AverageJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
-                                        { name => 'sumOfPositivesDS_1' }, { name => 'sumOfPositivesDS_2' }, { name => 'sumOfPositivesDS_times' },
-                                        { name => 'sumOfNegativesDS_1' }, { name => 'sumOfNegativesDS_2' }, { name => 'sumOfNegativesDS_times' },
-                                        { name => 'sumOfPositivesSD_1' }, { name => 'sumOfPositivesSD_2' }, { name => 'sumOfPositivesSD_times' },
-                                        { name => 'sumOfNegativesSD_1' }, { name => 'sumOfNegativesSD_2' }, { name => 'sumOfNegativesSD_times' },
-                                        { name => 'numOfPositivesDS_1' }, { name => 'numOfPositivesDS_2' }, { name => 'numOfPositivesDS_times' },
-                                        { name => 'numOfNegativesDS_1' }, { name => 'numOfNegativesDS_2' }, { name => 'numOfNegativesDS_times' },
-                                        { name => 'numOfPositivesSD_1' }, { name => 'numOfPositivesSD_2' }, { name => 'numOfPositivesSD_times' },
-                                        { name => 'numOfNegativesSD_1' }, { name => 'numOfNegativesSD_2' }, { name => 'numOfNegativesSD_times' },
+                                        { name => 'SumOfPositivesDS_1' }, { name => 'SumOfPositivesDS_2' }, { name => 'SumOfPositivesDS_times' },
+                                        { name => 'SumOfNegativesDS_1' }, { name => 'SumOfNegativesDS_2' }, { name => 'SumOfNegativesDS_times' },
+                                        { name => 'SumOfPositivesSD_1' }, { name => 'SumOfPositivesSD_2' }, { name => 'SumOfPositivesSD_times' },
+                                        { name => 'SumOfNegativesSD_1' }, { name => 'SumOfNegativesSD_2' }, { name => 'SumOfNegativesSD_times' },
+                                        { name => 'NumOfPositivesDS_1' }, { name => 'NumOfPositivesDS_2' }, { name => 'NumOfPositivesDS_times' },
+                                        { name => 'NumOfNegativesDS_1' }, { name => 'NumOfNegativesDS_2' }, { name => 'NumOfNegativesDS_times' },
+                                        { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
+                                        { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
                                       ],
                         closure_custom_calc => \&custom_AverageJitter_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Average Jitter : %.2f',
+                        output_template => 'Average Jitter : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'average_jitter', value => 'value', template => '%.2f', unit => 'ms',
@@ -224,7 +224,7 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_RTTStandardDeviation_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'Round-Trip Time Standard Deviation : %.2f',
+                        output_template => 'Round-Trip Time Standard Deviation : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'rtt_standard_deviation', value => 'value', template => '%.2f', unit => 'ms',
@@ -238,11 +238,11 @@ my $maps_counters = {
                                         { name => 'OWSum2SDHigh_1' }, { name => 'OWSum2SDHigh_2' },  { name => 'OWSum2SDHigh_times' },
                                         { name => 'OWSum2SDLow_1' }, { name => 'OWSum2SDLow_2' },  { name => 'OWSum2SDLow_times' },
                                         { name => 'NumOfOW_1' }, { name => 'NumOfOW_2' },  { name => 'NumOfOW_times' },
-                                        { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' },  { name => 'OWSumDS_times' },
+                                        { name => 'OWSumSD_1' }, { name => 'OWSumSD_2' },  { name => 'OWSumSD_times' },
                                       ],
                         closure_custom_calc => \&custom_DelaySource2DestinationStandardDeviation_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'One-Way Delay Source to Destination Standard Deviation : %.2f',
+                        output_template => 'One-Way Delay Source to Destination Standard Deviation : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'delay_src2dest_stdev', value => 'value', template => '%.2f', unit => 'ms',
@@ -261,7 +261,7 @@ my $maps_counters = {
                                       ],
                         closure_custom_calc => \&custom_DelayDestination2SourceStandardDeviation_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'One-Way Delay Destination to Source Standard Deviation : %.2f',
+                        output_template => 'One-Way Delay Destination to Source Standard Deviation : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'delay_dest2src_stdev', value => 'value', template => '%.2f', unit => 'ms',
@@ -276,12 +276,14 @@ my $maps_counters = {
                                         { name => 'Sum2PositivesSDLow_1' }, { name => 'Sum2PositivesSDLow_2' }, { name => 'Sum2PositivesSDLow_times' },
                                         { name => 'Sum2NegativesSDHigh_1' }, { name => 'Sum2NegativesSDHigh_2' }, { name => 'Sum2NegativesSDHigh_times' },
                                         { name => 'Sum2NegativesSDLow_1' }, { name => 'Sum2NegativesSDLow_2' }, { name => 'Sum2NegativesSDLow_times' },
+                                        { name => 'SumOfPositivesSD_1' }, { name => 'SumOfPositivesSD_2' }, { name => 'SumOfPositivesSD_times' },
+                                        { name => 'SumOfNegativesSD_1' }, { name => 'SumOfNegativesSD_2' }, { name => 'SumOfNegativesSD_times' },
                                         { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
                                         { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
                                         ],
                         closure_custom_calc => \&custom_JitterSource2DestinationStandardDeviation_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'One-Way Jitter Source to Destination Standard Deviation : %.2f',
+                        output_template => 'One-Way Jitter Source to Destination Standard Deviation : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'jitter_src2dest_stdev', value => 'value', template => '%.2f', unit => 'ms',
@@ -296,12 +298,14 @@ my $maps_counters = {
                                         { name => 'Sum2PositivesDSLow_1' }, { name => 'Sum2PositivesDSLow_2' }, { name => 'Sum2PositivesDSLow_times' },
                                         { name => 'Sum2NegativesDSHigh_1' }, { name => 'Sum2NegativesDSHigh_2' }, { name => 'Sum2NegativesDSHigh_times' },
                                         { name => 'Sum2NegativesDSLow_1' }, { name => 'Sum2NegativesDSLow_2' }, { name => 'Sum2NegativesDSLow_times' },
+                                        { name => 'SumOfPositivesDS_1' }, { name => 'SumOfPositivesDS_2' }, { name => 'SumOfPositivesDS_times' },
+                                        { name => 'SumOfNegativesDS_1' }, { name => 'SumOfNegativesDS_2' }, { name => 'SumOfNegativesDS_times' },
                                         { name => 'NumOfPositivesDS_1' }, { name => 'NumOfPositivesDS_2' }, { name => 'NumOfPositivesDS_times' },
                                         { name => 'NumOfNegativesDS_1' }, { name => 'NumOfNegativesDS_2' }, { name => 'NumOfNegativesDS_times' },
                                         ],
                         closure_custom_calc => \&custom_JitterDestination2SourceStandardDeviation_calc,
                         closure_custom_output => \&custom_generic_output,
-                        output_template => 'One-Way Jitter Destination to Source Standard Deviation : %.2f',
+                        output_template => 'One-Way Jitter Destination to Source Standard Deviation : %.2f ms',
                         threshold_use => 'value',
                         perfdatas => [
                             { label => 'jitter_dest2src_stdev', value => 'value', template => '%.2f', unit => 'ms',
@@ -344,6 +348,16 @@ sub custom_generic_output {
     my ($self, %options) = @_;
     
     return sprintf($self->{output_template}, $self->{result_values}->{value});
+}
+
+sub check_buffer_creation {
+    my ($self, %options) = @_;
+    
+    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{name} . '_1'})) {
+        $self->{error_msg} = "Buffer creation";
+        return 1;
+    }
+    return 0;
 }
 
 ###### STATUS ######
@@ -412,6 +426,7 @@ sub custom_NumberOverThresholds_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'OverThresholds'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OverThresholds');
     return 0;
@@ -425,6 +440,7 @@ sub custom_AverageDelaySD_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'OWSumSD'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW');
     return 0;
@@ -438,6 +454,7 @@ sub custom_AverageDelayDS_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'OWSumDS'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW');
     return 0;
@@ -451,6 +468,7 @@ sub custom_PacketLossRatio_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'PacketLossDS'));
         
     $self->{result_values}->{value} = ((get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketMIA')) * 100 ) / 
                                        (get_my_delta($self, %options, name => 'PacketLossSD') + get_my_delta($self, %options, name => 'PacketLossDS') + get_my_delta($self, %options, name => 'PacketMIA') + 
@@ -466,6 +484,7 @@ sub custom_PercentagePacketsPositiveJitter_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesSD'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
@@ -479,6 +498,7 @@ sub custom_AverageJitterPerPacketPositiveJitter_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'SumOfPositivesSD'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfPositivesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
@@ -492,6 +512,7 @@ sub custom_PercentagePacketsNegativeJitter_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfNegativesSD'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'NumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
@@ -505,6 +526,7 @@ sub custom_AverageJitterPerPacketNegativeJitter_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'SumOfNegativesSD'));
         
     $self->{result_values}->{value} = get_my_delta($self, %options, name => 'SumOfNegativesSD') / get_my_delta($self, %options, name => 'NumOfRTT');
     return 0;
@@ -518,9 +540,10 @@ sub custom_AverageJitter_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'SumOfPositivesDS'));
         
-    $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'sumOfPositivesDS') + get_my_delta($self, %options, name => 'sumOfNegativesDS') + get_my_delta($self, %options, name => 'sumOfPositivesSD') + get_my_delta($self, %options, name => 'sumOfNegativesSD')) / 
-                                      (get_my_delta($self, %options, name => 'numOfPositivesDS') + get_my_delta($self, %options, name => 'numOfNegativesDS') + get_my_delta($self, %options, name => 'numOfPositivesSD') + get_my_delta($self, %options, name => 'numOfNegativesSD'));
+    $self->{result_values}->{value} = (get_my_delta($self, %options, name => 'SumOfPositivesDS') + get_my_delta($self, %options, name => 'SumOfNegativesDS') + get_my_delta($self, %options, name => 'SumOfPositivesSD') + get_my_delta($self, %options, name => 'SumOfNegativesSD')) / 
+                                      (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS') + get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'));
     return 0;
 }
 
@@ -532,6 +555,7 @@ sub custom_RTTStandardDeviation_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfRTT'));
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'RTTSum2High') * 2 ** 32 + get_my_delta($self, %options, name => 'RTTSum2Low')) 
                                                 / get_my_delta($self, %options, name => 'NumOfRTT')) - (get_my_delta($self, %options, name => 'RTTSum') / get_my_delta($self, %options, name => 'NumOfRTT')) ** 2
@@ -547,6 +571,7 @@ sub custom_DelaySource2DestinationStandardDeviation_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfOW'));
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2SDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2SDLow')) / 
                                                 get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumSD') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
@@ -562,6 +587,7 @@ sub custom_DelayDestination2SourceStandardDeviation_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfOW'));
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'OWSum2DSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'OWSum2DSLow')) / 
                                                 get_my_delta($self, %options, name => 'NumOfOW')) - (get_my_delta($self, %options, name => 'OWSumDS') / get_my_delta($self, %options, name => 'NumOfOW')) ** 2
@@ -577,6 +603,7 @@ sub custom_JitterSource2DestinationStandardDeviation_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesSD'));
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesSDLow') + get_my_delta($self, %options, name => 'Sum2NegativesSDHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesSDLow')) 
                                         / (get_my_delta($self, %options, name => 'NumOfPositivesSD') + get_my_delta($self, %options, name => 'NumOfNegativesSD'))) - 
@@ -594,6 +621,7 @@ sub custom_JitterDestination2SourceStandardDeviation_calc {
         $options{new_datas}->{$self->{instance} . '_rttMonCtrlAdminRttType'} !~ /jitter/) {
         return -2;
     }
+    return -1 if (check_buffer_creation($self, %options, name => 'NumOfPositivesDS'));
         
     $self->{result_values}->{value} = sqrt ( ((get_my_delta($self, %options, name => 'Sum2PositivesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2PositivesDSLow') + get_my_delta($self, %options, name => 'Sum2NegativesDSHigh') * 2 ** 32 + get_my_delta($self, %options, name => 'Sum2NegativesDSLow')) 
                                         / (get_my_delta($self, %options, name => 'NumOfPositivesDS') + get_my_delta($self, %options, name => 'NumOfNegativesDS'))) - 
@@ -608,7 +636,7 @@ my $oid_rttMonEchoAdminPrecision    = '.1.3.6.1.4.1.9.9.42.1.2.2.1.37';
 
 my $oid_rttMonLatestRttOperEntry    = '.1.3.6.1.4.1.9.9.42.1.2.10.1';
 
-# Packet Loss Ratio (unit: integer):
+# Packet Loss Ratio (unit: %):
 #    [(RttMonJitterStatsPacketLossDS + RttMonJitterStatsPacketLossSD + RttMonJitterStatsPacketMIA) * 100 ] / 
 #           [RttMonJitterStatsPacketLossSD + RttMonJitterStatsPacketLossDS + RttMonJitterStatsPacketMIA + 
 #            RttMonJitterStatsPacketLateArrival + RttMonJitterStatsPacketOutOfSequence + RttMonJitterStatsNumOfRTT ]
@@ -811,7 +839,7 @@ sub run {
         
             my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{datas}->{$id},
                                                                      new_datas => $self->{new_datas});
-
+            next if ($value_check == -2);
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
                 $long_msg_append = ', ';
