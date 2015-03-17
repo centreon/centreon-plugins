@@ -183,10 +183,10 @@ sub run {
         if ($total_size <= 0) {
             if ($multiple == 0) {
                 $self->{output}->add_option_msg(severity => 'UNKNOWN',
-                                                short_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
+                                                short_msg => sprintf("Skipping storage '%s': total size is <= 0 (%s)", 
                                                                      $name_storage, int($total_size)));
             } else {
-                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%d': total size is <= 0 (%s)", 
+                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%s': total size is <= 0 (%s)", 
                                                                     $name_storage, int($total_size)));
             }
             next;
