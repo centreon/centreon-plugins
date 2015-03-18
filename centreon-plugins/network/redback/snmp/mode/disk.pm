@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::redback::snmp::mode::memory;
+package network::redback::snmp::mode::disk;
 
 use base qw(centreon::plugins::mode);
 
@@ -94,9 +94,9 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_used'} + $options{new_datas}->{$self->{instance} . '_free'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'} * $options{new_datas}->{$self->{instance} . '_total'} / 100;
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;
@@ -147,7 +147,7 @@ sub run {
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{memory_selected}}) == 1) {
+    if (scalar(keys %{$self->{disk_selected}}) == 1) {
         $multiple = 0;
     }
     
@@ -156,13 +156,13 @@ sub run {
                                     short_msg => 'All memory usages are ok');
     }
     
-    foreach my $id (sort keys %{$self->{memory_selected}}) {     
+    foreach my $id (sort keys %{$self->{disk_selected}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
         foreach (sort keys %{$maps_counters}) {
             $maps_counters->{$_}->{obj}->set(instance => $id);
         
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{memory_selected}->{$id});
+            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{disk_selected}->{$id});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
@@ -184,16 +184,16 @@ sub run {
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg");
+        $self->{output}->output_add(long_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $short_msg"
+                                        short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg");
+            $self->{output}->output_add(short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
         }
     }
     
@@ -202,30 +202,34 @@ sub run {
 }
 
 my $mapping = {
-    rbnMemoryModule          => { oid => '.1.3.6.1.4.1.2352.2.16.1.2.1.2' },
-    rbnMemoryFreeKBytes      => { oid => '.1.3.6.1.4.1.2352.2.16.1.2.1.3' },
-    rbnMemoryKBytesInUse     => { oid => '.1.3.6.1.4.1.2352.2.16.1.2.1.4' },
+    rbnSRStorageDescr        => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.2' },
+    rbnSRStorageSize         => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.5' }, # KB
+    rbnSRStorageUtilization  => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.6' }, # %
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{memory_selected} = {};
-    my $oid_rbnMemoryEntry = '.1.3.6.1.4.1.2352.2.16.1.2.1';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_rbnMemoryEntry,
+    my $oid_rbnSRStorageEntry = '.1.3.6.1.4.1.2352.2.24.1.2.1.1';
+    $self->{results} = $self->{snmp}->get_table(oid => $oid_rbnSRStorageEntry,
                                                 nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
-        next if ($oid !~ /^$mapping->{rbnMemoryModule}->{oid}\.(\d+)/);
+        next if ($oid !~ /^$mapping->{rbnSRStorageSize}->{oid}\.(\d+)/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{rbnMemoryModule} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnMemoryModule} . "': no matching filter.");
+            $result->{rbnSRStorageDescr} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnSRStorageDescr} . "': no matching filter.");
+            next;
+        }
+        if ($result->{rbnSRStorageSize} == 0) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnSRStorageDescr} . "': media is removed.");
             next;
         }
         
-        $self->{memory_selected}->{$instance} = { display => $result->{rbnMemoryModule}, 
-                                                  free => $result->{rbnMemoryFreeKBytes}, used =>  $result->{rbnMemoryKBytesInUse}};
+        $self->{memory_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
+                                                  used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize}};
     }
     
     if (scalar(keys %{$self->{memory_selected}}) <= 0) {
@@ -240,7 +244,7 @@ __END__
 
 =head1 MODE
 
-Check memory usages.
+Check disk usages.
 
 =over 8
 
@@ -254,7 +258,7 @@ Threshold critical (in percent).
 
 =item B<--filter-name>
 
-Filter memory name (can be a regexp).
+Filter disk name (can be a regexp).
 
 =back
 
