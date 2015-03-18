@@ -45,7 +45,7 @@ my $maps_counters = {
     '0_usage' => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'display' }, { name => 'free' }, { name => 'used' },
+                                        { name => 'display' }, { name => 'total' }, { name => 'used' },
                                       ],
                         closure_custom_calc => \&custom_usage_calc,
                         closure_custom_output => \&custom_usage_output,
@@ -110,7 +110,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-name"     => { name => 'filter_name' },
+                                  "filter-name:s"     => { name => 'filter_name' },
                                 });                         
      
     foreach (keys %{$maps_counters}) {
@@ -153,7 +153,7 @@ sub run {
     
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All memory usages are ok');
+                                    short_msg => 'All disk usages are ok');
     }
     
     foreach my $id (sort keys %{$self->{disk_selected}}) {     
@@ -210,7 +210,7 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{memory_selected} = {};
+    $self->{disk_selected} = {};
     my $oid_rbnSRStorageEntry = '.1.3.6.1.4.1.2352.2.24.1.2.1.1';
     $self->{results} = $self->{snmp}->get_table(oid => $oid_rbnSRStorageEntry,
                                                 nothing_quit => 1);
@@ -228,11 +228,11 @@ sub manage_selection {
             next;
         }
         
-        $self->{memory_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
-                                                  used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize}};
+        $self->{disk_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
+                                                  used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
     }
     
-    if (scalar(keys %{$self->{memory_selected}}) <= 0) {
+    if (scalar(keys %{$self->{disk_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
