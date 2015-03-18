@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::remote::mode::showpeers;
+package apps::voip::asterisk::remote::mode::dahdistatus;
 
 use base qw(centreon::plugins::mode);
 
@@ -62,10 +62,7 @@ sub new {
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "command:s"         => { name => 'command', default => 'asterisk_sendcommand.pm' },
                                   "command-path:s"    => { name => 'command_path', default => '/home/centreon/bin' },
-                                  "protocol:s"        => { name => 'protocol', },
                                   "filter-name:s"     => { name => 'filter_name', },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
                                 });
     $self->{result} = {};
     return $self;
@@ -92,29 +89,13 @@ sub check_options {
 	        $self->{output}->option_exit();
 	    }
     }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     my @result;
     
-    if ($self->{option_results}->{protocol} eq 'sip' || $self->{option_results}->{protocol} eq 'SIP')
-    {
-    	$self->{asterisk_command} = 'sip show peers';
-    }
-    elsif ($self->{option_results}->{protocol} eq 'iax' || $self->{option_results}->{protocol} eq 'IAX')
-    {
-    	$self->{asterisk_command} = 'iax2 show peers';
-    }
+    $self->{asterisk_command} = 'dahdi show status';
     
     if ($self->{option_results}->{remote} eq 'ami')
     {
@@ -135,30 +116,34 @@ sub manage_selection {
 
     # Compute data
     foreach my $line (@result) {
-        if ($line =~ /^([\w\-\/]*) *\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} .* (OK) \((.*) (.*)\)/)
+    	if ($line =~ /^Description /)
+    	{
+    		next;
+    	}
+        if ($line =~ /^(.{41})(\w*).*/)
         {
-	        my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
-	
+	        my $status;
+	        my ($trunkname, $trunkstatus) = ($1, $2);
+	        $trunkname =~ s/^\s+|\s+$//g;
 	        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
 	            $trunkname !~ /$self->{option_results}->{filter_name}/)
 	        {
 	            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
 	            next;
 	        }
-	        
-	        $self->{result}->{$trunkname} = {name => $trunkname, status => 'OK',
-	        	                             realstatus => $trunkstatus,
-	        	                             value => $trunkvalue,
-	        	                             unit => $trunkunit};
-        }
-        elsif ($line =~ /^([\w\-\/]*) *\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} .* (Unreachable)/)
-        {
-        	my ($trunkname, $trunkstatus) = ($1, $2);
-        	$self->{result}->{$trunkname} = {name => $trunkname, status => 'CRITICAL', realstatus => $trunkstatus};
+	        if ($trunkstatus eq 'Red' | $trunkstatus eq 'Yel' | $trunkstatus eq 'Blu')
+	        {
+	        	$status = 'CRITICAL';
+	        }
+	        elsif ($trunkstatus eq 'Unconfi')
+	        {
+	        	$status = 'WARNING';
+	        }
+	        $self->{result}->{$trunkname} = {name => $trunkname, status => $status, realstatus => $trunkstatus};
         }
         elsif ($line =~ /^Unable to connect .*/)
         {
-        	$self->{result}->{$line} = {name => $line, status => 'CRITICAL', realstatus => 'Unreachable'};
+        	$self->{result}->{$line} = {name => $line, status => 'CRITICAL'};
         }
     }
 }
@@ -184,34 +169,14 @@ sub run {
     }
 
     foreach my $name (sort(keys %{$self->{result}})) {
-        if (defined($self->{result}->{$name}->{value}) && defined($self->{result}->{$name}->{unit}))
-        {
-        	$self->{result}->{$name}->{status} = $self->{perfdata}->threshold_check(value => $self->{result}->{$name}->{value}, 
-                                                               threshold => [{ label => 'critical', exit_litteral => 'critical' },
-                                                               	             { label => 'warning', exit_litteral => 'warning' }]);
-        	$self->{output}->perfdata_add(label => $self->{result}->{$name}->{name},
-                                          value => $self->{result}->{$name}->{value}.$self->{result}->{$name}->{unit},
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                          min => 0);
-        }
-        
         if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1))
         {
             $msg = sprintf("Trunk: %s", $self->{result}->{$name}->{name});
             $self->{output}->output_add(severity => $self->{result}->{$name}->{status},
                                         short_msg => $msg);
-            if ($self->{result}->{$name}->{realstatus} eq 'Unreachable')
-            {
-            	$self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{realstatus}));
-            }
-            else
-            {
-            	$self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{value}));
-            }
         }
+        $self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{realstatus}));
     }
-
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -225,14 +190,6 @@ __END__
 Show peers for different protocols.
 
 =over 8
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
 
 =item B<--remote>
 
@@ -282,10 +239,6 @@ Command path (Default: /home/centreon/bin).
 =item B<--filter-name>
 
 Filter on trunkname (regexp can be used).
-
-=item B<--protocol>
-
-show peer for the choosen protocol (sip or iax).
 
 =back
 
