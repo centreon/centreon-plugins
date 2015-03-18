@@ -110,7 +110,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-name"     => { name => 'filter_name' },
+                                  "filter-name:s"     => { name => 'filter_name' },
                                 });                         
      
     foreach (keys %{$maps_counters}) {
@@ -225,7 +225,7 @@ sub manage_selection {
         }
         
         $self->{memory_selected}->{$instance} = { display => $result->{rbnMemoryModule}, 
-                                                  free => $result->{rbnMemoryFreeKBytes}, used =>  $result->{rbnMemoryKBytesInUse}};
+                                                  free => $result->{rbnMemoryFreeKBytes} * 1024, used =>  $result->{rbnMemoryKBytesInUse} * 1024};
     }
     
     if (scalar(keys %{$self->{memory_selected}}) <= 0) {
