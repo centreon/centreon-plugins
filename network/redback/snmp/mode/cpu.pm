@@ -126,25 +126,23 @@ sub run {
                            threshold => [ { label => 'crit5m', exit_litteral => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     
-    $self->{output}->output_add(long_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
+    $self->{output}->output_add(long_msg => sprintf("CPU: %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)",
                                         $cpu5sec, $cpu1min, $cpu5min));
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
-                                        $cpu5sec, $cpu1min, $cpu5min));
-    }
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("CPU: %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)",
+                                                     $cpu5sec, $cpu1min, $cpu5min));
     
-    $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5s",
+    $self->{output}->perfdata_add(label => "cpu_5s",
                                   value => $cpu5sec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_" . $instance . "_1m",
+    $self->{output}->perfdata_add(label => "cpu_1m",
                                   value => $cpu1min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5m",
+    $self->{output}->perfdata_add(label => "cpu_5m",
                                   value => $cpu5min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
