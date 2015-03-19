@@ -99,7 +99,7 @@ my $maps_counters = {
     '006_active-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnActivePdpContextCount' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnActivePdpContextCount', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Active Pdp : %s',
                         perfdatas => [
@@ -110,7 +110,7 @@ my $maps_counters = {
     '007_attempted-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnAttemptedActivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnAttemptedActivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Attempted Activation Pdp : %s',
                         perfdatas => [
@@ -121,7 +121,7 @@ my $maps_counters = {
     '008_attempted-dyn-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnAttemptedDynActivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnAttemptedDynActivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Attempted Dyn Activation Pdp : %s',
                         perfdatas => [
@@ -132,7 +132,7 @@ my $maps_counters = {
     '009_attempted-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnAttemptedDeactivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnAttemptedDeactivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Attempted Deactivation Pdp : %s',
                         perfdatas => [
@@ -143,7 +143,7 @@ my $maps_counters = {
     '010_attempted-self-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnAttemptedSelfDeactivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnAttemptedSelfDeactivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Attempted Self Deactivation Pdp : %s',
                         perfdatas => [
@@ -154,7 +154,7 @@ my $maps_counters = {
     '011_completed-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnCompletedActivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnCompletedActivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Completed Activation Pdp : %s',
                         perfdatas => [
@@ -165,7 +165,7 @@ my $maps_counters = {
     '012_completed-dyn-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnCompletedDynActivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnCompletedDynActivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Completed Dyn Activation Pdp : %s',
                         perfdatas => [
@@ -176,7 +176,7 @@ my $maps_counters = {
     '013_completed-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnCompletedDeactivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnCompletedDeactivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Completed Deactivation Pdp : %s',
                         perfdatas => [
@@ -187,7 +187,7 @@ my $maps_counters = {
     '014_completed-self-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnCompletedSelfDeactivation' }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnCompletedSelfDeactivation', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Completed Self Deactivation Pdp : %s',
                         perfdatas => [
