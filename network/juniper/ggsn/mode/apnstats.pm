@@ -282,7 +282,7 @@ sub run {
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{memory_selected}}) == 1) {
+    if (scalar(keys %{$self->{apn_selected}}) == 1) {
         $multiple = 0;
     }
     
