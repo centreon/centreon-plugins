@@ -116,6 +116,10 @@ sub check {
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
             }
+            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit2,
+                                            short_msg => sprintf("Temperature '%s' %s is %s degree centigrade", $instance, $result->{cpqHeTemperatureLocale}, $result->{cpqHeTemperatureCelsius}));
+            }
             $self->{output}->perfdata_add(label => "temp_" . $instance . "_" . $result->{cpqHeTemperatureLocale}, unit => 'C',
                                           value => $result->{cpqHeTemperatureCelsius},
                                           warning => $warn,

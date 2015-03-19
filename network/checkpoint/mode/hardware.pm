@@ -40,11 +40,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-use network::checkpoint::mode::components::fan;
-use network::checkpoint::mode::components::voltage;
-use network::checkpoint::mode::components::temperature;
-use network::checkpoint::mode::components::psu;
-
 my $thresholds = {
     temperature => [
         ['true', 'CRITICAL'],
@@ -77,7 +72,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"               => { name => 'exclude' },
-                                  "component:s"             => { name => 'component', default => 'all' },
+                                  "component:s"             => { name => 'component', default => '.*' },
                                   "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
@@ -114,33 +109,35 @@ sub check_options {
     }
 }
 
-sub global {
-    my ($self, %options) = @_;
-
-    network::checkpoint::mode::components::temperature::check($self);
-    network::checkpoint::mode::components::fan::check($self);
-    network::checkpoint::mode::components::voltage::check($self);
-    network::checkpoint::mode::components::psu::check($self);
-}
-
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    if ($self->{option_results}->{component} eq 'all') {
-        $self->global();
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        network::checkpoint::mode::components::fan::check($self);
-    } elsif ($self->{option_results}->{component} eq 'voltage') {
-        network::checkpoint::mode::components::voltage::check($self);
-    } elsif ($self->{option_results}->{component} eq 'temperature') {
-        network::checkpoint::mode::components::temperature::check($self);
-    } elsif ($self->{option_results}->{component} eq 'psu') {
-        network::checkpoint::mode::components::psu::check($self);
-    } else {
+    my $snmp_request = [];
+    my @components = ('voltage', 'fan', 'temperature', 'psu');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::checkpoint::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
+    
+    if (scalar(@{$snmp_request}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::checkpoint::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
     }
     
     my $total_components = 0;
@@ -220,7 +217,7 @@ Check hardware (fans, power supplies, temperatures, voltages).
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'psu', 'fan', 'temperature', 'voltage'.
 
 =item B<--exclude>

@@ -305,7 +305,7 @@ sub check_options {
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
             if ($section !~ /(temperature)/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: battery or temperature).");
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -440,7 +440,6 @@ sub absent_problem {
     return 1;
 }
 
-
 sub get_severity_numeric {
     my ($self, %options) = @_;
     my $status = 'OK'; # default
@@ -496,7 +495,7 @@ Check Hardware (CPUs, Power Supplies, Power converters, Fans).
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'cpu', 'psu', 'pc', 'fan', 'temperature', 'lnic', 'pnic',...
 There are some magic words like: 'network', 'storage'.
 

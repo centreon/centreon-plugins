@@ -106,7 +106,7 @@ sub run {
     my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
 
     my $exit = $self->{perfdata}->threshold_check(value => $CountOpenSlots,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Free slots: %d", $CountOpenSlots));

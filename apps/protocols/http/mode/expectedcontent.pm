@@ -61,6 +61,7 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "expected-string:s"     => { name => 'expected_string' },
             "timeout:s"             => { name => 'timeout', default => '3' },
+			"ssl:s"					=> { name => 'ssl', },
             });
     return $self;
 }
@@ -157,6 +158,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--ssl>
+
+Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 =item B<--expected-string>
 

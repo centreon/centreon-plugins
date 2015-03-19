@@ -44,39 +44,43 @@ my %map_states_voltage = (
     2 => 'reading error',
 );
 
+my $mapping = {
+    voltageSensorName => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.2' },
+    voltageSensorValue => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.3' },
+    voltageSensorStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.8.3.1.6', map => \%map_states_voltage },
+};
+my $oid_voltageSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.3.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_voltageSensorEntry, start => $mapping->{voltageSensorName}->{oid}, end => $mapping->{voltageSensorStatus}->{oid} };
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'voltage'));
-    
-    my $oid_voltageSensorEntry = '.1.3.6.1.4.1.2620.1.6.7.8.3.1';
-    my $oid_voltageSensorStatus = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.6';
-    my $oid_voltageSensorValue = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.3';
-    my $oid_voltageSensorName = '.1.3.6.1.4.1.2620.1.6.7.8.3.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_voltageSensorEntry);
-    return if (scalar(keys %$result) <= 0);
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_voltageSensorStatus\.(\d+).(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_voltageSensorEntry}})) {
+        next if ($oid !~ /^$mapping->{voltageSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageSensorEntry}, instance => $instance);
     
         next if ($self->check_exclude(section => 'voltage', instance => $instance));
-        my $voltage_name = $result->{$oid_voltageSensorName . '.' . $instance}; 
-        my $voltage_state = $result->{$oid_voltageSensorStatus . '.' . $instance};
      
         $self->{components}->{voltage}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s'",
-                                        $voltage_name, $map_states_voltage{$voltage_state}));
-        my $exit = $self->get_severity(section => 'voltage', value => $map_states_voltage{$voltage_state});
+                                        $result->{voltageSensorName}, $result->{voltageSensorStatus}));
+        my $exit = $self->get_severity(section => 'voltage', value => $result->{voltageSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' sensor out of range status is '%s'", $voltage_name, $map_states_voltage{$voltage_state}));
+                                        short_msg => sprintf("Voltage '%s' sensor out of range status is '%s'", $result->{voltageSensorName}, $result->{voltageSensorStatus}));
         }
-        $self->{output}->perfdata_add(label => $voltage_name , unit => 'V', 
-                                      value => sprintf("%d", $result->{$oid_voltageSensorValue . '.' . $instance}));
+        $self->{output}->perfdata_add(label => $result->{voltageSensorName} , unit => 'V', 
+                                      value => sprintf("%.2f", $result->{voltageSensorValue}));
 
     }
 }

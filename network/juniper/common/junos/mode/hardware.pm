@@ -40,55 +40,29 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my %map_fru_offline = (
-    1 => 'unknown', 2 => 'none', 3 => 'error', 4 => 'noPower', 5 => 'configPowerOff', 6 => 'configHoldInReset', 
-    7 => 'cliCommand', 8 => 'buttonPress', 9 => 'cliRestart', 10 => 'overtempShutdown', 11 => 'masterClockDown', 
-    12 => 'singleSfmModeChange', 13 => 'packetSchedulingModeChange', 14 => 'physicalRemoval', 15 => 'unresponsiveRestart', 
-    16 => 'sonetClockAbsent', 17 => 'rddPowerOff', 18 => 'majorErrors', 19 => 'minorErrors', 20 => 'lccHardRestart', 
-    21 => 'lccVersionMismatch', 22 => 'powerCycle', 23 => 'reconnect', 24 => 'overvoltage', 25 => 'pfeVersionMismatch', 
-    26 => 'febRddCfgChange', 27 => 'fpcMisconfig', 28 => 'fruReconnectFail', 29 => 'fruFwddReset', 30 => 'fruFebSwitch', 
-    31 => 'fruFebOffline', 32 => 'fruInServSoftUpgradeError', 33 => 'fruChasdPowerRatingExceed', 34 => 'fruConfigOffline', 
-    35 => 'fruServiceRestartRequest', 36 => 'spuResetRequest', 37 => 'spuFlowdDown', 38 => 'spuSpi4Down', 39 => 'spuWatchdogTimeout', 
-    40 => 'spuCoreDump', 41 => 'fpgaSpi4LinkDown', 42 => 'i3Spi4LinkDown', 43 => 'cppDisconnect', 44 => 'cpuNotBoot', 
-    45 => 'spuCoreDumpComplete', 46 => 'rstOnSpcSpuFailure', 47 => 'softRstOnSpcSpuFailure', 48 => 'hwAuthenticationFailure', 
-    49 => 'reconnectFpcFail', 50 => 'fpcAppFailed', 51 => 'fpcKernelCrash', 52 => 'spuFlowdDownNoCore', 53 => 'spuFlowdCoreDumpIncomplete',
-    54 => 'spuFlowdCoreDumpComplete', 55 => 'spuIdpdDownNoCore', 56 => 'spuIdpdCoreDumpIncomplete', 57 => 'spuIdpdCoreDumpComplete', 
-    58 => 'spuCoreDumpIncomplete', 59 => 'spuIdpdDown', 60 => 'fruPfeReset', 61 => 'fruReconnectNotReady', 62 => 'fruSfLinkDown', 
-    63 => 'fruFabricDown', 64 => 'fruAntiCounterfeitRetry', 65 => 'fruFPCChassisClusterDisable', 66 => 'spuFipsError', 
-    67 => 'fruFPCFabricDownOffline', 68 => 'febCfgChange', 69 => 'routeLocalizationRoleChange', 70 => 'fruFpcUnsupported', 
-    71 => 'psdVersionMismatch', 72 => 'fruResetThresholdExceeded', 73 => 'picBounce', 74 => 'badVoltage', 75 => 'fruFPCReducedFabricBW', 
-    76 => 'fruAutoheal', 77 => 'builtinPicBounce', 78 => 'fruFabricDegraded', 79 => 'fruFPCFabricDegradedOffline', 80 => 'fruUnsupportedSlot', 
-    81 => 'fruRouteLocalizationMisCfg', 82 => 'fruTypeConfigMismatch', 83 => 'lccModeChanged', 84 => 'hwFault', 85 => 'fruPICOfflineOnEccErrors',
-    86 => 'fruFpcIncompatible', 87 => 'fruFpcFanTrayPEMIncompatible', 88 => 'fruUnsupportedFirmware', 
-    89 => 'openflowConfigChange', 90 => 'fruFpcScbIncompatible', 91 => 'fruReUnresponsive' 
-);
-my %map_fru_type = (
-    1 => 'other', 2 => 'clockGenerator', 3 => 'flexiblePicConcentrator', 4 => 'switchingAndForwardingModule', 5 => 'controlBoard', 
-    6 => 'routingEngine', 7 => 'powerEntryModule', 8 => 'frontPanelModule', 9 => 'switchInterfaceBoard', 10 => 'processorMezzanineBoardForSIB', 
-    11 => 'portInterfaceCard', 12 => 'craftInterfacePanel', 13 => 'fan', 14 => 'lineCardChassis', 15 => 'forwardingEngineBoard', 
-    16 => 'protectedSystemDomain', 17 => 'powerDistributionUnit', 18 => 'powerSupplyModule', 19 => 'switchFabricBoard', 20 => 'adapterCard' 
-);
-my %fru_states = (
-    1 => ['unknown', 'UNKNOWN'], 
-    2 => ['empty', 'OK'], 
-    3 => ['present', 'OK'], 
-    4 => ['ready', 'OK'],
-    5 => ['announce online', 'OK'],
-    6 => ['online', 'OK'],
-    7 => ['announce offline', 'WARNING'],
-    8 => ['offline', 'CRITICAL'],
-    9 => ['diagnostic', 'WARNING'],
-    10 => ['standby', 'WARNING'],
-);
-my %operating_states = (
-    1 => ['unknown', 'UNKNOWN'], 
-    2 => ['running', 'OK'], 
-    3 => ['ready', 'OK'], 
-    4 => ['reset', 'WARNING'],
-    5 => ['runningAtFullSpeed', 'WARNING'],
-    6 => ['down', 'CRITICAL'],
-    7 => ['standby', 'OK'],
-);
+my $thresholds = {
+    fru => [
+        ['unknown', 'UNKNOWN'],
+        ['present', 'OK'],
+        ['ready', 'OK'],
+        ['announce online', 'OK'],
+        ['online', 'OK'],
+        ['announce offline', 'WARNING'],
+        ['offline', 'CRITICAL'],
+        ['diagnostic', 'WARNING'],
+        ['standby', 'WARNING'],
+        ['empty', 'OK'],
+    ],
+    operating => [
+        ['unknown', 'UNKNOWN'],
+        ['running', 'OK'], 
+        ['ready', 'OK'], 
+        ['reset', 'WARNING'],
+        ['runningAtFullSpeed', 'WARNING'],
+        ['down', 'CRITICAL'],
+        ['standby', 'OK'],
+    ],
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -98,14 +72,71 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
+                                  "exclude:s"        => { name => 'exclude' },
+                                  "absent-problem:s" => { name => 'absent' },
+                                  "component:s"      => { name => 'component', default => '.*' },
+                                  "no-component:s"   => { name => 'no_component' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
 
+    $self->{components} = {};
+    $self->{no_components} = undef;
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (defined($self->{option_results}->{no_component})) {
+        if ($self->{option_results}->{no_component} ne '') {
+            $self->{no_components} = $self->{option_results}->{no_component};
+        } else {
+            $self->{no_components} = 'critical';
+        }
+    }
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
+    
+    $self->{numeric_threshold} = {};
+    foreach my $option (('warning', 'critical')) {
+        foreach my $val (@{$self->{option_results}->{$option}}) {
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my ($section, $regexp, $value) = ($1, $2, $3);
+            if ($section !~ /(fru-temperature)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: fru-temperature).");
+                $self->{output}->option_exit();
+            }
+            my $position = 0;
+            if (defined($self->{numeric_threshold}->{$section})) {
+                $position = scalar(@{$self->{numeric_threshold}->{$section}});
+            }
+            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
+        }
+    }
 }
 
 sub run {
@@ -113,18 +144,57 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->{components_frus} = 0;
-    $self->{components_operating} = 0;
-    
     $self->get_type();
-    $self->check_frus();
-    $self->check_operating();
+    
+    my $snmp_request = [];
+    my @components = ('fru', 'operating');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::juniper::common::junos::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
+    
+    if (scalar(@{$snmp_request}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::juniper::common::junos::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
+    }
+    
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %d components [%d frus, %d operating] are ok, Environment type: %s", 
-                                ($self->{components_frus} + $self->{components_operating}), 
-                                $self->{components_frus}, $self->{components_operating}, $self->{env_type}));
-    
+                                short_msg => sprintf("All %s components are ok [%s].", 
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -137,93 +207,82 @@ sub get_type {
     my $result = $self->{snmp}->get_leef(oids => [$oid_jnxBoxDescr]);
     
     $self->{env_type} = defined($result->{$oid_jnxBoxDescr}) ? $result->{$oid_jnxBoxDescr} : 'unknown';
+    $self->{output}->output_add(long_msg => sprintf("Environment type: %s", $self->{env_type}));
 }
 
-sub check_frus {
-    my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking frus");
-    
-    my $oid_jnxFruName = '.1.3.6.1.4.1.2636.3.1.15.1.5';
-    my $oid_jnxFruType = '.1.3.6.1.4.1.2636.3.1.15.1.6';
-    my $oid_jnxFruState = '.1.3.6.1.4.1.2636.3.1.15.1.8';
-    my $oid_jnxFruTemp = '.1.3.6.1.4.1.2636.3.1.15.1.9';
-    my $oid_jnxFruOfflineReason = '.1.3.6.1.4.1.2636.3.1.15.1.10';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_jnxFruName);
-    return if (scalar(keys %$result) <= 0);
+sub check_exclude {
+    my ($self, %options) = @_;
 
-    $self->{snmp}->load(oids => [$oid_jnxFruType, $oid_jnxFruState, $oid_jnxFruTemp, $oid_jnxFruOfflineReason],
-                        instances => [keys %$result],
-                        instance_regexp => "^" . $oid_jnxFruName . '\.(.+)');
-    my $result2 = $self->{snmp}->get_leef();
-    
-    foreach my $oid (keys %$result) {        
-        $oid =~ /^$oid_jnxFruName\.(.+)/;
-        my $instance = $1;
-        
-        my $fru_name = $result->{$oid};
-        my $fru_type = $result2->{$oid_jnxFruType . "." . $instance};
-        my $fru_state = $result2->{$oid_jnxFruState . "." . $instance};
-        my $fru_temp = $result2->{$oid_jnxFruTemp . "." . $instance};
-        my $fru_offlinereason = $result2->{$oid_jnxFruOfflineReason . "." . $instance};
-        
-        # Empty. Skip
-        if ($fru_state == 2) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping fru '%s' [type: %s]: empty.", 
-                                           $fru_name, $map_fru_type{$fru_type}));
-            next;
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+            $self->{components}->{$options{section}}->{skip}++;
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+            return 1;
         }
-        
-        $self->{components_frus}++;
-        $self->{output}->output_add(long_msg => sprintf("Fru '%s' state is %s [type: %s, offline reason: %s]", 
-                                    $fru_name, ${$fru_states{$fru_state}}[0], 
-                                    $map_fru_type{$fru_type}, $map_fru_offline{$fru_offlinereason}));
-        if (${$fru_states{$fru_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity =>  ${$fru_states{$fru_state}}[1],
-                                        short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]", $fru_name, ${$fru_states{$fru_state}}[0],
-                                        $map_fru_offline{$fru_offlinereason}));
-        }
-        
-        if ($fru_temp != 0) {
-            $self->{output}->perfdata_add(label => 'temp_' . $fru_name, unit => 'C',
-                                          value => $fru_temp);
-        }
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+        return 1;
     }
+    return 0;
 }
 
-sub check_operating {
-    my ($self) = @_;
+sub absent_problem {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{absent}) && 
+        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
+                                                         $options{section}, $options{instance}));
+    }
 
-    $self->{output}->output_add(long_msg => "Checking operating");
-    
-    my $oid_jnxOperatingDescr = '.1.3.6.1.4.1.2636.3.1.13.1.5';
-    my $oid_jnxOperatingState = '.1.3.6.1.4.1.2636.3.1.13.1.6';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr);
-    return if (scalar(keys %$result) <= 0);
+    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
+    $self->{components}->{$options{section}}->{skip}++;
+    return 1;
+}
 
-    $self->{snmp}->load(oids => [$oid_jnxOperatingState],
-                        instances => [keys %$result],
-                        instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
-    my $result2 = $self->{snmp}->get_leef();
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
     
-    foreach my $oid (keys %$result) {        
-        $oid =~ /^$oid_jnxOperatingDescr\.(.+)/;
-        my $instance = $1;
-        
-        my $operating_descr = $result->{$oid};
-        my $operating_state = $result2->{$oid_jnxOperatingState . "." . $instance};
-        
-        $self->{components_operating}++;
-        $self->{output}->output_add(long_msg => sprintf("Operating '%s' state is %s", 
-                                    $operating_descr, ${$operating_states{$operating_state}}[0]));
-        if (${$operating_states{$operating_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operating_states{$operating_state}}[1],
-                                        short_msg => sprintf("Operating '%s' state is %s", 
-                                    $operating_descr, ${$operating_states{$operating_state}}[0]));
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{regexp}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
+            }
+        }
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
+    }
+    
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
         }
     }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -235,6 +294,42 @@ __END__
 Check Hardware (mib-jnx-chassis) (frus, operating).
 
 =over 8
+
+=item B<--component>
+
+Which component to check (Default: '.*').
+Can be: 'fru', 'operating'.
+
+=item B<--exclude>
+
+Exclude some parts (comma seperated list) (Example: --exclude=fru)
+Can also exclude specific instance: --exclude=fru#7.3.0.0#
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=fru#7.1.0.0#
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='operating,CRITICAL,^(?!(running)$)'
+
+=item B<--warning>
+
+Set warning threshold for fru temperatures (syntax: type,regexp,treshold)
+Example: --warning='fru-temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for fru temperatures (syntax: type,regexp,treshold)
+Example: --critical='fru-temperature,.*,40'
 
 =back
 

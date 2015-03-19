@@ -135,7 +135,7 @@ sub manage_selection {
 
     # Compute data
     foreach my $line (@result) {
-        if ($line =~ /^(\w*)\/\w* .* (OK) \((.*) (.*)\)/)
+        if ($line =~ /^([\w\-\/]*) *\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} .* (OK) \((.*) (.*)\)/)
         {
 	        my ($trunkname, $trunkstatus, $trunkvalue, $trunkunit) = ($1, $2, $3, $4);
 	
@@ -151,16 +151,15 @@ sub manage_selection {
 	        	                             value => $trunkvalue,
 	        	                             unit => $trunkunit};
         }
-        elsif ($line =~ /^(\w*)\/\w* .* (Unreachable)/)
+        elsif ($line =~ /^([\w\-\/]*) *\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} .* (Unreachable)/)
         {
         	my ($trunkname, $trunkstatus) = ($1, $2);
         	$self->{result}->{$trunkname} = {name => $trunkname, status => 'CRITICAL', realstatus => $trunkstatus};
         }
-        else
+        elsif ($line =~ /^Unable to connect .*/)
         {
-        	next;
+        	$self->{result}->{$line} = {name => $line, status => 'CRITICAL', realstatus => 'Unreachable'};
         }
-        
     }
 }
 
@@ -169,12 +168,20 @@ sub run {
 
     my $msg;
     my $old_status = 'ok';
+
+    $self->manage_selection();
     
     # Send formated data to Centreon
-    $self->{output}->output_add(severity => 'OK',
+    if (scalar keys %{$self->{result}} >= 1)
+    {
+    	$self->{output}->output_add(severity => 'OK',
                                 short_msg => 'Everything is OK');
-    
-    $self->manage_selection();
+    }
+    else
+    {
+    	$self->{output}->output_add(severity => 'Unknown',
+                                short_msg => 'Nothing to be monitored');
+    }
 
     foreach my $name (sort(keys %{$self->{result}})) {
         if (defined($self->{result}->{$name}->{value}) && defined($self->{result}->{$name}->{unit}))
