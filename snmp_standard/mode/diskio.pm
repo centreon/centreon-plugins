@@ -121,7 +121,7 @@ sub new {
                                 });
 
     $self->{device_id_selected} = {};
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);                           
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
      
     foreach (keys %{$maps_counters}) {
         $options{options}->add_options(arguments => {

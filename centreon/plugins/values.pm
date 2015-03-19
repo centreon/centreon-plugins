@@ -167,6 +167,8 @@ sub output {
 
     if ($self->{output_change_bytes} == 1) {
         ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
+    } elsif ($self->{output_change_bytes} == 2) {
+        ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
     }
     
     return sprintf($self->{output_template}, $value, $unit);
