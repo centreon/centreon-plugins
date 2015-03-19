@@ -51,6 +51,7 @@ my $thresholds = {
         ['offline', 'CRITICAL'],
         ['diagnostic', 'WARNING'],
         ['standby', 'WARNING'],
+        ['empty', 'OK'],
     ],
     operating => [
         ['unknown', 'UNKNOWN'],
@@ -59,7 +60,7 @@ my $thresholds = {
         ['reset', 'WARNING'],
         ['runningAtFullSpeed', 'WARNING'],
         ['down', 'CRITICAL'],
-        ['standby', 'WARNING'],
+        ['standby', 'OK'],
     ],
 };
 
@@ -241,6 +242,27 @@ sub absent_problem {
     return 1;
 }
 
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
+    
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{regexp}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
+            }
+        }
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
+    }
+    
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
+}
+
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
@@ -263,39 +285,6 @@ sub get_severity {
     return $status;
 }
 
-sub check_operating {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking operating");
-    
-    
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr);
-    return if (scalar(keys %$result) <= 0);
-
-    $self->{snmp}->load(oids => [$oid_jnxOperatingState],
-                        instances => [keys %$result],
-                        instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
-    my $result2 = $self->{snmp}->get_leef();
-    
-    foreach my $oid (keys %$result) {        
-        $oid =~ /^$oid_jnxOperatingDescr\.(.+)/;
-        my $instance = $1;
-        
-        my $operating_descr = $result->{$oid};
-        my $operating_state = $result2->{$oid_jnxOperatingState . "." . $instance};
-        
-        $self->{components_operating}++;
-        $self->{output}->output_add(long_msg => sprintf("Operating '%s' state is %s", 
-                                    $operating_descr, ${$operating_states{$operating_state}}[0]));
-        if (${$operating_states{$operating_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity => ${$operating_states{$operating_state}}[1],
-                                        short_msg => sprintf("Operating '%s' state is %s", 
-                                    $operating_descr, ${$operating_states{$operating_state}}[0]));
-        }
-    }
-}
-
 1;
 
 __END__
@@ -313,13 +302,13 @@ Can be: 'fru', 'operating'.
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fan,cpu)
-Can also exclude specific instance: --exclude=fan#1.2#,lnic#1#,cpu
+Exclude some parts (comma seperated list) (Example: --exclude=fru)
+Can also exclude specific instance: --exclude=fru#7.3.0.0#
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fan#1.2#,cpu
+Can be specific or global: --absent-problem=fru#7.1.0.0#
 
 =item B<--no-component>
 
@@ -330,7 +319,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='temperature,CRITICAL,^(?!(ok)$)'
+Example: --threshold-overload='operating,CRITICAL,^(?!(running)$)'
 
 =item B<--warning>
 
