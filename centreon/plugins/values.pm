@@ -183,10 +183,10 @@ sub perfdata {
     
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
-    my $cast_int = defined($options{cast_int}) ? $options{cast_int} : 0;
     
     foreach my $perf (@{$self->{perfdatas}}) {
         my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
+        my $cast_int = (defined($perf->{cast_int}) && $perf->{cast_int} == 1) ? 1 : 0;
         my $template = '%s';
         
         $template = $perf->{template} if (defined($perf->{template}));
