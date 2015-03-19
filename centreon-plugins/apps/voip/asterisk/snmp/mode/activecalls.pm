@@ -93,7 +93,7 @@ sub run {
     }
 
     if (!defined($value)) {
-        $self->{output}->output_add(severity => $self->{option_results}->{state_no_channels},
+        $self->{output}->output_add(severity => 'Unknown',
                                     short_msg => sprintf("No information available for active channel")
                                    );
         $self->{output}->display();
