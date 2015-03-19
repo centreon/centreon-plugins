@@ -50,6 +50,7 @@ sub new {
     %{$self->{modes}} = (
                          'showpeers' => 'apps::voip::asterisk::remote::mode::showpeers',
                          'dahdistatus' => 'apps::voip::asterisk::remote::mode::dahdistatus',
+                         'activecalls' => 'apps::voip::asterisk::remote::mode::activecalls',
 			);
 
     return $self;
