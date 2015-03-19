@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::voip::asterisk::remote::mode::dahdistatus;
+package apps::voip::asterisk::remote::mode::activecalls;
 
 use base qw(centreon::plugins::mode);
 
@@ -62,7 +62,10 @@ sub new {
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "command:s"         => { name => 'command', default => 'asterisk_sendcommand.pm' },
                                   "command-path:s"    => { name => 'command_path', default => '/home/centreon/bin' },
+                                  "protocol:s"        => { name => 'protocol', },
                                   "filter-name:s"     => { name => 'filter_name', },
+                                  "warning:s"         => { name => 'warning', },
+                                  "critical:s"        => { name => 'critical', },
                                 });
     $self->{result} = {};
     return $self;
@@ -89,13 +92,22 @@ sub check_options {
 	        $self->{output}->option_exit();
 	    }
     }
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     my @result;
     
-    $self->{asterisk_command} = 'dahdi show status';
+    $self->{asterisk_command} = 'core show channels';
     
     if ($self->{option_results}->{remote} eq 'ami')
     {
@@ -116,34 +128,13 @@ sub manage_selection {
 
     # Compute data
     foreach my $line (@result) {
-    	if ($line =~ /^Description /)
-    	{
-    		next;
-    	}
-        if ($line =~ /^(.{41})(\w*).*/)
+        if ($line =~ /^(\d*) active call/)
         {
-	        my $status;
-	        my ($trunkname, $trunkstatus) = ($1, $2);
-	        $trunkname =~ s/^\s+|\s+$//g;
-	        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-	            $trunkname !~ /$self->{option_results}->{filter_name}/)
-	        {
-	            $self->{output}->output_add(long_msg => "Skipping trunk '" . $trunkname . "': no matching filter name");
-	            next;
-	        }
-	        if ($trunkstatus eq 'Red' | $trunkstatus eq 'Yel' | $trunkstatus eq 'Blu')
-	        {
-	        	$status = 'CRITICAL';
-	        }
-	        elsif ($trunkstatus eq 'Unconfi')
-	        {
-	        	$status = 'WARNING';
-	        }
-	        $self->{result}->{$trunkname} = {name => $trunkname, status => $status, realstatus => $trunkstatus};
+	        $self->{result}->{activecalls} = {value => $1, status => '1'};
         }
         elsif ($line =~ /^Unable to connect .*/)
         {
-        	$self->{result}->{$line} = {name => $line, status => 'CRITICAL'};
+        	$self->{result}->{activecalls} = {value => $line, status => '0'};
         }
     }
 }
@@ -155,28 +146,25 @@ sub run {
     my $old_status = 'ok';
 
     $self->manage_selection();
-    
-    # Send formated data to Centreon
-    if (scalar keys %{$self->{result}} >= 1)
-    {
-    	$self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Everything is OK');
-    }
-    else
-    {
-    	$self->{output}->output_add(severity => 'Unknown',
-                                short_msg => 'Nothing to be monitored');
-    }
 
-    foreach my $name (sort(keys %{$self->{result}})) {
-        if (!$self->{output}->is_status(value => $self->{result}->{$name}->{status}, compare => 'ok', litteral => 1))
-        {
-            $msg = sprintf("Trunk: %s", $self->{result}->{$name}->{name});
-            $self->{output}->output_add(severity => $self->{result}->{$name}->{status},
-                                        short_msg => $msg);
-        }
-        $self->{output}->output_add(long_msg => sprintf("%s : %s", $self->{result}->{$name}->{name}, $self->{result}->{$name}->{realstatus}));
+    # Send formated data to Centreon
+    if ($self->{result}->{activecalls}->{status} eq '0')
+    {
+    	$self->{output}->output_add(severity => $self->{result}->{activecalls}->{status},
+                                short_msg => $self->{result}->{activecalls}->{value});
     }
+    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{result}->{activecalls}->{value},
+                              threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->perfdata_add(label => 'Calls',
+                                  value => $self->{result}->{activecalls}->{value},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("Current active calls: %s", $self->{result}->{activecalls}->{value})
+                                );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -187,9 +175,17 @@ __END__
 
 =head1 MODE
 
-Show status of dahdi lines.
+Show peers for different protocols.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning.
+
+=item B<--critical>
+
+Threshold critical.
 
 =item B<--remote>
 
@@ -239,6 +235,10 @@ Command path (Default: /home/centreon/bin).
 =item B<--filter-name>
 
 Filter on trunkname (regexp can be used).
+
+=item B<--protocol>
+
+show peer for the choosen protocol (sip or iax).
 
 =back
 
