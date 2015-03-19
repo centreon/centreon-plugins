@@ -44,7 +44,7 @@ use centreon::plugins::values;
 use Math::Complex;
 
 my $maps_counters = {
-    '0_status'  => { class => 'centreon::plugins::values', obj => undef, threshold => 0,
+    '000_status'  => { class => 'centreon::plugins::values', obj => undef, threshold => 0,
                    set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, 
                                         { name => 'rttMonCtrlAdminTag' },
@@ -61,7 +61,7 @@ my $maps_counters = {
                         closure_custom_threshold_check => \&custom_status_threshold,
                     }
                  },
-    '1_NumberOverThresholds'  => { class => 'centreon::plugins::values', obj => undef,
+    '001_NumberOverThresholds'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OverThresholds_1' }, { name => 'OverThresholds_2' }, { name => 'OverThresholds_times' },
@@ -76,7 +76,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '2_AverageDelaySD'   => { class => 'centreon::plugins::values', obj => undef,
+    '002_AverageDelaySD'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSumSD_1' }, { name => 'OWSumSD_2' }, { name => 'OWSumSD_times' },
@@ -92,7 +92,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '3_AverageDelayDS'   => { class => 'centreon::plugins::values', obj => undef,
+    '003_AverageDelayDS'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSumDS_1' }, { name => 'OWSumDS_2' }, { name => 'OWSumDS_times' },
@@ -108,7 +108,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '4_PacketLossRatio'  => { class => 'centreon::plugins::values', obj => undef,
+    '004_PacketLossRatio'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'PacketLossDS_1' }, { name => 'PacketLossDS_2' }, { name => 'PacketLossDS_times' },
@@ -128,7 +128,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '5_PercentagePacketsPositiveJitter'   => { class => 'centreon::plugins::values', obj => undef,
+    '005_PercentagePacketsPositiveJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'NumOfPositivesSD_1' }, { name => 'NumOfPositivesSD_2' }, { name => 'NumOfPositivesSD_times' },
@@ -144,7 +144,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '6_AverageJitterPerPacketPositiveJitter'  => { class => 'centreon::plugins::values', obj => undef,
+    '006_AverageJitterPerPacketPositiveJitter'  => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'SumOfPositivesSD_1' }, { name => 'SumOfPositivesSD_2' }, { name => 'SumOfPositivesSD_times' },
@@ -160,7 +160,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '7_PercentagePacketsNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
+    '007_PercentagePacketsNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'NumOfNegativesSD_1' }, { name => 'NumOfNegativesSD_2' }, { name => 'NumOfNegativesSD_times' },
@@ -176,7 +176,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '8_AverageJitterPerPacketNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
+    '008_AverageJitterPerPacketNegativeJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'SumOfNegativesSD_1' }, { name => 'SumOfNegativesSD_2' }, { name => 'SumOfNegativesSD_times' },
@@ -192,7 +192,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '9_AverageJitter'   => { class => 'centreon::plugins::values', obj => undef,
+    '009_AverageJitter'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'SumOfPositivesDS_1' }, { name => 'SumOfPositivesDS_2' }, { name => 'SumOfPositivesDS_times' },
@@ -214,7 +214,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '10_RTTStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
+    '010_RTTStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'RTTSum2High_1' }, { name => 'RTTSum2High_2' }, { name => 'RTTSum2High_times' },
@@ -232,7 +232,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '11_DelaySource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
+    '011_DelaySource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSum2SDHigh_1' }, { name => 'OWSum2SDHigh_2' },  { name => 'OWSum2SDHigh_times' },
@@ -251,7 +251,7 @@ my $maps_counters = {
                     }
                },
                
-    '12_DelayDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
+    '012_DelayDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'OWSum2DSHigh_1' }, { name => 'OWSum2DSHigh_2' }, { name => 'OWSum2DSHigh_times' },
@@ -269,7 +269,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '13_JitterSource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
+    '013_JitterSource2DestinationStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'Sum2PositivesSDHigh_1' }, { name => 'Sum2PositivesSDHigh_2' }, { name => 'Sum2PositivesSDHigh_times' },
@@ -291,7 +291,7 @@ my $maps_counters = {
                         ],
                     }
                },
-    '14_JitterDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
+    '014_JitterDestination2SourceStandardDeviation'   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
                         key_values => [ { name => 'rttMonCtrlAdminStatus' }, { name => 'rttMonCtrlAdminRttType' },
                                         { name => 'Sum2PositivesDSHigh_1' }, { name => 'Sum2PositivesDSHigh_2' }, { name => 'Sum2PositivesDSHigh_times' },
