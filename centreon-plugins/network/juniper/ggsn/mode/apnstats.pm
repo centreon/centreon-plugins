@@ -49,28 +49,182 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'ggsnApnUplinkBytes', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
-                        per_second => 1,
+                        per_second => 1, output_change_bytes => 2,
                         output_template => 'Traffic In : %s %s/s',
                         perfdatas => [
-                            { value => 'traffic_in',  template => '%s',
+                            { label => 'traffic_in', value => 'ggsnApnUplinkBytes_per_second', template => '%s',
                               unit => 'b', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
-    '1_traffic-down'   => { class => 'centreon::plugins::values', obj => undef,
+    '1_traffic-out'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
                                         { name => 'ggsnApnDownlinkBytes', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
-                        per_second => 1,
+                        per_second => 1,  output_change_bytes => 2,
                         output_template => 'Traffic Out : %s %s/s',
                         perfdatas => [
-                            { value => 'traffic_out',  template => '%s',
+                            { label => 'traffic_out', value => 'ggsnApnDownlinkBytes_per_second', template => '%s',
                               unit => 'b', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
+    '4_drop-in'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnUplinkDrops', diff => 1 }, { name => 'ggsnApnUplinkPackets', diff => 1 }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Drop In Packets : %s %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
+                        closure_custom_calc => \&custom_drop_in_calc,
+                        perfdatas => [
+                            { label => 'drop_in', value => 'ggsnApnUplinkDrops_absolute', template => '%s',
+                              min => 0, max => 'ggsnApnUplinkPackets_absolute', label_extra_instance => 1, instance_use => 'ggsnApnName' },
+                        ],
+                    }
+               },
+    '5_drop-out'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnDownlinkDrops', diff => 1 }, { name => 'ggsnApnDownlinkPackets', diff => 1 }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Drop In Packets : %s %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
+                        closure_custom_calc => \&custom_drop_out_calc,
+                        perfdatas => [
+                            { label => 'drop_out value => 'ggsnApnDownlinkDrops_absolute', template => '%s',
+                              min => 0, max => 'ggsnApnDownlinkPackets_absolute', label_extra_instance => 1, instance_use => 'ggsnApnName' },
+                        ],
+                    }
+               },
+    '6_active-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnActivePdpContextCount' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Active Pdp : %s',
+                        perfdatas => [
+                            { label => 'active_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '7_attempted-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnAttemptedActivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Attempted Activation Pdp : %s',
+                        perfdatas => [
+                            { label => 'attempted_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '8_attempted-dyn-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnAttemptedDynActivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Attempted Dyn Activation Pdp : %s',
+                        perfdatas => [
+                            { label => 'attempted_dyn_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '9_attempted-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnAttemptedDeactivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Attempted Deactivation Pdp : %s',
+                        perfdatas => [
+                            { label => 'attempted_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '10_attempted-self-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnAttemptedSelfDeactivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Attempted Self Deactivation Pdp : %s',
+                        perfdatas => [
+                            { label => 'attempted_self_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '11_completed-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnCompletedActivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Completed Activation Pdp : %s',
+                        perfdatas => [
+                            { label => 'completed_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '12_completed-dyn-activation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnCompletedDynActivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Completed Dyn Activation Pdp : %s',
+                        perfdatas => [
+                            { label => 'completed_dyn_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '13_completed-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnCompletedDeactivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Completed Deactivation Pdp : %s',
+                        perfdatas => [
+                            { label => 'completed_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
+    '14_completed-self-deactivation-pdp'   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'ggsnApnCompletedSelfDeactivation' }, { name => 'ggsnApnName' },
+                                      ],
+                        output_template => 'Completed Self Deactivation Pdp : %s',
+                        perfdatas => [
+                            { label => 'completed_self_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                        ],
+                    }
+               },
 };
+
+sub custom_drop_in_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{ggsnApnName} = $options{new_datas}->{$self->{instance} . '_ggsnApnName'};
+    $self->{result_values}->{ggsnApnUplinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'};
+    $self->{result_values}->{ggsnApnUplinkPackets_absolute} = options{new_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'};
+    if ($self->{result_values}->{ggsnApnUplinkPackets_absolute} == 0) {
+        $self->{result_values}->{drop_prct} = 0;
+    } else {
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnUplinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnUplinkPackets_absolute};
+    }
+    return 0;
+}
+
+sub custom_drop_out_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{ggsnApnName} = $options{new_datas}->{$self->{instance} . '_ggsnApnName'};
+    $self->{result_values}->{ggsnApnDownlinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'};
+    $self->{result_values}->{ggsnApnDownlinkPackets_absolute} = options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'};
+    if ($self->{result_values}->{ggsnApnDownlinkPackets} == 0) {
+        $self->{result_values}->{drop_prct} = 0;
+    } else {
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets};
+    }
+    return 0;
+}
+
 
 sub new {
     my ($class, %options) = @_;
@@ -243,13 +397,21 @@ Check APN statistics.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
-Threshold warning (in percent).
+Threshold warning.
+Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
+'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
+'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',
+'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
-Threshold critical (in percent).
+Threshold critical.
+Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%), 
+'active-pdp', 'attempted-activation-pdp', 'attempted-dyn-activation-pdp', 'attempted-deactivation-pdp',
+'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-dyn-activation-pdp',
+'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
 
 =item B<--filter-name>
 
