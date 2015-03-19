@@ -109,7 +109,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_jnxFruEntry}, instance => $instance);
         
         next if ($self->check_exclude(section => 'fru', instance => $instance));
-        next if ($result->{cpqHeFltTolFanPresent} =~ /empty/i && 
+        next if ($result->{jnxFruState} =~ /empty/i && 
                  $self->absent_problem(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
 
