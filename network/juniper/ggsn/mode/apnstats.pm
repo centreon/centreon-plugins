@@ -170,19 +170,20 @@ sub run {
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "APN '" . $self->{apn_selected}->{$id}->{display} . "' $long_msg");
+        $self->{output}->output_add(long_msg => "APN '" . $self->{apn_selected}->{$id}->{ggsnApnName} . "' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "APN '" . $self->{apn_selected}->{$id}->{display} . "' $short_msg"
+                                        short_msg => "APN '" . $self->{apn_selected}->{$id}->{ggsnApnName} . "' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "PAN '" . $self->{apn_selected}->{$id}->{display} . "' $long_msg");
+            $self->{output}->output_add(short_msg => "APN '" . $self->{apn_selected}->{$id}->{ggsnApnName} . "' $long_msg");
         }
     }
-    
+     
+    $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
 }
