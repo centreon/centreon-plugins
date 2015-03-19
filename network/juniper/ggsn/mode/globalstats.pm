@@ -88,7 +88,7 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'ggsnDownlinkDrops', diff => 1 }, { name => 'ggsnDownlinkPackets', diff => 1 },
                                       ],
-                        output_template => 'Drop In Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
+                        output_template => 'Drop Out Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                         closure_custom_calc => \&custom_drop_out_calc,
                         perfdatas => [
                             { label => 'drop_out', value => 'ggsnDownlinkDrops_absolute', template => '%s',
