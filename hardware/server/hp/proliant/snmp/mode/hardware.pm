@@ -305,7 +305,7 @@ sub check_options {
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
             if ($section !~ /(temperature)/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: battery or temperature).");
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -439,7 +439,6 @@ sub absent_problem {
     $self->{components}->{$options{section}}->{skip}++;
     return 1;
 }
-
 
 sub get_severity_numeric {
     my ($self, %options) = @_;
