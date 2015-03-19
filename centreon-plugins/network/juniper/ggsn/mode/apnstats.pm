@@ -53,7 +53,7 @@ my $maps_counters = {
                         output_template => 'Traffic In : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_in', value => 'ggsnApnUplinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                              unit => 'b', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
@@ -66,7 +66,7 @@ my $maps_counters = {
                         output_template => 'Traffic Out : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_out', value => 'ggsnApnDownlinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                              unit => 'b', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
@@ -75,7 +75,7 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'ggsnApnUplinkDrops', diff => 1 }, { name => 'ggsnApnUplinkPackets', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
-                        output_template => 'Drop In Packets : %s %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
+                        output_template => 'Drop In Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                         closure_custom_calc => \&custom_drop_in_calc,
                         perfdatas => [
                             { label => 'drop_in', value => 'ggsnApnUplinkDrops_absolute', template => '%s',
@@ -88,7 +88,7 @@ my $maps_counters = {
                         key_values => [
                                         { name => 'ggsnApnDownlinkDrops', diff => 1 }, { name => 'ggsnApnDownlinkPackets', diff => 1 }, { name => 'ggsnApnName' },
                                       ],
-                        output_template => 'Drop In Packets : %s %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
+                        output_template => 'Drop In Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                         closure_custom_calc => \&custom_drop_out_calc,
                         perfdatas => [
                             { label => 'drop_out', value => 'ggsnApnDownlinkDrops_absolute', template => '%s',
@@ -99,7 +99,7 @@ my $maps_counters = {
     '006_active-pdp'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'ggsnApnActivePdpContextCount', diff => 1 }, { name => 'ggsnApnName' },
+                                        { name => 'ggsnApnActivePdpContextCount' }, { name => 'ggsnApnName' },
                                       ],
                         output_template => 'Active Pdp : %s',
                         perfdatas => [
@@ -220,7 +220,7 @@ sub custom_drop_out_calc {
     if ($self->{result_values}->{ggsnApnDownlinkPackets_absolute} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
-        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets};
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets_absolute};
     }
     return 0;
 }
