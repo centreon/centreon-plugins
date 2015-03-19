@@ -177,7 +177,7 @@ __END__
 
 =head1 MODE
 
-Show peers for different protocols.
+Show number of current active calls
 
 =over 8
 
@@ -237,10 +237,6 @@ Command path (Default: /home/centreon/bin).
 =item B<--filter-name>
 
 Filter on trunkname (regexp can be used).
-
-=item B<--protocol>
-
-show peer for the choosen protocol (sip or iax).
 
 =back
 
