@@ -152,6 +152,8 @@ sub run {
     {
     	$self->{output}->output_add(severity => $self->{result}->{activecalls}->{status},
                                 short_msg => $self->{result}->{activecalls}->{value});
+        $self->{output}->display();
+        $self->{output}->exit();
     }
     my $exit_code = $self->{perfdata}->threshold_check(value => $self->{result}->{activecalls}->{value},
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
