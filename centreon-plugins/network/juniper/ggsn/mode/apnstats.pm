@@ -217,7 +217,7 @@ sub custom_drop_out_calc {
     $self->{result_values}->{ggsnApnName} = $options{new_datas}->{$self->{instance} . '_ggsnApnName'};
     $self->{result_values}->{ggsnApnDownlinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'};
     $self->{result_values}->{ggsnApnDownlinkPackets_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'};
-    if ($self->{result_values}->{ggsnApnDownlinkPackets} == 0) {
+    if ($self->{result_values}->{ggsnApnDownlinkPackets_absolute} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
         $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets};
