@@ -48,6 +48,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'apn-stats'    => 'network::juniper::ggsn::mode::apnstats',
+                         'global-stats' => 'network::juniper::ggsn::mode::globalstats',
                          );
 
     return $self;
