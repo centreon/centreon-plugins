@@ -73,6 +73,7 @@ sub init {
                                    arguments => {
                                                 'host:s@'  => { name => 'db_host' },
                                                 'port:s@'  => { name => 'db_port' },
+                                                'socket:s@'  => { name => 'db_socket' },
                                                 }
                                   );
     $self->{options}->parse_options();
@@ -89,6 +90,11 @@ sub init {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
                 $self->{sqldefault}->{mysqlcmd}[$i]->{port} = $options_result->{db_port}[$i];
             }
+	    # "DBI:mysql:database=dbname;host=localhost;mysql_socket=/path/to/mysql.sock"
+	    if (defined($options_result->{db_socket}[$i])) {
+	    	$self->{sqldefault}->{dbi}[$i]->{data_source} .= ';mysql_socket=' . $options_result->{db_socket}[$i];
+                $self->{sqldefault}->{mysqlcmd}[$i]->{socket} = $options_result->{db_socket}[$i];
+	    }
         }
     }
 
@@ -114,6 +120,10 @@ Hostname to query.
 =item B<--port>
 
 Database Server Port.
+
+=item B<--socket>
+
+Database Server Socket.
 
 =back
 
