@@ -259,6 +259,27 @@ sub fetchall_arrayref {
     return $array_ref;
 }
 
+sub fetchall_hashref {
+    my ($self, %options) = @_;
+    my $array_ref = [];
+    my $array_result = undef;
+
+    if (!defined($self->{columns})) {
+        $self->{stdout} =~ s/^(.*?)\Q$self->{record_separator}\E//ms;
+        @{$self->{columns}} = split(/\Q$self->{field_separator}\E/, $1);
+    }
+    foreach (split /\Q$self->{record_separator}\E/, $self->{stdout}) {
+        $array_result = {};
+        my @values = split(/\Q$self->{field_separator}\E/, $_);
+        for (my $i = 0; $i < scalar(@values); $i++) {
+            my $value = $values[$i];
+            $array_result->{$self->{columns}[$i]} = $value;
+        }
+        push @$array_ref, $array_result;
+    }
+    return $array_ref;
+}
+
 sub fetchrow_array {
     my ($self, %options) = @_;
     my @array_result = ();
