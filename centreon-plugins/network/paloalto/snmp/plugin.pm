@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::paloalto::pa::500::plugin;
+package network::paloalto::snmp::plugin;
 
 use strict;
 use warnings;
@@ -52,6 +52,7 @@ sub new {
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                         'hardware'          => 'snmp_standard::mode::hardwaredevice',
                         'packet-errors'     => 'snmp_standard::mode::packeterrors',
+                        'sessions'          => 'network::paloalto::snmp::mode::sessions',
                          );
 
     return $self;
@@ -63,6 +64,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Palo Alto PA 500 Family in SNMP.
+Check Palo Alto equipments in SNMP.
 
 =cut
