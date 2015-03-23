@@ -64,10 +64,10 @@ sub new {
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
-            "expected-string:s"     => { name => 'expected_string' },
             "header:s@"             => { name => 'header' },
+            "get-param:s@"          => { name => 'get_param' },
             "timeout:s"             => { name => 'timeout', default => 10 },
-			"ssl:s"					=> { name => 'ssl', },
+            "ssl:s"					=> { name => 'ssl', },
             
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },
@@ -134,6 +134,23 @@ sub check_options {
         foreach (@{$self->{option_results}->{header}}) {
             if (/^(.*?):(.*)/) {
                 $self->{headers}->{$1} = $2;
+            }
+        }
+    }
+    $self->{get_params} = {};
+    if (defined($self->{option_results}->{get_param})) {
+        foreach (@{$self->{option_results}->{get_param}}) {
+            if (/^([^=]+)={0,1}(.*)$/) {
+                my $key = $1;
+                my $value = defined($2) ? $2 : 1;
+                if (defined($self->{get_params}->{$key})) {
+                    if (ref($self->{get_params}->{$key}) ne 'ARRAY') {
+                        $self->{get_params}->{$key} = [ $self->{get_params}->{$key} ];
+                    }
+                    push @{$self->{get_params}->{$key}}, $value;
+                } else {
+                    $self->{get_params}->{$key} = $value;
+                }
             }
         }
     }
@@ -261,7 +278,8 @@ sub run {
     $self->load_request();
     
     my $timing0 = [gettimeofday];
-    $self->{json_response} = centreon::plugins::httplib::connect($self, headers => $self->{headers}, method => $self->{method}, query_form_post => $self->{json_request});
+    $self->{json_response} = centreon::plugins::httplib::connect($self, headers => $self->{headers}, method => $self->{method}, 
+                                                                 query_form_get => $self->{get_params}, query_form_post => $self->{json_request});
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
     $self->{output}->output_add(long_msg => $self->{json_response});
@@ -424,9 +442,13 @@ Threshold for HTTP timeout (Default: 10)
 
 Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
+=item B<--get-param>
+
+Set GET params (Multiple option. Example: --get-param='key=value')
+
 =item B<--header>
 
-Set HTTP headers (Multiple option)
+Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
 =back
 
