@@ -47,6 +47,7 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
+                        'cluster-status'    => 'network::paloalto::snmp::mode::clusterstatus',
                         'cpu'               => 'snmp_standard::mode::cpu',
                         'traffic'           => 'snmp_standard::mode::traffic',
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
