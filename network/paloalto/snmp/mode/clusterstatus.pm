@@ -118,7 +118,7 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_panSysHAState, $oid_panSysHAPeerState, $oid_panSysHAMode ], 
-                                                        nothing_quit => 1);
+                                              nothing_quit => 1);
     
     # Check if mode cluster
     my $ha_mode = $self->{result}->{$oid_panSysHAMode};
@@ -154,7 +154,7 @@ sub run {
         
         $self->{output}->output_add(long_msg => sprintf("peer high-availability state is %s",
                                                          $self->{result}->{$oid_panSysHAPeerState}));
-        my $exit = $self->get_severity(section => 'peer', value => $self->{result}->{$oid_panSysHAPeerState});
+        $exit = $self->get_severity(section => 'peer', value => $self->{result}->{$oid_panSysHAPeerState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("peer high-availability state is %s",
@@ -175,6 +175,11 @@ __END__
 Check cluster status.
 
 =over 8
+
+=item B<--threshold-overload>
+
+Set to overload default threshold value.
+Example: --threshold-overload='peer,critical,active' --threshold-overload='current,critical,passive' 
 
 =back
 
