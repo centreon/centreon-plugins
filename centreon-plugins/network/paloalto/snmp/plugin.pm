@@ -52,6 +52,7 @@ sub new {
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                         'hardware'          => 'snmp_standard::mode::hardwaredevice',
                         'packet-errors'     => 'snmp_standard::mode::packeterrors',
+                        'panorama'          => 'network::paloalto::snmp::mode::panorama',
                         'sessions'          => 'network::paloalto::snmp::mode::sessions',
                          );
 
