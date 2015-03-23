@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,17 +33,21 @@
 #
 ####################################################################################
 
-package network::paloalto::snmp::mode::panorama;
+package network::paloalto::snmp::mode::clusterstatus;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
+my $oid_panSysHAState = '.1.3.6.1.4.1.25461.2.1.2.1.11.0'; # '.0' to have the mode
+my $oid_panSysHAPeerState = '.1.3.6.1.4.1.25461.2.1.2.1.12.0';
+my $oid_panSysHAMode = '.1.3.6.1.4.1.25461.2.1.2.1.13.0';
+
 my $thresholds = {
-    panorama => [
-        ['^connected$', 'OK'],
-        ['^not-connected$', 'CRITICAL'],
+    peer => [
+    ],
+    current => [
     ],
 };
 
@@ -56,7 +60,6 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "threshold-overload:s@"  => { name => 'threshold_overload' },
-                                "exclude:s"              => { name => 'exclude' },
                                 });
 
     return $self;
@@ -67,11 +70,11 @@ sub check_treshold_overload {
     
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*)$/) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ('panorama', $1, $2);
+        my ($section, $status, $filter) = ($1, $2, $3);
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
@@ -87,19 +90,9 @@ sub check_options {
     $self->check_treshold_overload();
 }
 
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{instance} instance."));
-        return 1;
-    }
-    return 0;
-}
-
 sub get_severity {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
+    my $status = 'OK'; # default 
     
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
@@ -123,33 +116,51 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-
-    my $oid_panMgmtPanoramaConnected = '.1.3.6.1.4.1.25461.2.1.2.4.1.0';
-    my $oid_panMgmtPanorama2Connected = '.1.3.6.1.4.1.25461.2.1.2.4.2.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_panMgmtPanoramaConnected, $oid_panMgmtPanorama2Connected], nothing_quit => 1);
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Panorama connection statuses are ok.');
-    if (!$self->check_exclude(section => 'panorama', instance => 1)) {
-        my $exit = $self->get_severity(section => 'panorama', value => $result->{$oid_panMgmtPanoramaConnected});
-        $self->{output}->output_add(long_msg => sprintf("panorama '1' connection status is %s",
-                                                         $result->{$oid_panMgmtPanoramaConnected}));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("panorama '1' connection status is %s",
-                                                             $result->{$oid_panMgmtPanoramaConnected}));
-        }
-    }
-    if (!$self->check_exclude(section => 'panorama', instance => 2)) {
-        my $exit = $self->get_severity(section => 'panorama', value => $result->{$oid_panMgmtPanorama2Connected});
-        $self->{output}->output_add(long_msg => sprintf("panorama '2' connection status is %s",
-                                                         $result->{$oid_panMgmtPanorama2Connected}));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("panorama '2' connection status is %s",
-                                                             $result->{$oid_panMgmtPanorama2Connected}));
-        }
-    }
     
+    $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_panSysHAState, $oid_panSysHAPeerState, $oid_panSysHAMode ], 
+                                                        nothing_quit => 1);
+    
+    # Check if mode cluster
+    my $ha_mode = $self->{result}->{$oid_panSysHAMode};
+    $self->{output}->output_add(long_msg => 'High availabily mode is ' . $ha_mode . '.');
+    if ($ha_mode =~ /disabled/i) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => sprintf("No cluster configuration (standalone mode)."));
+    } else {
+        if ($ha_mode =~ /active-active/i) {
+            $thresholds = {
+                peer => [
+                    ['^active$', 'OK'],
+                    ['^passive$', 'CRITICAL'],
+                ],
+                current => [
+                    ['^active$', 'OK'],
+                    ['^passive$', 'CRITICAL'],
+                ],
+            };
+        }
+        
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => sprintf("Cluster status is ok."));
+        
+        $self->{output}->output_add(long_msg => sprintf("current high-availability state is %s",
+                                                         $self->{result}->{$oid_panSysHAState}));
+        my $exit = $self->get_severity(section => 'current', value => $self->{result}->{$oid_panSysHAState});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("current high-availability state is %s",
+                                                         $self->{result}->{$oid_panSysHAState}));
+        }
+        
+        $self->{output}->output_add(long_msg => sprintf("peer high-availability state is %s",
+                                                         $self->{result}->{$oid_panSysHAPeerState}));
+        my $exit = $self->get_severity(section => 'peer', value => $self->{result}->{$oid_panSysHAPeerState});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("peer high-availability state is %s",
+                                                         $self->{result}->{$oid_panSysHAPeerState}));
+        }
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -161,21 +172,10 @@ __END__
 
 =head1 MODE
 
-Check panorama connection status.
+Check cluster status.
 
 =over 8
-
-=item B<--threshold-overload>
-
-Set to overload default threshold value.
-Example: --threshold-overload='warning,(not-connected)'
-
-=item B<--exclude>
-
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --exclude=panorama#2#
 
 =back
 
 =cut
-    
