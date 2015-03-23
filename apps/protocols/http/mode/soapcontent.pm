@@ -64,10 +64,9 @@ sub new {
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
-            "expected-string:s"     => { name => 'expected_string' },
             "header:s@"             => { name => 'header' },
             "timeout:s"             => { name => 'timeout', default => 10 },
-			"ssl:s"					=> { name => 'ssl', },
+            "ssl:s"					=> { name => 'ssl', },
             
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },

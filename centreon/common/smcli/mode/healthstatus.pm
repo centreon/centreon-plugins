@@ -63,7 +63,7 @@ sub run {
     my ($self, %options) = @_;
     my $smcli = $options{custom};
 
-    my $response = $smcli->execute_command(cmd => $self->{option_results}->{storage_command});    
+    my $response = $smcli->execute_command(cmd => $self->{option_results}->{storage_command});
     # IBM smcli: Storage Subsystem health status = optimal.
     # Dell smcli: Storage array health status = optimal.
     
