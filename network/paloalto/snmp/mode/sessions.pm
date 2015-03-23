@@ -61,7 +61,6 @@ my $maps_counters = {
                                         { name => 'panSessionSslProxyUtilization' },
                                       ],
                         output_template => 'Active SSL Proxy : %.2f %%',
-                        closure_custom_calc => \&custom_active_ssl_proxy_calc,
                         perfdatas => [
                             { label => 'active_ssl_proxy', value => 'panSessionSslProxyUtilization_absolute', template => '%.2f', unit => '%',
                               min => 0, max => 100 },
@@ -109,8 +108,8 @@ sub custom_active_calc {
     $self->{result_values}->{panSessionActive_absolute} = $options{new_datas}->{$self->{instance} . '_panSessionActive'};
     $self->{result_values}->{panSessionMax_absolute} = $options{new_datas}->{$self->{instance} . '_panSessionMax'};
     $self->{result_values}->{active_prct} = 0;
-    if ($self->{result_values}->{panSessionActive_absolute} != 0) {
-        $self->{result_values}->{active_prct} = $self->{result_values}->{panSessionMax_absolute} * 100 / $self->{result_values}->{panSessionActive_absolute};
+    if ($self->{result_values}->{panSessionMax_absolute} != 0) {
+        $self->{result_values}->{active_prct} = $self->{result_values}->{panSessionActive_absolute} * 100 / $self->{result_values}->{panSessionMax_absolute};
     }
     return 0;
 }
