@@ -59,7 +59,7 @@ my %states = (
     1 => ['normal', 'OK'], 
     2 => ['warning', 'WARNING'], 
     3 => ['critical', 'CRITICAL'], 
-    4 => ['shutdown', 'OK'],
+    4 => ['shutdown', 'CRITICAL'],
     5 => ['not present', 'OK'],
     6 => ['not functioning', 'WARNING'],
 );
