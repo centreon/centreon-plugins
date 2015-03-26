@@ -206,8 +206,6 @@ __END__
 
 =head1 MODE
 
-=head1 MODE
-
 Check X509's certificate validity
 
 =over 8
@@ -218,7 +216,7 @@ IP Addr/FQDN of the host
 
 =item B<--port>
 
-Port used by Webserver (Default: '443')
+Port used by Server (Default: '443')
 
 =item B<--validity-mode>
 
