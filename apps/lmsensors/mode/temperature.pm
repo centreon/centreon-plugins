@@ -112,7 +112,7 @@ sub run {
 
         my $label = 'sensor_temperature';
         my $extra_label = '';
-        $extra_label = '_' . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
+        $extra_label = '_' . $SensorId . "_" . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
         $self->{output}->perfdata_add(label => $label . $extra_label,
                                       value => $SensorValue,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),

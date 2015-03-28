@@ -98,7 +98,7 @@ sub run {
 
     foreach my $SensorId (sort @{$self->{Sensor_id_selected}}) {
         my $SensorDesc = $SensorValueResult->{$oid_SensorDesc . '.' . $SensorId};
-        my $SensorValue = $SensorValueResult->{$oid_SensorValue . '.' . $SensorId};
+        my $SensorValue = $SensorValueResult->{$oid_SensorValue . '.' . $SensorId} / 1000;
 
         my $exit = $self->{perfdata}->threshold_check(value => $SensorValue, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
@@ -112,7 +112,7 @@ sub run {
 
         my $label = 'sensor_misc';
         my $extra_label = '';
-        $extra_label = '_' . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
+        $extra_label = '_' . $SensorId . "_" . $SensorDesc if (!defined($self->{option_results}->{sensor}) || defined($self->{option_results}->{use_regexp}));
         $self->{output}->perfdata_add(label => $label . $extra_label,
                                       value => $SensorValue,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
