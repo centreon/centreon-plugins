@@ -169,7 +169,7 @@ sub run {
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
             my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
-            if ( $self->{option_results}->{subjectname} =~ /$subject_name/mi ) {
+            if ( $subject_name =~ /$self->{option_results}->{subjectname}/mi ) {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("Subject Name %s is present in Certificate :%s", $self->{option_results}->{subjectname}, $subject_name));
             } else {
@@ -183,7 +183,7 @@ sub run {
         #Issuer Name
         } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
-            if ( $self->{option_results}->{issuer} =~ /$issuer_name/mi ) {
+            if ( $issuer_name =~ /$self->{option_results}->{issuername}/mi ) {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("Issuer Name %s is present in Certificate :%s", $self->{option_results}->{issuername}, $issuer_name));
             } else {
