@@ -90,13 +90,14 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All partitions are up to date"));
 
+    $self->{option_results}->{retentionforward}--;
+
     foreach my $table (@partitionedTables) {
          
          $self->{sql}->query(query => "SELECT TABLE_NAME,PARTITION_NAME FROM information_schema.PARTITIONS WHERE TABLE_NAME='".$table."' ORDER BY PARTITION_NAME DESC LIMIT 1;");
 
          my ($tableName, $yyyymmdd) = $self->{sql}->fetchrow_array();
          $yyyymmdd =~ s/^.//;
-         
          $self->{output}->output_add(long_msg => sprintf("Table %s last partition date is %s", $tableName, $yyyymmdd));
          
          my ($partY, $partM, $partD) = $yyyymmdd =~ /^(\d{4})(\d{2})(\d{2})\z/;
