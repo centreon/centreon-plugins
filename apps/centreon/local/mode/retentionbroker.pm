@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2015 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -45,13 +45,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments => {
-        "rrd-config-file:s"      => { name => 'rrd_config_file', default => 'central-rrd.xml' },
-        "sql-config-file:s"      => { name => 'sql_config_file', default => 'central-broker.xml' },
-        "config-path:s"          => { name => 'config_path', default => '/etc/centreon-broker/' },
-        "broker-retention-dir:s" => { name => 'broker_retention_dir', default => '/var/lib/centreon-broker/' },
-    });
+    $options{options}->add_options(arguments =>
+                                {
+                                 "rrd-config-file:s"    => { name => 'rrd_config_file', default => 'central-rrd.xml' },
+                                 "sql-config-file:s"    => { name => 'sql_config_file', default => 'central-broker.xml' },
+                                 "config-path:s"          => { name => 'config_path', default => '/etc/centreon-broker/' },
+                                 "broker-temporary-dir:s" => { name => 'broker_temporary_dir', default => '/var/lib/centreon-broker/' },
+                                });
     return $self;
 }
 
@@ -59,109 +61,66 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     if ($self->{option_results}->{config_path} !~ /\/$/) {
-        $self->{option_results}->{config_path} = $self->{option_results}->{config_path}."/";
+        $self->{output}->add_option_msg(short_msg => "Please set the last / the path to your config-path option");
+        $self->{output}->option_exit();
     }
-    if (! -e $self->{option_results}->{broker_retention_dir}) {
-        $self->{output}->add_option_msg(short_msg => "Directory specified with --broker-retention-dir not found !");
+    if (! -e $self->{option_results}->{broker_temporary_dir}) {
+        $self->{output}->add_option_msg(short_msg => "Directory specified with --broker-temporary-dir does not exist !");
         $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
+    
     my $parser = XML::LibXML->new();
-    my @broker_retention_dir_files;
-    my $broker_retention_sql_size=0;
-    my $broker_retention_perfdata_size=0;
-    my $broker_retention_rrd_size=0;
-    my $broker_rrd_retention_rrd_size=0;
     my $count = 0;
+    my $filepath;
+    my @fileList;
+    my @configFiles;
+    my @retentionFiles;
 
-    my $xml_rrd_config_file = $self->{option_results}->{config_path}.$self->{option_results}->{rrd_config_file};
-    my $xml_sql_config_file = $self->{option_results}->{config_path}.$self->{option_results}->{sql_config_file};
-    my $obj_rrd_config_file = $parser->parse_file($xml_rrd_config_file);	
-    my $obj_sql_config_file = $parser->parse_file($xml_sql_config_file);	
+    push @configFiles, $self->{option_results}->{config_path}.$self->{option_results}->{rrd_config_file}, $self->{option_results}->{config_path}.$self->{option_results}->{sql_config_file};
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'No retention files, centreon-broker outputs are OK');
+   
+    foreach my $file (@configFiles) {
+        my $config = $parser->parse_file($file);
+        
+        foreach my $data ($config->findnodes('/centreonBroker/output/path')) {    
+        
+            $filepath = $data->to_literal;
+            $filepath =~ s/^.*\/(.*)$/$1/;
+            
+            next if $filepath =~ m/(sock$|^ )/;
+            
+            push @retentionFiles, $filepath;
+        
+        }    
+   } 
+   
+   opendir(my $dh, $self->{option_results}->{broker_temporary_dir}) or die "Petit chaton mort\n";
+   
+   while (my $file = readdir($dh)) {
+       push @fileList, $file;
+   }
+   
+   foreach my $file (@retentionFiles) {
+       my $count = grep /$file/,@fileList;
+       if ($count > 0) {
+           my $size = -s $self->{option_results}->{broker_temporary_dir}.$file;
+           $size = $size * $count;
+           my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
+           $self->{output}->output_add(long_msg => sprintf("%s (%d files for an average size of %2f %s)", $file, $count, $size_value, $size_unit));
+           $self->{output}->output_add(severity => 'CRITICAL',
+                                                    short_msg => sprintf("[%s (count: %d) (size:%2f %s)] ", $file, $count, $size_value, $size_unit));
+       }
+   }
 
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Centreon-broker retention OK');
-
-    my $central_broker_master_sql_failover_path;
-    my $central_broker_master_rrd_failover_path;
-    my $central_broker_master_perfdata_failover_path;
-    my $central_broker_rrd_rrd_failover_path;
-    foreach my $data ($obj_sql_config_file->findnodes('/centreonBroker/output/path')) {
-        next if ($data->to_literal =~ m/rrdcached/);
-        my $filename = $data->to_literal;
-        $filename  =~ s/^.*\/(.*)$/$1/;
-        if ($filename =~ m/sql/) {
-            $central_broker_master_sql_failover_path = $filename;
-        }
-        if ($filename =~ m/rrd/) {
-            $central_broker_master_rrd_failover_path = $filename;
-        }
-        if ($filename =~ m/perfdata/) {
-            $central_broker_master_perfdata_failover_path = $filename;
-        }
-    }
-
-    foreach my $data ($obj_rrd_config_file->findnodes('/centreonBroker/output/path')) {
-        next if ($data->to_literal =~ m/rrdcached/);
-        $central_broker_rrd_rrd_failover_path = $data->to_literal;
-        $central_broker_rrd_rrd_failover_path  =~ s/^.*\/(.*)$/$1/;
-    }
-
-    opendir(my $dh, $self->{option_results}->{broker_retention_dir}); 
-    my $file = readdir($dh);
-    while ($file = readdir($dh)) {               
-        next if $file =~ m/^\./ or $file =~ m/stats/;
-        push @broker_retention_dir_files, $file;
-    } 
-
-    my @broker_retention_sql_files = grep(/$central_broker_master_sql_failover_path/, @broker_retention_dir_files);  
-    my @broker_retention_perfdata_files = grep(/$central_broker_master_perfdata_failover_path/, @broker_retention_dir_files);
-    my @broker_retention_rrd_files = grep(/$central_broker_master_rrd_failover_path/, @broker_retention_dir_files);
-    my @broker_rrd_retention_rrd_files = grep(/$central_broker_rrd_rrd_failover_path/, @broker_retention_dir_files);
-    my $broker_retention_sql_files_count = scalar(@broker_retention_sql_files);
-    my $broker_retention_perfdata_files_count = scalar(@broker_retention_perfdata_files);
-    my $broker_retention_rrd_files_count = scalar(@broker_retention_rrd_files);
-    my $broker_rrd_retention_rrd_files_count = scalar(@broker_rrd_retention_rrd_files);
-
-    foreach my $sql_file(@broker_retention_sql_files){
-        $broker_retention_sql_size += -s $self->{option_results}->{broker_retention_dir}.$sql_file;
-    }
-    foreach my $perfdata_file(@broker_retention_perfdata_files){
-        $broker_retention_perfdata_size += -s $self->{option_results}->{broker_retention_dir}.$perfdata_file;
-    }
-    foreach my $rrd_file(@broker_retention_rrd_files){
-        $broker_retention_rrd_size += -s $self->{option_results}->{broker_retention_dir}.$rrd_file;
-    }
-    foreach my $rrd_rrd_file(@broker_rrd_retention_rrd_files){
-        $broker_rrd_retention_rrd_size += -s $self->{option_results}->{broker_retention_dir}.$rrd_rrd_file;
-    }
-
-    if(length($broker_retention_sql_size)!=0){
-        $broker_retention_sql_size = $broker_retention_sql_size / 1024 / 1024;
-    }
-    if(length($broker_retention_perfdata_size)!=0){
-        $broker_retention_perfdata_size = $broker_retention_perfdata_size / 1024 / 1024;
-    }
-    if(length($broker_retention_rrd_size)!=0){
-        $broker_retention_rrd_size = $broker_retention_rrd_size / 1024 /1024;
-    }
-    if(length($broker_rrd_retention_rrd_size)!=0){
-        $broker_rrd_retention_rrd_size = $broker_rrd_retention_rrd_size / 1024 /1024;
-    }
-
-    if (($broker_retention_rrd_files_count > 0) || ($broker_retention_sql_files_count > 0) || ($broker_retention_rrd_files_count > 0) || ($broker_rrd_retention_rrd_files_count > 1)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'There are some retention files check your broker output',
-                                    long_msg => sprintf("sql_retention_files '%s' (size:'%.2f'MB) \nperfdata_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) \nrrd_retention_files '%s' (size:'%.2f'MB) ",
-                                    $broker_retention_sql_files_count, $broker_retention_sql_size,  $broker_retention_perfdata_files_count, $broker_retention_perfdata_size, $broker_retention_rrd_files_count, $broker_retention_rrd_size, $broker_rrd_retention_rrd_files_count, $broker_rrd_retention_rrd_size,
-                                   ));
-    }
-
-    $self->{output}->display(force_long_output => 1);
+    $self->{output}->display();
     $self->{output}->exit();
-
+    
 }
 
 1;
@@ -170,7 +129,7 @@ __END__
 
 =head1 MODE
 
-Check if one of centreon-broker output is dead and failover file is present. CRITICAL STATE ONLY
+Check if one of centreon-broker output is slow and temporary files are presents. CRITICAL STATE ONLY
 
 =over 8
 
@@ -186,7 +145,7 @@ Specify the name of your master sql config file (default: central-broker.xml)
 
 Specify the path to your broker config files (defaut: /etc/centreon-broker/)
 
-=item B<--broker-retention-dir>
+=item B<--broker-temporary-dir>
 
 Specify the path to your broker retention directory (defaut: /var/lib/centreon-broker/)
 
