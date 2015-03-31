@@ -54,6 +54,40 @@ my %map_admin_state = (
     2 => 'start',
 );
 
+my $thresholds = {
+    peers => [
+        ['idle', 'CRITICAL'],
+        ['active', 'CRITICAL'],
+        ['connect', 'CRITICAL'],
+        ['opensent', 'WARNING'],
+        ['openconfirm', 'WARNING'],
+        ['established', 'OK'],
+    ],
+};
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default
+
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+
+    return $status;
+}
+
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -64,6 +98,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "peer:s"               => { name => 'peer', },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
 
     return $self;
@@ -73,10 +108,21 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if ((defined $self->{option_results}->{peer}) || ($self->{option_results}->{peer} eq '')) {
-        $self->{output}->add_option_msg(short_msg=> 'Please specify IP of your peer');
-        $self->{output}->option_exit();
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
+
 }
 
 sub run {
@@ -115,8 +161,9 @@ sub run {
                                                              $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $bgpPeerRemoteAs, $bgpRemoteInfos)
                                         );
         } elsif ($bgpPeerState != 6) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg =>  sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",                                                             $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
+            my $exit = $self->get_severity(section => 'peers', value => $map_peer_state{$bgpPeerState});
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",                                                             $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
 
         }
    
@@ -125,7 +172,6 @@ sub run {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("All BGP peers are in an OK state"));
 
- 
         foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
      
             next if ($key !~ /^$oid_bgpPeerState\.(.*)$/);
@@ -140,17 +186,18 @@ sub run {
             my $bgpRemoteInfos = $result->{$oid_bgpPeerRemoteAddr. '.' . $instance} . ':' . $result->{$oid_bgpPeerRemotePort . '.' . $instance};
         
             if ($bgpPeerAdminStatus < 2) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Peer '%s' AdminState is '%s' Remote AS: %s Remote Addr: %s",
+		$self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("Peer '%s' AdminState is '%s' Remote AS: %s Remote Addr: %s \n",
                                                                  $instance, $map_admin_state{$bgpPeerAdminStatus}, $bgpPeerRemoteAs, 
 								 $bgpRemoteInfos));
             } elsif ($bgpPeerState != 6) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-	                                    short_msg => sprintf("Peer '%s' Connection is '%s' Remote AS: %s Remote Addr: %s",
-							     $instance, $map_peer_state{$bgpPeerState}, $bgpPeerRemoteAs, $bgpRemoteInfos));
+                my $exit = $self->get_severity(section => 'peers', value => $map_peer_state{$bgpPeerState});
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg =>  sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s] \n",                                                             $instance, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
+
             }
-      
-            $self->{output}->output_add(long_msg => sprintf("Peer:%s Local:%s Remote:%s AS:%d AdminState:'%s' Connection:'%s' Last Update:%d sec", $instance, $bgpLocalInfos, $bgpRemoteInfos, $bgpPeerRemoteAs, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpPeerInUpdateElpasedTime));
+
+            $self->{output}->output_add(long_msg => sprintf("Peer:%s Local:%s Remote:%s AS:%d AdminState:'%s' Connection:'%s' Last Update:%d sec \n", $instance, $bgpLocalInfos, $bgpRemoteInfos, $bgpPeerRemoteAs, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpPeerInUpdateElpasedTime));
 
 
         }
@@ -167,13 +214,22 @@ __END__
 
 =head1 MODE
 
-Check BGP basi infos (BGP4-MIB.mib and rfc4273)
+Check BGP basic infos (BGP4-MIB.mib and rfc4273)
+
+Default is Active,Connect,Idle=CRITICAL // Opensent,Openconfirm=WARNING // Established=OK
 
 =over 8
 
 =item B<--peer>
 
 Specify IP of a specific peer (otherwise all peer are checked
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='peers,CRITICAL,^(?!(ok)$)'
+
 
 =back
 
