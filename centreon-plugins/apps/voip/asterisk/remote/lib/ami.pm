@@ -38,7 +38,6 @@ package apps::voip::asterisk::remote::lib::ami;
 use strict;
 use warnings;
 use Net::Telnet;
-use Data::Dumper;
 
 my $ami_handle;
 my $line;
@@ -58,7 +57,7 @@ sub connect {
 
     $ami_handle = new Net::Telnet (Telnetmode => 0,
                                    Timeout => $self->{option_results}->{timeout},
-				   Errmode => 'return',		
+				   Errmode => 'return',
     );
 
     $ami_handle->open(Host => $self->{option_results}->{hostname},
@@ -106,13 +105,13 @@ sub action {
    $ami_handle->print("Action: command");
    $ami_handle->print("Command: $self->{asterisk_command}");
    $ami_handle->print("");
-   
-   
+
+
    my @return;
    while (my $line = $ami_handle->getline(Timeout => 1)) {
  	push(@return,$line);
 	next if ($line !~ /END COMMAND/o);
-   }   
+   }
    return @return;
 }
 
