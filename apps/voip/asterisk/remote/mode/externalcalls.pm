@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 #
 # For more information : contact@centreon.com
-# Authors : David Sabatié <dsabatie@centren.com>
+# Authors : Mathieu Cinquin <mcinquin@centreon.com>
 #
 ####################################################################################
 
-package apps::voip::asterisk::remote::mode::activecalls;
+package apps::voip::asterisk::remote::mode::externalcalls;
 
 use base qw(centreon::plugins::mode);
 
@@ -47,7 +47,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.1';
 
     $options{options}->add_options(arguments =>
                                 {
@@ -126,14 +126,11 @@ sub manage_selection {
     }
 
     # Compute data
+    $self->{option_results}->{extcallcounter} = '0';
     foreach my $line (@result) {
-        if ($line =~ /^(\d*) active call/)
+        if ($line =~ /Outgoing Line/m)
         {
-	        $self->{result}->{activecalls} = {value => $1, status => '1'};
-        }
-        elsif ($line =~ /^Unable to connect .*/)
-        {
-        	$self->{result}->{activecalls} = {value => $line, status => '0'};
+            $self->{option_results}->{extcallcounter}++;
         }
     }
 }
@@ -147,23 +144,16 @@ sub run {
     $self->manage_selection();
 
     # Send formated data to Centreon
-    if ($self->{result}->{activecalls}->{status} eq '0')
-    {
-    	$self->{output}->output_add(severity => $self->{result}->{activecalls}->{status},
-                                short_msg => $self->{result}->{activecalls}->{value});
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{result}->{activecalls}->{value},
+    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{option_results}->{extcallcounter},
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->perfdata_add(label => 'Active Calls',
-                                  value => $self->{result}->{activecalls}->{value},
+    $self->{output}->perfdata_add(label => 'External Calls',
+                                  value => $self->{option_results}->{extcallcounter},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Current active calls: %s", $self->{result}->{activecalls}->{value})
+                                short_msg => sprintf("Current external calls: %s", $self->{option_results}->{extcallcounter})
                                 );
 
     $self->{output}->display();
@@ -176,7 +166,7 @@ __END__
 
 =head1 MODE
 
-Show number of current active calls
+Show number of current external calls
 
 =over 8
 
