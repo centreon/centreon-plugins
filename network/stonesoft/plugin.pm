@@ -53,6 +53,8 @@ sub new {
                          'cluster-state'        => 'network::stonesoft::mode::clusterstate',
                          'cluster-load'         => 'network::stonesoft::mode::clusterload',
                          'rejected-packets'     => 'network::stonesoft::mode::rejectedpackets',
+                         'current-connections'  => 'network::stonesoft::mode::currentconnections',
+                         'rate-connection'      => 'network::stonesoft::mode::rateconnection',
                          'dropped-packets'      => 'network::stonesoft::mode::droppedpackets',
                          'traffic'              => 'snmp_standard::mode::traffic',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
