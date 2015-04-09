@@ -48,7 +48,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
          {
          "hostname:s"        => { name => 'hostname' },
@@ -93,29 +93,25 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
-    }
-
     #Global variables
     my ($connection, $ctx, $ssl, $cert);
 
     #Create Socket connection
     $connection = IO::Socket::INET->new(PeerAddr => $self->{option_results}->{hostname},
-                                            PeerPort => $self->{option_results}->{port},
-                                            Timeout => $self->{option_results}->{timeout},
-                                          );
+                                        PeerPort => $self->{option_results}->{port},
+                                        Timeout => $self->{option_results}->{timeout},
+                                       );
     if (!defined($connection)) {
-        if (!defined($!) || ($! eq '')) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
-        }
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("%s", $!));
+	    $self->{output}->display();
+	    $self->{output}->exit();
     } else {
         #Create SSL context
         eval { $ctx = Net::SSLeay::CTX_new() };
         if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
+                                        short_msg => sprintf ("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
@@ -127,7 +123,7 @@ sub run {
         eval { $ssl = Net::SSLeay::new($ctx) };
        if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
+                                        short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
@@ -136,7 +132,7 @@ sub run {
         eval { Net::SSLeay::set_fd($ssl, fileno($connection)) };
         if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
+                                        short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
@@ -145,7 +141,7 @@ sub run {
         eval { Net::SSLeay::connect($ssl) };
         if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
+                                        short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
@@ -169,7 +165,7 @@ sub run {
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
             my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
-            if ( $subject_name =~ /$self->{option_results}->{subjectname}/mi ) {
+            if ( $self->{option_results}->{subjectname} =~ /$subject_name/mi ) {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("Subject Name %s is present in Certificate :%s", $self->{option_results}->{subjectname}, $subject_name));
             } else {
@@ -183,7 +179,7 @@ sub run {
         #Issuer Name
         } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
-            if ( $issuer_name =~ /$self->{option_results}->{issuername}/mi ) {
+            if ( $self->{option_results}->{issuer} =~ /$issuer_name/mi ) {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("Issuer Name %s is present in Certificate :%s", $self->{option_results}->{issuername}, $issuer_name));
             } else {
