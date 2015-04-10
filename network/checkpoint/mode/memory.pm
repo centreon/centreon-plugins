@@ -78,7 +78,7 @@ sub run {
     my $oid_memActiveReal64 = '.1.3.6.1.4.1.2620.1.6.7.4.4.0';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalReal64, $oid_memActiveReal64], nothing_quit => 1);
-    my ($memActiveReal64_value, $memActiveReal64_unit) = $self->{perfdata}->change_bytes(value => $oid_memActiveReal64);
+    my ($memActiveReal64_value, $memActiveReal64_unit) = $self->{perfdata}->change_bytes(value => $result->{$oid_memActiveReal64});
 
     my $memPrctUsage = $result->{$oid_memActiveReal64} / $result->{$oid_memTotalReal64} * 100;
 
