@@ -54,7 +54,6 @@ sub new {
                          'diskio'           => 'os::linux::local::mode::diskio',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
-                         'hddtemp'          => 'os::linux::local::mode::hddtemp',
                          'inodes'           => 'os::linux::local::mode::inodes',
                          'load'             => 'os::linux::local::mode::loadaverage',
                          'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
