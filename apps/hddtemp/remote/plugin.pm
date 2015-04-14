@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::hddtemp::plugin;
+package apps::hddtemp::remote::plugin;
 
 use strict;
 use warnings;
@@ -47,8 +47,8 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'temperature'           => 'apps::hddtemp::mode::temperature',
-			'list-drives'           => 'apps::hddtemp::mode::listdrives',
+			'temperature'           => 'apps::hddtemp::remote::mode::temperature',
+			'list-drives'           => 'apps::hddtemp::remote::mode::listdrives',
 			);
 
 	return $self;
