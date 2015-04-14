@@ -100,13 +100,13 @@ sub run {
     my $exit;
     if ($webcontent->{status} eq 'green') {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("All shard are allocated"));
+                                    short_msg => sprintf("Cluster %s : All shard are allocated", $webcontent->{cluster_name}));
     } elsif ($webcontent->{status} eq 'yellow') {
         $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => sprintf("Primary shards are allocated but replicas not"));
+                                    short_msg => sprintf("Cluster %s : Primary shards are allocated but replicas not", $webcontent->{cluster_name}));
     } elsif ($webcontent->{status} eq 'red') {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Some or all primary shards aren't ready"));
+                                    short_msg => sprintf("Cluster %s : Some or all primary shards aren't ready", $webcontent->{cluster_name}));
     }
 
     $self->{output}->perfdata_add(label => 'primary_shard',
