@@ -47,7 +47,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"        => { name => 'hostname' },
@@ -57,7 +57,6 @@ sub new {
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "indice-uid:s"      => { name => 'indice_uid' },
             "timeout:s"         => { name => 'timeout', default => '3' },
         });
 
@@ -76,16 +75,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{indice_uid})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the indice-uid option");
-        $self->{output}->option_exit();
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/health/".$self->{option_results}->{indice_uid};
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/health/";
 
     my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
 
