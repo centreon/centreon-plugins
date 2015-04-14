@@ -35,7 +35,7 @@
 # Based on Apache Mode by Simon BOMM
 ####################################################################################
 
-package apps::hddtemp::mode::listdrives;
+package apps::hddtemp::remote::mode::listdrives;
 
 use base qw(centreon::plugins::mode);
 
