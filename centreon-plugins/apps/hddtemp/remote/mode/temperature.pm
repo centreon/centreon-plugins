@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::hddtemp::mode::temperature;
+package apps::hddtemp::remote::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
