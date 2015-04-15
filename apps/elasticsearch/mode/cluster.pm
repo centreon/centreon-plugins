@@ -97,7 +97,6 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $exit;
     if ($webcontent->{status} eq 'green') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("Cluster %s : All shard are allocated", $webcontent->{cluster_name}));
