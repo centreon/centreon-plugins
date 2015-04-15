@@ -90,13 +90,18 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All partitions are up to date"));
 
-    #$self->{option_results}->{retentionforward}--;
-
     foreach my $table (@partitionedTables) {
          
          $self->{sql}->query(query => "SELECT TABLE_NAME,PARTITION_NAME FROM information_schema.PARTITIONS WHERE TABLE_NAME='".$table."' ORDER BY PARTITION_NAME DESC LIMIT 1;");
-
+         
          my ($tableName, $yyyymmdd) = $self->{sql}->fetchrow_array();
+         if (!defined $yyyymmdd) {
+             $self->{output}->output_add(severity => 'UNKNOWN',
+                                         short_msg => sprintf("Couldn't get infos from mysql, is all specified tables have partitions ?"));
+             $self->{output}->display();
+             $self->{output}->exit();
+         }
+
          $yyyymmdd =~ s/^.//;
          $self->{output}->output_add(long_msg => sprintf("Table %s last partition date is %s", $tableName, $yyyymmdd));
          
