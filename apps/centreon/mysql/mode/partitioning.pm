@@ -90,7 +90,7 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All partitions are up to date"));
 
-    $self->{option_results}->{retentionforward}--;
+    #$self->{option_results}->{retentionforward}--;
 
     foreach my $table (@partitionedTables) {
          
