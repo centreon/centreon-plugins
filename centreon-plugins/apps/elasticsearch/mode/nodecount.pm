@@ -91,7 +91,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/health/";
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/stats/";
 
     my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
 
@@ -108,18 +108,41 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $webcontent->{number_of_nodes}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $webcontent->{nodes}->{count}->{total}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Number of nodes for cluster %s : %d",
-                                                      $webcontent->{cluster_name}, $webcontent->{number_of_nodes}));
-    $self->{output}->perfdata_add(label => "nbnode",
-                                  value => $webcontent->{number_of_nodes},
+                                                      $webcontent->{cluster_name}, $webcontent->{nodes}->{count}->{total}));
+    $self->{output}->perfdata_add(label => "node",
+                                  value => $webcontent->{nodes}->{count}->{total},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
-
+    $self->{output}->perfdata_add(label => "nodemasteronly",
+                                  value => $webcontent->{nodes}->{count}->{master_only},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0,
+                                 );
+    $self->{output}->perfdata_add(label => "nodedataonly",
+                                  value => $webcontent->{nodes}->{count}->{data_only},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0,
+                                 );
+    $self->{output}->perfdata_add(label => "nodemasterdata",
+                                  value => $webcontent->{nodes}->{count}->{master_data},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0,
+                                 );
+    $self->{output}->perfdata_add(label => "nodeclient,
+                                  value => $webcontent->{nodes}->{count}->{client},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0,
+                                 );
     $self->{output}->display();
     $self->{output}->exit();
 
