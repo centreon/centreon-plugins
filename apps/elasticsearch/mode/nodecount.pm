@@ -137,7 +137,7 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
-    $self->{output}->perfdata_add(label => "nodeclient,
+    $self->{output}->perfdata_add(label => "nodeclient",
                                   value => $webcontent->{nodes}->{count}->{client},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
