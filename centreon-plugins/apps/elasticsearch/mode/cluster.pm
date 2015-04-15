@@ -138,11 +138,11 @@ Check Elasticsearch cluster health
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Bluemind host
+IP Addr/FQDN of the Elasticsearch host
 
 =item B<--port>
 
-Port used by InfluxDB API (Default: '8086')
+Port used by Elasticsearch API (Default: '9200')
 
 =item B<--proto>
 
@@ -150,7 +150,7 @@ Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
-Set path to get influxdb information (Default: '/db')
+Set path to get Elasticsearch information (Default: '/')
 
 =item B<--credentials>
 
@@ -163,10 +163,6 @@ Specify username for API authentification
 =item B<--password>
 
 Specify password for API authentification
-
-=item B<--indice-uid>
-
-Specify Cluster indice
 
 =item B<--timeout>
 
