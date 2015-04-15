@@ -45,10 +45,11 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.3';
     %{$self->{modes}} = (
                         'cluster'     => 'apps::elasticsearch::mode::cluster',
                         'nodecount'   => 'apps::elasticsearch::mode::nodecount',
+                        'indice'      => 'apps::elasticsearch::mode::indice',
                         );
     return $self;
 }
