@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                         'cluster'     => 'apps::elasticsearch::mode::cluster',
-                        'nodecount'   => 'apps::elasticsearch::mode::nodecount',
-                        'indice'      => 'apps::elasticsearch::mode::indice',
+                        'nodescount'   => 'apps::elasticsearch::mode::nodescount',
+                        'indices'      => 'apps::elasticsearch::mode::indices',
                         );
     return $self;
 }
