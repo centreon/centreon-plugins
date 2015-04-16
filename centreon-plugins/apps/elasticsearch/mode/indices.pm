@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::elasticsearch::mode::indice;
+package apps::elasticsearch::mode::indices;
 
 use base qw(centreon::plugins::mode);
 
