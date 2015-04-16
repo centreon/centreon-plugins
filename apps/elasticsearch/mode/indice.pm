@@ -64,14 +64,15 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', default => '9200'},
-            "proto:s"           => { name => 'proto', default => 'http' },
-            "urlpath:s"         => { name => 'url_path', default => '/' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "hostname:s"              => { name => 'hostname' },
+            "port:s"                  => { name => 'port', default => '9200'},
+            "proto:s"                 => { name => 'proto', default => 'http' },
+            "urlpath:s"               => { name => 'url_path', default => '/' },
+            "credentials"             => { name => 'credentials' },
+            "username:s"              => { name => 'username' },
+            "password:s"              => { name => 'password' },
+            "timeout:s"               => { name => 'timeout', default => '3' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     return $self;
@@ -89,6 +90,22 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
+
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
+
 }
 
 sub get_severity {
@@ -191,6 +208,12 @@ Specify username for API authentification
 =item B<--password>
 
 Specify password for API authentification
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='indices,CRITICAL,^(?!(on)$)'
 
 =item B<--timeout>
 
