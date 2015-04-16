@@ -45,7 +45,7 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.3';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
                         'cluster'     => 'apps::elasticsearch::mode::cluster',
                         'nodecount'   => 'apps::elasticsearch::mode::nodecount',
