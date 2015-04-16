@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::elasticsearch::mode::nodecount;
+package apps::elasticsearch::mode::nodescount;
 
 use base qw(centreon::plugins::mode);
 
