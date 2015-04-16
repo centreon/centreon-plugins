@@ -72,6 +72,11 @@ my %componentStatus = (
     6 => ['nonRecoverable', 'CRITICAL'],
 );
 
+my %smartAlertIndication = (
+    1 => ['no', 'OK'],
+    2 => ['yes', 'WARNING'],
+);
+
 sub check {
     my ($self) = @_;
 
@@ -85,11 +90,12 @@ sub check {
     my $oid_diskLengthInMB = '.1.3.6.1.4.1.674.10893.1.20.130.4.1.11';
     my $oid_diskSpareState = '.1.3.6.1.4.1.674.10893.1.20.130.4.1.22';
     my $oid_diskComponentStatus = '.1.3.6.1.4.1.674.10893.1.20.130.4.1.24';
+    my $oid_diskSmartAlertIndication  = '.1.3.6.1.4.1.674.10893.1.20.130.4.1.31';
 
     my $result = $self->{snmp}->get_table(oid => $oid_diskName);
     return if (scalar(keys %$result) <= 0);
 
-    $self->{snmp}->load(oids => [$oid_diskState, $oid_diskLengthInMB, $oid_diskSpareState, $oid_diskComponentStatus],
+    $self->{snmp}->load(oids => [$oid_diskState, $oid_diskLengthInMB, $oid_diskSpareState, $oid_diskComponentStatus, $oid_diskSmartAlertIndication],
                         instances => [keys %$result],
                         instance_regexp => '(\d+\.\d+)$');
     my $result2 = $self->{snmp}->get_leef();
@@ -105,16 +111,23 @@ sub check {
         my $disk_LengthInMB = $result2->{$oid_diskLengthInMB . '.' . $instance};
         my $disk_SpareState = $result2->{$oid_diskSpareState . '.' . $instance};
         my $disk_ComponentStatus = $result2->{$oid_diskComponentStatus . '.' . $instance};
+	my $disk_SmartAlertIndication = $result2->{$oid_diskSmartAlertIndication . '.' . $instance};
         
         $self->{components}->{physicaldisk}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("physical disk %s status is %s, state is %s, spare state is %s, size is %d MB [index: %d].",
-                                    $disk_Name, ${$componentStatus{$disk_ComponentStatus}}[0], $state{$disk_State},
+        $self->{output}->output_add(long_msg => sprintf("physical disk '%s' status is %s, state is %s, predictive failure alert %s, spare state is %s, size is %d MB [index: %d].",
+                                    $disk_Name, ${$componentStatus{$disk_ComponentStatus}}[0], $state{$disk_State}, ${$smartAlertIndication{$disk_SmartAlertIndication}}[0],
                                     $spareState{$disk_SpareState}, $disk_LengthInMB, $disk_Index
                                     ));
+	
+	if ($disk_SmartAlertIndication !=1) {
+            $self->{output}->output_add(severity =>  ${$smartAlertIndication{$disk_SmartAlertIndication}}[1],
+                                        short_msg => sprintf("physical disk '%s' has received a predictive failure alert [index: %d]",
+                                           $disk_Name, $disk_Index));
+        }
 
         if ($disk_ComponentStatus != 3) {
             $self->{output}->output_add(severity =>  ${$componentStatus{$disk_ComponentStatus}}[1],
-                                        short_msg => sprintf("physical disk %s status is %s [index: %d]",
+                                        short_msg => sprintf("physical disk '%s' status is %s [index: %d]",
                                            $disk_Name, ${$componentStatus{$disk_ComponentStatus}}[0], $disk_Index));
         }
 
