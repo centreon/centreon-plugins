@@ -42,6 +42,14 @@ use warnings;
 use centreon::plugins::httplib;
 use JSON;
 
+my $thresholds = {
+    cluster => [
+        ['green', 'OK'],
+        ['yellow', 'WARNING'],
+        ['red', 'CRITICAL'],
+    ],
+};
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -50,14 +58,15 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', default => '9200'},
-            "proto:s"           => { name => 'proto', default => 'http' },
-            "urlpath:s"         => { name => 'url_path', default => '/' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "hostname:s"              => { name => 'hostname' },
+            "port:s"                  => { name => 'port', default => '9200'},
+            "proto:s"                 => { name => 'proto', default => 'http' },
+            "urlpath:s"               => { name => 'url_path', default => '/' },
+            "credentials"             => { name => 'credentials' },
+            "username:s"              => { name => 'username' },
+            "password:s"              => { name => 'password' },
+            "timeout:s"               => { name => 'timeout', default => '3' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     return $self;
@@ -75,7 +84,44 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
+
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ($1, $2, $3);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
 }
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default
+
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    return $status;
+}
+
 
 sub run {
     my ($self, %options) = @_;
@@ -97,15 +143,17 @@ sub run {
         $self->{output}->option_exit();
     }
 
+    my $exit = $self->get_severity(section => 'cluster', value => $webcontent->{status});
+
     if ($webcontent->{status} eq 'green') {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Cluster %s : All shard are allocated", $webcontent->{cluster_name}));
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("All shard are allocated for %s", $webcontent->{cluster_name}));
     } elsif ($webcontent->{status} eq 'yellow') {
-        $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => sprintf("Cluster %s : Primary shards are allocated but replicas not", $webcontent->{cluster_name}));
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Primary shards are allocated but replicas not for %s", $webcontent->{cluster_name}));
     } elsif ($webcontent->{status} eq 'red') {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Cluster %s : Some or all primary shards aren't ready", $webcontent->{cluster_name}));
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Some or all primary shards aren't ready for %s", $webcontent->{cluster_name}));
     }
 
     $self->{output}->perfdata_add(label => 'primary_shard',
@@ -167,6 +215,12 @@ Specify password for API authentification
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='cluster,CRITICAL,^(?!(on)$)'
 
 =back
 
