@@ -41,6 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use JSON;
+use Data::Dumper;
 
 my $thresholds = {
     indices => [
@@ -133,9 +134,10 @@ sub get_severity {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/health?level=indices";
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/health";
+    my $query_form_get = { level => 'indices' };
 
-    my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
+    my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get, connection_exit => 'critical');
 
     my $json = JSON->new;
 
@@ -154,21 +156,21 @@ sub run {
                                 short_msg => sprintf("All indices are in green state."));
 
     my $exit = 'OK';
-    my $status;
-    foreach my $indicename (sort(keys $webcontent->{indices})) {
-        my $tmp_exit = $self->get_severity(section => 'indices', value => $webcontent->{indices}->{$indicename}->{status});
+
+    foreach my $indicename (sort (keys %{$webcontent->{indices}})) {
+	    my $tmp_exit = $self->get_severity(section => 'indices', value => $webcontent->{indices}->{$indicename}->{status});
         $exit = $self->{output}->get_most_critical(status => [ $tmp_exit, $exit ]);
         if (!$self->{output}->is_status(value => $tmp_exit, compare => 'OK', litteral => 1)) {
             $self->{output}->output_add(long_msg => sprintf("Indice %s status is in %s state",
                                                             $indicename, $webcontent->{indices}->{$indicename}->{status}));
         }
     }
+
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("One or some indices are in %s state", $map_states_indices{$exit}));
 
     $self->{output}->display(force_long_output => 1);
     $self->{output}->exit();
-
 }
 
 1;
