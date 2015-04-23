@@ -233,6 +233,7 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection(disco => 1);
+    return if (scalar(@{$self->{interface_id_selected}}) == 0);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
