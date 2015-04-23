@@ -48,7 +48,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.2';
+    $self->{version} = '1.3';
     $options{options}->add_options(arguments =>
          {
          "hostname:s"        => { name => 'hostname' },
@@ -221,11 +221,11 @@ Can be : 'expiration' or 'subject' or 'issuer'
 
 =item B<--warning-date>
 
-Threshold warning in days (Days before expiration)
+Threshold warning in days (Days before expiration, eg: '60:' for 60 days before)
 
 =item B<--critical-date>
 
-Threshold critical in days (Days before expiration)
+Threshold critical in days (Days before expiration, eg: '30:' for 30 days before)
 
 =item B<--subject>
 
