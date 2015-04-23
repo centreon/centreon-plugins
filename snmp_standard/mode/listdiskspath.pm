@@ -189,6 +189,7 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection(disco => 1);
+    return if (scalar(@{$self->{diskpath_id_selected}}) == 0);
     my $result = $self->get_additional_information();
     foreach (sort @{$self->{diskpath_id_selected}}) {
         if (defined($result)) {
