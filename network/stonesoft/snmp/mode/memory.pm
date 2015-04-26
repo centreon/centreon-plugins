@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::stonesoft::mode::memory;
+package network::stonesoft::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 

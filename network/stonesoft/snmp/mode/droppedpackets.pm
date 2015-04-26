@@ -33,12 +33,13 @@
 #
 ####################################################################################
 
-package network::stonesoft::mode::clusterload;
+package network::stonesoft::snmp::mode::droppedpackets;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,6 +52,8 @@ sub new {
                                  "warning:s"               => { name => 'warning' },
                                  "critical:s"              => { name => 'critical' },
                                 });
+
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -67,29 +70,67 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+
+    $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
+    $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
 
-    my $oid_nodeCPULoad = '.1.3.6.1.4.1.1369.6.1.1.4.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_nodeCPULoad], nothing_quit => 1);
+    if ($self->{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
+        $self->{output}->option_exit();
+    }
 
-    my $cpuLoad = $result->{$oid_nodeCPULoad};
+    my $new_datas = {};
+    $self->{statefile_value}->read(statefile => "stonesoft_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
 
-    my $exit = $self->{perfdata}->threshold_check(value => $cpuLoad, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $oid_fwDropped = '.1.3.6.1.4.1.1369.5.2.1.6.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_fwDropped], nothing_quit => 1);
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Node CPU Load %d %%", 
-                                            $cpuLoad));
+    my $dropped_packets = $result->{$oid_fwDropped};
+    $new_datas->{dropped_packets} = $dropped_packets;
+    $new_datas->{last_timestamp} = time();
 
-     $self->{output}->perfdata_add(label => 'cpuload', unit => '%',
-                                  value => sprintf("%d", $cpuLoad),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
+    my $old_datas = {};
+    $old_datas->{old_timestamp} = $self->{statefile_value}->get(name => 'last_timestamp');
+    $old_datas->{old_dropped_packets} = $self->{statefile_value}->get(name => 'dropped_packets');
+    if (!defined($old_datas->{old_dropped_packets}) || $new_datas->{dropped_packets} < $old_datas->{old_dropped_packets}) {
+        # We set 0. Has reboot.
+        $old_datas->{old_dropped_packets} = 0;
+    }
+
+    if (defined($old_datas->{old_timestamp})) {
+        my $time_delta = $new_datas->{last_timestamp} - $old_datas->{old_timestamp};
+        if ($time_delta <= 0) {
+            $time_delta = 1;
+        }
+
+        my $dropped_absolute = $new_datas->{dropped_packets} - $old_datas->{old_dropped_packets};
+        my $dropped_absolute_per_sec = $dropped_absolute / $time_delta;
+
+        my $exit = $self->{perfdata}->threshold_check(value => $dropped_absolute_per_sec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Packets Dropped : %.2f /s [%i packets]", 
+                                                $dropped_absolute_per_sec, $dropped_absolute));
+
+        $self->{output}->perfdata_add(label => 'dropped_packets_per_sec',
+                                    value => sprintf("%.2f", $dropped_absolute_per_sec),
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                    min => 0);
+
+    } else {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+    }
+
+    $self->{statefile_value}->write(data => $new_datas);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -101,9 +142,17 @@ __END__
 
 =head1 MODE
 
-Check load of cluster in percent.
+Check dropped packets per second by firewall.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning for dropped packets per second.
+
+=item B<--critical>
+
+Threshold critical for dropped packets per second.
 
 =back
 
