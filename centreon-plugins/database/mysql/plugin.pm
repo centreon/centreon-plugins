@@ -73,6 +73,7 @@ sub init {
                                    arguments => {
                                                 'host:s@'  => { name => 'db_host' },
                                                 'port:s@'  => { name => 'db_port' },
+                                                'socket:s@'  => { name => 'db_socket' },
                                                 }
                                   );
     $self->{options}->parse_options();
@@ -88,6 +89,10 @@ sub init {
             if (defined($options_result->{db_port}[$i])) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{db_port}[$i];
                 $self->{sqldefault}->{mysqlcmd}[$i]->{port} = $options_result->{db_port}[$i];
+            }
+            if (defined($options_result->{db_socket}[$i])) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';mysql_socket=' . $options_result->{db_socket}[$i];
+                $self->{sqldefault}->{mysqlcmd}[$i]->{socket} = $options_result->{db_socket}[$i];
             }
         }
     }
