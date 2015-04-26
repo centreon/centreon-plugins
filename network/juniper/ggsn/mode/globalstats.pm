@@ -41,7 +41,6 @@ use strict;
 use warnings;
 use centreon::plugins::values;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
     '000_traffic-in'   => { class => 'centreon::plugins::values', obj => undef,
@@ -279,7 +278,7 @@ sub run {
     $self->manage_selection();
     
     $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "juniper_ggsn_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('.*')));
+    $self->{statefile_value}->read(statefile => "juniper_ggsn_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
     $self->{new_datas}->{last_timestamp} = time();
     
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -376,10 +375,6 @@ Can be: 'traffic-in' (bps), 'traffic-out' (bps), 'drop-in' (%), 'drop-out' (%),
 'active-pdp', 'attempted-activation-pdp', 'attempted-update-pdp', 'attempted-deactivation-pdp',
 'attempted-self-deactivation-pdp', 'completed-activation-pdp', 'completed-update-pdp',
 'completed-deactivation-pdp', 'completed-self-deactivation-pdp'.
-
-=item B<--filter-name>
-
-Filter APN name (can be a regexp).
 
 =back
 
