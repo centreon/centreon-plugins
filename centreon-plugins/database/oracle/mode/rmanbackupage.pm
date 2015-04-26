@@ -81,7 +81,7 @@ sub check_options {
         }
     }
 
-    if (defined($self->{option_results}->{timezone})) {
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $ENV{TZ} = $self->{option_results}->{timezone};
     }
 }
@@ -141,7 +141,7 @@ sub run {
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $label),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $label),
                                           min => 0);
-            my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical-' . $label, 'exit_litteral' => 'critical' }, { label => 'warning-' . $label, exit_litteral => 'warning' } ]);
+            my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical-' . $label, exit_litteral => 'critical' }, { label => 'warning-' . $label, exit_litteral => 'warning' } ]);
             
             if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit_code,

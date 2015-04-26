@@ -70,7 +70,7 @@ sub check_options {
        $self->{output}->option_exit();
     }
     
-    if (defined($self->{option_results}->{timezone})) {
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $ENV{TZ} = $self->{option_results}->{timezone};
     }
 }
