@@ -81,7 +81,7 @@ sub run {
     $self->{sql}->query(query => $query);
     my $rman_backup_problems = $self->{sql}->fetchrow_array();
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $rman_backup_problems, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit_code = $self->{perfdata}->threshold_check(value => $rman_backup_problems, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
                                   short_msg => sprintf("rman had %i problems during the last %i days", $rman_backup_problems, $self->{option_results}->{retention}));
     $self->{output}->perfdata_add(label => 'rman_backup_problems',
