@@ -39,7 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
+use DateTime;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,9 +49,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "skip-no-backup"          => { name => 'skip_no_backup', },
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "timezone:s"              => { name => 'timezone', },
                                 });
 
     return $self;
@@ -69,6 +69,10 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    
+    if (defined($self->{option_results}->{timezone})) {
+        $ENV{TZ} = $self->{option_results}->{timezone};
+    }
 }
 
 sub run {
@@ -77,7 +81,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    my $query = q{SELECT min(((time  -  date '1970-01-01') * 86400) - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,3))*3600 - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,1) || SUBSTR(TZ_OFFSET(DBTIMEZONE),5,2))*60 ) as last_time
+    my $query = q{SELECT min(((time - date '1970-01-01') * 86400)) as last_time
                   FROM v$backup
                   WHERE STATUS='ACTIVE'
     };
@@ -85,34 +89,33 @@ sub run {
     my $result = $self->{sql}->fetchall_arrayref();
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Rman online backup age are ok."));
+                                short_msg => sprintf("Backup online modes are ok."));
 
-    my $count_backups = 0;
     foreach my $row (@$result) {
         next if (!defined($$row[0]));
         my $last_time = $$row[0];
-        $last_time = sprintf("%i", $last_time);
-        $count_backups++;
-        my $now = sprintf("%i",time());
-        my $backup_age = $now - $last_time;
-        my $backup_age_convert = centreon::plugins::misc::change_seconds(value => $backup_age);
-        $self->{output}->output_add(long_msg => sprintf("Last Rman online backup : %s", $backup_age_convert));
-        $self->{output}->perfdata_add(label => 'online_backup_age',
-                                      value => $backup_age,
-                                      unit => 's',
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        
+        my @values = localtime($last_time);
+        my $dt = DateTime->new(
+                        year       => $values[5] + 1900,
+                        month      => $values[4] + 1,
+                        day        => $values[3],
+                        hour       => $values[2],
+                        minute     => $values[1],
+                        second     => $values[0],
+                        time_zone  => 'UTC',
+        );
+        my $offset = $last_time - $dt->epoch;
+        $last_time = $last_time + $offset;
+        
+        my $launched = time() - $last_time;
+        my $launched_convert = centreon::plugins::misc::change_seconds(value => $launched);
+        $self->{output}->output_add(long_msg => sprintf("backup online mode since %s (%s)", $launched_convert, locatime($last_time)));
+        my $exit_code = $self->{perfdata}->threshold_check(value => $launched, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Last Rman online backup : %s", $backup_age_convert));
+                                        short_msg => sprintf("backup online mode since %s (%s)", $launched_convert, locatime($last_time)));
         }
-    }
-
-    if (($count_backups == 0) && (!defined($self->{option_results}->{skip_no_backup}))) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Rman online backups never executed."));
     }
 
     $self->{output}->display();
@@ -125,7 +128,7 @@ __END__
 
 =head1 MODE
 
-Check Oracle rman online backup age.
+Check Oracle backup online mode.
 
 =over 8
 
@@ -137,9 +140,9 @@ Threshold warning in seconds.
 
 Threshold critical in seconds.
 
-=item B<--skip-bo-backup>
+=item B<--timezone>
 
-Return ok if no backup found.
+Timezone of oracle server (If not set, we use current server execution timezone)
 
 =back
 

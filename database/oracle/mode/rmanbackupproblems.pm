@@ -77,7 +77,7 @@ sub run {
 
     $self->{sql}->connect();
     my $retention = $self->{option_results}->{retention};
-    my $query = q{SELECT COUNT(*) FROM v$rman_status WHERE status != 'COMPLETED' AND status != 'RUNNING' AND start_time > sysdate-} . $retention;
+    my $query = q{SELECT COUNT(*) FROM v$rman_status WHERE operation = 'BACKUP' AND status != 'COMPLETED' AND status != 'RUNNING' AND start_time > sysdate-} . $retention;
     $self->{sql}->query(query => $query);
     my $rman_backup_problems = $self->{sql}->fetchrow_array();
 
