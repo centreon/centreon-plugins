@@ -174,7 +174,7 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $memUsed_prct, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $memUsed_prct, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     my ($memTotal_value, $memTotal_unit) = $self->{perfdata}->change_bytes(value => $memTotal);
     my ($memFree_value, $memFree_unit) = $self->{perfdata}->change_bytes(value => $memFree);
@@ -186,7 +186,7 @@ sub run {
                                 short_msg => sprintf("Memory used %s (%.2f%%)",
                                             $memUsed_value . " " . $memUsed_unit, $memUsed_prct));
 
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $memUsed,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memTotal),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memTotal),

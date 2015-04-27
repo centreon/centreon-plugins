@@ -112,7 +112,7 @@ sub check_table_memory {
                                             $free_value . " " . $free_unit, $prct_free));
         }
 
-        $self->{output}->perfdata_add(label => "used_" . $memory_name,
+        $self->{output}->perfdata_add(label => "used_" . $memory_name, unit => 'B',
                                       value => $memory_used,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),

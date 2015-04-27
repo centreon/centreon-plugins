@@ -117,7 +117,7 @@ sub run {
                                             $physical_used_value . " " . $physical_used_unit, $prct_used,
                                             $physical_free_value . " " . $physical_free_unit, 100 - $prct_used));
 
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $physical_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),

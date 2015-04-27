@@ -109,7 +109,7 @@ sub run {
                                             $swap_used_value . " " . $swap_used_unit, $prct_used,
                                             $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
     
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $swap_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),

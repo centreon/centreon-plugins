@@ -146,7 +146,7 @@ sub run {
     if ($i > 0) {
         my $avg_cpu = $cpu / $i;
         my $exit_code = $self->{perfdata}->threshold_check(value => $avg_cpu, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("CPU(s) average usage is: %.2f%%", $avg_cpu));
         $self->{output}->perfdata_add(label => 'total_cpu_avg', unit => '%',
