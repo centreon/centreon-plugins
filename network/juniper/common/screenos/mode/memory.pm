@@ -101,7 +101,7 @@ sub run {
                                         $free_value . " " . $free_unit, $prct_free,
 					$frag_value . " " . $frag_unit, $prct_frag));
     
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $memory_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),

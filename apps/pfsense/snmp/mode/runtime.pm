@@ -86,8 +86,8 @@ sub run {
     
     if ($valueStatus == 1) {
         my $exit_code = $self->{perfdata}->threshold_check(value => $valueRuntime, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
-        $self->{output}->perfdata_add(label => 'runtime',
+                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
+        $self->{output}->perfdata_add(label => 'runtime', unit => 's',
                                       value => floor($valueRuntime / 100),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -97,7 +97,7 @@ sub run {
                                                  defined($self->{option_results}->{seconds}) ? floor($valueRuntime / 100) . " seconds" : floor($valueRuntime / 86400 / 100) . " days" ));
 
     } else {
-        $self->{output}->perfdata_add(label => 'runtime',
+        $self->{output}->perfdata_add(label => 'runtime', unit => 's',
                                       value => 0,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
