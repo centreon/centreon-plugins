@@ -126,21 +126,18 @@ sub run {
                                     short_msg => sprintf("CPU Usage: %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)",
                                                         $cpu5sec, $cpu1min, $cpu5min));
 
-		$self->{output}->perfdata_add(label => "cpu_5s",
+		$self->{output}->perfdata_add(label => "cpu_5s", unit => '%',
                                       value => $cpu5sec,
-									  unit => '%',
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
                                       min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_1m",
+        $self->{output}->perfdata_add(label => "cpu_1m", unit => '%',
                                       value => $cpu1min,
-									  unit => '%',
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
                                       min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_5m",
+        $self->{output}->perfdata_add(label => "cpu_5m", unit => '%',
                                       value => $cpu5min,
-									  unit => '%',
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
                                       min => 0, max => 100);

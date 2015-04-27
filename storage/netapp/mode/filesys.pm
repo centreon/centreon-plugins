@@ -204,7 +204,7 @@ sub run {
             $total_options{total} = $total_size;
             $total_options{cast_int} = 1;
         }
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'o',
+        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
                                       value => $value_perf,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),

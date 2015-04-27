@@ -92,7 +92,7 @@ sub cpu_ha {
             my $cpu_num = $1;
         
             $self->{output}->output_add(long_msg => sprintf("CPU master $cpu_num Usage is %.2f%%", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
-            $self->{output}->perfdata_add(label => 'cpu_master' . $cpu_num,
+            $self->{output}->perfdata_add(label => 'cpu_master' . $cpu_num, unit => '%',
                                           value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
                                           min => 0, max => 100);
         }
@@ -108,7 +108,7 @@ sub cpu_ha {
                             'master' : 'slave';
             
             $self->{output}->output_add(long_msg => sprintf("CPU %s Usage is %.2f%%", $label, $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}));
-            $self->{output}->perfdata_add(label => 'cpu_' . $label,
+            $self->{output}->perfdata_add(label => 'cpu_' . $label, unit => '%',
                                           value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsCpuUsage}->{$key}),
                                           min => 0, max => 100);
         }
@@ -144,7 +144,7 @@ sub run {
         $i++;
         
         $self->{output}->output_add(long_msg => sprintf("CPU $cpu_num Usage is %.2f%%", $self->{result}->{$oid_cpu}->{$key}));
-        $self->{output}->perfdata_add(label => 'cpu' . $cpu_num,
+        $self->{output}->perfdata_add(label => 'cpu' . $cpu_num, unit => '%',
                                       value => sprintf("%.2f", $self->{result}->{$oid_cpu}->{$key}),
                                       min => 0, max => 100);
     }
@@ -154,7 +154,7 @@ sub run {
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("CPU(s) average usage is: %.2f%%", $avg_cpu));
-    $self->{output}->perfdata_add(label => 'total_cpu_avg',
+    $self->{output}->perfdata_add(label => 'total_cpu_avg', unit => '%',
                                   value => sprintf("%.2f", $avg_cpu),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

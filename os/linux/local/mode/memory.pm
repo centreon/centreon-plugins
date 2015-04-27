@@ -124,13 +124,13 @@ sub run {
                                             $buffer_value . " " . $buffer_unit,
                                             $cached_value . " " . $cached_unit));
     
-    $self->{output}->perfdata_add(label => "cached",
+    $self->{output}->perfdata_add(label => "cached", unit => 'B',
                                   value => $cached_used,
                                   min => 0);
-    $self->{output}->perfdata_add(label => "buffer",
+    $self->{output}->perfdata_add(label => "buffer", unit => 'B',
                                   value => $buffer_used,
                                   min => 0);
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $nobuf_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),

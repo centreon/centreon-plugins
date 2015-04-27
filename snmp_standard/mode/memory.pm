@@ -120,7 +120,7 @@ sub run {
     my $total_size = $result->{$oid_memTotalReal} * 1024;
     
     my $prct_used = $nobuf_used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
     my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
@@ -134,13 +134,13 @@ sub run {
                                             $cached_value . " " . $cached_unit,
                                             $shared_value . " " . $shared_unit));
     
-    $self->{output}->perfdata_add(label => "cached",
+    $self->{output}->perfdata_add(label => "cached", unit => 'B',
                                   value => $cached_used,
                                   min => 0);
-    $self->{output}->perfdata_add(label => "buffer",
+    $self->{output}->perfdata_add(label => "buffer", unit => 'B',
                                   value => $buffer_used,
                                   min => 0);
-    $self->{output}->perfdata_add(label => "used",
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $nobuf_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
@@ -170,7 +170,7 @@ sub run {
                                             $swap_used_value . " " . $swap_used_unit, $prct_used,
                                             $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
     
-        $self->{output}->perfdata_add(label => "swap",
+        $self->{output}->perfdata_add(label => "swap", unit => 'B',
                                       value => $swap_used,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-swap', total => $total_size, cast_int => 1),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-swap', total => $total_size, cast_int => 1),
