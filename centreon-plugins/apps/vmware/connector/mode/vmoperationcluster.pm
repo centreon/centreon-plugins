@@ -50,6 +50,7 @@ sub new {
                                 {
                                   "cluster:s"               => { name => 'cluster' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                   "warning-svmotion:s"      => { name => 'warning_svmotion' },
                                   "critical-svmotion:s"     => { name => 'critical_svmotion' },
                                   "warning-vmotion:s"       => { name => 'warning_vmotion' },
@@ -102,6 +103,10 @@ If not set, we check all clusters.
 =item B<--filter>
 
 Cluster is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
 
 =item B<--warning-*>
 
