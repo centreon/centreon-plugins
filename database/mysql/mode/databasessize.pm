@@ -100,7 +100,7 @@ sub run {
             $self->{output}->output_add(severity => $exit_code,
                                         short_msg => sprintf("DB '" . $$row[0] . "' size: %s%s", $value, $value_unit));
         }
-        $self->{output}->perfdata_add(label => $$row[0] . '_size',
+        $self->{output}->perfdata_add(label => $$row[0] . '_size', unit => 'B',
                                       value => $$row[1],
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

@@ -104,28 +104,28 @@ sub run {
     my $cpu15min = $result->{$oid_nsResCpuLast15Min};
     
     my $exit1 = $self->{perfdata}->threshold_check(value => $cpu1min, 
-                           threshold => [ { label => 'crit1min', 'exit_litteral' => 'critical' }, { label => 'warn1min', exit_litteral => 'warning' } ]);
+                           threshold => [ { label => 'crit1min', exit_litteral => 'critical' }, { label => 'warn1min', exit_litteral => 'warning' } ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $cpu5min, 
-                           threshold => [ { label => 'crit5min', 'exit_litteral' => 'critical' }, { label => 'warn5min', exit_litteral => 'warning' } ]);
+                           threshold => [ { label => 'crit5min', exit_litteral => 'critical' }, { label => 'warn5min', exit_litteral => 'warning' } ]);
     my $exit3 = $self->{perfdata}->threshold_check(value => $cpu15min, 
-                           threshold => [ { label => 'crit15min', 'exit_litteral' => 'critical' }, { label => 'warn15min', exit_litteral => 'warning' } ]);
+                           threshold => [ { label => 'crit15min', exit_litteral => 'critical' }, { label => 'warn15min', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
     
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("CPU Usage: %.2f%% (1min), %.2f%% (5min), %.2f%% (15min)",
                                       $cpu1min, $cpu5min, $cpu15min));
     
-    $self->{output}->perfdata_add(label => "cpu_1min",
+    $self->{output}->perfdata_add(label => "cpu_1min", unit => '%',
                                   value => $cpu1min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1min'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1min'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_5min",
+    $self->{output}->perfdata_add(label => "cpu_5min", unit => '%',
                                   value => $cpu5min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5min'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5min'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_15min",
+    $self->{output}->perfdata_add(label => "cpu_15min", unit => '%',
                                   value => $cpu15min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15min'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15min'),

@@ -39,7 +39,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
+use DateTime;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,13 +51,17 @@ sub new {
                                 { 
                                   "skip-no-backup"          => { name => 'skip_no_backup', },
                                   "filter-type:s"           => { name => 'filter_type', },
-                                  "warning-db-incr:s"       => { name => 'warning_db_incr', },
-                                  "critical-db-incr:s"      => { name => 'critical_db_incr', },
-                                  "warning-db-full:s"       => { name => 'warning_db_full', },
-                                  "critical-db-full:s"      => { name => 'critical_db_full', },
-                                  "warning-archivelog:s"    => { name => 'warning_archivelog', },
-                                  "critical-archivelog:s"   => { name => 'critical_archivelog', },
+                                  "timezone:s"              => { name => 'timezone', },
                                 });
+    foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
+        my $label = $_;
+        $label =~ s/ /-/g;
+        $options{options}->add_options(arguments => {	
+                                                     'warning-' . $label . ':s'     => { name => 'warning-' . $label },
+                                                     'critical-' . $label . ':s'    => { name => 'critical-' . $label },
+                                                     'no-' . $label                 => { name => 'no-' . $label },
+                                      });
+    }
 
     return $self;
 }
@@ -66,29 +70,19 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning_db_incr', value => $self->{option_results}->{warning_db_incr})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-db-incr threshold '" . $self->{option_results}->{warning_db_incr} . "'.");
-       $self->{output}->option_exit();
+    foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
+        my $label = $_;
+        $label =~ s/ /-/g;
+        foreach my $threshold (('warning', 'critical')) {
+            if (($self->{perfdata}->threshold_validate(label => $threshold . '-' . $label, value => $self->{option_results}->{$threshold . '-' . $label})) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong " . $threshold . '-' . $label . " threshold '" . $self->{option_results}->{warning_db_incr} . "'.");
+                $self->{output}->option_exit();
+            }
+        }
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical_db_incr', value => $self->{option_results}->{critical_db_incr})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-db-incr threshold '" . $self->{option_results}->{critical_db_incr} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning_db_full', value => $self->{option_results}->{warning_db_full})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-db-full threshold '" . $self->{option_results}->{warning_db_full} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical_db_full', value => $self->{option_results}->{critical_db_full})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-db-full threshold '" . $self->{option_results}->{critical_db_full} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning_archivelog', value => $self->{option_results}->{warning_archivelog})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-archivelog threshold '" . $self->{option_results}->{warning_archivelog} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical_archivelog', value => $self->{option_results}->{critical_archivelog})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-archivelog threshold '" . $self->{option_results}->{critical_archivelog} . "'.");
-       $self->{output}->option_exit();
+
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $ENV{TZ} = $self->{option_results}->{timezone};
     }
 }
 
@@ -99,7 +93,7 @@ sub run {
 
     $self->{sql}->connect();
     my $query = q{SELECT object_type, count(*) as num,
-                    ((max(start_time) - date '1970-01-01')*24*60*60 - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,3))*3600 - TO_NUMBER(SUBSTR(TZ_OFFSET(DBTIMEZONE),1,1) || SUBSTR(TZ_OFFSET(DBTIMEZONE),5,2))*60) as last_time
+                    ((max(start_time) - date '1970-01-01')*24*60*60) as last_time
                     FROM v$rman_status
                     WHERE operation='BACKUP'
                     GROUP BY object_type};
@@ -110,46 +104,54 @@ sub run {
                                 short_msg => sprintf("Rman backup age are ok."));
 
     my $count_backups = 0;
-    foreach my $row (@$result) {
-        my ($type, $count, $last_time) = @$row;
-        $last_time = sprintf("%i", $last_time);
-        next if (defined($self->{option_results}->{filter_type}) && $type !~ /$self->{option_results}->{filter_type}/);
-        $count_backups++;
-        my $now = sprintf("%i",time());
-        my $backup_age = $now - $last_time;
-        my $backup_age_convert = centreon::plugins::misc::change_seconds(value => $backup_age);
-        my $type_perfdata = $type;
-        $type_perfdata =~ s/\s+/_/;
-        $self->{output}->output_add(long_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
-        my $exit_code;
-        if ($type =~ /incr/i) {
+    foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
+        my $executed = 0;
+        my $label = $_;
+        $label =~ s/ /-/g;
+        foreach my $row (@$result) {
+            next if ($$row[0] !~ /$_/i);
+            
+            $count_backups++;
+            $executed = 1;
+            my ($type, $count, $last_time) = @$row;
+            next if (defined($self->{option_results}->{filter_type}) && $type !~ /$self->{option_results}->{filter_type}/);
+
+            my @values = localtime($last_time);
+            my $dt = DateTime->new(
+                            year       => $values[5] + 1900,
+                            month      => $values[4] + 1,
+                            day        => $values[3],
+                            hour       => $values[2],
+                            minute     => $values[1],
+                            second     => $values[0],
+                            time_zone  => 'UTC',
+            );
+            my $offset = $last_time - $dt->epoch;
+            $last_time = $last_time + $offset;
+
+            my $backup_age = time() - $last_time;
+        
+            my $backup_age_convert = centreon::plugins::misc::change_seconds(value => $backup_age);
+            my $type_perfdata = $type;
+            $type_perfdata =~ s/ /_/g;
+            $self->{output}->output_add(long_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
             $self->{output}->perfdata_add(label => sprintf('%s_backup_age',$type_perfdata),
                                           value => $backup_age,
                                           unit => 's',
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_db_incr'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_db_incr'),
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $label),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $label),
                                           min => 0);
-            $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical_db_incr', 'exit_litteral' => 'critical' }, { label => 'warning_db_incr', exit_litteral => 'warning' } ]);
-        } elsif ($type =~ /full/i) {
-            $self->{output}->perfdata_add(label => sprintf('%s_backup_age',$type_perfdata),
-                                          value => $backup_age,
-                                          unit => 's',
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_db_full'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_db_full'),
-                                          min => 0);
-            $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical_db_full', 'exit_litteral' => 'critical' }, { label => 'warning_db_full', exit_litteral => 'warning' } ]);
-        } elsif ($type =~ /archive/i) {
-            $self->{output}->perfdata_add(label => sprintf('%s_backup_age',$type_perfdata),
-                                          value => $backup_age,
-                                          unit => 's',
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_archivelog'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_archivelog'),
-                                          min => 0);
-            $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical_archivelog', 'exit_litteral' => 'critical' }, { label => 'warning_archivelog', exit_litteral => 'warning' } ]);
+            my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical-' . $label, exit_litteral => 'critical' }, { label => 'warning-' . $label, exit_litteral => 'warning' } ]);
+            
+            if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit_code,
+                                            short_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
+            }
         }
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
+        
+        if ($executed == 0 && !defined($self->{option_results}->{'no-' . $label})) {
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("Rman '%s' backups never executed", uc($_)));
         }
     }
 
@@ -172,38 +174,33 @@ Check Oracle rman backup age.
 
 =over 8
 
-=item B<--warning-db-incr>
+=item B<--warning-*>
 
-Threshold warning of DB INCR backups in seconds.
+Threshold warning in seconds.
+Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
-=item B<--critical-db-incr>
+=item B<--critical-*>
 
-Threshold critical of DB INCR backups in seconds.
+Threshold critical in seconds.
+Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
-=item B<--warning-db-full>
+=item B<--no-*>
 
-Threshold warning of DB FULL backups in seconds.
-
-=item B<--critical-db-full>
-
-Threshold critical of DB FULL backups in seconds.
-
-=item B<--warning-archivelog>
-
-Threshold warning of ARCHIVELOG backups in seconds.
-
-=item B<--critical-archivelog>
-
-Threshold critical of ARCHIVELOG backups in seconds.
+Skip error if never executed.
+Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
 =item B<--filter-type>
 
 Filter backup type.
 (type can be : 'DB INCR', 'DB FULL', 'ARCHIVELOG')
 
-=item B<--skip-bo-backup>
+=item B<--skip-no-backup>
 
 Return ok if no backup found.
+
+=item B<--timezone>
+
+Timezone of oracle server (If not set, we use current server execution timezone)
 
 =back
 

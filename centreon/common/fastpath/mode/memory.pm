@@ -99,9 +99,8 @@ sub run {
                                             $memory_available_value . " " . $memory_available_unit,
                                             $memory_free_value . " " . $memory_free_unit, $prct_free));
 	
-	$self->{output}->perfdata_add(label => "used",
+	$self->{output}->perfdata_add(label => "used", unit => 'B',
                                   value => $memory_used,
-                                  unit => 'B',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memory_available, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memory_available, cast_int => 1),
                                   min => 0, max => $memory_available);
