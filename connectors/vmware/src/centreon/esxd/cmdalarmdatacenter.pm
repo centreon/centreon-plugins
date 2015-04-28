@@ -48,7 +48,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -56,8 +56,8 @@ sub run {
 
     if (defined($self->{memory})) {
         $self->{statefile_cache} = centreon::plugins::statefile->new(output => $self->{manager}->{output});
-        $self->{statefile_cache}->read(statefile_dir => $self->{obj_esxd}->{retention_dir},
-                                       statefile => "cache_vmware_connector_" . $self->{obj_esxd}->{whoaim} . "_" . $self->{commandName} . "_" . (defined($self->{datacenter}) ? md5_hex($self->{datacenter}) : md5_hex('.*')),
+        $self->{statefile_cache}->read(statefile_dir => $self->{connector}->{retention_dir},
+                                       statefile => "cache_vmware_connector_" . $self->{connector}->{whoaim} . "_" . $self->{commandName} . "_" . (defined($self->{datacenter}) ? md5_hex($self->{datacenter}) : md5_hex('.*')),
                                        statefile_suffix => '',
                                        no_quit => 1);
         return if ($self->{statefile_cache}->error() == 1);
@@ -66,7 +66,7 @@ sub run {
     my %filters = ();
     my $multiple = 0;
 
-    if (defined($self->{filter_time}) && $self->{filter_time} ne '' && $self->{obj_esxd}->{module_date_parse_loaded} == 0) {
+    if (defined($self->{filter_time}) && $self->{filter_time} ne '' && $self->{connector}->{module_date_parse_loaded} == 0) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Need to install Date::Parse CPAN Module");
         return ;
@@ -81,7 +81,7 @@ sub run {
     }
     
     my @properties = ('name', 'triggeredAlarmState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datacenter', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'Datacenter', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -91,7 +91,7 @@ sub run {
     $self->{manager}->{output}->output_add(severity => 'OK',
                                            short_msg => sprintf("No current alarms on datacenter(s)"));
     
-    my $alarmMgr = centreon::esxd::common::get_view($self->{obj_esxd}, $self->{obj_esxd}->{session1}->get_service_content()->alarmManager, undef);
+    my $alarmMgr = centreon::esxd::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->alarmManager, undef);
     my $total_alarms = { red => 0, yellow => 0 };
     my $dc_alarms = {};
     my $new_datas = {};
@@ -107,8 +107,8 @@ sub run {
             $new_datas->{$_->key} = 1;
             next if (defined($self->{memory}) && defined($self->{statefile_cache}->get(name => $_->key)));
             
-            my $entity = centreon::esxd::common::get_view($self->{obj_esxd}, $_->entity, ['name']);
-            my $alarm = centreon::esxd::common::get_view($self->{obj_esxd}, $_->alarm, ['info']);
+            my $entity = centreon::esxd::common::get_view($self->{connector}, $_->entity, ['name']);
+            my $alarm = centreon::esxd::common::get_view($self->{connector}, $_->alarm, ['info']);
             
             $dc_alarms->{$datacenter_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, name => $entity->name, 
                                                                           time => $_->time, name => $alarm->info->name, 

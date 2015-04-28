@@ -371,40 +371,101 @@ sub cache_perf_counters {
     return 0;
 }
 
-sub get_entities_host {
-    my ($obj_esxd, $view_type, $filters, $properties) = @_;
+sub search_entities {
+    my (%options) = @_;
+    my $properties = ['name'];
+    my $begin_views = [];
+    
+    foreach my $scope (['scope_datacenter', 'Datacenter'], ['scope_cluster', 'ClusterComputeResource'], ['scope_host', 'HostSystem']) {
+        if (defined($options{command}->{$$scope[0]}) && $options{command}->{$$scope[0]} ne '') {
+            my $filters = { name => qr/$options{command}->{$$scope[0]}/ };
+            if (scalar(@$begin_views) > 0) {
+                my $temp_views = [];
+                while ((my $view = shift @$begin_views)) {
+                    my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $$scope[1], properties => $properties, filter => $filters, 
+                                                             begin_entity => $view, output_message => 0);
+                    next if ($status == 0);
+                    return undef if ($status == -1);
+                    push @$temp_views, @$views;
+                }
+                
+                if (scalar(@$temp_views) == 0) {
+                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                           short_msg => "Cannot find '$$scope[1]' object");
+                    return undef;
+                }
+                push @$begin_views, @$temp_views;
+            } else {
+                my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $$scope[1], properties => $properties, filter => $filters);
+                # We quit. No scope find
+                return undef if ($status <= 0);
+                push @$begin_views, @$views;
+            }
+        }
+    }
+    
+    if (scalar(@$begin_views) > 0) {
+        my $results = [];
+        foreach my $view (@$begin_views) {
+            my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, 
+                                                     begin_entity => $view, output_message => 0);
+            next if ($status == 0);
+            return undef if ($status == -1);
+            push @$results, @$views;
+        }
+        if (scalar(@$results) == 0) {
+            $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => "Cannot find '$options{view_type}' object");
+            return undef;
+        }
+        return $results;
+    } else {
+        my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+        return $views;
+    }
+}
+
+sub find_entity_views {
+    my (%options) = @_;
     my $entity_views;
 
     eval {
-        $entity_views = $obj_esxd->{session1}->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
+        if (defined($options{begin_entity})) {
+            $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
+        } else {
+            $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+        }
     };
     if ($@) {
-        $obj_esxd->{logger}->writeLogError("'" . $obj_esxd->{whoaim} . "' $@");
+        $options{connector}->{logger}->writeLogError("'" . $options{connector}->{whoaim} . "' $@");
         eval {
-            $entity_views = $obj_esxd->{session1}->find_entity_views(view_type => $view_type, properties => $properties, filter => $filters);
+            if (defined($options{begin_entity})) {
+                $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, begin_entity => $options{begin_entity});
+            } else {
+                $entity_views = $options{connector}->{session1}->find_entity_views(view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter});
+            }
         };
         if ($@) {
-            vmware_error($obj_esxd, $@);
-            return undef;
+            vmware_error($options{connector}, $@);
+            return (-1, undef);
         }
     }
-    if (!@$entity_views) {
+    if (!defined($entity_views) || scalar(@$entity_views) == 0) {
         my $status = 0;
-        $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Object $view_type does not exist");
-        return undef;
+        if (!defined($options{output_message}) || $options{output_message} != 0) {
+            $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => "Cannot find '$options{view_type}' object");
+        }
+        return (0, undef);
     }
     #eval {
     #    $$entity_views[0]->update_view_data(properties => $properties);
     #};
     #if ($@) {
     #    writeLogFile("$@");
-    #    my $lerror = $@;
-    #    $lerror =~ s/\n/ /g;
-    #    print "-1|Error: " . $lerror . "\n";
     #    return undef;
     #}
-    return $entity_views;
+    return (1, $entity_views);
 }
 
 sub performance_errors {

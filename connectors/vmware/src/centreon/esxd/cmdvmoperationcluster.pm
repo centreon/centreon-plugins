@@ -58,20 +58,20 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
     
     $self->{statefile_cache} = centreon::plugins::statefile->new(output => $self->{manager}->{output});
-    $self->{statefile_cache}->read(statefile_dir => $self->{obj_esxd}->{retention_dir},
-                                   statefile => "cache_vmware_connector_" . $self->{obj_esxd}->{whoaim} . "_" . $self->{commandName} . "_" . (defined($self->{cluster}) ? md5_hex($self->{cluster}) : md5_hex('.*')),
+    $self->{statefile_cache}->read(statefile_dir => $self->{connector}->{retention_dir},
+                                   statefile => "cache_vmware_connector_" . $self->{connector}->{whoaim} . "_" . $self->{commandName} . "_" . (defined($self->{cluster}) ? md5_hex($self->{cluster}) : md5_hex('.*')),
                                    statefile_suffix => '',
                                    no_quit => 1);
     return if ($self->{statefile_cache}->error() == 1);
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -87,20 +87,20 @@ sub run {
         $filters{name} = qr/$self->{cluster}/;
     }
     my @properties = ('name');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'ClusterComputeResource', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         $result, 
                         [{'label' => 'vmop.numVMotion.latest', 'instances' => ['']},
                          {'label' => 'vmop.numSVMotion.latest', 'instances' => ['']},
                          {'label' => 'vmop.numClone.latest', 'instances' => ['']}],
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
     
     if ($multiple == 1) {
         $self->{manager}->{output}->output_add(severity => 'OK',
@@ -118,7 +118,7 @@ sub run {
         my @exits;
         
         foreach my $label (('Clone', 'VMotion', 'SVMotion')) {
-            $new_datas->{$label . '_' . $entity_value} = $values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'vmop.num' . $label . '.latest'}->{key} . ":"}[0];
+            $new_datas->{$label . '_' . $entity_value} = $values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'vmop.num' . $label . '.latest'}->{key} . ":"}[0];
             $old_datas->{$label . '_' . $entity_value} = $self->{statefile_cache}->get(name => $label . '_' . $entity_value);
         
             next if (!defined($old_datas->{$label . '_' . $entity_value}));

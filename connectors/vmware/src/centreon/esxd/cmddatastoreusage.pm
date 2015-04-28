@@ -64,7 +64,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -81,7 +81,7 @@ sub run {
     }
     my @properties = ('summary');
 
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -93,7 +93,7 @@ sub run {
     }
     
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::datastore_state(connector => $self->{connector},
                                                          name => $entity_view->summary->name, 
                                                          state => $entity_view->summary->accessible,
                                                          status => $self->{disconnect_status},

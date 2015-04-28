@@ -50,7 +50,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -67,7 +67,7 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'summary.overallStatus', 'runtime.connectionState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
     if (scalar(@$result) > 1) {
@@ -92,7 +92,7 @@ sub run {
     }
     
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},

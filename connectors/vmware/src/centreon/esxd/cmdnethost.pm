@@ -72,13 +72,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -94,7 +94,7 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'config.network.pnic', 'runtime.connectionState', 'config.network.vswitch', 'config.network.proxySwitch');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -109,7 +109,7 @@ sub run {
     my $pnic_def_down = {};
     my $query_perfs = [];
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},
@@ -184,12 +184,12 @@ sub run {
     # Nothing to retrieve. problem before already.
     return if (scalar(@$query_perfs) == 0);
         
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         undef, 
                         $query_perfs,
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
     
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
@@ -204,8 +204,8 @@ sub run {
         my @exits;
         foreach (sort keys %{$pnic_def_up->{$entity_value}}) {
             # KBps
-            my $traffic_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_}[0])) * 1024 * 8;    
-            my $traffic_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_}[0])) * 1024 * 8;
+            my $traffic_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_}[0])) * 1024 * 8;    
+            my $traffic_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_}[0])) * 1024 * 8;
             my $interface_speed = $pnic_def_up->{$entity_value}->{$_} * 1024 * 1024;
             my $in_prct = $traffic_in  * 100 / $interface_speed;
             my $out_prct = $traffic_out * 100 / $interface_speed;

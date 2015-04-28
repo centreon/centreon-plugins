@@ -68,7 +68,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub display_verbose {
@@ -108,7 +108,7 @@ sub run {
         push @properties, 'config.annotation';
     }
 
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -126,7 +126,7 @@ sub run {
     my %memory_limit = ();
     my %disk_limit = ();
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::vm_state(connector => $self->{connector},
                                                   hostname => $entity_view->{name}, 
                                                   state => $entity_view->{'runtime.connectionState'}->val,
                                                   status => $self->{disconnect_status},

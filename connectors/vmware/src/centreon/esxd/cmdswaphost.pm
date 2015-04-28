@@ -62,13 +62,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -84,26 +84,26 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'runtime.connectionState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         $result, 
                         [{'label' => 'mem.swapinRate.average', 'instances' => ['']},
                          {'label' => 'mem.swapoutRate.average', 'instances' => ['']}],
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
     
     if ($multiple == 1) {
         $self->{manager}->{output}->output_add(severity => 'OK',
                                                short_msg => sprintf("All swap rate usages are ok"));
     }
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},
@@ -111,8 +111,8 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};                       
 
         # KBps
-        my $swap_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0])) * 1024;
-        my $swap_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0])) * 1024;
+        my $swap_in = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0])) * 1024;
+        my $swap_out = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0])) * 1024;
 
         my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $swap_in, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $swap_out, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);

@@ -66,13 +66,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -88,7 +88,7 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'config.fileSystemVolume.mountInfo', 'runtime.connectionState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -108,7 +108,7 @@ sub run {
     }
     
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},
@@ -153,12 +153,12 @@ sub run {
 
     # Vsphere >= 4.1
     # You get counters even if datastore is disconnect...
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         undef, 
                         $query_perfs,
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
 
     $self->{manager}->{output}->output_add(severity => 'OK',
                                            short_msg => sprintf("All Datastore latencies are ok"));
@@ -172,8 +172,8 @@ sub run {
             next if (defined($checked->{$uuid}));
             $checked->{$uuid} = 1;
             
-            my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $uuid}[0]));
-            my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $uuid}[0]));
+            my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $uuid}[0]));
+            my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $uuid}[0]));
             
             my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' read on '%s' is %s ms", 

@@ -43,6 +43,7 @@ my @load_modules = (
     'centreon::esxd::cmdgetmap',
     'centreon::esxd::cmdhealthhost',
     'centreon::esxd::cmdlimitvm',
+    'centreon::esxd::cmdlistdatacenters',
     'centreon::esxd::cmdlistdatastores',
     'centreon::esxd::cmdlistnichost',
     'centreon::esxd::cmdmemhost',

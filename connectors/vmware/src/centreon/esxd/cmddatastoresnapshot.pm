@@ -60,7 +60,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -76,7 +76,7 @@ sub run {
         $filters{name} = qr/$self->{datastore_name}/;
     }
     my @properties = ('summary.accessible', 'summary.name', 'browser');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
     if (scalar(@$result) > 1) {
@@ -86,7 +86,7 @@ sub run {
     my @ds_array = ();
     my %ds_names = ();
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::datastore_state(connector => $self->{connector},
                                                          name => $entity_view->{'summary.name'}, 
                                                          state => $entity_view->{'summary.accessible'},
                                                          status => $self->{disconnect_status},
@@ -99,7 +99,7 @@ sub run {
     
     @properties = ();
     my $result2;
-    return if (!($result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@ds_array, \@properties)));
+    return if (!($result2 = centreon::esxd::common::get_views($self->{connector}, \@ds_array, \@properties)));
 
     $self->{manager}->{output}->output_add(severity => 'OK',
                                           short_msg => sprintf("All snapshot sizes are ok"));
@@ -110,7 +110,7 @@ sub run {
         $dsName = $ds_names{$tmp_name};
 
         $self->{manager}->{output}->output_add(long_msg => "Checking datastore '$dsName':");
-        my ($snapshots, $msg) = centreon::esxd::common::search_in_datastore($self->{obj_esxd}, $browse_ds, '[' . $dsName . ']', [VmSnapshotFileQuery->new()], 1);
+        my ($snapshots, $msg) = centreon::esxd::common::search_in_datastore($self->{connector}, $browse_ds, '[' . $dsName . ']', [VmSnapshotFileQuery->new()], 1);
         if (!defined($snapshots)) {
             $msg =~ s/\n/ /g;
             if ($msg =~ /NoPermissionFault/i) {

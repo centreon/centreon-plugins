@@ -62,13 +62,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -85,45 +85,45 @@ sub run {
     }
 
     my @properties = ('name', 'runtime.connectionState', 'summary.hardware.numCpuCores', 'summary.hardware.cpuMhz');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
     my @instances = ('*');
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                             $result, 
                             [{'label' => 'cpu.usage.average',    'instances' => \@instances},
                              {'label' => 'cpu.usagemhz.average', 'instances' => \@instances}],
-                            $self->{obj_esxd}->{perfcounter_speriod}, 
+                            $self->{connector}->{perfcounter_speriod}, 
                             skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
 
     if ($multiple == 1) {
         $self->{manager}->{output}->output_add(severity => 'OK',
                                                short_msg => sprintf("All Total Average CPU usages are ok"));
     }
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},
                                                     multiple => $multiple) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
-        my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
-        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
+        my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
+        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
         
         my $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_cpu_average, 
                                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
         $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Total Average CPU usage '%s%%' on last %s min", 
-                                                                   $entity_view->{name}, $total_cpu_average, int($self->{obj_esxd}->{perfcounter_speriod} / 60)));
+                                                                   $entity_view->{name}, $total_cpu_average, int($self->{connector}->{perfcounter_speriod} / 60)));
         if ($multiple == 0 ||
             !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{manager}->{output}->output_add(severity => $exit,
                                                    short_msg => sprintf("'%s' Total Average CPU usage '%s%%' on last %s min", 
-                                                                        $entity_view->{name}, $total_cpu_average, int($self->{obj_esxd}->{perfcounter_speriod} / 60)));
+                                                                        $entity_view->{name}, $total_cpu_average, int($self->{connector}->{perfcounter_speriod} / 60)));
         }
 
         my $extra_label = '';

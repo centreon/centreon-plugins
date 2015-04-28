@@ -44,7 +44,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -53,7 +53,7 @@ sub run {
     
     my %filters = (name => $self->{esx_hostname});
     my @properties = ('config.network.pnic', 'config.network.vswitch', 'config.network.proxySwitch');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     # Get Name from vswitch

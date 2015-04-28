@@ -60,13 +60,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -82,7 +82,7 @@ sub run {
         $filters{name} = qr/$self->{datastore_name}/;
     }
     my @properties = ('summary.accessible', 'summary.name', 'vm', 'info');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'Datastore', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -98,7 +98,7 @@ sub run {
     my %datastore_lun = ();
     my $ds_checked = 0;
     foreach (@$result) {
-        next if (centreon::esxd::common::datastore_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::datastore_state(connector => $self->{connector},
                                                          name => $_->{'summary.name'}, 
                                                          state => $_->{'summary.accessible'},
                                                          status => $self->{disconnect_status},
@@ -139,7 +139,7 @@ sub run {
     }
 
     @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
-    my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
+    my $result2 = centreon::esxd::common::get_views($self->{connector}, \@vm_array, \@properties);
     return if (!defined($result2));
     
     # Remove disconnected or not running vm
@@ -154,14 +154,14 @@ sub run {
     }
 
     # Vsphere >= 4.1
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         $result2, 
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1);                  
     
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
 
     foreach (keys %$values) {
         my ($vm_id, $id, $disk_name) = split(/:/);
@@ -169,12 +169,12 @@ sub run {
         # RDM Disk. We skip. Don't know how to manage it right now.
         next if (!defined($disk_name{$disk_name}));
         
-        my $tmp_value = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$_}[0] /  $self->{obj_esxd}->{perfcounter_speriod}));
-        $datastore_lun{$disk_name{$disk_name}}{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
-        if (!defined($datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}})) {
-            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} = $tmp_value;
+        my $tmp_value = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$_}[0] /  $self->{connector}->{perfcounter_speriod}));
+        $datastore_lun{$disk_name{$disk_name}}{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
+        if (!defined($datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{connector}->{perfcounter_cache_reverse}->{$id}})) {
+            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{connector}->{perfcounter_cache_reverse}->{$id}} = $tmp_value;
         } else {
-            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
+            $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{connector}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
         }
     }
     

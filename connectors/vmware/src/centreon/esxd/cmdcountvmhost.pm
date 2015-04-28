@@ -60,7 +60,7 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
@@ -76,14 +76,14 @@ sub run {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
     my @properties = ('name', 'vm', 'runtime.connectionState');
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'HostSystem', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
     
-    #return if (centreon::esxd::common::host_state($self->{obj_esxd}, $self->{lhost}, 
+    #return if (centreon::esxd::common::host_state($self->{connector}, $self->{lhost}, 
     #                                              $$result[0]->{'runtime.connectionState'}->val) == 0);
 
     my @vm_array = ();
@@ -93,7 +93,7 @@ sub run {
         }
     }
     @properties = ('runtime.powerState');
-    my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@vm_array, \@properties);
+    my $result2 = centreon::esxd::common::get_views($self->{connector}, \@vm_array, \@properties);
     return if (!defined($result2));
 
     if ($multiple == 1) {
@@ -102,7 +102,7 @@ sub run {
     }
 
      foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::host_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::host_state(connector => $self->{connector},
                                                     hostname => $entity_view->{name}, 
                                                     state => $entity_view->{'runtime.connectionState'}->val,
                                                     status => $self->{disconnect_status},

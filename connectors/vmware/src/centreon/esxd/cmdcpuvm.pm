@@ -66,13 +66,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -95,18 +95,18 @@ sub run {
     if (defined($self->{display_description})) {
         push @properties, 'config.annotation';
     }
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
     my @instances = ('*');
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         $result, 
                         [{'label' => 'cpu.usage.average', 'instances' => \@instances},
                          {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
                          {'label' => 'cpu.ready.summation', 'instances' => \@instances}],
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
     
     if (scalar(@$result) > 1) {
         $multiple = 1;
@@ -116,7 +116,7 @@ sub run {
                                                short_msg => sprintf("All cpu usages are ok"));
     }
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::vm_state(connector => $self->{connector},
                                                   hostname => $entity_view->{name}, 
                                                   state => $entity_view->{'runtime.connectionState'}->val,
                                                   power => $entity_view->{'runtime.powerState'}->val,
@@ -124,9 +124,9 @@ sub run {
                                                   powerstatus => $self->{nopoweredon_status},
                                                   multiple => $multiple) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
-        my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
-        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
-        my $total_cpu_ready = centreon::esxd::common::simplify_number($values->{$entity_value}->{$self->{obj_esxd}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"}[0] / ($self->{obj_esxd}->{perfcounter_speriod} * 1000) * 100);
+        my $total_cpu_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
+        my $total_cpu_mhz_average = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
+        my $total_cpu_ready = centreon::esxd::common::simplify_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"}[0] / ($self->{connector}->{perfcounter_speriod} * 1000) * 100);
         
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
@@ -156,7 +156,7 @@ sub run {
                                           min => $entry->{perf_min}, max => $entry->{perf_max});
         }
         
-        $long_msg .= ' on last ' . int($self->{obj_esxd}->{perfcounter_speriod} / 60) . ' min';
+        $long_msg .= ' on last ' . int($self->{connector}->{perfcounter_speriod} / 60) . ' min';
         my $prefix_msg = "'$entity_view->{name}'";
         if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
             $entity_view->{'config.annotation'} ne '') {
@@ -180,7 +180,7 @@ sub run {
                                $cib = -1 if (!defined($cib) || $cib eq "");
                    $cia <=> $cib} keys %{$values->{$entity_value}}) {
             my ($counter_id, $instance) = split /:/, $id;
-            next if ($self->{obj_esxd}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} != $counter_id);
+            next if ($self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} != $counter_id);
             if ($instance ne "") {
                 $self->{manager}->{output}->perfdata_add(label => 'cpu_' . $instance . '_MHz' . $extra_label, unit => 'MHz',
                                                          value => centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($values->{$entity_value}->{$id}[0])),

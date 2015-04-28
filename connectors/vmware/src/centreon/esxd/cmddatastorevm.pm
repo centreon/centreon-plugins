@@ -72,13 +72,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if (!($self->{obj_esxd}->{perfcounter_speriod} > 0)) {
+    if (!($self->{connector}->{perfcounter_speriod} > 0)) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Can't retrieve perf counters");
         return ;
@@ -101,7 +101,7 @@ sub run {
     if (defined($self->{display_description})) {
         push @properties, 'config.annotation';
     }
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {
@@ -119,7 +119,7 @@ sub run {
     my $mapped_datastore = {};
     my @ds_array = ();
     foreach my $entity_view (@$result) {
-         next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+         next if (centreon::esxd::common::vm_state(connector => $self->{connector},
                                                   hostname => $entity_view->{name}, 
                                                   state => $entity_view->{'runtime.connectionState'}->val,
                                                   power => $entity_view->{'runtime.powerState'}->val,
@@ -137,7 +137,7 @@ sub run {
     }
     
     @properties = ('info');
-    my $result2 = centreon::esxd::common::get_views($self->{obj_esxd}, \@ds_array, \@properties);
+    my $result2 = centreon::esxd::common::get_views($self->{connector}, \@ds_array, \@properties);
     return if (!defined($result2));
     
     #my %uuid_list = ();
@@ -158,13 +158,13 @@ sub run {
 
     # Vsphere >= 4.1
     # We don't filter. To filter we'll need to get disk from vms
-    my $values = centreon::esxd::common::generic_performance_values_historic($self->{obj_esxd},
+    my $values = centreon::esxd::common::generic_performance_values_historic($self->{connector},
                         $result, 
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{obj_esxd}->{perfcounter_speriod},
+                        $self->{connector}->{perfcounter_speriod},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
-    return if (centreon::esxd::common::performance_errors($self->{obj_esxd}, $values) == 1);
+    return if (centreon::esxd::common::performance_errors($self->{connector}, $values) == 1);
 
     $self->{manager}->{output}->output_add(severity => 'OK',
                                            short_msg => sprintf("All Datastore IOPS counters are ok"));
@@ -190,13 +190,13 @@ sub run {
             next if ($disk_name{$disk_name} !~ /$ds_regexp/); 
             $datastore_lun{$disk_name{$disk_name}} = { 'disk.numberRead.summation' => 0, 
                                                        'disk.numberWrite.summation' => 0 } if (!defined($datastore_lun{$disk_name{$disk_name}}));
-            $datastore_lun{$disk_name{$disk_name}}->{$self->{obj_esxd}->{perfcounter_cache_reverse}->{$id}} += $values->{$entity_value}->{$_}[0];
+            $datastore_lun{$disk_name{$disk_name}}->{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $values->{$entity_value}->{$_}[0];
         }
 
         foreach (sort keys %datastore_lun) {
             $finded |= 2;
-            my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $self->{obj_esxd}->{perfcounter_speriod}));
-            my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $self->{obj_esxd}->{perfcounter_speriod}));
+            my $read_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $self->{connector}->{perfcounter_speriod}));
+            my $write_counter = centreon::esxd::common::simplify_number(centreon::esxd::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $self->{connector}->{perfcounter_speriod}));
 
             my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             $self->{manager}->{output}->output_add(long_msg => sprintf("%s read iops on '%s' is %s", 

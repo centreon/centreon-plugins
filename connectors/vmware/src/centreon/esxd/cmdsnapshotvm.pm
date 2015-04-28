@@ -60,13 +60,13 @@ sub initArgs {
 sub set_connector {
     my ($self, %options) = @_;
     
-    $self->{obj_esxd} = $options{connector};
+    $self->{connector} = $options{connector};
 }
 
 sub run {
     my $self = shift;
 
-    if ($self->{obj_esxd}->{module_date_parse_loaded} == 0) {
+    if ($self->{connector}->{module_date_parse_loaded} == 0) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Need to install Date::Parse CPAN Module");
         return ;
@@ -93,7 +93,7 @@ sub run {
         push @properties, 'config.annotation';
     }
 
-    my $result = centreon::esxd::common::get_entities_host($self->{obj_esxd}, 'VirtualMachine', \%filters, \@properties);
+    my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
     my %vm_consolidate = ();
@@ -109,7 +109,7 @@ sub run {
                                                short_msg => sprintf("Snapshot(s) OK"));
     }
     foreach my $entity_view (@$result) {
-        next if (centreon::esxd::common::vm_state(connector => $self->{obj_esxd},
+        next if (centreon::esxd::common::vm_state(connector => $self->{connector},
                                                   hostname => $entity_view->{name}, 
                                                   state => $entity_view->{'runtime.connectionState'}->val,
                                                   status => $self->{disconnect_status},
