@@ -92,48 +92,61 @@ sub check_table_cpu {
     my ($self, %options) = @_;
     
     my $checked = 0;
+    my $instances =  {};
     foreach my $oid (keys %{$self->{results}->{$options{entry}}}) {
-        next if ($oid !~ /^$options{sec5}/);
         $oid =~ /\.([0-9]+)$/;
+        next if (defined($instances->{$1}));
+        $instances->{$1} = 1;        
         my $instance = $1;
-        my $cpu5sec = $self->{results}->{$options{entry}}->{$oid};
-        my $cpu1min = $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance};
-        my $cpu5min = $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance};
+        my $cpu5sec = defined($self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance})  : undef;
+        my $cpu1min = defined($self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) : undef;
+        my $cpu5min = defined($self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) : undef;
         
         next if ($cpu5sec eq '');
         
         $checked = 1;
-        my $exit1 = $self->{perfdata}->threshold_check(value => $cpu5sec, 
-                               threshold => [ { label => 'crit5s', 'exit_litteral' => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $cpu1min, 
-                               threshold => [ { label => 'crit1m', 'exit_litteral' => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]);
-        my $exit3 = $self->{perfdata}->threshold_check(value => $cpu5min, 
-                               threshold => [ { label => 'crit5m', 'exit_litteral' => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]);
-        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
+        my @exits;
+        push @exits, $self->{perfdata}->threshold_check(value => $cpu5sec, 
+                               threshold => [ { label => 'crit5s', exit_litteral => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]) if (defined($cpu5sec));
+        push @exits, $self->{perfdata}->threshold_check(value => $cpu1min, 
+                               threshold => [ { label => 'crit1m', 'exit_litteral => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]) if (defined($cpu1min));
+        push @exits, $self->{perfdata}->threshold_check(value => $cpu5min, 
+                               threshold => [ { label => 'crit5m', exit_litteral => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]) if (defined($cpu5min));
+        my $exit = $self->{output}->get_most_critical(status => \@exits);
         
-        $self->{output}->output_add(long_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
-                                            $cpu5sec, $cpu1min, $cpu5min));
+        $self->{output}->output_add(long_msg => sprintf("CPU '%s': %s (5sec), %s (1min), %s (5min)", $instance,
+                                            defined($cpu5sec) ? $cpu5sec . '%' : 'not defined',
+                                            defined($cpu1min) ? $cpu1min . '%' : 'not defined',
+                                            defined($cpu5min) ? $cpu5min . '%' : 'not defined'));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("CPU '%s': %.2f%% (5sec), %.2f%% (1min), %.2f%% (5min)", $instance,
-                                            $cpu5sec, $cpu1min, $cpu5min));
+                                        short_msg => sprintf("CPU '%s': %s (5sec), %s (1min), %s (5min)", $instance,
+                                            defined($cpu5sec) ? $cpu5sec . '%' : 'not defined',
+                                            defined($cpu1min) ? $cpu1min . '%' : 'not defined',
+                                            defined($cpu5min) ? $cpu5min . '%' : 'not defined'));
         }
         
-        $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5s",
-                                      value => $cpu5sec,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_" . $instance . "_1m",
-                                      value => $cpu1min,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
-                                      min => 0, max => 100);
-        $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5m",
-                                      value => $cpu5min,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
-                                      min => 0, max => 100);
+        if (defined($cpu5sec)) {
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5s",
+                                          value => $cpu5sec,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
+                                          min => 0, max => 100);
+        }
+        if (defined($cpu1min)) {
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_1m",
+                                          value => $cpu1min,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
+                                          min => 0, max => 100);
+        }
+        if (defined($cpu5min)) {
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5m",
+                                          value => $cpu5min,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
+                                          min => 0, max => 100);
+        }
     }
     
     return $checked;
