@@ -92,12 +92,12 @@ sub run {
     
     my $alarmMgr = centreon::esxd::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->alarmManager, undef);
     my $total_alarms = { red => 0, yellow => 0 };
-    my $dc_alarms = {};
+    my $host_alarms = {};
     my $new_datas = {};
-    foreach my $datacenter_view (@$result) {
-        $dc_alarms->{$datacenter_view->name} = { red => 0, yellow => 0, alarms => {} };
-        next if (!defined($datacenter_view->triggeredAlarmState));
-        foreach(@{$datacenter_view->triggeredAlarmState}) {
+    foreach my $host_view (@$result) {
+        $host_alarms->{$host_view->name} = { red => 0, yellow => 0, alarms => {} };
+        next if (!defined($host_view->triggeredAlarmState));
+        foreach(@{$host_view->triggeredAlarmState}) {
             next if ($_->overallStatus->val !~ /(red|yellow)/i);
             if (defined($self->{filter_time}) && $self->{filter_time} ne '') {
                 my $time_sec = Date::Parse::str2time($_->time);
@@ -109,11 +109,11 @@ sub run {
             my $entity = centreon::esxd::common::get_view($self->{connector}, $_->entity, ['name']);
             my $alarm = centreon::esxd::common::get_view($self->{connector}, $_->alarm, ['info']);
             
-            $dc_alarms->{$datacenter_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, name => $entity->name, 
+            $host_alarms->{$host_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, name => $entity->name, 
                                                                           time => $_->time, name => $alarm->info->name, 
                                                                           description => $alarm->info->description, 
                                                                           status => $_->overallStatus->val};
-            $dc_alarms->{$datacenter_view->name}->{$_->overallStatus->val}++;
+            $host_alarms->{$host_view->name}->{$_->overallStatus->val}++;
             $total_alarms->{$_->overallStatus->val}++;
         }
     }
@@ -130,27 +130,27 @@ sub run {
                                                short_msg => sprintf("%s alarm(s) found(s)", $total_alarms->{red}));
     }    
     
-    foreach my $dc_name (keys %{$dc_alarms}) {
-        $self->{manager}->{output}->output_add(long_msg => sprintf("Checking host %s", $dc_name));
+    foreach my $host_name (keys %{$host_alarms}) {
+        $self->{manager}->{output}->output_add(long_msg => sprintf("Checking host %s", $host_name));
         $self->{manager}->{output}->output_add(long_msg => sprintf("    %s warn alarm(s) found(s) - %s critical alarm(s) found(s)", 
-                                                    $dc_alarms->{$dc_name}->{yellow},  $dc_alarms->{$dc_name}->{red}));
-        foreach my $alert (keys %{$dc_alarms->{$dc_name}->{alarms}}) {
+                                                    $host_alarms->{$host_name}->{yellow},  $host_alarms->{$host_name}->{red}));
+        foreach my $alert (keys %{$host_alarms->{$host_name}->{alarms}}) {
             $self->{manager}->{output}->output_add(long_msg => sprintf("    [%s] [%s] [%s] [%s] %s", 
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{status},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{name},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{time},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{type},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{description}
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{status},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{name},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{time},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{type},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{description}
                                                                ));
         }
         
         my $extra_label = '';
-        $extra_label = '_' . $dc_name if ($multiple == 1);
+        $extra_label = '_' . $host_name if ($multiple == 1);
         $self->{manager}->{output}->perfdata_add(label => 'alarm_warning' . $extra_label,
-                                                 value => $dc_alarms->{$dc_name}->{yellow},
+                                                 value => $host_alarms->{$host_name}->{yellow},
                                                  min => 0);
         $self->{manager}->{output}->perfdata_add(label => 'alarm_critical' . $extra_label,
-                                                 value => $dc_alarms->{$dc_name}->{red},
+                                                 value => $host_alarms->{$host_name}->{red},
                                                  min => 0);
     }
 
