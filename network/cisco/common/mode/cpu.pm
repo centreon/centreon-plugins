@@ -109,7 +109,7 @@ sub check_table_cpu {
         push @exits, $self->{perfdata}->threshold_check(value => $cpu5sec, 
                                threshold => [ { label => 'crit5s', exit_litteral => 'critical' }, { label => 'warn5s', exit_litteral => 'warning' } ]) if (defined($cpu5sec));
         push @exits, $self->{perfdata}->threshold_check(value => $cpu1min, 
-                               threshold => [ { label => 'crit1m', 'exit_litteral => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]) if (defined($cpu1min));
+                               threshold => [ { label => 'crit1m', exit_litteral => 'critical' }, { label => 'warn1m', exit_litteral => 'warning' } ]) if (defined($cpu1min));
         push @exits, $self->{perfdata}->threshold_check(value => $cpu5min, 
                                threshold => [ { label => 'crit5m', exit_litteral => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]) if (defined($cpu5min));
         my $exit = $self->{output}->get_most_critical(status => \@exits);
