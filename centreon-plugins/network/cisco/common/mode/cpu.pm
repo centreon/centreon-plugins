@@ -101,9 +101,7 @@ sub check_table_cpu {
         my $cpu5sec = defined($self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance})  : undef;
         my $cpu1min = defined($self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) : undef;
         my $cpu5min = defined($self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) : undef;
-        
-        next if ($cpu5sec eq '');
-        
+                
         $checked = 1;
         my @exits;
         push @exits, $self->{perfdata}->threshold_check(value => $cpu5sec, 
