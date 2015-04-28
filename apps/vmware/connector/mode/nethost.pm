@@ -51,6 +51,8 @@ sub new {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "nic-name:s"              => { name => 'nic_name' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
+                                  "scope-cluster:s"         => { name => 'scope_cluster' },
                                   "filter-nic"              => { name => 'filter_nic' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "warning-in:s"            => { name => 'warning_in', },
@@ -111,6 +113,14 @@ If not set, we check all ESX.
 =item B<--filter>
 
 ESX hostname is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
+
+=item B<--scope-cluster>
+
+Search in following cluster(s) (can be a regexp).
 
 =item B<--nic-name>
 

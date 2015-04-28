@@ -50,6 +50,7 @@ sub new {
                                 { 
                                   "datastore-name:s"        => { name => 'datastore_name' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "warning-total:s"         => { name => 'warning_total', },
                                   "critical-total:s"        => { name => 'critical_total', },
@@ -103,6 +104,10 @@ datastore name to list.
 =item B<--filter>
 
 Datastore name is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
 
 =item B<--disconnect-status>
 

@@ -50,6 +50,7 @@ sub new {
                                 { 
                                   "datastore-name:s"        => { name => 'datastore_name' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                 });
     return $self;
 }
@@ -102,6 +103,10 @@ datastore name to list.
 =item B<--filter>
 
 Datastore name is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
 
 =back
 

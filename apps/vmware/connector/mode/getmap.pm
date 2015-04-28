@@ -50,6 +50,8 @@ sub new {
                                 {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
+                                  "scope-cluster:s"         => { name => 'scope_cluster' },
                                   "vm-no"                   => { name => 'vm_no' },
                                 });
     return $self;
@@ -88,6 +90,14 @@ If not set, we list all ESX.
 =item B<--filter>
 
 ESX hostname is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
+
+=item B<--scope-cluster>
+
+Search in following cluster(s) (can be a regexp).
 
 =item B<--vm-no>
 
