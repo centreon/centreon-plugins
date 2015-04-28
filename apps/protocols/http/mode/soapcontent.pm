@@ -1,35 +1,36 @@
 ###############################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2015 CENTREON
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
 # Foundation ; either version 2 of the License.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
+#
+# You should have received a copy of the GNU General Public License along with
 # this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
+#
+# Linking this program statically or dynamically with other modules is making a
+# combined work based on this program. Thus, the terms and conditions of the GNU
 # General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an timeelapsedutable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
+#
+# As a special exception, the copyright holders of this program give CENTREON
+# permission to link this program with independent modules to produce an timeelapsedutable,
+# regardless of the license terms of these independent modules, and to copy and
+# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
+# CENTREON also meet, for each linked independent module, the terms  and conditions
+# of the license of that module. An independent module is a module which is not
+# derived from this program. If you modify this program, you may extend this
 # exception to your version of the program, but you are not obliged to do so. If you
 # do not wish to do so, delete this exception statement from your version.
-# 
+#
 # For more information : contact@centreon.com
-# Author : Simon BOMM <sbomm@merethis.com>
+# Authors : Simon BOMM <sbomm@merethis.com>
+#           Mathieu Cinquin <mcinquin@merethis.com>
 #
 # Based on De Bodt Lieven plugin
 ####################################################################################
@@ -49,7 +50,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
             {
             "service-soap:s"        => { name => 'service_soap' },
@@ -67,7 +68,10 @@ sub new {
             "header:s@"             => { name => 'header' },
             "timeout:s"             => { name => 'timeout', default => 10 },
             "ssl:s"					=> { name => 'ssl', },
-            
+            "cert-file:s"           => { name => 'cert_file' },
+            "cert-pwd:s"            => { name => 'cert_pwd' },
+            "cert-pkcs12"           => { name => 'cert_pkcs12' },
+
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },
             "warning-string:s"        => { name => 'warning_string' },
@@ -136,6 +140,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "--ntlm option must be used with --credentials option");
         $self->{output}->option_exit();
     }
+    if ((defined($self->{option_results}->{pkcs12})) && (!defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pwd}))) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --cert-file= and --cert-pwd= options when --pkcs12 is used");
+        $self->{output}->option_exit();
+    }
     $self->{headers} = {};
     if (defined($self->{option_results}->{header})) {
         foreach (@{$self->{option_results}->{header}}) {
@@ -149,7 +157,7 @@ sub check_options {
 
 sub load_request {
     my ($self, %options) = @_;
-    
+
     local $/ = undef;
     if (!open(FILE, "<", $self->{option_results}->{data})) {
         $self->{output}->output_add(severity => 'UNKNOWN',
@@ -163,7 +171,7 @@ sub load_request {
 
 sub display_output {
     my ($self, %options) = @_;
-    
+
     foreach my $severity (('ok', 'warning', 'critical')) {
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
         my $format = $self->{option_results}->{'format_' . $severity};
@@ -184,7 +192,7 @@ sub display_output {
 sub lookup {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
-    
+
     eval {
         $xpath = XML::XPath->new(xml => $self->{soap_response});
     };
@@ -192,7 +200,7 @@ sub lookup {
         $self->{output}->add_option_msg(short_msg => "Cannot load SOAP response");
         $self->{output}->option_exit();
     }
-    
+
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
         eval {
             $nodeset = $xpath->find($xpath_find);
@@ -201,7 +209,7 @@ sub lookup {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup: $@");
             $self->{output}->option_exit();
         }
-        
+
         $self->{output}->output_add(long_msg => "Lookup XPath $xpath_find:");
         foreach my $node ($nodeset->get_nodelist()) {
             $self->{count}++;
@@ -217,26 +225,26 @@ sub lookup {
             }
         }
     }
-    
+
     if ($self->{option_results}->{threshold_value} eq 'count') {
-        my $exit = lc($self->{perfdata}->threshold_check(value => $self->{count}, 
+        my $exit = lc($self->{perfdata}->threshold_check(value => $self->{count},
                                                          threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
         push @{$self->{'values_' . $exit}}, $self->{count};
         $self->{'count_' . $exit}++;
     }
-    
+
     $self->{output}->perfdata_add(label => 'count',
                                   value => $self->{count},
                                   warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                                   critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
                                   min => 0);
-    
+
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
         $count++;
         if ($value =~ /^[0-9.]+$/) {
             if ($self->{option_results}->{threshold_value} eq 'values') {
-                my $exit = lc($self->{perfdata}->threshold_check(value => $value, 
+                my $exit = lc($self->{perfdata}->threshold_check(value => $value,
                                             threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
@@ -246,10 +254,10 @@ sub lookup {
                                           warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                                           critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
         } else {
-            if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' && 
+            if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
                 $value =~ /$self->{option_results}->{critical_string}/) {
                 push @{$self->{values_string_critical}}, $value;
-            } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' && 
+            } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
                      $value =~ /$self->{option_results}->{warning_string}/) {
                 push @{$self->{values_string_warning}}, $value;
             } else {
@@ -257,7 +265,7 @@ sub lookup {
             }
         }
     }
-    
+
     $self->display_output();
 }
 
@@ -265,7 +273,7 @@ sub run {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self); 
+        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
     }
     $self->load_request();
 
@@ -280,7 +288,7 @@ sub run {
     } else {
         $self->lookup();
     }
-    
+
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                   threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -294,7 +302,7 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
                                   min => 0);
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -306,7 +314,7 @@ __END__
 =head1 MODE
 
 Check SOAP content. Send the soap request with option '--data'. Example:
-centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction' 
+centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction'
 --header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com' --urlpath='/get/payment'
 --lookup='//numeric/text()'
 
@@ -335,7 +343,7 @@ FORMAT OPTIONS:
 =item B<--format-ok>
 
 Output format (Default: '%{count} element(s) finded')
-Can used: 
+Can used:
 '%{values}' = display all values (also text string)
 '%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
 '%{values_warning}' and '%{values_critical}'
@@ -436,6 +444,18 @@ Threshold for HTTP timeout (Default: 10)
 =item B<--ssl>
 
 Specify SSL version (example : 'sslv3', 'tlsv1'...)
+
+=item B<--cert-file>
+
+Specify certificate to send to the webserver
+
+=item B<--cert-pwd>
+
+Specify certificate's password
+
+=item B<--cert-pkcs12>
+
+Specify type of certificate (PKCS1
 
 =item B<--header>
 

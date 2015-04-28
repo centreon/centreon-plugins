@@ -115,17 +115,17 @@ sub run {
                                 short_msg => sprintf("MP CPU Usage: %.2f%% (1sec), %.2f%% (4sec), %.2f%% (64sec)",
                                       $cpu1sec, $cpu4sec, $cpu64sec));
     
-    $self->{output}->perfdata_add(label => "cpu_1s",
+    $self->{output}->perfdata_add(label => "cpu_1s", unit => '%',
                                   value => $cpu1sec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1s'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1s'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_4s",
+    $self->{output}->perfdata_add(label => "cpu_4s", unit => '%',
                                   value => $cpu4sec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn4s'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit4s'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_64s",
+    $self->{output}->perfdata_add(label => "cpu_64s", unit => '%',
                                   value => $cpu64sec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn64s'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit64s'),
