@@ -50,6 +50,9 @@ sub new {
                                 {
                                   "vm-hostname:s"           => { name => 'vm_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
+                                  "scope-cluster:s"         => { name => 'scope_cluster' },
+                                  "scope-host:s"            => { name => 'scope_host' },
                                   "filter-description:s"    => { name => 'filter_description' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
@@ -118,6 +121,18 @@ VM hostname is a regexp.
 =item B<--filter-description>
 
 Filter also virtual machines description (can be a regexp).
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
+
+=item B<--scope-cluster>
+
+Search in following cluster(s) (can be a regexp).
+
+=item B<--scope-host>
+
+Search in following host(s) (can be a regexp).
 
 =item B<--disconnect-status>
 
