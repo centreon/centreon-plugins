@@ -50,6 +50,8 @@ sub new {
                                 { 
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
+                                  "scope-cluster:s"         => { name => 'scope_cluster' },
                                   "filter-time:s"           => { name => 'filter_time', },
                                   "memory"                  => { name => 'memory', },
                                 });
@@ -88,6 +90,14 @@ If not set, we check all ESX.
 =item B<--filter>
 
 Datacenter is a regexp.
+
+=item B<--scope-datacenter>
+
+Search in following datacenter(s) (can be a regexp).
+
+=item B<--scope-cluster>
+
+Search in following cluster(s) (can be a regexp).
 
 =item B<--filter-time>
 
