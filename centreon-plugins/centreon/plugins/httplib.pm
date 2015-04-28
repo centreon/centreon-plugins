@@ -30,7 +30,7 @@
 #
 # For more information : contact@centreon.com
 # Authors : Simon BOMM <sbomm@merethis.com>
-#           Mathieu Cinquin <mcinqui@centreon.com>
+#           Mathieu Cinquin <mcinquin@centreon.com>
 #
 # Based on De Bodt Lieven plugin
 ####################################################################################
@@ -39,7 +39,6 @@ package centreon::plugins::httplib;
 
 use strict;
 use warnings;
-
 use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
@@ -128,13 +127,13 @@ sub connect {
     }
 
     if (defined($self->{option_results}->{cert_pkcs12}) && $self->{option_results}->{cert_file} ne '' && $self->{option_results}->{cert_pwd} ne '') {
-        use Net::SSL;
+        eval "use Net::SSL"; die $@ if $@;
         $ENV{HTTPS_PKCS12_FILE} = $self->{option_results}->{cert_file};
         $ENV{HTTPS_PKCS12_PASSWORD} = $self->{option_results}->{cert_pwd};
     }
 
     if (defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pkcs12})) {
-        use Net::SSL;
+        eval "use Net::SSL"; die $@ if $@;
         $ENV{HTTPS_CERT_FILE} = $self->{option_results}->{cert_file};
     }
 

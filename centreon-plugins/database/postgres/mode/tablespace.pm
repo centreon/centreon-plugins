@@ -91,13 +91,14 @@ sub run {
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf('Tablespace "%s" size is %s %s',$self->{option_results}->{tablespace}, $value, $value_unit));
         
-        $self->{output}->perfdata_add(label => $self->{option_results}->{tablespace},
+        $self->{output}->perfdata_add(label => $self->{option_results}->{tablespace}, unit => 'B',
                                       value => $result,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0);
     } else {
         $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf('Table space "%s" is unknown ...',$self->{option_results}->{tablespace}));
+                                    short_msg => sprintf('Table space "%s" is unknown ...', $self->{option_results}->{tablespace}));
     }
 
     $self->{output}->display();

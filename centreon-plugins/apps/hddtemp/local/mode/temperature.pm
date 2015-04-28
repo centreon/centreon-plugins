@@ -117,7 +117,7 @@ sub run {
             $self->{output}->output_add(severity => $exit_code,
                                         short_msg => sprintf("'%s' temp is %s", $disk, $temp . '°' . $self->{option_results}->{unit}));
         }
-        $self->{output}->perfdata_add(label => $disk, unit => '°' .$self->{option_results}->{unit},
+        $self->{output}->perfdata_add(label => $disk, unit => $self->{option_results}->{unit},
                                       value => $temp,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

@@ -134,7 +134,7 @@ sub run {
         
         my $extra_label = '';
         $extra_label = '_' . $description if ($multiple == 1);
-        $self->{output}->perfdata_add(label => "used" . $extra_label,
+        $self->{output}->perfdata_add(label => "used" . $extra_label, unit => 'B',
                                       value => $memory_used,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),

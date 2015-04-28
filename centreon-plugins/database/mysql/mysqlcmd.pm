@@ -64,6 +64,7 @@ sub new {
                       "port:s@"                  => { name => 'port' },
                       "username:s@"              => { name => 'username' },
                       "password:s@"              => { name => 'password' },
+                      "socket:s@"                => { name => 'socket' },
                       "sql-errors-exit:s"        => { name => 'sql_errors_exit', default => 'unknown' },
         });
     }
@@ -78,6 +79,7 @@ sub new {
     
     $self->{host} = undef;
     $self->{port} = undef;
+    $self->{socket} = undef;
     $self->{username} = undef;
     $self->{password} = undef;
     
@@ -118,6 +120,7 @@ sub check_options {
     
     $self->{host} = (defined($self->{option_results}->{host})) ? shift(@{$self->{option_results}->{host}}) : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
+    $self->{socket} = (defined($self->{option_results}->{socket})) ? shift(@{$self->{option_results}->{socket}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
@@ -137,6 +140,9 @@ sub check_options {
     }
     if (defined($self->{password}) && $self->{password} ne '') {
         push @{$self->{args}}, "-p" . $self->{password};
+    }
+    if (defined($self->{socket}) && $self->{socket} ne '') {
+        push @{$self->{args}}, "--socket", $self->{socket};
     }
 
     if (scalar(@{$self->{option_results}->{host}}) == 0) {
