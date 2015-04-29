@@ -69,10 +69,10 @@ sub run {
     if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
         $filters{'config.annotation'} = qr/$self->{filter_description}/;
     }
+    my @properties = ('name', 'summary.overallStatus', 'runtime.connectionState');
     if (defined($self->{display_description})) {
         push @properties, 'config.annotation';
     }
-    my @properties = ('name', 'summary.overallStatus', 'runtime.connectionState');
     my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
