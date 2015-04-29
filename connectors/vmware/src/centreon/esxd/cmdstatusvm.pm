@@ -102,6 +102,7 @@ sub run {
                                                   hostname => $entity_view->{name}, 
                                                   state => $entity_view->{'runtime.connectionState'}->val,
                                                   status => $self->{disconnect_status},
+                                                  nocheck_ps => 1,
                                                   multiple => $multiple) == 0);
         
         my $status_vm = $entity_view->{'summary.overallStatus'}->val;
