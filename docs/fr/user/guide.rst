@@ -5,7 +5,7 @@ Description
 "centreon-plugins" est un projet gratuit et open source de supervision des systèmes.
 Ce projet peut être utilisé avec Centreon, Icinga et tout autre logiciel de supervision compatible avec les plugins Nagios.
 
-La dernière version est disponible sur le dépôt git suivant: http://git.centreon.com/centreon-plugins.git
+La dernière version est disponible sur le dépôt git suivant: https://github.com/centreon/centreon-plugins.git
 
 ************
 Installation
@@ -19,7 +19,7 @@ Télécharger la dernière version de "centreon-plugins" depuis le dépôt :
 ::
 
   # aptitude install git
-  # git clone http://git.centreon.com/centreon-plugins.git
+  # git clone https://github.com/centreon/centreon-plugins.git
 
 Pour superviser les systèmes SNMP, vous devez installer les paquets suivants :
 ::
@@ -41,7 +41,7 @@ Télécharger la dernière version de "centreon-plugins" depuis le dépôt :
 ::
 
   # yum install git
-  # git clone http://git.centreon.com/centreon-plugins.git
+  # git clone https://github.com/centreon/centreon-plugins.git
 
 Pour superviser les systèmes SNMP, vous devez installer les paquets suivants :
 ::
@@ -488,7 +488,7 @@ Divers
 J'utilise une options mais il semblerait qu'elle ne fonctionne pas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Avant d'ouvrir un ticket sur la forge, utilisez l'option ``--sanity-options``. Cela vérifie si vous avez mal orthographié une option :
+Avant d'ouvrir un ticket sur github, utilisez l'option ``--sanity-options``. Cela vérifie si vous avez mal orthographié une option :
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
