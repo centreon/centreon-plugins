@@ -5,7 +5,7 @@ Description
 "centreon-plugins" is a free and open source project to monitor systems.
 The project can be used with Centreon, Icinga and all monitoring softwares compatible Nagios plugins.
 
-The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
+The lastest version is available on following git repository: https://github.com/centreon/centreon-plugins.git
 
 ************
 Installation
@@ -19,7 +19,7 @@ Get the last version of "centreon-plugins" from the repository:
 ::
 
   # aptitude install git
-  # git clone http://git.centreon.com/centreon-plugins.git
+  # git clone https://github.com/centreon/centreon-plugins.git
 
 To monitor SNMP systems, you need to install the following packages:
 ::
@@ -41,7 +41,7 @@ Get the last version of "centreon-plugins" from the repository:
 ::
 
   # yum install git
-  # git clone http://git.centreon.com/centreon-plugins.git
+  # git clone https://github.com/centreon/centreon-plugins.git
 
 To monitor SNMP systems, you need to install the following packages:
 ::
@@ -488,7 +488,7 @@ Miscellaneous
 I use an option but it doesn't seem to work
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Before opening a ticket on the forge, please use the option ``--sanity-options``. It checks if you have misspell an option:
+Before opening a ticket on the github, please use the option ``--sanity-options``. It checks if you have misspell an option:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
