@@ -71,6 +71,7 @@ sub new {
                          'snapshot-vm'          => 'apps::vmware::connector::mode::snapshotvm',
                          'stat-connectors'      => 'apps::vmware::connector::mode::statconnectors',
                          'status-host'          => 'apps::vmware::connector::mode::statushost',
+                         'status-vm'            => 'apps::vmware::connector::mode::statusvm',
                          'swap-host'            => 'apps::vmware::connector::mode::swaphost',
                          'swap-vm'              => 'apps::vmware::connector::mode::swapvm',
                          'thinprovisioning-vm'  => 'apps::vmware::connector::mode::thinprovisioningvm',
