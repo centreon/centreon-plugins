@@ -121,7 +121,9 @@ sub check_options {
     $self->{vsphere_username} = (defined($self->{option_results}->{vsphere_username})) ? shift(@{$self->{option_results}->{vsphere_username}}) : undef;
     $self->{vsphere_password} = (defined($self->{option_results}->{vsphere_password})) ? shift(@{$self->{option_results}->{vsphere_password}}) : undef;
 
-    if (!defined($self->{connector_hostname})) {
+    $self->{connector_port} = 5700 if ($self->{connector_port} eq '');
+    $self->{container} = 'default' if ($self->{container} eq '');
+    if (!defined($self->{connector_hostname}) || $self->{connector_hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
         $self->{output}->option_exit();
     }
