@@ -68,15 +68,15 @@ my $maps_counters = {
                },
 };
 
-my $oid_upsmgEnvironAmbientTemp = '.1.3.6.1.4.1.705.1.8.1.0'; # in degree centigrade
-my $oid_upsmgEnvironAmbientHumidity = '.1.3.6.1.4.1.705.1.8.2.0'; # in %
+my $oid_upsmgEnvironAmbientTemp = '.1.3.6.1.4.1.705.1.8.1.0'; # in 0.1 degree centigrade
+my $oid_upsmgEnvironAmbientHumidity = '.1.3.6.1.4.1.705.1.8.2.0'; # in 0.1 %
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
                                 {
                                 });
@@ -154,12 +154,12 @@ sub manage_selection {
     
     if (defined($self->{results}->{$oid_upsmgEnvironAmbientTemp}) && $self->{results}->{$oid_upsmgEnvironAmbientTemp} ne '' &&
         $self->{results}->{$oid_upsmgEnvironAmbientTemp} != 0) {
-        $self->{instance_selected}->{ambiant}->{temperature} = $self->{results}->{$oid_upsmgEnvironAmbientTemp};
+        $self->{instance_selected}->{ambiant}->{temperature} = $self->{results}->{$oid_upsmgEnvironAmbientTemp} / 10;
         $values_ok++;
     }
     if (defined($self->{results}->{$oid_upsmgEnvironAmbientHumidity}) && $self->{results}->{$oid_upsmgEnvironAmbientHumidity} ne '' &&
         $self->{results}->{$oid_upsmgEnvironAmbientHumidity} != 0) {
-        $self->{instance_selected}->{ambiant}->{humidity} = $self->{results}->{$oid_upsmgEnvironAmbientHumidity};
+        $self->{instance_selected}->{ambiant}->{humidity} = $self->{results}->{$oid_upsmgEnvironAmbientHumidity} / 10;
         $values_ok++;
     }
     
