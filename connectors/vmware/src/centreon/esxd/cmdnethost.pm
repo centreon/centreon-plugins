@@ -85,7 +85,7 @@ sub run {
     }
 
     my %filters = ();
-    my $multiple = 0;
+    my ($multiple, $number_nic) = (0, 0);
     if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
         $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
     } elsif (!defined($self->{esx_hostname})) {
@@ -150,6 +150,7 @@ sub run {
                 next;
             }
             $filter_ok = 1;
+            $number_nic++;
             if (defined($_->linkSpeed)) {
                 $pnic_def_up->{$entity_view->{mo_ref}->{value}}->{$_->device} = $_->linkSpeed->speedMb;
                 push @$instances, $_->device;
@@ -159,12 +160,12 @@ sub run {
         }
         
         if ($filter_ok == 0) {
-           $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                  short_msg => sprintf("%s can't get physical nic with filter '%s'. (or physical nic not in a 'vswitch' or 'dvswitch'",
+            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => sprintf("%s can't get physical nic with filter '%s'. (or physical nic not in a 'vswitch' or 'dvswitch'",
                                                                         $entity_view->{name}, $self->{nic_name}));
-           next;
+            next;
         }
-        if (scalar(@${instances}) == 0 && 
+        if (scalar(@$instances) == 0 && 
             ($multiple == 0 || ($multiple == 1 && !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1)))) {
             $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
                                                    short_msg => sprintf("%s Link(s) '%s' is(are) down",
@@ -194,7 +195,7 @@ sub run {
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
         if (scalar(keys %{$pnic_def_down->{$entity_value}}) > 0 && 
-            ($multiple == 0 || !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1))) {
+            (($multiple == 0 && $number_nic == 1) || !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1))) {
             $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
                                                    short_msg => sprintf("%s Link(s) '%s' is(are) down",
                                                                         $entity_view->{name}, join("','", keys %{$pnic_def_down->{$entity_value}})));
@@ -223,13 +224,14 @@ sub run {
                                            $out_value . $out_unit, $out_prct);
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = ', ';
-            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
+            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0 && $number_nic == 1)) {
                 $short_msg .= $short_msg_append . $output;
                 $short_msg_append = ', ';
             }
 
             my $extra_label = '';
-            $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
+            $extra_label .= '_' . $_ if ($number_nic > 1);
+            $extra_label .= '_' . $entity_view->{name} if ($multiple == 1);
             $self->{manager}->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
                                           value => sprintf("%.2f", $traffic_in),
                                           warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
