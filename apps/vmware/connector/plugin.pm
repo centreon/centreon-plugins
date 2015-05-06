@@ -75,6 +75,7 @@ sub new {
                          'swap-host'            => 'apps::vmware::connector::mode::swaphost',
                          'swap-vm'              => 'apps::vmware::connector::mode::swapvm',
                          'thinprovisioning-vm'  => 'apps::vmware::connector::mode::thinprovisioningvm',
+                         'time-host'            => 'apps::vmware::connector::mode::timehost',
                          'tools-vm'             => 'apps::vmware::connector::mode::toolsvm',
                          'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
                          'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
