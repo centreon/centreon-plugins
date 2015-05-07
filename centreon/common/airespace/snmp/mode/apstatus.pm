@@ -262,8 +262,8 @@ sub manage_selection {
         $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnAPName}->{oid} }, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping->{bsnAPOperationStatus}->{oid} }, instance => $instance);
-        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping->{bsnAPAdminStatus}->{oid} }, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnAPOperationStatus}->{oid} }, instance => $instance);
+        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{bsnAPName} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{bsnAPName} . "': no matching filter.");

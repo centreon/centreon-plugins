@@ -70,12 +70,12 @@ sub check {
         $self->{components}->{psu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is %s.",
-                                                        $$instances[1], $operational));
+                                                        $$instances[0], $operational));
         my $exit = $self->get_severity(section => 'psu', value => $operational);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("Power supply '%s' status is %s.",
-                                                             $$instances[1], $operational));
+                                                             $$instances[0], $operational));
         }
     }
 }

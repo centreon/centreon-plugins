@@ -45,7 +45,7 @@ my $maps_counters = {
     '000_noise-power'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'noise_power' }
+                                        { name => 'noise_power' }, { name => 'label_perfdata' }
                                       ],
                         output_template => 'Noise Power : %s dBm',
                         perfdatas => [
@@ -179,7 +179,7 @@ sub manage_selection {
         }
         my $instance_end;
         foreach my $oid2 (keys %{$self->{results}->{$oid_bsnAPIfDBNoisePower}}) {
-            if ($oid2 =~ /^$oid\.(\d+)\.(\d+)$/) {
+            if ($oid2 =~ /^$oid_bsnAPIfDBNoisePower\.$instance_mac\.(\d+)\.(\d+)$/) {
                 $instance_end = $1 . '.' . $2;
                 
                 if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&

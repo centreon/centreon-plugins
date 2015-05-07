@@ -193,7 +193,7 @@ sub manage_selection {
         }
         my $instance_end;
         foreach my $oid2 (keys %{$self->{results}->{$oid_bsnAPIfInterferencePower}}) {
-            if ($oid2 =~ /^$oid\.(\d+)\.(\d+)$/) {
+            if ($oid2 =~ /^$oid_bsnAPIfInterferencePower\.$instance_mac\.(\d+)\.(\d+)$/) {
                 $instance_end = $1 . '.' . $2;
                 
                 if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&

@@ -51,84 +51,84 @@ my $maps_counters = {
                         ],
                     }
                },
-    '001_idle'   => { class => 'centreon::plugins::values', obj => undef,
+    '001_total-idle'   => { class => 'centreon::plugins::values', obj => undef,
                  set => {
-                        key_values => [ { name => 'idle' } ],
+                        key_values => [ { name => 'total_idle' } ],
                         output_template => 'Total Idle Users : %s',
                         perfdatas => [
-                            { label => 'total_idle', value => 'idle_absolute', template => '%s', 
+                            { label => 'total_idle', value => 'total_idle_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-     '002_aaapending'  => { set => {
-                        key_values => [ { name => 'aaapending' } ],
+     '002_total-aaapending'  => { set => {
+                        key_values => [ { name => 'total_aaapending' } ],
                         output_template => 'Total AaaPending Users : %s',
                         perfdatas => [
-                            { label => 'total_aaapending', value => 'aaapending_absolute', template => '%s', 
+                            { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '003_authenticated'   => { set => {
-                        key_values => [ { name => 'authenticated' } ],
+    '003_total-authenticated'   => { set => {
+                        key_values => [ { name => 'total_authenticated' } ],
                         output_template => 'Total Authenticated Users : %s',
                         perfdatas => [
-                            { label => 'total_authenticated', value => 'authenticated_absolute', template => '%s', 
+                            { label => 'total_authenticated', value => 'total_authenticated_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '004_associated'   => { set => {
-                        key_values => [ { name => 'associated' } ],
+    '004_total-associated'   => { set => {
+                        key_values => [ { name => 'total_associated' } ],
                         output_template => 'Total Associated Users : %s',
                         perfdatas => [
-                            { label => 'total_associated', value => 'associated_absolute', template => '%s', 
+                            { label => 'total_associated', value => 'total_associated_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '005_powersave'   => { set => {
-                        key_values => [ { name => 'idle' } ],
+    '005_total-powersave'   => { set => {
+                        key_values => [ { name => 'total_powersave' } ],
                         output_template => 'Total Powersave Users : %s',
                         perfdatas => [
-                            { label => 'total_powersave', value => 'powersave_absolute', template => '%s', 
+                            { label => 'total_powersave', value => 'total_powersave_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '006_disassociated'   => { set => {
-                        key_values => [ { name => 'disassociated' } ],
+    '006_total-disassociated'   => { set => {
+                        key_values => [ { name => 'total_disassociated' } ],
                         output_template => 'Total Disassociated Users : %s',
                         perfdatas => [
-                            { label => 'total_disassociated', value => 'disassociated_absolute', template => '%s', 
+                            { label => 'total_disassociated', value => 'total_disassociated_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '007_tobedeleted'   => { set => {
-                        key_values => [ { name => 'tobedeleted' } ],
+    '007_total-tobedeleted'   => { set => {
+                        key_values => [ { name => 'total_tobedeleted' } ],
                         output_template => 'Total ToBeDeleted Users : %s',
                         perfdatas => [
-                            { label => 'total_tobedeleted', value => 'tobedeleted_absolute', template => '%s', 
+                            { label => 'total_tobedeleted', value => 'total_tobedeleted_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '008_probing'   => { set => {
-                        key_values => [ { name => 'probing' } ],
+    '008_total-probing'   => { set => {
+                        key_values => [ { name => 'total_probing' } ],
                         output_template => 'Total Probing Users : %s',
                         perfdatas => [
-                            { label => 'total_probing', value => 'probing_absolute', template => '%s', 
+                            { label => 'total_probing', value => 'total_probing_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
                },
-    '009_blacklisted'   => { set => {
+    '009_total-blacklisted'   => { set => {
                         key_values => [ { name => 'blacklisted' } ],
                         output_template => 'Total Blacklisted Users : %s',
                         perfdatas => [
-                            { label => 'total_blacklisted', value => 'blacklisted_absolute', template => '%s', 
+                            { label => 'total_blacklisted', value => 'total_blacklisted_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
@@ -239,7 +239,9 @@ my $mapping2 = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = { total => 0 };
+    $self->{global} = { total => 0, total_idle => 0, total_aaapending => 0, total_authenticated => 0,
+                        total_associated => 0, total_powersave => 0, total_disassociated => 0,
+                        total_tobedeleted => 0, total_probing => 0, total_blacklisted => 0};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{bsnMobileStationStatus}->{oid} },
                                                                    { oid => $mapping2->{bsnMobileStationSsid}->{oid} },
                                                                  ],
@@ -248,15 +250,14 @@ sub manage_selection {
         $oid =~ /^$mapping->{bsnMobileStationStatus}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping->{bsnMobileStationSsid}->{oid} }, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnMobileStationSsid}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
             $result2->{bsnMobileStationSsid} !~ /$self->{option_results}->{filter_ssid}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result2->{bsnMobileStationSsid} . "': no matching filter.");
             next;
         }
         $self->{global}->{total}++;
-        $self->{global}->{$result->{bsnMobileStationStatus}} = 0 if (!defined($self->{global}->{$result->{bsnMobileStationStatus}}));
-        $self->{global}->{$result->{bsnMobileStationStatus}}++;
+        $self->{global}->{'total_' . $result->{bsnMobileStationStatus}}++;
     }
 }
 
