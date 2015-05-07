@@ -40,16 +40,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_CPU_Temperature_entry = '.1.3.6.1.4.1.24681.1.2.5';
-my $oid_CPU_Temperature = '.1.3.6.1.4.1.24681.1.2.5.0';
-my $oid_SystemTemperature_entry = '.1.3.6.1.4.1.24681.1.2.6';
-my $oid_SystemTemperature = '.1.3.6.1.4.1.24681.1.2.6.0';
-my $oid_HdDescr = '.1.3.6.1.4.1.24681.1.2.11.1.2';
-my $oid_HdTemperature = '.1.3.6.1.4.1.24681.1.2.11.1.3';
-my $oid_HdStatus = '.1.3.6.1.4.1.24681.1.2.11.1.4';
-my $oid_SysFanDescr = '.1.3.6.1.4.1.24681.1.2.15.1.2';
-my $oid_SysFanSpeed = '.1.3.6.1.4.1.24681.1.2.15.1.3';
-
 my $thresholds = {
     disk => [
         ['noDisk', 'OK'],
@@ -58,15 +48,12 @@ my $thresholds = {
         ['rwError', 'CRITICAL'],
         ['unknown', 'UNKNOWN'],
     ],
+    smartdisk => [
+        ['GOOD', 'OK'],
+        ['--', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
 };
-
-my %map_states_disk = (
-    0 => 'ready',
-    '-5' => 'noDisk',
-    '-6' => 'invalid',
-    '-9' => 'rwError',
-    '-4' => 'unknown',
-);
 
 sub new {
     my ($class, %options) = @_;
@@ -77,10 +64,12 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "exclude:s"               => { name => 'exclude' },
-                                  "component:s"             => { name => 'component', default => 'all' },
+                                  "component:s"             => { name => 'component', default => '.*' },
                                   "absent-problem:s"        => { name => 'absent' },
                                   "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
 
     $self->{components} = {};
@@ -114,6 +103,31 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
+    
+    $self->{numeric_threshold} = {};
+    foreach my $option (('warning', 'critical')) {
+        foreach my $val (@{$self->{option_results}->{$option}}) {
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my ($section, $regexp, $value) = ($1, $2, $3);
+            if ($section !~ /(temperature|fan|disk)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature, fan or disk).");
+                $self->{output}->option_exit();
+            }
+            my $position = 0;
+            if (defined($self->{numeric_threshold}->{$section})) {
+                $position = scalar(@{$self->{numeric_threshold}->{$section}});
+            }
+            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
+        }
+    }
 }
 
 sub run {
@@ -121,29 +135,30 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                { oid => $oid_CPU_Temperature_entry },
-                                                { oid => $oid_SystemTemperature_entry },
-                                                { oid => $oid_HdDescr },
-                                                { oid => $oid_HdTemperature },
-                                                { oid => $oid_HdStatus },
-                                                { oid => $oid_SysFanDescr },
-                                                { oid => $oid_SysFanSpeed },
-                                               ]);
-
-    if ($self->{option_results}->{component} eq 'all') {    
-        $self->check_temperature();
-        $self->check_disk();
-        $self->check_fan();
-    } elsif ($self->{option_results}->{component} eq 'temperature') {
-        $self->check_temperature();
-    } elsif ($self->{option_results}->{component} eq 'disk') {
-        $self->check_disk();
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        $self->check_fan();
-    } else {
+    my $snmp_request = [];
+    my @components = ('temperature', 'disk', 'fan');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "storage::qnap::snmp::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
+    
+    if (scalar(@{$snmp_request}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "storage::qnap::snmp::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
     }
     
     my $total_components = 0;
@@ -226,100 +241,25 @@ sub get_severity {
     return $status;
 }
 
-sub check_disk {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_HdDescr}})) {
-        $oid =~ /\.(\d+)$/;
-        my $instance = $1;
-        my $disk_descr = $self->{results}->{$oid_HdDescr}->{$oid};
-        my $disk_state = $self->{results}->{$oid_HdStatus}->{$oid_HdStatus . '.' . $instance};
-        my $disk_temp = defined($self->{results}->{$oid_HdTemperature}->{$oid_HdTemperature . '.' . $instance}) ? 
-                            $self->{results}->{$oid_HdTemperature}->{$oid_HdTemperature . '.' . $instance} : 'unknown';
-
-        next if ($self->check_exclude(section => 'disk', instance => $instance));
-        next if ($map_states_disk{$disk_state} eq 'noDisk' && 
-                 $self->absent_problem(section => 'instance', instance => $instance));
-        
-        $self->{components}->{disk}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' [instance: %s, temperature: %s] state is %s.",
-                                    $disk_descr, $instance, $disk_temp, $map_states_disk{$disk_state}));
-        my $exit = $self->get_severity(section => 'disk', value => $map_states_disk{$disk_state});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Disk '%s' state is %s.", $disk_descr, $map_states_disk{$disk_state}));
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
+    
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{regexp}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
+            }
         }
-        
-        if ($disk_temp =~ /([0-9]+)\s*C/) {
-            $self->{output}->perfdata_add(label => 'temp_disk_' . $instance, unit => 'C',
-                                          value => $1
-                                          );
-        }
-    }
-}
-
-sub check_temperature {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
-
-    my $cpu_temp = defined($self->{results}->{$oid_CPU_Temperature_entry}->{$oid_CPU_Temperature}) ? 
-                           $self->{results}->{$oid_CPU_Temperature_entry}->{$oid_CPU_Temperature} : 'unknown';
-    if ($cpu_temp =~ /([0-9]+)\s*C/ && !$self->check_exclude(section => 'temperature', instance => 'cpu')) {
-        my $value = $1;
-        $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("CPU Temperature is '%s' Celsisus",
-                                                        $value));
-        $self->{output}->perfdata_add(label => 'temp_cpu', unit => 'C',
-                                      value => $value
-                                      );
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
     }
     
-    my $system_temp = defined($self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature}) ? 
-                           $self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature} : 'unknown';
-    if ($system_temp =~ /([0-9]+)\s*C/ && !$self->check_exclude(section => 'temperature', instance => 'system')) {
-        my $value = $1;
-        $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("System Temperature is '%s' Celsius",
-                                                        $value));
-        $self->{output}->perfdata_add(label => 'temp_system', unit => 'C',
-                                      value => $value
-                                      );
-    }
-}
-
-sub check_fan {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_SysFanDescr}})) {
-        $oid =~ /\.(\d+)$/;
-        my $instance = $1;
-        my $fan_descr = $self->{results}->{$oid_SysFanDescr}->{$oid};
-        my $fan_speed = defined($self->{results}->{$oid_SysFanSpeed}->{$oid_SysFanSpeed . '.' . $instance}) ? 
-                            $self->{results}->{$oid_SysFanSpeed}->{$oid_SysFanSpeed . '.' . $instance} : 'unknown';
-
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
-        
-        $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' [instance: %s] speed is '%s'.",
-                                    $fan_descr, $instance, $fan_speed));
-
-        if ($fan_speed =~ /([0-9]+)\s*rpm/i) {
-            $self->{output}->perfdata_add(label => 'fan_' . $instance, unit => 'rpm',
-                                          value => $1
-                                          );
-        }
-    }
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
 }
 
 1;
@@ -334,7 +274,7 @@ Check hardware (NAS.mib) (Fans, Temperatures, Disks).
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'fan', 'disk', 'temperature'.
 
 =item B<--exclude>
@@ -357,6 +297,16 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='disk,CRITICAL,^(?!(ready)$)'
+
+=item B<--warning>
+
+Set warning threshold for temperatures (syntax: type,regexp,threshold)
+Example: --warning='temperature,cpu,30' --warning='fan,.*,1500'
+
+=item B<--critical>
+
+Set critical threshold for temperatures (syntax: type,regexp,threshold)
+Example: --critical='temperature,system,40' --critical='disk,.*,40'
 
 =back
 
