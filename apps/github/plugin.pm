@@ -47,8 +47,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'systemstatus'    => 'apps::github::mode::systemstatus',
-                        'apistatus'    => 'apps::github::mode::apistatus',
+                        'status'    => 'apps::github::mode::status',
                         'issue'    => 'apps::github::mode::issue',
                         'commit'    => 'apps::github::mode::commit',
                         'fork'    => 'apps::github::mode::fork',
