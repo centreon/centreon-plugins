@@ -125,7 +125,7 @@ my $maps_counters = {
                     }
                },
     '009_total-blacklisted'   => { set => {
-                        key_values => [ { name => 'blacklisted' } ],
+                        key_values => [ { name => 'total_blacklisted' } ],
                         output_template => 'Total Blacklisted Users : %s',
                         perfdatas => [
                             { label => 'total_blacklisted', value => 'total_blacklisted_absolute', template => '%s', 
