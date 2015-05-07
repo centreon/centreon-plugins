@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::ruggedcom::mode::memory;
+package centreon::common::airespace::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -73,13 +73,14 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_rcDeviceStsAvailableRam = '.1.3.6.1.4.1.15004.4.2.2.2.0'; # in bytes
-    my $oid_rcDeviceInfoTotalRam = '.1.3.6.1.4.1.15004.4.2.3.5.0'; # in bytes
+    my $oid_agentTotalMemory = '.1.3.6.1.4.1.14179.1.1.5.2.0'; # in Kbytes
+    my $oid_agentFreeMemory = '.1.3.6.1.4.1.14179.1.1.5.3.0'; # in Kbytes
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_rcDeviceStsAvailableRam, $oid_rcDeviceInfoTotalRam], 
+    my $result = $self->{snmp}->get_leef(oids => [$oid_agentTotalMemory, $oid_agentFreeMemory], 
                                          nothing_quit => 1);
-    my $used = $result->{$oid_rcDeviceStsAvailableRam};
-    my $total_size = $result->{$oid_rcDeviceInfoTotalRam};
+    my $free = $result->{$oid_agentFreeMemory} * 1024;
+    my $total_size = $result->{$oid_agentTotalMemory} * 1024;
+    my $used = $total_size - $free;    
     
     my $prct_used = $used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -108,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (RUGGEDCOM-SYS-INFO).
+Check memory usage (AIRESPACE-SWITCHING-MIB).
 
 =over 8
 
