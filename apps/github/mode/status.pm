@@ -65,8 +65,6 @@ sub new {
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
             "timeout:s"         => { name => 'timeout', default => '3' },
         });
 
@@ -165,19 +163,19 @@ Check Elasticsearch number of nodes
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Elasticsearch host
+IP Addr/FQDN of the github.com status website (Default: status.github.com)
 
 =item B<--port>
 
-Port used by Elasticsearch API (Default: '9200')
+Port used by github.com status website (Default: '443')
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (Default: 'https')
 
 =item B<--urlpath>
 
-Set path to get Elasticsearch information (Default: '/')
+Set path to get GitHub status information (Default: '/api/last-message.json')
 
 =item B<--credentials>
 
@@ -185,19 +183,11 @@ Specify this option if you access webpage over basic authentification
 
 =item B<--username>
 
-Specify username for API authentification
+Specify username
 
 =item B<--password>
 
-Specify password for API authentification
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Specify password
 
 =item B<--timeout>
 
