@@ -157,17 +157,17 @@ __END__
 
 =head1 MODE
 
-Check Elasticsearch number of nodes
+Check GitHub's status
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the github.com status website (Default: status.github.com)
+IP Addr/FQDN of the GitHub's status website (Default: status.github.com)
 
 =item B<--port>
 
-Port used by github.com status website (Default: '443')
+Port used by GitHub's status website (Default: '443')
 
 =item B<--proto>
 
@@ -175,7 +175,7 @@ Specify https if needed (Default: 'https')
 
 =item B<--urlpath>
 
-Set path to get GitHub status information (Default: '/api/last-message.json')
+Set path to get GitHub's status information (Default: '/api/last-message.json')
 
 =item B<--credentials>
 
