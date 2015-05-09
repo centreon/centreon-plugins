@@ -50,8 +50,6 @@ sub new {
                         'status'    => 'apps::github::mode::status',
                         'issues'    => 'apps::github::mode::issues',
                         'commits'    => 'apps::github::mode::commits',
-                        'fork'    => 'apps::github::mode::fork',
-                        'download'    => 'apps::github::mode::download',
                         );
     return $self;
 }
