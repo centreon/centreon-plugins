@@ -54,6 +54,7 @@ sub new {
                          'memory'           => 'storage::qnap::snmp::mode::memory',
                          'storage'          => 'snmp_standard::mode::storage',
                          'traffic'          => 'snmp_standard::mode::traffic',
+                         'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage',
                          );
 
     return $self;
