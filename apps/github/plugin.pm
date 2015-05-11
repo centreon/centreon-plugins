@@ -47,9 +47,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'status'    => 'apps::github::mode::status',
-                        'issues'    => 'apps::github::mode::issues',
-                        'commits'    => 'apps::github::mode::commits',
+                        'status'       => 'apps::github::mode::status',
+                        'issues'       => 'apps::github::mode::issues',
+                        'commits'      => 'apps::github::mode::commits',
+                        'pullrequests' => 'apps::github::mode::pullrequests',
                         );
     return $self;
 }
@@ -60,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check GitHub status and get statistics for metrology.
+Check GitHub status, issues, pullrequests and get commits for metrology.
 
 =cut
