@@ -120,13 +120,30 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $state = $webcontent->{state_code};
-    if ($state eq '200') {
+    my $state = $webcontent->{state};
+    my $output = $webcontent->{state_code_str};
+
+    if ($state == -3) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Disable");
+    } elsif ($state == -2) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Not scheduled");
+    } elsif ($state == -1) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Pending...");
+    } elsif ($state == 0) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Status %d received", $state));
-    } else {
+                                    short_msg => $output);
+    } elsif ($state == 1) {
+        $self->{output}->output_add(severity => 'WARNING',
+                                    short_msg => $output);
+    } elsif ($state == 2) {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Status %d received", $state));
+                                    short_msg => $output);
+    } elsif ($state >= 3) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => $output);
     }
 
     $self->{output}->display();
