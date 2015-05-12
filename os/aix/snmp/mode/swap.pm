@@ -50,9 +50,8 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "paging-state-buggy"      => { name => 'paging_state_buggy' },
                                 });
-
-    $self->{swap_memory_id} = undef;
     
     return $self;
 }
@@ -115,6 +114,13 @@ sub run {
     my $active_swap = 2;
     if ($results->{$oid_sysDescr}->{$oid_sysDescr . ".0"} =~ /AIX version: 05\./i) {
         $active_swap = 1;
+    }
+    if (defined($self->{option_results}->{paging_state_buggy})) {
+        if ($active_swap == 2) {
+            $active_swap = 1;
+        } else {
+            $active_swap = 2;
+        }
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -179,6 +185,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--paging-state-buggy>
+
+Paging state can be buggy. Please use the following option to swap state value.
 
 =back
 
