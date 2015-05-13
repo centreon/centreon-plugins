@@ -144,7 +144,9 @@ sub countFiles {
             }
 
             foreach my $line (@files) {
-                next if ($line !~ /(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(.*)/);
+                # IIS: 05-13-15  10:59AM              1184403 test.jpg
+                next if ($line !~ /(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(.*)/ &&
+                         $line !~ /^\s*\S+\s*\S+\s*(\S+)\s+(.*)/);
                 my ($rights, $filename) = ($1, $2);
                 my $bname = basename($filename);
                 next if ($bname eq '.' || $bname eq '..');
