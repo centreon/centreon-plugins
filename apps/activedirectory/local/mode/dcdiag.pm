@@ -157,11 +157,11 @@ sub dcdiag {
         $dcdiag_cmd .= ' /test:dfsrevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1) && defined($self->{option_results}->{dfsr}));
     }
     
-    my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                          timeout => $self->{option_results}->{timeout},
-                                                          command => $dcdiag_cmd . " 2>&1",
-                                                          command_path => undef,
-                                                          command_options => undef);
+    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
+                                                            timeout => $self->{option_results}->{timeout},
+                                                            command => $dcdiag_cmd,
+                                                            command_path => undef,
+                                                            command_options => undef);
     
     my $match = 0;
     while ($stdout =~ /$self->{msg}->{global}/imsg) {

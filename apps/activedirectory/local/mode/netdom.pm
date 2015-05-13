@@ -71,7 +71,7 @@ sub netdom {
     
     my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(output => $self->{output},
                                                           timeout => $self->{option_results}->{timeout},
-                                                          command => $netdom_cmd . " 2>&1",
+                                                          command => $netdom_cmd,
                                                           command_path => undef,
                                                           command_options => undef,
                                                           no_quit => 1);
