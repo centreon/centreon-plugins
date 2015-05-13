@@ -158,7 +158,7 @@ sub countFiles {
                     next;
                 }
             
-                if ($rights =~ /^d/i) {
+                if ($rights =~ /^(d|<DIR>)/i) {
                     if (defined($self->{option_results}->{max_depth}) && $level + 1 <= $self->{option_results}->{max_depth}) {
                         push @$list, { name => $name, level => $level + 1};
                     }
