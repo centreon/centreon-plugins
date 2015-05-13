@@ -104,12 +104,12 @@ sub run {
                                                                                      no_mapi => $self->{option_results}->{no_mapi},
                                                                                      filter_database => $self->{option_results}->{ps_database_filter},
                                                                                      filter_database_test => $self->{option_results}->{ps_database_test_filter});
-    $self->{option_results}->{command_options} .= " " . $ps . " 2>&1";
-    my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                          timeout => $self->{option_results}->{timeout},
-                                                          command => $self->{option_results}->{command},
-                                                          command_path => $self->{option_results}->{command_path},
-                                                          command_options => $self->{option_results}->{command_options});
+    $self->{option_results}->{command_options} .= " " . $ps;
+    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
+                                                            timeout => $self->{option_results}->{timeout},
+                                                            command => $self->{option_results}->{command},
+                                                            command_path => $self->{option_results}->{command_path},
+                                                            command_options => $self->{option_results}->{command_options});
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $stdout);

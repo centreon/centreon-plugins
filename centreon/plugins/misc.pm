@@ -39,47 +39,89 @@ use strict;
 use warnings;
 use utf8;
 
-# Function more simple for Windows platform
 sub windows_execute {
     my (%options) = @_;
-    my $result = undef;
-    my $stdout = '';
+    my $result;
+    my ($stdout, $pid, $ended) = ('');
     my ($exit_code, $cmd);
     
     $cmd = $options{command_path} . '/' if (defined($options{command_path}));
     $cmd .= $options{command} . ' ' if (defined($options{command}));
     $cmd .= $options{command_options} if (defined($options{command_options}));
     
-    eval {
-        local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
-        alarm( $options{timeout} );
-        $stdout = `$cmd`;
-        $exit_code = ($? >> 8);
-        alarm(0);
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'Win32::Job',
+                                           error_msg => "Cannot load module 'Win32::Job'.");
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'Time::HiRes',
+                                           error_msg => "Cannot load module 'Time::HiRes'.");
+    
+    $| = 1;
+    pipe FROM_CHILD, TO_PARENT or do {
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                    short_msg => "Internal error: can't create pipe from child to parent: $!");
+        $options{output}->display();
+        $options{output}->exit();
     };
+    my $job = Win32::Job->new;
+    if (!($pid = $job->spawn(undef, $cmd,
+                       { stdout => \*TO_PARENT,
+                         stderr => \*TO_PARENT }))) {
+        $options{output}->output_add(severity => 'UNKNOWN', 
+                                     short_msg => "Internal error: execution issue: $^E");
+        $options{output}->display();
+        $options{output}->exit();
+    }
+    close TO_PARENT;
 
-    if ($@) {
+    my $ein = "";
+    vec($ein, fileno(FROM_CHILD), 1) = 1;
+    $job->watch(
+        sub {            
+            my ($buffer);
+            my $time = $options{timeout};
+            my $last_time = Time::HiRes::time();
+            $ended = 0;
+            while (select($ein, undef, undef, $options{timeout})) {
+                if (sysread(FROM_CHILD, $buffer, 16384)) {
+                    $buffer =~ s/\r//g;
+                    $stdout .= $buffer;
+                } else {
+                    $ended = 1;
+                    last;
+                }
+                $options{timeout} -= Time::HiRes::time() - $last_time;
+                last if ($options{timeout} <= 0);         
+                $last_time = Time::HiRes::time();
+            }
+            return 1 if ($ended == 0);
+            return 0;
+        },
+        0.1
+    );
+        
+    $result = $job->status;
+    close FROM_CHILD;    
+    
+    if ($ended == 0) {
         $options{output}->output_add(severity => 'UNKNOWN', 
                                     short_msg => "Command too long to execute (timeout)...");
         $options{output}->display();
         $options{output}->exit();
     }
     chomp $stdout;
-    $stdout =~ s/\r//g;
     
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
-        return ($stdout, $exit_code);
+        return ($stdout, $result->{$pid}->{exitcode});
     }
     
-    if ($exit_code != 0) {
+    if ($result->{$pid}->{exitcode} != 0) {
         $stdout =~ s/\n/ - /g;
         $options{output}->output_add(severity => 'UNKNOWN', 
                                     short_msg => "Command error: $stdout");
         $options{output}->display();
         $options{output}->exit();
     }
-
-    return $stdout;
+    
+    return ($stdout, $result->{$pid}->{exitcode});
 }
 
 sub execute {
