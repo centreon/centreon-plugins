@@ -76,7 +76,7 @@ sub run {
 
     $self->{sql}->connect();
     $self->{sql}->query(query => q{
-        SELECT instance_id,name,last_alive,running FROM centreon_storage.instances;
+        SELECT instance_id,name,last_alive,running FROM centreon_storage.instances WHERE deleted = '0';
     });
     my $result = $self->{sql}->fetchall_arrayref();
     
