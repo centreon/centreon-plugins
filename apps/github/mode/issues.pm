@@ -58,7 +58,7 @@ sub new {
             "password:s"        => { name => 'password' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "user:s"            => { name => 'user' },
+            "owner:s"           => { name => 'owner' },
             "repository:s"      => { name => 'repository' },
             "label:s"           => { name => 'label', default => '' },
             "timeout:s"         => { name => 'timeout', default => '3' },
@@ -83,8 +83,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the repository option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{user})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the user option");
+    if (!defined($self->{option_results}->{owner})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the owner option");
         $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
@@ -101,7 +101,7 @@ sub run {
 
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = "/repos/".$self->{option_results}->{user}."/".$self->{option_results}->{repository} . "/issues";
+    $self->{option_results}->{url_path} = "/repos/".$self->{option_results}->{owner}."/".$self->{option_results}->{repository} . "/issues";
 
     my $query_form_get;
     if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
@@ -196,9 +196,9 @@ Threshold warning.
 
 Threshold critical.
 
-=item B<--user>
+=item B<--owner>
 
-Specify GitHub's user
+Specify GitHub's owner
 
 =item B<--repository>
 
