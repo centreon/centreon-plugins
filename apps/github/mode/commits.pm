@@ -58,7 +58,7 @@ sub new {
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "user:s"            => { name => 'user' },
+            "owner:s"           => { name => 'owner' },
             "repository:s"      => { name => 'repository' },
             "timeout:s"         => { name => 'timeout', default => '3' },
         });
@@ -84,8 +84,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the repository option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{user})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the user option");
+    if (!defined($self->{option_results}->{owner})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the owner option");
         $self->{output}->option_exit();
     }
 
@@ -95,9 +95,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $repository = $self->{option_results}->{repository};
-    $repository =~ tr/\//_/;
-    $self->{statefile_value}->read(statefile => 'github_' . $repository . '_' . $self->{option_results}->{user} . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'github_' . $self->{option_results}->{repository} . '_' . $self->{option_results}->{owner} . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     my $new_datas = {};
@@ -114,7 +112,7 @@ sub run {
     # Change date format from epoch to iso8601
     my $old_iso8601 = DateTime->from_epoch(epoch => $old_timestamp)."Z";
 
-    $self->{option_results}->{url_path} = "/repos/".$self->{option_results}->{user}."/".$self->{option_results}->{repository}."/commits";
+    $self->{option_results}->{url_path} = "/repos/".$self->{option_results}->{owner}."/".$self->{option_results}->{repository}."/commits";
 
     my $query_form_get = { per_page => '1000', since => $old_iso8601 };
     my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get , connection_exit => 'critical');
@@ -181,9 +179,9 @@ Specify username
 
 Specify password
 
-=item B<--user>
+=item B<--owner>
 
-Specify GitHub's user
+Specify GitHub's owner
 
 =item B<--repository>
 
