@@ -40,9 +40,16 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::httplib;
-use centreon::plugins::statefile;
-
 use JSON;
+
+my $thresholds = {
+    ws => [
+        ['^0$', 'OK'],
+        ['^1$', 'WARNING'],
+        ['^2$', 'CRITICAL'],
+        ['.*', 'UNKNOWN'],
+    ],
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -52,16 +59,15 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"        => { name => 'hostname', default => 'api.checkmy.ws'},
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "https" },
-            "urlpath:s"         => { name => 'url_path', default => "/api/status" },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "uid:s"             => { name => 'uid' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "hostname:s"            => { name => 'hostname', default => 'api.checkmy.ws'},
+            "port:s"                => { name => 'port', },
+            "proto:s"               => { name => 'proto', default => "https" },
+            "urlpath:s"             => { name => 'url_path', default => "/api/status" },
+            "proxyurl:s"            => { name => 'proxyurl' },
+            "uid:s"                 => { name => 'uid' },
+            "timeout:s"             => { name => 'timeout', default => '3' },
+            "threshold-overload:s@" => { name => 'threshold_overload' },
         });
-
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -82,26 +88,25 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set uid option");
         $self->{output}->option_exit();
     }
-
-    $self->{statefile_value}->check_options(%options);
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        if ($val !~ /^(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $status, $filter) = ('ws', $1, $2);
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
-
-    $self->{statefile_value}->read(statefile => 'checkmyws_' . $self->{option_results}->{uid}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-
-    my $new_datas = {};
-    $new_datas->{last_timestamp} = time();
-    $self->{statefile_value}->write(data => $new_datas);
-
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
 
     $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/".$self->{option_results}->{uid};
 
@@ -120,18 +125,68 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my $state = $webcontent->{state_code};
-    if ($state eq '200') {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Status %d received", $state));
-    } else {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Status %d received", $state));
+    my %map_output = (
+        -3 => 'Disable', 
+        -2 => 'Not scheduled', 
+        -1 => 'Pending...', 
+    );
+    my $state = $webcontent->{state};
+    my $output = defined($map_output{$state}) ? $map_output{$state} : $webcontent->{state_code_str};    
+    
+    my $exit = $self->get_severity(section => 'ws', value => $state);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => $output);
+
+    if (defined($webcontent->{lastvalues}->{httptime})) {
+        my $perfdata = $webcontent->{lastvalues}->{httptime};
+
+        my $mean_time = 0;
+        foreach my $location (keys %$perfdata) { 
+            $mean_time += $perfdata->{$location};
+            $self->{output}->perfdata_add(label => $location,  unit => 'ms',
+              value => $perfdata->{$location},
+              min => 0
+            );
+        }
+        
+        $self->{output}->perfdata_add(label => 'mean_time', unit => 'ms',
+              value => $mean_time / scalar(keys %$perfdata),
+              min => 0
+            ) if (scalar(keys %$perfdata) > 0);
+        $self->{output}->perfdata_add(label => 'yslow_page_load_time', unit => 'ms',
+              value => $webcontent->{metas}->{yslow_page_load_time},
+              min => 0
+            ) if (defined($webcontent->{metas}->{yslow_page_load_time}));
+        $self->{output}->perfdata_add(label => 'yslow_score',
+              value => $webcontent->{metas}->{yslow_score},
+              min => 0, max => 100
+            ) if (defined($webcontent->{metas}->{yslow_score}));
     }
 
     $self->{output}->display();
     $self->{output}->exit();
+}
 
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {           
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -175,6 +230,12 @@ ID for checkmyws API
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: '3')
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='CRITICAL,^(?!(0)$)'
 
 =back
 
