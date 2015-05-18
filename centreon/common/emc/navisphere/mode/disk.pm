@@ -172,6 +172,7 @@ my @states = (
     ['^empty$'           , 'OK'],
     ['^hot spare ready$' , 'OK'],
     ['^powering up$' , 'OK'],
+    ['^requested bypass$', 'WARNING'],
     ['^equalizing$'  , 'WARNING'],
     ['^formatting$'  , 'WARNING'],
     ['^removed$'     , 'WARNING'],
