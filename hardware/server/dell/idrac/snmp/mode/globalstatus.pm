@@ -57,6 +57,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                    "idrac6" => { name => 'idrac6' },
                                 });
 
     return $self;
@@ -72,17 +73,27 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
+    my $oid_dsrglobalSystemStatus = '.1.3.6.1.4.1.674.10892.2.2.1.0';
     my $oid_globalSystemStatus = '.1.3.6.1.4.1.674.10892.5.2.1.0';
     my $oid_globalStorageStatus = '.1.3.6.1.4.1.674.10892.5.2.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus, $oid_globalStorageStatus], nothing_quit => 1);
-    
-    $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalSystemStatus}}}[1],
-                                short_msg => sprintf("Overall global status is '%s'", 
-                                                ${$states{$result->{$oid_globalSystemStatus}}}[0]));
-    $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalStorageStatus}}}[1],
-                                short_msg => sprintf("Overall storage status is '%s'", 
-                                                ${$states{$result->{$oid_globalStorageStatus}}}[0]));
-                                                
+
+    if (!defined($self->{option_results}->{idrac6})) {
+        my $result = $self->{snmp}->get_leef(oids => [$oid_globalSystemStatus, $oid_globalStorageStatus], nothing_quit => 1);
+        $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalSystemStatus}}}[1],
+                                    short_msg => sprintf("Overall global status is '%s'",
+                                                    ${$states{$result->{$oid_globalSystemStatus}}}[0]));
+        $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalStorageStatus}}}[1],
+                                    short_msg => sprintf("Overall storage status is '%s'",
+                                                    ${$states{$result->{$oid_globalStorageStatus}}}[0]));
+    }
+    else {
+        my $result = $self->{snmp}->get_leef(oids => [$oid_dsrglobalSystemStatus], nothing_quit => 1);
+        $self->{output}->output_add(severity =>  ${$states{$result->{$oid_dsrglobalSystemStatus}}}[1],
+                                    short_msg => sprintf("Overall global status is '%s'",
+                                                    ${$states{$result->{$oid_dsrglobalSystemStatus}}}[0]));
+    }
+
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -97,7 +108,12 @@ Check the overall status of iDrac card.
 
 =over 8
 
+=item B<--idrac6>
+
+idrac6 support
+
 =back
 
 =cut
+
     
