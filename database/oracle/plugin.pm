@@ -57,6 +57,7 @@ sub new {
                          'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
                          'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+                         'session-usage'            => 'database::oracle::mode::sessionusage',
                          'sql'                      => 'database::oracle::mode::sql',
                          );
 
