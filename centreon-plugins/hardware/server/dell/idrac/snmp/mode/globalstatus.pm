@@ -77,7 +77,6 @@ sub run {
     my $oid_globalStorageStatus = '.1.3.6.1.4.1.674.10892.5.2.3.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_drsGlobalSystemStatus, $oid_globalSystemStatus, $oid_globalStorageStatus], nothing_quit => 1);
     
-    # iDrac > 6
     if (defined($result->{$oid_globalSystemStatus})) {
         $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalSystemStatus}}}[1],
                                     short_msg => sprintf("Overall global status is '%s'", 
@@ -85,7 +84,7 @@ sub run {
         $self->{output}->output_add(severity =>  ${$states{$result->{$oid_globalStorageStatus}}}[1],
                                     short_msg => sprintf("Overall storage status is '%s'", 
                                                          ${$states{$result->{$oid_globalStorageStatus}}}[0]));
-    } else { # iDrac <= 6
+    } else {
         $self->{output}->output_add(severity =>  ${$states{$result->{$oid_drsGlobalSystemStatus}}}[1],
                                     short_msg => sprintf("Overall global status is '%s'", 
                                                          ${$states{$result->{$oid_drsGlobalSystemStatus}}}[0]));
