@@ -78,7 +78,7 @@ sub run {
     my $result = $self->{snmp}->get_leef(oids => [$oid_drsGlobalSystemStatus, $oid_globalSystemStatus, $oid_globalStorageStatus], nothing_quit => 1);
     
     # iDrac 6
-    if (defined($result->{$oid_drsGlobalSystemStatus})) {
+    if (!defined($result->{$oid_globalSystemStatus})) {
         $self->{output}->output_add(severity =>  ${$states{$result->{$oid_drsGlobalSystemStatus}}}[1],
                                     short_msg => sprintf("Overall global status is '%s'", 
                                                          ${$states{$result->{$oid_drsGlobalSystemStatus}}}[0]));
