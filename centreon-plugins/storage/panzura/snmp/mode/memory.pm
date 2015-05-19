@@ -78,16 +78,17 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    my $oid_memUsed = '.1.3.6.1.4.1.32853.1.3.1.2.1.0'; # MB
-    my $oid_memAvail = '.1.3.6.1.4.1.32853.1.3.1.2.2.0'; # MB
-    my $oid_memTotal = '.1.3.6.1.4.1.32853.1.3.1.2.3.0'; # MB
+    # It's KB. Even if the mib file says 'MB'!! The MIB description will be fixed by panzura
+    my $oid_memUsed = '.1.3.6.1.4.1.32853.1.3.1.2.1.0'; # KB
+    my $oid_memAvail = '.1.3.6.1.4.1.32853.1.3.1.2.2.0'; # KB
+    my $oid_memTotal = '.1.3.6.1.4.1.32853.1.3.1.2.3.0'; # KB
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_memUsed, $oid_memAvail, $oid_memTotal], 
                                          nothing_quit => 1);
     
-    my $total_size = $result->{$oid_memTotal} * 1024 * 1024;
-    my $used = $result->{$oid_memUsed} * 1024 * 1024;
-    my $free = $result->{$oid_memAvail} * 1024 * 1024;
+    my $total_size = $result->{$oid_memTotal} * 1024;
+    my $used = $result->{$oid_memUsed} * 1024;
+    my $free = $result->{$oid_memAvail} * 1024;
     
     my $prct_used = $used * 100 / $total_size;
     my $prct_free = 100 - $prct_used;
