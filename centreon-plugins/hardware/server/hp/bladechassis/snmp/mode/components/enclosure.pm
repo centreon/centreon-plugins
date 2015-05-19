@@ -54,10 +54,15 @@ sub check {
     my $oid_cpqRackCommonEnclosureFWRev = '.1.3.6.1.4.1.232.22.2.3.1.1.1.8.1';
     my $oid_cpqRackCommonEnclosureCondition = '.1.3.6.1.4.1.232.22.2.3.1.1.1.16.1';
     
+    $self->{components}->{enclosure} = {name => 'enclosure', total => 0, skip => 0};
+    $self->{output}->output_add(long_msg => "Checking enclosure");
+    return if ($self->check_exclude(section => 'enclosure'));
+  
     my $result = $self->{snmp}->get_leef(oids => [$oid_cpqRackCommonEnclosurePartNumber, $oid_cpqRackCommonEnclosureSparePartNumber, 
                                                   $oid_cpqRackCommonEnclosureSerialNum, $oid_cpqRackCommonEnclosureFWRev,
-                                                  $oid_cpqRackCommonEnclosureCondition], nothing_quit => 1);
-
+                                                  $oid_cpqRackCommonEnclosureCondition], nothing_quit => 1);  
+    $self->{components}->{enclosure}->{total}++;
+    
     $self->{output}->output_add(long_msg => sprintf("Enclosure overall health condition is %s [part: %s, spare: %s, sn: %s, fw: %s].", 
                                 $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}},
                                 $result->{$oid_cpqRackCommonEnclosurePartNumber},
