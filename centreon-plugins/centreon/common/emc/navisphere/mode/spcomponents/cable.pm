@@ -39,6 +39,7 @@ use strict;
 use warnings;
 
 my @conditions = (
+    ['^(.*Unknown.*)$' => 'WARNING'],
     ['^(?!(Present|Valid)$)' => 'CRITICAL'],
 );
 
