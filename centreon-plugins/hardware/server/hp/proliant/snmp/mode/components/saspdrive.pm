@@ -48,6 +48,10 @@ my %map_pdrive_status = (
     7 => "missingWasPredictiveFailure",
     8 => "missingWasOffline",
     9 => "missingWasFailed",
+    10 => 'ssdWearOut',
+    11 => 'missingWasSSDWearOut',
+    12 => 'notAuthenticated',
+    13 => 'missingWasNotAuthenticated',
 );
 
 my %map_pdrive_condition = (
