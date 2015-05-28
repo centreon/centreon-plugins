@@ -73,7 +73,7 @@ my $oid_cpqNicIfLogMapAdapterCount = '.1.3.6.1.4.1.232.18.2.2.1.1.5';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapEntry, start => $mapping->{cpqNicIfLogMapCondition}->{oid}, end => $mapping->{cpqNicIfLogMapStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapEntry, start => $mapping3->{cpqNicIfLogMapCondition}->{oid}, end => $mapping3->{cpqNicIfLogMapStatus}->{oid} };
     push @{$options{request}}, { oid => $oid_cpqNicIfLogMapDescription };
     push @{$options{request}}, { oid => $oid_cpqNicIfLogMapAdapterCount };
 }
@@ -95,7 +95,7 @@ sub check {
         next if ($self->check_exclude(section => 'lnic', instance => $instance));
         $self->{components}->{lnic}->{total}++;
 
-        $self->{output}->output_add(long_msg => printf("logical nic '%s' [adapter count: %s, description: %s, status: %s] condition is %s.", 
+        $self->{output}->output_add(long_msg => sprintf("logical nic '%s' [adapter count: %s, description: %s, status: %s] condition is %s.", 
                                     $instance, $result2->{cpqNicIfLogMapAdapterCount}, centreon::plugins::misc::trim($result->{cpqNicIfLogMapDescription}),
                                     $result3->{cpqNicIfLogMapStatus},
                                     $result3->{cpqNicIfLogMapCondition}));
