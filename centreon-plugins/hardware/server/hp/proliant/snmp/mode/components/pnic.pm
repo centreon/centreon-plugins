@@ -88,7 +88,7 @@ my $oid_cpqNicIfPhysAdapterRole = '.1.3.6.1.4.1.232.18.2.3.1.1.3';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqNicIfPhysAdapterEntry, start => $mapping->{cpqNicIfPhysAdapterDuplexState}->{oid}, end => $mapping->{cpqNicIfPhysAdapterStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqNicIfPhysAdapterEntry, start => $mapping2->{cpqNicIfPhysAdapterDuplexState}->{oid}, end => $mapping2->{cpqNicIfPhysAdapterStatus}->{oid} };
     push @{$options{request}}, { oid => $oid_cpqNicIfPhysAdapterRole };
 }
 
