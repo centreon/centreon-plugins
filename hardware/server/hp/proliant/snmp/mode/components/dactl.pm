@@ -103,7 +103,7 @@ my $oid_cpqDaCntlrModel = '.1.3.6.1.4.1.232.3.2.2.1.1.2';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqDaCntlrEntry, start => $mapping->{cpqDaCntlrSlot}->{oid}, end => $mapping->{cpqDaCntlrCondition}->{oid} };
+    push @{$options{request}}, { oid => $oid_cpqDaCntlrEntry, start => $mapping2->{cpqDaCntlrSlot}->{oid}, end => $mapping2->{cpqDaCntlrCondition}->{oid} };
     push @{$options{request}}, { oid => $oid_cpqDaCntlrModel };
 }
 
