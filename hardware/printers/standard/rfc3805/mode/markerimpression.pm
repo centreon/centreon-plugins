@@ -42,7 +42,8 @@ use warnings;
 use centreon::plugins::statefile;
 
 my %unit_managed = (
-    7 => 1,     # impressions(7)
+    7 => 'impressions',
+    8 => 'sheets',
 );
 
 sub new {
@@ -95,7 +96,7 @@ sub run {
                         instances => [keys %$result], instance_regexp => '(\d+\.\d+)$');
     
     $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "Marker impressions are ok.");
+                                short_msg => "Marker impressions/sheets are ok.");
     
     my $perf_label = {};
     my $result2 = $self->{snmp}->get_leef();
@@ -121,14 +122,14 @@ sub run {
         }
         my $value = $new_datas->{'lifecount_' . $instance} - $old_life_count;
         
-        my $exit = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
-        $self->{output}->output_add(long_msg => sprintf("Marker impressions '%s': %s", $hrDeviceIndex . '#' . $prtMarkerIndex, $value));
+        my $exit = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
+        $self->{output}->output_add(long_msg => sprintf("Marker %s '%s': %s", $unit_managed{$counter_unit}, $hrDeviceIndex . '#' . $prtMarkerIndex, $value));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Marker impressions '%s': %s", $hrDeviceIndex . '#' . $prtMarkerIndex, $value));
+                                        short_msg => sprintf("Marker %s '%s': %s", $unit_managed{$counter_unit}, $hrDeviceIndex . '#' . $prtMarkerIndex, $value));
         }
         
-        my $label = 'impressions';
+        my $label = $unit_managed{$counter_unit};
         if (defined($perf_label->{$label})) {
             $label .= '#' . $hrDeviceIndex . '#' . $prtMarkerIndex;
         }
@@ -157,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check marker impressions between two checks.
+Check marker impressions/sheets.
 
 =over 8
 
