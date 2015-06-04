@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,11 +33,11 @@
 #
 ####################################################################################
 
-package snmp_standard::plugin;
+package apps::protocols::jmx::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -47,11 +47,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'numeric-value'      => 'snmp_standard::mode::numericvalue',
-                         'string-value'       => 'snmp_standard::mode::stringvalue',
-                         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
+                         'list-attributes'  => 'apps::protocols::jmx::mode::listattributes',
+                         'numeric-value'    => 'apps::protocols::jmx::mode::numericvalue',
                          );
 
+    $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
 }
 
@@ -61,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check SNMP values (string, numeric or execute commands).
+Generic JMX plugin. Need Jolokia agent.
 
 =cut
