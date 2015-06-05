@@ -48,15 +48,16 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'backends' => 'database::postgres::mode::backends',
-                         'connection-time' => 'database::postgres::mode::connectiontime',
-                         'hitratio' => 'database::postgres::mode::hitratio',
-                         'locks' => 'database::postgres::mode::locks',
-                         'list-databases' => 'database::postgres::mode::listdatabases',
-                         'query-time' => 'database::postgres::mode::querytime',
-                         'timesync' => 'database::postgres::mode::timesync',
-                         'vacuum' => 'database::postgres::mode::vacuum',
-                         'tablespace' => 'database::postgres::mode::tablespace',
+                         'backends'         => 'database::postgres::mode::backends',
+                         'connection-time'  => 'database::postgres::mode::connectiontime',
+                         'hitratio'         => 'database::postgres::mode::hitratio',
+                         'locks'            => 'database::postgres::mode::locks',
+                         'list-databases'   => 'database::postgres::mode::listdatabases',
+                         'query-time'       => 'database::postgres::mode::querytime',
+                         'timesync'         => 'database::postgres::mode::timesync',
+                         'vacuum'           => 'database::postgres::mode::vacuum',
+                         'statistics'       => 'database::postgres::mode::statistics',
+                         'tablespace'       => 'database::postgres::mode::tablespace',
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
