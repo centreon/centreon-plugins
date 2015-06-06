@@ -33,50 +33,66 @@
 #
 ####################################################################################
 
-package network::cisco::ironport::snmp::mode::components::raid;
+package network::extreme::snmp::mode::components::slot;
 
 use strict;
 use warnings;
 
-my %map_raid_status = (
-    1 => 'driveHealthy',
-    2 => 'driveFailure',
-    3 => 'driveRebuild',
+my %map_slot_status = (
+    1 => 'notPresent',
+    2 => 'testing',
+    3 => 'mismatch',
+    4 => 'failed',
+    5 => 'operational',
+    6 => 'powerdown',
+    7 => 'unknown',
+    8 => 'present',
+    9 => 'poweron',
+    10 => 'post',
+    11 => 'downloading',
+    12 => 'booting',
+    13 => 'offline',
+    14 => 'initializing',
+    100 => 'invalid',
 );
 
 my $mapping = {
-    raidStatus => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.2', map => \%map_raid_status },
-    raidID => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.4' },
+    extremeSlotName => { oid => '.1.3.6.1.4.1.1916.1.1.2.2.1.2' },
+    extremeSlotModuleState => { oid => '.1.3.6.1.4.1.1916.1.1.2.2.1.5', map => \%map_slot_status  },
 };
-my $oid_raidEntry = '.1.3.6.1.4.1.15497.1.1.1.18.1';
+my $oid_extremeSlotEntry = '.1.3.6.1.4.1.1916.1.1.2.2.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_raidEntry, end => $mapping->{raidStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_extremeSlotEntry, end => $mapping->{extremeSlotName}->{oid} };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking raids");
-    $self->{components}->{raid} = {name => 'raids', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'raid'));
+    $self->{output}->output_add(long_msg => "Checking slots");
+    $self->{components}->{slot} = {name => 'slots', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'slot'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raidEntry}})) {
-        next if ($oid !~ /^$mapping->{raidStatus}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_extremeSlotEntry}})) {
+        next if ($oid !~ /^$mapping->{extremeSlotModuleState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_raidEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremeSlotEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'raid', instance => $instance));
+        next if ($self->check_exclude(section => 'slot', instance => $instance));
+        if ($result->{extremeSlotModuleState} =~ /notPresent/i) {
+            $self->absent_problem(section => 'slot', instance => $instance);
+            next;
+        }
 
-        $self->{components}->{raid}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Raid '%s' status is '%s' [instance = %s]",
-                                                        $result->{raidID}, $result->{raidStatus}, $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{raidStatus});
+        $self->{components}->{slot}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Slot '%s' status is '%s' [instance = %s]",
+                                                        $result->{extremeSlotName}, $result->{extremeSlotModuleState}, $instance));
+        my $exit = $self->get_severity(section => 'psu', value => $result->{extremeSlotModuleState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                       short_msg => sprintf("Raid '%s' status is '%s'", $result->{raidID}, $result->{raidStatus}));
+                                       short_msg => sprintf("Slot '%s' status is '%s'", $result->{extremeSlotName}, $result->{extremeSlotModuleState}));
         }
     }
 }
