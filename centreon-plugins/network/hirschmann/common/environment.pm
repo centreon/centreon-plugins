@@ -40,21 +40,17 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my %states = (
-    1 => ['normal', 'OK'],
-    2 => ['warning', 'WARNING'],
-    3 => ['critical', 'CRITICAL'],
-    4 => ['shutdown', 'CRITICAL'],
-    5 => ['not present', 'OK'],
-    6 => ['not functioning', 'WARNING'],
+my %fan_states = (
+    1 => ['ok', 'OK'],
+    2 => ['failed', 'CRITICAL'],
 );
-my %map_psu_source = (
-    1 => 'unknown',
-    2 => 'ac',
-    3 => 'dc',
-    4 => 'externalPowerSupply',
-    5 => 'internalRedundant'
-);
+
+my %psu_states = (
+    1 => ['ok', 'OK'],
+    2 => ['failed', 'CRITICAL'],
+    3 => ['notInstalled', 'UNKNOWN'],
+    4 => ['unknown', 'UNKNOWN'],
+)
 
 sub new {
     my ($class, %options) = @_;
@@ -102,27 +98,26 @@ sub check_fans {
     $self->{output}->output_add(long_msg => "Checking fans");
     return if ($self->check_exclude('fans'));
 
-    my $oid_ciscoEnvMonFanStatusEntry = '.1.3.6.1.4.1.9.9.13.1.4.1';
-    my $oid_ciscoEnvMonFanStatusDescr = '.1.3.6.1.4.1.9.9.13.1.4.1.2';
-    my $oid_ciscoEnvMonFanState = '.1.3.6.1.4.1.9.9.13.1.4.1.3';
+    my $oid_hmFanTable = '.1.3.6.1.4.1.248.14.1.3';
+    my $oid_hmFanState = '.1.3.6.1.4.1.248.14.1.3.1.3';
 
-    my $result = $self->{snmp}->get_table(oid => $oid_ciscoEnvMonFanStatusEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_hmFanTable);
     return if (scalar(keys %$result) <= 0);
 
     foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_ciscoEnvMonFanStatusDescr/);
-        $oid =~ /\.([0-9]+)$/;
-        my $instance = $1;
+        next if ($oid !~ /^$oid_hmFanState/);
+        $oid =~ /\.([1-2]\.([0-8]))$/;
+        my $fan_id = $1;
+        my $instance = $2;
 
-        my $fan_descr = $result->{$oid};
-        my $fan_state = $result->{$oid_ciscoEnvMonFanState . '.' . $instance};
+        my $psu_state = $result->{ $oid_hmFanState. '.' . $fan_id};
 
         $self->{components_fans}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' state is %s.",
-                                    $fan_descr, ${$states{$fan_state}}[0]));
+                                    $instance, ${$fan_states{$fan_state}}[0]));
         if (${$states{$fan_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity =>  ${$states{$fan_state}}[1],
-                                        short_msg => sprintf("Fan '%s' state is %s.", $fan_descr, ${$states{$fan_state}}[0]));
+            $self->{output}->output_add(severity =>  ${$fan_states{$fan_state}}[1],
+                                        short_msg => sprintf("Fan '%s' state is %s.", $instance, ${$fan_states{$fan_state}}[0]));
         }
     }
 }
@@ -133,29 +128,26 @@ sub check_psus {
     $self->{output}->output_add(long_msg => "Checking power supplies");
     return if ($self->check_exclude('psu'));
 
-    my $oid_ciscoEnvMonSupplyStatusEntry = '.1.3.6.1.4.1.9.9.13.1.5.1';
-    my $oid_ciscoEnvMonSupplyStatusDescr = '.1.3.6.1.4.1.9.9.13.1.5.1.2';
-    my $oid_ciscoEnvMonSupplyState = '.1.3.6.1.4.1.9.9.13.1.5.1.3';
-    my $oid_ciscoEnvMonSupplySource = '.1.3.6.1.4.1.9.9.13.1.5.1.4';
+    my $oid_hmPSTable = '.1.3.6.1.4.1.248.14.1.2';
+    my $oid_hmPSState = '.1.3.6.1.4.1.248.14.1.2.1.3';
 
-    my $result = $self->{snmp}->get_table(oid => $oid_ciscoEnvMonSupplyStatusEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_hmPSTable);
     return if (scalar(keys %$result) <= 0);
 
     foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_ciscoEnvMonSupplyStatusDescr/);
-        $oid =~ /\.([0-9]+)$/;
-        my $instance = $1;
+        next if ($oid !~ /^$oid_hmPSState/);
+        $oid =~ /\.([1-2]\.([0-8]))$/;
+        my $psu_id = $1;
+        my $instance = $2;
 
-        my $psu_descr = $result->{$oid};
-        my $psu_state = $result->{$oid_ciscoEnvMonSupplyState . '.' . $instance};
-        my $psu_source = $result->{$oid_ciscoEnvMonSupplySource . '.' . $instance};
+        my $psu_state = $result->{ $oid_hmPSState. '.' . $psu_id};
 
         $self->{components_psus}++;
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' [type: %s] state is %s.",
-                                    $psu_descr, $map_psu_source{$psu_source}, ${$states{$psu_state}}[0]));
-        if (${$states{$psu_state}}[1] ne 'OK') {
-            $self->{output}->output_add(severity =>  ${$states{$psu_state}}[1],
-                                        short_msg => sprintf("Power Supply '%s' state is %s.", $psu_descr, ${$states{$psu_state}}[0]));
+        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
+                                    $instance, ${$psu_states{$psu_state}}[0]));
+        if (${$psu_states{$psu_state}}[1] ne 'OK') {
+            $self->{output}->output_add(severity =>  ${$psu_states{$psu_state}}[1],
+                                        short_msg => sprintf("Power Supply '%s' state is %s.", $instance, ${$fan_states{$psu_state}}[0]));
         }
     }
 }
