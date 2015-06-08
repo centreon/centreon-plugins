@@ -88,7 +88,7 @@ sub run {
                                   value => $temp,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
+                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();
