@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::mode::processcount;
+package network::hirschmann::common::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -73,22 +73,22 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmCpuRunningProcesses = '.1.3.6.1.4.1.248.14.2.15.2.3';
+    my $oid_hmCpuUtilization = '.1.3.6.1.4.1.248.14.2.15.2.1'; # in %
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuRunningProcesses],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuUtilization],
                                          nothing_quit => 1);
-    my $processcount = $result->{$oid_hmCpuRunningProcesses};
+    my $cpu = $result->{$oid_hmCpuUtilization};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $processcount, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $cpu, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Number of current processes running: %d", $processcount));
+                                short_msg => sprintf("CPU Usage is %d%%", $cpu));
 
-    $self->{output}->perfdata_add(label => "nbproc",
+    $self->{output}->perfdata_add(label => "cpu", unit => '%',
                                   value => $temp,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+                                  min =>0, max => 100);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -100,17 +100,17 @@ __END__
 
 =head1 MODE
 
-Check number of processes.
+Check CPU usage.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning (process count).
+Threshold warning in %.
 
 =item B<--critical>
 
-Threshold critical (process count).
+Threshold critical in %.
 
 =back
 

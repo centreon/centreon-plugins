@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::mode::memory;
+package network::hirschmann::common::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
