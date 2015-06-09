@@ -133,7 +133,7 @@ sub check {
         $self->{output}->perfdata_add(label => "psu_power_" . $instance, unit => 'W',
                                       value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
                                       critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum});
-        $self->{output}->perfdata_add(label => "psu__voltage" . $instance, unit => 'V',
+        $self->{output}->perfdata_add(label => "psu_voltage" . $instance, unit => 'V',
                                       value => $result->{cpqHeFltTolPowerSupplyMainVoltage});
     }
 }
