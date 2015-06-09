@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::mode::common::temperature;
+package network::hirschmann::common::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
@@ -73,7 +73,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmTemperature = '.1.3.6.1.4.1.248.14.2.5.1'; # in Celsius
+    my $oid_hmTemperature = '.1.3.6.1.4.1.248.14.2.5.1.0'; # in Celsius
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_hmTemperature],
                                          nothing_quit => 1);

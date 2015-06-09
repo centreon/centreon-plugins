@@ -50,7 +50,7 @@ my %psu_states = (
     2 => ['failed', 'CRITICAL'],
     3 => ['notInstalled', 'UNKNOWN'],
     4 => ['unknown', 'UNKNOWN'],
-)
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -63,6 +63,7 @@ sub new {
                                   "exclude:s"        => { name => 'exclude' },
                                 });
 
+    $self->{components} = {};
     return $self;
 }
 
@@ -76,17 +77,15 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    $self->{components_fans} = 0;
-    $self->{components_psus} = 0;
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
 
-    $self->get_type();
     $self->check_fans();
     $self->check_psus();
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All %d components [%d fans, %d power supplies] are ok",
-                                ($self->{components_fans} + $self->{components_psus}),
-                                $self->{components_fans}, $self->{components_psus}));
+                                ($self->{components}->{psu}->{total} + $self->{components}->{fan}->{total}),
+                                $self->{components}->{fan}->{total}, $self->{components}->{psu}->{total}));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -96,7 +95,7 @@ sub check_fans {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude('fans'));
+    return if ($self->check_exclude(section => 'fan'));
 
     my $oid_hmFanTable = '.1.3.6.1.4.1.248.14.1.3';
     my $oid_hmFanState = '.1.3.6.1.4.1.248.14.1.3.1.3';
@@ -110,12 +109,14 @@ sub check_fans {
         my $fan_id = $1;
         my $instance = $2;
 
-        my $psu_state = $result->{ $oid_hmFanState. '.' . $fan_id};
+        my $fan_state = $result->{ $oid_hmFanState. '.' . $fan_id};
 
-        $self->{components_fans}++;
+        next if ($self->check_exclude(section => 'fan', instance => $instance));
+
+        $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' state is %s.",
                                     $instance, ${$fan_states{$fan_state}}[0]));
-        if (${$states{$fan_state}}[1] ne 'OK') {
+        if (${$fan_states{$fan_state}}[1] ne 'OK') {
             $self->{output}->output_add(severity =>  ${$fan_states{$fan_state}}[1],
                                         short_msg => sprintf("Fan '%s' state is %s.", $instance, ${$fan_states{$fan_state}}[0]));
         }
@@ -126,7 +127,7 @@ sub check_psus {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if ($self->check_exclude('psu'));
+    return if ($self->check_exclude(section => 'psu'));
 
     my $oid_hmPSTable = '.1.3.6.1.4.1.248.14.1.2';
     my $oid_hmPSState = '.1.3.6.1.4.1.248.14.1.2.1.3';
@@ -142,7 +143,9 @@ sub check_psus {
 
         my $psu_state = $result->{ $oid_hmPSState. '.' . $psu_id};
 
-        $self->{components_psus}++;
+        next if ($self->check_exclude(section => 'psu', instance => $instance));
+
+        $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
                                     $instance, ${$psu_states{$psu_state}}[0]));
         if (${$psu_states{$psu_state}}[1] ne 'OK') {
@@ -152,15 +155,33 @@ sub check_psus {
     }
 }
 
-sub check_exclude {
-    my ($self, $section) = @_;
+#sub check_exclude {
+#    my ($self, $section) = @_;
+#
+#    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$section(\s|,|$)/) {
+#        $self->{output}->output_add(long_msg => sprintf("Skipping $section section."));
+#        return 1;
+#    }
+#    return 0;
+#}
 
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$section(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $section section."));
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    if (defined($options{instance})) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
+            $self->{components}->{$options{section}}->{skip}++;
+            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+            return 1;
+        }
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
         return 1;
     }
     return 0;
 }
+
+
 
 1;
 
@@ -174,7 +195,8 @@ Check Environment monitor (Fans, Power Supplies).
 
 =item B<--exclude>
 
-Exclude some parts (comma seperated list) (Example: --exclude=psu).
+Exclude some parts (comma seperated list) (Example: --exclude=psu)
+Can also exclude specific instance: --exclude='psu#3.3#'
 
 =back
 

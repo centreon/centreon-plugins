@@ -73,7 +73,7 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmCpuRunningProcesses = '.1.3.6.1.4.1.248.14.2.15.2.3';
+    my $oid_hmCpuRunningProcesses = '.1.3.6.1.4.1.248.14.2.15.2.3.0';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuRunningProcesses],
                                          nothing_quit => 1);
@@ -85,7 +85,7 @@ sub run {
                                 short_msg => sprintf("Number of current processes running: %d", $processcount));
 
     $self->{output}->perfdata_add(label => "nbproc",
-                                  value => $temp,
+                                  value => $processcount,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -101,6 +101,7 @@ __END__
 =head1 MODE
 
 Check number of processes.
+hmEnableMeasurement must be activated (value = 1).
 
 =over 8
 
