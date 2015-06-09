@@ -45,7 +45,7 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     %{$self->{modes}} = (
                          'components'           => 'storage::synology::mode::components',
                          'temperature'          => 'storage::synology::mode::temperature',
@@ -54,7 +54,7 @@ sub new {
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'memory'               => 'snmp_standard::mode::memory',
                          'load'                 => 'snmp_standard::mode::load',
-                         'diskusage'            => 'snmp_standard::mode::diskusage',
+                         'storage'              => 'snmp_standard::mode::storage',
                          );
 
     return $self;
