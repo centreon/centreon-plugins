@@ -47,6 +47,11 @@ my %states = (
     4 => ['red', 'CRITICAL'],
 );
 
+my $oid_hmLEDRSPowerSupply = '.1.3.6.1.4.1.248.14.1.1.35.1.1.0';
+my $oid_hmLEDRStandby = '.1.3.6.1.4.1.248.14.1.1.35.1.2.0';
+my $oid_hmLEDRSRedundancyManager = '.1.3.6.1.4.1.248.14.1.1.35.1.3.0';
+my $oid_hmLEDRSFault = '.1.3.6.1.4.1.248.14.1.1.35.1.4.0';
+
 
 sub new {
     my ($class, %options) = @_;
@@ -72,6 +77,9 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
+    $self->{results} = $self->{snmp}->get_leef(oids => [$oid_hmLEDRSPowerSupply, $oid_hmLEDRStandby, $oid_hmLEDRSRedundancyManager, $oid_hmLEDRSFault],
+					       nothing_quit => 1);
+
     $self->{led_psu} = 0;
     $self->{led_standby} = 0;
     $self->{led_redundancy} = 0;
@@ -96,12 +104,7 @@ sub check_led_psu {
     $self->{output}->output_add(long_msg => "Checking PSU led");
     return if ($self->check_exclude('led_psu'));
 
-    my $oid_hmLEDRSPowerSupply = '.1.3.6.1.4.1.248.14.1.1.35.1.1';
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmLEDRSPowerSupply],
-                                         nothing_quit => 1);
-
-    my $led_psu_state = $result->{ $oid_hmLEDRSPowerSupply };
+    my $led_psu_state = $self->{results}->{ $oid_hmLEDRSPowerSupply };
 
     $self->{led_psu}++;
     $self->{output}->output_add(long_msg => sprintf("PSU led state is %s.",
@@ -118,12 +121,7 @@ sub check_led_standby {
     $self->{output}->output_add(long_msg => "Checking Standby led");
     return if ($self->check_exclude('led_standby'));
 
-    my $oid_hmLEDRStandby = '.1.3.6.1.4.1.248.14.1.1.35.1.2';
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmLEDRStandby],
-                                         nothing_quit => 1);
-
-    my $led_standby_state = $result->{ $oid_hmLEDRStandby };
+    my $led_standby_state = $self->{results}->{ $oid_hmLEDRStandby };
 
     $self->{led_standby}++;
     $self->{output}->output_add(long_msg => sprintf("Standby led state is %s.",
@@ -140,12 +138,7 @@ sub check_led_redundancy {
     $self->{output}->output_add(long_msg => "Checking Redundancy led");
     return if ($self->check_exclude('led_redundancy'));
 
-    my $oid_hmLEDRSRedundancyManager = '.1.3.6.1.4.1.248.14.1.1.35.1.3';
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmLEDRSRedundancyManager],
-                                         nothing_quit => 1);
-
-    my $led_redundancy_state = $result->{ $oid_hmLEDRSRedundancyManager };
+    my $led_redundancy_state = $self->{results}->{ $oid_hmLEDRSRedundancyManager };
 
     $self->{led_redundancy}++;
     $self->{output}->output_add(long_msg => sprintf("Redundancy led state is %s.",
@@ -162,12 +155,7 @@ sub check_led_fault {
     $self->{output}->output_add(long_msg => "Checking Fault led");
     return if ($self->check_exclude('led_fault'));
 
-    my $oid_hmLEDRSFault = '.1.3.6.1.4.1.248.14.1.1.35.1.4';
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmLEDRSFault],
-                                         nothing_quit => 1);
-
-    my $led_fault_state = $result->{ $oid_hmLEDRSFault };
+    my $led_fault_state = $self->{results}->{ $oid_hmLEDRSFault };
 
     $self->{led_fault}++;
     $self->{output}->output_add(long_msg => sprintf("Fault led state is %s.",

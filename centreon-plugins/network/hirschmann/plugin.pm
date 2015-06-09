@@ -52,6 +52,7 @@ sub new {
                          'led'              => 'network::hirschmann::RS::mode::led',
                          'memory'           => 'network::hirschmann::common::mode::memory',
                          'processcount'     => 'network::hirschmann::common::mode::processcount',
+                         'temperature'      => 'network::hirschmann::common::mode::temperature',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
@@ -65,6 +66,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Hirschmann in SNMP (HMPRIV-MGMT-SNMP-MIB).
-hmEnableMeasurement must be activated (value = 1).
 
 =cut

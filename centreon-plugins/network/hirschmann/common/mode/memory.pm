@@ -73,15 +73,15 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmMemoryFree = '.1.3.6.1.4.1.248.14.2.15.3.2'; # in KBytes
-    my $oid_hmMemoryAllocated = '1.3.6.1.4.1.248.14.2.15.3.1' # in KBytes
+    my $oid_hmMemoryFree = '.1.3.6.1.4.1.248.14.2.15.3.2.0'; # in KBytes
+    my $oid_hmMemoryAllocated = '.1.3.6.1.4.1.248.14.2.15.3.1.0'; # in KBytes
 
     my $oids = [$oid_hmMemoryFree, $oid_hmMemoryAllocated];
 
-    my $result = $self->{snmp}->get_leef(oids => [$oids],
+    my $result = $self->{snmp}->get_leef(oids => $oids,
                                          nothing_quit => 1);
-    my $mem_free = $result->{$oid_hmMemoryFree};
-    my $mem_allocated = $result->{$oid_hmMemoryAllocated};
+    my $mem_free = $result->{$oid_hmMemoryFree} * 1024;
+    my $mem_allocated = $result->{$oid_hmMemoryAllocated} * 1024;
 
     my $mem_total = $mem_allocated + $mem_free;
 
@@ -91,17 +91,15 @@ sub run {
 
     my ($mem_allocated_value, $mem_allocated_unit) = $self->{perfdata}->change_bytes(value => $mem_allocated);
 
-
-
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Memory used %s (%.2f%%)", 
                                     $mem_allocated_value . " " . $mem_allocated_unit, $mem_percent_used));
 
     $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $mem_allocated_value,
+                                  value => $mem_allocated,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $mem_total, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical' total => $mem_total, cast_int => 1),
-                                  min => 0, max => $mem_total);
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $mem_total, cast_int => 1),
+                                  min => 0, max => $mem_total,
                                   );
 
     $self->{output}->display();
@@ -115,6 +113,7 @@ __END__
 =head1 MODE
 
 Check Memory usage.
+hmEnableMeasurement must be activated (value = 1).
 
 =over 8
 
