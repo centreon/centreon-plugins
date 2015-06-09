@@ -83,26 +83,28 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
+    my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3';
     my $oid_cswSwitchRole = '.1.3.6.1.4.1.9.9.500.1.2.1.1.3';
     my $oid_cswSwitchState = '.1.3.6.1.4.1.9.9.500.1.2.1.1.6';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_cswRingRedundant], nothing_quit => 1);
-    my $result_state = $self->{snmp}->get_table(oid => $oid_cswSwitchState, nothing_quit => 1);
-    my $result_role = $self->{snmp}->get_table(oid => $oid_cswSwitchRole);
-    
+    my $results = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_cswRingRedundant },
+                                                            { oid => $oid_cswSwitchState },
+                                                            { oid => $oid_cswSwitchRole }
+                                                            ],
+                                                   nothing_quit => 1);    
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'Stack ring is redundant');
-    if ($result->{$oid_cswRingRedundant} != 1) {
+    if ($results->{$oid_cswRingRedundant}->{$oid_cswRingRedundant . '.0'} != 1) {
         $self->{output}->output_add(severity => 'WARNING',
                                     short_msg => 'Stack ring is not redundant');
     }
     
-    foreach my $oid (keys %$result_state) {
+    foreach my $oid (keys %{$results->{$oid_cswSwitchState}}) {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
 
-        my $state = $result_state->{$oid};
-        my $role = defined($result_role->{$oid_cswSwitchRole . '.' . $instance}) ? $result_role->{$oid_cswSwitchRole . '.' . $instance} : 'unknown';
+        my $state = $results->{$oid_cswSwitchState}->{$oid};
+        my $role = defined($results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance}) ? $results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance} : 'unknown';
         # .1001, .2001 the instance.
         my $number = int(($instance - 1) / 1000);
         
