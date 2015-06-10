@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::RS::mode::led;
+package network::hirschmann::common::mode::led;
 
 use base qw(centreon::plugins::mode);
 

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::common::mode::environment;
+package network::hirschmann::snmp::mode::environment;
 
 use base qw(centreon::plugins::mode);
 

@@ -47,12 +47,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::hirschmann::common::mode::cpu',
-                         'environment'      => 'network::hirschmann::common::mode::environment',
-                         'led'              => 'network::hirschmann::RS::mode::led',
-                         'memory'           => 'network::hirschmann::common::mode::memory',
-                         'processcount'     => 'network::hirschmann::common::mode::processcount',
-                         'temperature'      => 'network::hirschmann::common::mode::temperature',
+                         'cpu'              => 'network::hirschmann::snmp::mode::cpu',
+                         'environment'      => 'network::hirschmann::snmp::mode::environment',
+                         'led'              => 'network::hirschmann::snmp::mode::led',
+                         'memory'           => 'network::hirschmann::snmp::mode::memory',
+                         'processcount'     => 'network::hirschmann::snmp::mode::processcount',
+                         'temperature'      => 'network::hirschmann::snmp::mode::temperature',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
