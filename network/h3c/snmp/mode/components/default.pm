@@ -41,7 +41,20 @@ use warnings;
 my %map_default_status = (
     1 => 'notSupported',
     2 => 'normal',
+    3 => 'postFailure',
     4 => 'entityAbsent',
+    11 => 'poeError',
+    21 => 'stackError',
+    22 => 'stackPortBlocked',
+    23 => 'stackPortFailed',
+    31 => 'sfpRecvError',
+    32 => 'sfpSendError',
+    33 => 'sfpBothError',
+    41 => 'fanError',
+    51 => 'psuError',
+    61 => 'rpsError(',
+    71 => 'moduleFaulty',
+    81 => 'sensorError',
     91 => 'hardwareFaulty',
 );
 
