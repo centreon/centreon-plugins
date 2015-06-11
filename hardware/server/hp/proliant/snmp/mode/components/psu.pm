@@ -119,7 +119,8 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("powersupply '%s' status is %s [redundance: %s, redundant partner: %s] (status %s).",
                                     $instance, $result->{cpqHeFltTolPowerSupplyCondition},
-                                    $result->{cpqHeFltTolPowerSupplyRedundant}, $result2->{cpqHeFltTolPowerSupplyRedundantPartner},
+                                    $result->{cpqHeFltTolPowerSupplyRedundant}, 
+                                    defined($result2->{cpqHeFltTolPowerSupplyRedundantPartner}) ? $result2->{cpqHeFltTolPowerSupplyRedundantPartner} : 'unknown',
                                     $result->{cpqHeFltTolPowerSupplyStatus}
                                     ));
         my $exit = $self->get_severity(section => 'psu', value => $result->{cpqHeFltTolPowerSupplyCondition});
@@ -132,7 +133,7 @@ sub check {
         $self->{output}->perfdata_add(label => "psu_power_" . $instance, unit => 'W',
                                       value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
                                       critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum});
-        $self->{output}->perfdata_add(label => "psu__voltage" . $instance, unit => 'V',
+        $self->{output}->perfdata_add(label => "psu_voltage" . $instance, unit => 'V',
                                       value => $result->{cpqHeFltTolPowerSupplyMainVoltage});
     }
 }

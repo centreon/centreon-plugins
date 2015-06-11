@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package snmp_standard::plugin;
+package network::cisco::ironport::snmp::plugin;
 
 use strict;
 use warnings;
@@ -45,11 +45,13 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'numeric-value'      => 'snmp_standard::mode::numericvalue',
-                         'string-value'       => 'snmp_standard::mode::stringvalue',
-                         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
+                         'cpu'              => 'network::cisco::ironport::snmp::mode::cpu',
+                         'hardware'         => 'network::cisco::ironport::snmp::mode::hardware',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::cisco::ironport::snmp::mode::memory',
+                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;
@@ -61,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check SNMP values (string, numeric or execute commands).
+Check Cisco Ironport in SNMP.
 
 =cut

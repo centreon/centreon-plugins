@@ -39,8 +39,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-#use Time::HiRes;
-use Time::Local;
 use POSIX;
 
 sub new {
@@ -51,8 +49,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "tablename:s"    => { name => 'tablename', default => 'data_bin' },
-                                  "retentionforward:s"    => { name => 'retentionforward', default => '10' },
+                                  "tablename:s@"        => { name => 'tablename' },
+                                  "timezone:s"          => { name => 'timezone' },
+                                  "warning:s"           => { name => 'warning' },
+                                  "critical:s"          => { name => 'critical' },
                                 });
 
     return $self;
@@ -63,61 +63,64 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warn1} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warn1} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{tablename}) || scalar(@{$self->{option_results}->{tablename}}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Please set tablename option.");
+        $self->{output}->option_exit();
+    }
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $ENV{TZ} = $self->{option_results}->{timezone};
     }
 }
 
 sub run {
- 
     my ($self, %options) = @_;
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-
-    my @partitionedTables = split /,/, $self->{option_results}->{tablename};
-
-    my($day, $month, $year) = (localtime)[3,4,5];
-    $month = sprintf '%02d', $month+1;
-    $day   = sprintf '%02d', $day;
-    my $actualTime = timelocal(0,0,0,$day,$month-1,$year);
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All partitions are up to date"));
-
-    foreach my $table (@partitionedTables) {
+                                short_msg => sprintf("All table partitions are up to date"));
+    foreach my $value (@{$self->{option_results}->{tablename}}) {
+        if ($value !~ /(\S+)\.(\S+)/) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("Wrong table name '%s'", $value));
+            next;
+        }
+        my ($database, $table) = ($1, $2);
+        $self->{sql}->query(query => "SELECT MAX(CONVERT(PARTITION_DESCRIPTION, SIGNED INTEGER)) as lastPart FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_NAME='" . $table . "' AND TABLE_SCHEMA='" . $database . "' GROUP BY TABLE_NAME;");
+        my ($last_time) = $self->{sql}->fetchrow_array();
+        if (!defined($last_time)) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("Couldn't get partition infos for table '%s'", $value));
+            next;
+        }
+        
+        my $retention_forward_current = 0;
+        my ($day,$month,$year) = (localtime(time))[3,4,5];
+        my $current_time = mktime(0, 0, 0, $day, $month, $year);
+        while ($current_time < $last_time) {
+            $retention_forward_current++;
+            $current_time = mktime(0, 0, 0, ++$day, $month, $year);
+        }
          
-         $self->{sql}->query(query => "SELECT TABLE_NAME,PARTITION_NAME FROM information_schema.PARTITIONS WHERE TABLE_NAME='".$table."' ORDER BY PARTITION_NAME DESC LIMIT 1;");
-         
-         my ($tableName, $yyyymmdd) = $self->{sql}->fetchrow_array();
-         if (!defined $yyyymmdd) {
-             $self->{output}->output_add(severity => 'UNKNOWN',
-                                         short_msg => sprintf("Couldn't get infos from mysql, is all specified tables have partitions ?"));
-             $self->{output}->display();
-             $self->{output}->exit();
-         }
-
-         $yyyymmdd =~ s/^.//;
-         $self->{output}->output_add(long_msg => sprintf("Table %s last partition date is %s", $tableName, $yyyymmdd));
-         
-         my ($partY, $partM, $partD) = $yyyymmdd =~ /^(\d{4})(\d{2})(\d{2})\z/;
-          
-         my $partTime = timelocal(0,0,0,$partD,$partM-1,$partY);
-         if ($partTime < $actualTime + $self->{option_results}->{retentionforward} * 86400) {
-             $self->{output}->output_add(severity => 'CRITICAL',
-                                         short_msg => sprintf("Partitions for table %s are not up to date (%s)",$tableName, $yyyymmdd));
-         }
-                      
+        $self->{output}->output_add(long_msg => sprintf("Table '%s' last partition date is %s (current retention forward in days: %s)", $value, scalar(localtime($last_time)), $retention_forward_current));
+        my $exit = $self->{perfdata}->threshold_check(value => $retention_forward_current, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Partitions for table '%s' are not up to date (current retention forward in days: %s)", $value, $retention_forward_current));
+        }
     }
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
 
 1;
@@ -126,18 +129,27 @@ __END__
 
 =head1 MODE
 
-Check that partitions for MySQL/MariaDB tables are correctly created
+Check that partitions for MySQL/MariaDB tables are correctly created.
 The mode should be used with mysql plugin and dyn-mode option.
 
 =over 8
 
 =item B<--tablename>
 
-This option is not mandatory, you can specify one or several table names separated by comma, default value is 'data_bin'
+This option is mandatory (can be multiple).
+Example: centreon_storage.data_bin
 
-=item B<--retentionforward>
+=item B<--warning>
 
-This option must be set accordingly to the number of days of retention forward value in centreon-partioning config file. This value will determine when a CRITICAL would be triggered for missing partitions. Default is 10
+Threshold warning (number of retention forward days)
+
+=item B<--critical>
+
+Threshold critical (number of retention forward days)
+
+=item B<--timezone>
+
+Timezone use for partitioning (If not set, we use current server execution timezone)
 
 =back
 

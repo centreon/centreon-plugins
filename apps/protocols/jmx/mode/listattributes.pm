@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,34 +33,70 @@
 #
 ####################################################################################
 
-package snmp_standard::plugin;
+package apps::protocols::jmx::mode::listattributes;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'numeric-value'      => 'snmp_standard::mode::numericvalue',
-                         'string-value'       => 'snmp_standard::mode::stringvalue',
-                         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
-                         );
-
+    
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                {
+                                  "max-depth:s"             => { name => 'max_depth', default => 6 },
+                                  "max-objects:s"           => { name => 'max_objects', default => 10000 },
+                                  "max-collection-size:s"   => { name => 'max_collection_size', default => 150 },
+                                  "mbean-pattern:s"         => { name => 'mbean_pattern', default => '*:*' },
+                                });
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+
+}
+
+sub run {
+    my ($self, %options) = @_;
+    $self->{connector} = $options{custom};
+
+    $self->{connector}->list_attributes(%{$self->{option_results}});
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check SNMP values (string, numeric or execute commands).
+List JMX attributes.
+
+=over 8
+
+=item B<--max-depth>
+
+Maximum nesting level of the returned JSON structure for a certain MBean (Default: 6)
+
+=item B<--max-collection-size>
+
+Maximum size of a collection after which it gets truncated (default: 150)
+
+=item B<--max-objects>
+
+Maximum overall objects to fetch for a mbean (default: 10000)
+
+=item B<--mbean-pattern>
+
+Pattern matching (Default: '*:*').
+For details: http://docs.oracle.com/javase/1.5.0/docs/api/javax/management/ObjectName.html
+
+=back
 
 =cut

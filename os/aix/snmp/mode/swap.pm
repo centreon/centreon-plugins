@@ -144,7 +144,7 @@ sub run {
                                             short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,
                                                 $total_size_value . " " . $total_size_unit,
                                                 $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
-                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_})));
+                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $swap_total)));
             }
             
             $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,14 +33,12 @@
 #
 ####################################################################################
 
-package apps::activedirectory::local::mode::netdom;
+package network::cisco::ironport::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use Win32;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,10 +47,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
-                                  "domain:s"        => { name => 'domain', },
-                                  "workstation:s"   => { name => 'workstation' },
-                                  "timeout:s"       => { name => 'timeout', default => 30 },
+                                { 
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                 });
 
     return $self;
@@ -61,39 +58,35 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-}
 
-sub netdom {
-    my ($self, %options) = @_;
-
-    my $netdom_cmd = 'netdom verify ';
-    $netdom_cmd .= ' /Domain:' . $self->{option_results}->{domain} if (defined($self->{option_results}->{domain}) && $self->{option_results}->{domain} ne '');
-    if (defined($self->{option_results}->{workstation})) {
-        $netdom_cmd .= ' ' . . $self->{option_results}->{workstation};
-    } else {
-        $netdom_cmd .= ' ' . . Win32::NodeName();
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
     }
-    
-    my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                          timeout => $self->{option_results}->{timeout},
-                                                          command => $netdom_cmd,
-                                                          command_path => undef,
-                                                          command_options => undef,
-                                                          no_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Secure channel has been verified.');
-    if ($exit_code != 0) {
-        $self->{output}->output_add(long_msg => $stdout);
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'Secure channel had a problem (see additional info).');
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+    
+    my $oid_perCentMemoryUtilization = '.1.3.6.1.4.1.15497.1.1.1.1.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_perCentMemoryUtilization], nothing_quit => 1);
 
-    $self->netdom();   
+    my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_perCentMemoryUtilization}, 
+                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("Memory usage is: %.2f%%", $result->{$oid_perCentMemoryUtilization}));
+    $self->{output}->perfdata_add(label => 'used', unit => '%',
+                                  value => sprintf("%.2f", $result->{$oid_perCentMemoryUtilization}),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => 100);
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -104,21 +97,17 @@ __END__
 
 =head1 MODE
 
-Check the secure connection between a workstation and a domain controller (use 'netdom' command).
+Check memory usage (ASYNCOS-MAIL-MIB).
 
 =over 8
 
-=item B<--workstation>
+=item B<--warning>
 
-Set the name of the workstation (Default: current hostname)
+Threshold warning in percent.
 
-=item B<--domain>
+=item B<--critical>
 
-Set the name of the domain (Default: current domain of the workstation)
-
-=item B<--timeout>
-
-Set timeout time for command execution (Default: 30 sec)
+Threshold critical in percent.
 
 =back
 

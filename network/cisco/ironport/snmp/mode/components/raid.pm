@@ -33,34 +33,52 @@
 #
 ####################################################################################
 
-package snmp_standard::plugin;
+package network::cisco::ironport::snmp::mode::components::raid;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+my %map_raid_status = (
+    1 => 'driveHealthy',
+    2 => 'driveFailure',
+    3 => 'driveRebuild',
+);
 
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'numeric-value'      => 'snmp_standard::mode::numericvalue',
-                         'string-value'       => 'snmp_standard::mode::stringvalue',
-                         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
-                         );
+my $mapping = {
+    raidStatus => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.2', map => \%map_raid_status },
+    raidID => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.4' },
+};
+my $oid_raidEntry = '.1.3.6.1.4.1.15497.1.1.1.18.1';
 
-    return $self;
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_raidEntry, end => $mapping->{raidStatus}->{oid} };
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking raids");
+    $self->{components}->{raid} = {name => 'raids', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'raid'));
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raidEntry}})) {
+        next if ($oid !~ /^$mapping->{raidStatus}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_raidEntry}, instance => $instance);
+        
+        next if ($self->check_exclude(section => 'raid', instance => $instance));
+
+        $self->{components}->{raid}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Raid '%s' status is '%s' [instance = %s]",
+                                                        $result->{raidID}, $result->{raidStatus}, $instance));
+        my $exit = $self->get_severity(section => 'psu', value => $result->{raidStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                       short_msg => sprintf("Raid '%s' status is '%s'", $result->{raidID}, $result->{raidStatus}));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check SNMP values (string, numeric or execute commands).
-
-=cut
