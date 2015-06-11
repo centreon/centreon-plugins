@@ -237,7 +237,7 @@ Set the storage name (empty means 'check all storage').
 
 =item B<--regexp>
 
-Allows to use regexp to filter storage (with option --name).
+Allows to use regexp to filter storage.
 
 =item B<--regexp-isensitive>
 
