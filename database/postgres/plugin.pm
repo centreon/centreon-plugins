@@ -57,6 +57,7 @@ sub new {
                          'timesync'         => 'database::postgres::mode::timesync',
                          'vacuum'           => 'database::postgres::mode::vacuum',
                          'statistics'       => 'database::postgres::mode::statistics',
+                         'sql'              => 'database::postgres::mode::sql',
                          'tablespace'       => 'database::postgres::mode::tablespace',
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
