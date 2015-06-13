@@ -52,7 +52,7 @@ my $maps_counters = {
                         output_template => 'Traffic In : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_in', value => 'ggsnUplinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, cast_int => 1 },
+                              unit => 'b/s', min => 0, cast_int => 1 },
                         ],
                     }
                },
@@ -65,7 +65,7 @@ my $maps_counters = {
                         output_template => 'Traffic Out : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_out', value => 'ggsnDownlinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, cast_int => 1 },
+                              unit => 'b/s', min => 0, cast_int => 1 },
                         ],
                     }
                },
@@ -348,6 +348,8 @@ sub manage_selection {
     $self->{results} = $self->{snmp}->get_table(oid => $oid_ggsnGlobalStats,
                                                 nothing_quit => 1);
     $self->{global} = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => '0');
+    $self->{global}->{ggsnDownlinkBytes} *= 8 if (defined($self->{global}->{ggsnDownlinkBytes}));
+    $self->{global}->{ggsnUplinkBytes} *= 8 if (defined($self->{global}->{ggsnUplinkBytes}));
 }
 
 1;
