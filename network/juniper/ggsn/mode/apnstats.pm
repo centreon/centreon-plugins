@@ -53,7 +53,7 @@ my $maps_counters = {
                         output_template => 'Traffic In : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_in', value => 'ggsnApnUplinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
+                              unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
@@ -66,7 +66,7 @@ my $maps_counters = {
                         output_template => 'Traffic Out : %s %s/s',
                         perfdatas => [
                             { label => 'traffic_out', value => 'ggsnApnDownlinkBytes_per_second', template => '%s',
-                              unit => 'b', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
+                              unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
                         ],
                     }
                },
@@ -378,6 +378,8 @@ sub manage_selection {
             next;
         }
         
+        $result->{ggsnApnDownlinkBytes} *= 8 if (defined($result->{ggsnApnDownlinkBytes}));
+        $result->{ggsnApnUplinkBytes} *= 8 if (defined($result->{ggsnApnUplinkBytes}));
         $self->{apn_selected}->{$instance} = $result;
     }
     
