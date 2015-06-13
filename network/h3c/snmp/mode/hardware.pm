@@ -253,16 +253,16 @@ sub get_long_name {
 }
 
 sub get_instance_class {
-     my ($self, %options) = @_;
+    my ($self, %options) = @_;
      
-     my @instances = ();
-     foreach (keys %{$self->{results}->{$oid_entPhysicalEntry}}) {
+    my @instances = ();
+    foreach (keys %{$self->{results}->{$oid_entPhysicalEntry}}) {
         if (/^$oid_entPhysicalClass\.(\d+)/ && defined($options{class}->{$self->{results}->{$oid_entPhysicalEntry}->{$_}})) {
             push @instances, $1;
         }
-     }
+    }
 
-     return @instances;
+    return @instances;
 }
 
 sub run {

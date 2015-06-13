@@ -47,10 +47,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         #'cpu'              => 'network::h3c::snmp::mode::cpu',
+                         'cpu'              => 'network::h3c::snmp::mode::cpu',
                          'hardware'         => 'network::h3c::snmp::mode::hardware',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         #'memory'           => 'network::h3c::snmp::mode::memory',
+                         'memory'           => 'network::h3c::snmp::mode::memory',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
