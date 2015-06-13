@@ -33,72 +33,33 @@
 #
 ####################################################################################
 
-package network::extreme::snmp::mode::cpu;
+package network::h3c::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::values;
+use centreon::plugins::statefile;
+
+my $oid_entPhysicalEntry = '.1.3.6.1.2.1.47.1.1.1.1';
+my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
+my $oid_entPhysicalContainedIn = '.1.3.6.1.2.1.47.1.1.1.1.4';
+my $oid_entPhysicalClass = '.1.3.6.1.2.1.47.1.1.1.1.5';
+my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
 
 my $maps_counters = {
     cpu => { 
-        '000_5secs'   => { set => {
-                        key_values => [ { name => 'extremeCpuMonitorSystemUtilization5secs' }, { name => 'num' }, ],
-                        output_template => '5 seconds : %.2f %%',
+        '000_usage'   => { set => {
+                        key_values => [ { name => 'EntityExtCpuUsage' }, { name => 'num' }, ],
+                        output_template => ' : %.2f %%',
                         perfdatas => [
-                            { label => 'cpu_5secs', value => 'extremeCpuMonitorSystemUtilization5secs_absolute', template => '%.2f',
-                              min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                        ],
-                    }
-               },
-        '001_10secs'   => { set => {
-                        key_values => [ { name => 'extremeCpuMonitorSystemUtilization10secs' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
-                        perfdatas => [
-                            { label => 'cpu_10secs', value => 'extremeCpuMonitorSystemUtilization10secs_absolute', template => '%.2f',
-                              min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                        ],
-                    }
-               },
-        '002_30secs'   => { set => {
-                        key_values => [ { name => 'extremeCpuMonitorSystemUtilization30secs' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
-                        perfdatas => [
-                            { label => 'cpu_30secs', value => 'extremeCpuMonitorSystemUtilization30secs_absolute', template => '%.2f',
-                              min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                        ],
-                    }
-               },
-        '003_1min'   => { set => {
-                        key_values => [ { name => 'extremeCpuMonitorSystemUtilization1min' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
-                        perfdatas => [
-                            { label => 'cpu_1min', value => 'extremeCpuMonitorSystemUtilization1min_absolute', template => '%.2f',
-                              min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                        ],
-                    }
-               },
-        '004_5min'   => { set => {
-                        key_values => [ { name => 'extremeCpuMonitorSystemUtilization5mins' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
-                        perfdatas => [
-                            { label => 'cpu_5min', value => 'extremeCpuMonitorSystemUtilization5mins_absolute', template => '%.2f',
+                            { label => 'cpu', value => 'EntityExtCpuUsage_absolute', template => '%.2f',
                               min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
                         ],
                     }
                },
         },
-    total => {
-        '000_total'   => { set => {
-                        key_values => [ { name => 'total' } ],
-                        output_template => 'CPU Usage : %.2f %%',
-                        perfdatas => [
-                            { label => 'cpu_total', value => 'total_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
-                        ],
-                    }
-               },
-    }
 };
 
 sub new {
@@ -108,10 +69,12 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                  "display-entity-name"     => { name => 'display_entity_name' },
                                 });                         
 
-    foreach my $key (('cpu', 'total')) {
+    foreach my $key (('cpu')) {
         foreach (keys %{$maps_counters->{$key}}) {
             my ($id, $name) = split /_/;
             if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
@@ -126,6 +89,8 @@ sub new {
         }
     }
     
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
     return $self;
 }
 
@@ -133,52 +98,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $key (('cpu', 'total')) {
+    foreach my $key (('cpu')) {
         foreach (keys %{$maps_counters->{$key}}) {
             $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
-    }    
-}
-
-sub check_total {
-    my ($self, %options) = @_;
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits = ();
-    foreach (sort keys %{$maps_counters->{total}}) {
-        my $obj = $maps_counters->{total}->{$_}->{obj};
-        $obj->set(instance => 'global');
-    
-        my ($value_check) = $obj->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
     }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Total $short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "Total $long_msg");
-    }
+    
+    $self->{statefile_cache}->check_options(%options);
 }
 
 sub run {
@@ -192,13 +118,7 @@ sub run {
     if (scalar(keys %{$self->{cpu}}) == 1) {
         $multiple = 0;
     }
-
-    if ($multiple == 1) {
-        $self->check_total();
-    }
     
-    ####
-    # By CPU 
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All CPU usages are ok');
@@ -233,7 +153,7 @@ sub run {
             $maps_counters->{cpu}->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "CPU '" . $self->{cpu}->{$id}->{num} . "' Usage $long_msg");
+        $self->{output}->output_add(long_msg => "CPU '" . $self->{cpu}->{$id}->{num} . "' Usage $long_msg [entity = '" . $self->{cpu}->{$id}->{name} . "']");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
@@ -250,35 +170,96 @@ sub run {
     $self->{output}->exit();
 }
 
-my $mapping = {
-    extremeCpuMonitorSystemUtilization5secs => { oid => '.1.3.6.1.4.1.1916.1.32.1.4.1.5' },
-    extremeCpuMonitorSystemUtilization10secs => { oid => '.1.3.6.1.4.1.1916.1.32.1.4.1.6' },
-    extremeCpuMonitorSystemUtilization30secs => { oid => '.1.3.6.1.4.1.1916.1.32.1.4.1.7' },
-    extremeCpuMonitorSystemUtilization1min => { oid => '.1.3.6.1.4.1.1916.1.32.1.4.1.8' },
-    extremeCpuMonitorSystemUtilization5mins => { oid => '.1.3.6.1.4.1.1916.1.32.1.4.1.9' },
-};
+sub check_cache {
+    my ($self, %options) = @_;
+
+    $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
+    
+    # init cache file
+    $self->{write_cache} = 0;
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_h3c_entity_' . $self->{hostname}  . '_' . $self->{snmp_port});
+    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
+    if ($has_cache_file == 0 ||
+        !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        push @{$self->{snmp_request}}, { oid => $oid_entPhysicalEntry, start => $oid_entPhysicalDescr, end => $oid_entPhysicalName };
+        $self->{write_cache} = 1;
+    }
+}
+
+sub write_cache {
+    my ($self, %options) = @_;
+    
+    if ($self->{write_cache} == 1) {
+        my $datas = {};
+        $datas->{last_timestamp} = time();
+        $datas->{oids} = $self->{results}->{$oid_entPhysicalEntry};
+        $self->{statefile_cache}->write(data => $datas);
+    } else {
+        $self->{results}->{$oid_entPhysicalEntry} = $self->{statefile_cache}->get(name => 'oids');
+    }
+}
+
+sub get_long_name {
+    my ($self, %options) = @_;
+    
+    my @names = ($self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $options{instance}});
+    my %loop = ($options{instance} => 1);
+    my $child = $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalContainedIn . '.' . $options{instance}};
+    while (1) {
+        last if (!defined($child) || defined($loop{$child}) || !defined($self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $child}));
+        
+        unshift @names, $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalDescr . '.' . $child};
+        $loop{$child} = 1;
+        $child = $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalContainedIn . '.' . $child};
+    }
+    
+    return join(' > ', @names);
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_extremeCpuMonitorSystemEntry = '.1.3.6.1.4.1.1916.1.32.1.4.1';
-    my $oid_extremeCpuMonitorTotalUtilization = '.1.3.6.1.4.1.1916.1.32.1.2'; # without .0
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_extremeCpuMonitorTotalUtilization },
-                                                            { oid => $oid_extremeCpuMonitorSystemEntry },
-                                                         ],
-                                                         , nothing_quit => 1);
+    my $oid_h3cEntityExtCpuUsage = '.1.3.6.1.4.1.2011.10.2.6.1.1.1.1.6';
+    my $oid_hh3cEntityExtCpuUsage = '.1.3.6.1.4.1.25506.2.6.1.1.1.1.6';
+    $self->{snmp_request} = [ 
+        { oid => $oid_h3cEntityExtCpuUsage },
+        { oid => $oid_hh3cEntityExtCpuUsage },
+    ];
+    $self->check_cache() if (defined($self->{option_results}->{display_entity_name}));
+
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{snmp_request},
+                                                         nothing_quit => 1);
+    $self->write_cache() if (defined($self->{option_results}->{display_entity_name}));
+    $self->{branch} = $oid_hh3cEntityExtCpuUsage;
+    if (defined($self->{results}->{$oid_h3cEntityExtCpuUsage}) && scalar(keys %{$self->{results}->{$oid_h3cEntityExtCpuUsage}}) > 0) {
+        $self->{branch} = $oid_h3cEntityExtCpuUsage;
+    }
+    
+    my $mapping = {
+        EntityExtCpuUsage => { oid => $self->{branch} . '.6' },
+    };
     
     $self->{cpu} = {};
-    foreach my $oid (keys %{$self->{results}->{$oid_extremeCpuMonitorSystemEntry}}) {
-        next if ($oid !~ /^$mapping->{extremeCpuMonitorSystemUtilization1min}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$self->{results}->{$self->{branch}}}) {
+        $oid =~ /^$mapping->{EntityExtCpuUsage}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremeCpuMonitorSystemEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch}}, instance => $instance);
         
-        $self->{cpu}->{$instance} = {num => $instance, %$result};
+        if (defined($result->{EntityExtCpuUsage}) && $result->{EntityExtCpuUsage} > 0) {
+            my $name = '-';
+            
+            if (defined($self->{option_results}->{display_entity_name})) {
+                $name = $self->get_long_name(instance => $instance);
+            }
+            $self->{cpu}->{$instance} = { num => $instance, name => $name, %$result};
+        }
     }
-
-    $self->{global} = { total => $self->{results}->{$oid_extremeCpuMonitorTotalUtilization}->{$oid_extremeCpuMonitorTotalUtilization . '.0'} };
+    
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -291,15 +272,21 @@ Check CPU usages.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-usage>
 
 Threshold warning.
-Can be: 'total', '5sec', '10sec', '30sec, '1min', '5min'.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
 Threshold critical.
-Can be: 'total', '5sec', '10sec', '30sec, '1min', '5min'.
+
+=item B<--reload-cache-time>
+
+Time in seconds before reloading cache file (default: 180).
+
+=item B<--display-entity-name>
+
+Display entity name of the component. A cache file will be used.
 
 =back
 
