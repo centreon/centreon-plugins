@@ -70,17 +70,17 @@ sub custom_usage_perfdata {
     }
     
     if ($self->{result_values}->{total} == 4294967295) {
-        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
-                                      value => $self->{result_values}->{used},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                      min => 0, max => $self->{result_values}->{total});
-    } else {
         $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => '%',
-                                      value => $self->{result_values}->{prtc_used},
+                                      value => $self->{result_values}->{prct_used},
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
                                       min => 0, max => 100);
+    } else {
+        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
+                                      value => int($self->{result_values}->{used}),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                      min => 0, max => $self->{result_values}->{total});
     }
 }
 
@@ -209,7 +209,7 @@ sub run {
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg [entity = '" . $self->{cpu}->{$id}->{name} . "']");
+        $self->{output}->output_add(long_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg [entity = '" . $self->{memory_selected}->{$id}->{name} . "']");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
