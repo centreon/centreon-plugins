@@ -93,7 +93,10 @@ sub run {
     } else {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
-    my @properties = ('name', 'config.network.pnic', 'runtime.connectionState', 'config.network.vswitch', 'config.network.proxySwitch');
+    my @properties = ('name', 'config.network.pnic', 'runtime.connectionState', 'config.network.vswitch');
+    if (!defined($self->{no_proxyswitch})) {
+        push @properties, 'config.network.proxySwitch';
+    }
     my $result = centreon::esxd::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
     
