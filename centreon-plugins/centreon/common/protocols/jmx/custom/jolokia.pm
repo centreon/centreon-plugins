@@ -170,29 +170,90 @@ sub connect {
     $self->{jmx4perl} = new JMX::Jmx4Perl($self->{connect_params});
 }
 
+sub _add_request {
+    my ($self, %options) = @_;
+    
+    my $request = JMX::Jmx4Perl::Request->new(READ, $options{object}, 
+                                              $options{attribute}
+                                              );
+    if (!$request->is_mbean_pattern($options{object})) {
+        $request->{path} = $options{path};
+    }
+    
+    return $request;
+}
+
 sub get_attributes {
     my ($self, %options) = @_;
-    my $dont_quit = defined($options{dont_quit}) && $options{dont_quit} == 1 ? 1 : 0;
+    my $nothing_quit = defined($options{nothing_quit}) && $options{nothing_quit} == 1 ? 1 : 0;
+    #$options{request} = [
+    #     { mbean => 'java.lang:name=*,type=MemoryPool', attributes => [ { name => 'CollectionUsage', path => 'committed' }, { name => 'Name', path => undef },
+    #     { name => 'NonHeapMemoryUsagePlop', path => undef } ] },
+    #     { mbean => 'java.lang:type=Memory', attributes => [ { name => 'NonHeapMemoryUsage' } ] },
+    #     { mbean => 'java.lang:type=Memory', attributes => [ { name => 'HeapMemoryUsage', path => 'committed' } ] },
+    #     { mbean => 'java.lang:type=Memory', attributes => [] },
+    #];
     
     if (!defined($self->{jmx4perl})) {
         $self->connect();
     }
-    
-    my $resp;
-    eval {
-        local $SIG{__DIE__} = 'IGNORE';
-        my $attributes = $options{attributes};
-        if (defined($attributes) && ref($attributes) eq 'ARRAY' && scalar(@{$attributes}) == 1) {
-            $attributes = $attributes->[0];
+
+    my @requests = ();
+    for (my $i = 0; defined($options{request}) && $i < scalar(@{$options{request}}); $i++) {
+        my $object = $options{request}->[$i]->{mbean};
+        for (my $j = 0; defined($options{request}->[$i]->{attributes}) && 
+                          $j < scalar(@{$options{request}->[$i]->{attributes}}) ; $j++) {            
+            push @requests, $self->_add_request(object => $object, attribute => $options{request}->[$i]->{attributes}->[$j]->{name},
+                                                path => $options{request}->[$i]->{attributes}->[$j]->{path});
         }
-        $resp = $self->{jmx4perl}->get_attribute($options{mbean_pattern}, $attributes, $options{path});
-    };
-    if ($@ && $dont_quit == 0) {
-        $self->{output}->add_option_msg(short_msg => "protocol issue: " . $@);
-        $self->{output}->option_exit();
+        if (!defined($options{request}->[$i]->{attributes}) || scalar(@{$options{request}->[$i]->{attributes}}) == 0) {
+            push @requests, $self->_add_request(object => $object, path => $options{request}->[$i]->{path});
+        }
     }
 
-    return $resp;
+    my $response = {};
+    my @responses = $self->{jmx4perl}->request(@requests);
+    for (my $i = 0, my $pos = 0; defined($options{request}) && $i < scalar(@{$options{request}}); $i++) {
+        for (my $j = 0; defined($options{request}->[$i]->{attributes}) && 
+                          $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
+            if ($responses[$pos]->is_error()) {
+                # 500-599 an error. 400 is an attribute not present
+                if ($responses[$pos]->status() >= 500) {
+                    $self->{output}->add_option_msg(short_msg => "protocol issue: " . $responses[$pos]->error_text());
+                    $self->{output}->option_exit();
+                }
+                next;
+            }
+            
+            my $mbean = $responses[$pos]->{request}->{mbean};
+            my $attribute = $responses[$pos]->{request}->{attribute};
+            my $value = $responses[$pos]->{value};
+            if ($requests[$pos]->is_mbean_pattern()) {
+                foreach (keys %{$responses[$pos]->{value}}) {
+                    $response->{$_} = {} if (!defined($response->{$_}));
+                    $response->{$_}->{$attribute} = $responses[$pos]->{value}->{$_}->{$attribute};
+                }
+            } else {
+                $response->{$mbean} = {} if (!defined($response->{$mbean}));
+                $response->{$mbean}->{$attribute} = $value;
+            }
+        }
+
+        if (!defined($options{request}->[$i]->{attributes}) || scalar(@{$options{request}->[$i]->{attributes}}) == 0) {
+            my $mbean = $responses[$pos]->{request}->{mbean};
+            $response->{$mbean} = {} if (!defined($response->{$mbean}));
+            foreach (keys %{$responses[$pos]->{value}}) {
+                $response->{$mbean}->{$_} = $responses[$pos]->{value}->{$_};
+            }
+            $pos++;
+        }
+    }
+
+    if ($nothing_quit == 1 && scalar(keys %{$response}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "JMX Request: Cant get a single value.");
+        $self->{output}->option_exit();
+    }
+    return $response;
 }
 
 sub list_attributes {
