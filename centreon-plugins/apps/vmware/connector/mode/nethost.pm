@@ -60,6 +60,7 @@ sub new {
                                   "warning-out:s"           => { name => 'warning_out', },
                                   "critical-out:s"          => { name => 'critical_out', },
                                   "link-down-status:s"      => { name => 'link_down_status', default => 'critical' },
+                                  "no-proxyswitch"          => { name => 'no_proxyswitch' },
                                 });
     return $self;
 }
@@ -154,6 +155,10 @@ Threshold warning traffic out (percent).
 =item B<--critical-out>
 
 Threshold critical traffic out (percent).
+
+=item B<--no-proxyswitch>
+
+Use the following option if you are checking an ESX 3.x version (it's mandatory).
 
 =back
 
