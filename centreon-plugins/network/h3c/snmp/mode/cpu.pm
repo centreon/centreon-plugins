@@ -237,7 +237,7 @@ sub manage_selection {
     }
     
     my $mapping = {
-        EntityExtCpuUsage => { oid => $self->{branch} . '.6' },
+        EntityExtCpuUsage => { oid => $self->{branch} },
     };
     
     $self->{cpu} = {};
