@@ -94,7 +94,7 @@ sub custom_usage_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_total'} + $options{new_datas}->{$self->{instance} . '_free'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_total'} - $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
