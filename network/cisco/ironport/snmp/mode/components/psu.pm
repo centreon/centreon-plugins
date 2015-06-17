@@ -54,7 +54,7 @@ my $oid_powerSupplyEntry = '.1.3.6.1.4.1.15497.1.1.1.8.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_powerSupplyEntry, end => $mapping->{powerSupplyStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_powerSupplyEntry, start => $mapping->{powerSupplyStatus}->{oid} };
 }
 
 sub check {

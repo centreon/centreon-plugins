@@ -47,7 +47,7 @@ my $oid_fanEntry = '.1.3.6.1.4.1.15497.1.1.1.10.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_fanEntry, end => $mapping->{fanRPMs}->{oid} };
+    push @{$options{request}}, { oid => $oid_fanEntry, start => $mapping->{fanRPMs}->{oid} };
 }
 
 sub check {

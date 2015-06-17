@@ -93,7 +93,7 @@ sub run {
         my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_cacheCpuUsage}, 
                                                            threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("CPU Mail usage is: %.2f%%", $result->{$oid_cacheCpuUsage}));
+                                    short_msg => sprintf("CPU WebSecurity usage is: %.2f%%", $result->{$oid_cacheCpuUsage}));
         $self->{output}->perfdata_add(label => 'cpu_websecurity', unit => '%',
                                       value => sprintf("%.2f", $result->{$oid_cacheCpuUsage}),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
