@@ -84,7 +84,7 @@ sub run {
 
     my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / 100),
                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->perfdata_add(label => 'uptime',
+    $self->{output}->perfdata_add(label => 'uptime', unit => 's',
                                   value => floor($value / 100),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

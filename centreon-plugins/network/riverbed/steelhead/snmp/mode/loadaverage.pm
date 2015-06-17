@@ -99,30 +99,27 @@ sub run {
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_cpuLoad1, $oid_cpuLoad5, $oid_cpuLoad15], nothing_quit => 1);
 
-    my $cpu_load1 = $result->{$oid_cpuLoad1};
-    my $cpu_load5 = $result->{$oid_cpuLoad5};
-    my $cpu_load15 = $result->{$oid_cpuLoad15};
+    my $cpu_load1 = $result->{$oid_cpuLoad1} / 100;
+    my $cpu_load5 = $result->{$oid_cpuLoad5} / 100;
+    my $cpu_load15 = $result->{$oid_cpuLoad15} / 100;
 
-    my $msg = sprintf("Load averages: %s %% (1min), %s %% (5min), %s %% (15min)", $cpu_load1, $cpu_load5, $cpu_load15);
+    my $msg = sprintf("Load average: %.2f (1min), %.2f (5min), %.2f (15min)", $cpu_load1, $cpu_load5, $cpu_load15);
 
     $self->{output}->perfdata_add(label => 'load1',
-                              value => $cpu_load1,
+                              value => sprintf("%.2f", $cpu_load1),
                               warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
                               critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-                              min => 0,
-                              max => 100);
+                              min => 0);
     $self->{output}->perfdata_add(label => 'load5',
-                              value => $cpu_load5,
+                              value => sprintf("%.2f", $cpu_load5),
                               warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
                               critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
-                              min => 0,
-                              max => 100);
+                              min => 0);
     $self->{output}->perfdata_add(label => 'load15',
-                              value => $cpu_load15,
+                              value => sprintf("%.2f", $cpu_load15),
                               warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
                               critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
-                              min => 0,
-                              max => 100);
+                              min => 0);
 
     my $exit1 = $self->{perfdata}->threshold_check(value => $cpu_load1,
                                                    threshold => [ { label => 'crit1', exit_litteral => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);

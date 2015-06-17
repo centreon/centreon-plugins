@@ -88,6 +88,7 @@ sub run {
                                   value => $disk_usage,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => 100
                                   );
 
     $self->{output}->display();
