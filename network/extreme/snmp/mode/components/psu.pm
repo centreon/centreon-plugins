@@ -57,7 +57,7 @@ my $oid_extremePowerSupplyEntry = '.1.3.6.1.4.1.1916.1.1.1.27.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_extremePowerSupplyEntry, end => $mapping->{extremePowerSupplyStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_extremePowerSupplyEntry, start => $mapping->{extremePowerSupplyStatus}->{oid} };
 }
 
 sub check_fan_speed {

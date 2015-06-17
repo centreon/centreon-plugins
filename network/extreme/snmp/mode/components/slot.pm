@@ -65,7 +65,7 @@ my $oid_extremeSlotEntry = '.1.3.6.1.4.1.1916.1.1.2.2.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_extremeSlotEntry, end => $mapping->{extremeSlotName}->{oid} };
+    push @{$options{request}}, { oid => $oid_extremeSlotEntry, start => $mapping->{extremeSlotName}->{oid}, end => $mapping->{extremeSlotModuleState}->{oid} };
 }
 
 sub check {
@@ -89,7 +89,7 @@ sub check {
         $self->{components}->{slot}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Slot '%s' status is '%s' [instance = %s]",
                                                         $result->{extremeSlotName}, $result->{extremeSlotModuleState}, $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{extremeSlotModuleState});
+        my $exit = $self->get_severity(section => 'slot', value => $result->{extremeSlotModuleState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                        short_msg => sprintf("Slot '%s' status is '%s'", $result->{extremeSlotName}, $result->{extremeSlotModuleState}));
