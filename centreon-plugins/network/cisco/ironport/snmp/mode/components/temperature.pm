@@ -61,7 +61,7 @@ my $oid_temperatureEntry = '.1.3.6.1.4.1.15497.1.1.1.9.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperatureEntry, end => $mapping->{degreesCelsius}->{oid} };
+    push @{$options{request}}, { oid => $oid_temperatureEntry, start => $mapping->{degreesCelsius}->{oid} };
 }
 
 sub check {
