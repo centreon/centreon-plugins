@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::snmp::mode::temperature;
+package network::hirschmann::standard::snmp::mode::processcount;
 
 use base qw(centreon::plugins::mode);
 
@@ -59,12 +59,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -73,22 +73,22 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_hmTemperature = '.1.3.6.1.4.1.248.14.2.5.1.0'; # in Celsius
+    my $oid_hmCpuRunningProcesses = '.1.3.6.1.4.1.248.14.2.15.2.3.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_hmTemperature],
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hmCpuRunningProcesses],
                                          nothing_quit => 1);
-    my $temp = $result->{$oid_hmTemperature};
+    my $processcount = $result->{$oid_hmCpuRunningProcesses};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $temp, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $processcount, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Temperature %s is degree centigrade", $temp));
+                                short_msg => sprintf("Number of current processes running: %d", $processcount));
 
-    $self->{output}->perfdata_add(label => "temp", unit => 'C',
-                                  value => $temp,
+    $self->{output}->perfdata_add(label => "nbproc",
+                                  value => $processcount,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min =>0);
+                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -100,17 +100,18 @@ __END__
 
 =head1 MODE
 
-Check CPU usage.
+Check number of processes.
+hmEnableMeasurement must be activated (value = 1).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in %.
+Threshold warning (process count).
 
 =item B<--critical>
 
-Threshold critical in %.
+Threshold critical (process count).
 
 =back
 

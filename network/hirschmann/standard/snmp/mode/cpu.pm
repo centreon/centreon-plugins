@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::snmp::mode::cpu;
+package network::hirschmann::standard::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -59,12 +59,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -79,16 +79,16 @@ sub run {
                                          nothing_quit => 1);
     my $cpu = $result->{$oid_hmCpuUtilization};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $cpu, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $cpu, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage is %d%%", $cpu));
+                                short_msg => sprintf("CPU Usage is %.2f%%", $cpu));
 
     $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $cpu,
+                                  value => sprintf("%.2f", $cpu),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min =>0, max => 100);
+                                  min => 0, max => 100);
 
     $self->{output}->display();
     $self->{output}->exit();
