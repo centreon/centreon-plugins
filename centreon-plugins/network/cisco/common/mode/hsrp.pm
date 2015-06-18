@@ -64,7 +64,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "role:s"               => { name => 'role', default => 'primary' },
+                                  "role:s"  => { name => 'role', default => 'primary' },
                                 });
     return $self;
 }
@@ -72,7 +72,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    if (($self->{option_results}->{role} ne 'primary') && ($self->{option_results}->{role} ne 'secondary')) {
+    
+    if (($self->{option_results}->{role} !~ /^primary|secondary$/) {
         $self->{output}->add_option_msg(short_msg => "You must use either primary either secondary for --role option");
         $self->{output}->option_exit();
     }
@@ -87,31 +88,33 @@ sub run {
     my $oid_cHsrpGrpStandbyState = ".1.3.6.1.4.1.9.9.106.1.2.1.1.15";    # HSRP Oper Status
     my $oid_cHsrpGrpEntryRowStatus = ".1.3.6.1.4.1.9.9.106.1.2.1.1.17";   # HSRP Admin Status
 
-    my $result_state = $self->{snmp}->get_table(oid => $oid_cHsrpGrpStandbyState, nothing_quit => 1);
-    my $result_status = $self->{snmp}->get_table(oid => $oid_cHsrpGrpEntryRowStatus, nothing_quit => 1);
+    my $results = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_cHsrpGrpStandbyState },
+                                                            { oid => $oid_cHsrpGrpEntryRowStatus },
+                                                            ],
+                                                   nothing_quit => 1);  
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Router is in its expected state : '%s'", $self->{option_results}->{role}));
-    
-    foreach my $oid (keys %$result_state) {
-	$oid =~ /(([0-9]+)\.([0-9]+))$/; 
+    foreach my $oid (keys %{$results->{$oid_cHsrpGrpStandbyState}}) {
+        $oid =~ /(\d+\.\d+)$/; 
         my $vrid = $1;
         
-        my $operState = $result_status->{$oid_cHsrpGrpEntryRowStatus . "." . $vrid};
-        my $adminState = $result_state->{$oid_cHsrpGrpStandbyState . "." . $vrid};
+        my $operState = $results->{$oid_cHsrpGrpEntryRowStatus}->{$oid_cHsrpGrpEntryRowStatus . "." . $vrid};
+        my $adminState = $results->{$oid_cHsrpGrpStandbyState}->{$oid};
 
         $self->{output}->output_add(long_msg => sprintf("[Vrid : %s] [Admin Status is '%s'] [Oper Status is '%s']",
-                                                               $vrid, $map_states{$adminState}, $map_row_status{$operState}));
+                                                        $vrid, $map_states{$adminState}, $map_row_status{$operState}));
         
-        if ($operState != 1) {
+        if ($map_row_status{$operState} !~ /^active$/i) {
             $self->{output}->output_add(severity => 'CRITICAL',
-					short_msg => sprintf("VRID %s operational state is '%s'", $vrid, $map_row_status{$operState}));
+					                    short_msg => sprintf("VRID %s operational state is '%s'", $vrid, $map_row_status{$operState}));
         }
 
-        if (($self->{option_results}->{role} eq 'primary' && $adminState != 6) || ($self->{option_results}->{role} eq 'secondary' && $adminState != 5)) {
+        if (($self->{option_results}->{role} eq 'primary' && $map_states{$adminState} !~ /^active$/) || 
+            ($self->{option_results}->{role} eq 'secondary' && $map_states{$adminState} !~ /^standby$/)) {
             $vridout .= sprintf("(VRID %s is '%s')", $vrid, $map_states{$adminState});
         }
-    
     }       
     
     if ($vridout ne '') {
@@ -132,6 +135,11 @@ __END__
 Check Cisco HSRP (CISCO-HSRP-MIB). Trigger a critical if not in the expected state or if a VRID is not in an active state.
 
 =over 8
+
+=item B<--role>
+
+If role is 'primary', an error if HSRPs are 'standby' states. 
+If role is 'secondary', an error if HSRPs are 'active' states. (Default: 'primary')
 
 =back
 
