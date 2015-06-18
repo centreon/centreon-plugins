@@ -53,7 +53,7 @@ sub new {
                          'memory' => 'network::cisco::common::mode::memory',
                          'packet-errors' => 'snmp_standard::mode::packeterrors',
                          'traffic' => 'snmp_standard::mode::traffic',
-                         'hsrp' => 'network::cisco::common::hsrp';
+                         'hsrp' => 'network::cisco::common::hsrp',
                          );
 
     return $self;
