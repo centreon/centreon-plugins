@@ -73,7 +73,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{option_results}->{role} !~ /^primary|secondary$/) {
+    if ($self->{option_results}->{role} !~ /^primary|secondary$/) {
         $self->{output}->add_option_msg(short_msg => "You must use either primary either secondary for --role option");
         $self->{output}->option_exit();
     }
