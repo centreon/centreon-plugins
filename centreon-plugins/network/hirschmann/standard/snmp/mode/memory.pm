@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::snmp::mode::memory;
+package network::hirschmann::standard::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -59,12 +59,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -76,9 +76,7 @@ sub run {
     my $oid_hmMemoryFree = '.1.3.6.1.4.1.248.14.2.15.3.2.0'; # in KBytes
     my $oid_hmMemoryAllocated = '.1.3.6.1.4.1.248.14.2.15.3.1.0'; # in KBytes
 
-    my $oids = [$oid_hmMemoryFree, $oid_hmMemoryAllocated];
-
-    my $result = $self->{snmp}->get_leef(oids => $oids,
+    my $result = $self->{snmp}->get_leef(oids => [$oid_hmMemoryFree, $oid_hmMemoryAllocated],
                                          nothing_quit => 1);
     my $mem_free = $result->{$oid_hmMemoryFree} * 1024;
     my $mem_allocated = $result->{$oid_hmMemoryAllocated} * 1024;
@@ -87,7 +85,7 @@ sub run {
 
     my $mem_percent_used = $mem_allocated / $mem_total * 100;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $mem_percent_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $mem_percent_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     my ($mem_allocated_value, $mem_allocated_unit) = $self->{perfdata}->change_bytes(value => $mem_allocated);
 

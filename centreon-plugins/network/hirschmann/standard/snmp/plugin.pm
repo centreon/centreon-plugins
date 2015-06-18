@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::hirschmann::plugin;
+package network::hirschmann::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,12 +47,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::hirschmann::snmp::mode::cpu',
-                         'environment'      => 'network::hirschmann::snmp::mode::environment',
-                         'led'              => 'network::hirschmann::snmp::mode::led',
-                         'memory'           => 'network::hirschmann::snmp::mode::memory',
-                         'processcount'     => 'network::hirschmann::snmp::mode::processcount',
-                         'temperature'      => 'network::hirschmann::snmp::mode::temperature',
+                         'cpu'              => 'network::hirschmann::standard::snmp::mode::cpu',
+                         'hardware'         => 'network::hirschmann::standard::snmp::mode::hardware',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::hirschmann::standard::snmp::mode::memory',
+                         'processcount'     => 'network::hirschmann::standard::snmp::mode::processcount',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
