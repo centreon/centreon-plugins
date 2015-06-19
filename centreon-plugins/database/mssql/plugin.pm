@@ -48,18 +48,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'blocked-processes'                    => 'database::mssql::mode::blockedprocesses',
-                         'cache-hitratio'                       => 'database::mssql::mode::cachehitratio',
-                         'connected-users'                      => 'database::mssql::mode::connectedusers',
-                         'connection-time'                      => 'database::mssql::mode::connectiontime',
-                         'databases-size'                       => 'database::mssql::mode::databasessize',
-                         'locks-waits'                          => 'database::mssql::mode::lockswaits',
-                         'transactions'                         => 'database::mssql::mode::transactions',
-                         'failed-jobs'                          => 'database::mssql::mode::failedjobs',
-                         'dead-locks'                           => 'database::mssql::mode::deadlocks',
-                         'backup-age'                           => 'database::mssql::mode::backupage',
-#                         'availability-group-states'            => 'database::mssql::mode::availabilitygroupstates',
-#                         'availability-group-synchronization'   => 'database::mssql::mode::availabilitygroupsync',
+                         'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
+                         'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
+                         'connected-users'      => 'database::mssql::mode::connectedusers',
+                         'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
+                         'databases-size'       => 'database::mssql::mode::databasessize',
+                         'locks-waits'          => 'database::mssql::mode::lockswaits',
+                         'transactions'         => 'database::mssql::mode::transactions',
+                         'failed-jobs'          => 'database::mssql::mode::failedjobs',
+                         'dead-locks'           => 'database::mssql::mode::deadlocks',
+                         'backup-age'           => 'database::mssql::mode::backupage',
+                         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
                          );
 
     return $self;

@@ -33,14 +33,12 @@
 #
 ####################################################################################
 
-package database::oracle::mode::connectiontime;
+package centreon::common::protocols::sql::mode::sql;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use Time::HiRes;
-use POSIX;
 
 sub new {
     my ($class, %options) = @_;
@@ -50,8 +48,14 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
+                                  "sql-statement:s"         => { name => 'sql_statement', },
+                                  "format:s"                => { name => 'format', default => 'SQL statement result : %i.'},
+                                  "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
+                                  "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
+                                  "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
+                                  "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                 });
 
     return $self;
@@ -69,6 +73,14 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{format}) || $self->{option_results}->{format} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--format' option.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -76,27 +88,23 @@ sub run {
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    my $now = Time::HiRes::time();
-    my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
-    my $now2 = Time::HiRes::time();    
- 
-    if ($exit == -1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => $msg_error);
-    } else {
-		my $milliseconds = $now2 - $now;
-        $milliseconds = floor($milliseconds * 1000);
-        my $exit_code = $self->{perfdata}->threshold_check(value => $milliseconds, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Connection established in %.3fs.", $milliseconds / 1000));
-        $self->{output}->perfdata_add(label => 'connection_time',
-                                      value => $milliseconds,
-                                      unit => 'ms',
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-    }
-    
+    my $query = $self->{option_results}->{sql_statement};
+
+    $self->{sql}->connect();
+    $self->{sql}->query(query => $query);
+    my $value = $self->{sql}->fetchrow_array();
+
+    my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf($self->{option_results}->{format}, $value));
+    $self->{output}->perfdata_add(label => $self->{option_results}->{perfdata_name},
+                                  unit => $self->{option_results}->{perfdata_unit},
+                                  value => $value,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => $self->{option_results}->{perfdata_min},
+                                  max => $self->{option_results}->{perfdata_max});
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -107,17 +115,41 @@ __END__
 
 =head1 MODE
 
-Check Oracle connection time.
+Check SQL statement.
 
 =over 8
 
+=item B<--sql-statement>
+
+SQL statement that returns a number.
+
+=item B<--format>
+
+Output format (Default: 'SQL statement result : %i.').
+
+=item B<--perfdata-unit>
+
+Perfdata unit in perfdata output (Default: '')
+
+=item B<--perfdata-name>
+
+Perfdata name in perfdata output (Default: 'value')
+
+=item B<--perfdata-min>
+
+Minimum value to add in perfdata output (Default: '')
+
+=item B<--perfdata-max>
+
+Maximum value to add in perfdata output (Default: '')
+
 =item B<--warning>
 
-Threshold warning in milliseconds.
+Threshold warning.
 
 =item B<--critical>
 
-Threshold critical in milliseconds.
+Threshold critical.
 
 =back
 
