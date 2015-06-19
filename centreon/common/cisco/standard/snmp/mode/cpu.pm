@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::common::mode::cpu;
+package centreon::common::cisco::standard::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
