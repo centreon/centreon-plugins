@@ -50,6 +50,7 @@ sub new {
                          'cpu'              => 'network::hp::procurve::mode::cpu',
                          'environment'      => 'network::hp::procurve::mode::environment',
                          'memory'           => 'network::hp::procurve::mode::memory',
+                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          );
