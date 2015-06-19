@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::components::fan;
+package centreon::common::aruba::snmp::mode::components::fan;
 
 use strict;
 use warnings;

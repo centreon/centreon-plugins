@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::components::psu;
+package centreon::common::aruba::snmp::mode::components::psu;
 
 use strict;
 use warnings;

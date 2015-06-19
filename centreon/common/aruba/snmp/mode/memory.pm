@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::memory;
+package centreon::common::aruba::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -60,12 +60,12 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -99,7 +99,7 @@ sub run {
         my $prct_used = $memory_used * 100 / $total_size;
         my $prct_free = 100 - $prct_used;
         
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
         my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
         my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
