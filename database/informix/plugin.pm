@@ -52,7 +52,7 @@ sub new {
                          'archivelevel0'    => 'database::informix::mode::archivelevel0',
                          'checkpoints'      => 'database::informix::mode::checkpoints',
                          'chunkstates'      => 'database::informix::mode::chunkstates',
-                         'connection-time'  => 'database::informix::mode::connectiontime',
+                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
                          'global-cache'     => 'database::informix::mode::globalcache',
                          'list-dbspaces'    => 'database::informix::mode::listdbspaces',
                          'list-databases'   => 'database::informix::mode::listdatabases',
@@ -62,6 +62,7 @@ sub new {
                          'logfile-usage'    => 'database::informix::mode::logfilesusage',
                          'sessions'         => 'database::informix::mode::sessions',
                          'table-locks'      => 'database::informix::mode::tablelocks',
+                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          );
 
     return $self;

@@ -49,7 +49,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'tnsping'                  => 'database::oracle::mode::tnsping',
-                         'connection-time'          => 'database::oracle::mode::connectiontime',
+                         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
                          'connected-users'          => 'database::oracle::mode::connectedusers',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
                          'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
@@ -58,7 +58,7 @@ sub new {
                          'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
                          'session-usage'            => 'database::oracle::mode::sessionusage',
-                         'sql'                      => 'database::oracle::mode::sql',
+                         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
                          );
 
     return $self;
