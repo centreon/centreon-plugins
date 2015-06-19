@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::common::mode::ipsla;
+package centreon::common::cisco::standard::snmp::mode::ipsla;
 
 use base qw(centreon::plugins::mode);
 

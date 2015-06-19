@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::common::mode::stack;
+package centreon::common::cisco::standard::snmp::mode::stack;
 
 use base qw(centreon::plugins::mode);
 

@@ -32,7 +32,8 @@
 # Authors : Simon Bomm <sbomm@centreon.com>
 #
 ####################################################################################
-package network::cisco::common::mode::hsrp;
+
+package centreon::common::cisco::standard::snmp::mode::hsrp;
 
 use base qw(centreon::plugins::mode);
 

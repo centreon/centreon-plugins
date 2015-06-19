@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::3750::plugin;
+package network::cisco::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,14 +47,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::cisco::common::mode::cpu',
-                         'environment'      => 'network::cisco::common::mode::environment',
-                         'ipsla'            => 'network::cisco::common::mode::ipsla',
+                         'anycast'          => 'snmp_standard::mode::anycast',
+                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
+                         'environment'      => 'centreon::common::cisco::standard::snmp::mode::environment',
+                         'ipsla'            => 'centreon::common::cisco::standard::snmp::mode::ipsla',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::cisco::common::mode::memory',
+                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
                          'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
-                         'stack'            => 'network::cisco::common::mode::stack',
+                         'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
@@ -67,6 +68,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco 3750 in SNMP.
+Check Cisco equipments (2800, 2900, 3750, Nexus,...) in SNMP.
 
 =cut
