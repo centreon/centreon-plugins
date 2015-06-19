@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::7200::plugin;
+package network::aruba::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,13 +47,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::aruba::common::mode::cpu',
-                         'hardware'         => 'network::aruba::common::mode::hardware',
+                         'cpu'              => 'centreon::common::aruba::snmp::mode::cpu',
+                         'hardware'         => 'centreon::common::aruba::snmp::mode::hardware',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'traffic'          => 'snmp_standard::mode::traffic',
-                         'memory'           => 'network::aruba::common::mode::memory',
-                         'storage'          => 'network::aruba::common::mode::storage',
+                         'memory'           => 'centreon::common::aruba::snmp::mode::memory',
+                         'storage'          => 'centreon::common::aruba::snmp::mode::storage',
                          );
 
     return $self;
@@ -65,6 +65,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Aruba 7200 series in SNMP.
+Check Aruba equipments in SNMP.
 
 =cut

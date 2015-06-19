@@ -33,16 +33,16 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::hardware;
+package centreon::common::aruba::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-use network::aruba::common::mode::components::fan;
-use network::aruba::common::mode::components::module;
-use network::aruba::common::mode::components::psu;
+use centreon::common::aruba::snmp::mode::components::fan;
+use centreon::common::aruba::snmp::mode::components::module;
+use centreon::common::aruba::snmp::mode::components::psu;
 
 sub new {
     my ($class, %options) = @_;
@@ -67,9 +67,9 @@ sub check_options {
 sub global {
     my ($self, %options) = @_;
 
-    network::aruba::common::mode::components::fan::check($self);
-    network::aruba::common::mode::components::module::check($self);
-    network::aruba::common::mode::components::psu::check($self);
+    centreon::common::aruba::snmp::mode::components::fan::check($self);
+    centreon::common::aruba::snmp::mode::components::module::check($self);
+    centreon::common::aruba::snmp::mode::components::psu::check($self);
 }
 
 sub run {
@@ -80,11 +80,11 @@ sub run {
     if ($self->{option_results}->{component} eq 'all') {
         $self->global();
     } elsif ($self->{option_results}->{component} eq 'fan') {
-        network::aruba::common::mode::components::fan::check($self);
+        centreon::common::aruba::snmp::mode::components::fan::check($self);
     } elsif ($self->{option_results}->{component} eq 'module') {
-        network::aruba::common::mode::components::module::check($self);
+        centreon::common::aruba::snmp::mode::components::module::check($self);
     } elsif ($self->{option_results}->{component} eq 'psu') {
-        network::aruba::common::mode::components::psu::check($self);
+        centreon::common::aruba::snmp::mode::components::psu::check($self);
     } else {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();

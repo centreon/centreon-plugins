@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::components::module;
+package centreon::common::aruba::snmp::mode::components::module;
 
 use strict;
 use warnings;

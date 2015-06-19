@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::aruba::common::mode::cpu;
+package centreon::common::aruba::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -60,12 +60,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -90,7 +90,7 @@ sub run {
         my $descr = $result->{$oid_sysExtProcessorDescr . '.' . $instance};
         
         my $exit = $self->{perfdata}->threshold_check(value => $load, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
         $self->{output}->output_add(long_msg => sprintf("CPU '%s': %.2f%% (1min)", $descr,
                                                         $load));
