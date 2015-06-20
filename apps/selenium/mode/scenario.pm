@@ -162,12 +162,16 @@ sub run {
         } elsif ($trim_action eq 'echo'){
             next;
         } else {
-            my $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value);
+            eval { my $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value) };
             $self->{output}->output_add(long_msg => "Step " . $temp_step
                                                     . " - Command : '" . $trim_action . "'"
                                                     . " , Filter : '" . $trim_filter . "'"
                                                     . " , Value : '" . $trim_value . "'");
-            if ($exit_command eq 'OK') {
+            if (!defined $exit_command) {
+                $exit1 = 'CRITICAL';
+                last;
+            }
+            elsif ($exit_command eq 'OK') {
                 $exit1 = 'OK';
                 $stepOk++;
             } else {
