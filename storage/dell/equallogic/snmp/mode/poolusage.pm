@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::redback::snmp::mode::disk;
+package storage::dell::equallogic::snmp::mode::poolusage;
 
 use base qw(centreon::plugins::mode);
 
@@ -42,11 +42,8 @@ use warnings;
 use centreon::plugins::values;
 
 my $maps_counters = {
-    '0_usage' => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'display' }, { name => 'total' }, { name => 'used' },
-                                      ],
+    '000_used' => { set => {
+                        key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
                         closure_custom_calc => \&custom_usage_calc,
                         closure_custom_output => \&custom_usage_output,
                         closure_custom_perfdata => \&custom_usage_perfdata,
@@ -95,7 +92,7 @@ sub custom_usage_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'} * $options{new_datas}->{$self->{instance} . '_total'} / 100;
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -121,8 +118,7 @@ sub new {
                                                         'critical-' . $name . ':s'    => { name => 'critical-' . $name },
                                            });
         }
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
+        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
                                                   label => $name);
         $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
     }
@@ -147,22 +143,22 @@ sub run {
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{disk_selected}}) == 1) {
+    if (scalar(keys %{$self->{pool_selected}}) == 1) {
         $multiple = 0;
     }
     
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All disk usages are ok');
+                                    short_msg => 'All Pool usages are ok');
     }
     
-    foreach my $id (sort keys %{$self->{disk_selected}}) {     
+    foreach my $id (sort keys %{$self->{pool_selected}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
         foreach (sort keys %{$maps_counters}) {
             $maps_counters->{$_}->{obj}->set(instance => $id);
         
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{disk_selected}->{$id});
+            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{pool_selected}->{$id});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
@@ -184,16 +180,16 @@ sub run {
             $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
+        $self->{output}->output_add(long_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $short_msg"
+                                        short_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
+            $self->{output}->output_add(short_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $long_msg");
         }
     }
     
@@ -202,37 +198,52 @@ sub run {
 }
 
 my $mapping = {
-    rbnSRStorageDescr        => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.2' },
-    rbnSRStorageSize         => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.5' }, # KB
-    rbnSRStorageUtilization  => { oid => '.1.3.6.1.4.1.2352.2.24.1.2.1.1.6' }, # %
+    eqlStoragePoolStatsSpace   => { oid => '.1.3.6.1.4.1.12740.16.1.2.1.1' }, # MB
+    eqlStoragePoolStatsSpaceUsed    => { oid => '.1.3.6.1.4.1.12740.16.1.2.1.2' }, # MB
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{disk_selected} = {};
-    my $oid_rbnSRStorageEntry = '.1.3.6.1.4.1.2352.2.24.1.2.1.1';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_rbnSRStorageEntry,
-                                                nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}}) {
-        next if ($oid !~ /^$mapping->{rbnSRStorageSize}->{oid}\.(\d+)/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+    my $oid_eqlStoragePoolName = '.1.3.6.1.4.1.12740.16.1.1.1.3';
+    my $oid_eqlStoragePoolStatsEntry = '.1.3.6.1.4.1.12740.16.1.2.1';
+    
+    if ($self->{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->{pool_selected} = {};
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_eqlStoragePoolName },
+                                                            { oid => $oid_eqlStoragePoolStatsEntry, start => $mapping->{eqlStoragePoolStatsSpace}->{oid}, end =>  $mapping->{eqlStoragePoolStatsSpaceUsed}->{oid}},
+                                                         ],
+                                                         nothing_quit => 1);
+    
+    foreach my $oid (keys %{$self->{results}->{$oid_eqlStoragePoolStatsEntry}}) {
+        next if ($oid !~ /^$mapping->{eqlStoragePoolStatsSpace}->{oid}\.(\d+\.\d+)/);
+        my $pool_instance = $1;        
+        next if (!defined($self->{results}->{$oid_eqlStoragePoolName}->{$oid_eqlStoragePoolName . '.' . $pool_instance}));
+        my $pool_name = $self->{results}->{$oid_eqlStoragePoolName}->{$oid_eqlStoragePoolName . '.' . $pool_instance};
+                
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlStoragePoolStatsEntry}, instance => $pool_instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{rbnSRStorageDescr} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnSRStorageDescr} . "': no matching filter.");
+            $pool_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $pool_name . "': no matching filter.");
             next;
         }
-        if ($result->{rbnSRStorageSize} == 0) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnSRStorageDescr} . "': media is removed.");
+        if ($result->{eqlStoragePoolStatsSpace} == 0) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $pool_name . "': total size is 0.");
             next;
         }
         
-        $self->{disk_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
-                                                used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
+        $self->{pool_selected}->{$pool_name} = { display => $pool_name, 
+                                                 total => $result->{eqlStoragePoolStatsSpace} * 1024 * 1024, 
+                                                 used =>  $result->{eqlStoragePoolStatsSpaceUsed} * 1024 * 1024,
+                                                };
     }
     
-    if (scalar(keys %{$self->{disk_selected}}) <= 0) {
+    if (scalar(keys %{$self->{pool_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
@@ -244,17 +255,19 @@ __END__
 
 =head1 MODE
 
-Check disk usages.
+Check pool usages.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
-Threshold warning (in percent).
+Threshold warning.
+Can be: 'used' (%).
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
-Threshold critical (in percent).
+Threshold critical.
+Can be: 'used' (%).
 
 =item B<--filter-name>
 
