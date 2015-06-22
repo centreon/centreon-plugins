@@ -162,15 +162,22 @@ sub run {
         } elsif ($trim_action eq 'echo'){
             next;
         } else {
-            my $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value);
+            my $exit_command;
+            
+            eval {
+                $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value);
+            };
             $self->{output}->output_add(long_msg => "Step " . $temp_step
                                                     . " - Command : '" . $trim_action . "'"
                                                     . " , Filter : '" . $trim_filter . "'"
                                                     . " , Value : '" . $trim_value . "'");
-            if ($exit_command eq 'OK') {
+            if (!$@ && $exit_command eq 'OK') {
                 $exit1 = 'OK';
                 $stepOk++;
             } else {
+                if ($@) {
+                    $self->{output}->output_add(long_msg => "display: $@");
+                }
                 $exit1 = 'CRITICAL';
                 last;
             }
@@ -180,7 +187,7 @@ sub run {
     my $availability = sprintf("%d", $stepOk * 100 / $step);
 
     my $exit2 = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
