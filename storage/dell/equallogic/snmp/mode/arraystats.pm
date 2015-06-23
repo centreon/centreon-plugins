@@ -301,28 +301,11 @@ sub manage_selection {
     my $oid_eqlMemberConnEntry = '.1.3.6.1.4.1.12740.2.1.12.1';
     
     $self->{member_selected} = {};
-    #$self->{results} = $self->{snmp}->get_multiple_table(oids => [
-    #                                                        { oid => $oid_eqlMemberName },
-    #                                                        { oid => $oid_eqlMemberConnEntry },
-    #                                                     ],
-    #                                                     nothing_quit => 1);
-    
-    $self->{results}->{$oid_eqlMemberName} = {
-        '.1.3.6.1.4.1.12740.2.1.1.1.9.1.1832149271' => "EQL4k2",
-        '.1.3.6.1.4.1.12740.2.1.1.1.9.1.1956449702' => "EQL4k1"
-    };
-    $self->{results}->{$oid_eqlMemberConnEntry} = {
-        '.1.3.6.1.4.1.12740.2.1.12.1.1.1.1832149271' => 30,
-        '.1.3.6.1.4.1.12740.2.1.12.1.2.1.1832149271' => 135418282,
-        '.1.3.6.1.4.1.12740.2.1.12.1.3.1.1832149271' => 11543981,
-        '.1.3.6.1.4.1.12740.2.1.12.1.4.1.1832149271' => 7,
-        '.1.3.6.1.4.1.12740.2.1.12.1.5.1.1832149271' => 1,
-       # '.1.3.6.1.4.1.12740.2.1.12.1.6.1.1832149271' => 20019257,
-        '.1.3.6.1.4.1.12740.2.1.12.1.7.1.1832149271' => 8584670,
-        '.1.3.6.1.4.1.12740.2.1.12.1.8.1.1832149271' => 504457911808,
-        '.1.3.6.1.4.1.12740.2.1.12.1.9.1.1832149271' => 364591348224,
-        '.1.3.6.1.4.1.12740.2.1.12.1.10.1.1832149271' => 30,
-    };
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_eqlMemberName },
+                                                            { oid => $oid_eqlMemberConnEntry },
+                                                         ],
+                                                         nothing_quit => 1);
     
     foreach my $oid (keys %{$self->{results}->{$oid_eqlMemberConnEntry}}) {
         next if ($oid !~ /^$mapping->{eqlMemberNumberOfConnections}->{oid}\.(\d+\.\d+)/);
