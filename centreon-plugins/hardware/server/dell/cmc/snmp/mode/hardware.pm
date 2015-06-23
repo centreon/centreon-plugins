@@ -39,6 +39,11 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
+
+my $oid_drsProductShortName = '.1.3.6.1.4.1.674.10892.2.1.1.2';
+my $oid_drsChassisServiceTag = '.1.3.6.1.4.1.674.10892.2.1.1.6';
+my $oid_drsFirmwareVersion = '.1.3.6.1.4.1.674.10892.2.1.2.1';
 
 my $thresholds = {
     health => [
@@ -66,7 +71,7 @@ sub new {
                                   "warning:s@"              => { name => 'warning' },
                                   "critical:s@"             => { name => 'critical' },
                                 });
-
+ 
     $self->{components} = {};
     $self->{no_components} = undef;
     
@@ -126,12 +131,22 @@ sub check_options {
     }
 }
 
+sub display_system_information {
+    my ($self, %options) = @_;
+    
+    $self->{output}->output_add(long_msg => sprintf("Product Name: %s, Service Tag: %s, Firmware Version: %s", 
+                                    defined($self->{results}->{$oid_drsProductShortName}->{$oid_drsProductShortName . '.0'}) ? centreon::plugins::misc::trim($self->{results}->{$oid_drsProductShortName}->{$oid_drsProductShortName . '.0'}) : 'unknown', 
+                                    defined($self->{results}->{$oid_drsChassisServiceTag}->{$oid_drsChassisServiceTag . '.0'}) ? $self->{results}->{$oid_drsChassisServiceTag}->{$oid_drsChassisServiceTag . '.0'} : 'unknown',
+                                    defined($self->{results}->{$oid_drsFirmwareVersion}->{$oid_drsFirmwareVersion . '.0'}) ? $self->{results}->{$oid_drsFirmwareVersion}->{$oid_drsFirmwareVersion . '.0'} : 'unknown')
+                                );
+}
+
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $snmp_request = [];
+    my $snmp_request = [ { oid => $oid_drsProductShortName }, { oid => $oid_drsChassisServiceTag }, { oid => $oid_drsFirmwareVersion } ];
     my @components = ('health', 'chassis', 'temperature', 'psu');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
@@ -143,11 +158,12 @@ sub run {
         }
     }
     
-    if (scalar(@{$snmp_request}) == 0) {
+    if (scalar(@{$snmp_request}) == 3) {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
     }
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    $self->display_system_information();
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
@@ -170,7 +186,7 @@ sub run {
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok [%s].", 
+                                short_msg => sprintf("All %s components are ok [%s]", 
                                                      $total_components,
                                                      $display_by_component)
                                 );
