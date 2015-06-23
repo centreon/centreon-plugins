@@ -57,42 +57,48 @@ my %map_card_type = (
     16 => 'sw620',
     17 => 'sw3500'
 );
-
-my %map_status = (
-    1 => 'active',
-    2 => 'inactive'
+my %map_module_status = (
+    1 => 'active', 
+    2 => 'inactive', 
 );
+
+# In MIB 'aruba-systemext'
+my $mapping = {
+    sysExtCardType => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.2', map => \%map_card_type },
+    sysExtCardStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.12', map => \%map_module_status },
+};
+my $oid_wlsxSysExtCardEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_wlsxSysExtCardEntry };
+}
 
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{modules} = {name => 'modules', total => 0};
     $self->{output}->output_add(long_msg => "Checking modules");
-    return if ($self->check_exclude(section => 'modules'));
-    
-    my $oid_wlsxSysExtCardEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1';
-    my $oid_sysExtCardType = '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.2';
-    my $oid_sysExtCardStatus = '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.12';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_wlsxSysExtCardEntry);
-    return if (scalar(keys %$result) <= 0);
+    $self->{components}->{module} = {name => 'modules', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'module'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysExtCardStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_wlsxSysExtCardEntry}})) {
+        next if ($oid !~ /^$mapping->{sysExtCardStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        next if ($self->check_exclude(section => 'modules', instance => $instance));
-    
-        my $type = $result->{$oid_sysExtCardType . '.' . $instance};
-        my $status = $result->{$oid_sysExtCardStatus . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxSysExtCardEntry}, instance => $instance);
 
-        $self->{components}->{modules}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s].", 
-                                    $map_card_type{$type}, $map_status{$status}, $instance));
-        if ($status != 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Module '%s' status is %s", 
-                                                             $map_card_type{$type}, $map_status{$status}));
+        next if ($self->check_exclude(section => 'module', instance => $instance));
+        $self->{components}->{module}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("Module '%s/%s' status is %s [instance: %s].",
+                                    $result->{sysExtCardType}, $instance, $result->{sysExtCardStatus},
+                                    $instance
+                                    ));
+        my $exit = $self->get_severity(section => 'module', value => $result->{sysExtCardStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity =>  $exit,
+                                        short_msg => sprintf("Module '%s/%s' status is %s",
+                                                             $result->{sysExtCardType}, $instance, $result->{sysExtCardStatus}));
         }
     }
 }

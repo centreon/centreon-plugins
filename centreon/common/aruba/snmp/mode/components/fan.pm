@@ -38,39 +38,47 @@ package centreon::common::aruba::snmp::mode::components::fan;
 use strict;
 use warnings;
 
-my %map_status = (
-    1 => 'active',
-    2 => 'inactive'
+my %map_fan_status = (
+    1 => 'active', 
+    2 => 'inactive', 
 );
+
+# In MIB 'aruba-systemext'
+my $mapping = {
+    sysExtFanStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.17.1.2', map => \%map_fan_status },
+};
+my $oid_wlsxSysExtFanEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.17.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_wlsxSysExtFanEntry };
+}
 
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude(section => 'fans'));
-    
-    my $oid_wlsxSysExtFanEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.17.1';
-    my $oid_sysExtFanStatus = '.1.3.6.1.4.1.14823.2.2.1.2.1.17.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_wlsxSysExtFanEntry);
-    return if (scalar(keys %$result) <= 0);
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'fan'));
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysExtFanStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_wlsxSysExtFanEntry}})) {
+        next if ($oid !~ /^$mapping->{sysExtFanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        next if ($self->check_exclude(section => 'fans', instance => $instance));
-    
-        my $status = $result->{$oid_sysExtFanStatus . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxSysExtFanEntry}, instance => $instance);
 
-        $self->{components}->{fans}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
-                                                        $instance, $map_status{$status}));
-        if ($status != 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Fan '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
+        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        $self->{components}->{fan}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s [instance: %s].",
+                                    $instance, $result->{sysExtFanStatus},
+                                    $instance
+                                    ));
+        my $exit = $self->get_severity(section => 'fan', value => $result->{sysExtFanStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity =>  $exit,
+                                        short_msg => sprintf("Fan '%s' status is %s",
+                                                             $instance, $result->{sysExtFanStatus}));
         }
     }
 }

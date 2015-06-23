@@ -47,6 +47,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+                         'ap-connections'   => 'centreon::common::aruba::snmp::mode::apconnections',
+                         'ap-users'         => 'centreon::common::aruba::snmp::mode::apusers',
                          'cpu'              => 'centreon::common::aruba::snmp::mode::cpu',
                          'hardware'         => 'centreon::common::aruba::snmp::mode::hardware',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
