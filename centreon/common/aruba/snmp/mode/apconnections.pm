@@ -65,7 +65,7 @@ my $maps_counters = {
                         key_values => [ { name => 'apChannelNoise' }, { name => 'bssid' }, ],
                         output_template => 'Channel noise : %d',
                         perfdatas => [
-                            { label => 'cpu_30secs', value => 'apChannelNoise_absolute', template => '%d',
+                            { label => 'channel_noise', value => 'apChannelNoise_absolute', template => '%d',
                               label_extra_instance => 1, instance_use => 'bssid_absolute' },
                         ],
                     }
@@ -74,7 +74,7 @@ my $maps_counters = {
                         key_values => [ { name => 'apSignalToNoiseRatio' }, { name => 'bssid' }, ],
                         output_template => 'Signal to noise ratio : %d',
                         perfdatas => [
-                            { label => 'cpu_1min', value => 'apSignalToNoiseRatio_absolute', template => '%d',
+                            { label => 'nsr', value => 'apSignalToNoiseRatio_absolute', template => '%d',
                               label_extra_instance => 1, instance_use => 'bssid_absolute' },
                         ],
                     }
@@ -83,7 +83,7 @@ my $maps_counters = {
     total => {
         '000_total'   => { set => {
                         key_values => [ { name => 'total' } ],
-                        output_template => 'AP connected : %d %%',
+                        output_template => 'AP connected : %d',
                         perfdatas => [
                             { label => 'total', value => 'total_absolute', template => '%d', min => 0 },
                         ],
@@ -100,6 +100,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
+                                  "filter-ip-address:s"  => { name => 'filter_ip_address' },
                                   "filter-bssid:s"  => { name => 'filter_bssid' },
                                   "filter-essid:s"  => { name => 'filter_essid' },
                                   "filter-type:s"   => { name => 'filter_type', default => 'ap' },
@@ -228,16 +229,16 @@ sub run {
             $maps_counters->{ap}->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "BSSID '" . $self->{ap}->{$id}->{bssid} . "' Usage $long_msg");
+        $self->{output}->output_add(long_msg => "AP [bssid: '$self->{ap}->{$id}->{bssid}', essid: $self->{ap}->{$id}->{apESSID}, ip: $self->{ap}->{$id}->{apIpAddress}] Usage $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "BSSID '" . $self->{ap}->{$id}->{bssid} . "' Usage $short_msg"
+                                        short_msg => "AP [bssid: '$self->{ap}->{$id}->{bssid}', essid: $self->{ap}->{$id}->{apESSID}, ip: $self->{ap}->{$id}->{apIpAddress}] Usage $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "BSSID '" . $self->{ap}->{$id}->{bssid} . "' Usage $long_msg");
+            $self->{output}->output_add(short_msg => "AP [bssid: '$self->{ap}->{$id}->{bssid}', [essid: $self->{ap}->{$id}->{apESSID}, ip: $self->{ap}->{$id}->{apIpAddress}] Usage $long_msg");
         }
     }
      
@@ -256,25 +257,39 @@ my %map_type = (
 );
 
 my $mapping = {
-    apESSID => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.2' },
-    apType  => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.7', map => \%map_type },
+    apESSID => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.2' },  
+};
+my $mapping2 = {
+    apIpAddress => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.5' },
+};
+my $mapping3 = {
+    apType => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.7', map => \%map_type },
+};
+my $mapping4 = {
     apTotalTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.10' },
     apInactiveTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.11' },
+};
+my $mapping5 = {
     apChannelNoise => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.13' },
     apSignalToNoiseRatio => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.14' },
 };
-
+    
 my $oid_wlsxSwitchRole = '.1.3.6.1.4.1.14823.2.2.1.1.1.4';
+my $oid_wlsxSwitchAccessPointTable = '.1.3.6.1.4.1.14823.2.2.1.1.3.3';
 my $oid_wlsxSwitchAccessPointEntry = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1';
+my $oid_wlsxSwitchTotalNumAccessPoints = '.1.3.6.1.4.1.14823.2.2.1.1.3.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_extremeCpuMonitorSystemEntry = '.1.3.6.1.4.1.1916.1.32.1.4.1';
-    my $oid_extremeCpuMonitorTotalUtilization = '.1.3.6.1.4.1.1916.1.32.1.2'; # without .0
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_wlsxSwitchTotalNumAccessPoints },
                                                             { oid => $oid_wlsxSwitchRole },
-                                                            { oid => $oid_wlsxSwitchAccessPointEntry },
+                                                            { oid => $mapping->{apESSID}->{oid} },
+                                                            { oid => $mapping2->{apIpAddress}->{oid} },
+                                                            { oid => $mapping3->{apType}->{oid} },
+                                                            { oid => $oid_wlsxSwitchAccessPointEntry, start => $mapping4->{apTotalTime}->{oid}, end => $mapping4->{apInactiveTime}->{oid} },
+                                                            { oid => $oid_wlsxSwitchAccessPointTable, start => $mapping5->{apChannelNoise}->{oid}, end => $mapping5->{apSignalToNoiseRatio}->{oid} },
                                                          ],
                                                          , nothing_quit => 1);
     my $role = $map_role{$self->{results}->{$oid_wlsxSwitchRole}->{$oid_wlsxSwitchRole . '.0'}};
@@ -286,15 +301,23 @@ sub manage_selection {
     }    
     
     $self->{ap} = {};
-    $self->{global} = { total => 0 };
-    foreach my $oid (keys %{$self->{results}->{$oid_wlsxSwitchAccessPointEntry}}) {
+    foreach my $oid (keys %{$self->{results}->{$mapping->{apESSID}->{oid}}}) {
         next if ($oid !~ /^$mapping->{apESSID}->{oid}\.(.*)$/);
         my $bssid = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxSwitchAccessPointEntry}, instance => $bssid);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{apESSID}->{oid}}, instance => $bssid);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{apIpAddress}->{oid}}, instance => $bssid);
+        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{apType}->{oid}}, instance => $bssid);
+        my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$oid_wlsxSwitchAccessPointEntry}, instance => $bssid);
+        my $result5 = $self->{snmp}->map_instance(mapping => $mapping5, results => $self->{results}->{$oid_wlsxSwitchAccessPointTable}, instance => $bssid);
         
         if (defined($self->{option_results}->{filter_bssid}) && $self->{option_results}->{filter_bssid} ne '' &&
             $bssid !~ /$self->{option_results}->{filter_bssid}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $bssid . "': no matching filter bssid.");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
+            $result2->{apIpAddress} !~ /$self->{option_results}->{filter_ip_address}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result2->{apIpAddress} . "': no matching filter ip-address.");
             next;
         }
         if (defined($self->{option_results}->{filter_essid}) && $self->{option_results}->{filter_essid} ne '' &&
@@ -303,16 +326,18 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $result->{apType} !~ /$self->{option_results}->{filter_type}/) {
+            $result3->{apType} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{apType} . "': no matching filter type.");
             next;
         }
         
-        $self->{ap}->{$bssid} = {bssid => $bssid, %$result};
+        $self->{ap}->{$bssid} = { bssid => $bssid, %$result2, %$result, %$result4, %$result5};
         $self->{ap}->{$bssid}->{apInactiveTime} *= 0.01 if (defined($self->{ap}->{$bssid}->{apInactiveTime}));
         $self->{ap}->{$bssid}->{apTotalTime} *= 0.01 if (defined($self->{ap}->{$bssid}->{apTotalTime}));
-        
-        $self->{global}->{total} += 1;
+    }
+    
+    if (defined($self->{results}->{$oid_wlsxSwitchTotalNumAccessPoints}->{$oid_wlsxSwitchTotalNumAccessPoints . '.0'})) {
+        $self->{global} = { total => $self->{results}->{$oid_wlsxSwitchTotalNumAccessPoints}->{$oid_wlsxSwitchTotalNumAccessPoints . '.0'} };
     }
 }
 
@@ -339,6 +364,10 @@ Can be: 'total', 'total-time', 'inactive-time', 'channel-noise', 'snr'.
 =item B<--filter-bssid>
 
 Filter by physical address (regexp can be used).
+
+=item B<--filter-ip-address>
+
+Filter by ip address (regexp can be used).
 
 =item B<--filter-essid>
 

@@ -82,7 +82,7 @@ my $maps_counters = {
                         key_values => [ { name => 'total_dot1x' } ],
                         output_template => 'Total Auth Dot1x : %s',
                         perfdatas => [
-                            { label => 'total_dot1x', value => 'total_dot1x', template => '%s', 
+                            { label => 'total_dot1x', value => 'total_dot1x_absolute', template => '%s', 
                               unit => 'users', min => 0 },
                         ],
                     }
