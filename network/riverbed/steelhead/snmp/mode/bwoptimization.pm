@@ -115,22 +115,30 @@ sub run {
     my $bwHCAggOutLanPerSec = int(($new_datas->{bwHCAggOutLan} - $old_bwHCAggOutLan) / $delta_time);
     my $bwHCAggOutWanPerSec = int(($new_datas->{bwHCAggOutWan} - $old_bwHCAggOutWan) / $delta_time);
 
-    $self->{output}->perfdata_add(label => 'wan2lan_lan',
+    $self->{output}->perfdata_add(label => 'wan2lan_lan', unit => 'B/s',
                                   value => $bwHCAggInLanPerSec,
                                   min => 0);
-    $self->{output}->perfdata_add(label => 'wan2lan_wan',
+    $self->{output}->perfdata_add(label => 'wan2lan_wan', unit => 'B/s',
                                   value => $bwHCAggInWanPerSec,
                                   min => 0);
-    $self->{output}->perfdata_add(label => 'lan2wan_lan',
+    $self->{output}->perfdata_add(label => 'lan2wan_lan', unit => 'B/s',
                                   value => $bwHCAggOutLanPerSec,
                                   min => 0);
-    $self->{output}->perfdata_add(label => 'lan2wan_wan',
+    $self->{output}->perfdata_add(label => 'lan2wan_wan', unit => 'B/s',
                                   value => $bwHCAggOutWanPerSec,
                                   min => 0);
 
+    my ($bwHCAggInLanPerSec_value, $bwHCAggInLanPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwHCAggInLanPerSec);
+    my ($bwHCAggInWanPerSec_value, $bwHCAggInWanPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwHCAggInWanPerSec);
+    my ($bwHCAggOutLanPerSec_value, $bwHCAggOutLanPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwHCAggOutLanPerSec);
+    my ($bwHCAggOutWanPerSec_value, $bwHCAggOutWanPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwHCAggOutWanPerSec);
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Optimized: Wan2Lan on Lan - %s bytes/sec, Wan2Lan on Wan - %s bytes/sec, Lan2Wan on Lan - %s bytes/sec, Lan2Wan on Wan - %s bytes/sec.",
-                                  $bwHCAggInLanPerSec, $bwHCAggInWanPerSec, $bwHCAggOutLanPerSec, $bwHCAggOutWanPerSec));
+                                short_msg => sprintf("Optimized: Wan2Lan on Lan %s/s, Wan2Lan on Wan %s/s, Lan2Wan on Lan %s/s, Lan2Wan on Wan %s/s",
+                                  $bwHCAggInLanPerSec_value . " " . $bwHCAggInLanPerSec_unit,
+                                  $bwHCAggInWanPerSec_value . " " . $bwHCAggInWanPerSec_unit,
+                                  $bwHCAggOutLanPerSec_value . " " . $bwHCAggOutLanPerSec_unit,
+                                  $bwHCAggOutWanPerSec_value . " " . $bwHCAggOutWanPerSec_unit
+                                  ));
 
     $self->{output}->display();
     $self->{output}->exit();

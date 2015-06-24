@@ -592,8 +592,11 @@ sub is_litteral_status {
 sub create_json_document {
     my ($self) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON',
-                                               error_msg => "Cannot load module 'JSON'.");
+    if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'JSON',
+                                           error_msg => "Cannot load module 'JSON'.")) {
+        print "Cannot load module 'JSON'\n";
+        $self->exit(exit_litteral => 'unknown');
+    }
     $self->{is_output_json} = 1;
     $self->{json_output} = JSON->new->utf8();
 }
@@ -601,8 +604,11 @@ sub create_json_document {
 sub create_xml_document {
     my ($self) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'XML::LibXML',
-                                               error_msg => "Cannot load module 'XML::LibXML'.");
+    if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'XML::LibXML',
+                                           error_msg => "Cannot load module 'XML::LibXML'.")) {
+        print "Cannot load module 'XML::LibXML'\n";
+        $self->exit(exit_litteral => 'unknown');
+    }
     $self->{is_output_xml} = 1;
     $self->{xml_output} = XML::LibXML::Document->new('1.0', 'utf-8');
 }
@@ -700,8 +706,11 @@ sub to_utf8 {
         
         
         # Some Perl version dont have the following module (like Perl 5.6.x)
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Encode',
-                                               error_msg => "Cannot load module 'Encode'.");
+        if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'Encode',
+                                                   error_msg => "Cannot load module 'Encode'.")) {
+            print "Cannot load module 'Encode'\n";
+            $self->exit(exit_litteral => 'unknown');
+        }
         
         $self->{encode_utf8_import} = 1;
         eval '$self->{perlqq} = Encode::PERLQQ';

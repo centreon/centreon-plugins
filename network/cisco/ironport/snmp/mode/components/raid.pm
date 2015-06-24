@@ -53,7 +53,7 @@ my $oid_raidEntry = '.1.3.6.1.4.1.15497.1.1.1.18.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_raidEntry, end => $mapping->{raidStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_raidEntry, start => $mapping->{raidStatus}->{oid} };
 }
 
 sub check {
@@ -73,7 +73,7 @@ sub check {
         $self->{components}->{raid}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Raid '%s' status is '%s' [instance = %s]",
                                                         $result->{raidID}, $result->{raidStatus}, $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{raidStatus});
+        my $exit = $self->get_severity(section => 'raid', value => $result->{raidStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                        short_msg => sprintf("Raid '%s' status is '%s'", $result->{raidID}, $result->{raidStatus}));

@@ -229,7 +229,7 @@ sub manage_selection {
         }
         
         $self->{disk_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
-                                                  used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
+                                                used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
     }
     
     if (scalar(keys %{$self->{disk_selected}}) <= 0) {

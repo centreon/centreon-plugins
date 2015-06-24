@@ -77,9 +77,6 @@ sub new {
                                   "critical:s@"             => { name => 'critical' },
                                 });
 
-    $self->{product_name} = undef;
-    $self->{serial} = undef;
-    $self->{romversion} = undef;
     $self->{components} = {};
     $self->{no_components} = undef;
     

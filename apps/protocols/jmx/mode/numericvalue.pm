@@ -81,9 +81,17 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify mbean-pattern option.");
        $self->{output}->option_exit(); 
     }
+    $self->{request} = [
+         { mbean => $self->{option_results}->{mbean_pattern} }
+    ];
     if (!defined($self->{option_results}->{attribute}) || scalar($self->{option_results}->{attribute}) == 0) {
         $self->{option_results}->{attribute} = undef;
-    }    
+    } else {
+        $self->{request}->[0]->{attributes} = [];
+        foreach (@{$self->{option_results}->{attribute}}) {
+            push @{$self->{request}->[0]->{attributes}}, { name => $_, path => $self->{option_results}->{lookup_path}};
+        }
+    }
     
     if (defined($self->{option_results}->{type})) {
         foreach (@{$self->{option_results}->{type}}) {
@@ -111,17 +119,17 @@ sub set_attributes {
     my ($self, %options) = @_;
     
     $self->{attributes} = {};
-    $self->{attributes}->{type} = (defined($self->{option_results}->{type})) ? shift(@{$self->{option_results}->{type}}) : 'gauge';
-    $self->{attributes}->{counter_per_seconds} = (defined($self->{option_results}->{counter_per_seconds})) ? shift(@{$self->{option_results}->{counter_per_seconds}}) : undef;
-    $self->{attributes}->{warning} = (defined($self->{option_results}->{warning})) ? shift(@{$self->{option_results}->{warning}}) : undef;
-    $self->{attributes}->{critical} = (defined($self->{option_results}->{critical})) ? shift(@{$self->{option_results}->{critical}}) : undef;
-    $self->{attributes}->{format} = (defined($self->{option_results}->{format})) ? shift(@{$self->{option_results}->{format}}) : 'current value' . $options{number} . ' is %s';
-    $self->{attributes}->{format_scale} = (defined($self->{option_results}->{format_scale})) ? shift(@{$self->{option_results}->{format_scale}}) : undef;
-    $self->{attributes}->{format_scale_unit} = (defined($self->{option_results}->{format_scale_unit})) ? shift(@{$self->{option_results}->{format_scale_unit}}) : 'other';
-    $self->{attributes}->{perfdata_unit} = (defined($self->{option_results}->{perfdata_unit})) ? shift(@{$self->{option_results}->{perfdata_unit}}) : '';
-    $self->{attributes}->{perfdata_name} = (defined($self->{option_results}->{perfdata_name})) ? shift(@{$self->{option_results}->{perfdata_name}}) : 'value' . $options{number};
-    $self->{attributes}->{perfdata_min} = (defined($self->{option_results}->{perfdata_min})) ? shift(@{$self->{option_results}->{perfdata_min}}) : '';
-    $self->{attributes}->{perfdata_max} = (defined($self->{option_results}->{perfdata_max})) ? shift(@{$self->{option_results}->{perfdata_max}}) : '';
+    $self->{attributes}->{type} = (defined($self->{option_results}->{type}) && scalar(@{$self->{option_results}->{type}}) > 0) ? shift(@{$self->{option_results}->{type}}) : 'gauge';
+    $self->{attributes}->{counter_per_seconds} = (defined($self->{option_results}->{counter_per_seconds}) && scalar(@{$self->{option_results}->{counter_per_seconds}}) > 0) ? shift(@{$self->{option_results}->{counter_per_seconds}}) : undef;
+    $self->{attributes}->{warning} = (defined($self->{option_results}->{warning}) && scalar(@{$self->{option_results}->{warning}}) > 0) ? shift(@{$self->{option_results}->{warning}}) : undef;
+    $self->{attributes}->{critical} = (defined($self->{option_results}->{critical}) && scalar(@{$self->{option_results}->{critical}}) > 0) ? shift(@{$self->{option_results}->{critical}}) : undef;
+    $self->{attributes}->{format} = (defined($self->{option_results}->{format}) && scalar(@{$self->{option_results}->{format}}) > 0) ? shift(@{$self->{option_results}->{format}}) : 'current value' . $options{number} . ' is %s';
+    $self->{attributes}->{format_scale} = (defined($self->{option_results}->{format_scale}) && scalar(@{$self->{option_results}->{format_scale}}) > 0) ? shift(@{$self->{option_results}->{format_scale}}) : undef;
+    $self->{attributes}->{format_scale_unit} = (defined($self->{option_results}->{format_scale_unit}) && scalar(@{$self->{option_results}->{format_scale_unit}}) > 0) ? shift(@{$self->{option_results}->{format_scale_unit}}) : 'other';
+    $self->{attributes}->{perfdata_unit} = (defined($self->{option_results}->{perfdata_unit}) && scalar(@{$self->{option_results}->{perfdata_unit}}) > 0) ? shift(@{$self->{option_results}->{perfdata_unit}}) : '';
+    $self->{attributes}->{perfdata_name} = (defined($self->{option_results}->{perfdata_name}) && scalar(@{$self->{option_results}->{perfdata_name}}) > 0) ? shift(@{$self->{option_results}->{perfdata_name}}) : 'value' . $options{number};
+    $self->{attributes}->{perfdata_min} = (defined($self->{option_results}->{perfdata_min}) && scalar(@{$self->{option_results}->{perfdata_min}}) > 0) ? shift(@{$self->{option_results}->{perfdata_min}}) : '';
+    $self->{attributes}->{perfdata_max} = (defined($self->{option_results}->{perfdata_max}) && scalar(@{$self->{option_results}->{perfdata_max}}) > 0) ? shift(@{$self->{option_results}->{perfdata_max}}) : '';
     
     if ($self->{attributes}->{type} !~ /^gauge|counter$/i) {
         $self->{output}->add_option_msg(short_msg => "Wrong --type argument '" . $self->{attributes}->{type} . "' ('gauge' or 'counter').");
@@ -201,9 +209,14 @@ sub find_values {
     
     $self->{values} = [];
     if (defined($options{result})) {
-        if (!ref($options{result})) {
-            push @{$self->{values}}, $options{result} if ($options{result} =~ /^[0-9\.,]+$/);
-        } elsif (defined($self->{jpath})) {
+        if (defined($self->{option_results}->{attribute})) {
+            foreach (@{$self->{option_results}->{attribute}}) {
+                if (defined($options{result}->{$self->{option_results}->{mbean_pattern}}->{$_}) && !ref($options{result}->{$self->{option_results}->{mbean_pattern}}->{$_})) {
+                    push @{$self->{values}}, $options{result}->{$self->{option_results}->{mbean_pattern}}->{$_} if ($options{result}->{$self->{option_results}->{mbean_pattern}}->{$_} =~ /^[0-9\.,]+$/);
+                }
+            }
+        }
+        if (defined($self->{jpath})) {
             my @values = ();
             
             eval {
@@ -218,7 +231,7 @@ sub find_values {
             }
         }
     }
-    
+
     if (scalar(@{$self->{values}}) == 0) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'Cannot find numeric values');
@@ -232,8 +245,8 @@ sub run {
     # $options{snmp} = snmp object
     $self->{connector} = $options{custom};
 
-    my $result = $self->{connector}->get_attributes(mbean_pattern => $self->{option_results}->{mbean_pattern}, attributes => $self->{option_results}->{attribute}, path => $self->{option_results}->{lookup_path});
-
+    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
+    
     $self->find_values(result => $result);
     for (my $i = 1; $i <= scalar(@{$self->{values}}); $i++) {
         $self->set_attributes(number => $i);

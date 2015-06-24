@@ -134,20 +134,23 @@ sub run {
                                                    threshold => [ { label => 'critical_out', exit_litteral => 'critical' }, { label => 'warning_out', exit_litteral => 'warning' } ]);
     my $exit_code = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
-    $self->{output}->perfdata_add(label => 'Traffic_In',
+    $self->{output}->perfdata_add(label => 'Traffic_In', unit => 'B/s',
                                   value => $bwPassThroughInPerSec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_in'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_in'),
                                   min => 0);
-    $self->{output}->perfdata_add(label => 'Traffic_Out',
+    $self->{output}->perfdata_add(label => 'Traffic_Out', unit => 'B/s',
                                   value => $bwPassThroughOutPerSec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_out'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_out'),
                                   min => 0);
 
+    my ($bwPassThroughInPerSec_value, $bwPassThroughInPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwPassThroughInPerSec);
+    my ($bwPassThroughOutPerSec_value, $bwPassThroughOutPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwPassThroughOutPerSec);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Passthrough: Wan2Lan - %s bytes/sec, Lan2Wan - %s bytes/sec.",
-                                  $bwPassThroughInPerSec, $bwPassThroughOutPerSec));
+                                short_msg => sprintf("Passthrough: Wan2Lan %s/s, Lan2Wan %s/s",
+                                  $bwPassThroughInPerSec_value . " " . $bwPassThroughInPerSec_unit, 
+                                  $bwPassThroughOutPerSec_value . " " . $bwPassThroughOutPerSec_unit));
 
     $self->{output}->display();
     $self->{output}->exit();

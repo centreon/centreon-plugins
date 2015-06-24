@@ -48,7 +48,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time'              => 'database::mysql::mode::connectiontime',
+                         'connection-time'              => 'centreon::common::protocols::sql::mode::connectiontime',
                          'databases-size'               => 'database::mysql::mode::databasessize',
                          'queries'                      => 'database::mysql::mode::queries',
                          'slow-queries'                 => 'database::mysql::mode::slowqueries',
@@ -58,6 +58,7 @@ sub new {
                          'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
                          'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
                          'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
+                         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
                          'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
                          'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
                          );

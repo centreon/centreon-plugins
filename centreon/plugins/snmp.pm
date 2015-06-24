@@ -782,7 +782,9 @@ sub map_instance {
         }
         
         if (defined($options{mapping}->{$name}->{map})) {
-            $results->{$name} = defined($options{mapping}->{$name}->{map}->{$results->{$name}}) ? $options{mapping}->{$name}->{map}->{$results->{$name}} : (defined($options{default}) ? $options{default} : 'unknown');
+            if (defined($results->{$name})) {
+                $results->{$name} = defined($options{mapping}->{$name}->{map}->{$results->{$name}}) ? $options{mapping}->{$name}->{map}->{$results->{$name}} : (defined($options{default}) ? $options{default} : 'unknown');
+            }
         }
     }
     
