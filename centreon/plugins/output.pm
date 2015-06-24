@@ -592,8 +592,8 @@ sub is_litteral_status {
 sub create_json_document {
     my ($self) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON',
-                                               error_msg => "Cannot load module 'JSON'.");
+    centreon::plugins::misc::mymodule_load(output => $self, module => 'JSON',
+                                           error_msg => "Cannot load module 'JSON'.");
     $self->{is_output_json} = 1;
     $self->{json_output} = JSON->new->utf8();
 }
@@ -601,8 +601,8 @@ sub create_json_document {
 sub create_xml_document {
     my ($self) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'XML::LibXML',
-                                               error_msg => "Cannot load module 'XML::LibXML'.");
+    centreon::plugins::misc::mymodule_load(output => $self, module => 'XML::LibXML',
+                                           error_msg => "Cannot load module 'XML::LibXML'.");
     $self->{is_output_xml} = 1;
     $self->{xml_output} = XML::LibXML::Document->new('1.0', 'utf-8');
 }
@@ -700,7 +700,7 @@ sub to_utf8 {
         
         
         # Some Perl version dont have the following module (like Perl 5.6.x)
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Encode',
+        centreon::plugins::misc::mymodule_load(output => $self, module => 'Encode',
                                                error_msg => "Cannot load module 'Encode'.");
         
         $self->{encode_utf8_import} = 1;
