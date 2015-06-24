@@ -50,7 +50,7 @@ sub new {
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
                          'load'                 => 'snmp_standard::mode::loadaverage',
-                         #'ha-status'           => 'network::netasq::snmp::mode::hastatus',
+                         'ha-status'            => 'network::netasq::snmp::mode::hastatus',
                          'memory'               => 'snmp_standard::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
                          'swap'                 => 'snmp_standard::mode::swap',
