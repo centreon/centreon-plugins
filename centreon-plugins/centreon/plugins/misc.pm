@@ -215,10 +215,12 @@ sub mymodule_load {
         require $file;
     };
     if ($@) {
+        return 1 if (defined($options{no_quit}) && $options{no_quit} == 1);
         $options{output}->add_option_msg(long_msg => $@);
         $options{output}->add_option_msg(short_msg => $options{error_msg});
         $options{output}->option_exit();
     }
+    return 0;
 }
 
 sub backtick {
