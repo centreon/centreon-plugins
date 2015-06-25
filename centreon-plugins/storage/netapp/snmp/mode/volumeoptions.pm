@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::volumeoptions;
+package storage::netapp::snmp::mode::volumeoptions;
 
 use base qw(centreon::plugins::mode);
 

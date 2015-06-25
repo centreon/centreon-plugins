@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::temperature;
+package storage::netapp::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

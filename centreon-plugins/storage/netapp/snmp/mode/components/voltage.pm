@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::voltage;
+package storage::netapp::snmp::mode::components::voltage;
 
 use strict;
 use warnings;

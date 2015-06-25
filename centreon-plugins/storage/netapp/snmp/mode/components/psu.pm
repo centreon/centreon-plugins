@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::psu;
+package storage::netapp::snmp::mode::components::psu;
 
 use base qw(centreon::plugins::mode);
 

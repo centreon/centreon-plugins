@@ -33,49 +33,68 @@
 #
 ####################################################################################
 
-package storage::netapp::plugin;
+package storage::netapp::snmp::mode::diskfailed;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
+    
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'cp-statistics'    => 'storage::netapp::mode::cpstatistics',
-                         'cpuload'          => 'storage::netapp::mode::cpuload',
-                         'diskfailed'       => 'storage::netapp::mode::diskfailed',
-                         'fan'              => 'storage::netapp::mode::fan',
-                         'filesys'          => 'storage::netapp::mode::filesys',
-                         'global-status'    => 'storage::netapp::mode::globalstatus',
-                         'list-filesys'     => 'storage::netapp::mode::listfilesys',
-                         'ndmpsessions'     => 'storage::netapp::mode::ndmpsessions',
-                         'nvram'            => 'storage::netapp::mode::nvram',
-                         'partnerstatus'    => 'storage::netapp::mode::partnerstatus',
-                         'psu'              => 'storage::netapp::mode::psu',
-                         'share-calls'      => 'storage::netapp::mode::sharecalls',
-                         'shelf'            => 'storage::netapp::mode::shelf',
-                         'snapmirrorlag'    => 'storage::netapp::mode::snapmirrorlag',
-                         'temperature'      => 'storage::netapp::mode::temperature',
-                         'volumeoptions'    => 'storage::netapp::mode::volumeoptions',
-                         'aggregatestate'   => 'storage::netapp::mode::aggregatestate',
-                         'snapshotage'      => 'storage::netapp::mode::snapshotage',
-                         );
+    $options{options}->add_options(arguments =>
+                                {
+                                });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+
+    my $oid_diskFailedCount = '.1.3.6.1.4.1.789.1.6.4.7.0';
+    my $oid_diskFailedMessage = '.1.3.6.1.4.1.789.1.6.4.10.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_diskFailedCount], nothing_quit => 1);
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'Disks are ok.');
+    if ($result->{$oid_diskFailedCount} != 0) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("'%d' fans are failed [message: %s].", 
+                                                    $result->{$oid_diskFailedCount}, $result->{$oid_diskFailedMessage}));
+    }
+
+    $self->{output}->perfdata_add(label => 'failed',
+                                  value => $result->{$oid_diskFailedCount},
+                                  min => 0);
+    
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check Netapp in SNMP (Some Check needs ONTAP 8.x).
+Check the current number of disk broken.
+If you are in cluster mode, the following mode doesn't work. Ask to netapp to add it :)
+
+=over 8
+
+=back
 
 =cut
+    

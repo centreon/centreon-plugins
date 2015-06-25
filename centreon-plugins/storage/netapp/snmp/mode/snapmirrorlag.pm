@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::snapmirrorlag;
+package storage::netapp::snmp::mode::snapmirrorlag;
 
 use base qw(centreon::plugins::mode);
 

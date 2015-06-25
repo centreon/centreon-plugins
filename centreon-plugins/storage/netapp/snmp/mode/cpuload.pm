@@ -33,24 +33,12 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::partnerstatus;
+package storage::netapp::snmp::mode::cpuload;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
-my %states = (
-    1 => ['maybe down', 'WARNING'], 
-    2 => ['ok', 'OK'], 
-    3 => ['dead', 'CRITICAL'],
-);
-my %connect_state = (
-    1 => ['not present', 'CRITICAL'], 
-    2 => ['down', 'CRITICAL'], 
-    3 => ['partial failure', 'WARNING'],
-    4 => ['up', 'OK'],
-);
 
 sub new {
     my ($class, %options) = @_;
@@ -60,6 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "warning:s"            => { name => 'warning' },
+                                  "critical:s"           => { name => 'critical' },
                                 });
 
     return $self;
@@ -68,6 +58,15 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -75,28 +74,17 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_cfPartnerStatus = '.1.3.6.1.4.1.789.1.2.3.4.0';
-    my $oid_cfPartnerName = '.1.3.6.1.4.1.789.1.2.3.6.0';
-    my $oid_cfInterconnectStatus = '.1.3.6.1.4.1.789.1.2.3.8.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_cfPartnerStatus, $oid_cfPartnerName, $oid_cfInterconnectStatus], nothing_quit => 1);
+    my $oid_cpuBusyTimePerCent = '.1.3.6.1.4.1.789.1.2.1.3.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_cpuBusyTimePerCent], nothing_quit => 1);
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Partner '%s' status is '%s'", $result->{$oid_cfPartnerName}, 
-                                            ${$states{$result->{$oid_cfPartnerStatus}}}[0]));
-    if (${$states{$result->{$oid_cfPartnerStatus}}}[1] ne 'OK') {
-        $self->{output}->output_add(severity => ${$states{$result->{$oid_cfPartnerStatus}}}[1],
-                                    short_msg => sprintf("Partner '%s' status is '%s'", $result->{$oid_cfPartnerName}, 
-                                            ${$states{$result->{$oid_cfPartnerStatus}}}[0]));
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Interconnect status is '%s'", 
-                                            ${$connect_state{$result->{$oid_cfInterconnectStatus}}}[0]));
-    if (${$connect_state{$result->{$oid_cfInterconnectStatus}}}[1] ne 'OK') {
-        $self->{output}->output_add(severity => ${$connect_state{$result->{$oid_cfInterconnectStatus}}}[1],
-                                    short_msg => sprintf("Interconnect status is '%s'", 
-                                            ${$connect_state{$result->{$oid_cfInterconnectStatus}}}[0]));
-    }
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_cpuBusyTimePerCent}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("CPU Usage %d %%", $result->{$oid_cpuBusyTimePerCent}));
+    $self->{output}->perfdata_add(label => 'cpuload', unit => '%',
+                                  value => sprintf("%d", $result->{$oid_cpuBusyTimePerCent}),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => 100);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -108,9 +96,17 @@ __END__
 
 =head1 MODE
 
-Check status of clustered failover partner.
+Check CPU usage.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning in percent.
+
+=item B<--critical>
+
+Threshold critical in percent.
 
 =back
 

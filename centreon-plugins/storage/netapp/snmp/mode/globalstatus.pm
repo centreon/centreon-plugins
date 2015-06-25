@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::sharecalls;
+package storage::netapp::snmp::mode::globalstatus;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,34 +43,60 @@ use centreon::plugins::statefile;
 use centreon::plugins::values;
 
 my $maps_counters = {
-    cifs   => { class => 'centreon::plugins::values', obj => undef,
+    read   => { class => 'centreon::plugins::values', obj => undef,
                 set => {
-                        key_values => [ { name => 'cifs', diff => 1 }, ],
+                        key_values => [
+                                        { name => 'read', diff => 1 },
+                                      ],
                         per_second => 1,
-                        output_template => 'CIFS : %s calls/s',
+                        output_template => 'Read I/O : %s %s/s',
+                        output_change_bytes => 1,
                         perfdatas => [
-                            { value => 'cifs_per_second', template => '%d', min => 0 },
+                            { value => 'read_per_second', template => '%d',
+                              unit => 'B/s', min => 0 },
                         ],
                     }
                },
-    nfs   => { class => 'centreon::plugins::values', obj => undef,
-                set => {
-                        key_values => [ { name => 'nfs', diff => 1 }, ],
+    write   => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'write', diff => 1 },
+                                      ],
                         per_second => 1,
-                        output_template => 'NFS : %s calls/s',
+                        output_template => 'Write I/O : %s %s/s',
+                        output_change_bytes => 1,
                         perfdatas => [
-                            { value => 'nfs_per_second', template => '%d', min => 0 },
+                            { value => 'write_per_second', template => '%d',
+                              unit => 'B/s', min => 0 },
                         ],
                     }
                },
 };
 
-my $oid_miscHighNfsOps = '.1.3.6.1.4.1.789.1.2.2.5.0';
-my $oid_miscLowNfsOps = '.1.3.6.1.4.1.789.1.2.2.6.0';
-my $oid_miscHighCifsOps = '.1.3.6.1.4.1.789.1.2.2.7.0';
-my $oid_miscLowCifsOps = '.1.3.6.1.4.1.789.1.2.2.8.0';
-my $oid_misc64NfsOps = '.1.3.6.1.4.1.789.1.2.2.27.0';
-my $oid_misc64CifsOps = '.1.3.6.1.4.1.789.1.2.2.28.0';
+my %states = (
+    1 => ['other', 'WARNING'], 
+    2 => ['unknown', 'UNKNOWN'], 
+    3 => ['ok', 'OK'], 
+    4 => ['non critical', 'WARNING'],
+    5 => ['critical', 'CRITICAL'],
+    6 => ['nonRecoverable', 'WARNING'],
+);
+my %fs_states = (
+    1 => ['ok', 'OK'], 
+    2 => ['nearly full', 'WARNING'], 
+    3 => ['full', 'CRITICAL'], 
+);
+
+my $oid_fsOverallStatus = '.1.3.6.1.4.1.789.1.5.7.1.0';
+my $oid_fsStatusMessage = '.1.3.6.1.4.1.789.1.5.7.2.0';
+my $oid_miscGlobalStatus = '.1.3.6.1.4.1.789.1.2.2.4.0';
+my $oid_miscGlobalStatusMessage = '.1.3.6.1.4.1.789.1.2.2.25.0';
+my $oid_misc64DiskReadBytes = '.1.3.6.1.4.1.789.1.2.2.32.0';
+my $oid_misc64DiskWriteBytes = '.1.3.6.1.4.1.789.1.2.2.33.0';
+my $oid_miscHighDiskReadBytes = '.1.3.6.1.4.1.789.1.2.2.15.0';
+my $oid_miscLowDiskReadBytes = '.1.3.6.1.4.1.789.1.2.2.16.0';
+my $oid_miscHighDiskWriteBytes = '.1.3.6.1.4.1.789.1.2.2.17.0';
+my $oid_miscLowDiskWriteBytes = '.1.3.6.1.4.1.789.1.2.2.18.0';
 
 sub new {
     my ($class, %options) = @_;
@@ -116,6 +142,15 @@ sub run {
     $self->{snmp_port} = $self->{snmp}->get_port();
 
     $self->manage_selection();
+    
+    $self->{results}->{$oid_miscGlobalStatusMessage} =~ s/\n//g;
+    $self->{output}->output_add(severity =>  ${$states{$self->{results}->{$oid_miscGlobalStatus}}}[1],
+                                short_msg => sprintf("Overall global status is '%s' [message: '%s']", 
+                                                ${$states{$self->{results}->{$oid_miscGlobalStatus}}}[0], $self->{results}->{$oid_miscGlobalStatusMessage}));
+    $self->{results}->{$oid_fsStatusMessage} =~ s/\n//g;
+    $self->{output}->output_add(severity =>  ${$fs_states{$self->{results}->{$oid_fsOverallStatus}}}[1],
+                                short_msg => sprintf("Overall file system status is '%s' [message: '%s']", 
+                                                ${$fs_states{$self->{results}->{$oid_fsOverallStatus}}}[0], $self->{results}->{$oid_fsStatusMessage}));
     
     $self->{new_datas} = {};
     $self->{statefile_value}->read(statefile => "cache_netapp_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
@@ -166,21 +201,24 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $request = [$oid_miscHighNfsOps, $oid_miscLowNfsOps,
-                   $oid_miscHighCifsOps, $oid_miscLowCifsOps];
+    my $request = [$oid_fsOverallStatus, $oid_fsStatusMessage,
+                   $oid_miscGlobalStatus, $oid_miscGlobalStatusMessage, 
+                   $oid_miscHighDiskReadBytes, $oid_miscLowDiskReadBytes,
+                   $oid_miscHighDiskWriteBytes, $oid_miscLowDiskWriteBytes];
     if (!$self->{snmp}->is_snmpv1()) {
-        push @{$request}, ($oid_misc64NfsOps, $oid_misc64CifsOps);
+        push @{$request}, ($oid_misc64DiskReadBytes, $oid_misc64DiskWriteBytes);
     }
     
     $self->{results} = $self->{snmp}->get_leef(oids => $request, nothing_quit => 1);
     
     $self->{global} = {};
-    $self->{global}->{cifs} = defined($self->{results}->{$oid_misc64CifsOps}) ?
-                                $self->{results}->{$oid_misc64CifsOps} : 
-                                ($self->{results}->{$oid_miscHighCifsOps} << 32) + $self->{results}->{$oid_miscLowCifsOps};
-    $self->{global}->{nfs} = defined($self->{results}->{$oid_misc64NfsOps}) ?
-                                $self->{results}->{$oid_misc64NfsOps} : 
-                                ($self->{results}->{$oid_miscHighNfsOps} << 32) + $self->{results}->{$oid_miscLowNfsOps};
+    $self->{global}->{read} = defined($self->{results}->{$oid_misc64DiskReadBytes}) ?
+                                $self->{results}->{$oid_misc64DiskReadBytes} : 
+                                ($self->{results}->{$oid_miscHighDiskReadBytes} << 32) + $self->{results}->{$oid_miscLowDiskReadBytes};
+    $self->{global}->{write} = defined($self->{results}->{$oid_misc64DiskWriteBytes}) ?
+                                $self->{results}->{$oid_misc64DiskWriteBytes} : 
+                                ($self->{results}->{$oid_miscHighDiskWriteBytes} << 32) + $self->{results}->{$oid_miscLowDiskWriteBytes};
+
 }
 
 1;
@@ -189,19 +227,20 @@ __END__
 
 =head1 MODE
 
-Check cifs and nfs calls per seconds.
+Check the overall status of the appliance and some metrics (total read bytes per seconds and total write bytes per seconds).
+If you are in cluster mode, the following mode doesn't work. Ask to netapp to add it :)
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'cifs', 'nfs'.
+Can be: 'read', 'write'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'cifs', 'nfs'.
+Can be: 'read', 'write'.
 
 =back
 

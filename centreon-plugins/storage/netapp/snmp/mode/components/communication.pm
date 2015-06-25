@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,67 +33,53 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::nvram;
+package storage::netapp::snmp::mode::components::communication;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my %states = (
-    1 => ['ok', 'OK'], 
-    2 => ['partially discharged', 'WARNING'], 
-    3 => ['fully discharged', 'CRITICAL'], 
-    4 => ['not present', 'CRITICAL'],
-    5 => ['near end of life', 'WARNING'],
-    6 => ['at end of life', 'CRITICAL'],
-    7 => ['unknown', 'UNKNOWN'],
+my %map_com_states = (
+    1 => 'initializing', 
+    2 => 'transitioning', 
+    3 => 'active', 
+    4 => 'inactive',
+    5 => 'reconfiguring',
+    6 => 'nonexistent',
 );
+my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
+my $oid_enclContactState = '.1.3.6.1.4.1.789.1.21.1.2.1.2';
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+sub load {
+    my (%options) = @_;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-
-    return $self;
+    push @{$options{request}}, { oid => $oid_enclContactState };
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
+sub check {
+    my ($self) = @_;
 
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
+    $self->{output}->output_add(long_msg => "Checking communications");
+    $self->{components}->{communication} = {name => 'communications', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'communication'));
 
-    my $oid_nvramBatteryStatus = '.1.3.6.1.4.1.789.1.2.5.1.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_nvramBatteryStatus], nothing_quit => 1);
-    
-    $self->{output}->output_add(severity =>  ${$states{$result->{$oid_nvramBatteryStatus}}}[1],
-                                short_msg => sprintf("NVRAM Batteries status is '%s'.", ${$states{$result->{$oid_nvramBatteryStatus}}}[0]));
+    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
+        my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
+        my $com_state = $map_com_states{$self->{results}->{$oid_enclContactState}->{$oid_enclContactState . '.' . $i}};
 
-    $self->{output}->display();
-    $self->{output}->exit();
+        next if ($self->check_exclude(section => 'communication', instance => $shelf_addr));
+        
+        $self->{components}->{communication}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Shelve '%s' communication state is '%s'", 
+                                                          $shelf_addr, $com_state));
+        my $exit = $self->get_severity(section => 'communication', value => $com_state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Shelve '%s' communication state is '%s'", 
+                                                          $shelf_addr, $com_state));
+        }
+    }
 }
 
 1;
-
-__END__
-
-=head1 MODE
-
-Check current status of the NVRAM batteries.
-
-=over 8
-
-=back
-
-=cut
-    
