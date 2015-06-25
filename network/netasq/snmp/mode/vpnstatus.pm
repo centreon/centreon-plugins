@@ -212,16 +212,16 @@ sub run {
             $maps_counters->{vpn}->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{src}/$self->{vpn}->{$id}->{dst}' $long_msg");
+        $self->{output}->output_add(long_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{src}/$self->{vpn}->{$id}->{dst}' $short_msg"
+                                        short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{src}/$self->{vpn}->{$id}->{dst}' Usage $long_msg");
+            $self->{output}->output_add(short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' Usage $long_msg");
         }
     }
     
@@ -265,7 +265,7 @@ my $mapping2 = {
     ntqVPNIPDst => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.3' },
 };
 my $mapping3 = {
-    ntqVPNState => { oid => '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.7', map => \%map_state },
+    ntqVPNState => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.11', map => \%map_state },
 };
 my $mapping4 = {
     ntqVPNBytes => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.13' },
@@ -283,8 +283,8 @@ sub manage_selection {
                                                          , nothing_quit => 1);
     
     $self->{vpn} = {};
-    foreach my $oid (keys %{$self->{results}->{$mapping->{ntqVPNState}->{oid}}}) {
-        next if ($oid !~ /^$mapping->{ntqVPNState}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$self->{results}->{$mapping3->{ntqVPNState}->{oid}}}) {
+        next if ($oid !~ /^$mapping3->{ntqVPNState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{ntqVPNIPSrc}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{ntqVPNIPDst}->{oid}}, instance => $instance);
