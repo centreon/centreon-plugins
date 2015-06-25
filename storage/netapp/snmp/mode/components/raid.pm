@@ -33,51 +33,53 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::communication;
+package storage::netapp::snmp::mode::components::raid;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my %map_com_states = (
-    1 => 'initializing', 
-    2 => 'transitioning', 
-    3 => 'active', 
-    4 => 'inactive',
-    5 => 'reconfiguring',
-    6 => 'nonexistent',
+my %map_raid_states = (
+    1 => 'active',
+    2 => 'reconstructionInProgress',
+    3 => 'parityReconstructionInProgress',
+    4 => 'parityVerificationInProgress',
+    5 => 'scrubbingInProgress',
+    6 => 'failed',
+    9 => 'prefailed',
+    10 => 'offline',
 );
-my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
-my $oid_enclContactState = '.1.3.6.1.4.1.789.1.21.1.2.1.2';
+my $oid_raidPStatus = '.1.3.6.1.4.1.789.1.6.10.1.2';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclContactState };
+    push @{$options{request}}, { oid => $oid_raidPStatus };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking communications");
-    $self->{components}->{communication} = {name => 'communications', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'communication'));
+    $self->{output}->output_add(long_msg => "Checking raids");
+    $self->{components}->{raid} = {name => 'raids', total => 0, skip => 0};
+    return if ($self->check_exclude(section => 'raid'));
 
-    for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
-        my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
-        my $com_state = $map_com_states{$self->{results}->{$oid_enclContactState}->{$oid_enclContactState . '.' . $i}};
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_raidPStatus}})) {
+        $oid =~ /^$oid_raidPStatus\.(.*)$/;
+        my $instance = $1;
+        my $raid_state = $map_raid_states{$self->{results}->{$oid_raidPStatus}->{$oid}};
 
-        next if ($self->check_exclude(section => 'communication', instance => $shelf_addr));
+        next if ($self->check_exclude(section => 'raid', instance => $instance));
         
-        $self->{components}->{communication}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Shelve '%s' communication state is '%s'", 
-                                                          $shelf_addr, $com_state));
-        my $exit = $self->get_severity(section => 'communication', value => $com_state);
+        $self->{components}->{raid}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Raid '%s' state is '%s'", 
+                                                        $instance, $raid_state));
+        my $exit = $self->get_severity(section => 'raid', value => $raid_state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Shelve '%s' communication state is '%s'", 
-                                                          $shelf_addr, $com_state));
+                                        short_msg => sprintf("Raid '%s' state is '%s'", 
+                                                             $instance, $raid_state));
         }
     }
 }

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::shelf;
+package storage::netapp::snmp::mode::shelf;
 
 use base qw(centreon::plugins::mode);
 
@@ -174,7 +174,7 @@ sub run {
     my @components = ('communication', 'psu', 'fan', 'temperature', 'voltage', 'electronics', 'raid');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "storage::netapp::mode::components::$_";
+            my $mod_name = "storage::netapp::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
@@ -194,7 +194,7 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "storage::netapp::mode::components::$_";
+            my $mod_name = "storage::netapp::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }

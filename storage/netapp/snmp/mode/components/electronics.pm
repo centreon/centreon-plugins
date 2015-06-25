@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::electronics;
+package storage::netapp::snmp::mode::components::electronics;
 
 use base qw(centreon::plugins::mode);
 

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::cpstatistics;
+package storage::netapp::snmp::mode::cpstatistics;
 
 use base qw(centreon::plugins::mode);
 

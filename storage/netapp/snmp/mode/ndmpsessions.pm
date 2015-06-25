@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::temperature;
+package storage::netapp::snmp::mode::ndmpsessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -48,6 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "warning:s"            => { name => 'warning' },
+                                  "critical:s"           => { name => 'critical' },
                                 });
 
     return $self;
@@ -56,6 +58,15 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -63,16 +74,18 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid_envOverTemperature = '.1.3.6.1.4.1.789.1.2.4.1.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_envOverTemperature], nothing_quit => 1);
+    my $oid_ndmpSessionOpened = '.1.3.6.1.4.1.789.1.10.2.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_ndmpSessionOpened], nothing_quit => 1);
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Hardware temperature is ok.');
-    if ($result->{$oid_envOverTemperature} == 2) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'Hardware temperature is over temperature range.');
-    }
-    
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_ndmpSessionOpened}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Current number of ndmp sessions opened: %d", $result->{$oid_ndmpSessionOpened}));
+    $self->{output}->perfdata_add(label => 'sessions',
+                                  value => $result->{$oid_ndmpSessionOpened},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -83,9 +96,17 @@ __END__
 
 =head1 MODE
 
-Check if hardware is currently operating outside of its recommended temperature range.
+Check current total of ndmp sessions opened.
 
 =over 8
+
+=item B<--warning>
+
+Threshold warning.
+
+=item B<--critical>
+
+Threshold critical.
 
 =back
 

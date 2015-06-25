@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::snapshotage;
+package storage::netapp::snmp::mode::snapshotage;
 
 use base qw(centreon::plugins::mode);
 

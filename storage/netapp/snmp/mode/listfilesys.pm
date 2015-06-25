@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::listfilesys;
+package storage::netapp::snmp::mode::listfilesys;
 
 use base qw(centreon::plugins::mode);
 

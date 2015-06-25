@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::netapp::mode::components::fan;
+package storage::netapp::snmp::mode::components::fan;
 
 use base qw(centreon::plugins::mode);
 
