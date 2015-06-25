@@ -78,13 +78,13 @@ sub custom_usage_perfdata {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
                                   min => 0, max => $self->{result_values}->{total});
-    if (defined($self->{result_values}->{dfCompressSavedPercent}) && $self->{result_values}->{dfCompressSavedPercent} ne ''
+    if (defined($self->{result_values}->{dfCompressSavedPercent}) && $self->{result_values}->{dfCompressSavedPercent} ne '' &&
         $self->{result_values}->{dfCompressSavedPercent} >= 0) {
         $self->{output}->perfdata_add(label => 'compresssaved' . $extra_label, unit => '%',
                                       value => $self->{result_values}->{dfCompressSavedPercent},
                                       min => 0, max => 100);
     }
-    if (defined($self->{result_values}->{dfDedupeSavedPercent}) && $self->{result_values}->{dfDedupeSavedPercent} ne ''
+    if (defined($self->{result_values}->{dfDedupeSavedPercent}) && $self->{result_values}->{dfDedupeSavedPercent} ne '' &&
         $self->{result_values}->{dfDedupeSavedPercent} >= 0) {
         $self->{output}->perfdata_add(label => 'dedupsaved' . $extra_label, unit => '%',
                                       value => $self->{result_values}->{dfDedupeSavedPercent},
