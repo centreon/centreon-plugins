@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::cisco::smallbusiness::mode::components::psu;
+package centreon::common::cisco::smallbusiness::snmp::mode::components::psu;
 
 use strict;
 use warnings;

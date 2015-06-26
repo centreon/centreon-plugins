@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::cisco::smallbusiness::mode::cpu;
+package centreon::common::cisco::smallbusiness::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -117,17 +117,17 @@ sub run {
                                 short_msg => sprintf("CPU: %.2f%% (1sec), %.2f%% (1min), %.2f%% (5min)",
                                                      $cpu1sec, $cpu1min, $cpu5min));
     
-    $self->{output}->perfdata_add(label => "cpu_1s",
+    $self->{output}->perfdata_add(label => "cpu_1s", unit => '%',
                                   value => $cpu1sec,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1s'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1s'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_1m",
+    $self->{output}->perfdata_add(label => "cpu_1m", unit => '%',
                                   value => $cpu1min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
                                   min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_5m",
+    $self->{output}->perfdata_add(label => "cpu_5m", unit => '%',
                                   value => $cpu5min,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::cisco::smallbusiness::sf500::plugin;
+package network::cisco::smallbusiness::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,8 +47,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::smallbusiness::mode::cpu',
-                         'environment'      => 'centreon::common::cisco::smallbusiness::mode::environment',
+                         'cpu'              => 'centreon::common::cisco::smallbusiness::snmp::mode::cpu',
+                         'environment'      => 'centreon::common::cisco::smallbusiness::snmp::mode::environment',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
@@ -64,6 +64,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco SB SF500 series switches in SNMP.
+Check Cisco SB series switches in SNMP.
 
 =cut
