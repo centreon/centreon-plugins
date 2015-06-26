@@ -41,9 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use centreon::plugins::statefile;
-
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
