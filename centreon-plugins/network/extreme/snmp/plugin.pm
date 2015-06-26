@@ -51,6 +51,7 @@ sub new {
                          'hardware'         => 'network::extreme::snmp::mode::hardware',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::extreme::snmp::mode::memory',
+                         'stack'            => 'network::extreme::snmp::mode::stack',
                          'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
