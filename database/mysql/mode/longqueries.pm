@@ -33,13 +33,12 @@
 #
 ####################################################################################
 
-package database::mysql::mode::queries;
+package database::mysql::mode::longqueries;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -49,10 +48,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"           => { name => 'warning', },
+                                  "critical:s"          => { name => 'critical', },
+                                  "seconds:s"           => { name => 'seconds', default => 60 },
+                                  "filter-user:s"       => { name => 'filter_user' },
+                                  "filter-command:s"    => { name => 'filter_command', default => '^(?!(sleep)$)' },
                                 });
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -69,8 +70,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    
-    $self->{statefile_cache}->check_options(%options);
+    if (!defined($self->{option_results}->{seconds}) || $self->{option_results}->{seconds} !~ /^[0-9]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Please set the option --seconds.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -79,55 +82,37 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{
-        SHOW /*!50000 global */ STATUS WHERE Variable_name IN ('Queries', 'Com_update', 'Com_delete', 'Com_insert', 'Com_truncate', 'Com_select') 
-    });
-    my $result = $self->{sql}->fetchall_arrayref();
     
-    if (!($self->{sql}->is_version_minimum(version => '5.0.76'))) {
-        $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.0.76').");
-        $self->{output}->option_exit();
-    }
+    $self->{sql}->query(query => q{SELECT USER, COMMAND, TIME, INFO FROM information_schema.processlist ORDER BY TIME DESC});
+    my $long_queries = 0;
+    my @queries = ();
     
-    my $new_datas = {};
-    $self->{statefile_cache}->read(statefile => 'mysql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
-    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-    $new_datas->{last_timestamp} = time();
-    
-    if (defined($old_timestamp) && $new_datas->{last_timestamp} - $old_timestamp == 0) {
-        $self->{output}->add_option_msg(short_msg => "Need at least one second between two checks.");
-        $self->{output}->option_exit();
-    }
-    
-    foreach my $row (@{$result}) {
-        next if ($$row[0] !~ /^(Queries|Com_update|Com_delete|Com_insert|Com_truncate|Com_select)/i);
-    
-        $new_datas->{$$row[0]} = $$row[1];
-        my $old_val = $self->{statefile_cache}->get(name => $$row[0]);
-        next if (!defined($old_val) || $$row[1] < $old_val);
-        
-        my $value = int(($$row[1] - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));
-        if ($$row[0] ne 'Queries') {
-            $self->{output}->perfdata_add(label => $$row[0] . '_requests',
-                                      value => $value,
-                                      min => 0);
-            next;
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        next if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
+                 $row->{USER} !~ /$self->{option_results}->{filter_user}/i);
+        next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
+                 $row->{COMMAND} !~ /$self->{option_results}->{filter_command}/i);
+        if (defined($self->{option_results}->{seconds}) && $self->{option_results}->{seconds} ne '' && $row->{TIME} >= $self->{option_results}->{seconds}) {
+            push @queries, { time => $row->{TIME}, query => $row->{INFO} };
+            $long_queries++;
         }
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Total requests = %s", $value));
-        $self->{output}->perfdata_add(label => 'total_requests',
-                                      value => $value,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
     }
     
-    $self->{statefile_cache}->write(data => $new_datas); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+    my $exit_code = $self->{perfdata}->threshold_check(value => $long_queries, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("%s queries over %s seconds",
+                                                     $long_queries, $self->{option_results}->{seconds}));
+    $self->{output}->perfdata_add(label => 'longqueries',
+                                  value => $long_queries,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+    
+    for (my $i = 0; $i < 10 && $i < scalar(@queries); $i++) {
+        $queries[$i]->{query} =~ s/\|/-/mg;
+        $self->{output}->output_add(long_msg => sprintf("[time: %s] [query: %s]",
+                                                        $queries[$i]->{time}, substr($queries[$i]->{query}, 0, 1024)));
     }
 
     $self->{output}->display();
@@ -140,17 +125,29 @@ __END__
 
 =head1 MODE
 
-Check average number of queries executed.
+Check current number of long queries.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning.
+Threshold warning (number of long queries).
 
 =item B<--critical>
 
-Threshold critical.
+Threshold critical (number of long queries).
+
+=item B<--critical>
+
+Threshold critical (number of long queries).
+
+=item B<--filter-user>
+
+Filter by user (can be a regexp).
+
+=item B<--filter-command>
+
+Filter by command (can be a regexp. Default: '^(?!(sleep)$)').
 
 =back
 

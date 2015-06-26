@@ -63,12 +63,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 
     $self->{statefile_cache}->check_options(%options);
@@ -115,7 +115,7 @@ sub run {
         $prcts{bufferpool_hitrate_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
         $prcts{bufferpool_hitrate} = ($new_datas->{Innodb_buffer_pool_read_requests} == 0) ? 100 : ($new_datas->{Innodb_buffer_pool_read_requests} - $new_datas->{Innodb_buffer_pool_reads}) * 100 / $new_datas->{Innodb_buffer_pool_read_requests};
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("innodb buffer pool hitrate at %.2f%%", $prcts{'bufferpool_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );

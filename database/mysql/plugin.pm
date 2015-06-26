@@ -50,17 +50,18 @@ sub new {
     %{$self->{modes}} = (
                          'connection-time'              => 'centreon::common::protocols::sql::mode::connectiontime',
                          'databases-size'               => 'database::mysql::mode::databasessize',
-                         'queries'                      => 'database::mysql::mode::queries',
-                         'slow-queries'                 => 'database::mysql::mode::slowqueries',
-                         'threads-connected'            => 'database::mysql::mode::threadsconnected',
-                         'uptime'                       => 'database::mysql::mode::uptime',
-                         'open-files'                   => 'database::mysql::mode::openfiles',
                          'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
+                         'long-queries'                 => 'database::mysql::mode::longqueries',
                          'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
+                         'open-files'                   => 'database::mysql::mode::openfiles',
                          'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
-                         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
+                         'queries'                      => 'database::mysql::mode::queries',
                          'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
                          'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
+                         'slow-queries'                 => 'database::mysql::mode::slowqueries',
+                         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
+                         'threads-connected'            => 'database::mysql::mode::threadsconnected',
+                         'uptime'                       => 'database::mysql::mode::uptime',
                          );
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
