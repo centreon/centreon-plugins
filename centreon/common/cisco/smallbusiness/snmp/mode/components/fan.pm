@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::cisco::smallbusiness::mode::components::fan;
+package centreon::common::cisco::smallbusiness::snmp::mode::components::fan;
 
 use strict;
 use warnings;

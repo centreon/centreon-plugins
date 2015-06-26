@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package centreon::common::cisco::smallbusiness::mode::environment;
+package centreon::common::cisco::smallbusiness::snmp::mode::environment;
 
 use base qw(centreon::plugins::mode);
 
@@ -116,7 +116,7 @@ sub run {
     my @components = ('psu', 'fan');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::cisco::smallbusiness::mode::components::$_";
+            my $mod_name = "centreon::common::cisco::smallbusiness::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
@@ -132,7 +132,7 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::cisco::smallbusiness::mode::components::$_";
+            my $mod_name = "centreon::common::cisco::smallbusiness::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }
