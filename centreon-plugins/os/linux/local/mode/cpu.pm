@@ -131,6 +131,12 @@ sub run {
         }
         
         my $total_elapsed = ($datas->{'cpu_idle_' . $cpu_number} + $datas->{'cpu_user_' . $cpu_number} + $datas->{'cpu_system_' . $cpu_number} + $datas->{'cpu_iowait_' . $cpu_number}) - ($old_cpu_user + $old_cpu_idle + $old_cpu_system + $old_cpu_iowait);
+        if ($total_elapsed == 0) {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => "No new values for cpu counters");
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
         my $idle_elapsed = $datas->{'cpu_idle_' . $cpu_number} - $old_cpu_idle;
         my $cpu_ratio_usetime = 100 * $idle_elapsed / $total_elapsed;
         $cpu_ratio_usetime = 100 - $cpu_ratio_usetime;        
