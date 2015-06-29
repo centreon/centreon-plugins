@@ -71,8 +71,9 @@ sub run {
                                 short_msg => 'Disks are ok.');
     if ($result->{$oid_diskFailedCount} != 0) {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("'%d' fans are failed [message: %s].", 
-                                                    $result->{$oid_diskFailedCount}, $result->{$oid_diskFailedMessage}));
+                                    short_msg => sprintf("'%d' disks are failed [message: %s].", 
+                                                    $result->{$oid_diskFailedCount}, 
+                                                    defined($result->{$oid_diskFailedMessage}) ? $result->{$oid_diskFailedMessage} : '-'));
     }
 
     $self->{output}->perfdata_add(label => 'failed',
