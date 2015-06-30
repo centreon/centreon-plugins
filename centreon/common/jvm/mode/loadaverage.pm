@@ -79,6 +79,13 @@ sub run {
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
     my $load = $result->{"java.lang:type=OperatingSystem"}->{SystemLoadAverage};
+    if ($load == -1) {
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "System load average is not set");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    
     my $exit = $self->{perfdata}->threshold_check(value => $load,
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
@@ -93,7 +100,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
 
 1;
