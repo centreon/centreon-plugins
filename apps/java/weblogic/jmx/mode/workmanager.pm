@@ -33,13 +33,15 @@
 #
 ####################################################################################
 
-package apps::java::weblogic::jmx::mode::health;
+package apps::java::weblogic::jmx::mode::workmanager;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::values;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
 my $thresholds = {
     health => [
@@ -64,9 +66,36 @@ my $maps_counters = {
                         closure_custom_threshold_check => \&custom_threshold_output,
                     }
                },
-        },
+        
+        '001_request-completed' => { set => {
+                        key_values => [ { name => 'completed', diff => 1 }, { name => 'runtime' } ],
+                        output_template => 'Requests completed : %s',
+                        perfdatas => [
+                            { label => 'request_completed', value => 'completed_absolute', template => '%s',
+                              min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                        ],
+                    }
+               },
+        '002_request-pending' => { set => {
+                        key_values => [ { name => 'pending' }, { name => 'runtime' } ],
+                        output_template => 'Requests pending : %s',
+                        perfdatas => [
+                            { label => 'request_pending', value => 'pending_absolute', template => '%s',
+                              min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                        ],
+                    }
+               },
+        '003_thread-stuck' => { set => {
+                        key_values => [ { name => 'stuck' }, { name => 'runtime' } ],
+                        output_template => 'Threads stuck : %s',
+                        perfdatas => [
+                            { label => 'thread_stuck', value => 'stuck_absolute', template => '%s',
+                              min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                        ],
+                    }
+               }, 
+    },
 };
-
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
@@ -89,10 +118,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-name:s"  => { name => 'filter_name' },
-                                  "filter-runtime:s"  => { name => 'filter_runtime' },
+                                  "filter-application:s"    => { name => 'filter_application' },
+                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "filter-runtime:s"        => { name => 'filter_runtime' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
  
     foreach my $key (('runtime')) {
         foreach (keys %{$maps_counters->{$key}}) {
@@ -103,7 +134,9 @@ sub new {
                                                             'critical-' . $name . ':s'    => { name => 'critical-' . $name },
                                                });
             }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(
+                                                      statefile => $self->{statefile_value},
+                                                      output => $self->{output}, perfdata => $self->{perfdata},
                                                       label => $name);
             $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
         }
@@ -122,6 +155,7 @@ sub check_options {
         }
     }
     
+    $self->{statefile_value}->check_options(%options);
     $instance_mode = $self;
     
     $self->{overload_th} = {};
@@ -153,8 +187,16 @@ sub run {
     
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All ServerRuntimes are ok');
+                                    short_msg => 'All WorkerManagers are ok');
     }
+    
+    my $matching = '';
+    foreach (('filter_application', 'filter_name', 'filter_runtime')) {
+        $matching .= defined($self->{option_results}->{$_}) ? $self->{option_results}->{$_} : 'all';
+    }
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => "weblogic_" . $self->{mode} . '_' .  md5_hex($self->{connector}->{url}) . '_' . md5_hex($matching));
+    $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $id (sort keys %{$self->{runtime}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -163,7 +205,8 @@ sub run {
             my $obj = $maps_counters->{runtime}->{$_}->{obj};
             $obj->set(instance => $id);
         
-            my ($value_check) = $obj->execute(values => $self->{runtime}->{$id});
+            my ($value_check) = $obj->execute(values => $self->{runtime}->{$id},
+                                              new_datas => $self->{new_datas});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -182,22 +225,23 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{runtime}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $obj->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "ServerRuntime '$self->{runtime}->{$id}->{name}/$self->{runtime}->{$id}->{runtime}' $long_msg");
+        $self->{output}->output_add(long_msg => "WorkerManager '$id' $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "ServerRuntime '$self->{runtime}->{$id}->{name}/$self->{runtime}->{$id}->{runtime}' $short_msg"
+                                        short_msg => "WorkerManager '$id' $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "ServerRuntime '$self->{runtime}->{$id}->{name}/$self->{runtime}->{$id}->{runtime}' $long_msg");
+            $self->{output}->output_add(short_msg => "WorkerManager '$id' $long_msg");
         }
     }
 
+    $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -232,21 +276,28 @@ my %map_state = (
     4 => 'HEALTH_OVERLOADED',
     5 => 'LOW_MEMORY_REASON',
 );
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{request} = [
-         { mbean => 'com.bea:ApplicationRuntime=bea_wls_deployment_internal,Name=*,ServerRuntime=*,Type=WorkManagerRuntime', attributes => [ { name => 'HealthState' } ] }
+         { mbean => 'com.bea:ApplicationRuntime=*,Name=*,ServerRuntime=*,Type=WorkManagerRuntime', 
+          attributes => [ { name => 'HealthState' }, { name => 'StuckThreadCount' }, { name => 'CompletedRequests' }, { name => 'PendingRequests' } ] }
     ];
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
     
     $self->{runtime} = {};
     foreach my $mbean (keys %{$result}) { 
-        next if ($mbean !~ /Name=(.*?),ServerRuntime=(.*?),/);
-        my ($name, $runtime) = ($1, $2);
+        next if ($mbean !~ /ApplicationRuntime=(.*?),Name=(.*?),ServerRuntime=(.*?),/);
+        my ($app, $name, $runtime) = ($1, $2, $3);
         my $health_state = defined($map_state{$result->{$mbean}->{HealthState}->{state}}) ? 
                             $map_state{$result->{$mbean}->{HealthState}->{state}} : 'unknown';
         
+        if (defined($self->{option_results}->{filter_application}) && $self->{option_results}->{filter_application} ne '' &&
+            $app !~ /$self->{option_results}->{filter_application}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $app . "': no matching filter application.");
+            next;
+        }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter name.");
@@ -258,7 +309,8 @@ sub manage_selection {
             next;
         }
         
-        $self->{runtime}->{$name . $runtime} = { name => $name, runtime => $runtime, health_state => $health_state };
+        $self->{runtime}->{$app . '/' . $name . '/' . $runtime} = { health_state => $health_state, runtime => $app . '/' . $name . '/' . $runtime,
+            completed => $result->{$mbean}->{CompletedRequests}, pending => $result->{$mbean}->{PendingRequests}, stuck => $result->{$mbean}->{StuckThreadCount} };
     }
     
     if (scalar(keys %{$self->{runtime}}) <= 0) {
@@ -273,9 +325,23 @@ __END__
 
 =head1 MODE
 
-Check WebLogic Runtimes Health State.
+Check WebLogic WorkManagers.
 
 =over 8
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'thread-stuck', 'request-completed', 'request-pending'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'thread-stuck', 'request-completed', 'request-pending'.
+
+=item B<--filter-application>
+
+Filter by application runtime.
 
 =item B<--filter-name>
 
@@ -283,7 +349,7 @@ Filter by name (regexp can be used).
 
 =item B<--filter-runtime>
 
-Filter by runtime.
+Filter by server runtime.
 
 =item B<--threshold-overload>
 
