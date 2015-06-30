@@ -221,7 +221,7 @@ sub run {
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' Usage $long_msg");
+            $self->{output}->output_add(short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $long_msg");
         }
     }
     
