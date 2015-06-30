@@ -355,7 +355,7 @@ Filter by server runtime.
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='health,CRITICAL,^(?!(mature)$)'
+Example: --threshold-overload='health,CRITICAL,^(?!(HEALTH_OK)$)'
 
 =back
 
