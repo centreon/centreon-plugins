@@ -48,10 +48,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-heap:s"              => { name => 'warning_heap', default => '80' },
-                                  "critical-heap:s"             => { name => 'critical_heap', default => '90' },
-                                  "warning-nonheap:s"              => { name => 'warning_nonheap', default => '80' },
-                                  "critical-nonheap:s"             => { name => 'critical_nonheap', default => '90' },
+                                  "warning-heap:s"      => { name => 'warning_heap' },
+                                  "critical-heap:s"     => { name => 'critical_heap' },
+                                  "warning-nonheap:s"   => { name => 'warning_nonheap' },
+                                  "critical-nonheap:s"  => { name => 'critical_nonheap' },
                                 });
     return $self;
 }
@@ -61,22 +61,21 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-heap', value => $self->{option_results}->{warning_heap})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-heap threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-heap threshold '" . $self->{option_results}->{warning_heap} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-heap', value => $self->{option_results}->{critical_heap})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-heap threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-heap threshold '" . $self->{option_results}->{critical_heap} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning-nonheap', value => $self->{option_results}->{warning_nonheap})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-nonheap threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-nonheap threshold '" . $self->{option_results}->{warning_nonheap} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-nonheap', value => $self->{option_results}->{critical_nonheap})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-nonheap threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-nonheap threshold '" . $self->{option_results}->{critical_nonheap} . "'.");
+        $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -94,10 +93,9 @@ sub run {
     my $prct_nonheap = $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used} / $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{max} * 100;
 
     my $exit1 = $self->{perfdata}->threshold_check(value => $prct_heap,
-                                                   threshold => [ { label => 'critical-heap', exit_litteral => 'critical' }, { label => 'warning-heap', 'exit_litteral' => 'warning' } ]);
+                                                   threshold => [ { label => 'critical-heap', exit_litteral => 'critical' }, { label => 'warning-heap', exit_litteral => 'warning' } ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $prct_nonheap,
-                                                   threshold => [ { label => 'critical-nonheap', exit_litteral => 'critical' }, { label => 'warning-nonheap', 'exit_litteral' => 'warning'} ]);
-
+                                                   threshold => [ { label => 'critical-nonheap', exit_litteral => 'critical' }, { label => 'warning-nonheap', exit_litteral => 'warning'} ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
     $self->{output}->output_add(severity => $exit,

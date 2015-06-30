@@ -48,10 +48,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-system:s"  => { name => 'warning_system', default => '80' },
-                                  "critical-system:s" => { name => 'critical_system', default => '90' },
-                                  "warning-process:s" => { name => 'warning_process', default => '80' },
-                                  "critical-process:s" => { name => 'critical_process', default => '90' }
+                                  "warning-system:s"  => { name => 'warning_system' },
+                                  "critical-system:s" => { name => 'critical_system' },
+                                  "warning-process:s" => { name => 'warning_process' },
+                                  "critical-process:s" => { name => 'critical_process' }
                                 });
     return $self;
 }
@@ -61,23 +61,21 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-system', value => $self->{option_results}->{warning_system})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-system threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-system threshold '" . $self->{option_results}->{warning_system} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-system', value => $self->{option_results}->{critical_system})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-system threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-system threshold '" . $self->{option_results}->{critical_system} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning-process', value => $self->{option_results}->{warning_process})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-process threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-process threshold '" . $self->{option_results}->{warning_process} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-process', value => $self->{option_results}->{critical_process})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-process threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
-   }
-
-
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-process threshold '" . $self->{option_results}->{critical_process} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -90,25 +88,25 @@ sub run {
     ];
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
-    
-    my $exit1 = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100,
-                                                   threshold => [ { label => 'critical-system', exit_litteral => 'critical' }, { label => 'warning-system', 'exit_litteral' => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100,
-                                                   threshold => [ { label => 'critical-process', exit_litteral => 'critical' }, { label => 'warning-process', 'exit_litteral' => 'warning'} ]);
-
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100,
+                                                  threshold => [ { label => 'critical-system', exit_litteral => 'critical' }, { label => 'warning-system', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("SystemCpuLoad: %.2f%% - ProcessCpuLoad: %.2f%%",
-                                                      $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100, $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100));
+                                short_msg => sprintf("SystemCpuLoad: %.2f%%",
+                                                      $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100));
 
-    $self->{output}->perfdata_add(label => 'SystemCpuLoad',
+    $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100,
+                                               threshold => [ { label => 'critical-process', exit_litteral => 'critical' }, { label => 'warning-process', exit_litteral => 'warning'} ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("ProcessCpuLoad: %.2f%%",
+                                                      $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100));
+
+    $self->{output}->perfdata_add(label => 'SystemCpuLoad', unit => '%',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100,
                                   warning => $self->{option_results}->{warning_system},
                                   critical => $self->{option_results}->{critical_system},
                                   min => 0, max => 100);
 
-    $self->{output}->perfdata_add(label => 'ProcessCpuLoad',
+    $self->{output}->perfdata_add(label => 'ProcessCpuLoad', unit => '%',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100,
                                   warning => $self->{option_results}->{warning_process},
                                   critical => $self->{option_results}->{critical_process},

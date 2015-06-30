@@ -63,16 +63,16 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-eden:s"              => { name => 'warning_eden', default => '80' },
-                                  "critical-eden:s"             => { name => 'critical_eden', default => '90' },
-                                  "warning-survivor:s"          => { name => 'warning_survivor', default => '80' },
-                                  "critical-survivor:s"         => { name => 'critical_survivor', default => '90' },
-                                  "warning-tenured:s"           => { name => 'warning_tenured', default => '80' },
-                                  "critical-tenured:s"          => { name => 'critical_tenured', default => '90' },
-                                  "warning-permanent:s"         => { name => 'warning_permanent', default => '80' },
-                                  "critical-permanent:s"        => { name => 'critical_permanent', default => '90' },
-                                  "warning-code:s"              => { name => 'warning_code', default => '80' },
-                                  "critical-code:s"             => { name => 'critical_code', default => '90' }
+                                  "warning-eden:s"              => { name => 'warning_eden' },
+                                  "critical-eden:s"             => { name => 'critical_eden' },
+                                  "warning-survivor:s"          => { name => 'warning_survivor' },
+                                  "critical-survivor:s"         => { name => 'critical_survivor' },
+                                  "warning-tenured:s"           => { name => 'warning_tenured' },
+                                  "critical-tenured:s"          => { name => 'critical_tenured' },
+                                  "warning-permanent:s"         => { name => 'warning_permanent' },
+                                  "critical-permanent:s"        => { name => 'critical_permanent' },
+                                  "warning-code:s"              => { name => 'warning_code' },
+                                  "critical-code:s"             => { name => 'critical_code' }
                                 });
     return $self;
 }
@@ -82,64 +82,50 @@ sub check_options {
     $self->SUPER::init(%options);
 
     foreach my $label ('warning_eden', 'critical_eden', 'warning_survivor', 'critical_survivor', 'warning_tenured', 'critical_tenured', 'warning_permanent', 'critical_permanent', 'warning_code', 'critical_code') {
-		        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-		            my ($label_opt) = $label;
-		            $label_opt =~ tr/_/-/;
-		            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-		            $self->{output}->option_exit();
-		        }
-		    }
-
+        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
+            my ($label_opt) = $label;
+		    $label_opt =~ tr/_/-/;
+		    $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
+		    $self->{output}->option_exit();
+        }
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
     $self->{connector} = $options{custom};
 
-    my %prct;
-    my $exit;
-    my @exits;
- 
-   $self->{request} = [
+    $self->{request} = [
          { mbean => "java.lang:type=MemoryPool,name=*", attributes => [ { name => 'Usage' } ] }
     ];
     
- 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     $self->{output}->output_add(severity => 'OK',
-				short_msg => 'All memories within bounds');
-
+                                short_msg => 'All memories within bounds');
 
     foreach my $key (keys %$result) { 
-
         $key =~ /name=(.*?),type/;
         my $memtype = $1;
-
-	$prct{$memtype} = $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used} / $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max} * 100;
+        my $prct = $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used} / $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max} * 100;
 
         $self->{output}->perfdata_add(label => $mapping_memory{$memtype},
-                                      value => $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used},
-                                      warning => $self->{option_results}->{'warning_'.$mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used},
-                                      critical => $self->{option_results}->{'critical_'.$mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used},
+                                      value => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
+                                      warning => $self->{option_results}->{'warning_' . $mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
+                                      critical => $self->{option_results}->{'critical_' . $mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
                                       min => 0, max => $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max});
 
-        $exit = $self->{perfdata}->threshold_check(value => $prct{$memtype},
-                                                        threshold => [ { label => 'critical_'.$mapping_memory{$memtype}, exit_litteral => 'critical' },
-								       { label => 'warning_'.$mapping_memory{$memtype}, 'exit_litteral' => 'warning'}  ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $prct,
+                                                      threshold => [ { label => 'critical_' . $mapping_memory{$memtype}, exit_litteral => 'critical' },
+                                                                     { label => 'warning_' . $mapping_memory{$memtype}, exit_litteral => 'warning' }  ]);
 
-        $self->{output}->output_add(long_msg => sprintf("%s usage is %.2f%%", $memtype, $prct{$memtype}));
-        push @exits, $exit;
-        if ($exit ne 'ok') {
+        $self->{output}->output_add(long_msg => sprintf("%s usage is %.2f%%", $memtype, $prct));
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg =>  sprintf("%s usage:%.2f%% ", $memtype, $prct{$memtype}));
+                                        short_msg => sprintf("%s usage:%.2f%% ", $memtype, $prct}));
         }
 
     }
-
-    $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-
-    $self->{output}->output_add(severity => $exit);
 
     $self->{output}->display();
     $self->{output}->exit();

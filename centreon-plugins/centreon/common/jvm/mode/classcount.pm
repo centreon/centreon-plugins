@@ -48,10 +48,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-loaded:s"              => { name => 'warning_loaded', default => '5000' },
-                                  "critical-loaded:s"             => { name => 'critical_loaded', default => '5000' },
-                                  "warning-total:s"              => { name => 'warning_total', default => '5500' },
-                                  "critical-total:s"             => { name => 'critical_total', default => '5500' },
+                                  "warning-loaded:s"    => { name => 'warning_loaded' },
+                                  "critical-loaded:s"   => { name => 'critical_loaded' },
+                                  "warning-total:s"     => { name => 'warning_total' },
+                                  "critical-total:s"    => { name => 'critical_total' },
                                 });
     return $self;
 }
@@ -61,22 +61,21 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-loaded', value => $self->{option_results}->{warning_loaded})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-loaded threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-loaded threshold '" . $self->{option_results}->{warning_loaded} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-loaded', value => $self->{option_results}->{critical_loaded})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-loaded threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-loaded threshold '" . $self->{option_results}->{critical_loaded} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning-total', value => $self->{option_results}->{warning_total})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-total threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-total threshold '" . $self->{option_results}->{warning_total} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-total', value => $self->{option_results}->{critical_total})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-total threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-total threshold '" . $self->{option_results}->{critical_total} . "'.");
+        $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -89,18 +88,17 @@ sub run {
     ];
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
-
     my $exit1 = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=ClassLoading"}->{TotalLoadedClassCount},
-                                                   threshold => [ { label => 'critical-total', exit_litteral => 'critical' }, { label => 'warning-total', 'exit_litteral' => 'warning'} ]);
+                                                   threshold => [ { label => 'critical-total', exit_litteral => 'critical' }, { label => 'warning-total', exit_litteral => 'warning'} ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=ClassLoading"}->{LoadedClassCount},
-                                                   threshold => [ { label => 'critical-loaded', exit_litteral => 'critical' }, { label => 'warning-loaded', 'exit_litteral' => 'warning'} ]);
+                                                   threshold => [ { label => 'critical-loaded', exit_litteral => 'critical' }, { label => 'warning-loaded', exit_litteral => 'warning'} ]);
 
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Loaded Class Count : %i, Total Loaded Class : %i, Unloaded Class Count : %i",
                                                       $result->{"java.lang:type=ClassLoading"}->{LoadedClassCount}, $result->{"java.lang:type=ClassLoading"}->{TotalLoadedClassCount},
-						      $result->{"java.lang:type=ClassLoading"}->{UnloadedClassCount}));
+                                                      $result->{"java.lang:type=ClassLoading"}->{UnloadedClassCount}));
 
     $self->{output}->perfdata_add(label => 'TotalLoadedClassCount',
                                   value => $result->{"java.lang:type=ClassLoading"}->{TotalLoadedClassCount},
