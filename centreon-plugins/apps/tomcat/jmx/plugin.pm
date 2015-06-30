@@ -51,9 +51,9 @@ sub new {
                           'memory'           => 'centreon::common::jvm::mode::memory',
                           'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
                           'load-average'     => 'centreon::common::jvm::mode::loadaverage',
-                          'thread-count'     => 'centreon::common::jvm::mode::threadcount',
                           'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
+                          'threads'          => 'centreon::common::jvm::mode::threads',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
