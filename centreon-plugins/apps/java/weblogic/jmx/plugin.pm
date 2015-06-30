@@ -48,10 +48,10 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
-                          'health'           => 'apps::java::weblogic::jmx::mode::health',
                           'memory'           => 'centreon::common::jvm::mode::memory',
                           'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
                           'thread-count'     => 'centreon::common::jvm::mode::threadcount',
+                          'work-manager'     => 'apps::java::weblogic::jmx::mode::workmanager',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
