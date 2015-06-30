@@ -49,9 +49,11 @@ my %mapping_memory = (
     'PS Survivor Space' => 'survivor',
     'CMS Perm Gen' => 'permanent',
     'PS Perm Gen' => 'permanent',
+    'Perm Gen' => 'permanent',
     'Code Cache' => 'code',
     'CMS Old Gen' => 'tenured',
     'PS Old Gen' => 'tenured',
+    'Tenured Gen' => 'tenured',
 );
 
 
@@ -109,7 +111,7 @@ sub run {
         my $memtype = $1;
         my $prct = $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{used} / $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max} * 100;
 
-        $self->{output}->perfdata_add(label => $mapping_memory{$memtype},
+        $self->{output}->perfdata_add(label => $mapping_memory{$memtype}, unit => 'B',
                                       value => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $mapping_memory{$memtype}, total => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used}, cast_int => 1),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $mapping_memory{$memtype}, total => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used}, cast_int => 1),
@@ -122,7 +124,7 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("%s usage %.2f%%", $memtype, $prct));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s usage %.2f%% ", $memtype, $prct}));
+                                        short_msg => sprintf("%s usage %.2f%% ", $memtype, $prct));
         }
 
     }
