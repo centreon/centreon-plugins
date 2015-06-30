@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package apps::java::weblogic::jmx::mode::health
+package apps::java::weblogic::jmx::mode::health;
 
 use base qw(centreon::plugins::mode);
 
@@ -93,8 +93,6 @@ sub new {
                                   "filter-runtime:s"  => { name => 'filter_runtime' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
-
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
  
     foreach my $key (('runtime')) {
         foreach (keys %{$maps_counters->{$key}}) {
@@ -260,7 +258,7 @@ sub manage_selection {
             next;
         }
         
-        $self->{runtime}->{$name . $runtime} = { name => $name, runtime => $runtime, health_state => $state };
+        $self->{runtime}->{$name . $runtime} = { name => $name, runtime => $runtime, health_state => $health_state };
     }
     
     if (scalar(keys %{$self->{runtime}}) <= 0) {
