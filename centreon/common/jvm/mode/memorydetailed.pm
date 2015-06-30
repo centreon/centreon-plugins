@@ -111,18 +111,18 @@ sub run {
 
         $self->{output}->perfdata_add(label => $mapping_memory{$memtype},
                                       value => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
-                                      warning => $self->{option_results}->{'warning_' . $mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
-                                      critical => $self->{option_results}->{'critical_' . $mapping_memory{$memtype}} / 100 * $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used},
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $mapping_memory{$memtype}, total => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used}, cast_int => 1),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $mapping_memory{$memtype}, total => $result->{"java.lang:name=" . $memtype . ",type=MemoryPool"}->{Usage}->{used}, cast_int => 1),
                                       min => 0, max => $result->{"java.lang:name=".$memtype.",type=MemoryPool"}->{Usage}->{max});
 
         my $exit = $self->{perfdata}->threshold_check(value => $prct,
                                                       threshold => [ { label => 'critical_' . $mapping_memory{$memtype}, exit_litteral => 'critical' },
                                                                      { label => 'warning_' . $mapping_memory{$memtype}, exit_litteral => 'warning' }  ]);
 
-        $self->{output}->output_add(long_msg => sprintf("%s usage is %.2f%%", $memtype, $prct));
+        $self->{output}->output_add(long_msg => sprintf("%s usage %.2f%%", $memtype, $prct));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("%s usage:%.2f%% ", $memtype, $prct}));
+                                        short_msg => sprintf("%s usage %.2f%% ", $memtype, $prct}));
         }
 
     }

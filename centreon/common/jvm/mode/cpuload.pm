@@ -102,14 +102,14 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'SystemCpuLoad', unit => '%',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{SystemCpuLoad} * 100,
-                                  warning => $self->{option_results}->{warning_system},
-                                  critical => $self->{option_results}->{critical_system},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-system'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-system'),
                                   min => 0, max => 100);
 
     $self->{output}->perfdata_add(label => 'ProcessCpuLoad', unit => '%',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{ProcessCpuLoad} * 100,
-                                  warning => $self->{option_results}->{warning_process},
-                                  critical => $self->{option_results}->{critical_process},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-process'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-process'),
                                   min => 0, max => 100);
 
     $self->{output}->display();

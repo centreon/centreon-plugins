@@ -84,8 +84,8 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'fd',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{OpenFileDescriptorCount},
-                                  warning => $self->{option_results}->{warning} / 100 * $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount},
-                                  critical => $self->{option_results}->{critical} / 100 * $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount}, cast_int => 1),
                                   min => 0, max => $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount});
 
     $self->{output}->output_add(severity => $exit,
