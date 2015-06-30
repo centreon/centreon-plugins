@@ -189,7 +189,7 @@ sub manage_selection {
 
     my $mbean = 'java.lang:type=Threading';
     $self->{request} = [
-         { mbean => $mbean, attributes => [ { name => 'TotalStartedThreadCount ' }, { name => 'ThreadCount' }, { name => 'DaemonThreadCount ' } ] },
+         { mbean => $mbean, attributes => [ { name => 'TotalStartedThreadCount' }, { name => 'ThreadCount' }, { name => 'DaemonThreadCount' } ] },
     ];
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
     
