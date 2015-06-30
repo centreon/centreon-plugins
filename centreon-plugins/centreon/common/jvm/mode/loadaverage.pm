@@ -84,8 +84,8 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'load',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{SystemLoadAverage},
-                                  warning => $self->{option_results}->{warning},
-                                  critical => $self->{option_results}->{critical},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit,

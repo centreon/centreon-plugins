@@ -104,14 +104,14 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'HeapMemoryUsage', unit => 'B',
                                   value => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used},
-                                  warning => $self->{option_results}->{warning_heap} / 100 * $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used},
-                                  critical => $self->{option_results}->{critical_heap} / 100 * $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-heap', total => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-heap', total => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used}, cast_int => 1),
                                   min => 0, max => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{max});
 
     $self->{output}->perfdata_add(label => 'NonHeapMemoryUsage', unit => 'B',
                                   value => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used},
-                                  warning => $self->{option_results}->{warning_nonheap} / 100 * $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used},
-                                  critical => $self->{option_results}->{critical_nonheap} / 100 * $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-nonheap', total => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-nonheap', total => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used}, cast_int => 1),
                                   min => 0, max => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{max});
 
     $self->{output}->display();

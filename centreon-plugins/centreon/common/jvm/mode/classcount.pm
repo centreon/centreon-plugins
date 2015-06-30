@@ -102,14 +102,14 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'TotalLoadedClassCount',
                                   value => $result->{"java.lang:type=ClassLoading"}->{TotalLoadedClassCount},
-                                  warning => $self->{option_results}->{warning_total},
-                                  critical => $self->{option_results}->{critical_total},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-total'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-total'),
                                   min => 0);
 
     $self->{output}->perfdata_add(label => 'LoadedClassCount',
                                   value => $result->{"java.lang:type=ClassLoading"}->{LoadedClassCount},
-                                  warning => $self->{option_results}->{warning_loaded},
-                                  critical => $self->{option_results}->{critical_loaded},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-loaded'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-loaded'),
                                   min => 0);
 
     $self->{output}->perfdata_add(label => 'UnloadedClassCount',

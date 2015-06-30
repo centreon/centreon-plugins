@@ -82,14 +82,14 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=Threading"}->{ThreadCount},
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-    $self->{output}->perfdata_add(label => 'ThreadCount', unit => 'thread',
+    $self->{output}->perfdata_add(label => 'ThreadCount',
                                   value => $result->{"java.lang:type=Threading"}->{ThreadCount},
-                                  warning => $self->{option_results}->{warning},
-                                  critical => $self->{option_results}->{critical},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Thread Count : %i", $result->{"java.lang:type=Threading"}->{ThreadCount}));
+                                short_msg => sprintf("Thread Count : %s", $result->{"java.lang:type=Threading"}->{ThreadCount}));
     $self->{output}->display();
     $self->{output}->exit();
 }
