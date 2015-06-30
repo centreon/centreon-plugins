@@ -50,7 +50,7 @@ sub new {
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
                           'memory'           => 'centreon::common::jvm::mode::memory',
                           'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
-                          'thread-count'     => 'centreon::common::jvm::mode::threadcount',
+                          'threads'          => 'ccentreon::common::jvm::mode::threads',
                           'work-manager'     => 'apps::java::weblogic::jmx::mode::workmanager',
                          );
 
