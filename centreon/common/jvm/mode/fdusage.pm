@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"   => { name => 'warning', default => '80' },
-                                  "critical:s"  => { name => 'critical', default => '90' },
+                                  "warning:s"   => { name => 'warning' },
+                                  "critical:s"  => { name => 'critical' },
                                 });
     return $self;
 }
@@ -59,14 +59,13 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -77,13 +76,11 @@ sub run {
     $self->{request} = [
          { mbean => "java.lang:type=OperatingSystem", attributes => [ { name => 'MaxFileDescriptorCount' }, { name => 'OpenFileDescriptorCount' } ] }
     ];
-
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
-    
     my $prct_fd = $result->{"java.lang:type=OperatingSystem"}->{OpenFileDescriptorCount} / $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount} * 100;
 
     my $exit = $self->{perfdata}->threshold_check(value => $prct_fd,
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', 'exit_litteral' => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->perfdata_add(label => 'fd',
                                   value => $result->{"java.lang:type=OperatingSystem"}->{OpenFileDescriptorCount},
@@ -92,7 +89,7 @@ sub run {
                                   min => 0, max => $result->{"java.lang:type=OperatingSystem"}->{MaxFileDescriptorCount});
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("File descriptor percentage usage: %2.f%%", $prct_fd));
+                                short_msg => sprintf("File descriptor percentage usage: %.2f%%", $prct_fd));
 
     $self->{output}->display();
     $self->{output}->exit();

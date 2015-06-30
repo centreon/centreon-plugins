@@ -54,7 +54,6 @@ sub new {
                           'thread-count'     => 'centreon::common::jvm::mode::threadcount',
                           'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
-                          'test'             => 'centreon::common::jvm::mode::test',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
@@ -67,6 +66,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-TOMCAT JMX plugin. Need Jolokia agent.
+Check Tomcat in JMX. Need Jolokia agent.
 
 =cut

@@ -48,8 +48,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"              => { name => 'warning', default => '80' },
-                                  "critical:s"             => { name => 'critical', default => '90' },
+                                  "warning:s"   => { name => 'warning' },
+                                  "critical:s"  => { name => 'critical' },
                                 });
     return $self;
 }
@@ -59,15 +59,13 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
-    
-
 }
 
 sub run {
@@ -82,17 +80,16 @@ sub run {
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     my $exit = $self->{perfdata}->threshold_check(value => $result->{"java.lang:type=Threading"}->{ThreadCount},
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', 'exit_litteral' => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->perfdata_add(label => 'ThreadCount', unit => 'thread',
                                   value => $result->{"java.lang:type=Threading"}->{ThreadCount},
                                   warning => $self->{option_results}->{warning},
                                   critical => $self->{option_results}->{critical},
-                                  min => 0
-				);
+                                  min => 0);
 
     $self->{output}->output_add(severity => $exit,
-				short_msg => sprintf("Thread Count : %i", $result->{"java.lang:type=Threading"}->{ThreadCount}));
+                                short_msg => sprintf("Thread Count : %i", $result->{"java.lang:type=Threading"}->{ThreadCount}));
     $self->{output}->display();
     $self->{output}->exit();
 }
