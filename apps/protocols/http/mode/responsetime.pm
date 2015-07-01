@@ -65,7 +65,7 @@ sub new {
          "warning:s"     => { name => 'warning' },
          "critical:s"    => { name => 'critical' },
          "timeout:s"     => { name => 'timeout', default => '3' },
-		 "ssl:s"		 => { name => 'ssl' },
+         "ssl:s"		 => { name => 'ssl' },
          "cert-file:s"   => { name => 'cert_file' },
          "key-file:s"    => { name => 'key_file' },
          "cacert-file:s" => { name => 'cacert_file' },
