@@ -53,22 +53,24 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
          {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "proto:s"      => { name => 'proto', default => "http" },
-         "urlpath:s"    => { name => 'url_path', default => "/" },
-         "credentials"  => { name => 'credentials' },
-         "ntlm"         => { name => 'ntlm' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "proxyurl:s"   => { name => 'proxyurl' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '3' },
-		 "ssl:s"		=> { name => 'ssl', },
-         "cert-file:s"  => { name => 'cert_file' },
-         "cert-pwd:s"   => { name => 'cert_pwd' },
-         "cert-pkcs12"  => { name => 'cert_pkcs12' },
+         "hostname:s"    => { name => 'hostname' },
+         "port:s"        => { name => 'port', },
+         "proto:s"       => { name => 'proto', default => "http" },
+         "urlpath:s"     => { name => 'url_path', default => "/" },
+         "credentials"   => { name => 'credentials' },
+         "ntlm"          => { name => 'ntlm' },
+         "username:s"    => { name => 'username' },
+         "password:s"    => { name => 'password' },
+         "proxyurl:s"    => { name => 'proxyurl' },
+         "warning:s"     => { name => 'warning' },
+         "critical:s"    => { name => 'critical' },
+         "timeout:s"     => { name => 'timeout', default => '3' },
+		 "ssl:s"		 => { name => 'ssl' },
+         "cert-file:s"   => { name => 'cert_file' },
+         "key-file:s"    => { name => 'key_file' },
+         "cacert-file:s" => { name => 'cacert_file' },
+         "cert-pwd:s"    => { name => 'cert_pwd' },
+         "cert-pkcs12"   => { name => 'cert_pkcs12' },
          });
     return $self;
 }
@@ -198,6 +200,14 @@ Threshold critical in seconds (Webpage response time)
 =item B<--cert-file>
 
 Specify certificate to send to the webserver
+
+=item B<--key-file>
+
+Specify key to send to the webserver
+
+=item B<--cacert-file>
+
+Specify root certificate to send to the webserver
 
 =item B<--cert-pwd>
 
