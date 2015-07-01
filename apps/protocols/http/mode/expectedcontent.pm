@@ -48,7 +48,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.2';
     $options{options}->add_options(arguments =>
             {
             "hostname:s"            => { name => 'hostname' },
@@ -64,6 +64,8 @@ sub new {
             "timeout:s"             => { name => 'timeout', default => '3' },
 			"ssl:s"					=> { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
+            "key-file:s"            => { name => 'key_file' },
+            "cacert-file:s"         => { name => 'cacert_file' },
             "cert-pwd:s"            => { name => 'cert_pwd' },
             "cert-pkcs12"           => { name => 'cert_pkcs12' },
             });
@@ -174,6 +176,14 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 =item B<--cert-file>
 
 Specify certificate to send to the webserver
+
+=item B<--key-file>
+
+Specify key to send to the webserver
+
+=item B<--cacert-file>
+
+Specify root certificate to send to the webserver
 
 =item B<--cert-pwd>
 
