@@ -50,6 +50,7 @@ sub new {
                          'anycast'          => 'snmp_standard::mode::anycast',
                          'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
                          'environment'      => 'centreon::common::cisco::standard::snmp::mode::environment',
+                         'hsrp'             => 'centreon::common::cisco::standard::snmp::mode::hsrp',
                          'ipsla'            => 'centreon::common::cisco::standard::snmp::mode::ipsla',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
