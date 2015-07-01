@@ -63,12 +63,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 
     $self->{statefile_cache}->check_options(%options);
@@ -132,7 +132,7 @@ sub run {
         $prcts{qcache_hitrate_now} = ($total_select_requests == 0) ? 100 : ($total_hits) * 100 / $total_select_requests;
         $prcts{qcache_hitrate} = (($new_datas->{Qcache_hits} + $new_datas->{Com_select}) == 0) ? 100 : ($new_datas->{Qcache_hits}) * 100 / ($new_datas->{Qcache_hits} + $new_datas->{Com_select});
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("query cache hitrate at %.2f%%", $prcts{'qcache_hitrate' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
                                     );
