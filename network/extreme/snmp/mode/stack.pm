@@ -56,7 +56,7 @@ my %mapping_stack_role = (
 );
 my $thresholds = {
     stack => [
-        ['ok', 'OK'],
+        ['up', 'OK'],
         ['down', 'CRITICAL'],
         ['mismatch', 'WARNING'],
     ],
@@ -139,10 +139,11 @@ sub run {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $results->{$mapping3->{extremeStackMemberRole}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $results->{$mapping4->{extremeStackMemberMACAddress}->{oid}}, instance => $instance);
             
-        my $exit = $self->get_severity(section => 'stack', value => $result2->{extremeStackMemberOperStatus});
         $self->{output}->output_add(long_msg => sprintf("Member '%s' state is %s [Role is '%s'] [Mac: %s]", 
                                                         $instance, $result2->{extremeStackMemberOperStatus}, 
-                                                        $result3->{extremeStackMemberRole}, $result4->{extremeStackMemberRole}));
+                                                        $result3->{extremeStackMemberRole}, 
+                                                        defined($result4->{extremeStackMemberMACAddress}) ? $result4->{extremeStackMemberMACAddress} : '-'));
+        my $exit = $self->get_severity(section => 'stack', value => $result2->{extremeStackMemberOperStatus});
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
                                        short_msg => sprintf("Member '%s' state is %s", 
