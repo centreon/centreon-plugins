@@ -65,7 +65,7 @@ sub check {
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("'%s' %s temperature is %dC.", 
+        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %dC.", 
                                     $instance, $result->{swTemperatureCurrent}));
         
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{swTemperatureCurrent});
