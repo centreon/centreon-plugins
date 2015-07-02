@@ -95,7 +95,7 @@ sub parse_output {
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "Cluster is OK");
     my @lines = split /\n/, $options{crm_out};
-    foreach my $line (shift @lines) {
+    foreach my $line (@lines) {
         if ($line =~ /Connection to cluster failed\:(.*)/i ) {
             $self->{output}->output_add(severity => 'CRITICAL', 
                                         short_msg => "Connection to cluster FAILED: $1");
