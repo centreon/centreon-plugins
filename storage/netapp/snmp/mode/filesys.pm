@@ -137,9 +137,15 @@ sub custom_usage_calc {
     $self->{result_values}->{dfDedupeSavedPercent} = $options{new_datas}->{$self->{instance} . '_dfDedupeSavedPercent'};
 
     return 0 if ($options{new_datas}->{$self->{instance} . '_total'} == 0);
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    # snapshot can be over 100%
+    if ($self->{result_values}->{free} < 0) {
+        $self->{result_values}->{free} = 0;
+        $self->{result_values}->{prct_free} = 0;
+    }
     
     return 0;
 }
