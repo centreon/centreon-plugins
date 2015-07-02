@@ -128,8 +128,8 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /^(fan|psu\.power|psu\.fan)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: fan, psu.power, psu.fan).");
+            if ($section !~ /^(temperature|fan|psu\.power|psu\.fan)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature, fan, psu.power, psu.fan).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -152,7 +152,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [];
-    my @components = ('fan', 'psu', 'slot');
+    my @components = ('fan', 'psu', 'slot', 'temperature');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "network::extreme::snmp::mode::components::$_";
@@ -284,14 +284,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power Supplies, Slot).
+Check Hardware (Fans, Power Supplies, Slot, Temperature).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'slot'.
+Can be: 'fan', 'psu', 'slot', 'temperature'.
 
 =item B<--exclude>
 
@@ -316,12 +316,12 @@ Example: --threshold-overload='psu,CRITICAL,^(?!(presentOK)$)'
 
 =item B<--warning>
 
-Set warning threshold for 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
+Set warning threshold for 'temperature', 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
 Example: --warning='psu.fan,1.1,5000'
 
 =item B<--critical>
 
-Set critical threshold for 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
+Set critical threshold for 'temperature', 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
 Example: --critical='psu,.*,200'
 
 =back
