@@ -142,7 +142,7 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("Member '%s' state is %s [Role is '%s'] [Mac: %s]", 
                                                         $instance, $result2->{extremeStackMemberOperStatus}, 
                                                         $result3->{extremeStackMemberRole}, 
-                                                        defined($result4->{extremeStackMemberMACAddress}) ? $result4->{extremeStackMemberMACAddress} : '-'));
+                                                        defined($result4->{extremeStackMemberMACAddress}) ? unpack('H*', $result4->{extremeStackMemberMACAddress}) : '-'));
         my $exit = $self->get_severity(section => 'stack', value => $result2->{extremeStackMemberOperStatus});
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
