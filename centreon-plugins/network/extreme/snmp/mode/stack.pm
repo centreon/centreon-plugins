@@ -41,6 +41,7 @@ use strict;
 use warnings;
 
 my %mapping_truth = (
+    0 => 'disabled',
     1 => 'enable',
     2 => 'disable',
 );
