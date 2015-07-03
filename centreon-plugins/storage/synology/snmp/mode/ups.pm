@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::synology::mode::ups;
+package storage::synology::snmp::mode::ups;
 
 use base qw(centreon::plugins::mode);
 
