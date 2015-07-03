@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+# Extreme put 0 when it's disabled.
 my %mapping_truth = (
     0 => 'disabled',
     1 => 'enable',
