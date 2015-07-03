@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::synology::mode::temperature;
+package storage::synology::snmp::mode::temperature;
 
 use base qw(centreon::plugins::mode);
 
