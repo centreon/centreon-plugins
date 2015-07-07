@@ -264,7 +264,7 @@ sub manage_selection {
                                                          , nothing_quit => 1);
     
     my ($branch, $map) = ($oid_ltmPoolStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmPoolStatusEntry}))  {
+    if (!defined($self->{results}->{$oid_ltmPoolStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmPoolStatusEntry}}) == 0)  {
         ($branch, $map) = ($oid_ltmPoolEntry, 'old');
     }
     
