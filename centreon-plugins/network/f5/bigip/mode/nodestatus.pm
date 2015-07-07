@@ -276,6 +276,8 @@ sub manage_selection {
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
         $result->{Name} = $instance;
+        # prefix by '1.4'
+        $result->{Name} =~ s/^1\.4\.//;
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
