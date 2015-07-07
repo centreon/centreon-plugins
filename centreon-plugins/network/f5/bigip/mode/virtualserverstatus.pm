@@ -265,7 +265,7 @@ sub manage_selection {
                                                          , nothing_quit => 1);
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmVsStatusEntry}))  {
+    if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
         ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
     }
     
