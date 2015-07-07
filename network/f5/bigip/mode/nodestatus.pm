@@ -245,13 +245,11 @@ my $mapping = {
         AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => \%map_node_status },
         EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => \%map_node_enabled },
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.6' },
-        Name => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7' },
     },
     old => {
         AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.13', map => \%map_node_status },
         EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.14', map => \%map_node_enabled },
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.16' },
-        Name => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.17' },
     },
 };
 my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1'; # new
@@ -277,6 +275,10 @@ sub manage_selection {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
+        $result->{Name} = '';
+        foreach (split /\./, $instance) {
+            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+        }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
