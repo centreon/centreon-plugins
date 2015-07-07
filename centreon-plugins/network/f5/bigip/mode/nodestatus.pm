@@ -185,7 +185,7 @@ sub run {
             $maps_counters->{node}->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Node '$self->{node}->{$id}->{Name}' $long_msg");
+        $self->{output}->output_add(long_msg => "Node '$self->{node}->{$id}->{Name}' $long_msg [Status Reason: $self->{node}->{$id}->{StatusReason}]");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
@@ -279,13 +279,14 @@ sub manage_selection {
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter id.");
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
             next;
         }
         if ($result->{EnabledState} !~ /enabled/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': state is '$result->{EnabledState}'.");
             next;
         }
+        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
         $self->{node}->{$instance} = { %$result };
     }
