@@ -40,6 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
+use centreon::plugins::misc;
 
 my $thresholds = {
     vs => [
@@ -163,7 +164,7 @@ sub run {
             my $obj = $maps_counters->{vs}->{$_}->{obj};
             $obj->set(instance => $id);
         
-            my ($value_check) = $obj->execute(values => $self->{N}->{$id});
+            my ($value_check) = $obj->execute(values => $self->{vs}->{$id});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -277,6 +278,7 @@ sub manage_selection {
         
         $result->{Name} = '';
         $result->{Name} .= chr foreach (split /\./, $instance);
+        $result->{Name} = centreon::plugins::misc::trim($result->{Name});
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");

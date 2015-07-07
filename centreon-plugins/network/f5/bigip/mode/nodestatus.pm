@@ -163,7 +163,7 @@ sub run {
             my $obj = $maps_counters->{node}->{$_}->{obj};
             $obj->set(instance => $id);
         
-            my ($value_check) = $obj->execute(values => $self->{N}->{$id});
+            my ($value_check) = $obj->execute(values => $self->{node}->{$id});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -287,6 +287,7 @@ sub manage_selection {
             next;
         }
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
+        $result->{Name} = centreon::plugins::misc::trim($result->{Name});
         
         $self->{node}->{$instance} = { %$result };
     }
