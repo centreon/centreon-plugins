@@ -271,14 +271,11 @@ sub manage_selection {
     
     $self->{node} = {};
     foreach my $oid (keys %{$self->{results}->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{Name}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
-        $result->{Name} = '';
-        foreach (split /\./, $instance) {
-            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
-        }
+        $result->{Name} = $instance;
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
@@ -289,7 +286,6 @@ sub manage_selection {
             next;
         }
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
-        $result->{Name} = centreon::plugins::misc::trim($result->{Name});
         
         $self->{node}->{$instance} = { %$result };
     }
