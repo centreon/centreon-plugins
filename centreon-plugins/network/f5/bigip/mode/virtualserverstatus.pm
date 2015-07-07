@@ -49,7 +49,7 @@ my $thresholds = {
         ['none', 'CRITICAL'],
         ['green', 'OK'],
         ['yellow', 'WARNING'],
-        ['critical', 'CRITICAL'],
+        ['red', 'CRITICAL'],
         ['blue', 'UNKNOWN'],
         ['gray', 'UNKNOWN'],
     ],
