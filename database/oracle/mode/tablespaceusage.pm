@@ -272,6 +272,14 @@ sub run {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
         next if (defined($self->{option_results}->{filter}) && $name !~ /$self->{option_results}->{filter}/);
         next if (defined($self->{option_results}->{skip}) && $status =~ /offline/i);
+        
+        if (!defined($bytes)) {
+            # seems corrupted, cannot get value
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("tbs '%s' cannot get data", $name));
+            next;
+        }
+        
         $status = lc $status;
         $type = lc $type;
         my ($percent_used, $percent_free, $used, $free, $size);

@@ -75,7 +75,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT current_utilization/limit_value*100 FROM v$resource_limit WHERE resource_name = 'sessions' -- FROM v$resource_limit WHERE resource_name LIKE '%sessions%'});
+    $self->{sql}->query(query => q{SELECT current_utilization/limit_value*100 FROM v$resource_limit WHERE resource_name = 'sessions'});
     my $session = $self->{sql}->fetchrow_array();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $session, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -86,7 +86,6 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
-
 
     $self->{output}->display();
     $self->{output}->exit();
