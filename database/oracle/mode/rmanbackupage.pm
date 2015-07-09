@@ -143,7 +143,7 @@ sub run {
                 if (/db full/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0) { # it's a full. we get
                     $$row[0] = 'DB FULL';
                 } else {
-                    next if (/db incr/ && $row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0); # it's a full. we skip.
+                    next if (/db incr/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0); # it's a full. we skip.
                     next if ($$row[0] !~ /$_/i);
                 }
                 
