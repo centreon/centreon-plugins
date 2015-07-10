@@ -39,9 +39,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
-my $oid_hpHttpMgDeviceHealth='.1.3.6.1.4.1.11.2.36.1.1.5.1.1.3.1';
+my $oid_hpHttpMgDeviceHealth = '.1.3.6.1.4.1.11.2.36.1.1.5.1.1.3.1';
 
 my $thresholds = {
     library => [
@@ -108,10 +107,9 @@ sub run {
     my $library_status = $result->{$oid_hpHttpMgDeviceHealth};
 
     $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Library status is %s.", $map_states_status{$library_status}));
+                                short_msg => sprintf("Library status is %s.", $map_states_status{$library_status}));
 
     my $exit = $self->get_severity(section => 'library', value => $map_states_status{$library_status});
-
     if (!$self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Library status is %s.", $map_states_status{$library_status}));
@@ -157,7 +155,7 @@ Check Library status.
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='status,CRITICAL,^(?!(ok)$)'
+Example: --threshold-overload='library,CRITICAL,^(?!(ok)$)'
 
 =back
 
