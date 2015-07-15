@@ -53,6 +53,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'instancestatus'    => 'cloud::aws::mode::instancestatus',
+                         'scan'    => 'cloud::aws::mode::scan',
                          );
 
     return $self;
@@ -64,23 +65,15 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Informix Server.
+Check Amazon AWS cloud.
 
 =over 8
 
 You need to specify the following options.
 
-=item B<--host>
+=item B<--region>
 
-Hostname to query.
-
-=item B<--port>
-
-Database Server Port.
-
-=item B<--instance>
-
-Database Instance Name.
+Region to query.
 
 =back
 
