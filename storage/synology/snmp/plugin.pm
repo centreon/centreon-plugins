@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package storage::synology::plugin;
+package storage::synology::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,9 +47,9 @@ sub new {
 
     $self->{version} = '1.1';
     %{$self->{modes}} = (
-                         'components'           => 'storage::synology::mode::components',
-                         'temperature'          => 'storage::synology::mode::temperature',
-                         'ups'                  => 'storage::synology::mode::ups',
+                         'components'           => 'storage::synology::snmp::mode::components',
+                         'temperature'          => 'storage::synology::snmp::mode::temperature',
+                         'ups'                  => 'storage::synology::snmp::mode::ups',
                          'traffic'              => 'snmp_standard::mode::traffic',
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'memory'               => 'snmp_standard::mode::memory',

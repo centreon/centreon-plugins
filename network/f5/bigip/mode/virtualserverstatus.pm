@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -39,30 +39,47 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
-my $oid_ltmVsStatusName = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.1';
-my $oid_ltmVsStatusAvailState = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2';
-my $oid_ltmVsStatusDetailReason = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5';
+use centreon::plugins::values;
 
 my $thresholds = {
     vs => [
         ['none', 'CRITICAL'],
         ['green', 'OK'],
         ['yellow', 'WARNING'],
-        ['critical', 'CRITICAL'],
+        ['red', 'CRITICAL'],
         ['blue', 'UNKNOWN'],
         ['gray', 'UNKNOWN'],
     ],
 };
+my $instance_mode;
 
-my %map_vs_status = (
-    0 => 'none',
-    1 => 'green',
-    2 => 'yellow',
-    3 => 'red',
-    4 => 'blue', # unknown
-    5 => 'gray',
-);
+my $maps_counters = {
+    vs => { 
+        '000_status'   => { set => {
+                        key_values => [ { name => 'AvailState' } ],
+                        closure_custom_calc => \&custom_status_calc,
+                        output_template => 'Status : %s', output_error_template => 'Status : %s',
+                        output_use => 'AvailState',
+                        closure_custom_perfdata => sub { return 0; },
+                        closure_custom_threshold_check => \&custom_threshold_output,
+                    }
+               },
+        },
+};
+
+
+sub custom_threshold_output {
+    my ($self, %options) = @_;
+    
+    return $instance_mode->get_severity(section => 'vs', value => $self->{result_values}->{AvailState});
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{AvailState} = $options{new_datas}->{$self->{instance} . '_AvailState'};
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -71,61 +88,54 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
+                                { 
+                                  "filter-name:s"           => { name => 'filter_name' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
-    $self->{vs_id_selected} = [];
-
+ 
+    foreach my $key (('vs')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
+    
+    foreach my $key (('vs')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
+    }
+    
+    $instance_mode = $self;
+    
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ('vs', $1, $2);
+        my ($section, $status, $filter) = ($1, $2, $3);
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
-}
-
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_ltmVsStatusName}})) {
-        next if ($oid !~ /^$oid_ltmVsStatusName\.(.*)$/);
-        my $instance = $1;
-        
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{vs_id_selected}}, $instance; 
-            next;
-        }
-        
-        $self->{results}->{$oid_ltmVsStatusName}->{$oid} = $self->{results}->{$oid_ltmVsStatusName}->{$oid};
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmVsStatusName}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{vs_id_selected}}, $instance; 
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{results}->{$oid_ltmVsStatusName}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{vs_id_selected}}, $instance;
-        }
-    }
-
-    if (scalar(@{$self->{vs_id_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No virtual server found for name '" . $self->{option_results}->{name} . "'.");
-        $self->{output}->option_exit();
     }
 }
 
@@ -134,37 +144,57 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmVsStatusName },
-                                                            { oid => $oid_ltmVsStatusAvailState },
-                                                            { oid => $oid_ltmVsStatusDetailReason },
-                                                            ],
-                                                         nothing_quit => 1);
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(@{$self->{vs_id_selected}}) == 1) {
+    if (scalar(keys %{$self->{vs}}) == 1) {
         $multiple = 0;
     }
+    
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Virtual Servers are ok.');
+                                    short_msg => 'All Virtual Servers are ok');
     }
     
-    foreach my $instance (sort @{$self->{vs_id_selected}}) {
-        my $name = $self->{results}->{$oid_ltmVsStatusName}->{$oid_ltmVsStatusName . '.' . $instance};
-        my $status = defined($self->{results}->{$oid_ltmVsStatusAvailState}->{$oid_ltmVsStatusAvailState . '.' . $instance}) ? 
-                            $self->{results}->{$oid_ltmVsStatusAvailState}->{$oid_ltmVsStatusAvailState . '.' . $instance} : 4;
-        my $reason = defined($self->{results}->{$oid_ltmVsStatusDetailReason}->{$oid_ltmVsStatusDetailReason . '.' . $instance}) ? 
-                            $self->{results}->{$oid_ltmVsStatusDetailReason}->{$oid_ltmVsStatusDetailReason . '.' . $instance} : 'unknown';
+    foreach my $id (sort keys %{$self->{vs}}) {     
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits = ();
+        foreach (sort keys %{$maps_counters->{vs}}) {
+            my $obj = $maps_counters->{vs}->{$_}->{obj};
+            $obj->set(instance => $id);
         
-        $self->{output}->output_add(long_msg => sprintf("Virtual Server '%s' status is %s [reason = %s]",
-                                                        $name, $map_vs_status{$status}, $reason));
-        my $exit = $self->get_severity(section => 'vs', value => $map_vs_status{$status});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
+            my ($value_check) = $obj->execute(values => $self->{vs}->{$id});
+
+            if ($value_check != 0) {
+                $long_msg .= $long_msg_append . $obj->output_error();
+                $long_msg_append = ', ';
+                next;
+            }
+            my $exit2 = $obj->threshold_check();
+            push @exits, $exit2;
+
+            my $output = $obj->output();
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            
+            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+            
+            $maps_counters->{vs}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+        }
+
+        $self->{output}->output_add(long_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $long_msg [Status Reason: $self->{vs}->{$id}->{StatusReason}]");
+        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Virtual Server '%s' status is %s",
-                                                        $name, $map_vs_status{$status}));
+                                        short_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $short_msg"
+                                        );
+        }
+        
+        if ($multiple == 0) {
+            $self->{output}->output_add(short_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $long_msg");
         }
     }
     
@@ -194,6 +224,81 @@ sub get_severity {
     return $status;
 }
 
+my %map_vs_status = (
+    0 => 'none',
+    1 => 'green',
+    2 => 'yellow',
+    3 => 'red',
+    4 => 'blue', # unknown
+    5 => 'gray',
+);
+my %map_vs_enabled = (
+    0 => 'none',
+    1 => 'enabled',
+    2 => 'disabled',
+    3 => 'disabledbyparent',
+);
+
+# New OIDS
+my $mapping = {
+    new => {
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => \%map_vs_enabled },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5' },
+    },
+    old => {
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => \%map_vs_enabled },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.25' },
+    },
+};
+my $oid_ltmVsStatusEntry = '.1.3.6.1.4.1.3375.2.2.10.13.2.1'; # new
+my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid} },
+                                                            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
+                                                         ],
+                                                         , nothing_quit => 1);
+    
+    my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
+    if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
+        ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
+    }
+    
+    $self->{vs} = {};
+    foreach my $oid (keys %{$self->{results}->{$branch}}) {
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
+        
+        $result->{Name} = '';
+        foreach (split /\./, $instance) {
+            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+        }
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
+            next;
+        }
+        if ($result->{EnabledState} !~ /enabled/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': state is '$result->{EnabledState}'.");
+            next;
+        }
+        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
+        
+        $self->{vs}->{$instance} = { %$result };
+    }
+    
+    if (scalar(keys %{$self->{vs}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
+    }
+}
+
 1;
 
 __END__
@@ -204,21 +309,16 @@ Check Virtual Servers status.
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the virtual server name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter virtual server name (with option --name).
+Filter by name (regexp can be used).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: status,regexp)
+Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='CRITICAL,^(?!(green)$)'
+Example: --threshold-overload='vs,CRITICAL,^(?!(green)$)'
 
 =back
 
 =cut
-    
