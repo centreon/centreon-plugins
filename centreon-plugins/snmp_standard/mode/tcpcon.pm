@@ -140,10 +140,10 @@ sub get_from_rfc4022 {
         
         my ($src_addr, $src_port, $dst_addr, $dst_port);
         if ($ipv eq 'ipv6') {
-            /^$oid_tcpConnectionState\.\d+\.\d+\.((?:\d+\.){16})(\d+)\.\d+\.((?:\d+\.){16})(\d+)/;
+            /^$oid_tcpConnectionState\.\d+\.\d+\.((?:\d+\.){16})(\d+)\.\d+\.\d+\.((?:\d+\.){16})(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($self->get_ipv6(value => $1), $2, $self->get_ipv6(value => $3), $4);
         } else {
-            /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
+            /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($1, $2, $3, $4);
         }
         $self->{states}->{$map_states{$result->{$_}}}++;
