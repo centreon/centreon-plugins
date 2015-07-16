@@ -42,6 +42,7 @@ use warnings;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
+use IO::Socket::SSL;
 
 sub get_port {
     my ($self, %options) = @_;
@@ -118,28 +119,26 @@ sub connect {
         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
 
-	if (defined($self->{option_results}->{ssl}) && $self->{option_results}->{ssl} ne '') {
-		use IO::Socket::SSL;
-		my $context = new IO::Socket::SSL::SSL_Context(
-			SSL_version => $self->{option_results}->{ssl},
-		);
-		IO::Socket::SSL::set_default_context($context);
-    }
-
     if (defined($self->{option_results}->{cert_pkcs12}) && $self->{option_results}->{cert_file} ne '' && $self->{option_results}->{cert_pwd} ne '') {
         eval "use Net::SSL"; die $@ if $@;
         $ENV{HTTPS_PKCS12_FILE} = $self->{option_results}->{cert_file};
         $ENV{HTTPS_PKCS12_PASSWORD} = $self->{option_results}->{cert_pwd};
     }
 
+    my $ssl_context;
+    if (defined($self->{option_results}->{ssl}) && $self->{option_results}->{ssl} ne '') {
+        $ssl_context = { SSL_version => $self->{option_results}->{ssl} };
+    }
     if (defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pkcs12})) {
-        use IO::Socket::SSL;
-        my $context = new IO::Socket::SSL::SSL_Context(
-            SSL_use_cert => 1,
-            SSL_cert_file => $self->{option_results}->{cert_file},
-            $self->{option_results}->{key_file} ? ( SSL_key_file => $self->{option_results}->{key_file} ):(),
-            $self->{option_results}->{cacert_file} ? ( SSL_ca_file => $self->{option_results}->{cacert_file} ):(),
-        );
+        $ssl_context = {} if (!defined($ssl_context));
+        $ssl_context->{SSL_use_cert} = 1;
+        $ssl_context->{SSL_cert_file} = $self->{option_results}->{cert_file};
+        $ssl_context->{SSL_key_file} = $self->{option_results}->{key_file} if (defined($self->{option_results}->{key_file}));
+        $ssl_context->{SSL_ca_file} = $self->{option_results}->{cacert_file} if (defined($self->{option_results}->{cacert_file}));
+    }
+    
+    if (defined($ssl_context)) {
+        my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
         IO::Socket::SSL::set_default_context($context);
     }
 

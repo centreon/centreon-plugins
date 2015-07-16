@@ -68,7 +68,7 @@ sub new {
             "header:s@"             => { name => 'header' },
             "get-param:s@"          => { name => 'get_param' },
             "timeout:s"             => { name => 'timeout', default => 10 },
-            "ssl:s"					=> { name => 'ssl', },
+            "ssl:s"                 => { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
             "key-file:s"            => { name => 'key_file' },
             "cacert-file:s"         => { name => 'cacert_file' },
