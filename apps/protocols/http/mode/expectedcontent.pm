@@ -62,7 +62,7 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "expected-string:s"     => { name => 'expected_string' },
             "timeout:s"             => { name => 'timeout', default => '3' },
-			"ssl:s"					=> { name => 'ssl', },
+            "ssl:s"                 => { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
             "key-file:s"            => { name => 'key_file' },
             "cacert-file:s"         => { name => 'cacert_file' },
