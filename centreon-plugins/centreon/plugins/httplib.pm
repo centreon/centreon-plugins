@@ -133,8 +133,14 @@ sub connect {
     }
 
     if (defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pkcs12})) {
-        eval "use Net::SSL"; die $@ if $@;
-        $ENV{HTTPS_CERT_FILE} = $self->{option_results}->{cert_file};
+        use IO::Socket::SSL;
+        my $context = new IO::Socket::SSL::SSL_Context(
+            SSL_use_cert => 1,
+            SSL_cert_file => $self->{option_results}->{cert_file},
+            $self->{option_results}->{key_file} ? ( SSL_key_file => $self->{option_results}->{key_file} ):(),
+            $self->{option_results}->{cacert_file} ? ( SSL_ca_file => $self->{option_results}->{cacert_file} ):(),
+        );
+        IO::Socket::SSL::set_default_context($context);
     }
 
     $response = $ua->request($req);
