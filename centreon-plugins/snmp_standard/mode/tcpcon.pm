@@ -107,14 +107,15 @@ sub get_from_rfc4022 {
     my ($self, %options) = @_;
     
     my $oid_tcpConnectionState = '.1.3.6.1.2.1.6.19.1.7';
-    my $result = $self->{snmp}->get_table(oid => $oid_tcpConnectionState);
-    
     my $oid_tcpListenerProcess = '.1.3.6.1.2.1.6.20.1.4';
-    my $result2 = $self->{snmp}->get_table(oid => $oid_tcpListenerProcess);
-    return 0 if (scalar(keys %$result) + scalar(keys %$result2) == 0);
+    my $results = $self->{snmp}->get_multiple_table(oids => [ 
+                                                            { oid => $oid_tcpConnectionState },
+                                                            { oid => $oid_tcpListenerProcess },
+                                                            ]);
+    return 0 if (scalar(keys %{$results->{$oid_tcpConnectionState}}) + scalar(keys %{$results->{$oid_tcpListenerProcess}}) == 0);
     
     # Listener
-    foreach (keys %$result2) {
+    foreach (keys %{$results->{$oid_tcpListenerProcess}}) {
         /^$oid_tcpListenerProcess\.(\d+)/;
         my $ipv = $map_addr_type{$1};
         next if ($ipv !~ /^ipv4|ipv6$/); # manage only 'ipv4' (1) and 'ipv6' (2) for now
@@ -133,7 +134,7 @@ sub get_from_rfc4022 {
         $self->{states}->{listen}++;
     }
     
-    foreach (keys %$result) {
+    foreach (keys %{$results->{$oid_tcpConnectionState}}) {
         /^$oid_tcpConnectionState\.(\d+)/;
         my $ipv = $map_addr_type{$1};
         next if ($ipv !~ /^ipv4|ipv6$/); # manage only 'ipv4' (1) and 'ipv6' (2) for now
@@ -146,8 +147,8 @@ sub get_from_rfc4022 {
             /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($1, $2, $3, $4);
         }
-        $self->{states}->{$map_states{$result->{$_}}}++;
-        push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$result->{$_}});
+        $self->{states}->{$map_states{$results->{$oid_tcpConnectionState}->{$_}}}++;
+        push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$results->{$oid_tcpConnectionState}->{$_}});
     }
     
     return 1;
