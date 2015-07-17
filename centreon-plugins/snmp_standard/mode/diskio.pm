@@ -226,16 +226,12 @@ sub run {
 sub add_result {
     my ($self, %options) = @_;
     
-    if ($self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} == 0 && 
-        $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} == 0) {
-        $self->{output}->add_option_msg(long_msg => "Skip device '" . $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $options{instance}} . "' with no values.");
-        return ;
-    }
-    
     $self->{device_id_selected}->{$options{instance}} = {};
     $self->{device_id_selected}->{$options{instance}}->{display} = $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $options{instance}};    
-    $self->{device_id_selected}->{$options{instance}}->{read} = $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}};
-    $self->{device_id_selected}->{$options{instance}}->{write} = $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}};
+    $self->{device_id_selected}->{$options{instance}}->{read} = (defined($self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} != 0) ?
+        $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} : 0;
+    $self->{device_id_selected}->{$options{instance}}->{write} = (defined($self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} != 0) ? 
+        $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} : undef;
     $self->{device_id_selected}->{$options{instance}}->{read_iops} = $self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}};
     $self->{device_id_selected}->{$options{instance}}->{write_iops} = $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}};
 }
