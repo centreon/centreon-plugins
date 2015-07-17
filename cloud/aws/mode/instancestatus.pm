@@ -53,8 +53,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "service:s"     => { name => 'service', default => 'EC2' },
-                                  "state:s"     => { name => 'state', default => 'running' },
-                                  "includeallinstances"     => { name => 'includeallinstances' },
+                                  "state:s@"     => { name => 'state', default => ['all'] },
+                                  "no-includeallinstances"     => { name => 'includeallinstances' },
                                   "region:s"      => { name => 'region' },
                                 });
     $self->{result} = {};
@@ -75,10 +75,17 @@ sub check_options {
     }
     
     if (defined($self->{option_results}->{includeallinstances})) {
-		$self->{option_results}->{includeallinstances} = 1;
+		$self->{option_results}->{includeallinstances} = 0;
 	}
 	else {
-		$self->{option_results}->{includeallinstances} = 0;
+		$self->{option_results}->{includeallinstances} = 1;
+	}
+
+	foreach my $curstate (@{$self->{option_results}->{state}}){
+		if ($curstate eq 'all'){
+			$self->{option_results}->{state} = ['pending','running','shutting-down','terminated','stopping','stopped'];
+			last;
+    	}
 	}
 }
 
@@ -87,19 +94,26 @@ sub manage_selection {
     my @result;
 
     my $Instance = Paws->service($self->{option_results}->{service}, , region => $self->{option_results}->{region});
-    $self->{status_command} = $Instance->DescribeInstanceStatus(Filters => [{'Name' => 'instance-state-name', 'Values' => [$self->{option_results}->{state}]
-												}],
-												IncludeAllInstances => $self->{option_results}->{includeallinstances});;
+    
+
+    $self->{status_command} = $Instance->DescribeInstanceStatus(IncludeAllInstances => $self->{option_results}->{includeallinstances},
+    															Filters => [{'Name' => 'instance-state-name', 'Values' => $self->{option_results}->{state}}]
+    															);
 
     # Compute data
-    $self->{option_results}->{instancecount} = '0';
-    #print Dumper($self->{status_command});
-    my @tab = $self->{status_command};
-    foreach my $k (@tab) {
-   		foreach my $l (@$k) {
-   			$self->{result}->{instance} = {instanceid => $l->InstanceId, instancestate => $l->InstanceState->Name};
-   			$self->{option_results}->{instancecount}++;
-		}
+    $self->{option_results}->{instancecount}->{'total'} = '0';
+    foreach my $curstate (@{$self->{option_results}->{state}}){
+    	$self->{option_results}->{instancecount}->{$curstate} = '0';
+    }
+   	foreach my $l (@{$self->{status_command}->{InstanceStatuses}}) {
+   		$self->{result}->{instance} = {instanceid => $l->InstanceId, instancestate => $l->InstanceState->Name};
+   		$self->{output}->output_add(long_msg => "'" . $l->InstanceId . "' [state = " . $l->InstanceState->Name . ']');
+   		foreach my $curstate (@{$self->{option_results}->{state}}){
+   			if($l->InstanceState->Name eq $curstate){
+   				$self->{option_results}->{instancecount}->{$curstate}++;
+   			}
+   		}
+   		$self->{option_results}->{instancecount}->{'total'}++;
 	}
 }
 
@@ -112,16 +126,25 @@ sub run {
     $self->manage_selection();
 
     # Send formated data to Centreon
-    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{option_results}->{instancecount},
+    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{option_results}->{instancecount}->{'total'},
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->perfdata_add(label => 'Active Calls',
-                                  value => $self->{option_results}->{instancecount},
+	
+	$self->{output}->perfdata_add(label => 'total instances',
+                                  value => $self->{option_results}->{instancecount}->{'total'},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-
+                                  
+    foreach my $curstate (@{$self->{option_results}->{state}}){
+    	$self->{output}->perfdata_add(label => $curstate.' instances',
+                                  value => $self->{option_results}->{instancecount}->{$curstate},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+    }
+    
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Current active calls: %s", $self->{option_results}->{instancecount})
+                                short_msg => sprintf("Total instances: %s", $self->{option_results}->{instancecount}->{'total'})
                                 );
 
     $self->{output}->display();

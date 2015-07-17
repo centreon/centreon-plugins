@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package cloud::aws::mode::scan;
+package cloud::aws::mode::instancestatus;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,23 +43,6 @@ use centreon::plugins::misc;
 use Data::Dumper;
 use JSON;
 
-my $Instance = Paws->service('EC2', , region => 'eu-west-1');
-my $result6 = $Instance->DescribeInstanceStatus(Filters => [{'Name' => 'instance-state-name', 'Values' => ['stopped']
-												}],
-												IncludeAllInstances => 1);
-                                            
-#print Dumper($result6);
-#print $result6->InstanceStatuses->[0]->InstanceId;
-my @toto = $result6->InstanceStatuses;
-#print @toto;
-foreach my $k (@toto) {
-   foreach my $l (@$k) {
-   		print $l->InstanceId."\n";
-   		print $l->InstanceState->Name."\n";
-	}
-}
-
-exit;
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -69,20 +52,8 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "port:s"            => { name => 'port', default => 5038 },
-                                  "username:s"        => { name => 'username' },
-                                  "password:s"        => { name => 'password' },
-                                  "remote:s"          => { name => 'remote', default => 'ssh' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "command:s"         => { name => 'command', default => 'asterisk_sendcommand.pm' },
-                                  "command-path:s"    => { name => 'command_path', default => '/home/centreon/bin' },
-                                  "protocol:s"        => { name => 'protocol', },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
+                                  "services:s@"     => { name => 'services', default => ['EC2'] },
+                                  "region:s"      => { name => 'region' },
                                 });
     $self->{result} = {};
     return $self;
@@ -92,24 +63,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --hostname option");
-        $self->{output}->option_exit();
-    }
-
-    if ($self->{option_results}->{remote} eq 'ami')
-    {
-    	if (!defined($self->{option_results}->{username})) {
-	        $self->{output}->add_option_msg(short_msg => "Please set the --username option");
-	        $self->{output}->option_exit();
-	    }
-
-	    if (!defined($self->{option_results}->{password})) {
-	        $self->{output}->add_option_msg(short_msg => "Please set the --password option");
-	        $self->{output}->option_exit();
-	    }
-    }
-
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -118,42 +71,38 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    
+    $self->{option_results}->{includeallinstances} = 1;
+
+	$self->{option_results}->{state} = ['pending','running','shutting-down','terminated','stopping','stopped'];
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     my @result;
 
-    $self->{asterisk_command} = 'core show channels';
+    my $Instance = Paws->service($self->{option_results}->{service}, , region => $self->{option_results}->{region});
+    
 
-    if ($self->{option_results}->{remote} eq 'ami')
-    {
-    	apps::voip::asterisk::remote::lib::ami::connect($self);
-        @result = apps::voip::asterisk::remote::lib::ami::action($self);
-        apps::voip::asterisk::remote::lib::ami::quit();
-    }
-    else
-    {
-    	my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => "'".$self->{asterisk_command}."'",
-                                                  );
-        @result = split /\n/, $stdout;
-    }
+    $self->{status_command} = $Instance->DescribeInstanceStatus(IncludeAllInstances => $self->{option_results}->{includeallinstances},
+    															Filters => [{'Name' => 'instance-state-name', 'Values' => $self->{option_results}->{state}}]
+    															);
 
     # Compute data
-    foreach my $line (@result) {
-        if ($line =~ /^(\d*) active call/)
-        {
-	        $self->{result}->{activecalls} = {value => $1, status => '1'};
-        }
-        elsif ($line =~ /^Unable to connect .*/)
-        {
-        	$self->{result}->{activecalls} = {value => $line, status => '0'};
-        }
+    $self->{option_results}->{instancecount}->{'total'} = '0';
+    foreach my $curstate (@{$self->{option_results}->{state}}){
+    	$self->{option_results}->{instancecount}->{$curstate} = '0';
     }
+   	foreach my $l (@{$self->{status_command}->{InstanceStatuses}}) {
+   		$self->{result}->{instance} = {instanceid => $l->InstanceId, instancestate => $l->InstanceState->Name};
+   		$self->{output}->output_add(long_msg => "'" . $l->InstanceId . "' [state = " . $l->InstanceState->Name . ']');
+   		foreach my $curstate (@{$self->{option_results}->{state}}){
+   			if($l->InstanceState->Name eq $curstate){
+   				$self->{option_results}->{instancecount}->{$curstate}++;
+   			}
+   		}
+   		$self->{option_results}->{instancecount}->{'total'}++;
+	}
 }
 
 sub run {
@@ -165,23 +114,25 @@ sub run {
     $self->manage_selection();
 
     # Send formated data to Centreon
-    if ($self->{result}->{activecalls}->{status} eq '0')
-    {
-    	$self->{output}->output_add(severity => $self->{result}->{activecalls}->{status},
-                                short_msg => $self->{result}->{activecalls}->{value});
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{result}->{activecalls}->{value},
+    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{option_results}->{instancecount}->{'total'},
                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->perfdata_add(label => 'Active Calls',
-                                  value => $self->{result}->{activecalls}->{value},
+	
+	$self->{output}->perfdata_add(label => 'total instances',
+                                  value => $self->{option_results}->{instancecount}->{'total'},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-
+                                  
+    foreach my $curstate (@{$self->{option_results}->{state}}){
+    	$self->{output}->perfdata_add(label => $curstate.' instances',
+                                  value => $self->{option_results}->{instancecount}->{$curstate},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+    }
+    
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Current active calls: %s", $self->{result}->{activecalls}->{value})
+                                short_msg => sprintf("Total instances: %s", $self->{option_results}->{instancecount}->{'total'})
                                 );
 
     $self->{output}->display();
