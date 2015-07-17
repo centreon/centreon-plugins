@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::batterystatus;
+package hardware::ups::standard::rfc1628::snmp::mode::batterystatus;
 
 use base qw(centreon::plugins::mode);
 

@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::plugin;
+package hardware::ups::powerware::snmp::plugin;
 
 use strict;
 use warnings;
@@ -47,12 +47,12 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment'      => 'hardware::ups::powerware::mode::environment',
-                         'input-lines'      => 'hardware::ups::powerware::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::powerware::mode::outputlines',
-                         'output-source'    => 'hardware::ups::powerware::mode::outputsource',
-                         'alarms'           => 'hardware::ups::powerware::mode::alarms',
-                         'battery-status'   => 'hardware::ups::powerware::mode::batterystatus',
+                         'environment'      => 'hardware::ups::powerware::snmp::mode::environment',
+                         'input-lines'      => 'hardware::ups::powerware::snmp::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::powerware::snmp::mode::outputlines',
+                         'output-source'    => 'hardware::ups::powerware::snmp::mode::outputsource',
+                         'alarms'           => 'hardware::ups::powerware::snmp::mode::alarms',
+                         'battery-status'   => 'hardware::ups::powerware::snmp::mode::batterystatus',
                          );
 
     return $self;

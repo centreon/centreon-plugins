@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::mode::outputlines;
+package hardware::ups::mge::snmp::mode::inputlines;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,11 +41,18 @@ use strict;
 use warnings;
 use centreon::plugins::values;
 
+my %map_input_status = (
+    1 => 'no',
+    2 => 'outoftolvolt',
+    3 => 'outoftolfreq',
+    4 => 'utilityoff',
+);
+
 my $maps_counters = {
     voltage => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'voltage', no_value => 0 },
+                                        { name => 'voltage', no_value => 0, },
                                       ],
                         output_template => 'Voltage: %.2f V', output_error_template => 'Voltage: %s',
                         perfdatas => [
@@ -66,25 +73,10 @@ my $maps_counters = {
                         ],
                     }
                },
-    power => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'power', no_value => 0 },
-                                      ],
-                        output_template => 'Power: %.2f W', output_error_template => 'Power: %s',
-                        perfdatas => [
-                            { value => 'power_absolute', label => 'power', template => '%.2f',
-                              unit => 'W', min => 0, label_extra_instance => 1 },
-                        ],
-                    }
-               },
-};
-
-my $maps_counters2 = {
     frequence => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
-                                        { name => 'frequence', no_value => 0 },
+                                        { name => 'frequence', no_value => 0, },
                                       ],
                         output_template => 'Frequence: %.2f Hz', output_error_template => 'Frequence: %s',
                         perfdatas => [
@@ -93,27 +85,14 @@ my $maps_counters2 = {
                         ],
                     }
                },
-    load => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'load', no_value => -1 },
-                                      ],
-                        output_template => 'Load: %.2f %%', output_error_template => 'Load: %s',
-                        perfdatas => [
-                            { value => 'load_absolute', label => 'load', template => '%.2f',
-                              unit => '%', min => 0 },
-                        ],
-                    }
-               },
 };
 
-my $oid_xupsOutputVoltageEntry = '.1.3.6.1.4.1.534.1.4.4.1.2'; # in V
-my $oid_xupsOutputCurrentEntry = '.1.3.6.1.4.1.534.1.4.4.1.3'; # in A
-my $oid_xupsOutputWattsEntry = '.1.3.6.1.4.1.534.1.4.4.1.4'; # in W
-my $oid_xupsOutputFrequencyEntry = '.1.3.6.1.4.1.534.1.4.2';
-my $oid_xupsOutputFrequency = '.1.3.6.1.4.1.534.1.4.2.0'; # in dHZ
-my $oid_xupsOutputLoadEntry = '.1.3.6.1.4.1.534.1.4.1';
-my $oid_xupsOutputLoad = '.1.3.6.1.4.1.534.1.4.1.0'; # in %
+my $oid_upsmgInputPhaseNumEntry = '.1.3.6.1.4.1.705.1.6.1'; 
+my $oid_mginputVoltageEntry = '.1.3.6.1.4.1.705.1.6.2.1.2'; # in dV
+my $oid_mginputFrequencyEntry = '.1.3.6.1.4.1.705.1.6.2.1.3'; # in dHz
+my $oid_mginputCurrentEntry = '.1.3.6.1.4.1.705.1.6.2.1.6'; # in dA
+my $oid_upsmgInputBadStatusEntry = '.1.3.6.1.4.1.705.1.6.3';
+my $oid_upsmgInputLineFailCauseEntry = '.1.3.6.1.4.1.705.1.6.4';
 
 sub new {
     my ($class, %options) = @_;
@@ -137,16 +116,6 @@ sub new {
                                                   label => $_);
         $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
     }
-    foreach (keys %{$maps_counters2}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters2->{$_}->{class};
-        $maps_counters2->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters2->{$_}->{obj}->set(%{$maps_counters2->{$_}->{set}});
-    }
     
     return $self;
 }
@@ -157,9 +126,6 @@ sub check_options {
     
     foreach (keys %{$maps_counters}) {
         $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-    foreach (keys %{$maps_counters2}) {
-        $maps_counters2->{$_}->{obj}->init(option_results => $self->{option_results});
     }
 }
 
@@ -215,6 +181,15 @@ sub run {
 
     $self->manage_selection();
     
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'Input Line(s) status is ok');
+    if (defined($self->{results}->{$oid_upsmgInputBadStatusEntry}->{$oid_upsmgInputBadStatusEntry . '.0'}) &&
+        $self->{results}->{$oid_upsmgInputBadStatusEntry}->{$oid_upsmgInputBadStatusEntry . '.0'} == 1) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Input Line(s) status is '%s'", 
+                                                         $map_input_status{$self->{results}->{$oid_upsmgInputLineFailCauseEntry}->{$oid_upsmgInputLineFailCauseEntry . '.0'}}));
+    }
+    
     $self->{multiple} = 1;
     if (scalar(keys %{$self->{instance_selected}}) == 1) {
         $self->{multiple} = 0;
@@ -222,16 +197,12 @@ sub run {
     
     if ($self->{multiple} == 1) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Output Lines are ok.');
+                                    short_msg => 'Input Lines are ok');
     }
     
     foreach my $id (sort keys %{$self->{instance_selected}}) {     
-        $self->manage_counters(instance => $id, maps_counters => $maps_counters, label => "Output Line '" . $id . "'");
+        $self->manage_counters(instance => $id, maps_counters => $maps_counters, label => "Input Line '" . $id . "'");
     }
-    
-    $self->{instance_selected}->{lines} = { frequence => defined($self->{results}->{$oid_xupsOutputFrequencyEntry}->{$oid_xupsOutputFrequency}) ? $self->{results}->{$oid_xupsOutputFrequencyEntry}->{$oid_xupsOutputFrequency} * 0.1 : 0,
-                                            load => defined($self->{results}->{$oid_xupsOutputLoadEntry}->{$oid_xupsOutputLoad}) ? $self->{results}->{$oid_xupsOutputLoadEntry}->{$oid_xupsOutputLoad} : -1 };
-    $self->manage_counters(instance => 'lines', maps_counters => $maps_counters2, label => "Output Lines");
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -241,38 +212,58 @@ sub add_result {
     my ($self, %options) = @_;
     
     $self->{instance_selected}->{$options{instance}} = {} if (!defined($self->{instance_selected}->{$options{instance}}));
-    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance}};
+    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance2}} * 0.1;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
  
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_xupsOutputVoltageEntry },
-                                                            { oid => $oid_xupsOutputCurrentEntry },
-                                                            { oid => $oid_xupsOutputWattsEntry },
-                                                            { oid => $oid_xupsOutputFrequencyEntry },
-                                                            { oid => $oid_xupsOutputLoadEntry },
+                                                            { oid => $oid_upsmgInputPhaseNumEntry },
+                                                            { oid => $oid_mginputVoltageEntry },
+                                                            { oid => $oid_mginputFrequencyEntry },
+                                                            { oid => $oid_mginputCurrentEntry },
+                                                            { oid => $oid_upsmgInputBadStatusEntry },
+                                                            { oid => $oid_upsmgInputLineFailCauseEntry },
                                                          ],
                                                          , nothing_quit => 1);
- 
-    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputVoltageEntry}}) {
-        $oid =~ /^$oid_xupsOutputVoltageEntry\.(\d)$/;
-        $self->add_result(instance => $1, name => 'voltage', oid => $oid_xupsOutputVoltageEntry);
+
+    if (!defined($self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) || 
+        $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'} == 0) {
+        $self->{output}->add_option_msg(short_msg => "No input lines found.");
+        $self->{output}->option_exit();
     }
-    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputCurrentEntry}}) {
-        $oid =~ /^$oid_xupsOutputCurrentEntry\.(\d)$/;
-        $self->add_result(instance => $1, name => 'current', oid => $oid_xupsOutputCurrentEntry);
+    
+    my %instances = ();
+    # can be 'xxx.1' or 'xxx.1.0' (cannot respect MIB :)
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputVoltageEntry}})) {
+        $oid =~ /^$oid_mginputVoltageEntry\.((\d+).*)/;
+        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
+            $instances{$2} = 1;
+            $self->add_result(instance => $2, instance2 => $1, name => 'voltage', oid => $oid_mginputVoltageEntry);
+        }
     }
-    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputWattsEntry}}) {
-        $oid =~ /^$oid_xupsOutputWattsEntry\.(\d)$/;
-        $self->add_result(instance => $1, name => 'power', oid => $oid_xupsOutputWattsEntry);
+    %instances = ();
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputCurrentEntry}})) {
+        $oid =~ /^$oid_mginputCurrentEntry\.((\d+).*)/;
+        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
+            $instances{$2} = 1;
+            $self->add_result(instance => $2, instance2 => $1, name => 'current', oid => $oid_mginputCurrentEntry);
+        }
+    }
+    %instances = ();
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputFrequencyEntry}})) {
+        $oid =~ /^$oid_mginputFrequencyEntry\.((\d+).*)/;
+        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
+            $instances{$2} = 1;
+            $self->add_result(instance => $2, instance2 => $1, name => 'frequence', oid => $oid_mginputFrequencyEntry);
+        }
     }
     
     if (scalar(keys %{$self->{instance_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No output lines found.");
+        $self->{output}->add_option_msg(short_msg => "No input lines found.");
         $self->{output}->option_exit();
-    }    
+    }
 }
 
 1;
@@ -281,21 +272,19 @@ __END__
 
 =head1 MODE
 
-Check Output lines metrics (load, voltage, current and true power) (XUPS-MIB).
+Check Input lines metrics (frequence, voltage, current).
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'load', 'voltage', 'current', 'power'.
-Load is a rate for X phase.
+Can be: 'frequence', 'voltage', 'current'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'load', 'voltage', 'current', 'power'.
-Load is a rate for X phase.
+Can be: 'frequence', 'voltage', 'current'.
 
 =back
 

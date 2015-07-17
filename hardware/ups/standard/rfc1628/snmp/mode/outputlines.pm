@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::outputlines;
+package hardware::ups::standard::rfc1628::snmp::mode::outputlines;
 
 use base qw(centreon::plugins::mode);
 

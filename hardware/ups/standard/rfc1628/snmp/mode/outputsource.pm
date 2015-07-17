@@ -33,12 +33,22 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::alarms;
+package hardware::ups::standard::rfc1628::snmp::mode::outputsource;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+
+my %outputsource_status = (
+    1 => ['other', 'UNKNOWN'], 
+    2 => ['none', 'CRITICAL'], 
+    3 => ['normal', 'OK'], 
+    4 => ['bypass', 'WARNING'],
+    5 => ['battery', 'WARNING'],
+    6 => ['booster', 'WARNING'],
+    7 => ['reducer', 'WARNING'],
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -63,18 +73,13 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    my $oid_upsAlarmsPresent = '.1.3.6.1.2.1.33.1.6.1.0';    
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_upsAlarmsPresent ], nothing_quit => 1);
-
-    $self->{output}->output_add(severity => 'ok',
-                                short_msg => 'No alarms');
-    if ($result->{$oid_upsAlarmsPresent} > 0) {
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf('%d Alarms (check your equipment to have more informations)', $result->{$oid_upsAlarmsPresent}));
-    }
-    $self->{output}->perfdata_add(label => 'alarms',
-                                  value => $result->{$oid_upsAlarmsPresent},
-                                  min => 0);
+    my $oid_upsOutputSource = '.1.3.6.1.2.1.33.1.4.1.0';
+    
+    my $result = $self->{snmp}->get_leef(oids => [$oid_upsOutputSource], nothing_quit => 1);
+    my $status = $result->{'.1.3.6.1.2.1.33.1.4.1.0'};
+  
+    $self->{output}->output_add(severity => ${$outputsource_status{$status}}[1],
+                                short_msg => sprintf("Output source status is %s", ${$outputsource_status{$status}}[0]));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -86,9 +91,7 @@ __END__
 
 =head1 MODE
 
-Check if Alarms present.
-Need an example to do the display from 'upsAlarmTable'. If you have ;)
-https://forge.centreon.com/issues/5377
+Check output source status.
 
 =over 8
 

@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -29,40 +29,69 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Stéphane Duret <sduret@merethis.com>
+# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
 ####################################################################################
 
-package hardware::ups::mge::plugin;
+package hardware::ups::standard::rfc1628::snmp::mode::alarms;
+
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object    
     
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'environment'      => 'hardware::ups::mge::mode::environment',
-                         'input-lines'      => 'hardware::ups::mge::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::mge::mode::outputlines',
-                         'output-source'    => 'hardware::ups::mge::mode::outputsource',
-                         'battery-status'   => 'hardware::ups::mge::mode::batterystatus',
-                         );
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                { 
+                                });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
+sub run {
+    my ($self, %options) = @_;
+    # $options{snmp} = snmp object
+    $self->{snmp} = $options{snmp};
+    
+    my $oid_upsAlarmsPresent = '.1.3.6.1.2.1.33.1.6.1.0';    
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_upsAlarmsPresent ], nothing_quit => 1);
+
+    $self->{output}->output_add(severity => 'ok',
+                                short_msg => 'No alarms');
+    if ($result->{$oid_upsAlarmsPresent} > 0) {
+        $self->{output}->output_add(severity => 'critical',
+                                    short_msg => sprintf('%d Alarms (check your equipment to have more informations)', $result->{$oid_upsAlarmsPresent}));
+    }
+    $self->{output}->perfdata_add(label => 'alarms',
+                                  value => $result->{$oid_upsAlarmsPresent},
+                                  min => 0);
+
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Check UPS MerlinGerin in SNMP.
+Check if Alarms present.
+Need an example to do the display from 'upsAlarmTable'. If you have ;)
+https://forge.centreon.com/issues/5377
+
+=over 8
+
+=back
 
 =cut

@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 # 
 # For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
+# Authors : Stéphane Duret <sduret@merethis.com>
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::plugin;
+package hardware::ups::mge::snmp::plugin;
 
 use strict;
 use warnings;
@@ -43,15 +43,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
+    # $options->{options} = options object    
+    
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'battery-status'   => 'hardware::ups::standard::rfc1628::mode::batterystatus',
-                         'input-lines'      => 'hardware::ups::standard::rfc1628::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::standard::rfc1628::mode::outputlines',
-                         'output-source'    => 'hardware::ups::standard::rfc1628::mode::outputsource',
-                         'alarms'           => 'hardware::ups::standard::rfc1628::mode::alarms',
+                         'environment'      => 'hardware::ups::mge::snmp::mode::environment',
+                         'input-lines'      => 'hardware::ups::mge::snmp::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::mge::snmp::mode::outputlines',
+                         'output-source'    => 'hardware::ups::mge::snmp::mode::outputsource',
+                         'battery-status'   => 'hardware::ups::mge::snmp::mode::batterystatus',
                          );
 
     return $self;
@@ -63,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check ups compatible RFC1628 in SNMP.
+Check UPS MerlinGerin in SNMP.
 
 =cut

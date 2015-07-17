@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::mode::outputsource;
+package hardware::ups::powerware::snmp::mode::outputsource;
 
 use base qw(centreon::plugins::mode);
 

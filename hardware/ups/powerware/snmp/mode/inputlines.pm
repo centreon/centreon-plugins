@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::mode::inputlines;
+package hardware::ups::powerware::snmp::mode::inputlines;
 
 use base qw(centreon::plugins::mode);
 

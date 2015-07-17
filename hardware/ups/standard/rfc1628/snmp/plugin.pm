@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2013 MERETHIS
+# Copyright 2005-2014 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 # 
@@ -33,68 +33,36 @@
 #
 ####################################################################################
 
-package hardware::ups::standard::rfc1628::mode::outputsource;
-
-use base qw(centreon::plugins::mode);
+package hardware::ups::standard::rfc1628::snmp::plugin;
 
 use strict;
 use warnings;
-
-my %outputsource_status = (
-    1 => ['other', 'UNKNOWN'], 
-    2 => ['none', 'CRITICAL'], 
-    3 => ['normal', 'OK'], 
-    4 => ['bypass', 'WARNING'],
-    5 => ['battery', 'WARNING'],
-    6 => ['booster', 'WARNING'],
-    7 => ['reducer', 'WARNING'],
-);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    # $options->{options} = options object
+
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+                         'battery-status'   => 'hardware::ups::standard::rfc1628::snmp::mode::batterystatus',
+                         'input-lines'      => 'hardware::ups::standard::rfc1628::snmp::mode::inputlines',
+                         'output-lines'     => 'hardware::ups::standard::rfc1628::snmp::mode::outputlines',
+                         'output-source'    => 'hardware::ups::standard::rfc1628::snmp::mode::outputsource',
+                         'alarms'           => 'hardware::ups::standard::rfc1628::snmp::mode::alarms',
+                         );
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-    
-    my $oid_upsOutputSource = '.1.3.6.1.2.1.33.1.4.1.0';
-    
-    my $result = $self->{snmp}->get_leef(oids => [$oid_upsOutputSource], nothing_quit => 1);
-    my $status = $result->{'.1.3.6.1.2.1.33.1.4.1.0'};
-  
-    $self->{output}->output_add(severity => ${$outputsource_status{$status}}[1],
-                                short_msg => sprintf("Output source status is %s", ${$outputsource_status{$status}}[0]));
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
 
 __END__
 
-=head1 MODE
+=head1 PLUGIN DESCRIPTION
 
-Check output source status.
-
-=over 8
-
-=back
+Check ups compatible RFC1628 in SNMP.
 
 =cut

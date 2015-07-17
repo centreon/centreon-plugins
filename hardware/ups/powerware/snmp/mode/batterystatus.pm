@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::mode::batterystatus;
+package hardware::ups::powerware::snmp::mode::batterystatus;
 
 use base qw(centreon::plugins::mode);
 
