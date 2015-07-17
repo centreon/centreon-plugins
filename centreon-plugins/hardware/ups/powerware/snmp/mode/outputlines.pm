@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::mge::mode::outputlines;
+package hardware::ups::powerware::snmp::mode::outputlines;
 
 use base qw(centreon::plugins::mode);
 
@@ -66,6 +66,21 @@ my $maps_counters = {
                         ],
                     }
                },
+    power => { class => 'centreon::plugins::values', obj => undef,
+                 set => {
+                        key_values => [
+                                        { name => 'power', no_value => 0 },
+                                      ],
+                        output_template => 'Power: %.2f W', output_error_template => 'Power: %s',
+                        perfdatas => [
+                            { value => 'power_absolute', label => 'power', template => '%.2f',
+                              unit => 'W', min => 0, label_extra_instance => 1 },
+                        ],
+                    }
+               },
+};
+
+my $maps_counters2 = {
     frequence => { class => 'centreon::plugins::values', obj => undef,
                  set => {
                         key_values => [
@@ -92,26 +107,13 @@ my $maps_counters = {
                },
 };
 
-my $maps_counters2 = {
-    'stdev-3phases' => { class => 'centreon::plugins::values', obj => undef,
-                    set => {
-                        key_values => [
-                                        { name => 'stdev' },
-                                      ],
-                        output_template => 'Load Standard Deviation : %.2f', output_error_template => 'Load Standard Deviation : %s',
-                        perfdatas => [
-                            { value => 'stdev_absolute', label => 'stdev', template => '%.2f',
-                              min => 0 },
-                        ],
-                    }
-               },
-};
-
-my $oid_upsmgOutputPhaseNumEntry = '.1.3.6.1.4.1.705.1.7.1'; 
-my $oid_mgoutputVoltageEntry = '.1.3.6.1.4.1.705.1.7.2.1.2'; # in dV
-my $oid_mgoutputFrequencyEntry = '.1.3.6.1.4.1.705.1.7.2.1.3'; # in dHz
-my $oid_mgoutputCurrentEntry = '.1.3.6.1.4.1.705.1.7.2.1.5'; # in dA
-my $oid_mgoutputLoadPerPhaseEntry = '.1.3.6.1.4.1.705.1.7.2.1.4'; # in %
+my $oid_xupsOutputVoltageEntry = '.1.3.6.1.4.1.534.1.4.4.1.2'; # in V
+my $oid_xupsOutputCurrentEntry = '.1.3.6.1.4.1.534.1.4.4.1.3'; # in A
+my $oid_xupsOutputWattsEntry = '.1.3.6.1.4.1.534.1.4.4.1.4'; # in W
+my $oid_xupsOutputFrequencyEntry = '.1.3.6.1.4.1.534.1.4.2';
+my $oid_xupsOutputFrequency = '.1.3.6.1.4.1.534.1.4.2.0'; # in dHZ
+my $oid_xupsOutputLoadEntry = '.1.3.6.1.4.1.534.1.4.1';
+my $oid_xupsOutputLoad = '.1.3.6.1.4.1.534.1.4.1.0'; # in %
 
 sub new {
     my ($class, %options) = @_;
@@ -227,10 +229,9 @@ sub run {
         $self->manage_counters(instance => $id, maps_counters => $maps_counters, label => "Output Line '" . $id . "'");
     }
     
-    if ($self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'} > 1) {
-        $self->{instance_selected}->{lines} = { stdev => $self->{stdev} };
-        $self->manage_counters(instance => 'lines', maps_counters => $maps_counters2, label => "Output Lines");
-    }
+    $self->{instance_selected}->{lines} = { frequence => defined($self->{results}->{$oid_xupsOutputFrequencyEntry}->{$oid_xupsOutputFrequency}) ? $self->{results}->{$oid_xupsOutputFrequencyEntry}->{$oid_xupsOutputFrequency} * 0.1 : 0,
+                                            load => defined($self->{results}->{$oid_xupsOutputLoadEntry}->{$oid_xupsOutputLoad}) ? $self->{results}->{$oid_xupsOutputLoadEntry}->{$oid_xupsOutputLoad} : -1 };
+    $self->manage_counters(instance => 'lines', maps_counters => $maps_counters2, label => "Output Lines");
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -240,76 +241,38 @@ sub add_result {
     my ($self, %options) = @_;
     
     $self->{instance_selected}->{$options{instance}} = {} if (!defined($self->{instance_selected}->{$options{instance}}));
-    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance2}} * $options{multiple};
+    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance}};
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
  
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_upsmgOutputPhaseNumEntry },
-                                                            { oid => $oid_mgoutputVoltageEntry },
-                                                            { oid => $oid_mgoutputFrequencyEntry },
-                                                            { oid => $oid_mgoutputCurrentEntry },
-                                                            { oid => $oid_mgoutputLoadPerPhaseEntry },
+                                                            { oid => $oid_xupsOutputVoltageEntry },
+                                                            { oid => $oid_xupsOutputCurrentEntry },
+                                                            { oid => $oid_xupsOutputWattsEntry },
+                                                            { oid => $oid_xupsOutputFrequencyEntry },
+                                                            { oid => $oid_xupsOutputLoadEntry },
                                                          ],
                                                          , nothing_quit => 1);
-
-    if (!defined($self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) || 
-        $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'} == 0) {
-        $self->{output}->add_option_msg(short_msg => "No output lines found.");
-        $self->{output}->option_exit();
+ 
+    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputVoltageEntry}}) {
+        $oid =~ /^$oid_xupsOutputVoltageEntry\.(\d)$/;
+        $self->add_result(instance => $1, name => 'voltage', oid => $oid_xupsOutputVoltageEntry);
     }
-        
-    my %instances = ();
-    # can be 'xxx.1' or 'xxx.1.0' (cannot respect MIB :)
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputVoltageEntry}})) {
-        $oid =~ /^$oid_mgoutputVoltageEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'voltage', oid => $oid_mgoutputVoltageEntry, multiple => 0.1);
-        }
+    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputCurrentEntry}}) {
+        $oid =~ /^$oid_xupsOutputCurrentEntry\.(\d)$/;
+        $self->add_result(instance => $1, name => 'current', oid => $oid_xupsOutputCurrentEntry);
     }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputCurrentEntry}})) {
-        $oid =~ /^$oid_mgoutputCurrentEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'current', oid => $oid_mgoutputCurrentEntry, multiple => 0.1);
-        }
+    foreach my $oid (keys %{$self->{results}->{$oid_xupsOutputWattsEntry}}) {
+        $oid =~ /^$oid_xupsOutputWattsEntry\.(\d)$/;
+        $self->add_result(instance => $1, name => 'power', oid => $oid_xupsOutputWattsEntry);
     }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputFrequencyEntry}})) {
-        $oid =~ /^$oid_mgoutputFrequencyEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'frequence', oid => $oid_mgoutputFrequencyEntry, multiple => 0.1);
-        }
-    }
-    
-    %instances = ();    
-    # Calculate stdev
-    my $total = 0;
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputLoadPerPhaseEntry}})) {
-        $oid =~ /^$oid_mgoutputLoadPerPhaseEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = $self->{results}->{$oid_mgoutputLoadPerPhaseEntry}->{$oid};
-            $self->add_result(instance => $2, instance2 => $1, name => 'load', oid => $oid_mgoutputLoadPerPhaseEntry, multiple => 1);
-            $total += $self->{results}->{$oid_mgoutputLoadPerPhaseEntry}->{$oid};
-        }
-    }
-    
-    my $mean = $total / $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'};
-    $total = 0;
-    foreach (keys %instances) {
-        $total += ($mean - $instances{$_}) ** 2; 
-    }
-    $self->{stdev} = sqrt($total / $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'});
     
     if (scalar(keys %{$self->{instance_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No output lines found.");
         $self->{output}->option_exit();
-    }
+    }    
 }
 
 1;
@@ -318,19 +281,21 @@ __END__
 
 =head1 MODE
 
-Check Output lines metrics (load, voltage, current).
+Check Output lines metrics (load, voltage, current and true power) (XUPS-MIB).
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
+Can be: 'load', 'voltage', 'current', 'power'.
+Load is a rate for X phase.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'load', 'voltage', 'current', 'frequence', 'stdev-3phases'.
+Can be: 'load', 'voltage', 'current', 'power'.
+Load is a rate for X phase.
 
 =back
 

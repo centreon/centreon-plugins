@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package hardware::ups::powerware::mode::alarms;
+package hardware::ups::powerware::snmp::mode::alarms;
 
 use base qw(centreon::plugins::mode);
 
