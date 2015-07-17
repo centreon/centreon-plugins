@@ -59,7 +59,6 @@ sub new {
             "password:s"                => { name => 'password' },
             "ssl:s"                     => { name => 'ssl', },
             "cert-file:s"               => { name => 'cert_file' },
-            "cert-file:s"               => { name => 'cert_file' },
             "key-file:s"                => { name => 'key_file' },
             "cacert-file:s"             => { name => 'cacert_file' },
             "timeout:s"                 => { name => 'timeout', default => '3' },
@@ -143,17 +142,17 @@ __END__
 
 =head1 MODE
 
-Check Container's state
+Check Docker information
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the GitHub's status website (Default: status.github.com)
+IP Addr/FQDN of Docker's API
 
 =item B<--port>
 
-Port used by GitHub's status website (Default: '443')
+Port used by Docker's API (Default: '2576')
 
 =item B<--proto>
 
@@ -161,7 +160,7 @@ Specify https if needed (Default: 'https')
 
 =item B<--urlpath>
 
-Set path to get GitHub's status information (Default: '/api/last-message.json')
+Set path to get Docker information (Default: '/')
 
 =item B<--credentials>
 
@@ -175,15 +174,25 @@ Specify username
 
 Specify password
 
+=item B<--ssl>
+
+Specify SSL version (example : 'sslv3', 'tlsv1'...)
+
+=item B<--cert-file>
+
+Specify certificate to send to the webserver
+
+=item B<--key-file>
+
+Specify key to send to the webserver
+
+=item B<--cacert-file>
+
+Specify root certificate to send to the webserver
+
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
-
-=item B<--threshold-overload>
-
-Set to overload default threshold values (syntax: status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='CRITICAL,^(?!(good)$)'
 
 =back
 
