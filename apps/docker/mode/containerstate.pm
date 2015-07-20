@@ -75,7 +75,6 @@ sub new {
             "cacert-file:s"             => { name => 'cacert_file' },
             "timeout:s"                 => { name => 'timeout', default => '3' },
             "threshold-overload:s@"     => { name => 'threshold_overload' },
-            "exclude:s"                 => { name => 'exclude' },
         });
 
     return $self;
@@ -137,22 +136,6 @@ sub get_severity {
     return $status;
 }
 
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Running') {
-        $self->{output}->output_add(long_msg => sprintf("Skipping Running containers."));
-        return 1;
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Paused') {
-        $self->{output}->output_add(long_msg => sprintf("Skipping Paused containers."));
-        return 1;
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Exited') {
-        $self->{output}->output_add(long_msg => sprintf("Skipping Exited containers."));
-        return 1;
-    }
-    return 0;
-}
-
 sub run {
     my ($self, %options) = @_;
 
@@ -206,8 +189,8 @@ sub run {
             $containername =~ s/^\///;
 
             if (($val->{Status} =~ m/^Up/) && ($val->{Status} =~ m/^(?:(?!Paused).)*$/)) {
-                $nbrunning++;
                 $result = 'Running';
+                $nbrunning++;
             } elsif ($val->{Status} =~ m/^Exited/) {
                 $result = 'Exited';
                 $nbexited++;
