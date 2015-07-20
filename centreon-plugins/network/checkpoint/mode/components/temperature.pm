@@ -70,7 +70,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_tempertureSensorEntry}, instance => $instance);
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
-        next if ($result->{tempertureSensorName} !~ /^[0-9a-zA-Z ]$/); # sometimes there is some wrong values in hex 
+        next if ($result->{tempertureSensorName} !~ /^[0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
     	
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s' [instance: %s]",
