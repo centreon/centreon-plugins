@@ -70,7 +70,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageSensorEntry}, instance => $instance);
     
         next if ($self->check_exclude(section => 'voltage', instance => $instance));
-        next if ($result->{voltageSensorName} !~ /^[0-9a-zA-Z ]$/); # sometimes there is some wrong values in hex 
+        next if ($result->{voltageSensorName} !~ /^[0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
      
         $self->{components}->{voltage}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s' [instance: %s]",
