@@ -41,7 +41,6 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use JSON;
-use Data::Dumper;
 
 my $thresholds = {
     state => [
@@ -76,6 +75,7 @@ sub new {
             "cacert-file:s"             => { name => 'cacert_file' },
             "timeout:s"                 => { name => 'timeout', default => '3' },
             "threshold-overload:s@"     => { name => 'threshold_overload' },
+            "exclude:s"                 => { name => 'exclude' },
         });
 
     return $self;
@@ -135,6 +135,22 @@ sub get_severity {
         }
     }
     return $status;
+}
+
+sub check_exclude {
+    my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Running') {
+        $self->{output}->output_add(long_msg => sprintf("Skipping Running containers."));
+        return 1;
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Paused') {
+        $self->{output}->output_add(long_msg => sprintf("Skipping Paused containers."));
+        return 1;
+    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} eq 'Exited') {
+        $self->{output}->output_add(long_msg => sprintf("Skipping Exited containers."));
+        return 1;
+    }
+    return 0;
 }
 
 sub run {
@@ -295,9 +311,9 @@ Threshold for HTTP timeout (Default: 3)
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: status,regexp)
+Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='CRITICAL,^(?!(good)$)'
+Example: --threshold-overload='state,CRITICAL,^(?!(Paused)$)'
 
 =back
 
