@@ -1,0 +1,2 @@
+# centreon_vmware command line options
+OPTIONS="--logfile=/var/log/centreon/centreon_vmware.log --severity=error"
