@@ -70,18 +70,21 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_tempertureSensorEntry}, instance => $instance);
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($result->{tempertureSensorName} !~ /^[0-9a-zA-Z ]$/); # sometimes there is some wrong values in hex 
     	
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s'",
-                                        $result->{tempertureSensorName}, $result->{tempertureSensorStatus}));
+        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' sensor out of range status is '%s' [instance: %s]",
+                                        $result->{tempertureSensorName}, $result->{tempertureSensorStatus}, $instance));
         my $exit = $self->get_severity(section => 'temperature', value => $result->{tempertureSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' sensor out of range status is '%s'", $result->{tempertureSensorName}, $result->{tempertureSensorStatus}));
+                                        short_msg => sprintf("Temperature '%s/%s' sensor out of range status is '%s'", $result->{tempertureSensorName}, $instance, $result->{tempertureSensorStatus}));
         }
 
-    	$self->{output}->perfdata_add(label => $result->{tempertureSensorName} , unit => 'C', 
-                                      value => sprintf("%.2f", $result->{tempertureSensorValue}));
+        if (defined($result->{tempertureSensorValue}) && $result->{tempertureSensorValue} =~ /^[0-9\.]+$/) {
+            $self->{output}->perfdata_add(label => 'temp_' . $result->{tempertureSensorName} . '_' . $instance , unit => 'C', 
+                                          value => sprintf("%.2f", $result->{tempertureSensorValue}));
+        }
     }
 }
 
