@@ -50,7 +50,7 @@ my $maps_counters = {
                                         { name => 'read', diff => 1 }, { name => 'display' },
                                       ],
                         per_second => 1,
-                        output_template => 'Read I/O : %s %s/s',
+                        output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'read_per_second', template => '%d',
@@ -64,7 +64,7 @@ my $maps_counters = {
                                         { name => 'write', diff => 1 }, { name => 'display' },
                                       ],
                         per_second => 1,
-                        output_template => 'Write I/O : %s %s/s',
+                        output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
                         output_change_bytes => 1,
                         perfdatas => [
                             { value => 'write_per_second', template => '%d',
@@ -78,7 +78,7 @@ my $maps_counters = {
                                         { name => 'read_iops', diff => 1 }, { name => 'display' },
                                       ],
                         per_second => 1,
-                        output_template => 'Read IOPs : %.2f',
+                        output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                         perfdatas => [
                             { value => 'read_iops_per_second',  template => '%.2f',
                               unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -91,7 +91,7 @@ my $maps_counters = {
                                         { name => 'write_iops', diff => 1 }, { name => 'display' },
                                       ],
                         per_second => 1,
-                        output_template => 'Write IOPs : %.2f',
+                        output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                         perfdatas => [
                             { value => 'write_iops_per_second', template => '%.2f',
                               unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
