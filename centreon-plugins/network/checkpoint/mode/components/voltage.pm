@@ -70,18 +70,21 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltageSensorEntry}, instance => $instance);
     
         next if ($self->check_exclude(section => 'voltage', instance => $instance));
+        next if ($result->{voltageSensorName} !~ /^[0-9a-zA-Z ]$/); # sometimes there is some wrong values in hex 
      
         $self->{components}->{voltage}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s'",
-                                        $result->{voltageSensorName}, $result->{voltageSensorStatus}));
+        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' sensor out of range status is '%s' [instance: %s]",
+                                        $result->{voltageSensorName}, $result->{voltageSensorStatus}, $instance));
         my $exit = $self->get_severity(section => 'voltage', value => $result->{voltageSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' sensor out of range status is '%s'", $result->{voltageSensorName}, $result->{voltageSensorStatus}));
+                                        short_msg => sprintf("Voltage '%s/%s' sensor out of range status is '%s'", $result->{voltageSensorName}, $instance, $result->{voltageSensorStatus}));
         }
-        $self->{output}->perfdata_add(label => $result->{voltageSensorName} , unit => 'V', 
-                                      value => sprintf("%.2f", $result->{voltageSensorValue}));
-
+        
+        if (defined($result->{voltageSensorValue}) && $result->{voltageSensorValue} =~ /^[0-9\.]+$/) {
+            $self->{output}->perfdata_add(label => 'volt_' . $result->{voltageSensorName} . '_' . $instance, unit => 'V', 
+                                          value => sprintf("%.2f", $result->{voltageSensorValue}));
+        }
     }
 }
 
