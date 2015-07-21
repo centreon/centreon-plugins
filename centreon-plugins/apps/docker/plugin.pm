@@ -50,6 +50,7 @@ sub new {
                         'blockio'           => 'apps::docker::mode::blockio',
                         'containerstate'    => 'apps::docker::mode::containerstate',
                         'cpu'               => 'apps::docker::mode::cpu',
+                        'image'             => 'apps::docker::mode::image',
                         'info'              => 'apps::docker::mode::info',
                         'list-containers'   => 'apps::docker::mode::listcontainers',
                         'memory'            => 'apps::docker::mode::memory',
@@ -65,6 +66,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Docker and containers through its API.
-Requirements: Docker 1.5+
+Requirements: Docker 1.7.1+ and Docker API 1.19+
 
 =cut
