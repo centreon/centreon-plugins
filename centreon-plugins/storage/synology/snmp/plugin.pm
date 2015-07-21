@@ -38,7 +38,7 @@ sub new {
                          'traffic'              => 'snmp_standard::mode::traffic',
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'memory'               => 'snmp_standard::mode::memory',
-                         'load'                 => 'snmp_standard::mode::load',
+                         'load'                 => 'snmp_standard::mode::loadaverage',
                          'storage'              => 'snmp_standard::mode::storage',
                          );
 
