@@ -41,8 +41,6 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use JSON;
-use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
 
 my $thresholds = {
     state => [
@@ -78,11 +76,7 @@ sub new {
             "cacert-file:s"             => { name => 'cacert_file' },
             "timeout:s"                 => { name => 'timeout', default => '3' },
             "threshold-overload:s@"     => { name => 'threshold_overload' },
-            "show-cache"                => { name => 'show_cache' },
         });
-
-    $self->{container_id_selected} = [];
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -125,8 +119,6 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
-
-    $self->{statefile_cache}->check_options(%options);
 }
 
 sub get_severity {
@@ -150,80 +142,6 @@ sub get_severity {
     return $status;
 }
 
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_json_' . $self->{option_results}->{hostname}  . '_' . $self->{option_results}->{port} . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
-    }
-
-    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    $self->reload_cache();
-    $self->{statefile_cache}->read();
-
-    my $all_containers = $self->{statefile_cache}->get(name => 'all_containers');
-    foreach my $val (@{$all_containers}) {
-        while( my ($containername,$containerid) = each(%{$val}) ) {
-            if ($containername eq $self->{option_results}->{name}) {
-                $self->{container_id_selected} = $containerid;
-                last;
-            }
-        }
-    }
-
-    if (!defined($self->{container_id_selected})) {
-        $self->{output}->add_option_msg(short_msg => "No container found for name '" . $self->{option_results}->{name} . "' (maybe you should reload cache file).");
-        $self->{output}->option_exit();
-    }
-
-    return $self->{container_id_selected};
-}
-
-sub reload_cache {
-    my ($self) = @_;
-    my $datas = {};
-
-    $datas->{last_timestamp} = time();
-
-    my $jsoncontent;
-
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."containers/json";
-    my $query_form_get = { all => 'true' };
-    $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get, connection_exit => 'critical');
-
-    my $json = JSON->new;
-
-    my $webcontent;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-
-    foreach my $val (@$webcontent) {
-        my $containername = $val->{Names}->[0];
-        $containername =~ s/^\///;
-        my %container_link = ($containername => $val->{Id});
-        my $container_link_ref = \%container_link;
-        push @{$datas->{all_containers}}, $container_link_ref;
-    }
-
-    if (scalar(@{$datas->{all_containers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_cache}->write(data => $datas);
-}
-
-
 sub run {
     my ($self, %options) = @_;
 
@@ -233,8 +151,7 @@ sub run {
         $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{id}."/json";
         $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
     } elsif (defined($self->{option_results}->{name})) {
-        $self->manage_selection();
-        $self->{option_results}->{url_path} = "/containers/".$self->{container_id_selected}."/json";
+        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{name}."/json";
         $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
     } else {
         $self->{option_results}->{url_path} = "/containers/json";
