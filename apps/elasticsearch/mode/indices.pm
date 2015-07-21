@@ -47,7 +47,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"              => { name => 'hostname' },
@@ -151,10 +151,12 @@ sub run {
         }
     }
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("One or some indices are in %s state", $map_states_indices{$exit}));
+    if ($exit ne 'OK') {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Some indices are in wrong state"));
+    }
 
-    $self->{output}->display(force_long_output => 1);
+    $self->{output}->display();
     $self->{output}->exit();
 }
 
