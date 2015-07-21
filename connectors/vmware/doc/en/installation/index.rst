@@ -35,6 +35,118 @@ Hardware prerequisites will depend of check numbers. Minimal used resources are 
 * RAM : 512 Mo (May slightly increase with the number of checks).
 * CPU : same as poller server.
 
+Centreon-vmware Installation - Debian Wheezy
+============================================
+
+SDK Perl VMWare Installation
+````````````````````````````
+
+The "centreon-vmware" connector uses SDK Perl VMWare for its operation. So we install it with VMWare recommandation (only tested with version below).
+
+========================== ===================== ======================
+Dependency                  Version               Repository
+========================== ===================== ======================
+libwww-perl                   6.04                wheezy
+libxml-libxml-perl            2.0001              wheezy
+libclass-methodmaker-perl     2.18                wheezy
+libcrypt-ssleay-perl          0.58                wheezy
+libsoap-lite-perl             0.714               wheezy
+libuuid-perl                  0.02                wheezy
+========================== ===================== ======================
+
+Install following dependency:
+::
+
+  # aptitude install make libxml-libxml-perl libwww-perl libclass-methodmaker-perl libcrypt-ssleay-perl libsoap-lite-perl libuuid-perl
+  
+Download the Perl SDK VMWare and install it:
+::
+
+  # tar zxf VMware-vSphere-Perl-SDK-6.0.0-2503617.x86_64.tar.gz && cd vmware-vsphere-cli-distrib
+  # perl Makefile.PL
+  # make && make install
+
+Requirements
+`````````````
+
+Following prerequisites are mandatory for « centreon_vmware »:
+
+* « perl-centreon-base »:  module since Centreon 2.5
+* « centreon-plugins-base »: the client and some dependencies
+* « zeromq » and Perl binding
+
+Following prerequisites are optional for « centreon_vmware »:
+
+*  « libtimedate-perl »
+
+centreon-vmware Installation with source
+````````````````````````````````````````
+
+Install the following package:
+::
+
+  # aptitude install libtimedate-perl
+
+Add the following line in « /etc/apt/sources.list » file:
+::
+
+  deb http://http.debian.net/debian wheezy-backports main
+
+Install « zeromq » dependency:
+::
+
+  # aptitude install libzmq3-dev gcc
+  # wget https://cpan.metacpan.org/authors/id/D/DM/DMAKI/ZMQ-LibZMQ3-1.19.tar.gz
+  # tar zxf ZMQ-LibZMQ3-1.19.tar.gz && cd ZMQ-LibZMQ3-1.19
+  # perl Makefile.PL
+  # make && make install
+  # wget https://cpan.metacpan.org/authors/id/D/DM/DMAKI/ZMQ-Constants-1.04.tar.gz
+  # tar zxf ZMQ-Constants-1.04.tar.gz && cd ZMQ-Constants-1.04
+  # perl Makefile.PL
+  # make && make install
+
+Download « centreon-vmware » archive, then install:
+::
+  
+  # tar zxvf centreon-vmware-2.0.0.tar.gz
+  # cd centreon-vmware-2.0.0
+  # cp centreon_vmware.pl /usr/bin/
+  
+  # mkdir -p /etc/centreon
+  # cp contrib/config/centreon_vmware-conf.pm /etc/centreon/centreon_vmware.pm
+  # cp contrib/debian/centreon_vmware-init /etc/init.d/centreon_vmware
+  # cp contrib/debian/centreon_vmware-default /etc/default/centreon_vmware
+  # chmod 775 /etc/init.d/centreon_vmware /usr/bin/centreon_vmware.pl
+  
+  # mkdir -p /usr/share/perl5/centreon/vmware/ /usr/share/perl5/centreon/script/
+  # cp centreon/vmware/* /usr/share/perl5/centreon/vmware/
+  # cp centreon/script/centreon_vmware.pm /usr/share/perl5/centreon/script/
+
+Configure "centreon-vmware" daemon to start at boot:
+::
+  
+  # update-rc.d centreon_vmware defaults
+
+Install « perl-centreon-base » dependency:
+::
+
+  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
+  # cd centreon
+  # cp lib/perl/centreon/script.pm /usr/share/perl5/centreon/
+  # cp -R lib/perl/centreon/common /usr/share/perl5/centreon/
+  
+Install the client and dependency:
+::
+
+  # git clone http://git.centreon.com/centreon-plugins.git
+  # cd centreon-plugins
+  # cp -R centreon/plugins /usr/share/perl5/centreon/
+  # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
+  # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
+  # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
+  # cp -R apps/vmware/* /usr/lib/nagios/plugins/apps/vmware/
+  # cp centreon_plugins.pl /usr/lib/nagios/plugins/
+
 Centreon-vmware Installation - centos/rhel 5 systems
 ====================================================
 
@@ -55,7 +167,8 @@ perl-UUID                    0.04             ces standard
 perl-VMware-vSphere          5.1.0-780721.1   ces standard
 ======================= ===================== ======================
 
-Install following dependency::
+Install following dependency:
+::
 
   # yum install perl-VMware-vSphere
 
@@ -88,7 +201,8 @@ Install the client:
 centreon-vmware Installation with source
 ````````````````````````````````````````
 
-Download « centreon-vmware » archive, then install ::
+Download « centreon-vmware » archive, then install:
+::
   
   # tar zxvf centreon-vmware-2.0.0.tar.gz
   # cd centreon-vmware-2.0.0
@@ -100,7 +214,7 @@ Download « centreon-vmware » archive, then install ::
   # cp contrib/redhat/centreon_vmware-sysconfig /etc/sysconfig/centreon_vmware
   # chmod 775 /etc/init.d/centreon_vmware /usr/bin/centreon_vmware.pl
   
-  # mkdir -p /usr/lib/perl5/vendor_perl/5.8.8/centreon/vmware/
+  # mkdir -p /usr/lib/perl5/vendor_perl/5.8.8/centreon/vmware/ /usr/lib/perl5/vendor_perl/5.8.8/centreon/script/
   # cp centreon/vmware/* /usr/lib/perl5/vendor_perl/5.8.8/centreon/vmware/
   # cp centreon/script/centreon_vmware.pm /usr/lib/perl5/vendor_perl/5.8.8/centreon/script/
 
@@ -117,11 +231,12 @@ Install « perl-centreon-base » dependency:
   # cp lib/perl/centreon/script.pm /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   # cp -R lib/perl/centreon/common /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   
-Install the client:
+Install the client and dependency:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
+  # cp -R centreon/plugins /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
@@ -195,7 +310,7 @@ Download « centreon-vmware » archive, then install:
   # cp contrib/redhat/centreon_vmware-sysconfig /etc/sysconfig/centreon_vmware
   # chmod 775 /etc/init.d/centreon_vmware /usr/bin/centreon_vmware.pl
   
-  # mkdir -p /usr/share/perl5/vendor_perl/centreon/vmware/
+  # mkdir -p /usr/share/perl5/vendor_perl/centreon/vmware/ /usr/share/perl5/vendor_perl/centreon/script/
   # cp centreon/vmware/* /usr/share/perl5/vendor_perl/centreon/vmware/
   # cp centreon/script/centreon_vmware.pm /usr/share/perl5/vendor_perl/centreon/script/
 
@@ -212,11 +327,12 @@ Install « perl-centreon-base » dependency:
   # cp lib/perl/centreon/script.pm /usr/share/perl5/vendor_perl/centreon/
   # cp -R lib/perl/centreon/common /usr/share/perl5/vendor_perl/centreon/
   
-Install the client:
+Install the client and dependency:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
+  # cp -R centreon/plugins /usr/share/perl5/vendor_perl/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
