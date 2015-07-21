@@ -106,26 +106,18 @@ sub run {
                                  );
     $self->{output}->perfdata_add(label => "nodemasteronly",
                                   value => $webcontent->{nodes}->{count}->{master_only},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
     $self->{output}->perfdata_add(label => "nodedataonly",
                                   value => $webcontent->{nodes}->{count}->{data_only},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
     $self->{output}->perfdata_add(label => "nodemasterdata",
                                   value => $webcontent->{nodes}->{count}->{master_data},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
     $self->{output}->perfdata_add(label => "nodeclient",
                                   value => $webcontent->{nodes}->{count}->{client},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0,
                                  );
     $self->{output}->display();

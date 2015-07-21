@@ -125,7 +125,6 @@ sub run {
     my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get, connection_exit => 'critical');
 
     my $json = JSON->new;
-
     my $webcontent;
 
     eval {
@@ -139,11 +138,9 @@ sub run {
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All indices are in green state."));
-
     my $exit = 'OK';
-
     foreach my $indicename (sort (keys %{$webcontent->{indices}})) {
-	    my $tmp_exit = $self->get_severity(section => 'indices', value => $webcontent->{indices}->{$indicename}->{status});
+        my $tmp_exit = $self->get_severity(section => 'indices', value => $webcontent->{indices}->{$indicename}->{status});
         $exit = $self->{output}->get_most_critical(status => [ $tmp_exit, $exit ]);
         if (!$self->{output}->is_status(value => $tmp_exit, compare => 'OK', litteral => 1)) {
             $self->{output}->output_add(long_msg => sprintf("Indice %s status is in %s state",
@@ -151,7 +148,7 @@ sub run {
         }
     }
 
-    if ($exit ne 'OK') {
+    if (!$self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Some indices are in wrong state"));
     }
