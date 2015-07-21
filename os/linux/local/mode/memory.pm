@@ -74,7 +74,9 @@ sub run {
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
     
-    my ($cached_used, $buffer_used, $free, $total_size);
+    # Buffer can be missing. In Openvz container for example.
+    my $buffer_used = 0;
+    my ($cached_used, $free, $total_size);
     foreach (split(/\n/, $stdout)) {
         if (/^MemTotal:\s+(\d+)/i) {
             $total_size = $1 * 1024;
@@ -87,8 +89,7 @@ sub run {
         }
     }
     
-    if (!defined($total_size) || !defined($cached_used) || 
-        !defined($buffer_used) || !defined($free)) {
+    if (!defined($total_size) || !defined($cached_used) || !defined($free)) {
         $self->{output}->add_option_msg(short_msg => "Some informations missing.");
         $self->{output}->option_exit();
     }
