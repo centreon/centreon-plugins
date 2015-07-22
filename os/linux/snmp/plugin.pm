@@ -37,6 +37,7 @@ sub new {
                          'diskio'           => 'snmp_standard::mode::diskio',
                          'disk-usage'       => 'snmp_standard::mode::diskusage',
                          'inodes'           => 'snmp_standard::mode::inodes',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'load'             => 'snmp_standard::mode::loadaverage',
                          'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
