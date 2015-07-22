@@ -2,12 +2,12 @@
 package Paws::S3::ListMultipartUploads {
   use Moose;
   has Bucket => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Bucket' , required => 1);
-  has Delimiter => (is => 'ro', isa => 'Str');
-  has EncodingType => (is => 'ro', isa => 'Str');
-  has KeyMarker => (is => 'ro', isa => 'Str');
-  has MaxUploads => (is => 'ro', isa => 'Int');
-  has Prefix => (is => 'ro', isa => 'Str');
-  has UploadIdMarker => (is => 'ro', isa => 'Str');
+  has Delimiter => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'delimiter' );
+  has EncodingType => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'encoding-type' );
+  has KeyMarker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'key-marker' );
+  has MaxUploads => (is => 'ro', isa => 'Int', traits => ['ParamInQuery'], query_name => 'max-uploads' );
+  has Prefix => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'prefix' );
+  has UploadIdMarker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'upload-id-marker' );
 
   use MooseX::ClassAttribute;
 

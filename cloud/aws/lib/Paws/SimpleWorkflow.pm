@@ -5,7 +5,7 @@ package Paws::SimpleWorkflow {
   sub target_prefix { 'SimpleWorkflowService' }
   sub json_version { "1.0" }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
 
   
   sub CountClosedWorkflowExecutions {

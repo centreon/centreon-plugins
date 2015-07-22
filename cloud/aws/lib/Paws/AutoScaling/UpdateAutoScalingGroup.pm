@@ -96,7 +96,7 @@ Understanding Auto Scaling Cooldowns.
   
 
 The number of EC2 instances that should be running in the Auto Scaling
-group. This value must be greater than or equal to the minimum size of
+group. This number must be greater than or equal to the minimum size of
 the group and less than or equal to the maximum size of the group.
 
 

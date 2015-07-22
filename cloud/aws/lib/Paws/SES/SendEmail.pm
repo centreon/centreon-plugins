@@ -5,7 +5,9 @@ package Paws::SES::SendEmail {
   has Message => (is => 'ro', isa => 'Paws::SES::Message', required => 1);
   has ReplyToAddresses => (is => 'ro', isa => 'ArrayRef[Str]');
   has ReturnPath => (is => 'ro', isa => 'Str');
+  has ReturnPathArn => (is => 'ro', isa => 'Str');
   has Source => (is => 'ro', isa => 'Str', required => 1);
+  has SourceArn => (is => 'ro', isa => 'Str');
 
   use MooseX::ClassAttribute;
 
@@ -105,17 +107,81 @@ verified with Amazon SES.
 
 
 
+=head2 ReturnPathArn => Str
+
+  
+
+This parameter is used only for sending authorization. It is the ARN of
+the identity that is associated with the sending authorization policy
+that permits you to use the email address specified in the
+C<ReturnPath> parameter.
+
+For example, if the owner of C<example.com> (which has ARN
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>) attaches a
+policy to it that authorizes you to use C<feedback@example.com>, then
+you would specify the C<ReturnPathArn> to be
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>, and the
+C<ReturnPath> to be C<feedback@example.com>.
+
+For more information about sending authorization, see the Amazon SES
+Developer Guide.
+
+
+
+
+
+
+
+
+
+
 =head2 B<REQUIRED> Source => Str
 
   
 
-The identity's email address.
+The email address that is sending the email. This email address must be
+either individually verified with Amazon SES, or from a domain that has
+been verified with Amazon SES. For information about verifying
+identities, see the Amazon SES Developer Guide.
 
-By default, the string must be 7-bit ASCII. If the text must contain
-any other characters, then you must use MIME encoded-word syntax (RFC
-2047) instead of a literal string. MIME encoded-word syntax uses the
-following form: C<=?charset?encoding?encoded-text?=>. For more
+If you are sending on behalf of another user and have been permitted to
+do so by a sending authorization policy, then you must also specify the
+C<SourceArn> parameter. For more information about sending
+authorization, see the Amazon SES Developer Guide.
+
+In all cases, the email address must be 7-bit ASCII. If the text must
+contain any other characters, then you must use MIME encoded-word
+syntax (RFC 2047) instead of a literal string. MIME encoded-word syntax
+uses the following form: C<=?charset?encoding?encoded-text?=>. For more
 information, see RFC 2047.
+
+
+
+
+
+
+
+
+
+
+=head2 SourceArn => Str
+
+  
+
+This parameter is used only for sending authorization. It is the ARN of
+the identity that is associated with the sending authorization policy
+that permits you to send for the email address specified in the
+C<Source> parameter.
+
+For example, if the owner of C<example.com> (which has ARN
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>) attaches a
+policy to it that authorizes you to send from C<user@example.com>, then
+you would specify the C<SourceArn> to be
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>, and the
+C<Source> to be C<user@example.com>.
+
+For more information about sending authorization, see the Amazon SES
+Developer Guide.
 
 
 

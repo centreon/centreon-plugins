@@ -1,9 +1,9 @@
 
 package Paws::Route53::ListHostedZones {
   use Moose;
-  has DelegationSetId => (is => 'ro', isa => 'Str');
-  has Marker => (is => 'ro', isa => 'Str');
-  has MaxItems => (is => 'ro', isa => 'Str');
+  has DelegationSetId => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'delegationsetid' );
+  has Marker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'marker' );
+  has MaxItems => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'maxitems' );
 
   use MooseX::ClassAttribute;
 

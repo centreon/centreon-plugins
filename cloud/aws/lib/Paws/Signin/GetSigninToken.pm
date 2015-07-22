@@ -7,6 +7,7 @@ package Paws::Signin::GetSigninToken {
 
   use MooseX::ClassAttribute;
 
+  class_has _api_uri  => (isa => 'Str', is => 'ro', default => '/federation');
   class_has _api_call => (isa => 'Str', is => 'ro', default => 'getSigninToken');
   class_has _returns => (isa => 'Str', is => 'ro', default => 'Paws::Signin::GetSigninTokenResponse');
   class_has _result_key => (isa => 'Str', is => 'ro');

@@ -4,7 +4,43 @@ package Paws::IAM {
   sub version { '2010-05-08' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'startsWith',
+          'cn-'
+        ]
+      ],
+      uri => 'https://{service}.cn-north-1.amazonaws.com.cn'
+    },
+    {
+      constraints => [
+        [
+          'region',
+          'startsWith',
+          'us-gov'
+        ]
+      ],
+      uri => 'https://{service}.us-gov.amazonaws.com'
+    },
+    {
+      properties => {
+        credentialScope => {
+          region => 'us-east-1'
+        }
+      },
+      uri => 'https://iam.amazonaws.com'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub AddClientIDToOpenIDConnectProvider {
@@ -182,6 +218,11 @@ package Paws::IAM {
     my $call_object = $self->new_with_coercions('Paws::IAM::DeleteSigningCertificate', @_);
     return $self->caller->do_call($self, $call_object);
   }
+  sub DeleteSSHPublicKey {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::IAM::DeleteSSHPublicKey', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
   sub DeleteUser {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::IAM::DeleteUser', @_);
@@ -302,6 +343,11 @@ package Paws::IAM {
     my $call_object = $self->new_with_coercions('Paws::IAM::GetServerCertificate', @_);
     return $self->caller->do_call($self, $call_object);
   }
+  sub GetSSHPublicKey {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::IAM::GetSSHPublicKey', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
   sub GetUser {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::IAM::GetUser', @_);
@@ -412,6 +458,11 @@ package Paws::IAM {
     my $call_object = $self->new_with_coercions('Paws::IAM::ListSigningCertificates', @_);
     return $self->caller->do_call($self, $call_object);
   }
+  sub ListSSHPublicKeys {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::IAM::ListSSHPublicKeys', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
   sub ListUserPolicies {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::IAM::ListUserPolicies', @_);
@@ -512,6 +563,11 @@ package Paws::IAM {
     my $call_object = $self->new_with_coercions('Paws::IAM::UpdateSigningCertificate', @_);
     return $self->caller->do_call($self, $call_object);
   }
+  sub UpdateSSHPublicKey {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::IAM::UpdateSSHPublicKey', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
   sub UpdateUser {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::IAM::UpdateUser', @_);
@@ -525,6 +581,11 @@ package Paws::IAM {
   sub UploadSigningCertificate {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::IAM::UploadSigningCertificate', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
+  sub UploadSSHPublicKey {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::IAM::UploadSSHPublicKey', @_);
     return $self->caller->do_call($self, $call_object);
   }
 }
@@ -1582,6 +1643,32 @@ associated users.
 
 
 
+=head2 DeleteSSHPublicKey(SSHPublicKeyId => Str, UserName => Str)
+
+Each argument is described in detail in: L<Paws::IAM::DeleteSSHPublicKey>
+
+Returns: nothing
+
+  
+
+Deletes the specified SSH public key.
+
+The SSH public key deleted by this action is used only for
+authenticating the associated IAM user to an AWS CodeCommit repository.
+For more information about using SSH keys to authenticate to an AWS
+CodeCommit repository, see Set up AWS CodeCommit for SSH Connections in
+the I<AWS CodeCommit User Guide>.
+
+
+
+
+
+
+
+
+
+
+
 =head2 DeleteUser(UserName => Str)
 
 Each argument is described in detail in: L<Paws::IAM::DeleteUser>
@@ -2154,6 +2241,33 @@ Returns: a L<Paws::IAM::GetServerCertificateResponse> instance
   
 
 Retrieves information about the specified server certificate.
+
+
+
+
+
+
+
+
+
+
+
+=head2 GetSSHPublicKey(Encoding => Str, SSHPublicKeyId => Str, UserName => Str)
+
+Each argument is described in detail in: L<Paws::IAM::GetSSHPublicKey>
+
+Returns: a L<Paws::IAM::GetSSHPublicKeyResponse> instance
+
+  
+
+Retrieves the specified SSH public key, including metadata about the
+key.
+
+The SSH public key retrieved by this action is used only for
+authenticating the associated IAM user to an AWS CodeCommit repository.
+For more information about using SSH keys to authenticate to an AWS
+CodeCommit repository, see Set up AWS CodeCommit for SSH Connections in
+the I<AWS CodeCommit User Guide>.
 
 
 
@@ -2761,6 +2875,37 @@ has no associated users.
 
 
 
+=head2 ListSSHPublicKeys([Marker => Str, MaxItems => Int, UserName => Str])
+
+Each argument is described in detail in: L<Paws::IAM::ListSSHPublicKeys>
+
+Returns: a L<Paws::IAM::ListSSHPublicKeysResponse> instance
+
+  
+
+Returns information about the SSH public keys associated with the
+specified IAM user. If there are none, the action returns an empty
+list.
+
+The SSH public keys returned by this action are used only for
+authenticating the IAM user to an AWS CodeCommit repository. For more
+information about using SSH keys to authenticate to an AWS CodeCommit
+repository, see Set up AWS CodeCommit for SSH Connections in the I<AWS
+CodeCommit User Guide>.
+
+Although each user is limited to a small number of keys, you can still
+paginate the results using the C<MaxItems> and C<Marker> parameters.
+
+
+
+
+
+
+
+
+
+
+
 =head2 ListUserPolicies(UserName => Str, [Marker => Str, MaxItems => Int])
 
 Each argument is described in detail in: L<Paws::IAM::ListUserPolicies>
@@ -3326,6 +3471,35 @@ has no associated users.
 
 
 
+=head2 UpdateSSHPublicKey(SSHPublicKeyId => Str, Status => Str, UserName => Str)
+
+Each argument is described in detail in: L<Paws::IAM::UpdateSSHPublicKey>
+
+Returns: nothing
+
+  
+
+Sets the status of the specified SSH public key to active or inactive.
+SSH public keys that are inactive cannot be used for authentication.
+This action can be used to disable a user's SSH public key as part of a
+key rotation work flow.
+
+The SSH public key affected by this action is used only for
+authenticating the associated IAM user to an AWS CodeCommit repository.
+For more information about using SSH keys to authenticate to an AWS
+CodeCommit repository, see Set up AWS CodeCommit for SSH Connections in
+the I<AWS CodeCommit User Guide>.
+
+
+
+
+
+
+
+
+
+
+
 =head2 UpdateUser(UserName => Str, [NewPath => Str, NewUserName => Str])
 
 Each argument is described in detail in: L<Paws::IAM::UpdateUser>
@@ -3413,6 +3587,33 @@ information about setting up signatures and authorization through the
 API, go to Signing AWS API Requests in the I<AWS General Reference>.
 For general information about using the Query API with IAM, go to
 Making Query Requests in the I<Using IAM>guide.
+
+
+
+
+
+
+
+
+
+
+
+=head2 UploadSSHPublicKey(SSHPublicKeyBody => Str, UserName => Str)
+
+Each argument is described in detail in: L<Paws::IAM::UploadSSHPublicKey>
+
+Returns: a L<Paws::IAM::UploadSSHPublicKeyResponse> instance
+
+  
+
+Uploads an SSH public key and associates it with the specified IAM
+user.
+
+The SSH public key uploaded by this action can be used only for
+authenticating the associated IAM user to an AWS CodeCommit repository.
+For more information about using SSH keys to authenticate to an AWS
+CodeCommit repository, see Set up AWS CodeCommit for SSH Connections in
+the I<AWS CodeCommit User Guide>.
 
 
 

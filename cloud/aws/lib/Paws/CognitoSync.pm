@@ -5,7 +5,7 @@ package Paws::CognitoSync {
   sub version { '2014-06-30' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::RestJsonCaller', 'Paws::Net::RestJsonResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::RestJsonCaller', 'Paws::Net::RestJsonResponse';
 
   
   sub BulkPublish {

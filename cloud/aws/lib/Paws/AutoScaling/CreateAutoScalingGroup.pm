@@ -87,9 +87,9 @@ parameter.
 The amount of time, in seconds, after a scaling activity completes
 before another scaling activity can start.
 
-If C<DefaultCooldown> is not specified, the default value is 300. For
-more information, see Understanding Auto Scaling Cooldowns in the
-I<Auto Scaling Developer Guide>.
+If this parameter is not specified, the default value is 300. For more
+information, see Understanding Auto Scaling Cooldowns in the I<Auto
+Scaling Developer Guide>.
 
 
 
@@ -105,7 +105,7 @@ I<Auto Scaling Developer Guide>.
   
 
 The number of EC2 instances that should be running in the group. This
-value must be greater than or equal to the minimum size of the group
+number must be greater than or equal to the minimum size of the group
 and less than or equal to the maximum size of the group.
 
 

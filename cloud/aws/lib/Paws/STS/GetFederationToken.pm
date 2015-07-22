@@ -95,8 +95,14 @@ the temporary security credentials are used to access a resource that
 has a resource-based policy that specifically allows the federated user
 to access the resource.
 
+The policy plain text must be 2048 bytes or shorter. However, an
+internal conversion compresses it into a packed binary format with a
+separate limit. The PackedPolicySize response element indicates by
+percentage how close to the upper size limit the policy is, with 100%
+equaling the maximum allowed size.
+
 For more information about how permissions work, see Permissions for
-GetFederationToken in I<Using Temporary Security Credentials>.
+GetFederationToken.
 
 
 

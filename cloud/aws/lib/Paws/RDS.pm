@@ -4,7 +4,25 @@ package Paws::RDS {
   sub version { '2014-10-31' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'equals',
+          'us-east-1'
+        ]
+      ],
+      uri => 'https://rds.amazonaws.com'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub AddSourceIdentifierToSubscription {

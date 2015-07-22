@@ -1,17 +1,17 @@
 
 package Paws::S3::UploadPart {
   use Moose;
-  has Body => (is => 'ro', isa => 'Str');
+  has Body => (is => 'ro', isa => 'Str', traits => ['ParamInBody']);
   has Bucket => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Bucket' , required => 1);
   has ContentLength => (is => 'ro', isa => 'Int', traits => ['ParamInHeader'], header_name => 'Content-Length' );
   has ContentMD5 => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'Content-MD5' );
   has Key => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Key' , required => 1);
-  has PartNumber => (is => 'ro', isa => 'Int', required => 1);
+  has PartNumber => (is => 'ro', isa => 'Int', traits => ['ParamInQuery'], query_name => 'partNumber' , required => 1);
   has RequestPayer => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-request-payer' );
   has SSECustomerAlgorithm => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-algorithm' );
   has SSECustomerKey => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-key' );
   has SSECustomerKeyMD5 => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-key-MD5' );
-  has UploadId => (is => 'ro', isa => 'Str', required => 1);
+  has UploadId => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'uploadId' , required => 1);
 
   use MooseX::ClassAttribute;
 

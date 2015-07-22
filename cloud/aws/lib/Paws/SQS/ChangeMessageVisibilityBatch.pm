@@ -1,7 +1,7 @@
 
 package Paws::SQS::ChangeMessageVisibilityBatch {
   use Moose;
-  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::ChangeMessageVisibilityBatchRequestEntry]', required => 1);
+  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::ChangeMessageVisibilityBatchRequestEntry]', traits => ['NameInRequest'], request_name => 'ChangeMessageVisibilityBatchRequestEntry' , required => 1);
   has QueueUrl => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;

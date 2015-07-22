@@ -3,6 +3,7 @@ package Paws::DynamoDB::Scan {
   use Moose;
   has AttributesToGet => (is => 'ro', isa => 'ArrayRef[Str]');
   has ConditionalOperator => (is => 'ro', isa => 'Str');
+  has ConsistentRead => (is => 'ro', isa => 'Bool');
   has ExclusiveStartKey => (is => 'ro', isa => 'Paws::DynamoDB::Key');
   has ExpressionAttributeNames => (is => 'ro', isa => 'Paws::DynamoDB::ExpressionAttributeNameMap');
   has ExpressionAttributeValues => (is => 'ro', isa => 'Paws::DynamoDB::ExpressionAttributeValueMap');
@@ -116,6 +117,47 @@ This parameter does not support attributes of type List or Map.
 
 
 
+=head2 ConsistentRead => Bool
+
+  
+
+A Boolean value that determines the read consistency model during the
+scan:
+
+=over
+
+=item *
+
+If I<ConsistentRead> is C<false>, then I<Scan> will use eventually
+consistent reads. The data returned from I<Scan> might not contain the
+results of other recently completed write operations (PutItem,
+UpdateItem or DeleteItem). The I<Scan> response might include some
+stale data.
+
+=item *
+
+If I<ConsistentRead> is C<true>, then I<Scan> will use strongly
+consistent reads. All of the write operations that completed before the
+I<Scan> began are guaranteed to be contained in the I<Scan> response.
+
+=back
+
+The default setting for I<ConsistentRead> is C<false>, meaning that
+eventually consistent reads will be used.
+
+Strongly consistent reads are not supported on global secondary
+indexes. If you scan a global secondary index with I<ConsistentRead>
+set to true, you will receive a I<ValidationException>.
+
+
+
+
+
+
+
+
+
+
 =head2 ExclusiveStartKey => Paws::DynamoDB::Key
 
   
@@ -205,9 +247,8 @@ C<
 Tokens that begin with the B<:> character are I<expression attribute
 values>, which are placeholders for the actual value at runtime.
 
-For more information on expression attribute names, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute names, see Accessing Item
+Attributes in the I<Amazon DynamoDB Developer Guide>.
 
 
 
@@ -240,9 +281,8 @@ You could then use these values in an expression, such as this:
 
 C<ProductStatus IN (:avail, :back, :disc)>
 
-For more information on expression attribute values, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute values, see Specifying
+Conditions in the I<Amazon DynamoDB Developer Guide>.
 
 
 

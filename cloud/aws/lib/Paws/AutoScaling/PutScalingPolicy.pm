@@ -4,9 +4,14 @@ package Paws::AutoScaling::PutScalingPolicy {
   has AdjustmentType => (is => 'ro', isa => 'Str', required => 1);
   has AutoScalingGroupName => (is => 'ro', isa => 'Str', required => 1);
   has Cooldown => (is => 'ro', isa => 'Int');
+  has EstimatedInstanceWarmup => (is => 'ro', isa => 'Int');
+  has MetricAggregationType => (is => 'ro', isa => 'Str');
+  has MinAdjustmentMagnitude => (is => 'ro', isa => 'Int');
   has MinAdjustmentStep => (is => 'ro', isa => 'Int');
   has PolicyName => (is => 'ro', isa => 'Str', required => 1);
+  has PolicyType => (is => 'ro', isa => 'Str');
   has ScalingAdjustment => (is => 'ro', isa => 'Int');
+  has StepAdjustments => (is => 'ro', isa => 'ArrayRef[Paws::AutoScaling::StepAdjustment]');
 
   use MooseX::ClassAttribute;
 
@@ -77,10 +82,70 @@ The name or ARN of the group.
   
 
 The amount of time, in seconds, after a scaling activity completes and
-before the next scaling activity can start.
+before the next scaling activity can start. If this parameter is not
+specified, the default cooldown period for the group applies.
+
+This parameter is not supported unless the policy type is
+C<SimpleScaling>.
 
 For more information, see Understanding Auto Scaling Cooldowns in the
 I<Auto Scaling Developer Guide>.
+
+
+
+
+
+
+
+
+
+
+=head2 EstimatedInstanceWarmup => Int
+
+  
+
+The estimated time, in seconds, until a newly launched instance can
+contribute to the CloudWatch metrics. The default is to use the value
+specified for the default cooldown period for the group.
+
+This parameter is not supported if the policy type is C<SimpleScaling>.
+
+
+
+
+
+
+
+
+
+
+=head2 MetricAggregationType => Str
+
+  
+
+The aggregation type for the CloudWatch metrics. Valid values are
+C<Minimum>, C<Maximum>, and C<Average>. If the aggregation type is
+null, the value is treated as C<Average>.
+
+This parameter is not supported if the policy type is C<SimpleScaling>.
+
+
+
+
+
+
+
+
+
+
+=head2 MinAdjustmentMagnitude => Int
+
+  
+
+The minimum number of instances to scale. If the value of
+C<AdjustmentType> is C<PercentChangeInCapacity>, the scaling policy
+changes the C<DesiredCapacity> of the Auto Scaling group by at least
+this many instances. Otherwise, the error is C<ValidationError>.
 
 
 
@@ -95,12 +160,8 @@ I<Auto Scaling Developer Guide>.
 
   
 
-Used with C<AdjustmentType> with the value C<PercentChangeInCapacity>,
-the scaling policy changes the C<DesiredCapacity> of the Auto Scaling
-group by at least the number of instances specified in the value.
-
-You will get a C<ValidationError> if you use C<MinAdjustmentStep> on a
-policy with an C<AdjustmentType> other than C<PercentChangeInCapacity>.
+Available for backward compatibility. Use C<MinAdjustmentMagnitude>
+instead.
 
 
 
@@ -126,15 +187,51 @@ The name of the policy.
 
 
 
+=head2 PolicyType => Str
+
+  
+
+The policy type. Valid values are C<SimpleScaling> and C<StepScaling>.
+If the policy type is null, the value is treated as C<SimpleScaling>.
+
+
+
+
+
+
+
+
+
+
 =head2 ScalingAdjustment => Int
 
   
 
-The number of instances by which to scale. C<AdjustmentType> determines
-the interpretation of this number (for example, as an absolute number
-or as a percentage of the existing Auto Scaling group size). A positive
-increment adds to the current capacity and a negative value removes
-from the current capacity.
+The amount by which to scale, based on the specified adjustment type. A
+positive value adds to the current capacity while a negative number
+removes from the current capacity.
+
+This parameter is required if the policy type is C<SimpleScaling> and
+not supported otherwise.
+
+
+
+
+
+
+
+
+
+
+=head2 StepAdjustments => ArrayRef[Paws::AutoScaling::StepAdjustment]
+
+  
+
+A set of adjustments that enable you to scale based on the size of the
+alarm breach.
+
+This parameter is required if the policy type is C<StepScaling> and not
+supported otherwise.
 
 
 

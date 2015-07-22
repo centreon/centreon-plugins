@@ -4,7 +4,25 @@ package Paws::SDB {
   sub version { '2009-04-15' }
   sub flattened_arrays { 1 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V2Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V2Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'equals',
+          'us-east-1'
+        ]
+      ],
+      uri => 'https://sdb.amazonaws.com'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub BatchDeleteAttributes {

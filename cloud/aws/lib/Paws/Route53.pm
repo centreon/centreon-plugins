@@ -5,7 +5,25 @@ package Paws::Route53 {
   sub version { '2013-04-01' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V3HTTPSSignature', 'Paws::Net::RestXmlCaller', 'Paws::Net::RestXMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V3HTTPSSignature', 'Paws::Net::RestXmlCaller', 'Paws::Net::RestXMLResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'notStartsWith',
+          'cn-'
+        ]
+      ],
+      uri => 'https://route53.amazonaws.com'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub AssociateVPCWithHostedZone {

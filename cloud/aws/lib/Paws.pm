@@ -53,7 +53,7 @@ __PACKAGE__->meta->make_immutable;
 
 package Paws;
 
-our $VERSION = '0.11';
+our $VERSION = '0.13';
 
 use Moose;
 use MooseX::ClassAttribute;
@@ -190,7 +190,7 @@ These parameters are basically passed to the service class constructor
 
 =head1 AUTHENTICATION
 
-Service classes by default try to authenticate with a chained autheticator. The chained authenticator tries to first find credentials in your enviroinment variables B<AWS_ACCESS_KEY> and B<AWS_SECRET_KEY> (note that B<AWS_ACCESS_KEY_ID> and B<AWS_SECRET_ACCESS_KEY> are also scanned for compatibility with the official SDKs). Second, it will look for credentials in the B<default> profile of the B<~/.aws/credentials> (an ini-formatted file). Last, if no environment variables are found, then a call to retrieve Role credentials is done. If your instance is running on an AWS instance, and has a Role assigned, the SDK will automatically retrieve credentials to call any services that the instances Role permits.
+Service classes by default try to authenticate with a chained autheticator. The chained authenticator tries to first find credentials in your enviroinment variables B<AWS_ACCESS_KEY> and B<AWS_SECRET_KEY> (note that B<AWS_ACCESS_KEY_ID> and B<AWS_SECRET_ACCESS_KEY> are also scanned for compatibility with the official SDKs). Second, it will look for credentials in the B<default> profile of the B<~/.aws/credentials> or the file in B<AWS_CONFIG_FILE> env variable (an ini-formatted file). Last, if no environment variables are found, then a call to retrieve Role credentials is done. If your instance is running on an AWS instance, and has a Role assigned, the SDK will automatically retrieve credentials to call any services that the instances Role permits.
 
 Please never burn credentials into your code. That's why the methods for passing an explicit access key and secret key are not documented.
 

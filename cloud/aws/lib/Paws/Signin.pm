@@ -1,11 +1,21 @@
 package Paws::Signin {
   use Moose;
-  sub service { 'signin.aws' }
+  sub service { 'signin' }
   sub version { '2010-05-08' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::SigninEndpointCaller', 'Paws::Net::NoSignature', 'Paws::Net::SigninCaller', 'Paws::Net::JsonResponse';
-  
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::NoSignature', 'Paws::Net::SigninCaller', 'Paws::Net::JsonResponse';
+ 
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+    $regioninfo = [
+    {
+      uri => 'https://signin.aws.amazon.com'
+    }
+    ];
+    return $regioninfo;
+  });
+ 
   sub GetSigninToken {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::Signin::GetSigninToken', @_);

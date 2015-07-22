@@ -1,7 +1,7 @@
 
 package Paws::SQS::DeleteMessageBatch {
   use Moose;
-  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::DeleteMessageBatchRequestEntry]', required => 1);
+  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::DeleteMessageBatchRequestEntry]', traits => ['NameInRequest'], request_name => 'DeleteMessageBatchRequestEntry' , required => 1);
   has QueueUrl => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;

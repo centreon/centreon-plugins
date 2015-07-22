@@ -4,6 +4,7 @@ package Paws::DynamoDB::UpdateTable {
   has AttributeDefinitions => (is => 'ro', isa => 'ArrayRef[Paws::DynamoDB::AttributeDefinition]');
   has GlobalSecondaryIndexUpdates => (is => 'ro', isa => 'ArrayRef[Paws::DynamoDB::GlobalSecondaryIndexUpdate]');
   has ProvisionedThroughput => (is => 'ro', isa => 'Paws::DynamoDB::ProvisionedThroughput');
+  has StreamSpecification => (is => 'ro', isa => 'Paws::DynamoDB::StreamSpecification');
   has TableName => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;
@@ -78,6 +79,9 @@ I<Delete> - remove a global secondary index from the table.
 
 =back
 
+For more information, see Managing Global Secondary Indexes in the
+I<Amazon DynamoDB Developer Guide>.
+
 
 
 
@@ -90,6 +94,25 @@ I<Delete> - remove a global secondary index from the table.
 =head2 ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput
 
   
+
+=head2 StreamSpecification => Paws::DynamoDB::StreamSpecification
+
+  
+
+Represents the DynamoDB Streams configuration for the table.
+
+You will receive a I<ResourceInUseException> if you attempt to enable a
+stream on a table that already has a stream, or if you attempt to
+disable a stream on a table which does not have a stream.
+
+
+
+
+
+
+
+
+
 
 =head2 B<REQUIRED> TableName => Str
 

@@ -37,7 +37,10 @@ Values for attributes that are native types (Int, String, Float, etc) can passed
 
   
 
-A list of one or more identities.
+A list of one or more identities. You can specify an identity by using
+its name or by using its Amazon Resource Name (ARN). Examples:
+C<user@example.com>, C<example.com>,
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>.
 
 
 

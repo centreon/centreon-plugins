@@ -20,9 +20,9 @@ Paws::IAM::ListVirtualMFADevicesResponse
 
   
 
-A flag that indicates whether there are more items to list. If your
+A flag that indicates whether there are more items to return. If your
 results were truncated, you can make a subsequent pagination request
-using the C<Marker> request parameter to retrieve more items the list.
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -36,8 +36,8 @@ using the C<Marker> request parameter to retrieve more items the list.
 
   
 
-If C<IsTruncated> is C<true>, this element is present and contains the
-value to use for the C<Marker> parameter in a subsequent pagination
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 
 

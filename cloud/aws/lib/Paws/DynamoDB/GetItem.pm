@@ -72,8 +72,9 @@ size, not on the amount of data that is returned to an application.
 
   
 
-A value that if set to C<true>, then the operation uses strongly
-consistent reads; otherwise, eventually consistent reads are used.
+Determines the read consistency model: If set to C<true>, then the
+operation uses strongly consistent reads; otherwise, the operation uses
+eventually consistent reads.
 
 
 
@@ -149,9 +150,8 @@ C<
 Tokens that begin with the B<:> character are I<expression attribute
 values>, which are placeholders for the actual value at runtime.
 
-For more information on expression attribute names, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute names, see Accessing Item
+Attributes in the I<Amazon DynamoDB Developer Guide>.
 
 
 

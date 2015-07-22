@@ -5,7 +5,31 @@ package Paws::DynamoDB {
   sub target_prefix { 'DynamoDB_20120810' }
   sub json_version { "1.0" }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'equals',
+          'local'
+        ]
+      ],
+      properties => {
+        credentialScope => {
+          region => 'us-east-1',
+          service => 'dynamodb'
+        }
+      },
+      uri => 'http://localhost:8000'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub BatchGetItem {
@@ -280,6 +304,10 @@ result is returned, the operation returns a value for
 I<UnprocessedKeys>. You can use this value to retry the operation
 starting with the next item to get.
 
+If you request more than 100 items I<BatchGetItem> will return a
+I<ValidationException> with the message "Too many items requested for
+the BatchGetItem call".
+
 For example, if you ask to retrieve 100 items, but each individual item
 is 300 KB in size, the system returns 52 items (so as not to exceed the
 16 MB limit). It also returns an appropriate I<UnprocessedKeys> value
@@ -386,15 +414,14 @@ calls would. For example, you cannot specify conditions on individual
 put and delete requests, and I<BatchWriteItem> does not return deleted
 items in the response.
 
-If you use a programming language that supports concurrency, such as
-Java, you can use threads to write items in parallel. Your application
-must include the necessary logic to manage the threads. With languages
-that don't support threading, such as PHP, you must update or delete
-the specified items one at a time. In both situations,
-I<BatchWriteItem> provides an alternative where the API performs the
-specified put and delete operations in parallel, giving you the power
-of the thread pool approach without having to introduce complexity into
-your application.
+If you use a programming language that supports concurrency, you can
+use threads to write items in parallel. Your application must include
+the necessary logic to manage the threads. With languages that don't
+support threading, you must update or delete the specified items one at
+a time. In both situations, I<BatchWriteItem> provides an alternative
+where the API performs the specified put and delete operations in
+parallel, giving you the power of the thread pool approach without
+having to introduce complexity into your application.
 
 Parallel processing reduces latency, but each specified put and delete
 request consumes the same number of write capacity units whether it is
@@ -446,7 +473,7 @@ The total request size exceeds 16 MB.
 
 
 
-=head2 CreateTable(AttributeDefinitions => ArrayRef[Paws::DynamoDB::AttributeDefinition], KeySchema => ArrayRef[Paws::DynamoDB::KeySchemaElement], ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput, TableName => Str, [GlobalSecondaryIndexes => ArrayRef[Paws::DynamoDB::GlobalSecondaryIndex], LocalSecondaryIndexes => ArrayRef[Paws::DynamoDB::LocalSecondaryIndex]])
+=head2 CreateTable(AttributeDefinitions => ArrayRef[Paws::DynamoDB::AttributeDefinition], KeySchema => ArrayRef[Paws::DynamoDB::KeySchemaElement], ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput, TableName => Str, [GlobalSecondaryIndexes => ArrayRef[Paws::DynamoDB::GlobalSecondaryIndex], LocalSecondaryIndexes => ArrayRef[Paws::DynamoDB::LocalSecondaryIndex], StreamSpecification => Paws::DynamoDB::StreamSpecification])
 
 Each argument is described in detail in: L<Paws::DynamoDB::CreateTable>
 
@@ -539,6 +566,10 @@ as I<GetItem> and I<PutItem>, on a table in the C<DELETING> state until
 the table deletion is complete.
 
 When you delete a table, any indexes on that table are also deleted.
+
+If you have DynamoDB Streams enabled on the table, then the
+corresponding stream on that table goes into the C<DISABLED> state, and
+the stream is automatically deleted after 24 hours.
 
 Use the I<DescribeTable> API to check the status of the table.
 
@@ -691,8 +722,8 @@ index to directly access items from that table or index.
 Use the I<KeyConditionExpression> parameter to provide a specific hash
 key value. The I<Query> operation will return all of the items from the
 table or index with that hash key value. You can optionally narrow the
-scope of the I<Query> by specifying a range key value and a comparison
-operator in the I<KeyConditionExpression>. You can use the
+scope of the I<Query> operation by specifying a range key value and a
+comparison operator in I<KeyConditionExpression>. You can use the
 I<ScanIndexForward> parameter to get results in forward or reverse
 order, by range key or by index key.
 
@@ -701,18 +732,18 @@ capacity units for that type of read operation.
 
 If the total number of items meeting the query criteria exceeds the
 result set size limit of 1 MB, the query stops and results are returned
-to the user with I<LastEvaluatedKey> to continue the query in a
-subsequent operation. Unlike a I<Scan> operation, a I<Query> operation
-never returns both an empty result set and a I<LastEvaluatedKey>. The
-I<LastEvaluatedKey> is only provided if the results exceed 1 MB, or if
-you have used I<Limit>.
+to the user with the I<LastEvaluatedKey> element to continue the query
+in a subsequent operation. Unlike a I<Scan> operation, a I<Query>
+operation never returns both an empty result set and a
+I<LastEvaluatedKey> value. I<LastEvaluatedKey> is only provided if the
+results exceed 1 MB, or if you have used the I<Limit> parameter.
 
 You can query a table, a local secondary index, or a global secondary
 index. For a query on a table or on a local secondary index, you can
-set I<ConsistentRead> to true and obtain a strongly consistent result.
-Global secondary indexes support eventually consistent reads only, so
-do not specify I<ConsistentRead> when querying a global secondary
-index.
+set the I<ConsistentRead> parameter to C<true> and obtain a strongly
+consistent result. Global secondary indexes support eventually
+consistent reads only, so do not specify I<ConsistentRead> when
+querying a global secondary index.
 
 
 
@@ -724,7 +755,7 @@ index.
 
 
 
-=head2 Scan(TableName => Str, [AttributesToGet => ArrayRef[Str], ConditionalOperator => Str, ExclusiveStartKey => Paws::DynamoDB::Key, ExpressionAttributeNames => Paws::DynamoDB::ExpressionAttributeNameMap, ExpressionAttributeValues => Paws::DynamoDB::ExpressionAttributeValueMap, FilterExpression => Str, IndexName => Str, Limit => Int, ProjectionExpression => Str, ReturnConsumedCapacity => Str, ScanFilter => Paws::DynamoDB::FilterConditionMap, Segment => Int, Select => Str, TotalSegments => Int])
+=head2 Scan(TableName => Str, [AttributesToGet => ArrayRef[Str], ConditionalOperator => Str, ConsistentRead => Bool, ExclusiveStartKey => Paws::DynamoDB::Key, ExpressionAttributeNames => Paws::DynamoDB::ExpressionAttributeNameMap, ExpressionAttributeValues => Paws::DynamoDB::ExpressionAttributeValueMap, FilterExpression => Str, IndexName => Str, Limit => Int, ProjectionExpression => Str, ReturnConsumedCapacity => Str, ScanFilter => Paws::DynamoDB::FilterConditionMap, Segment => Int, Select => Str, TotalSegments => Int])
 
 Each argument is described in detail in: L<Paws::DynamoDB::Scan>
 
@@ -742,13 +773,16 @@ I<LastEvaluatedKey> value to continue the scan in a subsequent
 operation. The results also include the number of items exceeding the
 limit. A scan can result in no table data meeting the filter criteria.
 
-The result set is eventually consistent.
-
 By default, I<Scan> operations proceed sequentially; however, for
 faster performance on a large table or secondary index, applications
 can request a parallel I<Scan> operation by providing the I<Segment>
 and I<TotalSegments> parameters. For more information, see Parallel
 Scan in the I<Amazon DynamoDB Developer Guide>.
+
+By default, I<Scan> uses eventually consistent reads when acessing the
+data in the table or local secondary index. However, you can use
+strongly consistent reads instead by setting the I<ConsistentRead>
+parameter to I<true>.
 
 
 
@@ -789,7 +823,7 @@ I<UpdateItem> operation using the I<ReturnValues> parameter.
 
 
 
-=head2 UpdateTable(TableName => Str, [AttributeDefinitions => ArrayRef[Paws::DynamoDB::AttributeDefinition], GlobalSecondaryIndexUpdates => ArrayRef[Paws::DynamoDB::GlobalSecondaryIndexUpdate], ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput])
+=head2 UpdateTable(TableName => Str, [AttributeDefinitions => ArrayRef[Paws::DynamoDB::AttributeDefinition], GlobalSecondaryIndexUpdates => ArrayRef[Paws::DynamoDB::GlobalSecondaryIndexUpdate], ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput, StreamSpecification => Paws::DynamoDB::StreamSpecification])
 
 Each argument is described in detail in: L<Paws::DynamoDB::UpdateTable>
 
@@ -797,24 +831,37 @@ Returns: a L<Paws::DynamoDB::UpdateTableOutput> instance
 
   
 
-Updates the provisioned throughput for the given table, or manages the
-global secondary indexes on the table.
+Modifies the provisioned throughput settings, global secondary indexes,
+or DynamoDB Streams settings for a given table.
 
-You can increase or decrease the table's provisioned throughput values
-within the maximums and minimums listed in the Limits section in the
-I<Amazon DynamoDB Developer Guide>.
+You can only perform one of the following operations at once:
 
-In addition, you can use I<UpdateTable> to add, modify or delete global
-secondary indexes on the table. For more information, see Managing
-Global Secondary Indexes in the I<Amazon DynamoDB Developer Guide>.
+=over
 
-The table must be in the C<ACTIVE> state for I<UpdateTable> to succeed.
-I<UpdateTable> is an asynchronous operation; while executing the
-operation, the table is in the C<UPDATING> state. While the table is in
-the C<UPDATING> state, the table still has the provisioned throughput
-from before the call. The table's new provisioned throughput settings
-go into effect when the table returns to the C<ACTIVE> state; at that
-point, the I<UpdateTable> operation is complete.
+=item *
+
+Modify the provisioned throughput settings of the table.
+
+=item *
+
+Enable or disable Streams on the table.
+
+=item *
+
+Remove a global secondary index from the table.
+
+=item *
+
+Create a new global secondary index on the table. Once the index begins
+backfilling, you can use I<UpdateTable> to perform other operations.
+
+=back
+
+I<UpdateTable> is an asynchronous operation; while it is executing, the
+table status changes from C<ACTIVE> to C<UPDATING>. While it is
+C<UPDATING>, you cannot issue another I<UpdateTable> request. When the
+table returns to the C<ACTIVE> state, the I<UpdateTable> operation is
+complete.
 
 
 

@@ -34,10 +34,9 @@ A list of the user's signing certificate information.
 
   
 
-A flag that indicates whether there are more certificate IDs to list.
-If your results were truncated, you can make a subsequent pagination
-request using the C<Marker> request parameter to retrieve more
-certificates in the list.
+A flag that indicates whether there are more items to return. If your
+results were truncated, you can make a subsequent pagination request
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -51,8 +50,8 @@ certificates in the list.
 
   
 
-If C<IsTruncated> is C<true>, this element is present and contains the
-value to use for the C<Marker> parameter in a subsequent pagination
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 
 

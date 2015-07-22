@@ -35,10 +35,9 @@ Information about the group.
 
   
 
-A flag that indicates whether there are more user names to list. If
-your results were truncated, you can make a subsequent pagination
-request using the C<Marker> request parameter to retrieve more user
-names in the list.
+A flag that indicates whether there are more items to return. If your
+results were truncated, you can make a subsequent pagination request
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -52,7 +51,7 @@ names in the list.
 
   
 
-If IsTruncated is C<true>, then this element is present and contains
+When C<IsTruncated> is C<true>, this element is present and contains
 the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 

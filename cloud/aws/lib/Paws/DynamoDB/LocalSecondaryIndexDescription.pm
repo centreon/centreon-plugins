@@ -1,5 +1,6 @@
 package Paws::DynamoDB::LocalSecondaryIndexDescription {
   use Moose;
+  has IndexArn => (is => 'ro', isa => 'Str');
   has IndexName => (is => 'ro', isa => 'Str');
   has IndexSizeBytes => (is => 'ro', isa => 'Int');
   has ItemCount => (is => 'ro', isa => 'Int');

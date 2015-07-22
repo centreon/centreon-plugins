@@ -2,8 +2,8 @@
 package Paws::CloudFront::ListInvalidations2015_04_17 {
   use Moose;
   has DistributionId => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'DistributionId' , required => 1);
-  has Marker => (is => 'ro', isa => 'Str');
-  has MaxItems => (is => 'ro', isa => 'Str');
+  has Marker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'Marker' );
+  has MaxItems => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'MaxItems' );
 
   use MooseX::ClassAttribute;
 

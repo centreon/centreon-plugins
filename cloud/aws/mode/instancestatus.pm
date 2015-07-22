@@ -43,6 +43,15 @@ use centreon::plugins::misc;
 use Data::Dumper;
 use JSON;
 
+my %EC2_instance_states = ('pending' => 'WARNING',
+                           'running' => 'OK',
+                           'shutting-down' => 'CRITICAL',
+                           'terminated' => 'CRITICAL',
+                           'stopping' => 'CRITICAL',
+                           'stopped' => 'CRITICAL'
+);
+my $EC2_includeallinstances = 1;
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -53,9 +62,10 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "service:s"     => { name => 'service', default => 'EC2' },
-                                  "state:s@"     => { name => 'state', default => ['all'] },
+                                  "state:s"     => { name => 'state', default => 'all' },
                                   "no-includeallinstances"     => { name => 'includeallinstances' },
                                   "region:s"      => { name => 'region' },
+                                  "exclude:s"     => { name => 'exclude' },
                                 });
     $self->{result} = {};
     return $self;
@@ -64,51 +74,68 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
     
-    if (defined($self->{option_results}->{includeallinstances})) {
-		$self->{option_results}->{includeallinstances} = 0;
-	}
-	else {
-		$self->{option_results}->{includeallinstances} = 1;
-	}
-
-	foreach my $curstate (@{$self->{option_results}->{state}}){
-		if ($curstate eq 'all'){
-			$self->{option_results}->{state} = ['pending','running','shutting-down','terminated','stopping','stopped'];
-			last;
-    	}
-	}
+    if (!defined($self->{option_results}->{region})) {
+        $self->{output}->add_option_msg(severity => 'UNKNOWN',
+	       								short_msg => "Please set the region. ex: --region \"eu-west-1\"");
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     my @result;
 
-    my $Instance = Paws->service($self->{option_results}->{service}, , region => $self->{option_results}->{region});
+	# Getting some parameters
+	# includeallinstances
+	if (defined($self->{option_results}->{includeallinstances})) {
+		$self->{option_results}->{includeallinstances} = 0;
+	}
+	else {
+		$self->{option_results}->{includeallinstances} = $EC2_includeallinstances;
+	}
+	
+	# states
+	if ($self->{option_results}->{state} eq 'all'){
+		@{$self->{option_results}->{statetab}} = keys(%EC2_instance_states);
+    }
+    else {
+    	@{$self->{option_results}->{statetab}} = split(/,/, $self->{option_results}->{state});
+    	foreach my $curstate (@{$self->{option_results}->{statetab}}) {
+    		if (! grep { /^$curstate$/ } keys(%EC2_instance_states) ) {
+	       		$self->{output}->add_option_msg(severity => 'UNKNOWN',
+	       										short_msg => "The state doesn't exist.");
+        		$self->{output}->option_exit();
+	    	}
+    	}
+    }
     
+    # exclusions
+    if (defined($self->{option_results}->{exclude})){
+    	my @excludetab = split(/,/, $self->{option_results}->{exclude});
+		my %array1 = map { $_ => 1 } @excludetab;
+		@{$self->{option_results}->{statetab}} = grep { not $array1{$_} } @{$self->{option_results}->{statetab}};
+    }
+    
+    # Getting data from AWS
+    my $Instance = Paws->service($self->{option_results}->{service}, region => $self->{option_results}->{region});
 
     $self->{status_command} = $Instance->DescribeInstanceStatus(IncludeAllInstances => $self->{option_results}->{includeallinstances},
-    															Filters => [{'Name' => 'instance-state-name', 'Values' => $self->{option_results}->{state}}]
+    															Filters => [{'Name' => 'instance-state-name', 'Values' => $self->{option_results}->{statetab}}]
     															);
 
     # Compute data
     $self->{option_results}->{instancecount}->{'total'} = '0';
-    foreach my $curstate (@{$self->{option_results}->{state}}){
+    foreach my $curstate (@{$self->{option_results}->{statetab}}){
     	$self->{option_results}->{instancecount}->{$curstate} = '0';
     }
    	foreach my $l (@{$self->{status_command}->{InstanceStatuses}}) {
-   		$self->{result}->{instance} = {instanceid => $l->InstanceId, instancestate => $l->InstanceState->Name};
+   		$self->{result}->{instance}->{$l->InstanceId} = $l->InstanceState->Name;
+   		
+   		# long output for each instance
    		$self->{output}->output_add(long_msg => "'" . $l->InstanceId . "' [state = " . $l->InstanceState->Name . ']');
-   		foreach my $curstate (@{$self->{option_results}->{state}}){
+   		
+   		foreach my $curstate (@{$self->{option_results}->{statetab}}){
    			if($l->InstanceState->Name eq $curstate){
    				$self->{option_results}->{instancecount}->{$curstate}++;
    			}
@@ -120,29 +147,30 @@ sub manage_selection {
 sub run {
     my ($self, %options) = @_;
 
-    my $msg;
-    my $old_status = 'ok';
-
+    my ($msg, $exit_code);
+    my $old_status = 'OK';
+    
     $self->manage_selection();
 
     # Send formated data to Centreon
-    my $exit_code = $self->{perfdata}->threshold_check(value => $self->{option_results}->{instancecount}->{'total'},
-                              threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-	
-	$self->{output}->perfdata_add(label => 'total instances',
+    # Perf data
+	$self->{output}->perfdata_add(label => 'total',
                                   value => $self->{option_results}->{instancecount}->{'total'},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+                                  );
                                   
-    foreach my $curstate (@{$self->{option_results}->{state}}){
-    	$self->{output}->perfdata_add(label => $curstate.' instances',
+    foreach my $curstate (@{$self->{option_results}->{statetab}}){
+    	$self->{output}->perfdata_add(label => $curstate,
                                   value => $self->{option_results}->{instancecount}->{$curstate},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+                                  );
+        # Most critical state
+        if ($self->{option_results}->{instancecount}->{$curstate} != '0') {
+        	$exit_code = $EC2_instance_states{$curstate};
+        	$exit_code = $self->{output}->get_most_critical(status => [ $exit_code, $old_status ]);
+        	$old_status = $exit_code;
+        }
     }
     
+    # Output message
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("Total instances: %s", $self->{option_results}->{instancecount}->{'total'})
                                 );

@@ -96,27 +96,26 @@ package Paws::Net::RestXmlCaller {
   sub prepare_request_for_call {
     my ($self, $call) = @_;
 
-    my $request = Paws::Net::APIRequest->new();
+    my $request;
+    if ($self->isa('Paws::S3')){
+      require Paws::Net::S3APIRequest;
+      $request = Paws::Net::S3APIRequest->new();
+    } else {
+      $request = Paws::Net::APIRequest->new();
+    }
 
     my $uri = $self->_call_uri($call);
     $request->uri($uri);
 
     my $url = $self->_api_endpoint . $uri;
-    if ($call->_api_method eq 'GET'){
-      my @param;
-      my %qc_params = $self->_to_querycaller_params($call);
-
-      for my $p (keys %qc_params) {
-        push @param , join '=' , map { $self->_uri_escape($_,"^A-Za-z0-9\-_.~") } ($p, $qc_params{$p});
-      }
-      $url .= '?' . (join '&', @param) if (@param);
-      $request->url($url);
-    } else {
-      $request->parameters({ $self->_to_querycaller_params($call) });
-      $request->url($url);
-    }
+    $request->parameters({ $self->_to_querycaller_params($call) });
+    $request->url($url);
 
     $request->method($call->_api_method);
+
+    #$request->headers->header( 'content-length' => $self->content_length ) if $content;
+    #$request->headers->header( 'content-type'   => $self->content_type ) if $content;
+    #$request->content();
 
     $self->sign($request);
 

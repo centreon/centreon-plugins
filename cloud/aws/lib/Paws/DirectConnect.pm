@@ -5,7 +5,7 @@ package Paws::DirectConnect {
   sub target_prefix { 'OvertureService' }
   sub json_version { "1.1" }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
 
   
   sub AllocateConnectionOnInterconnect {

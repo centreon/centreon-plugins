@@ -5,6 +5,7 @@ package Paws::AutoScaling::DescribePolicies {
   has MaxRecords => (is => 'ro', isa => 'Int');
   has NextToken => (is => 'ro', isa => 'Str');
   has PolicyNames => (is => 'ro', isa => 'ArrayRef[Str]');
+  has PolicyTypes => (is => 'ro', isa => 'ArrayRef[Str]');
 
   use MooseX::ClassAttribute;
 
@@ -91,6 +92,22 @@ this list, all policy names are described. If an group name is
 provided, the results are limited to that group. This list is limited
 to 50 items. If you specify an unknown policy name, it is ignored with
 no error.
+
+
+
+
+
+
+
+
+
+
+=head2 PolicyTypes => ArrayRef[Str]
+
+  
+
+One or more policy types. Valid values are C<SimpleScaling> and
+C<StepScaling>.
 
 
 

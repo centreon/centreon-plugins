@@ -4,12 +4,17 @@ package Paws::SES {
   sub version { '2010-12-01' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
 
   
   sub DeleteIdentity {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::SES::DeleteIdentity', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
+  sub DeleteIdentityPolicy {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::SES::DeleteIdentityPolicy', @_);
     return $self->caller->do_call($self, $call_object);
   }
   sub DeleteVerifiedEmailAddress {
@@ -25,6 +30,11 @@ package Paws::SES {
   sub GetIdentityNotificationAttributes {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::SES::GetIdentityNotificationAttributes', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
+  sub GetIdentityPolicies {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::SES::GetIdentityPolicies', @_);
     return $self->caller->do_call($self, $call_object);
   }
   sub GetIdentityVerificationAttributes {
@@ -47,9 +57,19 @@ package Paws::SES {
     my $call_object = $self->new_with_coercions('Paws::SES::ListIdentities', @_);
     return $self->caller->do_call($self, $call_object);
   }
+  sub ListIdentityPolicies {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::SES::ListIdentityPolicies', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
   sub ListVerifiedEmailAddresses {
     my $self = shift;
     my $call_object = $self->new_with_coercions('Paws::SES::ListVerifiedEmailAddresses', @_);
+    return $self->caller->do_call($self, $call_object);
+  }
+  sub PutIdentityPolicy {
+    my $self = shift;
+    my $call_object = $self->new_with_coercions('Paws::SES::PutIdentityPolicy', @_);
     return $self->caller->do_call($self, $call_object);
   }
   sub SendEmail {
@@ -169,6 +189,37 @@ This action is throttled at one request per second.
 
 
 
+=head2 DeleteIdentityPolicy(Identity => Str, PolicyName => Str)
+
+Each argument is described in detail in: L<Paws::SES::DeleteIdentityPolicy>
+
+Returns: a L<Paws::SES::DeleteIdentityPolicyResponse> instance
+
+  
+
+Deletes the specified sending authorization policy for the given
+identity (email address or domain). This API returns successfully even
+if a policy with the specified name does not exist.
+
+This API is for the identity owner only. If you have not verified the
+identity, this API will return an error.
+
+Sending authorization is a feature that enables an identity owner to
+authorize other senders to use its identities. For information about
+using sending authorization, see the Amazon SES Developer Guide.
+
+This action is throttled at one request per second.
+
+
+
+
+
+
+
+
+
+
+
 =head2 DeleteVerifiedEmailAddress(EmailAddress => Str)
 
 Each argument is described in detail in: L<Paws::SES::DeleteVerifiedEmailAddress>
@@ -258,6 +309,38 @@ notification attributes for up to 100 identities at a time.
 
 For more information about using notifications with Amazon SES, see the
 Amazon SES Developer Guide.
+
+
+
+
+
+
+
+
+
+
+
+=head2 GetIdentityPolicies(Identity => Str, PolicyNames => ArrayRef[Str])
+
+Each argument is described in detail in: L<Paws::SES::GetIdentityPolicies>
+
+Returns: a L<Paws::SES::GetIdentityPoliciesResponse> instance
+
+  
+
+Returns the requested sending authorization policies for the given
+identity (email address or domain). The policies are returned as a map
+of policy names to policy contents. You can retrieve a maximum of 20
+policies at a time.
+
+This API is for the identity owner only. If you have not verified the
+identity, this API will return an error.
+
+Sending authorization is a feature that enables an identity owner to
+authorize other senders to use its identities. For information about
+using sending authorization, see the Amazon SES Developer Guide.
+
+This action is throttled at one request per second.
 
 
 
@@ -365,6 +448,38 @@ This action is throttled at one request per second.
 
 
 
+=head2 ListIdentityPolicies(Identity => Str)
+
+Each argument is described in detail in: L<Paws::SES::ListIdentityPolicies>
+
+Returns: a L<Paws::SES::ListIdentityPoliciesResponse> instance
+
+  
+
+Returns a list of sending authorization policies that are attached to
+the given identity (email address or domain). This API returns only a
+list. If you want the actual policy content, you can use
+C<GetIdentityPolicies>.
+
+This API is for the identity owner only. If you have not verified the
+identity, this API will return an error.
+
+Sending authorization is a feature that enables an identity owner to
+authorize other senders to use its identities. For information about
+using sending authorization, see the Amazon SES Developer Guide.
+
+This action is throttled at one request per second.
+
+
+
+
+
+
+
+
+
+
+
 =head2 ListVerifiedEmailAddresses( => )
 
 Each argument is described in detail in: L<Paws::SES::ListVerifiedEmailAddresses>
@@ -392,7 +507,37 @@ This action is throttled at one request per second.
 
 
 
-=head2 SendEmail(Destination => Paws::SES::Destination, Message => Paws::SES::Message, Source => Str, [ReplyToAddresses => ArrayRef[Str], ReturnPath => Str])
+=head2 PutIdentityPolicy(Identity => Str, Policy => Str, PolicyName => Str)
+
+Each argument is described in detail in: L<Paws::SES::PutIdentityPolicy>
+
+Returns: a L<Paws::SES::PutIdentityPolicyResponse> instance
+
+  
+
+Adds or updates a sending authorization policy for the specified
+identity (email address or domain).
+
+This API is for the identity owner only. If you have not verified the
+identity, this API will return an error.
+
+Sending authorization is a feature that enables an identity owner to
+authorize other senders to use its identities. For information about
+using sending authorization, see the Amazon SES Developer Guide.
+
+This action is throttled at one request per second.
+
+
+
+
+
+
+
+
+
+
+
+=head2 SendEmail(Destination => Paws::SES::Destination, Message => Paws::SES::Message, Source => Str, [ReplyToAddresses => ArrayRef[Str], ReturnPath => Str, ReturnPathArn => Str, SourceArn => Str])
 
 Each argument is described in detail in: L<Paws::SES::SendEmail>
 
@@ -403,25 +548,33 @@ Returns: a L<Paws::SES::SendEmailResponse> instance
 Composes an email message based on input data, and then immediately
 queues the message for sending.
 
-You can only send email from verified email addresses and domains. If
-your account is still in the Amazon SES sandbox, you must also verify
-every recipient email address except for the recipients provided by the
-Amazon SES mailbox simulator. For more information, go to the Amazon
-SES Developer Guide.
+There are several important points to know about C<SendEmail>:
 
-The total size of the message cannot exceed 10 MB.
+=over
 
-Amazon SES has a limit on the total number of recipients per message:
-The combined number of To:, CC: and BCC: email addresses cannot exceed
-50. If you need to send an email message to a larger audience, you can
-divide your recipient list into groups of 50 or fewer, and then call
-Amazon SES repeatedly to send the message to each group.
+=item * You can only send email from verified email addresses and
+domains; otherwise, you will get an "Email address not verified" error.
+If your account is still in the Amazon SES sandbox, you must also
+verify every recipient email address except for the recipients provided
+by the Amazon SES mailbox simulator. For more information, go to the
+Amazon SES Developer Guide.
 
-For every message that you send, the total number of recipients (To:,
-CC: and BCC:) is counted against your I<sending quota> - the maximum
+=item * The total size of the message cannot exceed 10 MB. This
+includes any attachments that are part of the message.
+
+=item * Amazon SES has a limit on the total number of recipients per
+message. The combined number of To:, CC: and BCC: email addresses
+cannot exceed 50. If you need to send an email message to a larger
+audience, you can divide your recipient list into groups of 50 or
+fewer, and then call Amazon SES repeatedly to send the message to each
+group.
+
+=item * For every message that you send, the total number of recipients
+(To:, CC: and BCC:) is counted against your sending quota - the maximum
 number of emails you can send in a 24-hour period. For information
 about your sending quota, go to the Amazon SES Developer Guide.
 
+=back
 
 
 
@@ -432,7 +585,8 @@ about your sending quota, go to the Amazon SES Developer Guide.
 
 
 
-=head2 SendRawEmail(RawMessage => Paws::SES::RawMessage, [Destinations => ArrayRef[Str], Source => Str])
+
+=head2 SendRawEmail(RawMessage => Paws::SES::RawMessage, [Destinations => ArrayRef[Str], FromArn => Str, ReturnPathArn => Str, Source => Str, SourceArn => Str])
 
 Each argument is described in detail in: L<Paws::SES::SendRawEmail>
 
@@ -445,29 +599,65 @@ client. The C<SendRawEmail> action is useful for sending multipart MIME
 emails. The raw text of the message must comply with Internet email
 standards; otherwise, the message cannot be sent.
 
-You can only send email from verified email addresses and domains. If
-your account is still in the Amazon SES sandbox, you must also verify
-every recipient email address except for the recipients provided by the
-Amazon SES mailbox simulator. For more information, go to the Amazon
-SES Developer Guide.
+There are several important points to know about C<SendRawEmail>:
 
-The total size of the message cannot exceed 10 MB. This includes any
-attachments that are part of the message.
+=over
 
-Amazon SES has a limit on the total number of recipients per message:
-The combined number of To:, CC: and BCC: email addresses cannot exceed
-50. If you need to send an email message to a larger audience, you can
-divide your recipient list into groups of 50 or fewer, and then call
-Amazon SES repeatedly to send the message to each group.
+=item * You can only send email from verified email addresses and
+domains; otherwise, you will get an "Email address not verified" error.
+If your account is still in the Amazon SES sandbox, you must also
+verify every recipient email address except for the recipients provided
+by the Amazon SES mailbox simulator. For more information, go to the
+Amazon SES Developer Guide.
 
-The To:, CC:, and BCC: headers in the raw message can contain a group
-list. Note that each recipient in a group list counts towards the
+=item * The total size of the message cannot exceed 10 MB. This
+includes any attachments that are part of the message.
+
+=item * Amazon SES has a limit on the total number of recipients per
+message. The combined number of To:, CC: and BCC: email addresses
+cannot exceed 50. If you need to send an email message to a larger
+audience, you can divide your recipient list into groups of 50 or
+fewer, and then call Amazon SES repeatedly to send the message to each
+group.
+
+=item * The To:, CC:, and BCC: headers in the raw message can contain a
+group list. Note that each recipient in a group list counts towards the
 50-recipient limit.
 
-For every message that you send, the total number of recipients (To:,
-CC: and BCC:) is counted against your I<sending quota> - the maximum
+=item * For every message that you send, the total number of recipients
+(To:, CC: and BCC:) is counted against your sending quota - the maximum
 number of emails you can send in a 24-hour period. For information
 about your sending quota, go to the Amazon SES Developer Guide.
+
+=item * If you are using sending authorization to send on behalf of
+another user, C<SendRawEmail> enables you to specify the cross-account
+identity for the email's "Source," "From," and "Return-Path" parameters
+in one of two ways: you can pass optional parameters C<SourceArn>,
+C<FromArn>, and/or C<ReturnPathArn> to the API, or you can include the
+following X-headers in the header of your raw email:
+
+=over
+
+=item * C<X-SES-SOURCE-ARN>
+
+=item * C<X-SES-FROM-ARN>
+
+=item * C<X-SES-RETURN-PATH-ARN>
+
+=back
+
+Do not include these X-headers in the DKIM signature, because they are
+removed by Amazon SES before sending the email. For the most common
+sending authorization use case, we recommend that you specify the
+C<SourceIdentityArn> and do not specify either the C<FromIdentityArn>
+or C<ReturnPathIdentityArn>. (The same note applies to the
+corresponding X-headers.) If you only specify the C<SourceIdentityArn>,
+Amazon SES will simply set the "From" address and the "Return Path"
+address to the identity specified in C<SourceIdentityArn>. For more
+information about sending authorization, see the Amazon SES Developer
+Guide.
+
+=back
 
 
 

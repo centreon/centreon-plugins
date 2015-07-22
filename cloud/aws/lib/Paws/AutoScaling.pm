@@ -4,7 +4,7 @@ package Paws::AutoScaling {
   sub version { '2011-01-01' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::QueryCaller', 'Paws::Net::XMLResponse';
 
   
   sub AttachInstances {
@@ -402,7 +402,7 @@ Creates an Auto Scaling group with the specified name and attributes.
 
 If you exceed your maximum limit of Auto Scaling groups, which by
 default is 20 per region, the call fails. For information about viewing
-and updating these limits, see DescribeAccountLimits.
+and updating this limit, see DescribeAccountLimits.
 
 For more information, see Auto Scaling Groups in the I<Auto Scaling
 Developer Guide>.
@@ -429,7 +429,7 @@ Creates a launch configuration.
 
 If you exceed your maximum limit of launch configurations, which by
 default is 100 per region, the call fails. For information about
-viewing and updating these limits, see DescribeAccountLimits.
+viewing and updating this limit, see DescribeAccountLimits.
 
 For more information, see Launch Configurations in the I<Auto Scaling
 Developer Guide>.
@@ -864,7 +864,7 @@ Scaling group.
 
 
 
-=head2 DescribePolicies([AutoScalingGroupName => Str, MaxRecords => Int, NextToken => Str, PolicyNames => ArrayRef[Str]])
+=head2 DescribePolicies([AutoScalingGroupName => Str, MaxRecords => Int, NextToken => Str, PolicyNames => ArrayRef[Str], PolicyTypes => ArrayRef[Str]])
 
 Each argument is described in detail in: L<Paws::AutoScaling::DescribePolicies>
 
@@ -1118,7 +1118,7 @@ Scaling Developer Guide>.
 
 
 
-=head2 ExecutePolicy(PolicyName => Str, [AutoScalingGroupName => Str, HonorCooldown => Bool])
+=head2 ExecutePolicy(PolicyName => Str, [AutoScalingGroupName => Str, BreachThreshold => Num, HonorCooldown => Bool, MetricValue => Num])
 
 Each argument is described in detail in: L<Paws::AutoScaling::ExecutePolicy>
 
@@ -1200,6 +1200,11 @@ the instance in a pending state.
 For more information, see Auto Scaling Pending State and Auto Scaling
 Terminating State in the I<Auto Scaling Developer Guide>.
 
+If you exceed your maximum limit of lifecycle hooks, which by default
+is 50 per region, the call fails. For information about updating this
+limit, see AWS Service Limits in the I<Amazon Web Services General
+Reference>.
+
 
 
 
@@ -1237,7 +1242,7 @@ This configuration overwrites an existing configuration.
 
 
 
-=head2 PutScalingPolicy(AdjustmentType => Str, AutoScalingGroupName => Str, PolicyName => Str, [Cooldown => Int, MinAdjustmentStep => Int, ScalingAdjustment => Int])
+=head2 PutScalingPolicy(AdjustmentType => Str, AutoScalingGroupName => Str, PolicyName => Str, [Cooldown => Int, EstimatedInstanceWarmup => Int, MetricAggregationType => Str, MinAdjustmentMagnitude => Int, MinAdjustmentStep => Int, PolicyType => Str, ScalingAdjustment => Int, StepAdjustments => ArrayRef[Paws::AutoScaling::StepAdjustment]])
 
 Each argument is described in detail in: L<Paws::AutoScaling::PutScalingPolicy>
 
@@ -1249,6 +1254,11 @@ Creates or updates a policy for an Auto Scaling group. To update an
 existing policy, use the existing policy name and set the parameters
 you want to change. Any existing parameter not changed in an update to
 an existing policy is not changed in this update request.
+
+If you exceed your maximum limit of step adjustments, which by default
+is 20 per region, the call fails. For information about updating this
+limit, see AWS Service Limits in the I<Amazon Web Services General
+Reference>.
 
 
 

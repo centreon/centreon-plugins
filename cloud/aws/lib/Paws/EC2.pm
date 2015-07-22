@@ -4,7 +4,7 @@ package Paws::EC2 {
   sub version { '2015-04-15' }
   sub flattened_arrays { 1 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::EC2Caller', 'Paws::Net::XMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::EC2Caller', 'Paws::Net::XMLResponse';
 
   
   sub AcceptVpcPeeringConnection {
@@ -1722,7 +1722,7 @@ Cloud User Guide>.
 
 
 
-=head2 CopySnapshot(SourceRegion => Str, SourceSnapshotId => Str, [Description => Str, DestinationRegion => Str, DryRun => Bool, PresignedUrl => Str])
+=head2 CopySnapshot(SourceRegion => Str, SourceSnapshotId => Str, [Description => Str, DestinationRegion => Str, DryRun => Bool, Encrypted => Bool, KmsKeyId => Str, PresignedUrl => Str])
 
 Each argument is described in detail in: L<Paws::EC2::CopySnapshot>
 
@@ -1737,10 +1737,11 @@ Amazon Machine Images (AMIs). The snapshot is copied to the regional
 endpoint that you send the HTTP request to.
 
 Copies of encrypted EBS snapshots remain encrypted. Copies of
-unencrypted snapshots remain unencrypted.
-
-Copying snapshots that were encrypted with non-default AWS Key
-Management Service (KMS) master keys is not supported at this time.
+unencrypted snapshots remain unencrypted, unless the C<Encrypted> flag
+is specified during the snapshot copy operation. By default, encrypted
+snapshot copies use the default AWS Key Management Service (KMS)
+Customer Master Key (CMK); however, you can specify a non-default CMK
+with the C<KmsKeyId> parameter.
 
 For more information, see Copying an Amazon EBS Snapshot in the
 I<Amazon Elastic Compute Cloud User Guide>.
@@ -3967,6 +3968,11 @@ Returns: a L<Paws::EC2::DescribeRouteTablesResult> instance
   
 
 Describes one or more of your route tables.
+
+Each subnet in your VPC must be associated with a route table. If a
+subnet is not explicitly associated with any route table, it is
+implicitly associated with the main route table. This command does not
+return the subnet ID for implicit associations.
 
 For more information about route tables, see Route Tables in the
 I<Amazon Virtual Private Cloud User Guide>.

@@ -2,11 +2,11 @@
 package Paws::S3::ListObjects {
   use Moose;
   has Bucket => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Bucket' , required => 1);
-  has Delimiter => (is => 'ro', isa => 'Str');
-  has EncodingType => (is => 'ro', isa => 'Str');
-  has Marker => (is => 'ro', isa => 'Str');
-  has MaxKeys => (is => 'ro', isa => 'Int');
-  has Prefix => (is => 'ro', isa => 'Str');
+  has Delimiter => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'delimiter' );
+  has EncodingType => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'encoding-type' );
+  has Marker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'marker' );
+  has MaxKeys => (is => 'ro', isa => 'Int', traits => ['ParamInQuery'], query_name => 'max-keys' );
+  has Prefix => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'prefix' );
 
   use MooseX::ClassAttribute;
 

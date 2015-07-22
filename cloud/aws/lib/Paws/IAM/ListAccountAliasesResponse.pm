@@ -34,10 +34,9 @@ A list of aliases associated with the account.
 
   
 
-A flag that indicates whether there are more account aliases to list.
-If your results were truncated, you can make a subsequent pagination
-request using the C<Marker> request parameter to retrieve more account
-aliases in the list.
+A flag that indicates whether there are more items to return. If your
+results were truncated, you can make a subsequent pagination request
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -51,10 +50,9 @@ aliases in the list.
 
   
 
-Use this only when paginating results, and only in a subsequent request
-after you've received a response where the results are truncated. Set
-it to the value of the C<Marker> element in the response you just
-received.
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
+request.
 
 
 

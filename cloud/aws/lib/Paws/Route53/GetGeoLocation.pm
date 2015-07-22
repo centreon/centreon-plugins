@@ -1,9 +1,9 @@
 
 package Paws::Route53::GetGeoLocation {
   use Moose;
-  has ContinentCode => (is => 'ro', isa => 'Str');
-  has CountryCode => (is => 'ro', isa => 'Str');
-  has SubdivisionCode => (is => 'ro', isa => 'Str');
+  has ContinentCode => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'continentcode' );
+  has CountryCode => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'countrycode' );
+  has SubdivisionCode => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'subdivisioncode' );
 
   use MooseX::ClassAttribute;
 

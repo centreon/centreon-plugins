@@ -69,8 +69,13 @@ way to further restrict the permissions for the resulting temporary
 security credentials. You cannot use the passed policy to grant
 permissions that are in excess of those allowed by the access policy of
 the role that is being assumed. For more information, see Permissions
-for AssumeRoleWithWebIdentity in I<Using Temporary Security
-Credentials>.
+for AssumeRoleWithWebIdentity.
+
+The policy plain text must be 2048 bytes or shorter. However, an
+internal conversion compresses it into a packed binary format with a
+separate limit. The PackedPolicySize response element indicates by
+percentage how close to the upper size limit the policy is, with 100%
+equaling the maximum allowed size.
 
 
 

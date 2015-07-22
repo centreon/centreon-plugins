@@ -5,7 +5,7 @@ package Paws::S3::RestoreObject {
   has Key => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Key' , required => 1);
   has RequestPayer => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-request-payer' );
   has RestoreRequest => (is => 'ro', isa => 'Paws::S3::RestoreRequest');
-  has VersionId => (is => 'ro', isa => 'Str');
+  has VersionId => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'versionId' );
 
   use MooseX::ClassAttribute;
 

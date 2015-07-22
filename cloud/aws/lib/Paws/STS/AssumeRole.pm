@@ -60,14 +60,15 @@ value is set to 3600 seconds.
 
   
 
-A unique identifier that is used by third parties to assume a role in
-their customers' accounts. For each role that the third party can
-assume, they should instruct their customers to create a role with the
-external ID that the third party generated. Each time the third party
-assumes the role, they must pass the customer's external ID. The
-external ID is useful in order to help third parties bind a role to the
-customer who created it. For more information about the external ID,
-see About the External ID in I<Using Temporary Security Credentials>.
+A unique identifier that is used by third parties when assuming roles
+in their customers' accounts. For each role that the third party can
+assume, they should instruct their customers to ensure the role's trust
+policy checks for the external ID that the third party generated. Each
+time the third party assumes the role, they should pass the customer's
+external ID. The external ID is useful in order to help third parties
+bind a role to the customer who created it. For more information about
+the external ID, see How to Use External ID When Granting Access to
+Your AWS Resources in I<Using Temporary Security Credentials>.
 
 
 
@@ -84,15 +85,22 @@ see About the External ID in I<Using Temporary Security Credentials>.
 
 An IAM policy in JSON format.
 
-The policy parameter is optional. If you pass a policy, the temporary
+This parameter is optional. If you pass a policy, the temporary
 security credentials that are returned by the operation have the
-permissions that are allowed by both the access policy of the role that
-is being assumed, I<B<and>> the policy that you pass. This gives you a
-way to further restrict the permissions for the resulting temporary
-security credentials. You cannot use the passed policy to grant
-permissions that are in excess of those allowed by the access policy of
-the role that is being assumed. For more information, see Permissions
-for AssumeRole in I<Using Temporary Security Credentials>.
+permissions that are allowed by both (the intersection of) the access
+policy of the role that is being assumed, I<and> the policy that you
+pass. This gives you a way to further restrict the permissions for the
+resulting temporary security credentials. You cannot use the passed
+policy to grant permissions that are in excess of those allowed by the
+access policy of the role that is being assumed. For more information,
+see Permissions for AssumeRole, AssumeRoleWithSAML, and
+AssumeRoleWithWebIdentity in I<Using Temporary Security Credentials>.
+
+The policy plain text must be 2048 bytes or shorter. However, an
+internal conversion compresses it into a packed binary format with a
+separate limit. The PackedPolicySize response element indicates by
+percentage how close to the upper size limit the policy is, with 100%
+equaling the maximum allowed size.
 
 
 
@@ -107,7 +115,7 @@ for AssumeRole in I<Using Temporary Security Credentials>.
 
   
 
-The Amazon Resource Name (ARN) of the role that the caller is assuming.
+The Amazon Resource Name (ARN) of the role to assume.
 
 
 
@@ -122,8 +130,16 @@ The Amazon Resource Name (ARN) of the role that the caller is assuming.
 
   
 
-An identifier for the assumed role session. The session name is
-included as part of the C<AssumedRoleUser>.
+An identifier for the assumed role session.
+
+Use the role session name to uniquely identity a session when the same
+role is assumed by different principals or for different reasons. In
+cross-account scenarios, the role session name is visible to, and can
+be logged by the account that owns the role. The role session name is
+also used in the ARN of the assumed role principal. This means that
+subsequent cross-account API requests using the temporary security
+credentials will expose the role session name to the external account
+in their CloudTrail logs.
 
 
 

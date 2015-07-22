@@ -2,12 +2,12 @@
 package Paws::S3::ListObjectVersions {
   use Moose;
   has Bucket => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Bucket' , required => 1);
-  has Delimiter => (is => 'ro', isa => 'Str');
-  has EncodingType => (is => 'ro', isa => 'Str');
-  has KeyMarker => (is => 'ro', isa => 'Str');
-  has MaxKeys => (is => 'ro', isa => 'Int');
-  has Prefix => (is => 'ro', isa => 'Str');
-  has VersionIdMarker => (is => 'ro', isa => 'Str');
+  has Delimiter => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'delimiter' );
+  has EncodingType => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'encoding-type' );
+  has KeyMarker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'key-marker' );
+  has MaxKeys => (is => 'ro', isa => 'Int', traits => ['ParamInQuery'], query_name => 'max-keys' );
+  has Prefix => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'prefix' );
+  has VersionIdMarker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'version-id-marker' );
 
   use MooseX::ClassAttribute;
 

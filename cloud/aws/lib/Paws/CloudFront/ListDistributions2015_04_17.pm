@@ -1,8 +1,8 @@
 
 package Paws::CloudFront::ListDistributions2015_04_17 {
   use Moose;
-  has Marker => (is => 'ro', isa => 'Str');
-  has MaxItems => (is => 'ro', isa => 'Str');
+  has Marker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'Marker' );
+  has MaxItems => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'MaxItems' );
 
   use MooseX::ClassAttribute;
 

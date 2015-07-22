@@ -34,10 +34,9 @@ A list of access key metadata.
 
   
 
-A flag that indicates whether there are more keys to list. If your
+A flag that indicates whether there are more items to return. If your
 results were truncated, you can make a subsequent pagination request
-using the C<Marker> request parameter to retrieve more keys in the
-list.
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -51,8 +50,8 @@ list.
 
   
 
-If C<IsTruncated> is C<true>, this element is present and contains the
-value to use for the C<Marker> parameter in a subsequent pagination
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 
 

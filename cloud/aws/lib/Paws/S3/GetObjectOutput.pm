@@ -2,7 +2,7 @@
 package Paws::S3::GetObjectOutput {
   use Moose;
   has AcceptRanges => (is => 'ro', isa => 'Str');
-  has Body => (is => 'ro', isa => 'Str');
+  has Body => (is => 'ro', isa => 'Str', traits => ['ParamInBody']);
   has CacheControl => (is => 'ro', isa => 'Str');
   has ContentDisposition => (is => 'ro', isa => 'Str');
   has ContentEncoding => (is => 'ro', isa => 'Str');

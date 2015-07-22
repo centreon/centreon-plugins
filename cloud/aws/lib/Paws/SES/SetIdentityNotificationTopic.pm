@@ -39,8 +39,10 @@ Values for attributes that are native types (Int, String, Float, etc) can passed
 
   
 
-The identity for which the Amazon SNS topic will be set. Examples:
-C<user@example.com>, C<example.com>.
+The identity for which the Amazon SNS topic will be set. You can
+specify an identity by using its name or by using its Amazon Resource
+Name (ARN). Examples: C<user@example.com>, C<example.com>,
+C<arn:aws:ses:us-east-1:123456789012:identity/example.com>.
 
 
 

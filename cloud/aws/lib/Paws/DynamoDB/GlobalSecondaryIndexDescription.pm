@@ -1,6 +1,7 @@
 package Paws::DynamoDB::GlobalSecondaryIndexDescription {
   use Moose;
   has Backfilling => (is => 'ro', isa => 'Bool');
+  has IndexArn => (is => 'ro', isa => 'Str');
   has IndexName => (is => 'ro', isa => 'Str');
   has IndexSizeBytes => (is => 'ro', isa => 'Int');
   has IndexStatus => (is => 'ro', isa => 'Str');

@@ -1,7 +1,7 @@
 
 package Paws::S3::GetObjectTorrentOutput {
   use Moose;
-  has Body => (is => 'ro', isa => 'Str');
+  has Body => (is => 'ro', isa => 'Str', traits => ['ParamInBody']);
   has RequestCharged => (is => 'ro', isa => 'Str');
 
 }

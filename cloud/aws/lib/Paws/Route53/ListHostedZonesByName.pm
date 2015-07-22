@@ -1,9 +1,9 @@
 
 package Paws::Route53::ListHostedZonesByName {
   use Moose;
-  has DNSName => (is => 'ro', isa => 'Str');
-  has HostedZoneId => (is => 'ro', isa => 'Str');
-  has MaxItems => (is => 'ro', isa => 'Str');
+  has DNSName => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'dnsname' );
+  has HostedZoneId => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'hostedzoneid' );
+  has MaxItems => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'maxitems' );
 
   use MooseX::ClassAttribute;
 

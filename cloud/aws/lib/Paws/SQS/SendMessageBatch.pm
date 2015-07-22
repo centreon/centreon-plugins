@@ -1,7 +1,7 @@
 
 package Paws::SQS::SendMessageBatch {
   use Moose;
-  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::SendMessageBatchRequestEntry]', required => 1);
+  has Entries => (is => 'ro', isa => 'ArrayRef[Paws::SQS::SendMessageBatchRequestEntry]', traits => ['NameInRequest'], request_name => 'SendMessageBatchRequestEntry' , required => 1);
   has QueueUrl => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;

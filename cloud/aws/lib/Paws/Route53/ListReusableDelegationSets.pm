@@ -1,8 +1,8 @@
 
 package Paws::Route53::ListReusableDelegationSets {
   use Moose;
-  has Marker => (is => 'ro', isa => 'Str');
-  has MaxItems => (is => 'ro', isa => 'Str');
+  has Marker => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'marker' );
+  has MaxItems => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'maxitems' );
 
   use MooseX::ClassAttribute;
 

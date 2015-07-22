@@ -241,8 +241,8 @@ An expression can contain any of the following:
 
 =item *
 
-Boolean functions: C<attribute_exists | attribute_not_exists | contains
-| begins_with>
+Functions: C<attribute_exists | attribute_not_exists | attribute_type |
+contains | begins_with | size>
 
 These function names are case-sensitive.
 
@@ -621,9 +621,8 @@ C<
 Tokens that begin with the B<:> character are I<expression attribute
 values>, which are placeholders for the actual value at runtime.
 
-For more information on expression attribute names, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute names, see Accessing Item
+Attributes in the I<Amazon DynamoDB Developer Guide>.
 
 
 
@@ -656,9 +655,8 @@ You could then use these values in an expression, such as this:
 
 C<ProductStatus IN (:avail, :back, :disc)>
 
-For more information on expression attribute values, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute values, see Specifying
+Conditions in the I<Amazon DynamoDB Developer Guide>.
 
 
 
@@ -698,10 +696,10 @@ both the hash attribute and the range attribute.
 
   
 
-A value that if set to C<SIZE>, the response includes statistics about
-item collections, if any, that were modified during the operation are
-returned in the response. If set to C<NONE> (the default), no
-statistics are returned.
+Determines whether item collection metrics are returned. If set to
+C<SIZE>, the response includes statistics about item collections, if
+any, that were modified during the operation are returned in the
+response. If set to C<NONE> (the default), no statistics are returned.
 
 
 
@@ -790,7 +788,7 @@ The following action values are available for I<UpdateExpression>.
 C<SET> - Adds one or more attributes and values to an item. If any of
 these attribute already exist, they are replaced by the new values. You
 can also use C<SET> to add or subtract from an attribute that is of
-type Number.
+type Number. For example: C<SET myNum = myNum + :val>
 
 C<SET> supports the following functions:
 
@@ -872,9 +870,9 @@ the old set. For example, if the attribute value was the set C<[a,b,c]>
 and the C<DELETE> action specifies C<[a,c]>, then the final attribute
 value is C<[b]>. Specifying an empty set is an error.
 
-The C<DELETE> action only supports Number and set data types. In
-addition, C<DELETE> can only be used on top-level attributes, not
-nested attributes.
+The C<DELETE> action only supports set data types. In addition,
+C<DELETE> can only be used on top-level attributes, not nested
+attributes.
 
 =back
 

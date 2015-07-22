@@ -6,6 +6,7 @@ package Paws::DynamoDB::CreateTable {
   has KeySchema => (is => 'ro', isa => 'ArrayRef[Paws::DynamoDB::KeySchemaElement]', required => 1);
   has LocalSecondaryIndexes => (is => 'ro', isa => 'ArrayRef[Paws::DynamoDB::LocalSecondaryIndex]');
   has ProvisionedThroughput => (is => 'ro', isa => 'Paws::DynamoDB::ProvisionedThroughput', required => 1);
+  has StreamSpecification => (is => 'ro', isa => 'Paws::DynamoDB::StreamSpecification');
   has TableName => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;
@@ -255,6 +256,61 @@ attributes when determining the total.
 =head2 B<REQUIRED> ProvisionedThroughput => Paws::DynamoDB::ProvisionedThroughput
 
   
+
+=head2 StreamSpecification => Paws::DynamoDB::StreamSpecification
+
+  
+
+The settings for DynamoDB Streams on the table. These settings consist
+of:
+
+=over
+
+=item *
+
+I<StreamEnabled> - Indicates whether Streams is to be enabled (true) or
+disabled (false).
+
+=item *
+
+I<StreamViewType> - When an item in the table is modified,
+I<StreamViewType> determines what information is written to the table's
+stream. Valid values for I<StreamViewType> are:
+
+=over
+
+=item *
+
+I<KEYS_ONLY> - Only the key attributes of the modified item are written
+to the stream.
+
+=item *
+
+I<NEW_IMAGE> - The entire item, as it appears after it was modified, is
+written to the stream.
+
+=item *
+
+I<OLD_IMAGE> - The entire item, as it appeared before it was modified,
+is written to the stream.
+
+=item *
+
+I<NEW_AND_OLD_IMAGES> - Both the new and the old item images of the
+item are written to the stream.
+
+=back
+
+=back
+
+
+
+
+
+
+
+
+
 
 =head2 B<REQUIRED> TableName => Str
 

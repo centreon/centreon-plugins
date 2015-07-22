@@ -105,10 +105,10 @@ table's attribute definition.
 
   
 
-A value that if set to C<SIZE>, the response includes statistics about
-item collections, if any, that were modified during the operation are
-returned in the response. If set to C<NONE> (the default), no
-statistics are returned.
+Determines whether item collection metrics are returned. If set to
+C<SIZE>, the response includes statistics about item collections, if
+any, that were modified during the operation are returned in the
+response. If set to C<NONE> (the default), no statistics are returned.
 
 
 

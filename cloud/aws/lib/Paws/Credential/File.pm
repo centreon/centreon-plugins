@@ -6,7 +6,11 @@ package Paws::Credential::File {
 
   has credentials_file => (is => 'ro', lazy => 1, default => sub {
     my $self = shift;
-    return $self->path . '/' . $self->file_name;
+    if (defined $ENV{AWS_CONFIG_FILE}){
+      return $ENV{AWS_CONFIG_FILE};
+    } else {
+      return $self->path . '/' . $self->file_name;
+    }
   });
 
   has file_name => (is => 'ro', default => sub { 'credentials' });

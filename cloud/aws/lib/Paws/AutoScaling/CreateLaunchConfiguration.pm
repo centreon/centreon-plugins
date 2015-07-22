@@ -99,7 +99,7 @@ I<Amazon Elastic Compute Cloud User Guide>.
   
 
 The ID of a ClassicLink-enabled VPC to link your EC2-Classic instances
-to. This parameter can only be used if you are launching EC2-Classic
+to. This parameter is supported only if you are launching EC2-Classic
 instances. For more information, see ClassicLink in the I<Amazon
 Elastic Compute Cloud User Guide>.
 
@@ -118,7 +118,7 @@ Elastic Compute Cloud User Guide>.
 
 The IDs of one or more security groups for the VPC specified in
 C<ClassicLinkVPCId>. This parameter is required if C<ClassicLinkVPCId>
-is specified, and cannot be used otherwise. For more information, see
+is specified, and is not supported otherwise. For more information, see
 ClassicLink in the I<Amazon Elastic Compute Cloud User Guide>.
 
 

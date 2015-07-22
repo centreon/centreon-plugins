@@ -35,13 +35,16 @@
 
 package cloud::aws::plugin;
 
-use lib 'cloud/aws/lib';
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_simple);
 use File::Temp qw(tempfile);
-use cloud::aws::lib::Paws;
 use Data::Printer;
+
+# Declare cloud modules
+# AWS
+use lib 'cloud/aws/lib';
+use cloud::aws::lib::Paws;
 
 sub new {
     my ($class, %options) = @_;
@@ -53,7 +56,9 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'instancestatus'    => 'cloud::aws::mode::instancestatus',
-                         'scan'    => 'cloud::aws::mode::scan',
+                         'list'    => 'cloud::aws::mode::list',
+                         'test'    => 'cloud::aws::mode::test',
+                         'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
                          );
 
     return $self;

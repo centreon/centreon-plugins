@@ -9,16 +9,16 @@ package Paws::S3::GetObject {
   has Key => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Key' , required => 1);
   has Range => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'Range' );
   has RequestPayer => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-request-payer' );
-  has ResponseCacheControl => (is => 'ro', isa => 'Str');
-  has ResponseContentDisposition => (is => 'ro', isa => 'Str');
-  has ResponseContentEncoding => (is => 'ro', isa => 'Str');
-  has ResponseContentLanguage => (is => 'ro', isa => 'Str');
-  has ResponseContentType => (is => 'ro', isa => 'Str');
-  has ResponseExpires => (is => 'ro', isa => 'Str');
+  has ResponseCacheControl => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-cache-control' );
+  has ResponseContentDisposition => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-content-disposition' );
+  has ResponseContentEncoding => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-content-encoding' );
+  has ResponseContentLanguage => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-content-language' );
+  has ResponseContentType => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-content-type' );
+  has ResponseExpires => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'response-expires' );
   has SSECustomerAlgorithm => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-algorithm' );
   has SSECustomerKey => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-key' );
   has SSECustomerKeyMD5 => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-server-side-encryption-customer-key-MD5' );
-  has VersionId => (is => 'ro', isa => 'Str');
+  has VersionId => (is => 'ro', isa => 'Str', traits => ['ParamInQuery'], query_name => 'versionId' );
 
   use MooseX::ClassAttribute;
 

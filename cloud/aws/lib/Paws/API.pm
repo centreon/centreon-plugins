@@ -19,6 +19,12 @@ package Paws::API::Attribute::Trait::ParamInHeader {
   has header_name => (is => 'ro', isa => 'Str');
 }
 
+package Paws::API::Attribute::Trait::ParamInBody {
+  use Moose::Role;
+  use Moose::Util;
+  Moose::Util::meta_attribute_alias('ParamInBody');
+}
+
 package Paws::API::Attribute::Trait::ParamInQuery {
   use Moose::Role;
   use Moose::Util;

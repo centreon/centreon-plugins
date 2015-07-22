@@ -34,8 +34,11 @@ package Paws::Credential::STS {
     $self->actual_creds->SessionToken;
   }
 
-  has sts => (is => 'ro', isa => 'Paws::STS', default => sub {
-    Paws->service('STS');
+  has sts_region => (is => 'ro', isa => 'Str|Undef', default => sub { undef });
+
+  has sts => (is => 'ro', isa => 'Paws::STS', lazy => 1, default => sub {
+    my $self = shift;
+    Paws->service('STS', region => $self->sts_region);
   });
 
   has Name => (is => 'rw', isa => 'Str', required => 1);

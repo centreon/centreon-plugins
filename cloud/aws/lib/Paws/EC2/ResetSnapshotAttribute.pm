@@ -39,8 +39,8 @@ Values for attributes that are native types (Int, String, Float, etc) can passed
 
   
 
-The attribute to reset (currently only the attribute for permission to
-create volumes can be reset).
+The attribute to reset. Currently, only the attribute for permission to
+create volumes can be reset.
 
 
 

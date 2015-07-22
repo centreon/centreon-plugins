@@ -5,7 +5,7 @@ package Paws::MachineLearning {
   sub target_prefix { 'AmazonML_20141212' }
   sub json_version { "1.1" }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::JsonCaller', 'Paws::Net::JsonResponse';
 
   
   sub CreateBatchPrediction {

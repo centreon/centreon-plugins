@@ -1,23 +1,28 @@
 package Paws::Net::S3Signature {
   use Moose::Role;
-  use Net::Amazon::Signature::V4;
-  #requires 'region';
   requires 'service';
-  use POSIX qw(strftime);
+
+  use MIME::Base64 qw(encode_base64);
+  use Digest::HMAC_SHA1;
 
   sub sign {
     my ($self, $request) = @_;
 
-    $request->header( Date => strftime( '%Y%m%dT%H%M%SZ', gmtime) );
-    $request->header( Host => $self->endpoint_host );
-    if ($self->session_token) {
-      $request->header( 'X-Amz-Security-Token' => $self->session_token );
-    }
+    my $hmac = Digest::HMAC_SHA1->new( $self->secret_key );
+    $hmac->add( $request->string_to_sign() );
 
-    $request->header('X-Amz-Content-Sha256' => 'UNSIGNED-PAYLOAD');
+    my $headers = $request->headers;
+    $headers->header(Authorization  => 'AWS ' . $self->access_key . ':' . encode_base64( $hmac->digest, '' ));
+    $headers->header(Date           => $request->date );
+    $headers->header(Host           => $self->_api_endpoint );
+  }
 
-    my $sig = Net::Amazon::Signature::V4->new( $self->access_key, $self->secret_key, $self->_region_for_signature, $self->service );
-    $sig->sign( $request );
+  sub auth_header {
+    my ($self, $request) = @_;
+    my $hmac = Digest::HMAC_SHA1->new( $self->secret_key );
+    $hmac->add( $request->string_to_sign() );
+
+    return 'AWS ' . $self->access_key . ':' . encode_base64( $hmac->digest, '' );
   }
 }
 

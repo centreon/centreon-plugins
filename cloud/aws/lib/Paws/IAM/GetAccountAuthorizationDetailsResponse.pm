@@ -53,8 +53,8 @@ using the C<Marker> request parameter to retrieve more items.
 
   
 
-If C<IsTruncated> is C<true>, this element is present and contains the
-value to use for the C<Marker> parameter in a subsequent pagination
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 
 

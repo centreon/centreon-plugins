@@ -122,10 +122,11 @@ platform description will only be displayed to EC2-Classic account
 holders and are for use with Amazon VPC. (C<Linux/UNIX> | C<Linux/UNIX
 (Amazon VPC)> | C<SUSE Linux> | C<SUSE Linux (Amazon VPC)> | C<Red Hat
 Enterprise Linux> | C<Red Hat Enterprise Linux (Amazon VPC)> |
-C<Windows> | C<Windows (Amazon VPC)>) | C<Windows with SQL Server
+C<Windows> | C<Windows (Amazon VPC)> | C<Windows with SQL Server
 Standard> | C<Windows with SQL Server Standard (Amazon VPC)> |
 C<Windows with SQL Server Web> | C< Windows with SQL Server Web (Amazon
-VPC))>
+VPC)> | C<Windows with SQL Server Enterprise> | C<Windows with SQL
+Server Enterprise (Amazon VPC)>)
 
 =item *
 

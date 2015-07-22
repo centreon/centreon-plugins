@@ -20,10 +20,9 @@ Paws::IAM::ListGroupPoliciesResponse
 
   
 
-A flag that indicates whether there are more policy names to list. If
-your results were truncated, you can make a subsequent pagination
-request using the C<Marker> request parameter to retrieve more policy
-names in the list.
+A flag that indicates whether there are more items to return. If your
+results were truncated, you can make a subsequent pagination request
+using the C<Marker> request parameter to retrieve more items.
 
 
 
@@ -37,8 +36,8 @@ names in the list.
 
   
 
-If C<IsTruncated> is C<true>, this element is present and contains the
-value to use for the C<Marker> parameter in a subsequent pagination
+When C<IsTruncated> is C<true>, this element is present and contains
+the value to use for the C<Marker> parameter in a subsequent pagination
 request.
 
 

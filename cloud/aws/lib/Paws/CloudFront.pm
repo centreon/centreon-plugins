@@ -5,7 +5,30 @@ package Paws::CloudFront {
   sub version { '2015-04-17' }
   sub flattened_arrays { 0 }
 
-  with 'Paws::API::Caller', 'Paws::API::RegionalEndpointCaller', 'Paws::Net::V4Signature', 'Paws::Net::RestXmlCaller', 'Paws::Net::RestXMLResponse';
+  with 'Paws::API::Caller', 'Paws::API::EndpointResolver', 'Paws::Net::V4Signature', 'Paws::Net::RestXmlCaller', 'Paws::Net::RestXMLResponse';
+
+  has '+region_rules' => (default => sub {
+    my $regioninfo;
+      $regioninfo = [
+    {
+      constraints => [
+        [
+          'region',
+          'notStartsWith',
+          'cn-'
+        ]
+      ],
+      properties => {
+        credentialScope => {
+          region => 'us-east-1'
+        }
+      },
+      uri => 'https://cloudfront.amazonaws.com'
+    }
+  ];
+
+    return $regioninfo;
+  });
 
   
   sub CreateCloudFrontOriginAccessIdentity2015_04_17 {

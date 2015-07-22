@@ -2,7 +2,7 @@
 package Paws::S3::PutObject {
   use Moose;
   has ACL => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'x-amz-acl' );
-  has Body => (is => 'ro', isa => 'Str');
+  has Body => (is => 'ro', isa => 'Str', traits => ['ParamInBody']);
   has Bucket => (is => 'ro', isa => 'Str', traits => ['ParamInURI'], uri_name => 'Bucket' , required => 1);
   has CacheControl => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'Cache-Control' );
   has ContentDisposition => (is => 'ro', isa => 'Str', traits => ['ParamInHeader'], header_name => 'Content-Disposition' );

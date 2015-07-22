@@ -2,6 +2,7 @@
 package Paws::ECS::RegisterContainerInstance {
   use Moose;
   has cluster => (is => 'ro', isa => 'Str');
+  has containerInstanceArn => (is => 'ro', isa => 'Str');
   has instanceIdentityDocument => (is => 'ro', isa => 'Str');
   has instanceIdentityDocumentSignature => (is => 'ro', isa => 'Str');
   has totalResources => (is => 'ro', isa => 'ArrayRef[Paws::ECS::Resource]');
@@ -44,6 +45,22 @@ Values for attributes that are native types (Int, String, Float, etc) can passed
 The short name or full Amazon Resource Name (ARN) of the cluster that
 you want to register your container instance with. If you do not
 specify a cluster, the default cluster is assumed..
+
+
+
+
+
+
+
+
+
+
+=head2 containerInstanceArn => Str
+
+  
+
+The Amazon Resource Name (ARN) of the container instance (if it was
+previously registered).
 
 
 

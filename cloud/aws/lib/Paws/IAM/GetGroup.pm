@@ -54,10 +54,9 @@ The name of the group.
 
   
 
-Use this only when paginating results, and only in a subsequent request
-after you've received a response where the results are truncated. Set
-it to the value of the C<Marker> element in the response you just
-received.
+Use this parameter only when paginating results and only after you have
+received a response where the results are truncated. Set it to the
+value of the C<Marker> element in the response you just received.
 
 
 
@@ -73,10 +72,12 @@ received.
   
 
 Use this only when paginating results to indicate the maximum number of
-groups you want in the response. If there are additional groups beyond
+items you want in the response. If there are additional items beyond
 the maximum you specify, the C<IsTruncated> response element is
-C<true>. This parameter is optional. If you do not include it, it
-defaults to 100.
+C<true>.
+
+This parameter is optional. If you do not include it, it defaults to
+100.
 
 
 

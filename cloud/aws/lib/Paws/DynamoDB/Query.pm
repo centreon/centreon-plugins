@@ -138,12 +138,13 @@ This parameter does not support attributes of type List or Map.
 
   
 
-A value that if set to C<true>, then the operation uses strongly
-consistent reads; otherwise, eventually consistent reads are used.
+Determines the read consistency model: If set to C<true>, then the
+operation uses strongly consistent reads; otherwise, the operation uses
+eventually consistent reads.
 
 Strongly consistent reads are not supported on global secondary
 indexes. If you query a global secondary index with I<ConsistentRead>
-set to C<true>, you will receive an error message.
+set to C<true>, you will receive a I<ValidationException>.
 
 
 
@@ -239,9 +240,8 @@ C<
 Tokens that begin with the B<:> character are I<expression attribute
 values>, which are placeholders for the actual value at runtime.
 
-For more information on expression attribute names, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute names, see Accessing Item
+Attributes in the I<Amazon DynamoDB Developer Guide>.
 
 
 
@@ -274,9 +274,8 @@ You could then use these values in an expression, such as this:
 
 C<ProductStatus IN (:avail, :back, :disc)>
 
-For more information on expression attribute values, see Using
-Placeholders for Attribute Names and Values in the I<Amazon DynamoDB
-Developer Guide>.
+For more information on expression attribute values, see Specifying
+Conditions in the I<Amazon DynamoDB Developer Guide>.
 
 
 
@@ -339,10 +338,10 @@ The condition that specifies the key value(s) for items to be retrieved
 by the I<Query> action.
 
 The condition must perform an equality test on a single hash key value.
-The condition can also test for one or more range key values. A
-I<Query> can use I<KeyConditionExpression> to retrieve a single item
-with a given hash and range key value, or several items that have the
-same hash key value but different range key values.
+The condition can also perform one of several comparison tests on a
+single range key value. I<Query> can use I<KeyConditionExpression> to
+retrieve one item with a given hash and range key value, or several
+items that have the same hash key value but different range key values.
 
 The hash key equality test is required, and must be specified in the
 following format:
@@ -388,14 +387,15 @@ greater than or equal to C<:rangeval>.
 =item *
 
 C<rangeAttributeName> I<BETWEEN> C<:rangeval1> I<AND> C<:rangeval2> -
-true if the range key is less than or greater than C<:rangeval1>, and
+true if the range key is greater than or equal to C<:rangeval1>, and
 less than or equal to C<:rangeval2>.
 
 =item *
 
 I<begins_with (>C<rangeAttributeName>, C<:rangeval>I<)> - true if the
-range key begins with a particular operand. Note that the function name
-C<begins_with> is case-sensitive.
+range key begins with a particular operand. (You cannot use this
+function with a range key that is of type Number.) Note that the
+function name C<begins_with> is case-sensitive.
 
 =back
 
@@ -404,10 +404,10 @@ as C<:hashval> and C<:rangeval> with actual values at runtime.
 
 You can optionally use the I<ExpressionAttributeNames> parameter to
 replace the names of the hash and range attributes with placeholder
-tokens. This might be necessary if an attribute name conflicts with a
-DynamoDB reserved word. For example, the following
-I<KeyConditionExpression> causes an error because I<Size> is a reserved
-word:
+tokens. This option might be necessary if an attribute name conflicts
+with a DynamoDB reserved word. For example, the following
+I<KeyConditionExpression> parameter causes an error because I<Size> is
+a reserved word:
 
 =over
 
@@ -416,8 +416,8 @@ word:
 =back
 
 To work around this, define a placeholder (such a C<
-represent the attribute name I<Size>. I<KeyConditionExpression> then is
-as follows:
+the attribute name I<Size>. I<KeyConditionExpression> then is as
+follows:
 
 =over
 
@@ -737,16 +737,21 @@ Condition data type.
 
   
 
-A value that specifies ascending (true) or descending (false) traversal
-of the index. DynamoDB returns results reflecting the requested order
-determined by the range key. If the data type is Number, the results
-are returned in numeric order. For type String, the results are
-returned in order of ASCII character code values. For type Binary,
-DynamoDB treats each byte of the binary data as unsigned when it
-compares binary values.
+Specifies the order in which to return the query results - either
+ascending (C<true>) or descending (C<false>).
 
-If I<ScanIndexForward> is not specified, the results are returned in
-ascending order.
+Items with the same hash key are stored in sorted order by range key
+.If the range key data type is Number, the results are stored in
+numeric order. For type String, the results are returned in order of
+ASCII character code values. For type Binary, DynamoDB treats each byte
+of the binary data as unsigned.
+
+If I<ScanIndexForward> is C<true>, DynamoDB returns the results in
+order, by range key. This is the default behavior.
+
+If I<ScanIndexForward> is C<false>, DynamoDB sorts the results in
+descending order by range key, and then returns the results to the
+client.
 
 
 

@@ -2,7 +2,9 @@
 package Paws::AutoScaling::ExecutePolicy {
   use Moose;
   has AutoScalingGroupName => (is => 'ro', isa => 'Str');
+  has BreachThreshold => (is => 'ro', isa => 'Num');
   has HonorCooldown => (is => 'ro', isa => 'Bool');
+  has MetricValue => (is => 'ro', isa => 'Num');
   has PolicyName => (is => 'ro', isa => 'Str', required => 1);
 
   use MooseX::ClassAttribute;
@@ -50,20 +52,62 @@ The name or Amazon Resource Name (ARN) of the Auto Scaling group.
 
 
 
+=head2 BreachThreshold => Num
+
+  
+
+The breach threshold for the alarm.
+
+This parameter is required if the policy type is C<StepScaling> and not
+supported otherwise.
+
+
+
+
+
+
+
+
+
+
 =head2 HonorCooldown => Bool
 
   
 
-Set to C<True> if you want Auto Scaling to wait for the cooldown period
-associated with the Auto Scaling group to complete before executing the
-policy.
+If this parameter is true, Auto Scaling waits for the cooldown period
+to complete before executing the policy. Otherwise, Auto Scaling
+executes the policy without waiting for the cooldown period to
+complete.
 
-Set to C<False> if you want Auto Scaling to circumvent the cooldown
-period associated with the Auto Scaling group and execute the policy
-before the cooldown period ends.
+This parameter is not supported if the policy type is C<StepScaling>.
 
 For more information, see Understanding Auto Scaling Cooldowns in the
 I<Auto Scaling Developer Guide>.
+
+
+
+
+
+
+
+
+
+
+=head2 MetricValue => Num
+
+  
+
+The metric value to compare to C<BreachThreshold>. This enables you to
+execute a policy of type C<StepScaling> and determine which step
+adjustment to use. For example, if the breach threshold is 50 and you
+want to use a step adjustment with a lower bound of 0 and an upper
+bound of 10, you can set the metric value to 59.
+
+If you specify a metric value that doesn't correspond to a step
+adjustment for the policy, the call returns an error.
+
+This parameter is required if the policy type is C<StepScaling> and not
+supported otherwise.
 
 
 
