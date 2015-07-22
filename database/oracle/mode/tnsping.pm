@@ -62,12 +62,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -77,8 +77,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
-
-    if (defined($msg_error) && $msg_error !~ /ORA-01017/i) {
+    if (defined($msg_error) && $msg_error !~ /(ORA-01017|ORA-01004)/i) {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => $msg_error);
     } else {

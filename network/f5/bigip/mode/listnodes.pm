@@ -40,7 +40,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7';
+my $oid_ltmNodeAddrStatusAvailState = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3';
 
 sub new {
     my ($class, %options) = @_;
@@ -66,9 +66,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmNodeAddrStatusName, nothing_quit => 1);
+    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmNodeAddrStatusAvailState, nothing_quit => 1);
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /^$oid_ltmNodeAddrStatusName\.(.*)$/);
+        next if ($oid !~ /^$oid_ltmNodeAddrStatusAvailState\.(.*)$/);
         my $instance = $1;
         
         # Get all without a name
@@ -77,17 +77,19 @@ sub manage_selection {
             next;
         }
         
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
+        my $name = $instance;
+        # prefix by '1.4'
+        $name =~ s/^1\.4\.//;
+        if (!defined($self->{option_results}->{use_regexp}) && $name eq $self->{option_results}->{name}) {
             push @{$self->{node_id_selected}}, $instance;
             next;
         }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
+        if (defined($self->{option_results}->{use_regexp}) && $name =~ /$self->{option_results}->{name}/) {
             push @{$self->{node_id_selected}}, $instance;
             next;
         }
         
-        $self->{output}->output_add(long_msg => "Skipping node '" . $self->{result_names}->{$oid} . "': no matching filter name");
+        $self->{output}->output_add(long_msg => "Skipping node '" . $name . "': no matching filter name");
     }
 }
 
@@ -97,8 +99,10 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    foreach my $instance (sort @{$self->{node_id_selected}}) { 
-        my $name = $self->{result_names}->{$oid_ltmNodeAddrStatusName . '.' . $instance};
+    foreach my $instance (sort @{$self->{node_id_selected}}) {
+        my $name = $instance;
+        # prefix by '1.4'
+        $name =~ s/^1\.4\.//;
 
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
@@ -122,7 +126,9 @@ sub disco_show {
 
     $self->manage_selection(disco => 1);
     foreach my $instance (sort @{$self->{node_id_selected}}) {        
-        my $name = $self->{result_names}->{$oid_ltmNodeAddrStatusName . '.' . $instance};
+        my $name = $instance;
+        # prefix by '1.4'
+        $name =~ s/^1\.4\.//;
         
         $self->{output}->add_disco_entry(name => $name);
     }

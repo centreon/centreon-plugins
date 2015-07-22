@@ -33,21 +33,19 @@
 #
 ####################################################################################
 
-package network::dlink::standard::snmp::mode::components::temperature;
+package network::extreme::snmp::mode::components::temperature;
 
 use strict;
 use warnings;
 
-# In MIB 'env_mib.mib'
 my $mapping = {
-    swTemperatureCurrent => { oid => '.1.3.6.1.4.1.171.12.11.1.8.1.2' },
+    extremeCurrentTemperature => { oid => '.1.3.6.1.4.1.1916.1.1.1.8' },
 };
-my $oid_swTemperatureEntry = '.1.3.6.1.4.1.171.12.11.1.8.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_swTemperatureEntry };
+    push @{$options{request}}, { oid => $mapping->{extremeCurrentTemperature}->{oid} };
 }
 
 sub check {
@@ -57,27 +55,25 @@ sub check {
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'temperature'));
     
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_swTemperatureEntry}})) {
-        next if ($oid !~ /^$mapping->{swTemperatureCurrent}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_swTemperatureEntry}, instance => $instance);
+    return if (!defined($self->{results}->{$mapping->{extremeCurrentTemperature}->{oid}}->{$mapping->{extremeCurrentTemperature}->{oid} . '.0'}));
+    my $instance = 0;
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{extremeCurrentTemperature}->{oid}}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
-        $self->{components}->{temperature}->{total}++;
+    next if ($self->check_exclude(section => 'temperature', instance => $instance));
+    $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %dC.", 
-                                    $instance, $result->{swTemperatureCurrent}));
-        
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{swTemperatureCurrent});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is %s degree centigrade", $instance, $result->{swTemperatureCurrent}));
-        }
-        $self->{output}->perfdata_add(label => "temp_" . $instance, unit => 'C',
-                                      value => $result->{swTemperatureCurrent},
-                                      warning => $warn,
-                                      critical => $crit);
+    $self->{output}->output_add(long_msg => sprintf("temperature is %dC [instance: %s].", 
+                                                    $result->{extremeCurrentTemperature},
+                                                    $instance));
+    my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{extremeCurrentTemperature});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Temperature is %s degree centigrade", $result->{extremeCurrentTemperature}));
     }
+    $self->{output}->perfdata_add(label => "temp", unit => 'C',
+                                  value => $result->{extremeCurrentTemperature},
+                                  warning => $warn,
+                                  critical => $crit);
 }
 
 1;

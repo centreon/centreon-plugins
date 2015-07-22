@@ -123,6 +123,11 @@ sub custom_usage_calc {
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    # qtree can be over 100%
+    if ($self->{result_values}->{free} < 0) {
+        $self->{result_values}->{free} = 0;
+        $self->{result_values}->{prct_free} = 0;
+    }
     
     return 0;
 }

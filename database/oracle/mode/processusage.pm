@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright 2005-2014 MERETHIS
+# Copyright 2005-2013 MERETHIS
 # Centreon is developped by : Julien Mathis and Romain Le Merlus under
 # GPL Licence 2.0.
 #
@@ -29,11 +29,11 @@
 # do not wish to do so, delete this exception statement from your version.
 #
 # For more information : contact@centreon.com
-# Authors : Mathieu Cinquin <mcinquin@merethis.com>
+# Authors : Kevin Duret <kduret@merethis.com>
 #
 ####################################################################################
 
-package storage::synology::mode::temperature;
+package database::oracle::mode::processusage;
 
 use base qw(centreon::plugins::mode);
 
@@ -48,9 +48,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', },
                                 });
+
     return $self;
 }
 
@@ -59,37 +60,32 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
+    # $options{sql} = sqlmode object
+    $self->{sql} = $options{sql};
 
-    my $oid_synoSystemtemperature = '.1.3.6.1.4.1.6574.1.2.0'; # in Celsius
+    $self->{sql}->connect();
+    $self->{sql}->query(query => q{SELECT current_utilization/limit_value*100 FROM v$resource_limit WHERE resource_name = 'processes'});
+    my $session = $self->{sql}->fetchrow_array();
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_synoSystemtemperature],
-                                         nothing_quit => 1);
-    my $temp = $result->{$oid_synoSystemtemperature};
-
-    my $exit = $self->{perfdata}->threshold_check(value => $temp, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Device Temperature is %d C degrees",
-                                                     $temp));
-
-    $self->{output}->perfdata_add(label => "temperature", unit => 'C',
-                                  value => $temp,
+    my $exit_code = $self->{perfdata}->threshold_check(value => $session, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                                  short_msg => sprintf("%.2f%% of process resources used.", $session));
+    $self->{output}->perfdata_add(label => 'process_used', unit => '%',
+                                  value => sprintf("%.2f", $session),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
+                                  min => 0, max => 100);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -101,17 +97,17 @@ __END__
 
 =head1 MODE
 
-Check temperature (SYNOLOGY-SYSTEM-MIB).
+Check Oracle process used.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in celsius degrees.
+Threshold warning.
 
 =item B<--critical>
 
-Threshold critical in celsius degrees.
+Threshold critical.
 
 =back
 

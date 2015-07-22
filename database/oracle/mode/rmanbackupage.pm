@@ -52,6 +52,7 @@ sub new {
                                   "skip-no-backup"          => { name => 'skip_no_backup', },
                                   "filter-type:s"           => { name => 'filter_type', },
                                   "timezone:s"              => { name => 'timezone', },
+                                  "incremental-level"       => { name => 'incremental_level', },
                                 });
     foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
         my $label = $_;
@@ -84,6 +85,11 @@ sub check_options {
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $ENV{TZ} = $self->{option_results}->{timezone};
     }
+    
+    if (defined($self->{option_results}->{incremental_level})) {
+        # the special request don't retrieve controlfiles. But controlfiles are saved with archivelog.
+        $self->{option_results}->{'no-controlfile'} = 1;
+    }
 }
 
 sub run {
@@ -92,11 +98,30 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    my $query = q{SELECT object_type, count(*) as num,
+    my $query;
+    if (defined($self->{option_results}->{incremental_level})) {
+        $query = q{SELECT
+  j.input_type as object_type,
+  ((max(j.start_time) - date '1970-01-01')*24*60*60) as last_time,  
+  x.incremental_level 
+  FROM v$rman_backup_job_details j
+  LEFT OUTER JOIN (SELECT
+                     d.session_recid, d.session_stamp,
+                     (case when sum(case when d.backup_type||d.incremental_level = 'I1' then 1 else 0 end) = 0 then 0 else 1 end) incremental_level
+                    FROM
+                     v$backup_set_details d
+                     JOIN V$backup_set s on s.set_stamp = d.set_stamp and s.set_count = d.set_count
+                    WHERE s.input_file_scan_only = 'NO'
+                    GROUP BY d.session_recid, d.session_stamp) x
+    on x.session_recid = j.session_recid and x.session_stamp = j.session_stamp
+  GROUP BY input_type, incremental_level ORDER BY last_time DESC};
+    } else {
+        $query = q{SELECT object_type,
                     ((max(start_time) - date '1970-01-01')*24*60*60) as last_time
                     FROM v$rman_status
                     WHERE operation='BACKUP'
                     GROUP BY object_type};
+    }
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
 
@@ -104,16 +129,32 @@ sub run {
                                 short_msg => sprintf("Rman backup age are ok."));
 
     my $count_backups = 0;
+    my $already_checked = {};
     foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
         my $executed = 0;
         my $label = $_;
         $label =~ s/ /-/g;
         foreach my $row (@$result) {
-            next if ($$row[0] !~ /$_/i);
+        
+            next if (defined($already_checked->{$$row[0]}));
+            
+            if (defined($self->{option_results}->{incremental_level})) {            
+                # db incr with incremental level 0 = DB FULL
+                if (/db full/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0) { # it's a full. we get
+                    $$row[0] = 'DB FULL';
+                } else {
+                    next if (/db incr/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0); # it's a full. we skip.
+                    next if ($$row[0] !~ /$_/i);
+                }
+                
+                $already_checked->{$$row[0]} = 1;
+            } else {
+                next if ($$row[0] !~ /$_/i);
+            }
             
             $count_backups++;
             $executed = 1;
-            my ($type, $count, $last_time) = @$row;
+            my ($type, $last_time) = @$row;
             next if (defined($self->{option_results}->{filter_type}) && $type !~ /$self->{option_results}->{filter_type}/);
 
             my @values = localtime($last_time);
@@ -135,7 +176,7 @@ sub run {
             my $type_perfdata = $type;
             $type_perfdata =~ s/ /_/g;
             $self->{output}->output_add(long_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
-            $self->{output}->perfdata_add(label => sprintf('%s_backup_age',$type_perfdata),
+            $self->{output}->perfdata_add(label => sprintf('%s_backup_age', $type_perfdata),
                                           value => $backup_age,
                                           unit => 's',
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $label),
@@ -200,7 +241,11 @@ Return ok if no backup found.
 
 =item B<--timezone>
 
-Timezone of oracle server (If not set, we use current server execution timezone)
+Timezone of oracle server (If not set, we use current server execution timezone).
+
+=item B<--incremental-level>
+
+Please use the following option if your using incremental level 0 for full backup.
 
 =back
 

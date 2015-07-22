@@ -40,7 +40,9 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+# Extreme put 0 when it's disabled.
 my %mapping_truth = (
+    0 => 'disabled',
     1 => 'enable',
     2 => 'disable',
 );
@@ -56,7 +58,7 @@ my %mapping_stack_role = (
 );
 my $thresholds = {
     stack => [
-        ['ok', 'OK'],
+        ['up', 'OK'],
         ['down', 'CRITICAL'],
         ['mismatch', 'WARNING'],
     ],
@@ -122,7 +124,7 @@ sub run {
                                                             ], nothing_quit => 1);
     
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results->{$mapping->{extremeStackDetection}->{oid}}, instance => '0');
-    if ($result->{extremeStackDetection} eq 'disable') {
+    if ($result->{extremeStackDetection} eq 'disabled') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'Stacking is disable');
         $self->{output}->display();
@@ -139,10 +141,11 @@ sub run {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $results->{$mapping3->{extremeStackMemberRole}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $results->{$mapping4->{extremeStackMemberMACAddress}->{oid}}, instance => $instance);
             
-        my $exit = $self->get_severity(section => 'stack', value => $result2->{extremeStackMemberOperStatus});
         $self->{output}->output_add(long_msg => sprintf("Member '%s' state is %s [Role is '%s'] [Mac: %s]", 
                                                         $instance, $result2->{extremeStackMemberOperStatus}, 
-                                                        $result3->{extremeStackMemberRole}, $result4->{extremeStackMemberRole}));
+                                                        $result3->{extremeStackMemberRole}, 
+                                                        defined($result4->{extremeStackMemberMACAddress}) ? unpack('H*', $result4->{extremeStackMemberMACAddress}) : '-'));
+        my $exit = $self->get_severity(section => 'stack', value => $result2->{extremeStackMemberOperStatus});
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
                                        short_msg => sprintf("Member '%s' state is %s", 
