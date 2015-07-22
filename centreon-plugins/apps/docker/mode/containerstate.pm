@@ -41,6 +41,7 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use JSON;
+use DateTime::Format::ISO8601;
 
 my $thresholds = {
     state => [
@@ -172,7 +173,7 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    my ($result, $containername);
+    my ($result,$containername,$containertime);
     my $exit = 'OK';
 
     if (defined($self->{option_results}->{id}) || defined($self->{option_results}->{name})) {
@@ -181,13 +182,15 @@ sub run {
                 $result = $keys;
                 $containername = $webcontent->{Name};
                 $containername =~ s/^\///;
+                my $dt = DateTime::Format::ISO8601->parse_datetime($webcontent->{State}->{StartedAt});
+                $containertime = $dt->strftime('%F %T');
                 last;
             }
         }
 
         $exit = $self->get_severity(section => 'state', value => $result);
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Container %s is %s", $containername, $result));
+                                    short_msg => sprintf("Container %s is %s (started since %s)", $containername, $result, $containertime));
     } else {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("All containers are in Running state"));
@@ -217,7 +220,7 @@ sub run {
             }
         }
 
-        if ($exit ne 'OK') {
+        if (!$self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Some containers are in wrong state"));
         }
