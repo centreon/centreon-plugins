@@ -170,7 +170,7 @@ __END__
 
 =head1 MODE
 
-Check Container's memory
+Check Container's memory usage
 
 =over 8
 
