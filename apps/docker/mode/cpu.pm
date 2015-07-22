@@ -146,11 +146,18 @@ sub run {
     my @cpu_number = @{$webcontent->{cpu_stats}->{cpu_usage}->{percpu_usage}};
 
     my $new_datas = {};
-    my $buffer_creation = 0;
     $new_datas->{cpu_totalusage} = $cpu_totalusage;
     $new_datas->{cpu_systemusage} = $cpu_systemusage;
     my $old_cpu_totalusage = $self->{statefile_value}->get(name => 'cpu_totalusage');
     my $old_cpu_systemusage = $self->{statefile_value}->get(name => 'cpu_systemusage');
+
+    if ((!defined($old_cpu_totalusage)) || (!defined($old_cpu_systemusage))) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        $self->{statefile_value}->write(data => $new_datas);
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
 
     if ($new_datas->{cpu_totalusage} < $old_cpu_totalusage) {
         # We set 0. Has reboot.
@@ -179,10 +186,6 @@ sub run {
                                  );
 
     $self->{statefile_value}->write(data => $new_datas);
-    if ($buffer_creation == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
 
     $self->{output}->display();
     $self->{output}->exit();
