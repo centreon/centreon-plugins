@@ -34,10 +34,10 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::extreme::snmp::mode::cpu',
                          'hardware'         => 'network::extreme::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::extreme::snmp::mode::memory',
                          'stack'            => 'network::extreme::snmp::mode::stack',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

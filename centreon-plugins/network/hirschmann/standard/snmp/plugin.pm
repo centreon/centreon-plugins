@@ -34,10 +34,10 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::hirschmann::standard::snmp::mode::cpu',
                          'hardware'         => 'network::hirschmann::standard::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::hirschmann::standard::snmp::mode::memory',
                          'processcount'     => 'network::hirschmann::standard::snmp::mode::processcount',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

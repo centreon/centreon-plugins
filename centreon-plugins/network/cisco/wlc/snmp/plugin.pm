@@ -38,9 +38,9 @@ sub new {
                          'ap-users'                 => 'centreon::common::airespace::snmp::mode::apusers',
                          'cpu'                      => 'centreon::common::airespace::snmp::mode::cpu',
                          'hardware'         => 'centreon::common::airespace::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::airespace::snmp::mode::memory',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

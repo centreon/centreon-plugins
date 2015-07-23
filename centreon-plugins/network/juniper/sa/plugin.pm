@@ -37,9 +37,10 @@ sub new {
                          'disk'                 => 'network::juniper::common::ive::mode::disk',
                          'logfile'              => 'network::juniper::common::ive::mode::logfile',
                          'users'                => 'network::juniper::common::ive::mode::users',
+                         'interfaces'           => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'memory'               => 'snmp_standard::mode::memory',
                          'swap'                 => 'snmp_standard::mode::swap',
-                         'traffic'              => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

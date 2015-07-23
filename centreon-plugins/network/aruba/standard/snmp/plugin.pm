@@ -36,9 +36,8 @@ sub new {
                          'ap-users'         => 'centreon::common::aruba::snmp::mode::apusers',
                          'cpu'              => 'centreon::common::aruba::snmp::mode::cpu',
                          'hardware'         => 'centreon::common::aruba::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          'memory'           => 'centreon::common::aruba::snmp::mode::memory',
                          'storage'          => 'centreon::common::aruba::snmp::mode::storage',
                          );
