@@ -637,10 +637,10 @@ Linux
 Contrôler le trafic de toutes les interfaces en SNMP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dégradé si le trafic entrant/sortant utilisé > 80% et critique si le trafic entrant/sortant utilisé > 90%. L'exemple évite également les erreurs sur les interfaces déconnectées (option ``--skip``) :
+Dégradé si le trafic entrant/sortant utilisé > 80% et critique si le trafic entrant/sortant utilisé > 90% :
 ::
 
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --regexp --skip --warning-in=80 --critical-in=90 --warning-out=80 --critical-out=90
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=interfaces --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --add-traffic --warning-in=80 --critical-in=90 --warning-out=80 --critical-out=90
   OK: All traffic are ok | 'traffic_in_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_out_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_in_eth0'=1872.00b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth0'=266.32b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_in_eth1'=976.65b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth1'=1021.68b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000
   Interface 'lo' Traffic In : 126.58b/s (0.00 %), Out : 126.58b/s (0.00 %)
   Interface 'eth0' Traffic In : 1.87Kb/s (0.00 %), Out : 266.32b/s (0.00 %)
