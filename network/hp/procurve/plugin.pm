@@ -34,10 +34,9 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::hp::procurve::mode::cpu',
                          'environment'      => 'network::hp::procurve::mode::environment',
-                         'memory'           => 'network::hp::procurve::mode::memory',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
-                         'traffic'          => 'snmp_standard::mode::traffic',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::hp::procurve::mode::memory',
                          );
 
     return $self;

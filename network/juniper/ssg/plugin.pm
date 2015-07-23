@@ -32,12 +32,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-			 'cpu'			=> 'network::juniper::common::screenos::mode::cpu',
-			 'memory'		=> 'network::juniper::common::screenos::mode::memory',
-			 'sessions'		=> 'network::juniper::common::screenos::mode::sessions',
-			 'hardware'		=> 'network::juniper::common::screenos::mode::hardware',
-                         'traffic'              => 'snmp_standard::mode::traffic',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+                        'cpu'               => 'network::juniper::common::screenos::mode::cpu',
+                        'memory'            => 'network::juniper::common::screenos::mode::memory',
+                        'sessions'          => 'network::juniper::common::screenos::mode::sessions',
+                        'hardware'          => 'network::juniper::common::screenos::mode::hardware',
+                        'interfaces'        => 'snmp_standard::mode::interfaces', 
+                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                          );
 
     return $self;

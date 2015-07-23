@@ -39,7 +39,7 @@ sub new {
                          'memory-forwarding'    => 'network::juniper::common::junos::mode::memoryforwarding', # packet forwarding engine
                          'cp-sessions'          => 'network::juniper::common::junos::mode::cpsessions', # CP = 'central point'
                          'flow-sessions'        => 'network::juniper::common::junos::mode::flowsessions',
-                         'traffic'              => 'snmp_standard::mode::traffic',
+                         'interfaces'           => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'list-storages'        => 'snmp_standard::mode::liststorages',
                          'storage'              => 'snmp_standard::mode::storage',

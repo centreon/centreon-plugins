@@ -34,11 +34,10 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
                          'failover'         => 'network::cisco::asa::mode::failover',
+                         'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'sessions'         => 'network::cisco::asa::mode::sessions',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

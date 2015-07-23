@@ -35,9 +35,9 @@ sub new {
                          'array-stats'      => 'storage::dell::equallogic::snmp::mode::arraystats',
                          'disk-usage'       => 'storage::dell::equallogic::snmp::mode::diskusage',
                          'hardware'         => 'storage::dell::equallogic::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'pool-usage'       => 'storage::dell::equallogic::snmp::mode::poolusage',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

@@ -34,12 +34,13 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
+                         'interfaces'           => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
                          'ha-status'            => 'network::netasq::snmp::mode::hastatus',
                          'memory'               => 'snmp_standard::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
                          'swap'                 => 'snmp_standard::mode::swap',
-                         'traffic'              => 'snmp_standard::mode::traffic',
                          'vpn-status'           => 'network::netasq::snmp::mode::vpnstatus',
                          );
 

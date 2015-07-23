@@ -36,11 +36,11 @@ sub new {
                          'cpu'                  => 'centreon::common::fortinet::fortigate::mode::cpu',
                          'disk'                 => 'centreon::common::fortinet::fortigate::mode::disk',
                          'hardware'             => 'centreon::common::fortinet::fortigate::mode::hardware',
+                         'interfaces'           => 'snmp_standard::mode::interfaces', 
                          'ips-stats'            => 'centreon::common::fortinet::fortigate::mode::ipsstats',
                          'list-virtualdomains'  => 'centreon::common::fortinet::fortigate::mode::listvirtualdomains',
                          'memory'               => 'centreon::common::fortinet::fortigate::mode::memory',
                          'sessions'             => 'centreon::common::fortinet::fortigate::mode::sessions',
-                         'traffic'              => 'snmp_standard::mode::traffic',
                          'virus'                => 'centreon::common::fortinet::fortigate::mode::virus',
                          );
 
