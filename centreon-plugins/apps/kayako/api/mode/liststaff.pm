@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kayako::mode::liststatus;
+package apps::kayako::api::mode::liststaff;
 
 use base qw(centreon::plugins::mode);
 
@@ -66,7 +66,7 @@ sub handle_ALRM {
     my $self = shift;
     
     $self->{output}->output_add(severity => 'UNKNOWN',
-                                short_msg => sprintf("Cannot finished scenario execution (timeout received)"));
+                                short_msg => sprintf("Cannot finished API execution (timeout received)"));
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -94,21 +94,21 @@ sub run {
 	my $salt;
 	$salt .= int(rand(10)) for 1..10;
 	my $digest = hmac_sha256_base64 ($salt, $self->{option_results}->{'kayako_secret_key'});
-	$self->{option_results}->{'url_path'} .= "/Tickets/TicketStatus&apikey=" . $self->{option_results}->{'kayako_api_key'} . "&salt=" . $salt . "&signature=" . $digest . "=";	
+	$self->{option_results}->{'url_path'} .= "/Base/Staff&apikey=" . $self->{option_results}->{'kayako_api_key'} . "&salt=" . $salt . "&signature=" . $digest . "=";	
 	my $webcontent = centreon::plugins::httplib::connect($self);
 	my $xp = XML::XPath->new( $webcontent );
-	my $nodes = $xp->find('ticketstatuses/ticketstatus');
+	my $nodes = $xp->find('staffusers/staff');
 
 	foreach my $actionNode ($nodes->get_nodelist) {
 		my ($id) = $xp->find('./id', $actionNode)->get_nodelist;
 		my $trim_id = centreon::plugins::misc::trim($id->string_value);
-		my ($title) = $xp->find('./title', $actionNode)->get_nodelist;
+		my ($title) = $xp->find('./username', $actionNode)->get_nodelist;
 		my $trim_title = centreon::plugins::misc::trim($title->string_value);
         $self->{output}->output_add(long_msg => "'" . $trim_title . "' [id = " . $trim_id . "]");
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List status:');
+                                short_msg => 'List staff:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

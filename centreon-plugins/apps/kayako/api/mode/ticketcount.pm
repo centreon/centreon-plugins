@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kayako::mode::ticketcount;
+package apps::kayako::api::mode::ticketcount;
 
 use base qw(centreon::plugins::mode);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kayako::plugin;
+package apps::kayako::api::plugin;
 
 use strict;
 use warnings;
@@ -32,11 +32,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'list-department'	=> 'apps::kayako::mode::listdepartment',
-        'list-priority'		=> 'apps::kayako::mode::listpriority',
-        'list-staff'		=> 'apps::kayako::mode::liststaff',
-        'list-status'		=> 'apps::kayako::mode::liststatus',
-        'ticket-count'		=> 'apps::kayako::mode::ticketcount',
+        'list-department'	=> 'apps::kayako::api::mode::listdepartment',
+        'list-priority'		=> 'apps::kayako::api::mode::listpriority',
+        'list-staff'		=> 'apps::kayako::api::mode::liststaff',
+        'list-status'		=> 'apps::kayako::api::mode::liststatus',
+        'ticket-count'		=> 'apps::kayako::api::mode::ticketcount',
     );
 
     return $self;
@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Selenium server.
+Check Kayako with REST API.
 
 =cut

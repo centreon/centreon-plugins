@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kayako::mode::listpriority;
+package apps::kayako::api::mode::listpriority;
 
 use base qw(centreon::plugins::mode);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kayako::mode::listdepartment;
+package apps::kayako::api::mode::listdepartment;
 
 use base qw(centreon::plugins::mode);
 
@@ -121,7 +121,7 @@ __END__
 
 =head1 MODE
 
-List departmentf of kayako 
+List departments of kayako 
 
 =over 8
 
