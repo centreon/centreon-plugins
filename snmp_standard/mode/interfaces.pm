@@ -46,7 +46,7 @@ my $maps_counters = {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in'}, { name => 'display' }, { name => 'mode_traffic' } ],
                 per_second => 1,
                 closure_custom_calc => \&custom_traffic_calc, closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => \&custom_traffic_output,
+                closure_custom_output => \&custom_traffic_output, output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => \&custom_traffic_perfdata,
                 closure_custom_threshold_check => \&custom_traffic_threshold,
             }
@@ -56,12 +56,48 @@ my $maps_counters = {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out'}, { name => 'display' }, { name => 'mode_traffic' } ],
                 per_second => 1,
                 closure_custom_calc => \&custom_traffic_calc, closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => \&custom_traffic_output,
+                closure_custom_output => \&custom_traffic_output, output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => \&custom_traffic_perfdata,
                 closure_custom_threshold_check => \&custom_traffic_threshold,
             }
         },
-        '020_in-ucast'   => { filter => 'add_cast',
+        '020_in-discard'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Discard : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '021_in-error'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Error : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '022_out-discard'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Discard : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '023_out-error'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Error : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '030_in-ucast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
@@ -73,7 +109,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '021_in-bcast'   => { filter => 'add_cast',
+        '031_in-bcast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
@@ -85,7 +121,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '022_in-mcast'   => { filter => 'add_cast',
+        '032_in-mcast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
@@ -97,7 +133,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '023_out-ucast'   => { filter => 'add_cast',
+        '033_out-ucast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
@@ -109,7 +145,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '024_out-bcast'   => { filter => 'add_cast',
+        '034_out-bcast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
@@ -121,7 +157,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '025_out-mcast'   => { filter => 'add_cast',
+        '035_out-mcast'   => { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
@@ -152,7 +188,7 @@ sub custom_threshold_output {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin status: ' . $self->{result_values}->{admstatus} . ')';
+    my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
     
     return $msg;
 }
@@ -195,6 +231,11 @@ sub custom_traffic_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
+    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+        $self->{result_values}->{traffic_per_seconds} /= 8;
+        $self->{result_values}->{speed} /= 8;
+    }
+    
     my ($warning, $critical);
     if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
@@ -203,11 +244,20 @@ sub custom_traffic_perfdata {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => $self->{result_values}->{traffic_per_seconds},
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    
+    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+        $self->{output}->perfdata_add(label => $self->{result_values}->{label} . $extra_label,
+                                      value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+                                      warning => $warning,
+                                      critical => $critical,
+                                      min => 0, max => $self->{result_values}->{speed});
+    } else {
+        $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
+                                      value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+                                      warning => $warning,
+                                      critical => $critical,
+                                      min => 0, max => $self->{result_values}->{speed});
+    }
 }
 
 sub custom_traffic_threshold {
@@ -226,7 +276,7 @@ sub custom_traffic_output {
     my ($self, %options) = @_;
     
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
-    my $msg = sprintf("Traffic %s %s/s (%s)",
+    my $msg = sprintf("Traffic %s : %s/s (%s)",
                       ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
                       defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
     return $msg;
@@ -241,6 +291,11 @@ sub custom_traffic_calc {
     }
     
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    if ($diff_traffic == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
@@ -249,6 +304,77 @@ sub custom_traffic_calc {
     }
     
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
+##############
+# Errors
+sub custom_errors_perfdata {
+    my ($self, %options) = @_;
+    
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+        $self->{output}->perfdata_add(label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label, unit => '%',
+                                  value => sprintf("%.2f", $self->{result_values}->{prct}),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
+                                  min => 0, max => 100);
+    } else {
+        $self->{output}->perfdata_add(label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label,
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
+                                  min => 0, max => $self->{result_values}->{total});
+    }
+}
+
+sub custom_errors_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } else {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_errors_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Packets %s %s : %.2f%% (%s)",
+                      ucfirst($self->{result_values}->{label1}), ucfirst($self->{result_values}->{label2}),
+                      $self->{result_values}->{prct}, $self->{result_values}->{used});
+    return $msg;
+}
+
+sub custom_errors_calc {
+    my ($self, %options) = @_;
+
+    if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
+        $self->{error_msg} = "buffer creation";
+        return -2;
+    }
+    
+    my $diff = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}} - 
+        $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
+    my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
+        $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
+    if ($total == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    
+    $self->{result_values}->{prct} = $diff * 100 / $total;
+    $self->{result_values}->{used} = $diff;
+    $self->{result_values}->{total} = $total;
+    $self->{result_values}->{label1} = $options{extra_options}->{label_ref1};
+    $self->{result_values}->{label2} = $options{extra_options}->{label_ref2};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -295,6 +421,15 @@ sub set_oids_status {
     };
 }
 
+sub set_oids_errors {
+    my ($self, %options) = @_;
+    
+    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
+    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
+    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
+    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
+}
+
 sub set_oids_traffic {
     my ($self, %options) = @_;
     
@@ -329,14 +464,18 @@ sub set_oids_cast {
 sub check_oids_label {
     my ($self, %options) = @_;
     
-    $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
     foreach (('oid_filter', 'oid_display')) {
         if (!defined($self->{oids_label}->{lc($self->{option_results}->{$_})})) {
             my $label = $_;
             $label =~ s/_/-/g;
-            $self->{output}->add_option_msg(short_msg => "Unsupported --" . $label . " option.");
+            $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
             $self->{output}->option_exit();
         }
+    }
+    
+    if (defined($self->{option_results}->{oid_extra_display}) && !defined($self->{oids_label}->{lc($self->{option_results}->{oid_extra_display})})) {
+        $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -366,9 +505,11 @@ sub new {
                                 "add-cast"                => { name => 'add_cast' },
                                 "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
                                 "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
+                                "oid-extra-display:s"     => { name => 'oid_extra_display' },
                                 "interface:s"             => { name => 'interface' },
                                 "name"                    => { name => 'use_name' },
                                 "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+                                "units-errors:s"          => { name => 'units_errors', default => '%' },
                                 "speed:s"                 => { name => 'speed' },
                                 "speed-in:s"              => { name => 'speed_in' },
                                 "speed-out:s"             => { name => 'speed_out' },
@@ -377,6 +518,7 @@ sub new {
                                 "show-cache"              => { name => 'show_cache' },
                                 "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                 "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
                                 }); 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -422,6 +564,11 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong option --units-traffic.");
         $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{add_errors}) && 
+        (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} !~ /^(%|absolute)$/)) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option --units-errors.");
+        $self->{output}->option_exit();
+    }
     
     if ((!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') &&
         ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
@@ -436,7 +583,7 @@ sub check_options {
     }
     $self->{checking} = '';
     foreach (('add_status', 'add_errors', 'add_traffic', 'add_cast')) {
-        if (defined($self->{options_results}->{$_})) {
+        if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
     }
@@ -513,16 +660,16 @@ sub run {
             $maps_counters->{int}->{$_}->{obj}->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "' $long_msg");
+        $self->{output}->output_add(long_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Inteface '" . $self->{interface_selected}->{$id}->{display} . "' $short_msg"
+                                        short_msg => "Inteface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "' $long_msg");
+            $self->{output}->output_add(short_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $long_msg");
         }
     }
     
@@ -563,12 +710,28 @@ sub get_display_value {
     }
     return $value;
 }
+
+sub check_oids_options_change {
+    my ($self, %options) = @_;
+    
+    my @array = ();
+    push @array, $self->{statefile_cache}->get(name => 'oid_display'), $self->{statefile_cache}->get(name => 'oid_filter'), $self->{statefile_cache}->get(name => 'oid_extra_display');
+    my $regexp = join('|', @array);
+    foreach ('oid_display', 'oid_filter', 'oid_extra_display') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} !~ /^($regexp)$/i) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
     $datas->{oid_display} = $self->{option_results}->{oid_display};
+    $datas->{oid_extra_display} = $self->{option_results}->{oid_extra_display};
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
     
@@ -578,6 +741,10 @@ sub reload_cache {
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
         push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} };
     }
+    if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
+        $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}} };
+    }    
     
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
     foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}})) {
@@ -597,8 +764,24 @@ sub reload_cache {
             $datas->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$_});
        }
     }
+    if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
+        $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
+        foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}})) {
+            /\.([0-9]+)$/;
+            $datas->{$self->{option_results}->{oid_extra_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}->{$_});
+       }
+    }
     
     $self->{statefile_cache}->write(data => $datas);
+}
+
+sub add_selected_interface {
+    my ($self, %options) = @_;
+    
+    $self->{interface_selected}->{$options{id}} = { display => $self->get_display_value(id => $options{id}), extra_display => '' };
+    if (defined($self->{option_results}->{oid_extra_display})) {
+         $self->{interface_selected}->{$options{id}}->{extra_display} = ' [ ' . $self->{statefile_cache}->get(name => $self->{option_results}->{oid_extra_display} . "_" . $options{id}) . ' ]';
+    }
 }
 
 sub get_selection {
@@ -613,10 +796,8 @@ sub get_selection {
 
     $self->{interface_selected} = {};
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    my $oid_display = $self->{statefile_cache}->get(name => 'oid_display');
-    my $oid_filter = $self->{statefile_cache}->get(name => 'oid_filter');
-    if ($has_cache_file == 0 ||
-        ($self->{option_results}->{oid_display} !~ /^($oid_display|$oid_filter)$/i || $self->{option_results}->{oid_filter} !~ /^($oid_display|$oid_filter)$/i) ||
+    
+    if ($has_cache_file == 0 || $self->check_oids_options_change() ||
         !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
         $self->reload_cache();
         $self->{statefile_cache}->read();
@@ -626,7 +807,7 @@ sub get_selection {
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
         foreach (@{$all_ids}) {
             if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
-                $self->{interface_selected}->{$_} = { display => $self->get_display_value(id => $_) };
+                $self->add_selected_interface(id => $_);
             }
         }
     } else {
@@ -634,11 +815,11 @@ sub get_selection {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $_);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{interface})) {
-                $self->{interface_selected}->{$_} = { display => $self->get_display_value(id => $_) }; 
+                $self->add_selected_interface(id => $_);
                 next;
             }
             if ($filter_name =~ /$self->{option_results}->{interface}/) {
-                $self->{interface_selected}->{$_} = { display => $self->get_display_value(id => $_) }; 
+                $self->add_selected_interface(id => $_);
             }
         }
     }
@@ -672,6 +853,14 @@ sub load_traffic {
     }
 }
 
+sub load_errors {
+    my ($self, %options) = @_;
+    
+    $self->set_oids_errors();
+    $self->{snmp}->load(oids => [$self->{oid_ifInDiscards}, $self->{oid_ifInErrors},
+                                 $self->{oid_ifOutDiscards}, $self->{oid_ifOutErrors}], instances => $self->{array_interface_selected});
+}
+
 sub load_cast {
     my ($self, %options) = @_;
 
@@ -692,15 +881,17 @@ sub get_informations {
     $self->get_selection();
     $self->{array_interface_selected} = [keys %{$self->{interface_selected}}];    
     $self->load_status() if (defined($self->{option_results}->{add_status}));
+    $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
-    $self->load_cast() if (defined($self->{option_results}->{add_cast}));
+    $self->load_cast() if (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors}));
 
     $self->{results} = $self->{snmp}->get_leef();
     
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
-        $self->add_result_cast(instance => $_) if (defined($self->{option_results}->{add_cast}));
+        $self->add_result_cast(instance => $_) if (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors}));
+        $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
     }
 }
 
@@ -709,6 +900,15 @@ sub add_result_status {
     
     $self->{interface_selected}->{$options{instance}}->{opstatus} = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}};
     $self->{interface_selected}->{$options{instance}}->{admstatus} = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}};
+}
+
+sub add_result_errors {
+    my ($self, %options) = @_;
+    
+    $self->{interface_selected}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
+    $self->{interface_selected}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
+    $self->{interface_selected}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
+    $self->{interface_selected}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
 }
 
 sub add_result_traffic {
@@ -778,8 +978,10 @@ sub add_result_cast {
             $self->{interface_selected}->{$options{instance}}->{mode_cast} = 64;
         }
     }
+    
+    $self->{interface_selected}->{$options{instance}}->{total_in_packets} = $self->{interface_selected}->{$options{instance}}->{iucast} + $self->{interface_selected}->{$options{instance}}->{imcast} + $self->{interface_selected}->{$options{instance}}->{ibcast};
+    $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
 }
-
 
 1;
 
@@ -806,16 +1008,26 @@ Check interface cast.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
+Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
 
 =item B<--units-traffic>
 
 Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+
+=item B<--units-errors>
+
+Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
+
+=item B<--nagvis-perfdata>
+
+Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--threshold-overload>
 
@@ -854,6 +1066,10 @@ Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, 
 =item B<--oid-display>
 
 Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+
+=item B<--oid-extra-display>
+
+Add an OID to display.
 
 =item B<--display-transform-src>
 
