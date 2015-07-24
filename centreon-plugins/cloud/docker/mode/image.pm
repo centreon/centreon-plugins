@@ -187,7 +187,7 @@ __END__
 
 =head1 MODE
 
-Check Container's image viability
+Check Container's image viability with a registry
 
 =over 8
 

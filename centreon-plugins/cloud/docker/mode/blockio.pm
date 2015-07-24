@@ -158,6 +158,7 @@ sub run {
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
+    # First execution
     if (!defined($old_timestamp)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
@@ -201,15 +202,15 @@ sub run {
                                     $write_value . $write_unit));
 
     $self->{output}->perfdata_add(label => 'read_io', unit => 'B/s',
-                                      value => sprintf("%.2f", $read_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-read'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-read'),
-                                      min => 0);
+                                    value => sprintf("%.2f", $read_absolute_per_sec),
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-read'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-read'),
+                                    min => 0);
     $self->{output}->perfdata_add(label => 'write_io', unit => 'B/s',
-                                      value => sprintf("%.2f", $write_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-write'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-write'),
-                                      min => 0);
+                                    value => sprintf("%.2f", $write_absolute_per_sec),
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-write'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-write'),
+                                    min => 0);
 
     $self->{statefile_value}->write(data => $new_datas);
 
