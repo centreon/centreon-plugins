@@ -32,7 +32,7 @@ my $instance_mode;
 
 my $maps_counters = {
     int => { 
-        '000_status'   => { filter => 'add_status',
+        '000_status'   => { filter => 'add_status', threshold => 0,
             set => {
                 key_values => [ { name => 'opstatus' }, { name => 'admstatus' } ],
                 closure_custom_calc => \&custom_status_calc,
@@ -177,12 +177,23 @@ my $maps_counters = {
 #########################
 sub custom_threshold_output {
     my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
     
-    my $status = $instance_mode->get_severity(section => 'admin', value => $self->{result_values}->{admstatus});
-    if ($self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-        return $status;
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($instance_mode->{option_results}->{critical_status}) && eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
     }
-    $status = $instance_mode->get_severity(section => 'oper', value => $self->{result_values}->{opstatus});
+
     return $status;
 }
 
@@ -409,16 +420,6 @@ sub set_oids_status {
     $self->{oid_opstatus_mapping} = {
         1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
     };
-    
-    $self->{thresholds_status} = {
-        oper => [
-            ['up', 'OK'],
-            ['.*', 'CRITICAL'],
-        ],
-        admin => [
-            ['down', 'OK'],
-        ],
-    };
 }
 
 sub set_oids_errors {
@@ -479,6 +480,12 @@ sub check_oids_label {
     }
 }
 
+sub default_critical_status {
+    my ($self, %options) = @_;
+    
+    return '%{admstatus} eq "up" and %{opstatus} ne "up"';
+}
+
 sub default_oid_filter_name {
     my ($self, %options) = @_;
     
@@ -503,6 +510,8 @@ sub new {
                                 "add-traffic"             => { name => 'add_traffic' },
                                 "add-errors"              => { name => 'add_errors' },
                                 "add-cast"                => { name => 'add_cast' },
+                                "warning-status:s"        => { name => 'warning_status' },
+                                "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
                                 "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
                                 "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
                                 "oid-extra-display:s"     => { name => 'oid_extra_display' },
@@ -517,7 +526,6 @@ sub new {
                                 "display-transform-dst:s" => { name => 'display_transform_dst' },
                                 "show-cache"              => { name => 'show_cache' },
                                 "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
                                 }); 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -588,20 +596,7 @@ sub check_options {
         }
     }
     
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
+    $self->change_macros();
 }
 
 sub run {
@@ -678,26 +673,14 @@ sub run {
     $self->{output}->exit();
 }
 
-sub get_severity {
+sub change_macros {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
     
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
     }
-    foreach (@{$self->{thresholds_status}->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 sub get_display_value {
@@ -714,10 +697,14 @@ sub get_display_value {
 sub check_oids_options_change {
     my ($self, %options) = @_;
     
-    my @array = ();
-    push @array, $self->{statefile_cache}->get(name => 'oid_display'), $self->{statefile_cache}->get(name => 'oid_filter'), $self->{statefile_cache}->get(name => 'oid_extra_display');
-    my $regexp = join('|', @array);
-    foreach ('oid_display', 'oid_filter', 'oid_extra_display') {
+    my ($regexp, $regexp_append) = ('', '');
+    foreach (('oid_display', 'oid_filter', 'oid_extra_display')) {
+        if (my $value = $self->{statefile_cache}->get(name => $_)) {
+            $regexp .= $regexp_append . $value;
+            $regexp_append = '|';
+        }
+    }
+    foreach (('oid_display', 'oid_filter', 'oid_extra_display')) {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} !~ /^($regexp)$/i) {
             return 1;
         }
@@ -1005,6 +992,16 @@ Check interface traffic.
 
 Check interface cast.
 
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
+Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+
 =item B<--warning-*>
 
 Threshold warning.
@@ -1028,12 +1025,6 @@ Units of thresholds for errors/discards (Default: '%') ('%', 'absolute').
 =item B<--nagvis-perfdata>
 
 Display traffic perfdata to be compatible with nagvis widget.
-
-=item B<--threshold-overload>
-
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
-How to avoid errors on interface status: --threshold-overload='oper,OK,.*'
 
 =item B<--interface>
 
@@ -1073,11 +1064,11 @@ Add an OID to display.
 
 =item B<--display-transform-src>
 
-Regexp src to transform display value. (security risk!!!)
+Regexp src to transform display value.
 
 =item B<--display-transform-dst>
 
-Regexp dst to transform display value. (security risk!!!)
+Regexp dst to transform display value.
 
 =item B<--show-cache>
 
