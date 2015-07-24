@@ -108,9 +108,17 @@ sub run {
         my $containername = $val->{Names}->[0];
         $containername =~ s/^\///;
         my $containerid = $val->{Id};
-        my $containerstate = $val->{Status};
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , state = %s]",
-                                                        $containername, $containerid, $containerstate));
+        my $containerimage = $val->{Image};
+        my $containerstate;
+        if (($val->{Status} =~ m/^Up/) && ($val->{Status} =~ m/^(?:(?!Paused).)*$/)) {
+                $containerstate = 'Running';
+            } elsif ($val->{Status} =~ m/^Exited/) {
+                $containerstate = 'Exited';
+            } elsif ($val->{Status} =~ m/\(Paused\)$/) {
+                $containerstate = 'Paused';
+            }
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , image = %s, state = %s]",
+                                                        $containername, $containerid, $containerimage, $containerstate));
     }
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'List containers:');
