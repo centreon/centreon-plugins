@@ -184,8 +184,8 @@ sub run {
         $old_write_bytes = 0;
     }
 
-    my $delta_read_bits = ($read_bytes - $old_read_bytes) * 8;
-    my $delta_write_bits = ($write_bytes - $old_write_bytes) * 8;
+    my $delta_read_bytes = $read_bytes - $old_read_bytes;
+    my $delta_write_bytes = $write_bytes - $old_write_bytes;
     my $read_absolute_per_sec = $delta_read_bits / $time_delta;
     my $write_absolute_per_sec = $delta_write_bits / $time_delta;
 
@@ -200,12 +200,12 @@ sub run {
                                     $read_value . $read_unit,
                                     $write_value . $write_unit));
 
-    $self->{output}->perfdata_add(label => 'read_io', unit => 'b/s',
+    $self->{output}->perfdata_add(label => 'read_io', unit => 'B/s',
                                       value => sprintf("%.2f", $read_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-read'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-read'),
                                       min => 0);
-    $self->{output}->perfdata_add(label => 'write_io', unit => 'b/s',
+    $self->{output}->perfdata_add(label => 'write_io', unit => 'B/s',
                                       value => sprintf("%.2f", $write_absolute_per_sec),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-write'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-write'),
@@ -254,19 +254,19 @@ Specify one container's name
 
 =item B<--warning-read>
 
-Threshold warning in b/s for Read I/O.
+Threshold warning in B/s for Read I/O.
 
 =item B<--critical-read>
 
-Threshold critical in b/s for Read I/O.
+Threshold critical in B/s for Read I/O.
 
 =item B<--warning-write>
 
-Threshold warning in b/s for Write I/O.
+Threshold warning in B/s for Write I/O.
 
 =item B<--critical-write>
 
-Threshold critical in b/s for Write I/O.
+Threshold critical in B/s for Write I/O.
 
 =item B<--credentials>
 
