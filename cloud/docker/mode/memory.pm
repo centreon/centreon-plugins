@@ -153,8 +153,8 @@ sub run {
 
     $self->{output}->perfdata_add(label => "used",
                                   value => $webcontent->{memory_stats}->{usage},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0,
                                   max => $webcontent->{memory_stats}->{limit},
                                  );
