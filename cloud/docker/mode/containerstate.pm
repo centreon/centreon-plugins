@@ -41,7 +41,6 @@ use strict;
 use warnings;
 use centreon::plugins::httplib;
 use JSON;
-use DateTime::Format::ISO8601;
 
 my $thresholds = {
     state => [
@@ -182,8 +181,8 @@ sub run {
                 $result = $keys;
                 $containername = $webcontent->{Name};
                 $containername =~ s/^\///;
-                my $dt = DateTime::Format::ISO8601->parse_datetime($webcontent->{State}->{StartedAt});
-                $containertime = $dt->strftime('%F %T');
+                my ( $y, $m, $d, $h, $mi, $s ) = $webcontent->{State}->{StartedAt} =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
+                $containertime = $y."-".$m."-".$d." ".$h.":".$mi.":".$s;
                 last;
             }
         }
