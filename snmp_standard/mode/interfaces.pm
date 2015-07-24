@@ -184,9 +184,11 @@ sub custom_threshold_output {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -480,6 +482,12 @@ sub check_oids_label {
     }
 }
 
+sub default_warning_status {
+    my ($self, %options) = @_;
+    
+    return '';
+}
+
 sub default_critical_status {
     my ($self, %options) = @_;
     
@@ -510,7 +518,7 @@ sub new {
                                 "add-traffic"             => { name => 'add_traffic' },
                                 "add-errors"              => { name => 'add_errors' },
                                 "add-cast"                => { name => 'add_cast' },
-                                "warning-status:s"        => { name => 'warning_status' },
+                                "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
                                 "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
                                 "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
                                 "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
