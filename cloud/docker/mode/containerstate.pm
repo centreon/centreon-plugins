@@ -177,6 +177,7 @@ sub run {
 
     if (defined($self->{option_results}->{id}) || defined($self->{option_results}->{name})) {
         while ( my ($keys,$values) = each(%{$webcontent->{State}})) {
+            # Why not set a variable that contains the state?
             if ($values eq 'true') {
                 $result = $keys;
                 $containername = $webcontent->{Name};
@@ -200,6 +201,7 @@ sub run {
             $containername = $val->{Names}->[0];
             $containername =~ s/^\///;
 
+            # Thanks to Docker API for the paused state...
             if (($val->{Status} =~ m/^Up/) && ($val->{Status} =~ m/^(?:(?!Paused).)*$/)) {
                 $result = 'Running';
                 $nbrunning++;
@@ -215,7 +217,7 @@ sub run {
             $exit = $self->{output}->get_most_critical(status => [ $tmp_exit, $exit ]);
             if (!$self->{output}->is_status(value => $tmp_exit, compare => 'OK', litteral => 1)) {
                 $self->{output}->output_add(long_msg => sprintf("Containers %s is in %s state",
-                                                                $containername, $result));
+                                                                    $containername, $result));
             }
         }
 
@@ -224,16 +226,16 @@ sub run {
                                         short_msg => sprintf("Some containers are in wrong state"));
         }
         $self->{output}->perfdata_add(label => "running",
-                                      value => $nbrunning,
-                                      min => 0,
+                                        value => $nbrunning,
+                                        min => 0,
                                      );
         $self->{output}->perfdata_add(label => "paused",
-                                      value => $nbpaused,
-                                      min => 0,
+                                        value => $nbpaused,
+                                        min => 0,
                                      );
         $self->{output}->perfdata_add(label => "exited",
-                                      value => $nbexited,
-                                      min => 0,
+                                        value => $nbexited,
+                                        min => 0,
                                      );
     }
 
