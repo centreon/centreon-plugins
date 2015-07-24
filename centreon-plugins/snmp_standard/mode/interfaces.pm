@@ -30,148 +30,6 @@ use Digest::MD5 qw(md5_hex);
 
 my $instance_mode;
 
-my $maps_counters = {
-    int => { 
-        '000_status'   => { filter => 'add_status', threshold => 0,
-            set => {
-                key_values => [ { name => 'opstatus' }, { name => 'admstatus' } ],
-                closure_custom_calc => \&custom_status_calc,
-                closure_custom_output => \&custom_status_output,
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&custom_threshold_output,
-            }
-        },
-        '010_in-traffic'   => { filter => 'add_traffic',
-            set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in'}, { name => 'display' }, { name => 'mode_traffic' } ],
-                per_second => 1,
-                closure_custom_calc => \&custom_traffic_calc, closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => \&custom_traffic_output, output_error_template => 'Traffic In : %s',
-                closure_custom_perfdata => \&custom_traffic_perfdata,
-                closure_custom_threshold_check => \&custom_traffic_threshold,
-            }
-        },
-        '011_out-traffic'   => { filter => 'add_traffic',
-            set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out'}, { name => 'display' }, { name => 'mode_traffic' } ],
-                per_second => 1,
-                closure_custom_calc => \&custom_traffic_calc, closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => \&custom_traffic_output, output_error_template => 'Traffic Out : %s',
-                closure_custom_perfdata => \&custom_traffic_perfdata,
-                closure_custom_threshold_check => \&custom_traffic_threshold,
-            }
-        },
-        '020_in-discard'   => { filter => 'add_errors',
-            set => {
-                key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
-                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Discard : %s',
-                closure_custom_perfdata => \&custom_errors_perfdata,
-                closure_custom_threshold_check => \&custom_errors_threshold,
-            }
-        },
-        '021_in-error'   => { filter => 'add_errors',
-            set => {
-                key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
-                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Error : %s',
-                closure_custom_perfdata => \&custom_errors_perfdata,
-                closure_custom_threshold_check => \&custom_errors_threshold,
-            }
-        },
-        '022_out-discard'   => { filter => 'add_errors',
-            set => {
-                key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
-                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Discard : %s',
-                closure_custom_perfdata => \&custom_errors_perfdata,
-                closure_custom_threshold_check => \&custom_errors_threshold,
-            }
-        },
-        '023_out-error'   => { filter => 'add_errors',
-            set => {
-                key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
-                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Error : %s',
-                closure_custom_perfdata => \&custom_errors_perfdata,
-                closure_custom_threshold_check => \&custom_errors_threshold,
-            }
-        },
-        '030_in-ucast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
-                output_template => 'In Ucast : %.2f %%', output_error_template => 'In Ucast : %s',
-                output_use => 'iucast_prct',  threshold_use => 'iucast_prct',
-                perfdatas => [
-                    { value => 'iucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        '031_in-bcast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
-                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
-                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
-                perfdatas => [
-                    { value => 'ibcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        '032_in-mcast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
-                output_template => 'In Mcast : %.2f %%', output_error_template => 'In Mcast : %s',
-                output_use => 'imcast_prct',  threshold_use => 'imcast_prct',
-                perfdatas => [
-                    { value => 'imcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        '033_out-ucast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
-                output_template => 'Out Ucast : %.2f %%', output_error_template => 'Out Ucast : %s',
-                output_use => 'oucast_prct',  threshold_use => 'oucast_prct',
-                perfdatas => [
-                    { value => 'oucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        '034_out-bcast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
-                output_template => 'Out Bcast : %.2f %%', output_error_template => 'Out Bcast : %s',
-                output_use => 'obcast_prct',  threshold_use => 'obcast_prct',
-                perfdatas => [
-                    { value => 'obcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-        '035_out-mcast'   => { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
-                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
-                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
-                perfdatas => [
-                    { value => 'ibcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    },
-};
-
 #########################
 # Calc functions
 #########################
@@ -297,7 +155,7 @@ sub custom_traffic_output {
 
 sub custom_traffic_calc {
     my ($self, %options) = @_;
-
+    
     if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -395,6 +253,169 @@ sub custom_errors_calc {
 #########################
 # OIDs mapping functions
 #########################
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters} = {
+    int => { 
+        '000_status'   => { filter => 'add_status', threshold => 0,
+            set => {
+                key_values => $self->set_key_values_status(),
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+        '010_in-traffic'   => { filter => 'add_traffic',
+            set => {
+                key_values => $self->set_key_values_in_traffic(),
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+        '011_out-traffic'   => { filter => 'add_traffic',
+            set => {
+                key_values => $self->set_key_values_out_traffic(),
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+        '020_in-discard'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Discard : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '021_in-error'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets In Error : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '022_out-discard'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Discard : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '023_out-error'   => { filter => 'add_errors',
+            set => {
+                key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_errors_calc, closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
+                closure_custom_output => \&custom_errors_output, output_error_template => 'Packets Out Error : %s',
+                closure_custom_perfdata => \&custom_errors_perfdata,
+                closure_custom_threshold_check => \&custom_errors_threshold,
+            }
+        },
+        '030_in-ucast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
+                output_template => 'In Ucast : %.2f %%', output_error_template => 'In Ucast : %s',
+                output_use => 'iucast_prct',  threshold_use => 'iucast_prct',
+                perfdatas => [
+                    { value => 'iucast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        '031_in-bcast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
+                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
+                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
+                perfdatas => [
+                    { value => 'ibcast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        '032_in-mcast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
+                output_template => 'In Mcast : %.2f %%', output_error_template => 'In Mcast : %s',
+                output_use => 'imcast_prct',  threshold_use => 'imcast_prct',
+                perfdatas => [
+                    { value => 'imcast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        '033_out-ucast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
+                output_template => 'Out Ucast : %.2f %%', output_error_template => 'Out Ucast : %s',
+                output_use => 'oucast_prct',  threshold_use => 'oucast_prct',
+                perfdatas => [
+                    { value => 'oucast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        '034_out-bcast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
+                output_template => 'Out Bcast : %.2f %%', output_error_template => 'Out Bcast : %s',
+                output_use => 'obcast_prct',  threshold_use => 'obcast_prct',
+                perfdatas => [
+                    { value => 'obcast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        '035_out-mcast'   => { filter => 'add_cast',
+            set => {
+                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
+                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
+                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
+                perfdatas => [
+                    { value => 'ibcast_prct', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    }};
+}
+
+sub set_key_values_status {
+    my ($self, %options) = @_;
+
+    return [ { name => 'opstatus' }, { name => 'admstatus' } ];
+}
+
+sub set_key_values_in_traffic {
+    my ($self, %options) = @_;
+    
+    return [ { name => 'in', diff => 1 }, { name => 'speed_in'}, { name => 'display' }, { name => 'mode_traffic' } ];
+}
+
+sub set_key_values_out_traffic {
+     my ($self, %options) = @_;
+     
+     return [ { name => 'out', diff => 1 }, { name => 'speed_out'}, { name => 'display' }, { name => 'mode_traffic' } ];
+}
+
 sub set_instance {
     my ($self, %options) = @_;
     
@@ -538,20 +559,21 @@ sub new {
                                 }); 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->set_counters();
 
     foreach my $key (('int')) {
-        foreach (keys %{$maps_counters->{$key}}) {
+        foreach (keys %{$self->{maps_counters}->{$key}}) {
             my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+            if (!defined($self->{maps_counters}->{$key}->{$_}->{threshold}) || $self->{maps_counters}->{$key}->{$_}->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
                                                     'warning-' . $name . ':s'    => { name => 'warning-' . $name },
                                                     'critical-' . $name . ':s'    => { name => 'critical-' . $name },
                                                });
             }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
+            $self->{maps_counters}->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
                                                       output => $self->{output}, perfdata => $self->{perfdata},
                                                       label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+            $self->{maps_counters}->{$key}->{$_}->{obj}->set(%{$self->{maps_counters}->{$key}->{$_}->{set}});
         }
     }
     
@@ -563,8 +585,8 @@ sub check_options {
     $self->SUPER::init(%options);
     
     foreach my $key (('int')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        foreach (keys %{$self->{maps_counters}->{$key}}) {
+            $self->{maps_counters}->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
     }
     
@@ -635,9 +657,9 @@ sub run {
     foreach my $id (sort keys %{$self->{interface_selected}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
-        foreach (sort keys %{$maps_counters->{int}}) {
-            my $obj = $maps_counters->{int}->{$_}->{obj};
-            next if (!defined($self->{option_results}->{$maps_counters->{int}->{$_}->{filter}}));
+        foreach (sort keys %{$self->{maps_counters}->{int}}) {
+            my $obj = $self->{maps_counters}->{int}->{$_}->{obj};
+            next if (!defined($self->{option_results}->{$self->{maps_counters}->{int}->{$_}->{filter}}));
             $obj->set(instance => $id);
         
             my ($value_check) = $obj->execute(values => $self->{interface_selected}->{$id},
@@ -660,7 +682,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{int}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $obj->perfdata(extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $long_msg");
