@@ -1,4 +1,4 @@
-package Paws::Credential {
+package Paws::Credential;
   use Moose::Role;
 
   requires 'access_key';
@@ -11,6 +11,5 @@ package Paws::Credential {
   }
 
   no Moose;
-}
 
 1;

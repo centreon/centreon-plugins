@@ -43,6 +43,7 @@ use Data::Printer;
 
 # Declare cloud modules
 # AWS
+use lib '/usr/src/dsabatie/centreon-plugins/cloud/aws/lib';
 use lib 'cloud/aws/lib';
 use cloud::aws::lib::Paws;
 

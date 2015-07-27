@@ -1,4 +1,4 @@
-package Paws::Net::V4Signature {
+package Paws::Net::V4Signature;
   use Moose::Role;
   use Net::Amazon::Signature::V4;
   #requires 'region';
@@ -17,6 +17,6 @@ package Paws::Net::V4Signature {
     my $sig = Net::Amazon::Signature::V4->new( $self->access_key, $self->secret_key, $self->_region_for_signature, $self->service );
     $sig->sign( $request );
   }
-}
+
 
 1;

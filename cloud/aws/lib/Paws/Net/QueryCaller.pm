@@ -1,4 +1,4 @@
-package Paws::Net::QueryCaller {
+package Paws::Net::QueryCaller;
   use Moose::Role;
   use HTTP::Request::Common;
   use POSIX qw(strftime); 
@@ -95,6 +95,6 @@ package Paws::Net::QueryCaller {
 
     return $request;
   }
-}
+
 
 1;

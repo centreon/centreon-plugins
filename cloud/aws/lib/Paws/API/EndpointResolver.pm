@@ -1,4 +1,4 @@
-package Paws::API::EndpointResolver {
+package Paws::API::EndpointResolver;
   use Moose::Role;
   use URI::Template;
   use Paws::Exception;
@@ -173,7 +173,7 @@ package Paws::API::EndpointResolver {
     my $value = $constraint->[2];
     return $self->constraints->{$func}->($region,$value);
   }
-}
+
 
 1;
 

@@ -1,4 +1,4 @@
-package Paws::CloudWatch {
+package Paws::CloudWatch;
   use Moose;
   sub service { 'monitoring' }
   sub version { '2010-08-01' }
@@ -62,7 +62,7 @@ package Paws::CloudWatch {
     my $call_object = $self->new_with_coercions('Paws::CloudWatch::SetAlarmState', @_);
     return $self->caller->do_call($self, $call_object);
   }
-}
+
 1;
 
 ### main pod documentation begin ###

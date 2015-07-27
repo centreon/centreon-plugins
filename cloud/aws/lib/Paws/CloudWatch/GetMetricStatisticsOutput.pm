@@ -1,10 +1,10 @@
 
-package Paws::CloudWatch::GetMetricStatisticsOutput {
+package Paws::CloudWatch::GetMetricStatisticsOutput;
   use Moose;
   has Datapoints => (is => 'ro', isa => 'ArrayRef[Paws::CloudWatch::Datapoint]');
   has Label => (is => 'ro', isa => 'Str');
 
-}
+
 1;
 
 ### main pod documentation begin ###

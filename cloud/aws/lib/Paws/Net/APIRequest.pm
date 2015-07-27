@@ -1,4 +1,4 @@
-package Paws::Net::APIRequest {
+package Paws::Net::APIRequest;
   use Moose;
   use HTTP::Headers;
   use URI;
@@ -22,6 +22,6 @@ package Paws::Net::APIRequest {
      $self->headers->scan(sub { $headers->{ $_[0] } = $_[1] });
      return $headers;
    }
-}
+
 
 1;

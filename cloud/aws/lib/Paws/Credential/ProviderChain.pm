@@ -1,4 +1,4 @@
-package Paws::Credential::ProviderChain {
+package Paws::Credential::ProviderChain;
   use Moose;
 
   use Module::Runtime qw//;
@@ -32,6 +32,6 @@ package Paws::Credential::ProviderChain {
   }
 
   with 'Paws::Credential';
-}
+
 
 1;

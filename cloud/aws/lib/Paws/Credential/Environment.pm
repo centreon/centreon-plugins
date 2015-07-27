@@ -1,4 +1,4 @@
-package Paws::Credential::Environment {
+package Paws::Credential::Environment;
   use Moose;
 
   has access_key => (is => 'ro', default => sub { $ENV{AWS_ACCESS_KEY} || $ENV{AWS_ACCESS_KEY_ID} });
@@ -8,7 +8,7 @@ package Paws::Credential::Environment {
   with 'Paws::Credential';
 
   no Moose;
-}
+
 
 1;
 

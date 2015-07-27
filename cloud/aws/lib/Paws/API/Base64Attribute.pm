@@ -1,4 +1,4 @@
-package Paws::API::Base64Attribute {
+package Paws::API::Base64Attribute;
   use Moose::Role;
   Moose::Util::meta_attribute_alias('Base64Attribute');
 
@@ -22,6 +22,5 @@ package Paws::API::Base64Attribute {
     }
 
   };
-}
 
 1;

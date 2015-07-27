@@ -1,4 +1,4 @@
-package Paws::Net::XMLResponse {
+package Paws::Net::XMLResponse;
   use Moose::Role;
   use XML::Simple qw//;
   use Carp qw(croak);
@@ -49,6 +49,6 @@ package Paws::Net::XMLResponse {
     );
     return $xml;
   }
-}
+
 
 1;

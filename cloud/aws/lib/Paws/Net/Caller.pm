@@ -1,4 +1,4 @@
-package Paws::Net::Caller {
+package Paws::Net::Caller;
   use Moose;
   use Carp qw(croak);
   with 'Paws::Net::CallerRole';
@@ -40,6 +40,6 @@ package Paws::Net::Caller {
       return $res;
     }
   }
-}
+
 
 1;

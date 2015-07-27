@@ -1,4 +1,4 @@
-package Paws::API::JSONAttribute {
+package Paws::API::JSONAttribute;
   use Moose::Role;
   Moose::Util::meta_attribute_alias('JSONAttribute');
 
@@ -30,6 +30,5 @@ package Paws::API::JSONAttribute {
 
     $realclass->add_method( $self->method => $coderef );
   };
-}
 
 1;
