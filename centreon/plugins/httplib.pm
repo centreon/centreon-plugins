@@ -1,39 +1,22 @@
-###############################################################################
-# Copyright 2005-2015 CENTREON
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation ; either version 2 of the License.
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, see <http://www.gnu.org/licenses>.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Linking this program statically or dynamically with other modules is making a
-# combined work based on this program. Thus, the terms and conditions of the GNU
-# General Public License cover the whole combination.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# As a special exception, the copyright holders of this program give CENTREON
-# permission to link this program with independent modules to produce an timeelapsedutable,
-# regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
-# CENTREON also meet, for each linked independent module, the terms  and conditions
-# of the license of that module. An independent module is a module which is not
-# derived from this program. If you modify this program, you may extend this
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# For more information : contact@centreon.com
-# Authors : Simon BOMM <sbomm@merethis.com>
-#           Mathieu Cinquin <mcinquin@centreon.com>
-#
-# Based on De Bodt Lieven plugin
-####################################################################################
 
 package centreon::plugins::httplib;
 
@@ -42,6 +25,7 @@ use warnings;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
+use IO::Socket::SSL;
 
 sub get_port {
     my ($self, %options) = @_;
@@ -118,23 +102,27 @@ sub connect {
         $ua->proxy(['http', 'https'], $self->{option_results}->{proxyurl});
     }
 
-	if (defined($self->{option_results}->{ssl}) && $self->{option_results}->{ssl} ne '') {
-		use IO::Socket::SSL;
-		my $context = new IO::Socket::SSL::SSL_Context(
-			SSL_version => $self->{option_results}->{ssl},
-		);
-		IO::Socket::SSL::set_default_context($context);
-    }
-
     if (defined($self->{option_results}->{cert_pkcs12}) && $self->{option_results}->{cert_file} ne '' && $self->{option_results}->{cert_pwd} ne '') {
         eval "use Net::SSL"; die $@ if $@;
         $ENV{HTTPS_PKCS12_FILE} = $self->{option_results}->{cert_file};
         $ENV{HTTPS_PKCS12_PASSWORD} = $self->{option_results}->{cert_pwd};
     }
 
+    my $ssl_context;
+    if (defined($self->{option_results}->{ssl}) && $self->{option_results}->{ssl} ne '') {
+        $ssl_context = { SSL_version => $self->{option_results}->{ssl} };
+    }
     if (defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pkcs12})) {
-        eval "use Net::SSL"; die $@ if $@;
-        $ENV{HTTPS_CERT_FILE} = $self->{option_results}->{cert_file};
+        $ssl_context = {} if (!defined($ssl_context));
+        $ssl_context->{SSL_use_cert} = 1;
+        $ssl_context->{SSL_cert_file} = $self->{option_results}->{cert_file};
+        $ssl_context->{SSL_key_file} = $self->{option_results}->{key_file} if (defined($self->{option_results}->{key_file}));
+        $ssl_context->{SSL_ca_file} = $self->{option_results}->{cacert_file} if (defined($self->{option_results}->{cacert_file}));
+    }
+    
+    if (defined($ssl_context)) {
+        my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
+        IO::Socket::SSL::set_default_context($context);
     }
 
     $response = $ua->request($req);

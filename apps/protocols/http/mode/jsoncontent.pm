@@ -1,39 +1,22 @@
-###############################################################################
-# Copyright 2005-2015 CENTREON
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation ; either version 2 of the License.
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, see <http://www.gnu.org/licenses>.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Linking this program statically or dynamically with other modules is making a
-# combined work based on this program. Thus, the terms and conditions of the GNU
-# General Public License cover the whole combination.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# As a special exception, the copyright holders of this program give CENTREON
-# permission to link this program with independent modules to produce an timeelapsedutable,
-# regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
-# CENTREON also meet, for each linked independent module, the terms  and conditions
-# of the license of that module. An independent module is a module which is not
-# derived from this program. If you modify this program, you may extend this
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# For more information : contact@centreon.com
-# Authors : Simon BOMM <sbomm@merethis.com>
-#           Mathieu Cinquin <mcinquin@centreon.com>
-#
-# Based on De Bodt Lieven plugin
-####################################################################################
 
 package apps::protocols::http::mode::jsoncontent;
 
@@ -51,7 +34,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.2';
     $options{options}->add_options(arguments =>
             {
             "data:s"                => { name => 'data' },
@@ -68,8 +51,10 @@ sub new {
             "header:s@"             => { name => 'header' },
             "get-param:s@"          => { name => 'get_param' },
             "timeout:s"             => { name => 'timeout', default => 10 },
-            "ssl:s"					=> { name => 'ssl', },
+            "ssl:s"                 => { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
+            "key-file:s"            => { name => 'key_file' },
+            "cacert-file:s"         => { name => 'cacert_file' },
             "cert-pwd:s"            => { name => 'cert_pwd' },
             "cert-pkcs12"           => { name => 'cert_pkcs12' },
 
@@ -453,6 +438,14 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 =item B<--cert-file>
 
 Specify certificate to send to the webserver
+
+=item B<--key-file>
+
+Specify key to send to the webserver
+
+=item B<--cacert-file>
+
+Specify root certificate to send to the webserver
 
 =item B<--cert-pwd>
 
