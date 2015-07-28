@@ -262,7 +262,7 @@ sub run {
     $self->manage_selection();
     
     $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile =>  "apc_" . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile =>  "apc_" . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     $self->{new_datas}->{last_timestamp} = time();
 
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');

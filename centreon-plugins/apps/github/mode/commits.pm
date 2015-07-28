@@ -75,7 +75,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $self->{statefile_value}->read(statefile => 'github_' . $self->{option_results}->{repository} . '_' . $self->{option_results}->{owner} . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'github_' . $self->{option_results}->{repository} . '_' . $self->{option_results}->{owner} . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
     my $new_datas = {};

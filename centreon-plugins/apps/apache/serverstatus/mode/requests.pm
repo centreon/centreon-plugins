@@ -115,7 +115,7 @@ sub run {
     $avg_bPerSec = '0' . $avg_bPerSec if ($avg_bPerSec =~ /^\./);
     $bPerReq = '0' . $bPerReq if ($bPerReq =~ /^\./);
     
-    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
     my $old_total_access = $self->{statefile_value}->get(name => 'total_access');
     my $old_total_bytes = $self->{statefile_value}->get(name => 'total_bytes');
