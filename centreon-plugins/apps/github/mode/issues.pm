@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use JSON;
 
 sub new {
@@ -46,9 +46,10 @@ sub new {
             "owner:s"           => { name => 'owner' },
             "repository:s"      => { name => 'repository' },
             "label:s"           => { name => 'label', default => '' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -56,14 +57,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{repository})) {
         $self->{output}->add_option_msg(short_msg => "Please set the repository option");
         $self->{output}->option_exit();
@@ -73,33 +66,30 @@ sub check_options {
         $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
+    
+    $self->{option_results}->{url_path} = "/repos/" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository} . "/issues";
+    if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
+        $self->{option_results}->{get_param} = ['state=open', 'labels=' . $self->{option_results}->{label}, 'per_page=1000'];
+    } else {
+        $self->{option_results}->{get_param} = ['state=open', 'per_page=1000'];
+    }
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
-
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = "/repos/".$self->{option_results}->{owner}."/".$self->{option_results}->{repository} . "/issues";
-
-    my $query_form_get;
-    if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
-        $query_form_get = { state => 'open', labels => $self->{option_results}->{label}, per_page => '1000' };
-    } else {
-        $query_form_get = { state => 'open', per_page => '1000' };
-    }
-    my $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get , connection_exit => 'critical');
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
-
     my $webcontent;
-
     eval {
         $webcontent = $json->decode($jsoncontent);
     };
@@ -136,7 +126,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
 
 1;

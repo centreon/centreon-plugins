@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 
 sub new {
@@ -37,7 +37,7 @@ sub new {
             {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "http" },
+            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
@@ -49,8 +49,9 @@ sub new {
             "critical-bytes:s"  => { name => 'critical_bytes' },
             "warning-access:s"  => { name => 'warning_access' },
             "critical-access:s" => { name => 'critical_access' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
             });
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -83,22 +84,15 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-access threshold '" . $self->{option_results}->{critical_access} . "'.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
-    
+
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my $webcontent = $self->{http}->request();
     my ($rPerSec, $bPerReq, $total_access, $total_bytes, $avg_bPerSec);
 
     $total_access = $1 if ($webcontent =~ /^Total Accesses:\s+([^\s]+)/mi);
