@@ -177,7 +177,6 @@ sub DESTROY {
     my $self = shift;
     
     if ($self->{logon} == 1) {
-        $self->{option_results}->{url_path} = ;
         $self->{http}->request(url_path => $self->{url_path} . 'exit',
                                header => ['dataType: api', 'sessionKey: ' . $self->{session_id}]);
     }
