@@ -88,9 +88,7 @@ sub check_table_cpu {
         my $cpu5min = defined($self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) : undef;
         
         # Case that it's maybe other CPU oid in table for datas.
-        if (!defined($cpu5sec) && !defined($cpu1min) && !defined($cpu5min)) {
-            return 0;
-        }
+        next if (!defined($cpu5sec) && !defined($cpu1min) && !defined($cpu5min));
         
         $checked = 1;
         my @exits;
