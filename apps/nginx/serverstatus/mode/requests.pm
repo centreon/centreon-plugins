@@ -89,7 +89,7 @@ sub run {
     my $new_datas = {};
     my $old_datas = {};
     
-    $self->{statefile_value}->read(statefile => 'nginx_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'nginx_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     $old_datas->{timestamp} = $self->{statefile_value}->get(name => 'timestamp');
     $new_datas->{timestamp} = time();
     foreach (@{$maps}) {
