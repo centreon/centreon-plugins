@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::values;
@@ -216,7 +216,7 @@ sub new {
                                 {
                                 "hostname:s"        => { name => 'hostname' },
                                 "port:s"            => { name => 'port', },
-                                "proto:s"           => { name => 'proto', default => "http" },
+                                "proto:s"           => { name => 'proto' },
                                 "urlpath:s"         => { name => 'url_path', default => "/apc.php" },
                                 "credentials"       => { name => 'credentials' },
                                 "username:s"        => { name => 'username' },
@@ -225,6 +225,7 @@ sub new {
                                 "timeout:s"         => { name => 'timeout', default => 30 },
                                 });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);                           
      
     foreach (keys %{$maps_counters}) {
@@ -246,25 +247,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
-    
     foreach (keys %{$maps_counters}) {
         $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
     }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{webcontent} = centreon::plugins::httplib::connect($self);
+    $self->{webcontent} = $self->{http}->request();
 
     $self->manage_selection();
     

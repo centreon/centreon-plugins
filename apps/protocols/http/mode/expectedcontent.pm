@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,23 +35,33 @@ sub new {
     $options{options}->add_options(arguments =>
             {
             "hostname:s"            => { name => 'hostname' },
+            "http-peer-addr:s"      => { name => 'http_peer_addr' },
             "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto', default => "http" },
-            "urlpath:s"             => { name => 'url_path', default => "/" },
+            "method:s"              => { name => 'method' },
+            "proto:s"               => { name => 'proto' },
+            "urlpath:s"             => { name => 'url_path' },
             "credentials"           => { name => 'credentials' },
             "ntlm"                  => { name => 'ntlm' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
             "expected-string:s"     => { name => 'expected_string' },
-            "timeout:s"             => { name => 'timeout', default => '3' },
+            "timeout:s"             => { name => 'timeout' },
             "ssl:s"                 => { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
             "key-file:s"            => { name => 'key_file' },
             "cacert-file:s"         => { name => 'cacert_file' },
             "cert-pwd:s"            => { name => 'cert_pwd' },
             "cert-pkcs12"           => { name => 'cert_pkcs12' },
+            "header:s@"             => { name => 'header' },
+            "get-param:s@"          => { name => 'get_param' },
+            "post-param:s@"         => { name => 'post_param' },
+            "cookies-file:s"        => { name => 'cookies_file' },
+            "unknown-status:s"      => { name => 'unknown_status' },
+            "warning-status:s"      => { name => 'warning_status' },
+            "critical-status:s"     => { name => 'critical_status' },
             });
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -59,36 +69,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify hostname.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{expected_string})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
         $self->{output}->option_exit();
     }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
-    if ((!defined($self->{option_results}->{credentials})) && (defined($self->{option_results}->{ntlm}))) {
-        $self->{output}->add_option_msg(short_msg => "--ntlm option must be used with --credentials option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{pkcs12})) && (!defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pwd}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --cert-file= and --cert-pwd= options when --pkcs12 is used");
-        $self->{output}->option_exit();
-    }
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
-    }
-
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my $webcontent = $self->{http}->request();
     $self->{output}->output_add(long_msg => $webcontent);
 
     if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
@@ -116,6 +107,10 @@ Check Webpage content
 
 IP Addr/FQDN of the Webserver host
 
+=item B<--http-peer-addr>
+
+Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
+
 =item B<--port>
 
 Port used by Webserver
@@ -124,9 +119,13 @@ Port used by Webserver
 
 Proxy URL if any
 
+=item B<--method>
+
+Specify http method used (Default: 'GET')
+
 =item B<--proto>
 
-Specify https if needed
+Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
@@ -150,7 +149,7 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 =item B<--timeout>
 
-Threshold for HTTP timeout
+Threshold for HTTP timeout (Default: 5)
 
 =item B<--ssl>
 
@@ -175,6 +174,34 @@ Specify certificate's password
 =item B<--cert-pkcs12>
 
 Specify type of certificate (PKCS12)
+
+=item B<--header>
+
+Set HTTP headers (Multiple option)
+
+=item B<--get-param>
+
+Set GET params (Multiple option. Example: --get-param='key=value')
+
+=item B<--post-param>
+
+Set POST params (Multiple option. Example: --post-param='key=value')
+
+=item B<--cookies-file>
+
+Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
+
+=item B<--unknown-status>
+
+Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+
+=item B<--warning-status>
+
+Threshold warning for http response code
+
+=item B<--critical-status>
+
+Threshold critical for http response code 
 
 =item B<--expected-string>
 
