@@ -62,6 +62,7 @@ sub new {
     $self->{result} = {};
     $self->{hostname} = undef;
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
