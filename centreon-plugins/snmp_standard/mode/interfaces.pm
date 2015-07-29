@@ -489,7 +489,8 @@ sub check_oids_label {
     my ($self, %options) = @_;
     
     foreach (('oid_filter', 'oid_display')) {
-        if (!defined($self->{oids_label}->{lc($self->{option_results}->{$_})})) {
+        $self->{option_results}->{$_} = lc($self->{option_results}->{$_}) if (defined($self->{option_results}->{$_}));
+        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}})) {
             my $label = $_;
             $label =~ s/_/-/g;
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
@@ -497,9 +498,13 @@ sub check_oids_label {
         }
     }
     
-    if (defined($self->{option_results}->{oid_extra_display}) && !defined($self->{oids_label}->{lc($self->{option_results}->{oid_extra_display})})) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
-        $self->{output}->option_exit();
+    
+    if (defined($self->{option_results}->{oid_extra_display})) {
+        $self->{option_results}->{oid_extra_display} = lc($self->{option_results}->{oid_extra_display});
+        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}})) {
+            $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
+            $self->{output}->option_exit();
+        }
     }
 }
 
@@ -608,6 +613,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
+    $self->{get_speed} = 0;
     if ((!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') &&
         ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
         (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq ''))) {
