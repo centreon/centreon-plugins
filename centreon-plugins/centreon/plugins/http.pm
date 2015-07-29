@@ -83,7 +83,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $options{request}->{port} = $self->get_port();
+    $options{request}->{port} = $self->get_port_request();
     
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
@@ -135,6 +135,16 @@ sub get_port {
         $port = 443 if ($self->{options}->{proto} eq 'https');
     }
 
+    return $port;
+}
+
+sub get_port_request {
+    my ($self, %options) = @_;
+    
+    my $port = '';
+    if (defined($self->{options}->{port}) && $self->{options}->{port} ne '') {
+        $port = $self->{options}->{port};
+    }
     return $port;
 }
 
