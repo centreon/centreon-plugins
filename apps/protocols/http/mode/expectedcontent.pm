@@ -47,6 +47,7 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "expected-string:s"     => { name => 'expected_string' },
             "timeout:s"             => { name => 'timeout' },
+            "no-follow"             => { name => 'no_follow', },
             "ssl:s"                 => { name => 'ssl', },
             "cert-file:s"           => { name => 'cert_file' },
             "key-file:s"            => { name => 'key_file' },
@@ -150,6 +151,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--no-follow>
+
+Do not follow http redirect
 
 =item B<--ssl>
 

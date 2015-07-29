@@ -158,12 +158,16 @@ sub request {
     $self->check_options(request => $request_options);
     
     if (!defined($self->{ua})) {
-        $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
-                                          requests_redirectable => [ 'GET', 'HEAD', 'POST' ]);
+        $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
         if (defined($request_options->{cookies_file})) {
             $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
                                                        autosave => 1));
         }
+    }
+    if (defined($request_options->{no_follow})) {
+        $self->{ua}->requests_redirectable(undef);
+    } else {
+        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST' ]);
     }
     if (defined($request_options->{http_peer_addr})) {
         push @LWP::Protocol::http::EXTRA_SOCK_OPTS, PeerAddr => $request_options->{http_peer_addr};
