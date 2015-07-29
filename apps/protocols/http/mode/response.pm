@@ -114,18 +114,22 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
     # Size check
-    my $content_size = length($webcontent);
-    $exit = $self->{perfdata}->threshold_check(value => $content_size,
-                                               threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Content size : %s", $content_size));
+    {
+        require bytes;
+        
+        my $content_size = bytes::length($webcontent);
+        $exit = $self->{perfdata}->threshold_check(value => $content_size,
+                                                   threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Content size : %s", $content_size));
+        }
+        $self->{output}->perfdata_add(label => "size", unit => 'B',
+                                      value => $content_size,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
+                                      min => 0);
     }
-    $self->{output}->perfdata_add(label => "size",
-                                  value => $content_size,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
-                                  min => 0);
                                   
     $self->{output}->display();
     $self->{output}->exit();
