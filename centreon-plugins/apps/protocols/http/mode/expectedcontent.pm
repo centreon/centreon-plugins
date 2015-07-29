@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %options) = @_;
@@ -61,6 +62,10 @@ sub new {
             "unknown-status:s"      => { name => 'unknown_status' },
             "warning-status:s"      => { name => 'warning_status' },
             "critical-status:s"     => { name => 'critical_status' },
+            "warning:s"             => { name => 'warning' },
+            "critical:s"            => { name => 'critical' },
+            "warning-size:s"        => { name => 'warning_size' },
+            "critical-size:s"       => { name => 'critical_size' },
             });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
@@ -74,13 +79,32 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-size', value => $self->{option_results}->{warning_size})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-size threshold '" . $self->{option_results}->{warning_size} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-size', value => $self->{option_results}->{critical_size})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-size threshold '" . $self->{option_results}->{critical_size} . "'.");
+        $self->{output}->option_exit();
+    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
+    my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
+    my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    
     $self->{output}->output_add(long_msg => $webcontent);
 
     if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
@@ -90,6 +114,33 @@ sub run {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
     }
+    
+    # Time check
+    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Response time : %.3fs", $timeelapsed));
+    }
+    $self->{output}->perfdata_add(label => "time", unit => 's',
+                                  value => sprintf('%.3f', $timeelapsed),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+    # Size check
+    my $content_size = length($webcontent);
+    $exit = $self->{perfdata}->threshold_check(value => $content_size,
+                                               threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Content size : %s", $content_size));
+    }
+    $self->{output}->perfdata_add(label => "size",
+                                  value => $content_size,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
+                                  min => 0);
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -207,6 +258,22 @@ Threshold warning for http response code
 =item B<--critical-status>
 
 Threshold critical for http response code 
+
+=item B<--warning>
+
+Threshold warning in seconds (Webpage response time)
+
+=item B<--critical>
+
+Threshold critical in seconds (Webpage response time)
+
+=item B<--warning-size>
+
+Threshold warning for content size
+
+=item B<--critical-size>
+
+Threshold critical for content size
 
 =item B<--expected-string>
 
