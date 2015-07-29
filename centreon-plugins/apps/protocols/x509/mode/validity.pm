@@ -41,9 +41,9 @@ sub new {
          "validity-mode:s"   => { name => 'validity_mode' },
          "warning-date:s"    => { name => 'warning' },
          "critical-date:s"   => { name => 'critical' },
-         "subjectname:s"     => { name => 'subjectname' },
-         "issuername:s"      => { name => 'issuername' },
-         "timeout:s"         => { name => 'timeout', default => '3' },
+         "subjectname:s"     => { name => 'subjectname', default => '' },
+         "issuername:s"      => { name => 'issuername', default => '' },
+         "timeout:s"         => { name => 'timeout', default => 5 },
          });
     return $self;
 }
@@ -68,11 +68,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the port option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{validity_mode})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option");
+    if (!defined($self->{option_results}->{validity_mode}) || $self->{option_results}->{validity_mode} !~ /^expiration|subject|issuer$/) {
+        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option (issuer, subject or expiration)");
         $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -100,19 +99,19 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         #Create SSL connection
         Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
 
         eval { $ssl = Net::SSLeay::new($ctx) };
-       if ($@) {
+        if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         eval { Net::SSLeay::set_fd($ssl, fileno($connection)) };
         if ($@) {
@@ -121,7 +120,7 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         eval { Net::SSLeay::connect($ssl) };
         if ($@) {
@@ -130,7 +129,7 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         #Retrieve Certificat
         $cert = Net::SSLeay::get_peer_certificate($ssl);
@@ -150,12 +149,12 @@ sub run {
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
             my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
-            if ( $subject_name =~ /$self->{option_results}->{subjectname}/mi ) {
+            if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name %s is present in Certificate :%s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Subject Name %s is not present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
             }
 
             $self->{output}->display();
@@ -164,19 +163,16 @@ sub run {
         #Issuer Name
         } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
-            if ( $issuer_name =~ /$self->{option_results}->{issuername}/mi ) {
+            if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Issuer Name %s is present in Certificate :%s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Issuer Name %s is not present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is not present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
             }
 
             $self->{output}->display();
             $self->{output}->exit()
-        } else {
-            $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find validity-mode '" . $self->{option_results}->{validity_mode} . "'.");
-            $self->{output}->option_exit();
         }
     }
 }
