@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::http::mode::responsetime;
+package apps::protocols::http::mode::response;
 
 use base qw(centreon::plugins::mode);
 
@@ -46,8 +46,6 @@ sub new {
          "username:s"    => { name => 'username' },
          "password:s"    => { name => 'password' },
          "proxyurl:s"    => { name => 'proxyurl' },
-         "warning:s"     => { name => 'warning' },
-         "critical:s"    => { name => 'critical' },
          "timeout:s"     => { name => 'timeout' },
          "no-follow"     => { name => 'no_follow', },
          "ssl:s"		 => { name => 'ssl' },
@@ -63,6 +61,10 @@ sub new {
          "unknown-status:s"     => { name => 'unknown_status', default => '' },
          "warning-status:s"     => { name => 'warning_status' },
          "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+         "warning:s"            => { name => 'warning' },
+         "critical:s"           => { name => 'critical' },
+         "warning-size:s"       => { name => 'warning_size' },
+         "critical-size:s"      => { name => 'critical_size' },
          });
     
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -81,6 +83,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-size', value => $self->{option_results}->{warning_size})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-size threshold '" . $self->{option_results}->{warning_size} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-size', value => $self->{option_results}->{critical_size})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-size threshold '" . $self->{option_results}->{critical_size} . "'.");
+        $self->{output}->option_exit();
+    }
 
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -89,9 +99,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-
     my $webcontent = $self->{http}->request();
-
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
 
     $self->{output}->output_add(long_msg => $webcontent);
@@ -105,7 +113,20 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-
+    # Size check
+    my $content_size = length($webcontent);
+    $exit = $self->{perfdata}->threshold_check(value => $content_size,
+                                               threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Content size : %s", $content_size));
+    }
+    $self->{output}->perfdata_add(label => "size",
+                                  value => $content_size,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
+                                  min => 0);
+                                  
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -116,7 +137,7 @@ __END__
 
 =head1 MODE
 
-Check Webpage Time Response
+Check Webpage response and size.
 
 =over 8
 
