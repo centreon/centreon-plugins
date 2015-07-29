@@ -645,7 +645,7 @@ sub run {
     $self->get_informations();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{int}}) == 1) {
+    if (scalar(keys %{$self->{interface_selected}}) == 1) {
         $multiple = 0;
     }
     
