@@ -1024,6 +1024,10 @@ Check interface status (By default if no --add-* option is set).
 
 Check interface traffic.
 
+=item B<--add-errors>
+
+Check interface errors.
+
 =item B<--add-cast>
 
 Check interface cast.
