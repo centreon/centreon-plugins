@@ -510,7 +510,7 @@ sub run {
     }
 
     zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
-    zmq_bind($frontend, 'tcp://*:5700');
+    zmq_bind($frontend, 'tcp://*:' . $centreon_vmware->{centreon_vmware_config}->{port});
     $centreon_vmware->bind_ipc(socket => $frontend, ipc_file => '/tmp/centreon_vmware/routing.ipc');
 
     foreach (keys %{$centreon_vmware->{centreon_vmware_config}->{vsphere_server}}) {
