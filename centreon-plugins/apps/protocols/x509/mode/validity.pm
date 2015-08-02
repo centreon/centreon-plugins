@@ -151,10 +151,10 @@ sub run {
             my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
             if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name '%s' is present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
             }
 
             $self->{output}->display();
@@ -165,10 +165,10 @@ sub run {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
             if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Issuer Name '%s' is present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Issuer Name '%s' is not present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
             }
 
             $self->{output}->display();
