@@ -107,13 +107,15 @@ sub run {
     my $prct_used = $nobuf_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
     my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
     my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
     my ($shared_value, $shared_unit) = $self->{perfdata}->change_bytes(value => $shared_used);
     
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s, Shared: %s",
+                                short_msg => sprintf("Ram Total: %s, Used (-buffers/cache): %s (%.2f%%), Buffer: %s, Cached: %s, Shared: %s",
+                                            $total_value . " " . $total_unit,
                                             $nobuf_value . " " . $nobuf_unit, $prct_used,
                                             $buffer_value . " " . $buffer_unit,
                                             $cached_value . " " . $cached_unit,
