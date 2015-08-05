@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::dell::openmanage::plugin;
+package hardware::server::dell::openmanage::snmp::plugin;
 
 use strict;
 use warnings;
@@ -32,7 +32,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::dell::openmanage::mode::hardware',
+                         'hardware' => 'hardware::server::dell::openmanage::snmp::mode::hardware',
                          );
 
     return $self;
