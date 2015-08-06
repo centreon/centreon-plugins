@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::apc::web::mode::memory;
+package apps::php::apc::web::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
