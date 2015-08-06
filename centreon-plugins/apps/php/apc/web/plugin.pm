@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::apc::web::plugin;
+package apps::php::apc::web::plugin;
 
 use strict;
 use warnings;
@@ -32,8 +32,8 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-        'file-cache'    => 'apps::apc::web::mode::filecache',
-        'memory'        => 'apps::apc::web::mode::memory',
+        'file-cache'    => 'apps::php::apc::web::mode::filecache',
+        'memory'        => 'apps::php::apc::web::mode::memory',
     );
 
 	return $self;

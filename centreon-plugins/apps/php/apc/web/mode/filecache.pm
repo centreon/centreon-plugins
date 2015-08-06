@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::apc::web::mode::filecache;
+package apps::php::apc::web::mode::filecache;
 
 use base qw(centreon::plugins::mode);
 
@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::values;
 
 my $maps_counters = {
