@@ -34,10 +34,9 @@ sub new {
     %{$self->{modes}} = (
                         'cluster-status'    => 'network::paloalto::snmp::mode::clusterstatus',
                         'cpu'               => 'snmp_standard::mode::cpu',
-                        'traffic'           => 'snmp_standard::mode::traffic',
+                        'interfaces'        => 'snmp_standard::mode::interfaces', 
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                         'hardware'          => 'snmp_standard::mode::hardwaredevice',
-                        'packet-errors'     => 'snmp_standard::mode::packeterrors',
                         'panorama'          => 'network::paloalto::snmp::mode::panorama',
                         'sessions'          => 'network::paloalto::snmp::mode::sessions',
                          );

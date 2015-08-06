@@ -33,9 +33,9 @@ sub new {
     $self->{version} = '0.5';
     %{$self->{modes}} = (
                         'cpu'               => 'network::oneaccess::snmp::mode::cpu',
+                        'interfaces'        => 'snmp_standard::mode::interfaces', 
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                         'memory'            => 'network::oneaccess::snmp::mode::memory',
-                        'traffic'           => 'snmp_standard::mode::traffic',
                         );
 
     return $self;

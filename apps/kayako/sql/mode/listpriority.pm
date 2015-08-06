@@ -45,16 +45,11 @@ sub run {
 
     $self->{sql}->connect();
 
-    if (!($self->{sql}->is_version_minimum(version => '5'))) {
-        $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
-        $self->{output}->option_exit();
-    }
-
     $self->{sql}->query(query => "SELECT priorityid, title FROM swticketpriorities");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-	$self->{output}->output_add(long_msg => "'" . $row->{title} . "' [id = " . $row->{priorityid} . "]");
+        $self->{output}->output_add(long_msg => "'" . $row->{title} . "' [id = " . $row->{priorityid} . "]");
     }
-	
+   
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'List priorities:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);

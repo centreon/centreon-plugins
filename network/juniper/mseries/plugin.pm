@@ -35,7 +35,7 @@ sub new {
                          'hardware'             => 'network::juniper::common::junos::mode::hardware',
                          'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
                          'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-                         'traffic'              => 'snmp_standard::mode::traffic',
+                         'interfaces'           => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'list-storages'        => 'snmp_standard::mode::liststorages',
                          'storage'              => 'snmp_standard::mode::storage',

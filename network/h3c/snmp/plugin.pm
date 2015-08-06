@@ -34,9 +34,9 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::h3c::snmp::mode::cpu',
                          'hardware'         => 'network::h3c::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::h3c::snmp::mode::memory',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

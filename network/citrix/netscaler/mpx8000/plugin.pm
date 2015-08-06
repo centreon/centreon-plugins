@@ -37,11 +37,11 @@ sub new {
             'storage'               => 'network::citrix::netscaler::common::mode::storage',
             'health'                => 'network::citrix::netscaler::common::mode::health',
             'ha-state'              => 'network::citrix::netscaler::common::mode::hastate',
+            'interfaces'            => 'snmp_standard::mode::interfaces',
             'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
             'list-vservers'         => 'network::citrix::netscaler::common::mode::listvservers',
             'vserver-status'        => 'network::citrix::netscaler::common::mode::vserverstatus',
             'memory'                => 'network::citrix::netscaler::common::mode::memory',
-            'traffic'               => 'snmp_standard::mode::traffic',
     );
 
     return $self;

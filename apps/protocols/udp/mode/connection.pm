@@ -67,10 +67,6 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
-    }
-
     my $icmp_sock = new IO::Socket::INET(Proto=>"icmp");
     my $read_set = new IO::Select();
     $read_set->add($icmp_sock);

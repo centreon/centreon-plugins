@@ -29,60 +29,94 @@ use Digest::MD5 qw(md5_hex);
 use centreon::plugins::values;
 
 my $maps_counters = {
-    read   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'read', diff => 1 }, { name => 'display' },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
-                        output_change_bytes => 1,
-                        perfdatas => [
-                            { value => 'read_per_second', template => '%d',
-                              unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    write   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'write', diff => 1 }, { name => 'display' },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
-                        output_change_bytes => 1,
-                        perfdatas => [
-                            { value => 'write_per_second', template => '%d',
-                              unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    'read-iops'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'read_iops', diff => 1 }, { name => 'display' },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
-                        perfdatas => [
-                            { value => 'read_iops_per_second',  template => '%.2f',
-                              unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    'write-iops'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'write_iops', diff => 1 }, { name => 'display' },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
-                        perfdatas => [
-                            { value => 'write_iops_per_second', template => '%.2f',
-                              unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
+    disk => { 
+        '000_read' => { set => {
+                key_values => [ { name => 'read', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'read', value => 'read_per_second', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        '001_write'   => { set => {
+                key_values => [ { name => 'write', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'write', value => 'write_per_second', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        '002_read-iops'   => { set => {
+                key_values => [ { name => 'read_iops', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
+                perfdatas => [
+                    { label => 'read_iops', value => 'read_iops_per_second',  template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        '003_write-iops'   => { set => {
+                key_values => [ { name => 'write_iops', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
+                perfdatas => [
+                    { label => 'write_iops', value => 'write_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    },
+    total => { 
+        '000_total-read' => { set => {
+                key_values => [ { name => 'total_read', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'total_read', value => 'total_read_per_second', template => '%d',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        '001_total-write'   => { set => {
+                key_values => [ { name => 'total_write', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'total_write', value => 'total_write_per_second', template => '%d',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        '002_total-read-iops'   => { set => {
+                key_values => [ { name => 'total_read_iops', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
+                perfdatas => [
+                    { label => 'total_read_iops', value => 'total_read_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0 },
+                ],
+            }
+        },
+        '003_total-write-iops'   => { set => {
+                key_values => [ { name => 'total_write_iops', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
+                perfdatas => [
+                    { label => 'total_write_iops', value => 'total_write_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0 },
+                ],
+            }
+        },
+    },
 };
 
 my $oid_diskIODevice = '.1.3.6.1.4.1.2021.13.15.1.1.2';
@@ -108,16 +142,20 @@ sub new {
     $self->{device_id_selected} = {};
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
      
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
-                                                  output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
+    foreach my $key (('total', 'disk')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
+                                                      output => $self->{output}, perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
     }
     
     return $self;
@@ -127,11 +165,55 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
+    foreach my $key (('total', 'disk')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
     }
 
     $self->{statefile_value}->check_options(%options);
+}
+
+sub check_total {
+    my ($self, %options) = @_;
+    
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits = ();
+    foreach (sort keys %{$maps_counters->{total}}) {
+        my $obj = $maps_counters->{total}->{$_}->{obj};
+        $obj->set(instance => 'global');
+    
+        my ($value_check) = $obj->execute(values => $self->{global},
+                                          new_datas => $self->{new_datas});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
+    }
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Total $short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "Total $long_msg");
+    }
 }
 
 sub run {
@@ -147,6 +229,10 @@ sub run {
     }
 
     $self->manage_selection();
+
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{device}) ? md5_hex($self->{option_results}->{device}) : md5_hex('all')));
+    $self->{new_datas}->{last_timestamp} = time();
     
     my $multiple = 1;
     if (scalar(keys %{$self->{device_id_selected}}) == 1) {
@@ -154,31 +240,30 @@ sub run {
     }
     
     if ($multiple == 1) {
+        $self->check_total();
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All devices are ok.');
     }
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{device}) ? md5_hex($self->{option_results}->{device}) : md5_hex('all')));
-    $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $id (sort keys %{$self->{device_id_selected}}) {     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
+        foreach (sort keys %{$maps_counters->{disk}}) {
+            my $obj = $maps_counters->{disk}->{$_}->{obj};
         
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{device_id_selected}->{$id},
-                                                                     new_datas => $self->{new_datas});
+            $obj->set(instance => $id);
+            my ($value_check) = $obj->execute(values => $self->{device_id_selected}->{$id},
+                                              new_datas => $self->{new_datas});
 
             if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
+                $long_msg .= $long_msg_append . $obj->output_error();
                 $long_msg_append = ', ';
                 next;
             }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
+            my $exit2 = $obj->threshold_check();
             push @exits, $exit2;
 
-            my $output = $maps_counters->{$_}->{obj}->output();
+            my $output = $obj->output();
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = ', ';
             
@@ -187,7 +272,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $obj->perfdata(extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
@@ -211,19 +296,30 @@ sub run {
 sub add_result {
     my ($self, %options) = @_;
     
-    $self->{device_id_selected}->{$options{instance}} = {};
+    $self->{device_id_selected}->{$options{instance}} = { read => undef, write => undef, read_iops => undef, write_iops => undef };
     $self->{device_id_selected}->{$options{instance}}->{display} = $self->{results}->{$oid_diskIODevice}->{$oid_diskIODevice . '.' . $options{instance}};    
-    $self->{device_id_selected}->{$options{instance}}->{read} = (defined($self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} != 0) ?
-        $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} : 0;
-    $self->{device_id_selected}->{$options{instance}}->{write} = (defined($self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} != 0) ? 
-        $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} : undef;
-    $self->{device_id_selected}->{$options{instance}}->{read_iops} = $self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}};
-    $self->{device_id_selected}->{$options{instance}}->{write_iops} = $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}};
+    if (defined($self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}} != 0) {
+        $self->{device_id_selected}->{$options{instance}}->{read} = $self->{results}->{$oid_diskIONReadX}->{$oid_diskIONReadX . '.' . $options{instance}};
+        $self->{global}->{total_read} += $self->{device_id_selected}->{$options{instance}}->{read};
+    }
+    if (defined($self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}}) && $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}} != 0) {
+        $self->{device_id_selected}->{$options{instance}}->{write} = $self->{results}->{$oid_diskIONWrittenX}->{$oid_diskIONWrittenX . '.' . $options{instance}};
+        $self->{global}->{total_write} += $self->{device_id_selected}->{$options{instance}}->{write};
+    }    
+    if (defined($self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}}) && $self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}} != 0) {
+        $self->{device_id_selected}->{$options{instance}}->{read_iops} = $self->{results}->{$oid_diskIOReads}->{$oid_diskIOReads . '.' . $options{instance}};
+        $self->{global}->{total_read_iops} += $self->{device_id_selected}->{$options{instance}}->{read_iops};
+    }
+    if (defined($self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}}) && $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}} != 0) {
+        $self->{device_id_selected}->{$options{instance}}->{write_iops} = $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}};
+        $self->{global}->{total_write_iops} += $self->{device_id_selected}->{$options{instance}}->{write_iops};
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
+    $self->{global} = { total_read => 0, total_write => 0, total_read_iops => 0, total_write_iops => 0 };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_diskIODevice },
                                                             { oid => $oid_diskIOReads },
@@ -303,12 +399,14 @@ Check read/write I/O disks (bytes per secondes, IOPs).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'read', 'write', 'read-iops', 'write-iops'.
+Can be: 'read', 'write', 'read-iops', 'write-iops',
+'total-read', 'total-write', 'total-read-iops', 'total-write-iops'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'read', 'write', 'read-iops', 'write-iops'.
+Can be: 'read', 'write', 'read-iops', 'write-iops',
+'total-read', 'total-write', 'total-read-iops', 'total-write-iops'.
 
 =item B<--device>
 

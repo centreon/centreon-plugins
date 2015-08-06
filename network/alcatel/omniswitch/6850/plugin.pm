@@ -34,12 +34,11 @@ sub new {
     %{$self->{modes}} = (
                         'cpu'               => 'network::alcatel::common::mode::cpu',
                         'hardware'          => 'network::alcatel::common::mode::hardware',
+                        'interfaces'        => 'snmp_standard::mode::interfaces', 
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                         'flash-memory'      => 'network::alcatel::common::mode::flashmemory',
                         'memory'            => 'network::alcatel::common::mode::memory',
-                        'packet-errors'     => 'snmp_standard::mode::packeterrors',
                         'spanning-tree'     => 'snmp_standard::mode::spanningtree',
-                        'traffic'           => 'snmp_standard::mode::traffic',
                         );
 
     return $self;
