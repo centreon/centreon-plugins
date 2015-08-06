@@ -44,21 +44,13 @@ my $mapping = {
 my $mapping2 = {
     coolingDeviceLocationName => { oid => '.1.3.6.1.4.1.674.10892.1.700.12.1.8' },
 };
-my $mapping3 = {
-    coolingDeviceUpperCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.12.1.10' },
-    coolingDeviceUpperNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.12.1.11' },
-    coolingDeviceLowerNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.12.1.12' },
-    coolingDeviceLowerCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.12.1.13' },
-};
-my $oid_coolingDeviceTable = '.1.3.6.1.4.1.674.10892.1.700.12';
 my $oid_coolingDeviceTableEntry = '.1.3.6.1.4.1.674.10892.1.700.12.1';
 
 sub load {
     my (%options) = @_;
     
     push @{$options{request}}, { oid => $oid_coolingDeviceTableEntry, start => $mapping->{coolingDeviceStatus}->{oid}, end => $mapping->{coolingDeviceReading}->{oid} },
-        { oid => $mapping2->{coolingDeviceLocationName}->{oid} },
-        { oid => $oid_coolingDeviceTable, start => $mapping3->{coolingDeviceUpperCriticalThreshold}->{oid}, end => $mapping3->{coolingDeviceLowerCriticalThreshold}->{oid} };
+        { oid => $mapping2->{coolingDeviceLocationName}->{oid} };
 }
 
 sub check {
@@ -73,7 +65,6 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_coolingDeviceTableEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{coolingDeviceLocationName}->{oid}}, instance => $instance);
-        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_coolingDeviceTable}, instance => $instance);
 
         next if ($self->check_exclude(section => 'fan', instance => $instance));
         
@@ -92,17 +83,6 @@ sub check {
         
         if (defined($result->{coolingDeviceReading}) && $result->{coolingDeviceReading} =~ /[0-9]/) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{coolingDeviceReading});
-            if ($checked == 0) {
-                my $warn_th = $result->{coolingDeviceLowerNonCriticalThreshold} . ':' . $result->{coolingDeviceUpperNonCriticalThreshold};
-                my $crit_th = $result->{coolingDeviceLowerCriticalThreshold} . ':' . $result->{coolingDeviceUpperCriticalThreshold};
-                $self->{perfdata}->threshold_validate(label => 'warning-fan-instance-' . $instance, value => $warn_th);
-                $self->{perfdata}->threshold_validate(label => 'critical-fan-instance-' . $instance, value => $crit_th);
-                
-                $exit = $self->{perfdata}->threshold_check(value => $result->{coolingDeviceReading}, threshold => [ { label => 'critical-fan-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-fan-instance-' . $instance, exit_litteral => 'warning' } ]);
-                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-fan-instance-' . $instance);
-                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-fan-instance-' . $instance);
-            }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,

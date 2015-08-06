@@ -49,7 +49,7 @@ my $oid_batteryTableEntry = '.1.3.6.1.4.1.674.10892.1.600.50.1';
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_batteryTableEntry, start => $mapping->{globalSystemStatus}->{oid} };
+    push @{$options{request}}, { oid => $oid_batteryTableEntry, start => $mapping->{batteryStatus}->{oid}, end => $mapping->{batteryLocationName}->{oid} };
 }
 
 sub check {

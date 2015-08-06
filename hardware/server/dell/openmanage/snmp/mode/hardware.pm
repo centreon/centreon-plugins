@@ -128,7 +128,7 @@ my $thresholds = {
         ['nonRecoverable', 'CRITICAL'],
     ],
     physicaldisk_smartalert => [
-        ['yes', 'CRITICAL'],
+        ['yes', 'WARNING'],
         ['no', 'OK'],
     ],
     psu => [
@@ -169,7 +169,6 @@ sub new {
                                   "critical:s@"             => { name => 'critical' },
                                 });
 
-    $self->{product_name} = undef;
     $self->{components} = {};
     return $self;
 }
@@ -257,7 +256,7 @@ sub run {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_chassisModelName}})) {
         my $name = defined($self->{results}->{$oid_chassisModelName}->{$oid}) ? 
         centreon::plugins::misc::trim($self->{results}->{$oid_chassisModelName}->{$oid}) : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("Product Name: %s", $self->{product_name}));
+        $self->{output}->output_add(long_msg => sprintf("Product Name: %s", $name));
     }    
     
     foreach (@components) {
