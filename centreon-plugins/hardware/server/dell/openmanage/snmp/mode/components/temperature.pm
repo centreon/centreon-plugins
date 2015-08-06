@@ -49,20 +49,12 @@ my $mapping = {
     temperatureProbeType => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.7', map => \%map_type },
     temperatureProbeLocationName => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.8' },
 };
-my $mapping2 = {
-    temperatureProbeUpperCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.10' },
-    temperatureProbeUpperNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.11' },
-    temperatureProbeLowerNonCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.12' },
-    temperatureProbeLowerCriticalThreshold => { oid => '.1.3.6.1.4.1.674.10892.1.700.20.1.13' },
-};
 my $oid_temperatureProbeTable = '.1.3.6.1.4.1.674.10892.1.700.20';
-my $oid_temperatureProbeTableEntry = '.1.3.6.1.4.1.674.10892.1.700.20.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperatureProbeTable, start => $mapping->{temperatureProbeStatus}->{oid}, end => $mapping->{temperatureProbeLocationName}->{oid} },
-        { oid => $oid_temperatureProbeTableEntry, start => $mapping2->{temperatureProbeUpperCriticalThreshold}->{oid}, end => $mapping2->{temperatureProbeLowerCriticalThreshold}->{oid} };
+    push @{$options{request}}, { oid => $oid_temperatureProbeTable, start => $mapping->{temperatureProbeStatus}->{oid}, end => $mapping->{temperatureProbeLocationName}->{oid} };
 }
 
 sub check {
@@ -76,7 +68,6 @@ sub check {
         next if ($oid !~ /^$mapping->{temperatureProbeStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_temperatureProbeTable}, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_temperatureProbeTableEntry}, instance => $instance);
 
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
         
@@ -94,19 +85,8 @@ sub check {
         }
         
         if (defined($result->{temperatureProbeReading}) && $result->{temperatureProbeReading} =~ /[0-9]/) {
-            $result->{temperatureProbeReading} *= 10;
+            $result->{temperatureProbeReading} /= 10;
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temperatureProbeReading});
-            if ($checked == 0) {
-                my $warn_th = $result->{temperatureProbeLowerNonCriticalThreshold} . ':' . $result->{temperatureProbeUpperNonCriticalThreshold};
-                my $crit_th = $result->{temperatureProbeLowerCriticalThreshold} . ':' . $result->{temperatureProbeUpperCriticalThreshold};
-                $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
-                $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
-                
-                $exit = $self->{perfdata}->threshold_check(value => $result->{temperatureProbeReading}, threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                                                     { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' } ]);
-                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
-                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
-            }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,

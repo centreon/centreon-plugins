@@ -92,7 +92,8 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{batteryComponentStatus}->{oid}}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{batteryPredictedCapicity}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{batteryLearnState}->{oid}}, instance => $instance);
-
+        $result4->{batteryLearnState} = defined($result4->{batteryLearnState}) ? $result4->{batteryLearnState} : '-';
+        
         next if ($self->check_exclude(section => 'cachebattery', instance => $instance));
         
         $self->{components}->{cachebattery}->{total}++;

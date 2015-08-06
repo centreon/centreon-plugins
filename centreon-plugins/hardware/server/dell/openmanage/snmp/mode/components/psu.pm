@@ -77,7 +77,7 @@ sub load {
     my (%options) = @_;
     
     push @{$options{request}}, { oid => $oid_powerSupplyTable, start => $mapping->{powerSupplyStatus}->{oid}, end => $mapping->{powerSupplyLocationName}->{oid} },
-        { oid => $oid_powerSupplyTableEntry, start => $mapping->{powerSupplySensorState}->{oid}, end => $mapping->{powerSupplyConfigurationErrorType}->{oid} };
+        { oid => $oid_powerSupplyTableEntry, start => $mapping2->{powerSupplySensorState}->{oid}, end => $mapping2->{powerSupplyConfigurationErrorType}->{oid} };
 }
 
 sub check {
@@ -92,7 +92,8 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerSupplyTable}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_powerSupplyTableEntry}, instance => $instance);
-
+        $result2->{powerSupplyConfigurationErrorType} = defined($result2->{powerSupplyConfigurationErrorType}) ? $result2->{powerSupplyConfigurationErrorType} : '-';
+        
         next if ($self->check_exclude(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
@@ -110,7 +111,7 @@ sub check {
         }
         
         if (defined($result->{powerSupplyOutputWatts}) && $result->{powerSupplyOutputWatts} =~ /[0-9]/) {
-            $result->{powerSupplyOutputWatts} *= 10;
+            $result->{powerSupplyOutputWatts} /= 10;
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu.power', instance => $instance, value => $result->{powerSupplyOutputWatts});
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

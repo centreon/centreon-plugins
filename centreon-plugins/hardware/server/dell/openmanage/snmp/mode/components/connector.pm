@@ -60,12 +60,12 @@ my $mapping2 = {
 my $mapping3 = {
     channelBusType => { oid => '.1.3.6.1.4.1.674.10893.1.20.130.2.1.11', map => \%map_busType },
 };
-my $oid_batteryEntry = '.1.3.6.1.4.1.674.10893.1.20.130.15.1';
+my $oid_channelEntry = '.1.3.6.1.4.1.674.10893.1.20.130.2.1';
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_batteryEntry, start => $mapping->{channelName}->{oid}, end => $mapping->{channelState}->{oid} }, 
+    push @{$options{request}}, { oid => $oid_channelEntry, start => $mapping->{channelName}->{oid}, end => $mapping->{channelState}->{oid} }, 
         { oid => $mapping2->{channelComponentStatus}->{oid} },
         { oid => $mapping3->{channelBusType}->{oid} } ;
 }
@@ -80,7 +80,7 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping2->{channelComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping2->{channelComponentStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_batteryEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_channelEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{channelComponentStatus}->{oid}}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{channelBusType}->{oid}}, instance => $instance);
 

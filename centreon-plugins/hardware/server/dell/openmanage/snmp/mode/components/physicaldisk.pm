@@ -99,7 +99,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{arrayDiskState}->{oid}}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{arrayDiskSpareState}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{arrayDiskComponentStatus}->{oid}}, instance => $instance);
-        my $result5 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping5->{arrayDiskSmartAlertIndication}->{oid}}, instance => $instance);
+        my $result5 = $self->{snmp}->map_instance(mapping => $mapping5, results => $self->{results}->{$mapping5->{arrayDiskSmartAlertIndication}->{oid}}, instance => $instance);
         
         next if ($self->check_exclude(section => 'physicaldisk', instance => $instance));
         
