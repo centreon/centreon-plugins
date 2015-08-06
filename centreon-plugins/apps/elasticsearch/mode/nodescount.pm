@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use JSON;
 
 sub new {
@@ -37,31 +37,23 @@ sub new {
         {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', default => '9200'},
-            "proto:s"           => { name => 'proto', default => 'http' },
-            "urlpath:s"         => { name => 'url_path', default => '/' },
+            "proto:s"           => { name => 'proto' },
+            "urlpath:s"         => { name => 'url_path' },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -71,17 +63,17 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path} . "_cluster/stats/";
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."_cluster/stats/";
-
-    my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
-
     my $webcontent;
 
     eval {
@@ -173,7 +165,7 @@ Threshold critical.
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 3)
+Threshold for HTTP timeout (Default: 5)
 
 =back
 

@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -36,7 +36,7 @@ sub new {
             {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "http" },
+            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
@@ -44,8 +44,9 @@ sub new {
             "proxyurl:s"        => { name => 'proxyurl' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
             });
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -61,20 +62,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
         
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my $webcontent = $self->{http}->request();
     # If not present: cpuload is 0
     my ($cpuload) = 0;
 

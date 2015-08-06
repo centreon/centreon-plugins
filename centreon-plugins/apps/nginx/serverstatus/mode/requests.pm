@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 
 my $maps = [
@@ -43,13 +43,13 @@ sub new {
             {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto', default => "http" },
+            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/nginx_status" },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
             "proxyurl:s"        => { name => 'proxyurl' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
             });
     foreach (@{$maps}) {
         $options{options}->add_options(arguments => {
@@ -58,6 +58,7 @@ sub new {
                                                     });
     }
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -75,27 +76,20 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
     
     $self->{statefile_value}->check_options(%options);
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my $webcontent = $self->{http}->request();
     my ($buffer_creation, $exit) = (0, 0);
     my $new_datas = {};
     my $old_datas = {};
     
-    $self->{statefile_value}->read(statefile => 'nginx_' . $self->{option_results}->{hostname}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => 'nginx_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     $old_datas->{timestamp} = $self->{statefile_value}->get(name => 'timestamp');
     $new_datas->{timestamp} = time();
     foreach (@{$maps}) {

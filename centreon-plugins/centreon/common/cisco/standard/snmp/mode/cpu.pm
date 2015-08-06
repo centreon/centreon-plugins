@@ -86,7 +86,10 @@ sub check_table_cpu {
         my $cpu5sec = defined($self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance})  : undef;
         my $cpu1min = defined($self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) : undef;
         my $cpu5min = defined($self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) ? sprintf("%.2f", $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) : undef;
-                
+        
+        # Case that it's maybe other CPU oid in table for datas.
+        next if (!defined($cpu5sec) && !defined($cpu1min) && !defined($cpu5min));
+        
         $checked = 1;
         my @exits;
         push @exits, $self->{perfdata}->threshold_check(value => $cpu5sec, 

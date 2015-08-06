@@ -32,16 +32,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-			 'cpu'		=> 'snmp_standard::mode::cpu',
-			 'memory'	=> 'os::windows::snmp::mode::memory',
-			 'storage'	=> 'snmp_standard::mode::storage',
-                         'audio-ports' => 'apps::voip::cisco::meetingplace::mode::audioports',
-                         'video-ports' => 'apps::voip::cisco::meetingplace::mode::videoports',
-                         'audio-licenses' => 'apps::voip::cisco::meetingplace::mode::audiolicenses',
-                         'video-licenses' => 'apps::voip::cisco::meetingplace::mode::videolicenses',
-                         'packet-errors' => 'snmp_standard::mode::packeterrors',
-                         'traffic' => 'snmp_standard::mode::traffic',
-                         );
+            'cpu'               => 'snmp_standard::mode::cpu',
+            'memory'            => 'os::windows::snmp::mode::memory',
+            'storage'           => 'snmp_standard::mode::storage',
+            'audio-ports'       => 'apps::voip::cisco::meetingplace::mode::audioports',
+            'video-ports'       => 'apps::voip::cisco::meetingplace::mode::videoports',
+            'audio-licenses'    => 'apps::voip::cisco::meetingplace::mode::audiolicenses',
+            'video-licenses'    => 'apps::voip::cisco::meetingplace::mode::videolicenses',
+            'interfaces'        => 'snmp_standard::mode::interfaces', 
+    );
 
     return $self;
 }

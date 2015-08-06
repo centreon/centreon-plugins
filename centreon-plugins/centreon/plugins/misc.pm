@@ -318,13 +318,13 @@ sub powershell_escape {
 
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
-    
+        
     # No Version. We skip   
     if (!defined($version_src) || !defined($version_dst) || 
-        $version_src !~ /^[0-9]+(?:\.[0-9\.])*$/ || $version_dst !~ /^[0-9x]+(?:\.[0-9x\.])*$/) {
+        $version_src !~ /^[0-9]+(?:\.[0-9\.]+)*$/ || $version_dst !~ /^[0-9x]+(?:\.[0-9x]+)*$/) {
         return 1;
     }
-    
+  
     my @version_src = split /\./, $version_src;
     my @versions = split /\./, $version_dst;
     for (my $i = 0; $i < scalar(@versions); $i++) {

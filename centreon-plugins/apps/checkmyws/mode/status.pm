@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use JSON;
 
 my $thresholds = {
@@ -50,10 +50,11 @@ sub new {
             "urlpath:s"             => { name => 'url_path', default => "/api/status" },
             "proxyurl:s"            => { name => 'proxyurl' },
             "uid:s"                 => { name => 'uid' },
-            "timeout:s"             => { name => 'timeout', default => '3' },
+            "timeout:s"             => { name => 'timeout' },
             "threshold-overload:s@" => { name => 'threshold_overload' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -88,19 +89,19 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
+    
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/".$self->{option_results}->{uid};
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/".$self->{option_results}->{uid};
-
-    my $jsoncontent = centreon::plugins::httplib::connect($self);
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
 
     my $webcontent;
-
     eval {
         $webcontent = $json->decode($jsoncontent);
     };
@@ -214,7 +215,7 @@ ID for checkmyws API
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: '3')
+Threshold for HTTP timeout (Default: 5)
 
 =item B<--threshold-overload>
 

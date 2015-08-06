@@ -37,9 +37,8 @@ sub new {
                          'swap'             => 'snmp_standard::mode::swap',
                          'inodes'           => 'snmp_standard::mode::inodes',
                          'processcount'     => 'snmp_standard::mode::processcount',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
 

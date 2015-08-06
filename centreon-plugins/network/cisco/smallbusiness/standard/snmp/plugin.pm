@@ -34,10 +34,9 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'centreon::common::cisco::smallbusiness::snmp::mode::cpu',
                          'environment'      => 'centreon::common::cisco::smallbusiness::snmp::mode::environment',
+                         'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;

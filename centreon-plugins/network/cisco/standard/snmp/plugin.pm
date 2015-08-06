@@ -32,17 +32,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'anycast'          => 'snmp_standard::mode::anycast',
                          'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
                          'environment'      => 'centreon::common::cisco::standard::snmp::mode::environment',
                          'hsrp'             => 'centreon::common::cisco::standard::snmp::mode::hsrp',
+                         'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'ipsla'            => 'centreon::common::cisco::standard::snmp::mode::ipsla',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'packet-errors'    => 'snmp_standard::mode::packeterrors',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
-                         'traffic'          => 'snmp_standard::mode::traffic',
                          );
 
     return $self;
