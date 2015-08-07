@@ -24,7 +24,93 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::values;
 use centreon::plugins::statefile;
+
+my $maps_counters = {
+    global => {
+        '000_total'   => { set => {
+                key_values => [ { name => 'total', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Total : %d',
+                perfdatas => [
+                    { label => 'total', template => '%d', value => 'total_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '001_seq-reads'   => { set => {
+                key_values => [ { name => 'seq_reads', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Seq Reads : %d',
+                perfdatas => [
+                    { label => 'seq_reads', template => '%d', value => 'seq_reads_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '002_inserts'   => { set => {
+                key_values => [ { name => 'inserts', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Inserts : %d',
+                perfdatas => [
+                    { label => 'inserts', template => '%d', value => 'inserts_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '003_updates'   => { set => {
+                key_values => [ { name => 'updates', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Updates : %d',
+                perfdatas => [
+                    { label => 'updates', template => '%d', value => 'updates_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '004_deletes'   => { set => {
+                key_values => [ { name => 'deletes', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Deletes : %d',
+                perfdatas => [
+                    { label => 'deletes', template => '%d', value => 'deletes_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '005_backouts'   => { set => {
+                key_values => [ { name => 'backouts', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Backouts : %d',
+                perfdatas => [
+                    { label => 'backouts', template => '%d', value => 'backouts_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '006_purges'   => { set => {
+                key_values => [ { name => 'purges', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Purges : %d',
+                perfdatas => [
+                    { label => 'purges', template => '%d', value => 'purges_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+        '007_expunges'   => { set => {
+                key_values => [ { name => 'expunges', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Expunges : %d',
+                perfdatas => [
+                    { label => 'expunges', template => '%d', value => 'expunges_per_second',
+                      unit => '/s', min => 0 },
+                ],
+            }
+        },
+    },
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -33,12 +119,26 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                {
                                 });
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
+                                                      output => $self->{output}, perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
+    
     return $self;
 }
 
@@ -46,78 +146,89 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
     }
     
-    $self->{statefile_cache}->check_options(%options);
+    $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
+    $self->manage_selection();
+    
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => 'firebird_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
+    $self->{new_datas}->{last_timestamp} = time();
+    
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits;
+    
+    foreach (sort keys %{$maps_counters->{global}}) {
+        my $obj = $maps_counters->{global}->{$_}->{obj};
+                
+        $obj->set(instance => 'firebird');
+    
+        my ($value_check) = $obj->execute(values => $self->{firebird},
+                                          new_datas => $self->{new_datas});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
+    }
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Records $short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "Records $long_msg");
+    }
+    
+    $self->{statefile_value}->write(data => $self->{new_datas});
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{
-        SELECT MON$RECORD_SEQ_READS,MON$RECORD_INSERTS,MON$RECORD_UPDATES,MON$RECORD_DELETES,MON$RECORD_BACKOUTS,MON$RECORD_PURGES,MON$RECORD_EXPUNGES
-            FROM MON$RECORD_STATS mr WHERE mr.MON$STAT_GROUP = '0';
-    });
-    
-    my $result = $self->{sql}->fetchall_arrayref();    
-    
-    my $new_datas = {};
-    $self->{statefile_cache}->read(statefile => 'firebird_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
-    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-    $new_datas->{last_timestamp} = time();
-    
-    if (defined($old_timestamp) && $new_datas->{last_timestamp} - $old_timestamp == 0) {
-        $self->{output}->add_option_msg(short_msg => "Need at least one second between two checks.");
+    $self->{sql}->query(query => q{SELECT MON$RECORD_SEQ_READS as MYREADS,MON$RECORD_INSERTS as MYINSERTS,
+            MON$RECORD_UPDATES as MYUPDATES, MON$RECORD_DELETES as MYDELETES, MON$RECORD_BACKOUTS as MYBACKOUTS,
+            MON$RECORD_PURGES as MYPURGES, MON$RECORD_EXPUNGES as MYEXPUNGES
+            FROM MON$RECORD_STATS mr WHERE mr.MON$STAT_GROUP = '0'});    
+    my $row = $self->{sql}->fetchrow_hashref();
+    if (!defined($row)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get query informations");
         $self->{output}->option_exit();
     }
     
-    my @field = ("seq_reads", "inserts", "updates", "deletes", "backouts", "purges", "expunges");
-    my $i  = 0;
-    my $total_requests = 0;
-    my $checked = 0;
-    foreach my $name (@field) {
-        $new_datas->{$name} = $$result[0][$i];
-        my $old_val = $self->{statefile_cache}->get(name => $name);
-        next if (!defined($old_val) || $$result[0][$i] < $old_val);
-        
-        my $value = int(($$result[0][$i] - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));
-        $self->{output}->perfdata_add(label => $name . '_requests',
-                                      value => $value,
-                                      min => 0);
-        $i++;
-        $total_requests += $value;
-        $checked = 1;
-    }
-    
-    if ($checked == 1) {
-        my $exit_code = $self->{perfdata}->threshold_check(value => $total_requests, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Total requests = %s", $total_requests));
-        $self->{output}->perfdata_add(label => 'total_requests',
-                                      value => $total_requests,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-    }
-    
-    $self->{statefile_cache}->write(data => $new_datas); 
-    if ($checked == 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{firebird} = { seq_reads => $row->{MYREADS}, inserts => $row->{MYINSERTS}, 
+        updates => $row->{MYUPDATES}, deletes => $row->{MYDELETES},
+        backouts => $row->{MYBACKOUTS}, purges => $row->{MYPURGES}, expunges => $row->{MYEXPUNGES} };
+    $self->{firebird}->{total} = $row->{MYREADS} + $row->{MYINSERTS} + $row->{MYUPDATES} +
+        $row->{MYDELETES} + $row->{MYBACKOUTS} + $row->{MYPURGES} + $row->{MYEXPUNGES};
 }
 
 1;
@@ -126,17 +237,21 @@ __END__
 
 =head1 MODE
 
-Check average number of queries executed on the current database (firebird version >= 2.1)
+Check queries statistics on current database. 
 
-=over 8
+=over 8)
 
-=item B<--warning>
+=item B<--warning-*>
 
 Threshold warning.
+Can be: 'total', 'seq-reads', 'inserts', 'updates',
+'deletes', 'backouts', 'purges', 'expunges'. 
 
-=item B<--critical>
+=item B<--critical-*>
 
 Threshold critical.
+Can be: 'total', 'seq-reads', 'inserts', 'updates',
+'deletes', 'backouts', 'purges', 'expunges'.
 
 =back
 
