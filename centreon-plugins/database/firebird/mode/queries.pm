@@ -65,14 +65,11 @@ sub run {
 
     $self->{sql}->connect();
     $self->{sql}->query(query => q{
-        SELECT MON$RECORD_SEQ_READS,MON$RECORD_INSERTS,MON$RECORD_UPDATES,MON$RECORD_DELETES,MON$RECORD_BACKOUTS,MON$RECORD_PURGES,MON$RECORD_EXPUNGES from MON$RECORD_STATS WHERE MON$STAT_GROUP=0 
+        SELECT MON$RECORD_SEQ_READS,MON$RECORD_INSERTS,MON$RECORD_UPDATES,MON$RECORD_DELETES,MON$RECORD_BACKOUTS,MON$RECORD_PURGES,MON$RECORD_EXPUNGES
+            FROM MON$RECORD_STATS mr WHERE mr.MON$STAT_GROUP = '0';
     });
-    my $result = $self->{sql}->fetchall_arrayref();
     
-    if (!($self->{sql}->is_version_minimum(version => '1'))) {
-        $self->{output}->add_option_msg(short_msg => "Firebird version '" . $self->{sql}->{version} . "' is not supported (need version >= '1').");
-        $self->{output}->option_exit();
-    }
+    my $result = $self->{sql}->fetchall_arrayref();    
     
     my $new_datas = {};
     $self->{statefile_cache}->read(statefile => 'firebird_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
@@ -84,36 +81,37 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    my @field = ("seq_reads","inserts","updates","deletes","backouts","purges","expunges");
-    my $i=0;
+    my @field = ("seq_reads", "inserts", "updates", "deletes", "backouts", "purges", "expunges");
+    my $i  = 0;
+    my $total_requests = 0;
+    my $checked = 0;
     foreach my $name (@field) {
-    
         $new_datas->{$name} = $$result[0][$i];
         my $old_val = $self->{statefile_cache}->get(name => $name);
         next if (!defined($old_val) || $$result[0][$i] < $old_val);
         
         my $value = int(($$result[0][$i] - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));
-        if ($name ne 'seq_reads') {
-            $self->{output}->perfdata_add(label => $name . '_requests',
+        $self->{output}->perfdata_add(label => $name . '_requests',
                                       value => $value,
                                       min => 0);
-            $i++;
-            next;
-        }
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $i++;
+        $total_requests += $value;
+        $checked = 1;
+    }
+    
+    if ($checked == 1) {
+        my $exit_code = $self->{perfdata}->threshold_check(value => $total_requests, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Total requests = %s", $value));
+                                    short_msg => sprintf("Total requests = %s", $total_requests));
         $self->{output}->perfdata_add(label => 'total_requests',
-                                      value => $value,
+                                      value => $total_requests,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
-    $i++
     }
     
     $self->{statefile_cache}->write(data => $new_datas); 
-    if (!defined($old_timestamp)) {
+    if ($checked == 0) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
     }
@@ -128,7 +126,7 @@ __END__
 
 =head1 MODE
 
-Check average number of queries executed.
+Check average number of queries executed on the current database (firebird version >= 2.1)
 
 =over 8
 

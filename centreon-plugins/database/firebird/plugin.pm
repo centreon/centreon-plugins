@@ -33,12 +33,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time'     => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'memory'              => 'database::firebird::mode::memory',
-                         'users'               => 'database::firebird::mode::users',
-                         'io-stats'            => 'database::firebird::mode::iostats',
-                         'queries'             => 'database::firebird::mode::queries',
-                         'slow-queries'                 => 'database::firebird::mode::slowqueries',
+                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+                         'users'            => 'database::firebird::mode::users',
+                         'pages'            => 'database::firebird::mode::pages',
+                         'memory'           => 'database::firebird::mode::memory',
+                         'queries'          => 'database::firebird::mode::queries',
+                         'long-queries'     => 'database::firebird::mode::longqueries',
+                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          );
     $self->{sql_modes}{firebirdcmd} = 'database::firebird::firebirdcmd';
 
@@ -84,7 +85,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Firebird Server.
+Check Firebird Server. It works with version >= 2.1 and sysdba user.
 
 =over 8
 

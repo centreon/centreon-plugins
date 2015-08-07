@@ -62,12 +62,7 @@ sub run {
 
     $self->{sql}->connect();
     
-    if (!($self->{sql}->is_version_minimum(version => '1'))) {
-        $self->{output}->add_option_msg(short_msg => "firebird version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{sql}->query(query => q{SELECT COUNT(MON$USER) FROM MON$ATTACHMENTS});
+    $self->{sql}->query(query => q{SELECT COUNT(MON$USER) FROM MON$ATTACHMENTS WHERE MON$ATTACHMENT_ID <> CURRENT_CONNECTION});
     my $result = $self->{sql}->fetchrow_array();
 
     if (!defined($result)) {
@@ -80,7 +75,7 @@ sub run {
     
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => $msg);
-    $self->{output}->perfdata_add(label => 'User', value => $result,
+    $self->{output}->perfdata_add(label => 'users', value => $result,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -95,7 +90,7 @@ __END__
 
 =head1 MODE
 
-Check MySQL uptime.
+Check current users connected on the database (firebird version >= 2.1)
 
 =over 8
 
@@ -106,10 +101,6 @@ Threshold warning.
 =item B<--critical>
 
 Threshold critical.
-
-=item B<--seconds>
-
-Display uptime in seconds.
 
 =back
 
