@@ -41,7 +41,6 @@ sub new {
                          'long-queries'     => 'database::firebird::mode::longqueries',
                          'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          );
-    $self->{sql_modes}{firebirdcmd} = 'database::firebird::firebirdcmd';
 
     return $self;
 }
