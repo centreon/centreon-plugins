@@ -695,7 +695,7 @@ sub run {
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Inteface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $short_msg"
+                                        short_msg => "Interface '" . $self->{interface_selected}->{$id}->{display} . "'$self->{interface_selected}->{$id}->{extra_display} $short_msg"
                                         );
         }
         
