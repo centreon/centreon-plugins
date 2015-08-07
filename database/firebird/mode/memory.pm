@@ -24,7 +24,111 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use DBD::Firebird;
+use centreon::plugins::values;
+
+my $maps_counters = {
+    global => {
+        '000_used'   => { set => {
+                key_values => [ { name => 'database_used' }, { name => 'database_allocated' } ],
+                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'database' },
+                closure_custom_output => \&custom_used_output,
+                threshold_use => 'prct',
+                closure_custom_perfdata => \&custom_used_perfdata,
+            }
+        },
+        '001_attachment'   => { set => {
+                key_values => [ { name => 'attachment_used' }, { name => 'database_allocated' } ],
+                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'attachment' },
+                closure_custom_output => \&custom_unit_output,
+                threshold_use => 'prct',
+                closure_custom_perfdata => \&custom_unit_perfdata,
+            }
+        },
+        '002_transaction'   => { set => {
+                key_values => [ { name => 'transaction_used' }, { name => 'database_allocated' } ],
+                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'transaction' },
+                closure_custom_output => \&custom_unit_output,
+                threshold_use => 'prct',
+                closure_custom_perfdata => \&custom_unit_perfdata,
+            }
+        },
+        '003_statement'   => { set => {
+                key_values => [ { name => 'statement_used' }, { name => 'database_allocated' } ],
+                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'statement' },
+                closure_custom_output => \&custom_unit_output,
+                threshold_use => 'prct',
+                closure_custom_perfdata => \&custom_unit_perfdata,
+            }
+        },
+        '004_call'   => { set => {
+                key_values => [ { name => 'call_used' }, { name => 'database_allocated' } ],
+                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'call' },
+                closure_custom_output => \&custom_unit_output,
+                threshold_use => 'prct',
+                closure_custom_perfdata => \&custom_unit_perfdata,
+            }
+        },
+    },
+};
+
+sub custom_used_output {
+    my ($self, %options) = @_;
+    
+    my $free = $self->{result_values}->{total} - $self->{result_values}->{used};
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
+    my $msg = sprintf("Total: %s Used : %s (%.2f %%) Free : %s (%.2f %%)",
+                      $total_value . ' ' . $total_unit,
+                      $used_value . ' ' . $used_unit, $self->{result_values}->{prct},
+                      $free_value . ' ' . $free_unit, 100 - $self->{result_values}->{prct});
+    return $msg;
+}
+
+sub custom_used_perfdata {
+    my ($self, %options) = @_;
+    
+    $self->{output}->perfdata_add(label => 'used', unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_unit_perfdata {
+    my ($self, %options) = @_;
+    
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_unit_output {
+    my ($self, %options) = @_;
+    
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my $msg = sprintf("%s : %s (%.2f %%)",
+                      ucfirst($self->{result_values}->{label}),
+                      $used_value . ' ' . $used_unit, $self->{result_values}->{prct});
+    return $msg;
+}
+
+sub custom_unit_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_database_allocated'};
+    if ($self->{result_values}->{total} == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_used'};    
+    $self->{result_values}->{prct} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,12 +137,25 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "seconds"                 => { name => 'seconds', },
+                                {
                                 });
-
+    
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output},
+                                                      perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
+    
     return $self;
 }
 
@@ -46,119 +163,79 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
-   
-    if (!($self->{sql}->is_version_minimum(version => '1'))) {
-        $self->{output}->add_option_msg(short_msg => "Firebird version '" . $self->{sql}->{version} . "' is not supported (need version >= '1.x').");
-        $self->{output}->option_exit();
-    }
+    $self->manage_selection();
+    
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits;
+    
+    foreach (sort keys %{$maps_counters->{global}}) {
+        my $obj = $maps_counters->{global}->{$_}->{obj};
+                
+        $obj->set(instance => 'firebird');
+    
+        my ($value_check) = $obj->execute(values => $self->{firebird});
 
-    $self->{sql}->query(query => q{SELECT MON$STAT_GROUP,MON$MEMORY_ALLOCATED,MON$MEMORY_USED FROM MON$MEMORY_USAGE});
-    my  $result = $self->{sql}->fetchall_arrayref();
-    if(!defined($result)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get memory.");
-        $self->{output}->opion_exit();
-    }
-
-
-    my $mem_allocated;
-    my $attach_used=0;
-    my $prct_attach=0;
-    my $trans_used=0;
-    my $prct_trans;
-    my $stat_used=0;
-    my $prct_stat=0;
-    my $call_used=0;
-    my $prct_call=0;
-    my ($total_value, $total_unit)=(0,0);
-    my ($attach_value, $attach_unit)=(0,0);
-    my ($trans_value, $trans_unit)=(0,0);
-    my ($stat_value, $stat_unit)=(0,0);
-    my ($call_value, $call_unit)= (0,'B');
-
-    foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter}) &&
-                 $$row[0] !~ /$self->{option_results}->{filter}/);
-        
-
-        
-        if ($$row[0] == 0) {
-            $mem_allocated = $$row[1];
-            ($total_value, $total_unit) =  $self->{perfdata}->change_bytes(value => $mem_allocated);
-
-        } elsif ($$row[0] ==1) {
-             $attach_used = $attach_used + $$row[2];
-             $prct_attach = $attach_used * 100 / $mem_allocated;
-             ($attach_value, $attach_unit) = $self->{perfdata}->change_bytes(value => $attach_used);
-
-        } elsif ($$row[0] == 2) {
-             $trans_used = $trans_used + $$row[2];
-             $prct_trans = $trans_used * 100 / $mem_allocated;
-             ($trans_value, $trans_unit) = $self->{perfdata}->change_bytes(value => $trans_used);
-
-
-        } elsif ($$row[0] == 3) {
-             $stat_used = $stat_used + $$row[2];
-             $prct_stat = $stat_used * 100 / $mem_allocated;
-             ($stat_value, $stat_unit) = $self->{perfdata}->change_bytes(value => $stat_used);
-
-        } elsif ($$row[0] ==4) {
-             $call_used = $call_used + $$row[2];
-             $prct_call = $call_used * 100 / $mem_allocated;
-             ($call_value, $call_unit) = $self->{perfdata}->change_bytes(value => $call_used);
-
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
         }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
     }
-    my $mem_used = $attach_used + $trans_used + $stat_used + $call_used;
-    my $prct_used = $mem_used * 100 / $mem_allocated;
-    my ($used_value, $used_unit)=$self->{perfdata}->change_bytes(value => $mem_used);
 
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $mem_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $mem_allocated, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $mem_allocated, cast_int => 1),
-                                  min => 0, max => $mem_allocated);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Allocated %s, Total Used %s (%.2f%%)",
-                                             $total_value . " " . $total_unit,
-                                             $used_value . " " . $used_unit, $prct_used));
-    $self->{output}->output_add(long_msg => sprintf("Attachement Used %s (%.2f%%)",
-                                $attach_value . " " . $attach_unit, $prct_attach));
-    $self->{output}->perfdata_add(label => "attachement", unit => 'B',
-                                  value => $attach_used);
-    $self->{output}->output_add(long_msg => sprintf("Transaction Used %s (%.2f%%)",
-                                $trans_value . " " . $trans_unit, $prct_trans));
-    $self->{output}->perfdata_add(label => "transaction", unit => 'B',
-                                  value => $trans_used);
-    $self->{output}->output_add(long_msg => sprintf("Statement Used %s (%.2f%%)",
-                                $stat_value . " " . $stat_unit, $prct_stat));
-    $self->{output}->perfdata_add(label => "statement", unit => 'B',
-                                  value => $stat_used);
-    $self->{output}->output_add(long_msg => sprintf("Call Used %s (%.2f%%)",
-                                $call_value . " " . $call_unit, $prct_call));
-    $self->{output}->perfdata_add(label => "call", unit => 'B',
-                                  value => $call_used);
-
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Memory $short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "Memory $long_msg");
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
+}
 
- 
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{sql}->connect();
+    $self->{sql}->query(query => q{SELECT MON$STAT_GROUP as MYGROUP, MON$MEMORY_ALLOCATED AS MYTOTAL, MON$MEMORY_USED AS MYUSED FROM MON$MEMORY_USAGE});
+    
+    my %map_group = (0 => 'database', 1 => 'attachment', 2 => 'transaction', 3 => 'statement', 4 => 'call'); 
+    
+    $self->{firebird} = {};
+    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        if (!defined($self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'})) {
+            $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'} = 0;
+            $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_allocated'} = 0;
+        }
+        $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'} += $row->{MYUSED};
+        $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_allocated'} += $row->{MYTOTAL};
+    }
 }
 
 1;
@@ -167,21 +244,21 @@ __END__
 
 =head1 MODE
 
-Check MySQL uptime.
+Check memory usage. 
 
-=over 8
+=over 8)
 
-=item B<--warning>
+=item B<--warning-*>
 
 Threshold warning.
+Can be: 'used' (%), 'attachment' (%), 'transaction' (%), 
+'statement' (%), 'call' (%).
 
-=item B<--critical>
+=item B<--critical-*>
 
 Threshold critical.
-
-=item B<--seconds>
-
-Display uptime in seconds.
+Can be: 'used' (%), 'attachment' (%), 'transaction' (%), 
+'statement' (%), 'call' (%).
 
 =back
 
