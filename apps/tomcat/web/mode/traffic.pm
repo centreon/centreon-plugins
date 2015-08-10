@@ -1,44 +1,29 @@
-###############################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an timeelapsedutable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Author : Florian Asche <info@florian-asche.de>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package apps::tomcat::web::mode::traffic;
 
 use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
@@ -54,12 +39,12 @@ sub new {
             {
             "hostname:s"            => { name => 'hostname' },
             "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto', default => "http" },
+            "proto:s"               => { name => 'proto' },
             "credentials"           => { name => 'credentials' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout', default => '3' },
+            "timeout:s"             => { name => 'timeout' },
             "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
             "name:s"                => { name => 'name' },
             "regexp"                => { name => 'use_regexp' },
@@ -74,6 +59,7 @@ sub new {
     $self->{result} = {};
     $self->{hostname} = undef;
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -81,18 +67,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
     if (($self->{perfdata}->threshold_validate(label => 'warning-in', value => $self->{option_results}->{warning_in})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning 'in' threshold '" . $self->{option_results}->{warning_in} . "'.");
         $self->{output}->option_exit();
@@ -124,6 +98,8 @@ sub check_options {
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
+    
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 my %xpath_to_check = (
@@ -134,7 +110,7 @@ my %xpath_to_check = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $webcontent = centreon::plugins::httplib::connect($self);  
+    my $webcontent = $self->{http}->request();
     my $port = $self->{option_results}->{port};
 
     #EXAMPLE 1:
@@ -222,7 +198,7 @@ sub run {
     $self->manage_selection();
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname} . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname} . '_' . $self->{http}->get_port() . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 

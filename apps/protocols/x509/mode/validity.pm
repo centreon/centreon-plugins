@@ -1,37 +1,22 @@
-###############################################################################
-# Copyright 2005-2015 CENTREON
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation ; either version 2 of the License.
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, see <http://www.gnu.org/licenses>.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Linking this program statically or dynamically with other modules is making a
-# combined work based on this program. Thus, the terms and conditions of the GNU
-# General Public License cover the whole combination.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# As a special exception, the copyright holders of this program give MERETHIS
-# permission to link this program with independent modules to produce an timeelapsedutable,
-# regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that
-# MERETHIS also meet, for each linked independent module, the terms  and conditions
-# of the license of that module. An independent module is a module which is not
-# derived from this program. If you modify this program, you may extend this
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# For more information : contact@centreon.com
-# Author : Mathieu Cinquin <mcinquin@centreon.com>
-#
-####################################################################################
 
 package apps::protocols::x509::mode::validity;
 
@@ -56,9 +41,9 @@ sub new {
          "validity-mode:s"   => { name => 'validity_mode' },
          "warning-date:s"    => { name => 'warning' },
          "critical-date:s"   => { name => 'critical' },
-         "subjectname:s"     => { name => 'subjectname' },
-         "issuername:s"      => { name => 'issuername' },
-         "timeout:s"         => { name => 'timeout', default => '3' },
+         "subjectname:s"     => { name => 'subjectname', default => '' },
+         "issuername:s"      => { name => 'issuername', default => '' },
+         "timeout:s"         => { name => 'timeout', default => 5 },
          });
     return $self;
 }
@@ -83,11 +68,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the port option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{validity_mode})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option");
+    if (!defined($self->{option_results}->{validity_mode}) || $self->{option_results}->{validity_mode} !~ /^expiration|subject|issuer$/) {
+        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option (issuer, subject or expiration)");
         $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -115,19 +99,19 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         #Create SSL connection
         Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
 
         eval { $ssl = Net::SSLeay::new($ctx) };
-       if ($@) {
+        if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         eval { Net::SSLeay::set_fd($ssl, fileno($connection)) };
         if ($@) {
@@ -136,7 +120,7 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         eval { Net::SSLeay::connect($ssl) };
         if ($@) {
@@ -145,7 +129,7 @@ sub run {
 
             $self->{output}->display();
             $self->{output}->exit()
-        };
+        }
 
         #Retrieve Certificat
         $cert = Net::SSLeay::get_peer_certificate($ssl);
@@ -165,12 +149,12 @@ sub run {
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
             my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
-            if ( $subject_name =~ /$self->{option_results}->{subjectname}/mi ) {
+            if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name %s is present in Certificate :%s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Subject Name %s is not present in Certificate : %s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
             }
 
             $self->{output}->display();
@@ -179,19 +163,16 @@ sub run {
         #Issuer Name
         } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
-            if ( $issuer_name =~ /$self->{option_results}->{issuername}/mi ) {
+            if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Issuer Name %s is present in Certificate :%s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Issuer Name %s is not present in Certificate : %s", $self->{option_results}->{issuername}, $issuer_name));
+                                            short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
             }
 
             $self->{output}->display();
             $self->{output}->exit()
-        } else {
-            $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find validity-mode '" . $self->{option_results}->{validity_mode} . "'.");
-            $self->{output}->option_exit();
         }
     }
 }

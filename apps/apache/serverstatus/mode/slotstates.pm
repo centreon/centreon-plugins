@@ -1,38 +1,22 @@
-###############################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an timeelapsedutable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting timeelapsedutable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Author : Simon BOMM <sbomm@merethis.com>
 #
-# Based on De Bodt Lieven plugin
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package apps::apache::serverstatus::mode::slotstates;
 
@@ -40,28 +24,208 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
+use centreon::plugins::values;
+
+my $instance_mode;
+
+my $maps_counters = {
+    global => {
+        '000_busy'   => { set => {
+                key_values => [ { name => 'busy' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'busy' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '001_free'   => { set => {
+                key_values => [ { name => 'free' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'free' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '002_waiting'   => { set => {
+                key_values => [ { name => 'waiting' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'waiting' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '003_starting'   => { set => {
+                key_values => [ { name => 'starting' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'starting' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '004_reading'   => { set => {
+                key_values => [ { name => 'reading' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'reading' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '005_sending'   => { set => {
+                key_values => [ { name => 'sending' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'sending' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '006_keepalive'   => { set => {
+                key_values => [ { name => 'keepalive' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'keepalive' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '007_dns-lookup'   => { set => {
+                key_values => [ { name => 'dns_lookup' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'dns_lookup' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '008_closing'   => { set => {
+                key_values => [ { name => 'closing' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'closing' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '009_logging'   => { set => {
+                key_values => [ { name => 'logging' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'logging' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '007_gracefuly-finished'   => { set => {
+                key_values => [ { name => 'gracefuly_finished' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'gracefuly_finished' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+        '007_idle-cleanup-worker'   => { set => {
+                key_values => [ { name => 'idle_cleanup_worker' }, { name => 'total' } ],
+                closure_custom_calc => \&custom_value_calc, closure_custom_calc_extra_options => { label_ref => 'idle_cleanup_worker' },
+                closure_custom_output => \&custom_value_output,
+                closure_custom_threshold_check => \&custom_value_threshold,
+                closure_custom_perfdata => \&custom_value_perfdata,
+            }
+        },
+    },
+};
+
+sub custom_value_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } else {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_value_perfdata {
+    my ($self, %options) = @_;
+    
+    my ($warning, $critical);
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
+    } else {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    }
+    
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label},
+                                  value => $self->{result_values}->{used},
+                                  warning => $warning,
+                                  critical => $critical,
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_value_output {
+    my ($self, %options) = @_;
+    
+    my $label = $self->{result_values}->{label};
+    $label =~ s/_/ /g;
+    $label =~ s/(\w+)/\u$1/g;
+    my $msg = sprintf("%s : %s (%.2f %%)",
+                      ucfirst($label),
+                      $self->{result_values}->{used}, $self->{result_values}->{prct});
+    return $msg;
+}
+
+sub custom_value_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    if ($self->{result_values}->{total} == 0) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};    
+    $self->{result_values}->{prct} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
+    
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-            {
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port', },
-            "proto:s"       => { name => 'proto', default => "http" },
-            "urlpath:s"     => { name => 'url_path', default => "/server-status/?auto" },
-            "credentials"   => { name => 'credentials' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "proxyurl:s"    => { name => 'proxyurl' },
-            "warning:s"     => { name => 'warning' },
-            "critical:s"    => { name => 'critical' },
-            "timeout:s"     => { name => 'timeout', default => '3' },
-            });
+                                {
+                                "hostname:s"    => { name => 'hostname' },
+                                "port:s"        => { name => 'port', },
+                                "proto:s"       => { name => 'proto' },
+                                "urlpath:s"     => { name => 'url_path', default => "/server-status/?auto" },
+                                "credentials"   => { name => 'credentials' },
+                                "username:s"    => { name => 'username' },
+                                "password:s"    => { name => 'password' },
+                                "proxyurl:s"    => { name => 'proxyurl' },
+                                "timeout:s"     => { name => 'timeout' },
+                                "units:s"       => { name => 'units', default => '%' },
+                                });
+    
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output},
+                                                      perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
+    
     return $self;
 }
 
@@ -69,76 +233,81 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
+    foreach my $key (('global')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
     }
     
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
-
+    $instance_mode = $self;
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
+
+    $self->manage_selection();
     
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits;
+    
+    foreach (sort keys %{$maps_counters->{global}}) {
+        my $obj = $maps_counters->{global}->{$_}->{obj};
+                
+        $obj->set(instance => 'global');
+    
+        my ($value_check) = $obj->execute(values => $self->{global});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
+    }
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Slots $short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "Slots $long_msg");
+    }
+    
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $webcontent = $self->{http}->request();
     my $ScoreBoard = "";
     if ($webcontent =~ /^Scoreboard:\s+([^\s]+)/mi) {
         $ScoreBoard = $1;
     }
-   
-    my $srvLimit = length($ScoreBoard);
-    my $CountOpenSlots = ($ScoreBoard =~ tr/\.//);
-
-    my $exit = $self->{perfdata}->threshold_check(value => $CountOpenSlots,
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Free slots: %d", $CountOpenSlots));
-    $self->{output}->perfdata_add(label => "freeSlots",
-                                  value => $CountOpenSlots,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0,
-                                  max => $srvLimit);
-    $self->{output}->perfdata_add(label => "waiting",
-            value => ($ScoreBoard =~ tr/\_//));
-    $self->{output}->perfdata_add(label => "starting",
-            value => ($ScoreBoard =~ tr/S//));
-    $self->{output}->perfdata_add(label => "reading",
-            value => ($ScoreBoard =~ tr/R//));
-    $self->{output}->perfdata_add(label => "sending",
-            value => ($ScoreBoard =~ tr/W//));
-    $self->{output}->perfdata_add(label => "keepalive",
-            value => ($ScoreBoard =~ tr/K//));
-    $self->{output}->perfdata_add(label => "dns_lookup",
-            value => ($ScoreBoard =~ tr/D//));
-    $self->{output}->perfdata_add(label => "closing",
-            value => ($ScoreBoard =~ tr/C//));
-    $self->{output}->perfdata_add(label => "logging",
-            value => ($ScoreBoard =~ tr/L//));
-    $self->{output}->perfdata_add(label => "gracefuly_finished",
-            value => ($ScoreBoard =~ tr/G//));
-    $self->{output}->perfdata_add(label => "idle_cleanup_worker",
-            value => ($ScoreBoard =~ tr/I//));
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    
+    $self->{global} = { total => length($ScoreBoard),
+                        free => ($ScoreBoard =~ tr/\.//),
+                        busy => length($ScoreBoard) - ($ScoreBoard =~ tr/\.//),
+                        waiting => ($ScoreBoard =~ tr/\_//), starting => ($ScoreBoard =~ tr/S//),
+                        reading => ($ScoreBoard =~ tr/R//), sending => ($ScoreBoard =~ tr/W//),
+                        keepalive => ($ScoreBoard =~ tr/K//), dns_lookup => ($ScoreBoard =~ tr/D//),
+                        closing => ($ScoreBoard =~ tr/C//), logging => ($ScoreBoard =~ tr/L//),
+                        gracefuly_finished => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)};
 }
 
 1;
@@ -187,13 +356,25 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 Threshold for HTTP timeout
 
+=item B<--units>
+
+Threshold unit (Default: '%'. Can be: '%' or 'absolute')
+
 =item B<--warning>
 
-Warning Threshold on remaining free slot
+Warning threshold.
+Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
+'sending', 'keepalive', 'dns-lookup', 'closing',
+'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
 
 =item B<--critical>
 
-Critical Threshold on remaining free slot
+Critical threshold.
+Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
+'sending', 'keepalive', 'dns-lookup', 'closing',
+'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+
+=over 8)
 
 =back
 
