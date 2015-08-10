@@ -52,7 +52,7 @@ sub check {
         my $instance_type = $raritan_type{$component};
         my $value_type = $map_type{$instance_type};
         foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
-            next if ($oid !~ /^$mapping->{$options{type}}->{Label}->{State}\.(\d+)\.(\d+)\.$instance_type$/);
+            next if ($oid !~ /^$mapping->{$options{type}}->{State}->{oid}\.(\d+)\.(\d+)\.$instance_type$/);
             my $instance = $1 . '.' . $2 . '.' . $instance_type;
             my $result = $self->{snmp}->map_instance(mapping => $mapping->{$options{type}}, results => $self->{results}, instance => $instance);
             my $result2 = $self->{snmp}->map_instance(mapping => $mapping->{$options{type} . '_label'}, results => $self->{results}, instance => $1 . '.' . $2);
@@ -68,7 +68,7 @@ sub check {
             
             $self->{components}->{$component}->{total}++;
 
-            my $value = defined($result->{SignedValue}) ? $result->{SignedValue} : '-';
+            my $value = (defined($result->{Value}) && $result->{Value} ne '') ? $result->{Value} : '-';
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
@@ -83,15 +83,16 @@ sub check {
                                                 $instance, $component, $result->{State}));
             }
             
-            if ($value->{value} =~ /[0-9]/) {
+            if ($value =~ /[0-9]/) {
                 my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $value);
                 if ($checked == 0) {
+                    $result->{EnabledThresholds} = oct("0b". unpack('b*', $result->{EnabledThresholds}));
                     my $warn_th = '~:';
-                    $warn_th = $result->{LowerWarningThreshold} if (($result->{EnabledThresholds} & (1 << 1)));
-                    $warn_th .= $result->{UpperWarningThreshold} if (($result->{EnabledThresholds} & (1 << 2)));
+                    $warn_th = $result->{LowerWarningThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 1)));
+                    $warn_th .= $result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 2)));
                     my $crit_th = '~:';
-                    $crit_th = $result->{LowerCriticalThreshold} if (($result->{EnabledThresholds} & (1 << 0)));
-                    $crit_th .= $result->{UpperCriticalThreshold} if (($result->{EnabledThresholds} & (1 << 3)));
+                    $crit_th = $result->{LowerCriticalThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 0)));
+                    $crit_th .= $result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 3)));
                     $self->{perfdata}->threshold_validate(label => 'warning-' . $component . '-instance-' . $instance, value => $warn_th);
                     $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
                     $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);

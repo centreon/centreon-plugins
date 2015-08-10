@@ -34,6 +34,7 @@ sub new {
     %{$self->{modes}} = (
                          'inlet-sensors'    => 'hardware::pdu::raritan::snmp::mode::inletsensors',
                          'outlet-sensors'   => 'hardware::pdu::raritan::snmp::mode::outletsensors',
+                         'ocprot-sensors'   => 'hardware::pdu::raritan::snmp::mode::ocprotsensors',
                          );
 
     return $self;

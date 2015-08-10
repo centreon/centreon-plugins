@@ -63,10 +63,6 @@ sub check_options {
     $self->{filter} = [];
     foreach my $val (@{$self->{option_results}->{filter}}) {
         my @values = split (/,/, $val);
-        if (scalar(@values) < 2) {
-            $self->{output}->add_option_msg(short_msg => "Wrong filter option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
         push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
     

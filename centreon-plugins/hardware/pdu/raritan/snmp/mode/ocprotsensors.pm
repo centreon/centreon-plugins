@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::pdu::raritan::snmp::mode::inletsensors;
+package hardware::pdu::raritan::snmp::mode::ocprotsensors;
 
 use base qw(centreon::plugins::mode);
 
@@ -124,12 +124,12 @@ sub run {
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                           error_msg => "Cannot load module '$mod_name'.");
     my $func = $mod_name->can('load');
-    $func->(type => 'inlet', request => $snmp_request); 
+    $func->(type => 'ocprot', request => $snmp_request); 
     
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request, return_type => 1);
     
     $func = $mod_name->can('check');
-    $func->($self, component => $self->{option_results}->{component}, type => 'inlet'); 
+    $func->($self, component => $self->{option_results}->{component}, type => 'ocprot'); 
 
     my $total_components = 0;
     my $display_by_component = '';
@@ -226,7 +226,7 @@ __END__
 
 =head1 MODE
 
-Check inlet sensors.
+Check overcurrent protectors sensors.
 
 =over 8
 
@@ -237,7 +237,7 @@ Which component to check (Default: '.*').
 =item B<--filter>
 
 Exclude some parts (comma seperated list) (Example: --filter=airPressure --filter=rmsVoltage)
-Can also exclude specific instance: --filter=rmsVoltage,I1
+Can also exclude specific instance: --filter=rmsVoltage,C1
 
 =item B<--no-component>
 
