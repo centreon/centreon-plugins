@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use JSON;
 
 sub new {
@@ -46,9 +46,10 @@ sub new {
             "cert-file:s"               => { name => 'cert_file' },
             "key-file:s"                => { name => 'key_file' },
             "cacert-file:s"             => { name => 'cacert_file' },
-            "timeout:s"                 => { name => 'timeout', default => '3' },
+            "timeout:s"                 => { name => 'timeout' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -56,22 +57,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
 
-    my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
+    my $jsoncontent = $self->{http}->request();;
 
     my $json = JSON->new;
 
