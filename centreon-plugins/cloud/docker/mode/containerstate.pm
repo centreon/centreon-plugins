@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::containerstate;
+package cloud::docker::mode::containerstate;
 
 use base qw(centreon::plugins::mode);
 

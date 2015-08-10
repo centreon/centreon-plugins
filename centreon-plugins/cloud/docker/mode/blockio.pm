@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::blockio;
+package docker::docker::mode::blockio;
 
 use base qw(centreon::plugins::mode);
 

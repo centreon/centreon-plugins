@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::listcontainers;
+package cloud::docker::mode::listcontainers;
 
 use base qw(centreon::plugins::mode);
 
