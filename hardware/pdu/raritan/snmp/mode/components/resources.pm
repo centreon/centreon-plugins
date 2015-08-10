@@ -99,6 +99,20 @@ $mapping = {
         State   => { oid => '.1.3.6.1.4.1.13742.6.5.4.3.1.3', map => \%map_state }, # measurementsOutletSensorState
         Value => { oid => '.1.3.6.1.4.1.13742.6.5.4.3.1.4' }, # measurementsOutletSensorValue
     },
+    ocprot_label => {
+        Label   => { oid => '.1.3.6.1.4.1.13742.6.3.4.3.1.2' }, # overCurrentProtectorLabel
+    },
+    ocprot => {
+        Unit    => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.6', map => \%map_units }, # overCurrentProtectorSensorUnits
+        Decimal => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.7' }, # overCurrentProtectorSensorDecimalDigits
+        EnabledThresholds => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.25' }, # overCurrentProtectorSensorEnabledThresholds
+        LowerCriticalThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.21' }, # overCurrentProtectorSensorLowerCriticalThreshold
+        LowerWarningThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.22' }, # overCurrentProtectorSensorLowerWarningThreshold
+        UpperCriticalThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.23' }, # overCurrentProtectorSensorUpperCriticalThreshold
+        UpperWarningThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.4.4.1.24' }, # overCurrentProtectorSensorUpperWarningThreshold
+        State   => { oid => '.1.3.6.1.4.1.13742.6.5.3.3.1.3', map => \%map_state }, # measurementsOverCurrentProtectorSensorState
+        Value => { oid => '.1.3.6.1.4.1.13742.6.5.3.3.1.4' }, # measurementsOverCurrentProtectorSensorValue
+    },
 };
 
 %raritan_type = (
