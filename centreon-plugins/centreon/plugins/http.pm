@@ -22,7 +22,6 @@ package centreon::plugins::http;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
