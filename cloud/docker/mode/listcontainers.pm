@@ -49,7 +49,7 @@ sub new {
             "timeout:s"                 => { name => 'timeout' },
         });
 
-    $self->{http}->set_options(%{$self->{option_results}});
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
