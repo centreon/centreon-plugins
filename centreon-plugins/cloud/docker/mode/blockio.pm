@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package docker::docker::mode::blockio;
+package cloud::docker::mode::blockio;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON;
 
@@ -53,11 +53,11 @@ sub new {
             "cert-file:s"       => { name => 'cert_file' },
             "key-file:s"        => { name => 'key_file' },
             "cacert-file:s"     => { name => 'cacert_file' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -65,14 +65,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
     if ((defined($self->{option_results}->{name})) && (defined($self->{option_results}->{id}))) {
         $self->{output}->add_option_msg(short_msg => "Please set the name or id option");
         $self->{output}->option_exit();
@@ -98,6 +90,15 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{option_results}->{get_param} = [];
+    push @{$self->{option_results}->{get_param}}, "stream=false";
+    if (defined($self->{option_results}->{id})) {
+        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{id}."/stats";
+    } elsif (defined($self->{option_results}->{name})) {
+        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{name}."/stats";
+    }
+
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -107,21 +108,12 @@ sub run {
     my $new_datas = {};
 
     if (defined($self->{option_results}->{id})) {
-        $self->{statefile_value}->read(statefile => 'docker_' . $self->{option_results}->{id}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+        $self->{statefile_value}->read(statefile => 'docker_' . $self->{option_results}->{id}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     } elsif (defined($self->{option_results}->{name})) {
-        $self->{statefile_value}->read(statefile => 'docker_' . $self->{option_results}->{name}  . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode});
+        $self->{statefile_value}->read(statefile => 'docker_' . $self->{option_results}->{name}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     }
 
-    my $jsoncontent;
-    my $query_form_get = { stream => 'false' };
-
-    if (defined($self->{option_results}->{id})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{id}."/stats";
-        $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get, connection_exit => 'critical');
-    } elsif (defined($self->{option_results}->{name})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{name}."/stats";
-        $jsoncontent = centreon::plugins::httplib::connect($self, query_form_get => $query_form_get, connection_exit => 'critical');
-    }
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
 
