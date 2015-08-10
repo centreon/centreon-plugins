@@ -34,9 +34,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "component:s"      => { name => 'component', default => '.*' },
-                                  "no-component:s"   => { name => 'no_component' },
+                                  "filter:s@"               => { name => 'filter' },
+                                  "component:s"             => { name => 'component', default => '.*' },
+                                  "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                   "warning:s@"              => { name => 'warning' },
                                   "critical:s@"             => { name => 'critical' },
@@ -58,6 +58,16 @@ sub check_options {
         } else {
             $self->{no_components} = 'critical';
         }
+    }
+    
+    $self->{filter} = [];
+    foreach my $val (@{$self->{option_results}->{filter}}) {
+        my @values = split (/,/, $val);
+        if (scalar(@values) < 2) {
+            $self->{output}->add_option_msg(short_msg => "Wrong filter option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
     
     $self->{overload_th} = {};
@@ -152,19 +162,21 @@ sub run {
     $self->{output}->exit();
 }
 
-sub check_exclude {
+sub check_filter {
     my ($self, %options) = @_;
 
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
+    foreach (@{$self->{filter}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($options{instance}) && !defined($_->{instance})) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                return 1;
+            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                return 1;
+            }
         }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-        return 1;
     }
+    
     return 0;
 }
 
@@ -226,10 +238,10 @@ Check inlet sensors.
 
 Which component to check (Default: '.*').
 
-=item B<--exclude>
+=item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --exclude=airPressure,rmsVoltage)
-Can also exclude specific instance: --exclude=rmsVoltage#1.2.3#,airPressure
+Exclude some parts (comma seperated list) (Example: --filter=airPressure --filter=rmsVoltage)
+Can also exclude specific instance: --filter=rmsVoltage,I1
 
 =item B<--no-component>
 
