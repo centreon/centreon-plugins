@@ -85,6 +85,20 @@ $mapping = {
         State   => { oid => '.1.3.6.1.4.1.13742.6.5.2.3.1.3', map => \%map_state }, # measurementsInletSensorState
         Value => { oid => '.1.3.6.1.4.1.13742.6.5.2.3.1.4' }, # measurementsInletSensorValue
     },
+    outlet_label => {
+        Label   => { oid => '.1.3.6.1.4.1.13742.6.3.5.3.1.2' }, # outletLabel
+    },
+    outlet => {
+        Unit    => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.6', map => \%map_units }, # outletSensorUnits
+        Decimal => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.7' }, # outletSensorDecimalDigits
+        EnabledThresholds => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.25' }, # outletSensorEnabledThresholds
+        LowerCriticalThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.21' }, # outletSensorLowerCriticalThreshold
+        LowerWarningThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.22' }, # outletSensorLowerWarningThreshold
+        UpperCriticalThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.23' }, # outletSensorUpperCriticalThreshold
+        UpperWarningThreshold => { oid => '.1.3.6.1.4.1.13742.6.3.5.4.1.24' }, # outletSensorUpperWarningThreshold
+        State   => { oid => '.1.3.6.1.4.1.13742.6.5.4.3.1.3', map => \%map_state }, # measurementsOutletSensorState
+        Value => { oid => '.1.3.6.1.4.1.13742.6.5.4.3.1.4' }, # measurementsOutletSensorValue
+    },
 };
 
 %raritan_type = (

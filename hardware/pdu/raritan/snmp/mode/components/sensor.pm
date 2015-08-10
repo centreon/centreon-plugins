@@ -47,7 +47,7 @@ sub check {
         my $long_msg = 0;
         next if ($component !~ /$options{component}/);
         $self->{components}->{$component} = {name => $component, total => 0, skip => 0};
-        next if ($self->check_exclude(section => $component));
+        next if ($self->check_filter(section => $component));
         
         my $instance_type = $raritan_type{$component};
         my $value_type = $map_type{$instance_type};
@@ -57,7 +57,9 @@ sub check {
             my $result = $self->{snmp}->map_instance(mapping => $mapping->{$options{type}}, results => $self->{results}, instance => $instance);
             my $result2 = $self->{snmp}->map_instance(mapping => $mapping->{$options{type} . '_label'}, results => $self->{results}, instance => $1 . '.' . $2);
             
-            next if ($self->check_exclude(section => $component, instance => $instance));
+            $instance = defined($result2->{Label}) && $result2->{Label} ne '' ? $result2->{Label} : $1 . '.' . $2;
+            
+            next if ($self->check_filter(section => $component, instance => $instance));
             
             if ($long_msg == 0) {
                 $self->{output}->output_add(long_msg => "Checking " . $component);
@@ -70,15 +72,15 @@ sub check {
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
-            $self->{output}->output_add(long_msg => sprintf("'%s' %s state is '%s' [instance: %s, value: %s, unit: %s]", 
-                                        $result2->{Label}, $component, $result->{State},
-                                        $instance, $value, $result->{Unit}));
+            $self->{output}->output_add(long_msg => sprintf("'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s]", 
+                                        $instance, $component, $result->{State},
+                                        $instance, $value, $result->{Unit}, $result2->{Label}));
             my $exit = $self->get_severity(section => $component, label => $value_type, 
                                            instance => $instance, value => $result->{State});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("'%s' %s state is '%s'", 
-                                                $result2->{Label}, $component, $result->{State}));
+                                                $instance, $component, $result->{State}));
             }
             
             if ($value->{value} =~ /[0-9]/) {
@@ -98,9 +100,9 @@ sub check {
                 if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                     $self->{output}->output_add(severity => $exit2,
                                                 short_msg => sprintf("'%s' %s value is %s %s", 
-                                                                      $result2->{Label}, $component, $value, $result->{Unit}));
+                                                                     $instance, $component, $value, $result->{Unit}));
                 }
-                $self->{output}->perfdata_add(label => $result2->{label} . "_" . $component, unit => $result->{Unit},
+                $self->{output}->perfdata_add(label => $instance . "_" . $component, unit => $result->{Unit},
                                               value => $value,
                                               warning => $warn,
                                               critical => $crit);
