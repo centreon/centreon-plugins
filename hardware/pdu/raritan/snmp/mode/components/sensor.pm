@@ -83,7 +83,8 @@ sub check {
                                                 $instance, $component, $result->{State}));
             }
             
-            if ($value =~ /[0-9]/ || ($value =~ /^0$/ && $result->{Unit} ne '')) {
+            if ($value =~ /[0-9]/) {
+                next if ($value =~ /^0$/ && $result->{Unit} eq '');
                 my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $value);
                 if ($checked == 0) {
                     $result->{EnabledThresholds} = oct("0b". unpack('b*', $result->{EnabledThresholds}));
