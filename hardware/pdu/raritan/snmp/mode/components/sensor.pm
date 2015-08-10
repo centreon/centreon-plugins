@@ -89,11 +89,11 @@ sub check {
                 if ($checked == 0) {
                     $result->{EnabledThresholds} = oct("0b". unpack('b*', $result->{EnabledThresholds}));
                     my $warn_th = '~:';
-                    $warn_th = $result->{LowerWarningThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 1)));
-                    $warn_th .= $result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 2)));
+                    $warn_th = ($result->{LowerWarningThreshold} * 10 ** -int($result->{Decimal})) . ':' if (($result->{EnabledThresholds} & (1 << 1)));
+                    $warn_th .= ($result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal})) if (($result->{EnabledThresholds} & (1 << 2)));
                     my $crit_th = '~:';
-                    $crit_th = $result->{LowerCriticalThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 0)));
-                    $crit_th .= $result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal}) if (($result->{EnabledThresholds} & (1 << 3)));
+                    $crit_th = ($result->{LowerCriticalThreshold} * 10 ** -int($result->{Decimal})) . ':' if (($result->{EnabledThresholds} & (1 << 0)));
+                    $crit_th .= ($result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal})) if (($result->{EnabledThresholds} & (1 << 3)));
                     $self->{perfdata}->threshold_validate(label => 'warning-' . $component . '-instance-' . $instance, value => $warn_th);
                     $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
                     $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);
