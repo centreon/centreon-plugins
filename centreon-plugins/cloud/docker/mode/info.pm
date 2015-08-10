@@ -57,6 +57,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
