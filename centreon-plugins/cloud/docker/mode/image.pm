@@ -121,6 +121,7 @@ sub run {
     $self->{option_results}->{port} = $self->{option_results}->{registry_port};
     $self->{option_results}->{proto} = $self->{option_results}->{registry_proto};
     $self->{option_results}->{hostname} = $self->{option_results}->{registry_hostname};
+    $self->{http}->set_options(%{$self->{option_results}});
 
     $jsoncontent2 = $self->{http}->request();
 
