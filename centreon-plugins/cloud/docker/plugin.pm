@@ -32,14 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'blockio'           => ':cloud:docker::mode::blockio',
-                        'containerstate'    => ':cloud:docker::mode::containerstate',
-                        'cpu'               => ':cloud:docker::mode::cpu',
-                        'image'             => ':cloud:docker::mode::image',
-                        'info'              => ':cloud:docker::mode::info',
-                        'list-containers'   => ':cloud:docker::mode::listcontainers',
-                        'memory'            => ':cloud:docker::mode::memory',
-                        'traffic'           => ':cloud:docker::mode::traffic',
+                        'blockio'           => 'cloud::docker::mode::blockio',
+                        'containerstate'    => 'cloud::docker::mode::containerstate',
+                        'cpu'               => 'cloud::docker::mode::cpu',
+                        'image'             => 'cloud::docker::mode::image',
+                        'info'              => 'cloud::docker::mode::info',
+                        'list-containers'   => 'cloud::docker::mode::listcontainers',
+                        'memory'            => 'cloud::docker::mode::memory',
+                        'traffic'           => 'cloud::docker::mode::traffic',
                         );
     return $self;
 }
