@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::traffic;
+package cloud::docker::mode::traffic;
 
 use base qw(centreon::plugins::mode);
 

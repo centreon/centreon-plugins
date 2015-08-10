@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::memory;
+package cloud::docker::mode::memory;
 
 use base qw(centreon::plugins::mode);
 

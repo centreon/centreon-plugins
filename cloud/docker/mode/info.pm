@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::mode::info;
+package cloud::docker::mode::info;
 
 use base qw(centreon::plugins::mode);
 

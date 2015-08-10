@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::docker::plugin;
+package cloud::docker::plugin;
 
 use strict;
 use warnings;
@@ -32,14 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'blockio'           => 'apps::docker::mode::blockio',
-                        'containerstate'    => 'apps::docker::mode::containerstate',
-                        'cpu'               => 'apps::docker::mode::cpu',
-                        'image'             => 'apps::docker::mode::image',
-                        'info'              => 'apps::docker::mode::info',
-                        'list-containers'   => 'apps::docker::mode::listcontainers',
-                        'memory'            => 'apps::docker::mode::memory',
-                        'traffic'           => 'apps::docker::mode::traffic',
+                        'blockio'           => ':cloud:docker::mode::blockio',
+                        'containerstate'    => ':cloud:docker::mode::containerstate',
+                        'cpu'               => ':cloud:docker::mode::cpu',
+                        'image'             => ':cloud:docker::mode::image',
+                        'info'              => ':cloud:docker::mode::info',
+                        'list-containers'   => ':cloud:docker::mode::listcontainers',
+                        'memory'            => ':cloud:docker::mode::memory',
+                        'traffic'           => ':cloud:docker::mode::traffic',
                         );
     return $self;
 }
