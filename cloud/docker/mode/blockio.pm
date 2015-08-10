@@ -172,8 +172,8 @@ sub run {
 
     my $delta_read_bytes = $read_bytes - $old_read_bytes;
     my $delta_write_bytes = $write_bytes - $old_write_bytes;
-    my $read_absolute_per_sec = $delta_read_bits / $time_delta;
-    my $write_absolute_per_sec = $delta_write_bits / $time_delta;
+    my $read_absolute_per_sec = $delta_read_bytes / $time_delta;
+    my $write_absolute_per_sec = $delta_write_bytes / $time_delta;
 
     my $exit1 = $self->{perfdata}->threshold_check(value => $read_absolute_per_sec, threshold => [ { label => 'critical-read', 'exit_litteral' => 'critical' }, { label => 'warning-read', exit_litteral => 'warning' } ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $write_absolute_per_sec, threshold => [ { label => 'critical-write', 'exit_litteral' => 'critical' }, { label => 'warning-write', exit_litteral => 'warning' } ]);
