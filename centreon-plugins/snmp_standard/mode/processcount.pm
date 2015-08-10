@@ -1,37 +1,22 @@
-################################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an executable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting executable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package snmp_standard::mode::processcount;
 
@@ -74,6 +59,9 @@ sub new {
                                   "process-status:s"        => { name => 'process_status', default => 'running|runnable' },
                                   "memory"                  => { name => 'memory', },
                                   "cpu"                     => { name => 'cpu', },
+                                  "top"                     => { name => 'top', },
+                                  "top-num:s"               => { name => 'top_num', default => 5 },
+                                  "top-size:s"              => { name => 'top_size', default => 52428800 }, # 50MB
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{filter4md5} = '';
@@ -129,20 +117,45 @@ sub check_options {
     }
 }
 
+my $oids = {
+    name => '.1.3.6.1.2.1.25.4.2.1.2', # hrSWRunName
+    path => '.1.3.6.1.2.1.25.4.2.1.4', # hrSWRunPath
+    args => '.1.3.6.1.2.1.25.4.2.1.5', # hrSWRunParameters (Warning: it's truncated. (128 characters))
+    status => '.1.3.6.1.2.1.25.4.2.1.7', # hrSWRunStatus
+};
+my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
+my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
+
+sub check_top {
+    my ($self, %options) = @_;
+    
+    my %data = ();
+    foreach (keys %{$self->{results}->{$oids->{name}}}) {
+        if (/^$oids->{name}\.(.*)/ && 
+            defined($self->{results}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1})) {
+            $data{$self->{results}->{$oids->{name}}->{$_}} = 0 if (!defined($data{$self->{results}->{$oids->{name}}->{$_}}));
+            $data{$self->{results}->{$oids->{name}}->{$_}} += $self->{results}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1} * 1024;
+        }
+    }
+    
+    my $i = 1;
+    foreach my $name (sort { $data{$b} <=> $data{$a} } keys %data) {
+        last if ($i > $self->{option_results}->{top_num});
+        last if ($data{$name} < $self->{option_results}->{top_size});
+        
+        my ($mem_value, $amem_unit) = $self->{perfdata}->change_bytes(value => $data{$name});
+        $self->{output}->output_add(long_msg => sprintf("Top %d '%s' memory usage: %s %s", $i, $name, $mem_value, $amem_unit));
+        $self->{output}->perfdata_add(label => 'top_' . $name, unit => 'B',
+                                      value => $data{$name},
+                                      min => 0);        
+        $i++;
+    }
+}
+
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-    
-    my $oids = {
-                name => '.1.3.6.1.2.1.25.4.2.1.2', # hrSWRunName
-                path => '.1.3.6.1.2.1.25.4.2.1.4', # hrSWRunPath
-                args => '.1.3.6.1.2.1.25.4.2.1.5', # hrSWRunParameters (Warning: it's truncated. (128 characters))
-                status => '.1.3.6.1.2.1.25.4.2.1.7', # hrSWRunStatus
-               };
-    
-    my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
-    my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 
     my $oid2check_filter;
     # To have a better order
@@ -168,9 +181,15 @@ sub run {
         }
     }
 
-    my $result = $self->{snmp}->get_table(oid => $oids->{$oid2check_filter});
+    my $oids_multiple_table = [ { oid => $oids->{$oid2check_filter} } ];
+    if (defined($self->{option_results}->{top})) {
+        push @{$oids_multiple_table}, { oid => $oids->{name} };
+        push @{$oids_multiple_table}, { oid => $oid_hrSWRunPerfMem };
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $oids_multiple_table);
+    my $result = $self->{results}->{$oids->{$oid2check_filter}};
     my $instances_keep = {};
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result})) {
         my $option_val = $self->{option_results}->{'process_' . $oid2check_filter};
         
         if ($oid2check_filter eq 'status') {
@@ -244,7 +263,7 @@ sub run {
         my ($total_mem_value, $total_mem_unit) = $self->{perfdata}->change_bytes(value => $total_memory);
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Total memory usage: %s", $total_mem_value . " " . $total_mem_unit));
-        $self->{output}->perfdata_add(label => 'mem_total',
+        $self->{output}->perfdata_add(label => 'mem_total', unit => 'B',
                                       value => $total_memory,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_mem_total'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_mem_total'),
@@ -254,7 +273,7 @@ sub run {
         my ($avg_mem_value, $avg_mem_unit) = $self->{perfdata}->change_bytes(value => $total_memory / $num_processes_match);
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Average memory usage: %.2f %s", $avg_mem_value, $avg_mem_unit));
-        $self->{output}->perfdata_add(label => 'mem_avg',
+        $self->{output}->perfdata_add(label => 'mem_avg', unit => 'B',
                                       value => sprintf("%.2f", $total_memory / $num_processes_match),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_avg_total'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_avg_total'),
@@ -306,6 +325,8 @@ sub run {
         
         $self->{statefile_cache}->write(data => $datas);
     }
+    
+    $self->check_top() if (defined($self->{option_results}->{top}));
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -394,6 +415,18 @@ Check memory.
 
 Check cpu usage. Should be used with fix processes.
 if processes pid changes too much, the plugin can compute values.
+
+=item B<--top>
+
+Enable top memory usage display.
+
+=item B<--top-num>
+
+Number of processes in the top (Default: 5).
+
+=item B<--top-size>
+
+Minimum memory usage to be in the top (Default: 52428800 -> 50 MB).
 
 =back
 

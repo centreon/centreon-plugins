@@ -1,43 +1,28 @@
-################################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an executable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting executable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package storage::hp::p2000::xmlapi::custom;
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use XML::XPath;
 use Digest::MD5 qw(md5_hex);
 
@@ -123,7 +108,7 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
     $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
-    
+        
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -144,8 +129,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
      
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
@@ -194,9 +177,8 @@ sub DESTROY {
     my $self = shift;
     
     if ($self->{logon} == 1) {
-        $self->{option_results}->{url_path} = $self->{url_path} . 'exit';
-        centreon::plugins::httplib::connect($self, 
-                                            headers => {dataType => 'api', sessionKey => $self->{session_id} });
+        $self->{http}->request(url_path => $self->{url_path} . 'exit',
+                               header => ['dataType: api', 'sessionKey: ' . $self->{session_id}]);
     }
 }
 
@@ -206,9 +188,8 @@ sub get_infos {
     
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    $self->{option_results}->{url_path} = $self->{url_path} . $cmd;
-    my $response = centreon::plugins::httplib::connect($self, 
-                                                       headers => {dataType => 'api', sessionKey => $self->{session_id} });
+    my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
+                                         header => ['dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
@@ -247,11 +228,12 @@ sub login {
     my ($self, %options) = @_;
     
     $self->build_options_for_httplib();
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http}->set_options(%{$self->{option_results}});
     
     # Login First
     my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
-    $self->{option_results}->{url_path} = $self->{url_path} . 'login/' . $md5_hash;
-    my $response = centreon::plugins::httplib::connect($self);
+    my $response = $self->{http}->request(url_path => $self->{url_path} . 'login/' . $md5_hash);
     $self->check_login(content => $response);
 }
 

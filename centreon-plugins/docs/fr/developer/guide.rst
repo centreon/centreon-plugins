@@ -1191,7 +1191,7 @@ Pour l'utiliser, ajouter la ligne suivante au début de votre **mode** :
 
 .. code-block:: perl
 
-  use centreon::plugins::httplib;
+  use centreon::plugins::http;
 
 Certaines options doivent être spécifiées dans **plugin.pm** :
 
@@ -1243,7 +1243,9 @@ Nous supposons que ces options sont définies :
 
 .. code-block:: perl
 
-  my $webcontent = centreon::plugins::httplib::connect($self);
+  $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{http}->set_options(%{$self->{option_results}});
+  my $webcontent = $self->{http}->request();
   print $webcontent;
 
 La sortie affichera le contenu de la page web '\http://google.com/'.

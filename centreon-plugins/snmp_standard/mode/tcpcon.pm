@@ -1,37 +1,22 @@
-################################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an executable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting executable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package snmp_standard::mode::tcpcon;
 
@@ -107,14 +92,15 @@ sub get_from_rfc4022 {
     my ($self, %options) = @_;
     
     my $oid_tcpConnectionState = '.1.3.6.1.2.1.6.19.1.7';
-    my $result = $self->{snmp}->get_table(oid => $oid_tcpConnectionState);
-    
     my $oid_tcpListenerProcess = '.1.3.6.1.2.1.6.20.1.4';
-    my $result2 = $self->{snmp}->get_table(oid => $oid_tcpListenerProcess);
-    return 0 if (scalar(keys %$result) + scalar(keys %$result2) == 0);
+    my $results = $self->{snmp}->get_multiple_table(oids => [ 
+                                                            { oid => $oid_tcpConnectionState },
+                                                            { oid => $oid_tcpListenerProcess },
+                                                            ]);
+    return 0 if (scalar(keys %{$results->{$oid_tcpConnectionState}}) + scalar(keys %{$results->{$oid_tcpListenerProcess}}) == 0);
     
     # Listener
-    foreach (keys %$result2) {
+    foreach (keys %{$results->{$oid_tcpListenerProcess}}) {
         /^$oid_tcpListenerProcess\.(\d+)/;
         my $ipv = $map_addr_type{$1};
         next if ($ipv !~ /^ipv4|ipv6$/); # manage only 'ipv4' (1) and 'ipv6' (2) for now
@@ -133,21 +119,21 @@ sub get_from_rfc4022 {
         $self->{states}->{listen}++;
     }
     
-    foreach (keys %$result) {
+    foreach (keys %{$results->{$oid_tcpConnectionState}}) {
         /^$oid_tcpConnectionState\.(\d+)/;
         my $ipv = $map_addr_type{$1};
         next if ($ipv !~ /^ipv4|ipv6$/); # manage only 'ipv4' (1) and 'ipv6' (2) for now
         
         my ($src_addr, $src_port, $dst_addr, $dst_port);
         if ($ipv eq 'ipv6') {
-            /^$oid_tcpConnectionState\.\d+\.\d+\.((?:\d+\.){16})(\d+)\.\d+\.((?:\d+\.){16})(\d+)/;
+            /^$oid_tcpConnectionState\.\d+\.\d+\.((?:\d+\.){16})(\d+)\.\d+\.\d+\.((?:\d+\.){16})(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($self->get_ipv6(value => $1), $2, $self->get_ipv6(value => $3), $4);
         } else {
-            /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
+            /^$oid_tcpConnectionState\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)\.\d+\.\d+\.(\d+\.\d+\.\d+\.\d+)\.(\d+)/;
             ($src_addr, $src_port, $dst_addr, $dst_port) = ($1, $2, $3, $4);
         }
-        $self->{states}->{$map_states{$result->{$_}}}++;
-        push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$result->{$_}});
+        $self->{states}->{$map_states{$results->{$oid_tcpConnectionState}->{$_}}}++;
+        push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$results->{$oid_tcpConnectionState}->{$_}});
     }
     
     return 1;

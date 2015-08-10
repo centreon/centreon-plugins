@@ -1,37 +1,22 @@
-###############################################################################
-# Copyright 2005-2015 CENTREON
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation ; either version 2 of the License.
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, see <http://www.gnu.org/licenses>.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Linking this program statically or dynamically with other modules is making a
-# combined work based on this program. Thus, the terms and conditions of the GNU
-# General Public License cover the whole combination.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# As a special exception, the copyright holders of this program give CENTREON
-# permission to link this program with independent modules to produce an timeelapsedutable,
-# regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
-# CENTREON also meet, for each linked independent module, the terms  and conditions
-# of the license of that module. An independent module is a module which is not
-# derived from this program. If you modify this program, you may extend this
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# For more information : contact@centreon.com
-# Author : Mathieu Cinquin <mcinquin@centreon.com>
-#
-####################################################################################
 
 package apps::jenkins::mode::jobstate;
 
@@ -39,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON;
 
@@ -52,8 +37,8 @@ sub new {
     $options{options}->add_options(arguments =>
         {
             "hostname:s"           => { name => 'hostname' },
-            "port:s"               => { name => 'port', default => '80'},
-            "proto:s"              => { name => 'proto', default => 'http' },
+            "port:s"               => { name => 'port' },
+            "proto:s"              => { name => 'proto' },
             "urlpath:s"            => { name => 'url_path' },
             "jobname:s"            => { name => 'jobname' },
             "credentials"          => { name => 'credentials' },
@@ -62,9 +47,10 @@ sub new {
             "warning:s"            => { name => 'warning' },
             "critical:s"           => { name => 'critical' },
             "checkstyle"            => { name => 'checkstyle' },
-            "timeout:s"            => { name => 'timeout', default => '3' },
+            "timeout:s"            => { name => 'timeout' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -80,32 +66,23 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{jobname})) {
         $self->{output}->add_option_msg(short_msg => "Please set the jobname option");
         $self->{output}->option_exit();
     }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
+    
+    $self->{option_results}->{url_path} = $self->{option_results}->{url_path} . "/job/" . $self->{option_results}->{jobname} . "/api/json";
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."/job/".$self->{option_results}->{jobname}."/api/json";
-
-    my $jsoncontent = centreon::plugins::httplib::connect($self);
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
 
     my $webcontent;
-
     eval {
         $webcontent = $json->decode($jsoncontent);
     };
@@ -202,7 +179,7 @@ Add checkstyle's violation output and perfdata
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 3)
+Threshold for HTTP timeout (Default: 5)
 
 =back
 

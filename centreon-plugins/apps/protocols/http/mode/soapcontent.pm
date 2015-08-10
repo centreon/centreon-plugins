@@ -1,39 +1,22 @@
-###############################################################################
-# Copyright 2005-2015 CENTREON
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
 #
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free Software
-# Foundation ; either version 2 of the License.
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
 #
-# You should have received a copy of the GNU General Public License along with
-# this program; if not, see <http://www.gnu.org/licenses>.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Linking this program statically or dynamically with other modules is making a
-# combined work based on this program. Thus, the terms and conditions of the GNU
-# General Public License cover the whole combination.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# As a special exception, the copyright holders of this program give CENTREON
-# permission to link this program with independent modules to produce an timeelapsedutable,
-# regardless of the license terms of these independent modules, and to copy and
-# distribute the resulting timeelapsedutable under terms of CENTREON choice, provided that
-# CENTREON also meet, for each linked independent module, the terms  and conditions
-# of the license of that module. An independent module is a module which is not
-# derived from this program. If you modify this program, you may extend this
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
-# For more information : contact@centreon.com
-# Authors : Simon BOMM <sbomm@merethis.com>
-#           Mathieu Cinquin <mcinquin@merethis.com>
-#
-# Based on De Bodt Lieven plugin
-####################################################################################
 
 package apps::protocols::http::mode::soapcontent;
 
@@ -42,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use XML::XPath;
 
 sub new {
@@ -57,9 +40,11 @@ sub new {
             "data:s"                => { name => 'data' },
             "lookup:s@"             => { name => 'lookup' },
             "hostname:s"            => { name => 'hostname' },
+            "http-peer-addr:s"      => { name => 'http_peer_addr' },
+            "vhost:s"               => { name => 'vhost' },
             "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto', default => "http" },
-            "urlpath:s"             => { name => 'url_path', default => "/" },
+            "proto:s"               => { name => 'proto' },
+            "urlpath:s"             => { name => 'url_path' },
             "credentials"           => { name => 'credentials' },
             "ntlm"                  => { name => 'ntlm' },
             "username:s"            => { name => 'username' },
@@ -73,6 +58,9 @@ sub new {
             "cacert-file:s"         => { name => 'cacert_file' },
             "cert-pwd:s"            => { name => 'cert_pwd' },
             "cert-pkcs12"           => { name => 'cert_pkcs12' },
+            "unknown-status:s"      => { name => 'unknown_status' },
+            "warning-status:s"      => { name => 'warning_status' },
+            "critical-status:s"     => { name => 'critical_status' },
 
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },
@@ -96,6 +84,7 @@ sub new {
     $self->{values_string_ok} = [];
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -130,31 +119,9 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify data.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify hostname.");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
-    if ((!defined($self->{option_results}->{credentials})) && (defined($self->{option_results}->{ntlm}))) {
-        $self->{output}->add_option_msg(short_msg => "--ntlm option must be used with --credentials option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{pkcs12})) && (!defined($self->{option_results}->{cert_file}) && !defined($self->{option_results}->{cert_pwd}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --cert-file= and --cert-pwd= options when --pkcs12 is used");
-        $self->{output}->option_exit();
-    }
-    $self->{headers} = {};
-    if (defined($self->{option_results}->{header})) {
-        foreach (@{$self->{option_results}->{header}}) {
-            if (/^(.*?):(.*)/) {
-                $self->{headers}->{$1} = $2;
-            }
-        }
-    }
-    $self->{headers}->{SOAPAction} = $self->{option_results}->{service_soap};
+    
+    $self->{http}->set_options(%{$self->{option_results}});
+    $self->{http}->add_header(key => 'SOAPAction', value => $self->{option_results}->{service_soap});
 }
 
 sub load_request {
@@ -274,13 +241,10 @@ sub lookup {
 sub run {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
-    }
     $self->load_request();
 
     my $timing0 = [gettimeofday];
-    $self->{soap_response} = centreon::plugins::httplib::connect($self, headers => $self->{headers}, method => 'POST', query_form_post => $self->{soap_request});
+    $self->{soap_response} = $self->{http}->request(method => 'POST', query_form_post => $self->{soap_request});
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
     $self->{output}->output_add(long_msg => $self->{soap_response});
@@ -407,6 +371,10 @@ HTTP OPTIONS:
 
 IP Addr/FQDN of the Webserver host
 
+=item B<--http-peer-addr>
+
+Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
+
 =item B<--port>
 
 Port used by Webserver
@@ -470,6 +438,18 @@ Specify type of certificate (PKCS1
 =item B<--header>
 
 Set HTTP headers (Multiple option)
+
+=item B<--unknown-status>
+
+Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+
+=item B<--warning-status>
+
+Threshold warning for http response code
+
+=item B<--critical-status>
+
+Threshold critical for http response code
 
 =back
 
