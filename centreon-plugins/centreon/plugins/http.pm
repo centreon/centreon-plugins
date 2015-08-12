@@ -147,6 +147,30 @@ sub get_port_request {
     return $port;
 }
 
+sub set_proxy {
+    my ($self, %options) = @_;
+    
+    if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
+                                               error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
+        my $pac;
+        eval {
+            $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'issue to load proxypac: ' . $@);
+            $self->{output}->option_exit();
+        }
+        my $res = $pac->find_proxy($options{url});
+        if (defined($res->direct) && $res->direct != 1) {
+            $self->{ua}->proxy(['http', 'https'], $res->proxy);
+        }
+    }    
+    if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
+        $self->{ua}->proxy(['http', 'https'], $options{request_options}->{proxyurl});
+    }
+}
+
 sub request {
     my ($self, %options) = @_;
     
@@ -215,9 +239,7 @@ sub request {
         $req->authorization_basic($request_options->{username}, $request_options->{password});
     }
 
-    if (defined($request_options->{proxyurl})) {
-        $self->{ua}->proxy(['http', 'https'], $request_options->{proxyurl});
-    }
+    $self->set_proxy(request => $request_options, url => $url);
 
     if (defined($request_options->{cert_pkcs12}) && $request_options->{cert_file} ne '' && $request_options->{cert_pwd} ne '') {
         eval "use Net::SSL"; die $@ if $@;

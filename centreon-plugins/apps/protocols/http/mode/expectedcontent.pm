@@ -46,6 +46,7 @@ sub new {
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
+            "proxypac:s"            => { name => 'proxypac' },
             "expected-string:s"     => { name => 'expected_string' },
             "timeout:s"             => { name => 'timeout' },
             "no-follow"             => { name => 'no_follow', },
@@ -173,7 +174,11 @@ Port used by Webserver
 
 =item B<--proxyurl>
 
-Proxy URL if any
+Proxy URL
+
+=item B<--proxypac>
+
+Proxy pac file (can be an url or local file)
 
 =item B<--method>
 
