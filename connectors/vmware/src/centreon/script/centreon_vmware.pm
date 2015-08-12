@@ -51,6 +51,7 @@ my @load_modules = (
     'centreon::vmware::cmdcountvmhost',
     'centreon::vmware::cmdcpuhost',
     'centreon::vmware::cmdcpuvm',
+    'centreon::vmware::cmddatastorecountvm',
     'centreon::vmware::cmddatastoreio',
     'centreon::vmware::cmddatastoreiops',
     'centreon::vmware::cmddatastorehost',

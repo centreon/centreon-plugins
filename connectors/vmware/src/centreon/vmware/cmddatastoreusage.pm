@@ -55,7 +55,7 @@ sub checkArgs {
         $self->{output}->add_option_msg(short_msg => "Wrong units option '" . (defined($options{arguments}->{units}) ? $options{arguments}->{units} : 'null') . "'.");
         $self->{output}->option_exit();
     }
-    foreach my $label (('warning', 'critical')) {
+    foreach my $label (('warning', 'critical', 'warning_provisioned', 'critical_provisioned')) {
         if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
             $options{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                     short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
@@ -73,7 +73,7 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    foreach my $label (('warning', 'critical')) {
+    foreach my $label (('warning', 'critical', 'warning_provisioned', 'critical_provisioned')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
 }
@@ -126,6 +126,7 @@ sub run {
         }
 
         # in Bytes
+        my $exits = [];
         my $name_storage = $entity_view->summary->name;        
         my $total_size = $entity_view->summary->capacity;
         my $total_free = $entity_view->summary->freeSpace;
@@ -133,29 +134,42 @@ sub run {
         my $prct_used = $total_used * 100 / $total_size;
         my $prct_free = 100 - $prct_used;
         
-        my ($exit, $threshold_value);
+        my ($total_uncommited, $prct_uncommited);
+        my $msg_uncommited = '';
+        if (defined($entity_view->summary->uncommitted)) {
+            $total_uncommited = $total_used + $entity_view->summary->uncommitted;
+            $prct_uncommited = $total_uncommited * 100 / $total_size;
+            my ($total_uncommited_value, $total_uncommited_unit) = $self->{manager}->{perfdata}->change_bytes(value => $total_uncommited);
+            $msg_uncommited = sprintf(" Provisioned: %s (%.2f%%)", $total_uncommited_value . " " . $total_uncommited_unit, $prct_uncommited);
+            push @{$exits}, $self->{manager}->{perfdata}->threshold_check(value => $prct_uncommited, threshold => [ { label => 'critical_provisioned', exit_litteral => 'critical' }, { label => 'warning_provisioned', exit_litteral => 'warning' } ]);
+        }
+        
+        my ($threshold_value);
         $threshold_value = $total_used;
         $threshold_value = $total_free if (defined($self->{free}));
         if ($self->{units} eq '%') {
             $threshold_value = $prct_used;
             $threshold_value = $prct_free if (defined($self->{free}));
         } 
-        $exit = $self->{manager}->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
+        push @{$exits}, $self->{manager}->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{manager}->{output}->get_most_critical(status => $exits);
+        
         my ($total_size_value, $total_size_unit) = $self->{manager}->{perfdata}->change_bytes(value => $total_size);
         my ($total_used_value, $total_used_unit) = $self->{manager}->{perfdata}->change_bytes(value => $total_used);
         my ($total_free_value, $total_free_unit) = $self->{manager}->{perfdata}->change_bytes(value => $total_free);
 
-        $self->{manager}->{output}->output_add(long_msg => sprintf("Datastore '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
+        $self->{manager}->{output}->output_add(long_msg => sprintf("Datastore '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)%s", $name_storage,
                                             $total_size_value . " " . $total_size_unit,
                                             $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
+                                            $total_free_value . " " . $total_free_unit, $prct_free,
+                                            $msg_uncommited));
         if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || $multiple == 0) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Datastore '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
+                                                   short_msg => sprintf("Datastore '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)%s", $name_storage,
                                             $total_size_value . " " . $total_size_unit,
                                             $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
+                                            $total_free_value . " " . $total_free_unit, $prct_free,
+                                            $msg_uncommited));
         }    
 
         my $label = 'used';
@@ -176,6 +190,13 @@ sub run {
                                                  warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                                  critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
                                                  min => 0, max => $total_size);
+        if (defined($total_uncommited)) {
+            $self->{manager}->{output}->perfdata_add(label => 'provisioned' . $extra_label, unit => 'B',
+                                                    value => $total_uncommited,
+                                                    warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_provisioned', total => $total_size, cast_int => 1),
+                                                    critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_provisioned', total => $total_size, cast_int => 1),
+                                                    min => 0, max => $total_size);
+        }
     }
 }
 
