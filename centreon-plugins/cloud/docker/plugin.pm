@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.1';
+    $self->{version} = '0.2';
     %{$self->{modes}} = (
                         'blockio'           => 'cloud::docker::mode::blockio',
                         'containerstate'    => 'cloud::docker::mode::containerstate',
@@ -50,7 +50,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Docker and containers through its API.
+Check Docker and containers through its HTTPS Remote API (https://docs.docker.com/reference/api/docker_remote_api/).
 Requirements: Docker 1.7.1+ and Docker API 1.19+
 
 =cut
