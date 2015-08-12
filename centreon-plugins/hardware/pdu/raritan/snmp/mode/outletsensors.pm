@@ -62,12 +62,14 @@ sub check_options {
     
     $self->{filter} = [];
     foreach my $val (@{$self->{option_results}->{filter}}) {
+        next if (!defined($val) || $val eq '');
         my @values = split (/,/, $val);
         push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
     
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        next if (!defined($val) || $val eq '');
         my @values = split (/,/, $val);
         if (scalar(@values) < 3) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
@@ -91,6 +93,7 @@ sub check_options {
     $self->{numeric_threshold} = {};
     foreach my $option (('warning', 'critical')) {
         foreach my $val (@{$self->{option_results}->{$option}}) {
+            next if (!defined($val) || $val eq '');
             if ($val !~ /^(.*?),(.*?),(.*)$/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();

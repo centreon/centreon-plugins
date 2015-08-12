@@ -37,6 +37,7 @@ sub new {
                          'countvm-host'         => 'apps::vmware::connector::mode::countvmhost', 
                          'cpu-host'             => 'apps::vmware::connector::mode::cpuhost', 
                          'cpu-vm'               => 'apps::vmware::connector::mode::cpuvm',
+                         'datastore-countvm'    => 'apps::vmware::connector::mode::datastorecountvm',
                          'datastore-host'       => 'apps::vmware::connector::mode::datastorehost',
                          'datastore-io'         => 'apps::vmware::connector::mode::datastoreio',
                          'datastore-iops'       => 'apps::vmware::connector::mode::datastoreiops',
