@@ -46,6 +46,7 @@ sub new {
          "username:s"    => { name => 'username' },
          "password:s"    => { name => 'password' },
          "proxyurl:s"    => { name => 'proxyurl' },
+         "proxypac:s"    => { name => 'proxypac' },
          "timeout:s"     => { name => 'timeout' },
          "no-follow"     => { name => 'no_follow', },
          "ssl:s"		 => { name => 'ssl' },
@@ -187,7 +188,11 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 
 =item B<--proxyurl>
 
-Proxy URL if any
+Proxy URL
+
+=item B<--proxypac>
+
+Proxy pac file (can be an url or local file)
 
 =item B<--timeout>
 
