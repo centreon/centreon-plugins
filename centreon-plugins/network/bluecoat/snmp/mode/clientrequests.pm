@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::bluecoat::mode::clientrequests;
+package network::bluecoat::snmp::mode::clientrequests;
 
 use base qw(centreon::plugins::mode);
 
