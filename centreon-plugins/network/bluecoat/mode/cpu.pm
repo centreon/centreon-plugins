@@ -78,13 +78,19 @@ sub run {
     my $result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.3417.2.11.2.4.1', nothing_quit => 1);
     $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
     $new_datas->{last_timestamp} = time();
-    for (my $i = 1; defined($result->{'.1.3.6.1.4.1.3417.2.11.2.4.1.3.' . $i}); $i++) {
-        $new_datas->{'cpu_' . $i . '_busy'} = $result->{'.1.3.6.1.4.1.3417.2.11.2.4.1.3.' . $i};
-        $new_datas->{'cpu_' . $i . '_idle'} = $result->{'.1.3.6.1.4.1.3417.2.11.2.4.1.4.' . $i};
+    
+    my $oid_sgProxyCpuCoreBusyTime = '.1.3.6.1.4.1.3417.2.11.2.4.1.3';
+    my $oid_sgProxyCpuCoreIdleTime = '.1.3.6.1.4.1.3417.2.11.2.4.1.4';
+    my $i = 0;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result})) {
+        next if ($oid !~ /^$oid_sgProxyCpuCoreBusyTime\.(\d+)/);
+        my $instance = $1;
         
-        if (!defined($old_timestamp)) {
-            next;
-        }
+        $i++;
+        $new_datas->{'cpu_' . $i . '_busy'} = $result->{$oid};
+        $new_datas->{'cpu_' . $i . '_idle'} = $result->{$oid_sgProxyCpuCoreIdleTime . '.' . $instance};
+        
+        next if (!defined($old_timestamp));
         
         my $old_cpu_busy = $self->{statefile_value}->get(name => 'cpu_' . $i . '_busy');
         my $old_cpu_idle = $self->{statefile_value}->get(name => 'cpu_' . $i . '_idle');

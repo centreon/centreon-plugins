@@ -24,39 +24,44 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
-my %device_status_msg = (2 => "unaivalable", 3 => "non operationnal");
-my %device_units = (
-                    1 => '', # other
-                    2 => '', # truthvalue
-                    3 => '', # specialEnum
-                    4 => 'volts',
-                    5 => 'celsius',
-                    6 => 'rpm'
-                    );
- my %device_code = (
-                    1 => ["The device sensor '%s' is ok", 'OK'], 2 => ["The device sensor '%s' is unknown", 'UNKNOWN'], 3 => ["The device sensor '%s' is not installed", 'UNKNOWN'],
-                    4 => ["The device sensor '%s' has a low voltage", 'WARNING'], 5 => ["The device sensor '%s' has a low voltage", 'CRITICAL'],
-                    6 => ["The device sensor '%s' has no power", 'CRITICAL'],
-                    7 => ["The device sensor '%s' has a high voltage", 'WARNING'],
-                    8 => ["The device sensor '%s' has a high voltage", 'CRITICAL'],
-                    9 => ["The device sensor '%s' has a very (!!!) high voltage", 'CRITICAL'],
-                    10 => ["The device sensor '%s' has a high temperature", 'WARNING'],
-                    11 => ["The device sensor '%s' has a high temperature", 'CRITICAL'],
-                    12 => ["The device sensor '%s' has a very high (!!!) temperature", 'CRITICAL'],
-                    13 => ["The fan '%s' is slow", 'WARNING'],
-                    14 => ["The fan '%s' is slow", 'CRITICAL'],
-                    15 => ["The fan '%s' is stopped", 'CRITICAL'],
-                    );
-my %disk_status = (
-                    1 => ["Disk '%s' is present", 'OK'], 2 => ["Disk '%s' is initializing", 'OK'], 3 => ["Disk '%s' is inserted", 'OK'],
-                    4 => ["Disk '%s' is offline", 'WARNING'], 5 => ["Disk '%s' is removed", 'WARNING'],
-                    6 => ["Disk '%s' is not present", 'WARNING'],
-                    7 => ["Disk '%s' is empty", 'WARNING'],
-                    8 => ["Disk '%s' has io errors", 'CRITICAL'],
-                    9 => ["Disk '%s' is unusable", 'CRITICAL'],
-                    10 => ["Disk status '%s' is unknown", 'UNKNOWN'],
-                    );
+my $thresholds = {
+    sensor_opstatus => [
+        ['ok', 'OK'],
+        ['unavailable', 'UNKNOWN'],
+        ['nonoperational', 'UNKNOWN'],
+    ],
+    sensor => [    
+        ['ok', 'OK'],
+        ['unknown', 'UNKNOWN'],
+        ['nonInstalled', 'OK'],
+        ['voltageLowWarning', 'WARNING'],
+        ['voltageLowCritical', 'CRITICAL'],
+        ['noPower', 'CRITICAL'],
+        ['voltageHighWarning', 'WARNING'],
+        ['voltageHighCritical', 'CRITICAL'],
+        ['voltageHighSevere', 'CRITICAL'],
+        ['temperatureHighWarning', 'WARNING'],
+        ['temperatureHighCritical', 'CRITICAL'],
+        ['temperatureHighSevere', 'CRITICAL'],
+        ['fanSlowWarning', 'WARNING'],
+        ['fanSlowCritical', 'CRITICAL'],
+        ['fanStopped', 'CRITICAL'],
+    ],    
+    disk => [
+        ['present', 'OK'],
+        ['initializing', 'OK'],
+        ['inserted', 'OK'],
+        ['offline', 'WARNING'],
+        ['removed', 'WARNING'],
+        ['notpresent', 'OK'],
+        ['empty', 'WARNING'],
+        ['ioerror', 'CRITICAL'],
+        ['unusable', 'CRITICAL'],
+        ['unknown', 'UNKNOWN'],
+    ],
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -66,71 +71,239 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "skip"        => { name => 'skip' },
+                                  "filter:s@"               => { name => 'filter' },
+                                  "absent-problem:s@"       => { name => 'absent_problem' },
+                                  "component:s"             => { name => 'component', default => '.*' },
+                                  "no-component:s"          => { name => 'no_component' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
 
+    $self->{components} = {};
+    $self->{no_components} = undef;
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (defined($self->{option_results}->{no_component})) {
+        if ($self->{option_results}->{no_component} ne '') {
+            $self->{no_components} = $self->{option_results}->{no_component};
+        } else {
+            $self->{no_components} = 'critical';
+        }
+    }
+    
+    $self->{filter} = [];
+    foreach my $val (@{$self->{option_results}->{filter}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
+    }
+    
+    $self->{absent_problem} = [];
+    foreach my $val (@{$self->{option_results}->{absent_problem}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{absent_problem}}, { filter => $values[0], instance => $values[1] }; 
+    }
+    
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        if (scalar(@values) < 3) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $instance, $status, $filter);
+        if (scalar(@values) == 3) {
+            ($section, $status, $filter) = @_;
+            $instance = '.*';
+        } else {
+             ($section, $instance, $status, $filter) = @_;
+        }
+        if ($section !~ /^sensor$/) {
+            $self->{output}->add_option_msg(short_msg => "Wronghreshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
+    }
+    
+    $self->{numeric_threshold} = {};
+    foreach my $option (('warning', 'critical')) {
+        foreach my $val (@{$self->{option_results}->{$option}}) {
+            next if (!defined($val) || $val eq '');
+            if ($val !~ /^(.*?),(.*?),(.*)$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my ($section, $instance, $value) = ($1, $2, $3);
+            if ($section !~ /^sensor$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
+                $self->{output}->option_exit();
+            }
+            my $position = 0;
+            if (defined($self->{numeric_threshold}->{$section})) {
+                $position = scalar(@{$self->{numeric_threshold}->{$section}});
+            }
+            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
+                $self->{output}->option_exit();
+            }
+            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, instance => $instance };
+        }
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-    
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "All disks and sensors are ok.");
-    
-    my $oid_DeviceSensorValueEntry = '.1.3.6.1.4.1.3417.2.1.1.1.1.1';
-    my $result = $self->{snmp}->get_table(oid => $oid_DeviceSensorValueEntry, nothing_quit => 1);
-    
-    for (my $i = 0; defined($result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.9.' . $i}); $i++) {
-        my $sensor_name = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.9.' . $i};
-        my $sensor_status = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.7.' . $i};
-        my $sensor_units = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.3.' . $i};
-        my $sensor_code = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.4.' . $i};
-        my $sensor_value = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.5.' . $i};
-        my $sensor_scale = $result->{'.1.3.6.1.4.1.3417.2.1.1.1.1.1.4.' . $i};
-        
-        $self->{output}->output_add(long_msg => "Device sensor '" .  $sensor_name . "' status = '" . $sensor_status  . "', code = '" . $sensor_code . "'");
-        
-        # Check 'nonoperationnal' and 'unavailable'
-        if ($sensor_status == 2 || $sensor_status == 3) {
-            if (!defined($self->{option_results}->{skip})) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => "Device sensor '" . $sensor_name . "' is " . $sensor_status);
-            }
-            next;
+
+    my $snmp_request = [];
+    my @components = ('sensor', 'disk');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::bluecoat::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
         }
-        
-        if ($sensor_code != 1) {
-            $self->{output}->output_add(severity => ${$device_code{$sensor_code}}[1],
-                                        short_msg => sprintf(${$device_code{$sensor_code}}[0], $sensor_name));
-        }
-        
-        $self->{output}->perfdata_add(label => $sensor_name, unit => $device_units{sensor_units},
-                                      value => ($sensor_value * (10 ** $sensor_scale)));
     }
     
-    $result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.3417.2.2.1.1.1.1');
-    for (my $i = 0; defined($result->{'.1.3.6.1.4.1.3417.2.2.1.1.1.1.8.' . $i}); $i++) {
-        my $disk_serial = $result->{'.1.3.6.1.4.1.3417.2.2.1.1.1.1.8.' . $i};
-        my $disk_status = $result->{'.1.3.6.1.4.1.3417.2.2.1.1.1.1.3.' . $i};
-        
-        if ($disk_status > 3) {
-            $self->{output}->output_add(severity => ${$disk_status{$disk_status}}[1],
-                                        short_msg => sprintf(${$disk_status{$disk_status}}[0], $disk_serial));
+    if (scalar(@{$snmp_request}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
+    
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "network::bluecoat::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
         }
-        $self->{output}->output_add(long_msg => sprintf(${$disk_status{$disk_status}}[0], $disk_serial));
     }
     
+    my $total_components = 0;
+    my $display_by_component = '';
+    my $display_by_component_append = '';
+    foreach my $comp (sort(keys %{$self->{components}})) {
+        # Skipping short msg when no components
+        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
+        $display_by_component_append = ', ';
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => sprintf("All %s components are ok [%s].", 
+                                                     $total_components,
+                                                     $display_by_component)
+                                );
+
+    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
+        $self->{output}->output_add(severity => $self->{no_components},
+                                    short_msg => 'No components are checked.');
+    }
+
     $self->{output}->display();
     $self->{output}->exit();
 }
+
+sub absent_problem {
+    my ($self, %options) = @_;
+    
+    foreach (@{$self->{absent_problem}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($_->{instance}) || $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("Component '%s' instance '%s' is not present", 
+                                                                 $options{section}, $options{instance}));
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
+                $self->{components}->{$options{section}}->{skip}++;
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+sub check_filter {
+    my ($self, %options) = @_;
+
+    foreach (@{$self->{filter}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($options{instance}) && !defined($_->{instance})) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                return 1;
+            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+sub get_severity_numeric {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    my $checked = 0;
+    
+    if (defined($self->{numeric_threshold}->{$options{section}})) {
+        my $exits = [];
+        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
+            if ($options{instance} =~ /$_->{instance}/) {
+                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
+                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
+                $checked = 1;
+            }
+        }
+        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
+    }
+    
+    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    my $label = defined($options{label}) ? $options{label} : $options{section};
+    foreach (@{$thresholds->{$label}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
+}
+
 
 1;
 
@@ -138,14 +311,45 @@ __END__
 
 =head1 MODE
 
-Check bluecoat hardware sensors and disks.
+Check Hardware (Sensors, Disks).
 
 =over 8
 
-=item B<--skip>
+=item B<--component>
 
-Skip 'nonoperationnal' and 'unavailable' sensors.
+Which component to check (Default: '.*').
+Can be: 'sensor', 'disk'.
 
+=item B<--filter>
+
+Exclude some parts (comma seperated list) (Example: --filter=disk --filter=sensor)
+Can also exclude specific instance: --filter=rmsVoltage,I1
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=disk,1
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='sensor,CRITICAL,^(?!(ok)$)'
+
+=item B<--warning>
+
+Set warning threshold for temperatures (syntax: type,instance,threshold)
+Example: --warning='sensor,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for temperatures (syntax: type,instance,threshold)
+Example: --critical='sensor,.*,40'
 =back
 
 =cut

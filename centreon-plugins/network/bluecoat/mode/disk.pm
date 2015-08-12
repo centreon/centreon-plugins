@@ -61,13 +61,16 @@ sub run {
     
     my $disk_num = 1;
     my $result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.3417.2.4.1.1.1');
-    for (my $i = 1; defined($result->{'.1.3.6.1.4.1.3417.2.4.1.1.1.3.' . $i}); $i++) {
-        if ($result->{'.1.3.6.1.4.1.3417.2.4.1.1.1.3.' . $i} !~ /^DISK$/i) {
-            next;
-        }
+    my $oid_deviceUsageName = '.1.3.6.1.4.1.3417.2.4.1.1.1.3';
+    my $oid_deviceUsagePercent = '.1.3.6.1.4.1.3417.2.4.1.1.1.4';
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result})) {
+        next if ($oid !~ /^$oid_deviceUsageName\.(\d+)/);
+        my $instance = $1;
+        next if ($result->{$oid} !~ /^DISK/i);
         
-        my $disk_usage = $result->{'.1.3.6.1.4.1.3417.2.4.1.1.1.4.' . $i};
-        my $exit = $self->{perfdata}->threshold_check(value => $disk_usage, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $disk_usage = $result->{$oid_deviceUsagePercent . '.' . $instance};
+        my $exit = $self->{perfdata}->threshold_check(value => $disk_usage, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Disk $disk_num usage is %.2f%%", $disk_usage));
         $self->{output}->perfdata_add(label => 'disk_' . $disk_num, unit => '%',
