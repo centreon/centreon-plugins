@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::bluecoat::mode::components::disk;
+package network::bluecoat::snmp::mode::components::disk;
 
 use strict;
 use warnings;

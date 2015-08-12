@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::bluecoat::mode::hardware;
+package network::bluecoat::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
@@ -174,7 +174,7 @@ sub run {
     my @components = ('sensor', 'disk');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "network::bluecoat::mode::components::$_";
+            my $mod_name = "network::bluecoat::snmp::mode::components::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
@@ -190,7 +190,7 @@ sub run {
     
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
-            my $mod_name = "network::bluecoat::mode::components::$_";
+            my $mod_name = "network::bluecoat::snmp::mode::components::$_";
             my $func = $mod_name->can('check');
             $func->($self); 
         }

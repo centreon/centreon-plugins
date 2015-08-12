@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::bluecoat::mode::components::sensor;
+package network::bluecoat::snmp::mode::components::sensor;
 
 use strict;
 use warnings;

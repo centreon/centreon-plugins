@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::bluecoat::mode::cpu;
+package network::bluecoat::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
