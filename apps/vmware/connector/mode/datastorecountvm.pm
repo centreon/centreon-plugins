@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::vmware::connector::mode::datastoreusage;
+package apps::vmware::connector::mode::datastorecountvm;
 
 use base qw(centreon::plugins::mode);
 
@@ -32,17 +32,17 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "datastore-name:s"        => { name => 'datastore_name' },
                                   "filter"                  => { name => 'filter' },
                                   "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "warning-provisioned:s"   => { name => 'warning_provisioned', },
-                                  "critical-provisioned:s"  => { name => 'critical_provisioned', },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
+                                  "warning-on:s"            => { name => 'warning_on' },
+                                  "critical-on:s"           => { name => 'critical_on' },
+                                  "warning-off:s"           => { name => 'warning_off' },
+                                  "critical-off:s"          => { name => 'critical_off' },
+                                  "warning-suspended:s"     => { name => 'warning_suspended' },
+                                  "critical-suspended:s"    => { name => 'critical_suspended' },
                                 });
     return $self;
 }
@@ -50,8 +50,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    foreach my $label (('warning', 'critical', 'warning_provisioned', 'critical_provisioned')) {
+    
+    foreach my $label (('warning_on', 'critical_on', 'warning_off', 'critical_off', 'warning_suspended', 'critical_suspended')) {
         if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
             my ($label_opt) = $label;
             $label_opt =~ tr/_/-/;
@@ -59,12 +59,9 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
+
     if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{units}) || $self->{option_results}->{units} !~ /^(%|B)$/) {
-        $self->{output}->add_option_msg(short_msg => "Wrong units option '" . $self->{option_results}->{units} . "'.");
         $self->{output}->option_exit();
     }
 }
@@ -74,7 +71,7 @@ sub run {
     $self->{connector} = $options{custom};
 
     $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'datastoreusage');
+                                   command => 'datastorecountvm');
     $self->{connector}->run();
 }
 
@@ -84,13 +81,13 @@ __END__
 
 =head1 MODE
 
-Check datastore usage.
+Check number of vm running/off on datastores.
 
 =over 8
 
 =item B<--datastore-name>
 
-datastore name to list.
+datastore name to check.
 
 =item B<--filter>
 
@@ -104,29 +101,29 @@ Search in following datacenter(s) (can be a regexp).
 
 Status if datastore disconnected (default: 'unknown').
 
-=item B<--warning>
+=item B<--warning-on>
 
-Threshold warning (depends units option).
+Threshold warning for 'poweredOn' vms.
 
-=item B<--critical>
+=item B<--critical-on>
 
-Threshold critical (depends units option).
+Threshold critical for 'poweredOn' vms.
 
-=item B<--warning-provisioned>
+=item B<--warning-off>
 
-Threshold warning for provisioned storage (percent).
+Threshold warning for 'poweredOff' vms.
 
-=item B<--critical-provisioned>
+=item B<--critical-off>
 
-Threshold critical for provisioned storage (percent).
+Threshold critical for 'poweredOff' vms.
 
-=item B<--units>
+=item B<--warning-suspended>
 
-Units of thresholds (Default: '%') ('%', 'B').
+Threshold warning for 'suspended' vms.
 
-=item B<--free>
+=item B<--critical-suspended>
 
-Thresholds are on free space left.
+Threshold critical for 'suspended' vms.
 
 =back
 
