@@ -88,12 +88,24 @@ sub check {
                 my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $value);
                 if ($checked == 0) {
                     $result->{EnabledThresholds} = oct("0b". unpack('b*', $result->{EnabledThresholds}));
-                    my $warn_th = '~:';
+                    my $warn_th;
                     $warn_th = ($result->{LowerWarningThreshold} * 10 ** -int($result->{Decimal})) . ':' if (($result->{EnabledThresholds} & (1 << 1)));
-                    $warn_th .= ($result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal})) if (($result->{EnabledThresholds} & (1 << 2)));
-                    my $crit_th = '~:';
+                    if (($result->{EnabledThresholds} & (1 << 2))) {
+                        if (defined($warn_th)) {
+                            $warn_th .= ($result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal}));
+                        } else {
+                            $warn_th = '~:' . ($result->{UpperWarningThreshold} * 10 ** -int($result->{Decimal}));
+                        }
+                    }
+                    my $crit_th;
                     $crit_th = ($result->{LowerCriticalThreshold} * 10 ** -int($result->{Decimal})) . ':' if (($result->{EnabledThresholds} & (1 << 0)));
-                    $crit_th .= ($result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal})) if (($result->{EnabledThresholds} & (1 << 3)));
+                    if (($result->{EnabledThresholds} & (1 << 3))) {
+                        if (defined($crit_th)) {
+                            $crit_th .= ($result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal}));
+                        } else {
+                            $crit_th = '~:' . ($result->{UpperCriticalThreshold} * 10 ** -int($result->{Decimal}));
+                        }
+                    }
                     $self->{perfdata}->threshold_validate(label => 'warning-' . $component . '-instance-' . $instance, value => $warn_th);
                     $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
                     $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);
