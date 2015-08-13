@@ -110,6 +110,10 @@ Check Fan state for VPlex
 
 Specify the engine number to be checked (1-1 or 2-1 usually)
 
+=item B<--filter-name>
+
+Filter by name - can be a regexp
+
 =back
 
 =cut
