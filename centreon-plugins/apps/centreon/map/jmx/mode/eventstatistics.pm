@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreonmap::mode::eventstatistics;
+package apps::centreon::map::jmx::mode::eventstatistics;
 
 use base qw(centreon::plugins::mode);
 
@@ -84,7 +84,7 @@ sub run {
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
 
     my $new_datas = {};
-    $self->{statefile_cache}->read(statefile => 'tomcat_' . $self->{mode} . '-' . md5_hex($self->{connector}->{url}));
+    $self->{statefile_cache}->read(statefile => 'centreon_map_' . $self->{mode} . '-' . md5_hex($self->{connector}->{url}));
     my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
     $new_datas->{last_timestamp} = time();
 
@@ -141,7 +141,7 @@ Check Centreon Map Event Statistics
 
 Example:
 
-perl centreon_plugins.pl --plugin=apps::centreonmap::plugin  --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war  --mode=eventstatistics
+perl centreon_plugins.pl --plugin=apps::centreon::jmx::map::plugin --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war --mode=event-statistics
 
 =over 8
 
