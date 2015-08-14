@@ -43,6 +43,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
+           "database:s"             => { name => 'db_name' },
            "reload-cache-time:s"    => { name => 'reload_cache_time', default => 180 },
            "department-id:s"        => { name => 'department_id' },
            "staff-id:s"             => { name => 'staff_id' },
@@ -103,22 +104,22 @@ sub reload_cache {
 
     $datas->{last_timestamp} = time();
 
-    $self->{sql}->query(query => "SELECT departmentid, title FROM swdepartments");
+    $self->{sql}->query(query => "SELECT departmentid, title FROM " . $self->{option_results}->{'db_name'} . ".swdepartments");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         $datas->{"department_" . $row->{departmentid}} = $self->{output}->to_utf8($row->{title});
     }
 
-    $self->{sql}->query(query => "SELECT priorityid, title FROM swticketpriorities");
+    $self->{sql}->query(query => "SELECT priorityid, title FROM " . $self->{option_results}->{'db_name'} . ".swticketpriorities");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         $datas->{"priority_" . $row->{priorityid}} = $self->{output}->to_utf8($row->{title});
     }
 
-    $self->{sql}->query(query => "SELECT staffid, username FROM swstaff");
+    $self->{sql}->query(query => "SELECT staffid, username FROM " . $self->{option_results}->{'db_name'} . ".swstaff");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         $datas->{"staff_" . $row->{staffid}} = $self->{output}->to_utf8($row->{username});
     }
 
-    $self->{sql}->query(query => "SELECT ticketstatusid, title FROM swticketstatus");
+    $self->{sql}->query(query => "SELECT ticketstatusid, title FROM " . $self->{option_results}->{'db_name'} . ".swticketstatus");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         $datas->{"status_" . $row->{ticketstatusid}} = $self->{output}->to_utf8($row->{title});
     }
@@ -140,7 +141,7 @@ sub run {
         $self->{statefile_cache}->read();
     }
 
-    my $query = "SELECT priorityid FROM swtickets WHERE ticketid IS NOT NULL";
+    my $query = "SELECT priorityid FROM " . $self->{option_results}->{'db_name'} . ".swtickets WHERE ticketid IS NOT NULL";
     if (defined($self->{option_results}->{'department_id'})) {
         $query .= " AND departmentid IN (" . $self->{option_results}->{'department_id'} . ")";
     }
