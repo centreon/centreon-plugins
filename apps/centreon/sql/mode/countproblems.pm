@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::mysql::mode::countproblems;
+package apps::centreon::sql::mode::countproblems;
 
 use base qw(centreon::plugins::mode);
 
@@ -121,7 +121,7 @@ sub run {
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
-    $self->{statefile_cache}->read(statefile => 'mysql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
+    $self->{statefile_cache}->read(statefile => 'sql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
     my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
     my $new_datas = { last_timestamp => time() };
     $self->{statefile_cache}->write(data => $new_datas);
