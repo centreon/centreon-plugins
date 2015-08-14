@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::mysql::mode::partitioning;
+package apps::centreon::sql::mode::partitioning;
 
 use base qw(centreon::plugins::mode);
 

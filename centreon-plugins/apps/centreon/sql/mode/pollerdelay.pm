@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::mysql::mode::pollerdelay;
+package apps::centreon::sql::mode::pollerdelay;
 
 use base qw(centreon::plugins::mode);
 
