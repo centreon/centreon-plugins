@@ -30,6 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+         {
+           "database:s"             => { name => 'db_name' },
+         });
     return $self;
 }
 
@@ -45,7 +49,7 @@ sub run {
 
     $self->{sql}->connect();
 
-    $self->{sql}->query(query => "SELECT departmentid, title FROM swdepartments");
+    $self->{sql}->query(query => "SELECT departmentid, title FROM " . $self->{option_results}->{'db_name'} . ".swdepartments");
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         $self->{output}->output_add(long_msg => "'" . $row->{title} . "' [id = " . $row->{departmentid} . "]");
     }
