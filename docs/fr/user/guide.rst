@@ -646,4 +646,15 @@ Dégradé si le trafic entrant/sortant utilisé > 80% et critique si le trafic e
   Interface 'eth0' Traffic In : 1.87Kb/s (0.00 %), Out : 266.32b/s (0.00 %)
   Interface 'eth1' Traffic In : 976.65b/s (0.00 %), Out : 1.02Kb/s (0.00 %)
 
+--------------
+Protocole HTTP
+--------------
 
+Contrôler l'authentification à une application (requête POST)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Voici un exemple pour le formulaire d'authentification de ``demo.centreon.com`` :
+::
+
+  $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
+  OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;

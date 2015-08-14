@@ -635,7 +635,7 @@ Linux
 Check all interface traffics in SNMP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Warning if traffic in/out used > 80% and critical if traffic in/out used > 90% :
+Warning if traffic in/out used > 80% and critical if traffic in/out used > 90%:
 ::
 
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=interfaces --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --add-traffic --warning-in-traffic=80 --critical-in-traffic=90 --warning-out-traffic=80 --critical-out-traffic=90
@@ -645,3 +645,15 @@ Warning if traffic in/out used > 80% and critical if traffic in/out used > 90% :
   Interface 'eth1' Traffic In : 976.65b/s (0.00 %), Out : 1.02Kb/s (0.00 %)
 
 
+-------------
+HTTP Protocol
+-------------
+
+Check authentification of an application (POST request)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An example for authentification form of ``demo.centreon.com``:
+::
+
+  $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
+  OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
