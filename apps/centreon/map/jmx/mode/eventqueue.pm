@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreonmap::mode::gates;
+package apps::centreon::map::jmx::mode::eventqueue;
 
 use base qw(centreon::plugins::mode);
 
@@ -56,26 +56,23 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "com.merethis.map:name=BusinessGate,type=repo" }
+         { mbean => "com.merethis.studio:name=statistics,type=session" }
     ];
 
-    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);  
-
-    my $gates = $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount};
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $gates,
+    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
+  
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize},
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Business gates opened : %d",
-                                                      $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount}));
+                                short_msg => sprintf("Average event queue size : %d",
+                                                      $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize}));
 
-    $self->{output}->perfdata_add(label => 'gates',
-                                  value => $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount},
+    $self->{output}->perfdata_add(label => 'events',
+                                  value => $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -91,21 +88,21 @@ __END__
 
 =head1 MODE
 
-Check Centreon Map Open Gates 
+Check Centreon Map Session event queue size
 
 Example:
 
-perl centreon_plugins.pl --plugin=apps::centreonmap::plugin  --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war  --mode=gates
+perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war --mode=event-queue
 
 =over 8
 
 =item B<--warning>
 
-Set this threshold if you want a warning if opened gates match condition
+Set this threshold if you want a warning if global sessions event queue size match threshold 
 
 =item B<--critical>
 
-Set this threshold if you want a warning if opened gates match condition
+Set this threshold if you want a warning if global sessions event queue size match threshold
 
 =back
 

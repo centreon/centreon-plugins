@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreonmap::plugin;
+package apps::centreon::map::jmx::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gates'		=> 'apps::centreonmap::mode::gates',
-                         'sessions'		=> 'apps::centreonmap::mode::sessions',
-                         'event-queue'		=> 'apps::centreonmap::mode::eventqueue',
-                         'event-statistics'	=> 'apps::centreonmap::mode::eventstatistics',
+                         'gates'            => 'apps::centreon::map::jmx::mode::gates',
+                         'sessions'         => 'apps::centreon::map::jmx::mode::sessions',
+                         'event-queue'      => 'apps::centreon::map::jmx::mode::eventqueue',
+                         'event-statistics' => 'apps::centreon::map::jmx::mode::eventstatistics',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Centreon map informations. Need Jolokia agent and Map >= 4.0
+Check Centreon Map informations. Need Jolokia agent and Map >= 4.0.
 
 =cut

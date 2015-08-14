@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreonmap::mode::eventqueue;
+package apps::centreon::map::jmx::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -43,7 +43,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
         $self->{output}->option_exit();
@@ -56,6 +55,7 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
+    # $options{snmp} = snmp object
     $self->{connector} = $options{custom};
 
     $self->{request} = [
@@ -64,15 +64,15 @@ sub run {
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
   
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize},
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount},
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Average event queue size : %d",
-                                                      $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize}));
+                                short_msg => sprintf("Current sessions : %d",
+                                                      $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount}));
 
-    $self->{output}->perfdata_add(label => 'events',
-                                  value => $result->{"com.merethis.studio:name=statistics,type=session"}->{AverageEventQueueSize},
+    $self->{output}->perfdata_add(label => 'sessions',
+                                  value => $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
@@ -88,21 +88,21 @@ __END__
 
 =head1 MODE
 
-Check Centreon Map Session event queue size
+Check Centreon Map Number of sessions
 
 Example:
 
-perl centreon_plugins.pl --plugin=apps::centreonmap::plugin  --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war  --mode=eventqueue
+perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin  --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war --mode=sessions
 
 =over 8
 
 =item B<--warning>
 
-Set this threshold if you want a warning if global sessions event queue size match threshold 
+Set this threshold if you want a warning if current session number match condition
 
 =item B<--critical>
 
-Set this threshold if you want a warning if global sessions event queue size match threshold
+Set this threshold if you want a warning if current session number match condition
 
 =back
 
