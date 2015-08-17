@@ -77,11 +77,22 @@ sub default_oid_display_name {
     return 'ifname';
 }
 
+sub is_admin_status_down {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{use_adminstatus}) && defined($options{admin_status}) && 
+        $self->{oid_adminstatus_mapping}->{$options{admin_status}} ne 'up') {
+        return 1;
+    }
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => defined($options{package}) ? $options{package} : __PACKAGE__, %options);
     bless $self, $class;
     
+    $self->{no_speed} = defined($options{no_speed}) && $options{no_speed} =~ /^[01]$/ ? $options{no_speed} : 0;
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
@@ -133,8 +144,11 @@ sub run {
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
 
-        my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
-            ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));        
+        my $interface_speed = 0;
+        if ($self->{no_speed} == 0) {
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
+                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+        }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
@@ -148,8 +162,7 @@ sub run {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': no matching filter status");
             next;
         }
-        if (defined($self->{option_results}->{use_adminstatus}) && defined($result->{$self->{oid_adminstatus} . "." . $_}) && 
-            $self->{oid_adminstatus_mapping}->{$result->{$self->{oid_adminstatus} . "." . $_}} ne 'up') {
+        if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_})) {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': adminstatus is not 'up' and option --use-adminstatus is set");
             next;
         }
@@ -172,10 +185,11 @@ sub run {
 sub get_additional_information {
     my ($self, %options) = @_;
 
-    my $oids = [$oid_speed32];
+    my $oids = [];
     push @$oids, $self->{oid_adminstatus} if (defined($self->{oid_adminstatus}));
     push @$oids, $self->{oid_opstatus} if (defined($self->{oid_opstatus}));
-    push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1());  
+    push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
+    push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
     if (scalar(keys %{$self->{extra_oids}}) > 0) {
         push @$oids, values %{$self->{extra_oids}};
     }
@@ -275,8 +289,7 @@ sub disco_show {
         next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
         next if (defined($self->{option_results}->{filter_status}) && defined($result->{$self->{oid_opstatus} . "." . $_}) && 
             $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i);
-        next if (defined($self->{option_results}->{use_adminstatus}) && defined($result->{$self->{oid_adminstatus} . "." . $_}) && 
-            $self->{oid_adminstatus_mapping}->{$result->{$self->{oid_adminstatus} . "." . $_}} ne 'up');
+        next if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_}));
         
         my %extra_values = ();
         foreach my $name (keys %{$self->{extra_oids}}) {

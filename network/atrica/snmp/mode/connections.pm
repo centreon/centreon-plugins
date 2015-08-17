@@ -367,7 +367,7 @@ __END__
 
 =head1 MODE
 
-Check connections.
+Check connections (A-Series.mib).
 
 =over 8
 
