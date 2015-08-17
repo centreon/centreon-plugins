@@ -102,6 +102,30 @@ sub default_critical_status {
     return undef;
 }
 
+sub default_global_admin_up_rule {
+    my ($self, %options) = @_;
+    
+    return '%{admstatus} eq "up" or %{admstatus} eq "on"';
+}
+
+sub default_global_admin_down_rule {
+    my ($self, %options) = @_;
+    
+    return '%{admstatus} ne "up" and %{admstatus} ne "on"';
+}
+
+sub default_global_oper_up_rule {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} eq "up" or %{opstatus} eq "inService"';
+}
+
+sub default_global_oper_down_rule {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} ne "up" and %{opstatus} ne "inService"';
+}
+
 sub default_oid_filter_name {
     my ($self, %options) = @_;
     
@@ -234,12 +258,7 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0) {
-        $self->{error_msg} = "skipped";
-        return -2;
-    }
-    
+    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});    
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
@@ -272,14 +291,14 @@ sub load_speed {
 sub load_traffic {
     my ($self, %options) = @_;
     
-    if (!$self->{snmp}->is_snmpv1()) {
+    if ($self->{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
     
     if (!defined($self->{speed_loaded})) {
         $self->set_speed();
-        $self->load_speed();
+        $self->load_speed(%options);
     }
     $self->set_oids_traffic();
     $self->{snmp}->load(oids => [$self->{oid_ing_cir}, $self->{oid_ing_eir}, 
@@ -289,13 +308,13 @@ sub load_traffic {
 sub load_errors {
     my ($self, %options) = @_;
     
-    if (!$self->{snmp}->is_snmpv1()) {
+    if ($self->{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{speed_loaded})) {
         $self->set_speed();
-        $self->load_speed();
+        $self->load_speed(%options);
     }
     $self->set_oids_errors();    
     $self->{snmp}->load(oids => [$self->{oid_ing_eir_discard}, $self->{oid_eg_eir_discard}], instances => $self->{array_interface_selected});
@@ -304,6 +323,7 @@ sub load_errors {
 sub add_result_speed {
     my ($self, %options) = @_;
     
+    return if (defined($self->{interface_selected}->{$options{instance}}->{speed_in}));
     $self->{interface_selected}->{$options{instance}}->{speed_in} = 0;
     $self->{interface_selected}->{$options{instance}}->{speed_out} = 0;
     if ($self->{get_speed} == 0) {
@@ -314,8 +334,8 @@ sub add_result_speed {
         $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
         $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     } else {
-        my $interface_speed = 0;
-        $interface_speed = $self->{results}->{$self->{oid_speed} . "." . $options{instance}} * 1000;        
+        my $interface_speed = defined($self->{results}->{$self->{oid_speed} . "." . $options{instance}}) ? $self->{results}->{$self->{oid_speed} . "." . $options{instance}} : 0;
+        $interface_speed *= 1000;
         $self->{interface_selected}->{$options{instance}}->{speed_in} = $interface_speed;
         $self->{interface_selected}->{$options{instance}}->{speed_out} = $interface_speed;
         $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
@@ -328,7 +348,7 @@ sub add_result_errors {
     
     $self->{interface_selected}->{$options{instance}}->{in_eir_discard} = $self->{results}->{$self->{oid_ing_eir_discard} . '.' . $options{instance}} * 8;
     $self->{interface_selected}->{$options{instance}}->{out_eir_discard} = $self->{results}->{$self->{oid_eg_eir_discard} . '.' . $options{instance}} * 8;
-    $self->add_result_speed();
+    $self->add_result_speed(%options);
 }
 
 sub add_result_traffic {
@@ -338,7 +358,7 @@ sub add_result_traffic {
     $self->{interface_selected}->{$options{instance}}->{in_eir} = $self->{results}->{$self->{oid_ing_eir} . '.' . $options{instance}} * 8;
     $self->{interface_selected}->{$options{instance}}->{out_cir} = $self->{results}->{$self->{oid_eg_cir} . '.' . $options{instance}} * 8;
     $self->{interface_selected}->{$options{instance}}->{out_eir} = $self->{results}->{$self->{oid_eg_eir} . '.' . $options{instance}} * 8;
-    $self->add_result_speed();
+    $self->add_result_speed(%options);
 }
 
 1;
