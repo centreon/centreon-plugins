@@ -281,8 +281,11 @@ sub disco_show {
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         
-        my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
-            ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+        my $interface_speed = 0;
+        if ($self->{no_speed} == 0) {
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
+                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+        }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
