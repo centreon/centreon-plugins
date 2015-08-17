@@ -256,7 +256,7 @@ sub custom_errors_calc {
 sub set_counters {
     my ($self, %options) = @_;
     
-    $self->{maps_counters} = { int => {}, global => {} };
+    $self->{maps_counters} = { int => {}, global => {} } if (!defined($self->{maps_counters}));
     $self->{maps_counters}->{int}->{'000_status'} = { filter => 'add_status', threshold => 0,
         set => {
             key_values => $self->set_key_values_status(),
@@ -638,7 +638,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     if (defined($self->{option_results}->{add_errors}) && 
-        (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} !~ /^(%|absolute)$/)) {
+        (!defined($self->{option_results}->{units_errors}) || $self->{option_results}->{units_errors} !~ /^(%|absolute|b\/s)$/)) {
         $self->{output}->add_option_msg(short_msg => "Wrong option --units-errors.");
         $self->{output}->option_exit();
     }
@@ -936,14 +936,14 @@ sub get_informations {
     $self->load_status() if (defined($self->{option_results}->{add_status}));
     $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
-    $self->load_cast() if (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors}));
+    $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
 
     $self->{results} = $self->{snmp}->get_leef();
     
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
-        $self->add_result_cast(instance => $_) if (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors}));
+        $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
     }
 }
