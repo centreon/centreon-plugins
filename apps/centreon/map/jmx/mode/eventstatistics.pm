@@ -63,9 +63,9 @@ sub check_options {
     foreach my $label ('warning_global', 'critical_global', 'warning_create', 'critical_create', 'warning_update', 'critical_update', 'warning_remove', 'critical_remove') {
         if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
             my ($label_opt) = $label;
-                    $label_opt =~ tr/_/-/;
-                    $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-                    $self->{output}->option_exit();
+            $label_opt =~ tr/_/-/;
+            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
+            $self->{output}->option_exit();
         }
     }
 
@@ -100,10 +100,10 @@ sub run {
         my $value = int(($result->{"com.merethis.studio:name=statistics,type=whatsup"}->{$type}->{andIncrement} - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));     
 
         $self->{output}->perfdata_add(label => $type,
-				      value => $value,
+                                      value => $value,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $mapping_eventtype{$type}), 
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $mapping_eventtype{$type}),
-				      min => 0);
+                                      min => 0);
 
         my $exit = $self->{perfdata}->threshold_check(value => $value,
                                                       threshold => [ { label => 'critical_' . $mapping_eventtype{$type}, exit_litteral => 'critical' },
