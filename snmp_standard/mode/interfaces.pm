@@ -257,6 +257,63 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters} = { int => {}, global => {} } if (!defined($self->{maps_counters}));
+    
+    $self->{maps_counters}->{global}->{'000_total-port'} = { filter => 'add_global',
+        set => {
+            key_values => [ { name => 'total_port' } ],
+            output_template => 'Total port : %s', output_error_template => 'Total port : %s',
+            output_use => 'total_port_absolute',  threshold_use => 'total_port_absolute',
+            perfdatas => [
+                { label => 'total_port', value => 'total_port_absolute', template => '%s',
+                  min => 0, max => 'total_port_absolute' },
+           ],
+        }
+    };
+    $self->{maps_counters}->{global}->{'001_global-admin-up'} = { filter => 'add_global',
+        set => {
+            key_values => [ { name => 'global_admin_up' }, { name => 'total_port' } ],
+            output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
+            output_use => 'global_admin_up_absolute',  threshold_use => 'global_admin_up_absolute',
+            perfdatas => [
+                { label => 'total_admin_up', value => 'global_admin_up_absolute', template => '%s',
+                  min => 0, max => 'total_port_absolute' },
+           ],
+        }
+    };
+    $self->{maps_counters}->{global}->{'002_total-admin-down'} = { filter => 'add_global',
+        set => {
+            key_values => [ { name => 'global_admin_down' }, { name => 'total_port' } ],
+            output_template => 'AdminStatus Down : %s', output_error_template => 'AdminStatus Down : %s',
+            output_use => 'global_admin_down_absolute',  threshold_use => 'global_admin_down_absolute',
+            perfdatas => [
+                { label => 'total_admin_down', value => 'global_admin_down_absolute', template => '%s',
+                  min => 0, max => 'total_port_absolute' },
+           ],
+        }
+    };
+    $self->{maps_counters}->{global}->{'003_total-oper-up'} = { filter => 'add_global',
+        set => {
+            key_values => [ { name => 'global_oper_up' }, { name => 'total_port' } ],
+            output_template => 'OperStatus Up : %s', output_error_template => 'OperStatus Up : %s',
+            output_use => 'global_oper_up_absolute',  threshold_use => 'global_oper_up_absolute',
+            perfdatas => [
+                { label => 'total_oper_up', value => 'global_oper_up_absolute', template => '%s',
+                  min => 0, max => 'total_port_absolute' },
+           ],
+        }
+    };
+    $self->{maps_counters}->{global}->{'004_total-oper-down'} = { filter => 'add_global',
+        set => {
+            key_values => [ { name => 'global_oper_down' }, { name => 'total_port' } ],
+            output_template => 'OperStatus Down : %s', output_error_template => 'OperStatus Down : %s',
+            output_use => 'global_oper_down_absolute',  threshold_use => 'global_oper_down_absolute',
+            perfdatas => [
+                { label => 'global_oper_down', value => 'global_oper_down_absolute', template => '%s',
+                  min => 0, max => 'total_port_absolute' },
+           ],
+        }
+    };
+    
     $self->{maps_counters}->{int}->{'000_status'} = { filter => 'add_status', threshold => 0,
         set => {
             key_values => $self->set_key_values_status(),
@@ -523,6 +580,30 @@ sub default_critical_status {
     return '%{admstatus} eq "up" and %{opstatus} ne "up"';
 }
 
+sub default_global_admin_up_rule {
+    my ($self, %options) = @_;
+    
+    return '%{admstatus} eq "up"';
+}
+
+sub default_global_admin_down_rule {
+    my ($self, %options) = @_;
+    
+    return '%{admstatus} ne "up"';
+}
+
+sub default_global_oper_up_rule {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} eq "up"';
+}
+
+sub default_global_oper_down_rule {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} ne "up"';
+}
+
 sub default_oid_filter_name {
     my ($self, %options) = @_;
     
@@ -551,9 +632,14 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "add-global"              => { name => 'add_global' },
                                 "add-status"              => { name => 'add_status' },
                                 "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
                                 "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
+                                "global-admin-up-rule:s"    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
+                                "global-oper-up-rule:s"     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
+                                "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
+                                "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
                                 "interface:s"             => { name => 'interface' },
                                 "units-traffic:s"         => { name => 'units_traffic', default => '%' },
                                 "units-errors:s"          => { name => 'units_errors', default => '%' },
@@ -596,7 +682,7 @@ sub new {
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->set_counters();
 
-    foreach my $key (('int')) {
+    foreach my $key (('int', 'global')) {
         foreach (keys %{$self->{maps_counters}->{$key}}) {
             my ($id, $name) = split /_/;
             if (!defined($self->{maps_counters}->{$key}->{$_}->{threshold}) || $self->{maps_counters}->{$key}->{$_}->{threshold} != 0) {
@@ -619,7 +705,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $key (('int')) {
+    foreach my $key (('int', 'global')) {
         foreach (keys %{$self->{maps_counters}->{$key}}) {
             $self->{maps_counters}->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
@@ -651,18 +737,61 @@ sub check_options {
     }
     
     # If no options, we set status
-    if (!defined($self->{option_results}->{add_status}) && !defined($self->{option_results}->{add_traffic}) &&
+    if (!defined($self->{option_results}->{add_global}) &&
+        !defined($self->{option_results}->{add_status}) && !defined($self->{option_results}->{add_traffic}) &&
         !defined($self->{option_results}->{add_errors}) && !defined($self->{option_results}->{add_cast})) {
         $self->{option_results}->{add_status} = 1;
     }
     $self->{checking} = '';
-    foreach (('add_status', 'add_errors', 'add_traffic', 'add_cast')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
     }
     
     $self->change_macros();
+}
+
+sub run_global {
+    my ($self, %options) = @_;
+    
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits;
+    foreach (sort keys %{$self->{maps_counters}->{global}}) {
+        my $obj = $self->{maps_counters}->{global}->{$_}->{obj};
+                
+        $obj->set(instance => 'global');
+    
+        my ($value_check) = $obj->execute(values => $self->{global});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
+    }
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "$short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "$long_msg");
+    }
 }
 
 sub run {
@@ -678,7 +807,11 @@ sub run {
         $multiple = 0;
     }
     
-    if ($multiple == 1) {
+    if ($multiple == 1 && defined($self->{option_results}->{add_global})) {
+        $self->run_global();
+    }
+    
+    if ($multiple == 1 && $self->{checking} =~ /cast|errors|traffic|status/) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All interfaces are ok');
     }
@@ -689,7 +822,9 @@ sub run {
              md5_hex($self->{checking}));
     $self->{new_datas}->{last_timestamp} = time();
     
-    foreach my $id (sort keys %{$self->{interface_selected}}) {     
+    foreach my $id (sort keys %{$self->{interface_selected}}) {
+        next if ($self->{checking} !~ /cast|errors|traffic|status/);
+    
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (sort keys %{$self->{maps_counters}->{int}}) {
@@ -933,18 +1068,48 @@ sub get_informations {
 
     $self->get_selection();
     $self->{array_interface_selected} = [keys %{$self->{interface_selected}}];    
-    $self->load_status() if (defined($self->{option_results}->{add_status}));
+    $self->load_status() if (defined($self->{option_results}->{add_status}) || defined($self->{option_results}->{add_global}));
     $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
     $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
 
     $self->{results} = $self->{snmp}->get_leef();
     
+    $self->add_result_global() if (defined($self->{option_results}->{add_global}));    
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
         $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
+    }
+}
+
+sub add_result_global {
+    my ($self, %options) = @_;
+    
+    foreach (('global_admin_up_rule', 'global_admin_down_rule', 'global_oper_up_rule', 'global_oper_down_rule')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$$1/g;
+        }
+    }
+    
+    $self->{global} = { total_port => 0, global_admin_up => 0, global_admin_down => 0,
+                        global_oper_up => 0, global_oper_down => 0};
+    foreach (@{$self->{array_interface_selected}}) {
+        my $opstatus = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $_}};
+        my $admstatus = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $_}};
+        foreach (('global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
+            eval {
+                local $SIG{__WARN__} = sub { return ; };
+                local $SIG{__DIE__} = sub { return ; };
+        
+                if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
+                    eval "$self->{option_results}->{$_ . '_rule'}") {
+                    $self->{global}->{$_}++;
+                }
+            };
+        }
+        $self->{global}->{total_port}++;
     }
 }
 
@@ -1046,9 +1211,13 @@ Check interfaces.
 
 =over 8
 
+=item B<--add-global>
+
+Check global port statistics (By default if no --add-* option is set).
+
 =item B<--add-status>
 
-Check interface status (By default if no --add-* option is set).
+Check interface status.
 
 =item B<--add-traffic>
 
@@ -1075,13 +1244,15 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
 
 =item B<--units-traffic>
