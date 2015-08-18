@@ -102,6 +102,12 @@ sub default_critical_status {
     return undef;
 }
 
+sub default_check_status {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} eq "up" or %{opstatus} eq "inService"';
+}
+
 sub default_global_admin_up_rule {
     my ($self, %options) = @_;
     
@@ -258,7 +264,14 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
-    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});    
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+
+    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    if ($diff_traffic == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+        $self->{error_msg} = "skipped";
+        return -2;
+    }
+    
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
@@ -433,6 +446,10 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
+
+=item B<--no-skipped-counters>
+
+Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 
