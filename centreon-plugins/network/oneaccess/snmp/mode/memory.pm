@@ -63,10 +63,10 @@ sub run {
     my $oid_oacSysMemoryUsed = '.1.3.6.1.4.1.13191.10.3.3.1.1.4.0';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_oacSysMemoryTotal, $oid_oacSysMemoryUsed], nothing_quit => 1);
-    my $total = $result->{oid_oacSysMemoryTotal};
-    my $used = $result->{oid_oacSysMemoryUsed} * $total / 100;
+    my $total = $result->{$oid_oacSysMemoryTotal};
+    my $used = $result->{$oid_oacSysMemoryUsed} * $total / 100;
     my $free = $total - $used; 
-    my $prct_used = $result->{oid_oacSysMemoryUsed};
+    my $prct_used = $result->{$oid_oacSysMemoryUsed};
     my $prct_free = 100 - $prct_used;
     
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total);
@@ -82,7 +82,7 @@ sub run {
                                     $total_free_value . " " . $total_free_unit, $prct_free));
        
     $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $used,
+                                  value => sprintf("%d", $used),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total, cast_int => 1),
                                   min => 0, max => $total
