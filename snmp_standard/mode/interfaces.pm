@@ -49,6 +49,11 @@ sub custom_threshold_output {
                  eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
+        
+        $instance_mode->{last_status} = 0;
+        if (eval "$instance_mode->{check_status}") {
+            $instance_mode->{last_status} = 1;
+        }
     };
     if (defined($message)) {
         $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
@@ -74,22 +79,25 @@ sub custom_status_calc {
 
 sub custom_cast_calc {
     my ($self, %options) = @_;
-        
-    my $diff_cast = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    my $total = $diff_cast
-                + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}}) 
-                + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}});
+
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
     }
-    if ($total == 0) {
+
+    my $diff_cast = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    my $total = $diff_cast
+                + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}}) 
+                + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}});
+
+    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
     
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{$options{extra_options}->{label_ref} . '_prct'} = $diff_cast * 100 / $total;
+    $self->{result_values}->{$options{extra_options}->{label_ref} . '_prct'} = $total == 0 ? 0 : $diff_cast * 100 / $total;
     return 0;
 }
 
@@ -156,13 +164,14 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
     }
-    
+  
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0) {
+    if ($diff_traffic == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -227,6 +236,7 @@ sub custom_errors_output {
 sub custom_errors_calc {
     my ($self, %options) = @_;
 
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -236,12 +246,12 @@ sub custom_errors_calc {
         $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
     my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
-    if ($total == 0) {
+    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
     
-    $self->{result_values}->{prct} = $diff * 100 / $total;
+    $self->{result_values}->{prct} = $total == 0 ? 0 : $diff * 100 / $total;
     $self->{result_values}->{used} = $diff;
     $self->{result_values}->{total} = $total;
     $self->{result_values}->{label1} = $options{extra_options}->{label_ref1};
@@ -568,6 +578,12 @@ sub check_oids_label {
     }
 }
 
+sub default_check_status {
+    my ($self, %options) = @_;
+    
+    return '%{opstatus} eq "up"';
+}
+
 sub default_warning_status {
     my ($self, %options) = @_;
     
@@ -646,6 +662,7 @@ sub new {
                                 "speed:s"                 => { name => 'speed' },
                                 "speed-in:s"              => { name => 'speed_in' },
                                 "speed-out:s"             => { name => 'speed_out' },
+                                "no-skipped-counters"     => { name => 'no_skipped_counters' },
                                 "display-transform-src:s" => { name => 'display_transform_src' },
                                 "display-transform-dst:s" => { name => 'display_transform_dst' },
                                 "show-cache"              => { name => 'show_cache' },
@@ -834,7 +851,7 @@ sub run {
         
             my ($value_check) = $obj->execute(values => $self->{interface_selected}->{$id},
                                               new_datas => $self->{new_datas});
-
+            next if ($value_check == -10); # not running
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
                 $long_msg_append = ', ';
@@ -881,6 +898,9 @@ sub change_macros {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
     }
+    
+    $self->{check_status} = $self->default_check_status();
+    $self->{check_status} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
 }
 
 sub get_display_value {
@@ -1286,6 +1306,10 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
+
+=item B<--no-skipped-counters>
+
+Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 
