@@ -290,8 +290,8 @@ sub manage_selection {
                               };
     }
     
-    if (defined($self->{option_results}->{no_component}) && scalar(keys %{$self->{vol}}) <= 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
+    if (scalar(keys %{$self->{vol}}) <= 0) {
+        $self->{output}->output_add(severity => defined($self->{no_components}) ? $self->{no_components} : 'unknown',
                                     short_msg => 'No components are checked.');
     }
 }
@@ -341,8 +341,7 @@ Command options (Default: 'performance -type host-io').
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Set the threshold where no components (Default: 'unknown' returns).
 
 =item B<--filter-name>
 
