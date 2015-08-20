@@ -196,8 +196,8 @@ sub manage_selection {
         $self->{cpu}->{$cpu_name} = { display => $cpu_name, usage => $cpu_value };
     }
     
-    if (defined($self->{option_results}->{no_component}) && scalar(keys %{$self->{cpu}}) <= 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->{output}->output_add(severity => defined($self->{no_components}) ? $self->{no_components} : 'unknown',
                                     short_msg => 'No components are checked.');
     }
 }
@@ -247,8 +247,7 @@ Command options (Default: 'performance -type cm').
 
 =item B<--no-component>
 
-Return an error if no compenents are checked.
-If total (with skipped) is 0. (Default: 'critical' returns).
+Set the threshold where no components (Default: 'unknown' returns).
 
 =item B<--filter-name>
 
