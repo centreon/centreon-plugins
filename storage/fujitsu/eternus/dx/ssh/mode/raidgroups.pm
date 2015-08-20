@@ -71,7 +71,6 @@ sub custom_status_calc {
     return 0;
 }
 
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
