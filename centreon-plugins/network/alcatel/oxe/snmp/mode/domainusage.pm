@@ -58,7 +58,7 @@ sub custom_usage_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label_perf} . '_used' . $extra_label, unit => 'B',
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label_perf} . '_used' . $extra_label,
                                   value => $self->{result_values}->{used},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -74,16 +74,12 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    
+
     my $msg = sprintf("%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
                       $self->{result_values}->{label_output},
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+                      $self->{result_values}->{total},
+                      $self->{result_values}->{used}, $self->{result_values}->{prct_used},
+                      $self->{result_values}->{free}, $self->{result_values}->{prct_free});
     return $msg;
 }
 
