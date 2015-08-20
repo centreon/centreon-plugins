@@ -224,8 +224,8 @@ sub check {
         # Check mounted
         if ($mounted =~ /False/i) {
             $self->{output}->output_add(long_msg => sprintf("    not mounted\n   Skip mapi/mailflow test"));
-            $self->{output}->output_add(short_msg => 'CRITICAL',
-                                        long_msg => sprintf("Database '%s' server '%s' is not mounted", $database, $server));
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("Database '%s' server '%s' is not mounted", $database, $server));
             next;
         }
         $self->{output}->output_add(long_msg => sprintf("    mounted"));

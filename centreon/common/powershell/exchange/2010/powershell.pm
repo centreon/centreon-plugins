@@ -48,9 +48,6 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
             Write-Host $Error[0].Exception
             exit 1
         }
-    } else {
-        Write-Host "Snap-In no present or not registered"
-        exit 1
     }
 } else {
     Write-Host "Snap-In no present or not registered"
