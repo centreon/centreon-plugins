@@ -51,7 +51,6 @@ my $maps_counters = {
     }
 };
 
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
@@ -91,6 +90,10 @@ sub custom_usage_output {
 sub custom_cac_usage_calc {
     my ($self, %options) = @_;
 
+    if ($options{new_datas}->{$self->{instance} . '_cacAllowed'} <= 0) {
+        $self->{error_msg} = "skipped (no allowed)";
+        return -2;
+    }
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_cacAllowed'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_cacUsed'};
@@ -105,6 +108,10 @@ sub custom_cac_usage_calc {
 sub custom_conference_usage_calc {
     my ($self, %options) = @_;
 
+    if ($options{new_datas}->{$self->{instance} . '_confAvailable'} <= 0) {
+        $self->{error_msg} = "skipped (no available)";
+        return -2;
+    }
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_confAvailable'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_confBusy'};
@@ -240,7 +247,7 @@ sub manage_selection {
     my ($self, %options) = @_;
  
     $self->{domain} = {};
-    my $oid_ipDomainEntry = '.1.3.6.1.4.1.637.64.4400.1.3.1.1';
+    my $oid_ipDomainEntry = '.1.3.6.1.4.1.637.64.4400.1.3.1';
     $self->{results} = $self->{snmp}->get_table(oid => $oid_ipDomainEntry,
                                                 nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
@@ -257,8 +264,8 @@ sub manage_selection {
                                          %{$result}};
     }
     
-    if (defined($self->{option_results}->{no_component}) && scalar(keys %{$self->{domain}}) <= 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
+    if (scalar(keys %{$self->{domain}}) <= 0) {
+        $self->{output}->output_add(severity => defined($self->{no_components}) ? $self->{no_components} : 'unknown',
                                     short_msg => 'No components are checked.');
     }
 }
@@ -286,6 +293,10 @@ Can be: 'cac-usage' (%), 'conference-usage' (%).
 
 Threshold critical.
 Can be: 'cac-usage' (%), 'conference-usage' (%).
+
+=item B<--no-component>
+
+Set the threshold where no components (Default: 'unknown' returns).
 
 =back
 
