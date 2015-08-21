@@ -27,7 +27,6 @@ use warnings;
 use centreon::plugins::values;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
-use bigint qw/hex/; # Need it because we have big counters in octet strings
 
 my $maps_counters = {
     vlan => { 
@@ -210,6 +209,14 @@ sub reload_cache {
     $self->{statefile_cache}->write(data => $result);
 }
 
+sub get_big_counter {
+    my ($self, %options) = @_;
+    
+    my $hex = unpack('H*', $options{value});
+    $hex =~ /^(.){8}(.){8}$/;
+    return (hex($1) << 32) + hex($2);
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
  
@@ -270,8 +277,10 @@ sub manage_selection {
         next if ($_ !~ /^$oid_extendPortVlanCurrent1DayUpFwdByteCounter\.(\d+)\.(\d+)$/);
         my $vlan_index = $2;
         
-        my $in = hex(unpack('H*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}));
-        my $out = hex(unpack('H*', $self->{results}->{$_}));
+        my $in = defined($self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}) ? 
+            $self->get_big_counter(value => $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}) : 0;
+        my $out = defined($self->{results}->{$_}) ? 
+            $self->get_big_counter(value => $self->{results}->{$_}) : 0;
 
         $self->{vlan}->{$vlan_index}->{in} += $in * 8;
         $self->{vlan}->{$vlan_index}->{out} += $out * 8;
