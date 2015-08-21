@@ -140,13 +140,24 @@ sub execute {
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
         $sub_cmd .= $options{command_options} if (defined($options{command_options}));
-        ($lerror, $stdout, $exit_code) = backtick(
+        # On some equipment. Cannot get a pseudo terminal
+        if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
+            $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(" ", @$args);
+            ($lerror, $stdout, $exit_code) = backtick(
+                                                 command => $cmd,
+                                                 timeout => $options{options}->{timeout},
+                                                 wait_exit => 1,
+                                                 redirect_stderr => 1
+                                                 );
+        } else {
+            ($lerror, $stdout, $exit_code) = backtick(
                                                  command => $cmd,
                                                  arguments => [@$args, $sub_cmd],
                                                  timeout => $options{options}->{timeout},
                                                  wait_exit => 1,
                                                  redirect_stderr => 1
                                                  );
+        }
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
