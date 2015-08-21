@@ -173,6 +173,7 @@ sub manage_selection {
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
+    # Can have 4 columns also.
     
     #Location              Busy Rate(%) Copy Residual Quantity(MB)
     #--------------------- ------------ --------------------------
@@ -185,7 +186,7 @@ sub manage_selection {
     
     $self->{cpu} = {};
     foreach (split /\n/, $stdout) {
-        next if ($_ !~ /^(.*?)\s+(\d+)\s+\S+$/);
+        next if ($_ !~ /^(CM.*?)\s{2,}(\d+)\s+\S+/);
         my ($cpu_name, $cpu_value) = ($1, $2);
             
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
