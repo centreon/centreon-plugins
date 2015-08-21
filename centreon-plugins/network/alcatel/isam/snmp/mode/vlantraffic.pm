@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::values;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+use bigint qw/hex/; # Need it because we have big counters in octet strings
 
 my $maps_counters = {
     vlan => { 
@@ -269,8 +270,8 @@ sub manage_selection {
         next if ($_ !~ /^$oid_extendPortVlanCurrent1DayUpFwdByteCounter\.(\d+)\.(\d+)$/);
         my $vlan_index = $2;
         
-        my $in = oct("0b". unpack('b*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}));
-        my $out = oct("0b". unpack('b*', $self->{results}->{$_}));
+        my $in = hex(unpack('H*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}));
+        my $out = hex(unpack('H*', $self->{results}->{$_}));
 
         $self->{vlan}->{$vlan_index}->{in} += $in * 8;
         $self->{vlan}->{$vlan_index}->{out} += $out * 8;
