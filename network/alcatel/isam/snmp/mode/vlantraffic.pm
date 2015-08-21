@@ -30,96 +30,28 @@ use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
     vlan => { 
-        '000_cac-usage'   => {
+        '001_in'   => {
             set => {
-                key_values => [ { name => 'display' }, { name => 'cacUsed' }, { name => 'cacAllowed' } ],
-                closure_custom_calc => \&custom_cac_usage_calc,
-                closure_custom_calc_extra_options => { label_output => 'External Communication', label_perf => 'cac' },
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                key_values => [ { name => 'in' }, { name => 'display' } ],
+                output_template => 'In : %s %s/s', output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'in', value => 'in_absolute', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             },
         },
-        '001_conference-usage'   => {
+        '001_out'   => {
             set => {
-                key_values => [ { name => 'display' }, { name => 'confBusy' }, { name => 'confAvailable' } ],
-                closure_custom_calc => \&custom_conference_usage_calc,
-                closure_custom_calc_extra_options => { label_output => 'Conference circuits', label_perf => 'conference' },
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                key_values => [ { name => 'out' }, { name => 'display' } ],
+                output_template => 'Out : %s %s/s', output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'out', value => 'out_absolute', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             },
         },
     }
 };
-
-sub custom_usage_perfdata {
-    my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label_perf} . '_used' . $extra_label,
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
-}
-
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-
-    my $msg = sprintf("%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $self->{result_values}->{label_output},
-                      $self->{result_values}->{total},
-                      $self->{result_values}->{used}, $self->{result_values}->{prct_used},
-                      $self->{result_values}->{free}, $self->{result_values}->{prct_free});
-    return $msg;
-}
-
-sub custom_cac_usage_calc {
-    my ($self, %options) = @_;
-
-    if ($options{new_datas}->{$self->{instance} . '_cacAllowed'} <= 0) {
-        $self->{error_msg} = "skipped (no allowed)";
-        return -2;
-    }
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_cacAllowed'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_cacUsed'};
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
-    $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
-    return 0;
-}
-
-sub custom_conference_usage_calc {
-    my ($self, %options) = @_;
-
-    if ($options{new_datas}->{$self->{instance} . '_confAvailable'} <= 0) {
-        $self->{error_msg} = "skipped (no available)";
-        return -2;
-    }
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_confAvailable'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_confBusy'};
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{label_perf} = $options{extra_options}->{label_perf};
-    $self->{result_values}->{label_output} = $options{extra_options}->{label_output};
-    return 0;
-}
 
 sub new {
     my ($class, %options) = @_;
@@ -226,16 +158,16 @@ sub run {
             $obj->perfdata(extra_instance => $multiple);
         }
 
-        $self->{output}->output_add(long_msg => "VLAN '$self->{vlan}->{$id}->{display}' $long_msg");
+        $self->{output}->output_add(long_msg => "VLAN '$self->{vlan}->{$id}->{display}' Traffic $long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "VLAN '$self->{vlan}->{$id}->{display}' $short_msg"
+                                        short_msg => "VLAN '$self->{vlan}->{$id}->{display}' Traffic $short_msg"
                                         );
         }
         
         if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "VLAN '$self->{vlan}->{$id}->{display}' $long_msg");
+            $self->{output}->output_add(short_msg => "VLAN '$self->{vlan}->{$id}->{display}' Traffic $long_msg");
         }
     }
      
@@ -243,7 +175,7 @@ sub run {
     $self->{output}->exit();
 }
 
-my $oid_extendVlanStaticName = '.1.3.6.1.4.1.5003.9.10.8.2';
+my $oid_extendVlanStaticName = '.1.3.6.1.4.1.637.61.1.31.2.4.1.6';
 my $oid_extendPortVlanVlanIndex = '.1.3.6.1.4.1.637.61.1.31.2.12.1.1';
 my $oid_dot1dBasePortIfIndex = '.1.3.6.1.2.1.17.1.4.1.2';
 my $oid_ifDescr = '.1.3.6.1.2.1.2.2.1.2';
@@ -318,7 +250,7 @@ sub manage_selection {
             }
             
             $self->{snmp}->load(oids => [$oid_extendPortVlanCurrent1DayUpFwdByteCounter, $oid_extendPortVlanCurrent1DayDnFwdByteCounter],
-                                instances => $dot1dBasePort . '.' . $vlan_index);
+                                instances => [$dot1dBasePort . '.' . $vlan_index], instance_regexp => '(.*)');
         }
         
         $self->{vlan}->{$vlan_index} = { display => $vlan_name, in => 0, out => 0 };
@@ -330,16 +262,12 @@ sub manage_selection {
         next if ($_ !~ /^$oid_extendPortVlanCurrent1DayUpFwdByteCounter\.(\d+)\.(\+d)$/);
         my $vlan_index = $2;
         
-        my $in = unpack('b*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index});
-        my $out = unpack('b*', $self->{results}->{$_});
+        my $in = oct("0b". unpack('b*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}));
+        my $out = oct("0b". unpack('b*', $self->{results}->{$_}));
 
-        $self->{vlan}->{$vlan_index}->{in} += $in;
-        $self->{vlan}->{$vlan_index}->{in} += $out;
+        $self->{vlan}->{$vlan_index}->{in} += $in * 8;
+        $self->{vlan}->{$vlan_index}->{out} += $out * 8;
     }
-    
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{vlan});
-    exit(1);
     
     if (scalar(keys %{$self->{vlan}}) <= 0) {
         $self->{output}->output_add(severity => defined($self->{no_components}) ? $self->{no_components} : 'unknown',
