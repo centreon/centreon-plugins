@@ -72,7 +72,7 @@ sub manage_selection {
             next;
         }
         
-        $self->{output}->output_add(long_msg => "Skipping pool '" . $self->{result_names}->{$oid} . "': no matching filter name");
+        $self->{output}->output_add(long_msg => "Skipping pool '" . $self->{result_names}->{$oid} . "': no matching filter name", debug => 1);
     }
 }
 
