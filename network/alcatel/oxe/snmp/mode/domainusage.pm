@@ -252,7 +252,7 @@ sub manage_selection {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
         if (defined($self->{option_results}->{filter_domain}) && $self->{option_results}->{filter_domain} ne '' &&
             $instance !~ /$self->{option_results}->{filter_domain}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $instance . "': no matching filter.");
+            $self->{output}->output_add(long_msg => "Skipping  '" . $instance . "': no matching filter.", debug => 1);
             next;
         }
 
