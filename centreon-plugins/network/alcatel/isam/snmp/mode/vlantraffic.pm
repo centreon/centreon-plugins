@@ -32,7 +32,7 @@ my $maps_counters = {
     vlan => { 
         '001_in'   => {
             set => {
-                key_values => [ { name => 'in' }, { name => 'display' } ],
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 output_template => 'In : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
                     { label => 'in', value => 'in_absolute', template => '%d',
@@ -42,7 +42,7 @@ my $maps_counters = {
         },
         '001_out'   => {
             set => {
-                key_values => [ { name => 'out' }, { name => 'display' } ],
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 output_template => 'Out : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
                     { label => 'out', value => 'out_absolute', template => '%d',
@@ -128,6 +128,11 @@ sub run {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All VLAN usages are ok');
     }
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => "alcatel_isam_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . 
+            (defined($self->{option_results}->{filter_vlan}) ? md5_hex($self->{option_results}->{filter_vlan}) : md5_hex('all')) . '_' .
+            (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all')));
+    $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $id (sort keys %{$self->{vlan}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -136,7 +141,8 @@ sub run {
             my $obj = $maps_counters->{vlan}->{$_}->{obj};
             $obj->set(instance => $id);
         
-            my ($value_check) = $obj->execute(values => $self->{vlan}->{$id});
+            my ($value_check) = $obj->execute(values => $self->{vlan}->{$id},
+                                              new_datas => $self->{new_datas});
 
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -170,7 +176,8 @@ sub run {
             $self->{output}->output_add(short_msg => "VLAN '$self->{vlan}->{$id}->{display}' Traffic $long_msg");
         }
     }
-     
+    
+    $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -206,7 +213,7 @@ sub manage_selection {
     my ($self, %options) = @_;
  
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_alcatel_isam_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
