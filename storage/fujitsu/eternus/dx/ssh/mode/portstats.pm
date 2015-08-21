@@ -199,6 +199,7 @@ sub manage_selection {
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
+                                                  ssh_pipe => 1,
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
