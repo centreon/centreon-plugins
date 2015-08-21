@@ -1313,7 +1313,7 @@ Don't skip counters when no change.
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 180).
+Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
