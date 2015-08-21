@@ -266,7 +266,7 @@ sub manage_selection {
     $self->{results} = $self->{snmp}->get_leef();
  
     foreach (keys %{$self->{results}}) {
-        next if ($_ !~ /^$oid_extendPortVlanCurrent1DayUpFwdByteCounter\.(\d+)\.(\+d)$/);
+        next if ($_ !~ /^$oid_extendPortVlanCurrent1DayUpFwdByteCounter\.(\d+)\.(\d+)$/);
         my $vlan_index = $2;
         
         my $in = oct("0b". unpack('b*', $self->{results}->{$oid_extendPortVlanCurrent1DayDnFwdByteCounter . '.' . $1 . '.' . $vlan_index}));
