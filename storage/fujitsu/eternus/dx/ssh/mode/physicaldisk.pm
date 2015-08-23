@@ -60,7 +60,7 @@ sub new {
                                   "timeout:s"               => { name => 'timeout', default => 30 },
                                   "command:s"               => { name => 'command', default => 'show' },
                                   "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => 'disks -csv' },
+                                  "command-options:s"       => { name => 'command_options', default => 'disks' },
                                   "filter:s@"               => { name => 'filter' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                   "no-component:s"          => { name => 'no_component' },
@@ -118,16 +118,17 @@ sub run {
                                                   command_path => $self->{option_results}->{command_path},
                                                   command_options => $self->{option_results}->{command_options});
 
-    #[Location],[Status],[Size],[Type],[Speed],[Usage],[Health],[RAID Group],[Motor Status],[Rebuild/Copyback Progress],[Vendor ID],[Product ID],[Serial Number],[WWN],[Firmware Revision],[Total completed passes],[Progress with current pass],[Completed passes since last Power On]
-    #CE-Disk#0,Available,2.0TB,Unknown,-,System,0%,-,Active,-,FUJITSU,PRODUCT-00000001,SERIAL-000000001,0000000000000000,REV-0001,0Cycles,0%,0Cycles
-    #CE-Disk#1,Available,2.0TB,Unknown,-,System,0%,-,Active,-,FUJITSU,PRODUCT-00000001,SERIAL-000000002,0000000000000000,REV-0001,0Cycles,0%,0Cycles
-    #CE-Disk#2,Available,2.0TB,Unknown,-,System,0%,-,Active,-,FUJITSU,PRODUCT-00000001,SERIAL-000000003,0000000000000000,REV-0001,0Cycles,0%,0Cycles
-    #CE-Disk#3,Available,2.0TB,Unknown,-,System,0%,-,Active,-,FUJITSU,PRODUCT-00000001,SERIAL-000000004,0000000000000000,REV-0001,0Cycles,0%,0Cycles
+    #Location      Status                        Size    Type                Speed(rpm) Usage               Health(%)
+    #------------- ----------------------------- ------- ------------------- ---------- ------------------- ---------
+    #CE-Disk#0     Available                         4TB 3.5 SSD-H                 7200 System                    100
+    #CE-Disk#1     Available                         4TB 3.5 SSD-M                 7200 System                      0
+    #CE-Disk#2     Available                         4TB 3.5 SSD-L                 7200 System                      0
+    #CE-Disk#3     Available                         4TB 3.5 Nearline SED          7200 System                      0
     
     my $total_components = 0;
-    while ($stdout =~ /^(.*?),(.*?),/msg) {
+    while ($stdout =~ /^(\S+)\s+(\S+)/msg) {
         my ($disk_name, $disk_status) = ($1, $2);
-        next if ($disk_name =~ /\[.*?\]/);
+        next if ($disk_name =~ /Location|---/);
 
         next if ($self->check_filter(section => 'disk', instance => $disk_name));
 
@@ -233,7 +234,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: 'disks -csv').
+Command options (Default: 'disks').
 
 =item B<--filter>
 

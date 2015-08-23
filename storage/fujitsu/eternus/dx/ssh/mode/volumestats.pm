@@ -50,20 +50,20 @@ my $maps_counters = {
         },
         '002_read-traffic'   => {
             set => {
-                key_values => [ { name => 'read_traffic' }, { name => 'display' } ],
+                key_values => [ { name => 'read_throughput' }, { name => 'display' } ],
                 output_template => 'Read Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_traffic', value => 'read_traffic_absolute', template => '%d',
+                    { label => 'read_throughput', value => 'read_throughput_absolute', template => '%d',
                       unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             },
         },
         '003_write-traffic'   => {
             set => {
-                key_values => [ { name => 'write_traffic' }, { name => 'display' } ],
+                key_values => [ { name => 'write_throughput' }, { name => 'display' } ],
                 output_template => 'Write Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_traffic', value => 'write_traffic_absolute', template => '%d',
+                    { label => 'write_throughput', value => 'write_throughput_absolute', template => '%d',
                       unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             },
@@ -271,9 +271,28 @@ sub manage_selection {
     #    2 VOL002                                 7791       6608        613        292      12148      11045       10005      10007           41         37         36
     
     $self->{vol} = {};
+    my %template_label = (cache_hit_rate => { labels => ['read', 'write', 'prefetch'] });
+    my @template_values = ();
     foreach (split /\n/, $stdout) {
-        next if ($_ !~ /^\s*(\d+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/);
-        my @matches = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+        if (/^Volume/) {            
+            while (/(\sIOPS|\sThroughput|\sResponse Time|\sProcessing Time|[^C]\sCache Hit Rate)/mgi) {
+                my $value = lc(centreon::plugins::misc::trim($1));
+                $value =~ s/ /_/g;
+                
+                my $labels = ['read', 'write'];
+                if (defined($template_label{$value})) {
+                    $labels = $template_label{$value}->{labels};
+                }
+                
+                foreach (@{$labels}) {
+                    push @template_values, { label => $_ . '_' . $value };
+                }
+            }
+            next;
+        }
+        next if (/----|Name/i);
+        my $value = centreon::plugins::misc::trim($_);
+        my @matches = split /\s+/, $value;
             
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $matches[1] !~ /$self->{option_results}->{filter_name}/) {
@@ -281,13 +300,15 @@ sub manage_selection {
             next;
         }
         
+        my %counters = ();
+        for (my $i = 0; $i < scalar(@template_values); $i++) {
+            $counters{$template_values[$i]->{label}} = $matches[$i + 2];
+        }
+        $counters{read_throughput} *= 1000 * 1000 * 8 if (defined($counters{read_throughput}));
+        $counters{write_throughput} *= 1000 * 1000 * 8 if (defined($counters{write_throughput}));
+        
         $self->{vol}->{$matches[0]} = { display => $matches[1],
-                                read_iops => $matches[2], write_iops => $matches[3],
-                                read_traffic => $matches[4] * 1000 * 1000 * 8,
-                                write_traffic => $matches[5] * 1000 * 1000 * 8,
-                                read_response_time => $matches[6], write_response_time => $matches[7],
-                                read_processing_time => $matches[8], write_processing_time => $matches[9],
-                                read_cache_hit_rate => $matches[10], write_cache_hit_rate => $matches[11],
+                                %counters
                               };
     }
     
