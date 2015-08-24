@@ -77,10 +77,10 @@ sub check_options {
         }
         my ($section, $instance, $status, $filter);
         if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @_;
+            ($section, $status, $filter) = @values;
             $instance = '.*';
         } else {
-             ($section, $instance, $status, $filter) = @_;
+             ($section, $instance, $status, $filter) = @values;
         }
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
