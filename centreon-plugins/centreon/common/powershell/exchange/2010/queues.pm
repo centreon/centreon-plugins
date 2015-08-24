@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::imapmailbox;
+package centreon::common::powershell::exchange::2010::queues;
 
 use strict;
 use warnings;
@@ -36,21 +36,15 @@ sub get_powershell {
     
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"
-    $username = "' . $options{mailbox}  . '"
-    $password = "' . $options{password}  . '"
-    $secstr = New-Object -TypeName System.Security.SecureString
-    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
-    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
-    
-    $results = Test-ImapConnectivity -MailboxCredential $cred
+    $ErrorActionPreference = "Stop"    
+    $results = Get-Queue
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
+    Write-Host "[identity=" $result.Identity "][deliverytype=" $result.DeliveryType "][status=" $result.Status "][isvalid=" $result.IsValid "][messagecount=" $result.MessageCount "][[error=" $result.LastError "]]"
 }
 exit 0
 ';
@@ -63,17 +57,17 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[scenario= Options ][result= Failure ][latency= 52,00 ][[error=...]]
+    #[identity=  ][deliverytype= SmtpRelayWithinAdSite][status= Active ][isvalid= Yes][messagecount= 1 ][[error=...]]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "Imap to '" . $options{mailbox} . "' is ok.");
+                                short_msg => "All Queues are ok.");
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[identity=(.*?)\]\[deliverytype=(.*?)\]\[status=(.*?)\]\[isvalid=(.*?)\]\[messagecount=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
+        ($self->{data}->{identity}, $self->{data}->{deliverytype}, $self->{data}->{status}, $self->{data}->{isvalid}, $self->{data}->{messagecount}, $self->{data}->{error}) = 
             ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
+             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6));
         
         $checked++;
         
@@ -95,13 +89,13 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
-                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
+                                        short_msg => sprintf("Queue '%s' status is '%s' [last error: %s]",
+                                                             $self->{data}->{identity}, $self->{data}->{status}, $self->{data}->{error}));
         }
         
-        if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
+        if ($self->{data}->{messagecount} =~ /^(\d+)/) {
+            $self->{output}->perfdata_add(label => 'queue_length_' . $self->{data}->{identity},
+                                          value => $1,
                                           min => 0);
         }
     }
@@ -118,6 +112,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 imap on a specific mailbox.
+Method to check Exchange 2010 queues.
 
 =cut

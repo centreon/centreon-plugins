@@ -115,23 +115,29 @@ sub check_mapi {
         return ;
     }
     
-    my $mapi_result = centreon::plugins::misc::trim($1);
+    $self->{data}->{mapi_result} = centreon::plugins::misc::trim($1);
+    $self->{output}->output_add(long_msg => "    MAPI Test connectivity: " . $self->{data}->{mapi_result});
     
-    $self->{output}->output_add(long_msg => "    MAPI Test connectivity: " . $mapi_result);
-    foreach my $th (('critical_mapi', 'warning_mapi')) {
-        next if (!defined($self->{thresholds}->{$th}));
+    my ($status, $message) = ('ok');
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if ($self->{thresholds}->{$th}->{operator} eq '=' && 
-            $mapi_result =~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("Server '%s' Database '%s' MAPI connectivity is %s",
-                                                            $options{server}, $options{database}, $mapi_result));
-        } elsif ($self->{thresholds}->{$th}->{operator} eq '!=' && 
-            $mapi_result !~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("Server '%s' Database '%s' MAPI connectivity is %s",
-                                                               $options{server}, $options{database}, $mapi_result));
+        if (defined($self->{option_results}->{critical_mapi}) && $self->{option_results}->{critical_mapi} ne '' &&
+            eval "$self->{option_results}->{critical_mapi}") {
+            $status = 'critical';
+        } elsif (defined($self->{option_results}->{warning_mapi}) && $self->{option_results}->{warning_mapi} ne '' &&
+                 eval "$self->{option_results}->{warning_mapi}") {
+            $status = 'warning';
         }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $status,
+                                    short_msg => sprintf("Server '%s' Database '%s' MAPI connectivity is %s",
+                                                         $self->{data}->{server}, $self->{data}->{database}, $self->{data}->{mapi_result}));
     }
 }
 
@@ -148,27 +154,34 @@ sub check_mailflow {
         return ;
     }
     
-    my ($mailflow_result, $latency) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2));
+    $self->{data}->{mailflow_result} = centreon::plugins::misc::trim($1);
+    my $latency = centreon::plugins::misc::trim($2);
+    $self->{output}->output_add(long_msg => "    Mailflow Test: " . $self->{data}->{mailflow_result});
     
-    $self->{output}->output_add(long_msg => "    Mailflow Test: " . $mailflow_result);
-    foreach my $th (('critical_mailflow', 'warning_mailflow')) {
-        next if (!defined($self->{thresholds}->{$th}));
+    my ($status, $message) = ('ok');
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if ($self->{thresholds}->{$th}->{operator} eq '=' && 
-            $mailflow_result =~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("Server '%s' Database '%s' Mailflow test is %s",
-                                                            $options{server}, $options{database}, $mailflow_result));
-        } elsif ($self->{thresholds}->{$th}->{operator} eq '!=' && 
-            $mailflow_result !~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("Server '%s' Database '%s' Mailflow test is %s",
-                                                            $options{server}, $options{database}, $mailflow_result));
+        if (defined($self->{option_results}->{critical_mailflow}) && $self->{option_results}->{critical_mailflow} ne '' &&
+            eval "$self->{option_results}->{critical_mailflow}") {
+            $status = 'critical';
+        } elsif (defined($self->{option_results}->{warning_mailflow}) && $self->{option_results}->{warning_mailflow} ne '' &&
+                 eval "$self->{option_results}->{warning_mailflow}") {
+            $status = 'warning';
         }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $status,
+                                    short_msg => sprintf("Server '%s' Database '%s' Mailflow test is %s",
+                                                         $self->{data}->{server}, $self->{data}->{database}, $self->{data}->{mailflow_result}));
     }
     
     if ($latency =~ /^(\d+)/) {
-        $self->{output}->perfdata_add(label => 'latency_' . $options{database}, unit => 's',
+        $self->{output}->perfdata_add(label => 'latency_' . $self->{data}->{server} . '_' . $self->{data}->{database}, unit => 's',
                                       value => sprintf("%.3f", $1 / 1000),
                                       min => 0);
     }
@@ -197,23 +210,24 @@ sub check {
     foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^\[name=(.*?)\]\[server=(.*?)\]\[mounted=(.*?)\]\[size=(.*?)\]\[asize=(.*?)\]/);
         $checked++;
-        my ($database, $server, $mounted, $size, $asize) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+        $self->{data} = {};
+        ($self->{data}->{database}, $self->{data}->{server}, $self->{data}->{mounted}, $self->{data}->{size}, $self->{data}->{asize}) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
                                              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
-        $self->{output}->output_add(long_msg => sprintf("Test database '%s' server '%s':", $database, $server));
-        if ($size =~ /\((.*?)\s*bytes/) {
+        $self->{output}->output_add(long_msg => sprintf("Test database '%s' server '%s':", $self->{data}->{database}, $self->{data}->{server}));
+        if ($self->{data}->{size} =~ /\((.*?)\s*bytes/) {
             my $total_bytes = $1;
             $total_bytes =~ s/[.,]//g;
-            $self->{output}->perfdata_add(label => 'size_' . $database, unit => 'B',
+            $self->{output}->perfdata_add(label => 'size_' . $self->{data}->{database}, unit => 'B',
                                           value => $total_bytes,
                                           min => 0);
             my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
             $self->{output}->output_add(long_msg => sprintf("    Size %s", $total_value . ' ' . $total_unit));
         }
-        if ($asize =~ /\((.*?)\s*bytes/) {
+        if ($self->{data}->{asize} =~ /\((.*?)\s*bytes/) {
             my $total_bytes = $1;
             $total_bytes =~ s/[.,]//g;
-            $self->{output}->perfdata_add(label => 'asize_' . $database, unit => 'B',
+            $self->{output}->perfdata_add(label => 'asize_' . $self->{data}->{database}, unit => 'B',
                                           value => $total_bytes,
                                           min => 0);
             my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
@@ -222,16 +236,16 @@ sub check {
         
         
         # Check mounted
-        if ($mounted =~ /False/i) {
+        if ($self->{data}->{mounted} =~ /False/i) {
             $self->{output}->output_add(long_msg => sprintf("    not mounted\n   Skip mapi/mailflow test"));
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Database '%s' server '%s' is not mounted", $database, $server));
+                                        short_msg => sprintf("Database '%s' server '%s' is not mounted", $self->{data}->{database}, $self->{data}->{server}));
             next;
         }
         $self->{output}->output_add(long_msg => sprintf("    mounted"));
         
-        check_mapi($self, database => $database, server => $server, line => $line);
-        check_mailflow($self, database => $database, server => $server, line => $line);
+        check_mapi($self, line => $line);
+        check_mailflow($self, line => $line);
     }
     
     if ($checked == 0) {
