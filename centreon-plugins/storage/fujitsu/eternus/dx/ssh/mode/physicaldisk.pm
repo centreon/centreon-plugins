@@ -33,7 +33,7 @@ my $thresholds = {
         ['Redundant Copy', 'OK'],
         ['Rebuild/Copyback', 'WARNING'],
         ['Available (Predictive Failure)', 'WARNING'],
-        ['Present', 'WARNING'],
+        ['Present', 'OK'],
         ['Failed Usable', 'WARNING'],
         ['Formatting', 'WARNING'],
         ['Not Format', 'WARNING'],
@@ -129,6 +129,7 @@ sub run {
     while ($stdout =~ /^(\S+)\s+(\S+)/msg) {
         my ($disk_name, $disk_status) = ($1, $2);
         next if ($disk_name =~ /Location|---/);
+        next if ($disk_name !~ /Disk/i);
 
         next if ($self->check_filter(section => 'disk', instance => $disk_name));
 
