@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::exchange::2010::imapmailbox;
+package centreon::common::powershell::exchange::2010::services;
 
 use strict;
 use warnings;
@@ -36,21 +36,17 @@ sub get_powershell {
     
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"
-    $username = "' . $options{mailbox}  . '"
-    $password = "' . $options{password}  . '"
-    $secstr = New-Object -TypeName System.Security.SecureString
-    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
-    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
-    
-    $results = Test-ImapConnectivity -MailboxCredential $cred
+    $ErrorActionPreference = "Stop"    
+    $results = Test-ServiceHealth
 } catch {
     Write-Host $Error[0].Exception
     exit 1
 }
 
 Foreach ($result in $results) {
-    Write-Host "[scenario=" $result.Scenario "][result=" $result.Result "][latency=" $result.Latency.TotalMilliseconds "][[error=" $Result.Error "]]"
+    $servicesrunning = [String]::join(",", $result.ServicesRunning)
+    $servicesnotrunning = [String]::join(",", $result.ServicesNotRunning)
+    Write-Host "[role=" $result.Role "][requiredservicesrunning=" $result.RequiredServicesRunning "][servicesrunning=" $servicesrunning "][servicesnotrunning=" $servicesnotrunning "]"
 }
 exit 0
 ';
@@ -63,15 +59,15 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[scenario= Options ][result= Failure ][latency= 52,00 ][[error=...]]
+    #[role= Mailbox Server Role ][requiredservicesrunning= True ][servicesrunning= IISAdmin,MSExchangeADTopology,MSExchangeSA,... ][servicesnotrunning=  ]
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "Imap to '" . $options{mailbox} . "' is ok.");
+                                short_msg => "All role services are ok.");
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
-    while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[role=(.*?)\]\[requiredservicesrunning=(.*?)\]\[servicesrunning=(.*?)\]\[servicesnotrunning=(.*?)\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
+        ($self->{data}->{role}, $self->{data}->{requiredservicesrunning}, $self->{data}->{servicesrunning}, $self->{data}->{servicesnotrunning}) = 
             ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
         
@@ -95,14 +91,8 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
-                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
-        }
-        
-        if ($self->{data}->{latency} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
-                                          value => sprintf("%.3f", $1 / 1000),
-                                          min => 0);
+                                        short_msg => sprintf("Role '%s' services problem [services not running: %s]",
+                                                             $self->{data}->{role}, $self->{data}->{servicesnotrunning}));
         }
     }
     
@@ -118,6 +108,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to check Exchange 2010 imap on a specific mailbox.
+Method to check Exchange 2010 services running or not running.
 
 =cut

@@ -38,6 +38,8 @@ sub new {
                          'imap-mailbox'         => 'apps::exchange::2010::local::mode::imapmailbox',
                          'mapi-mailbox'         => 'apps::exchange::2010::local::mode::mapimailbox',
                          'owa-mailbox'          => 'apps::exchange::2010::local::mode::owamailbox',
+                         'queues'               => 'apps::exchange::2010::local::mode::queues',
+                         'services'             => 'apps::exchange::2010::local::mode::services',
                          );
 
     return $self;
