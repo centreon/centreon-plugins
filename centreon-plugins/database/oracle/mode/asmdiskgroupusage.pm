@@ -252,7 +252,7 @@ sub change_macros {
         }
     }
     
-    $self->{check_status} = '%{state} =~ /^(mounted|dismounted|connected)$/';
+    $self->{check_status} = '%{state} =~ /^(mounted|dismounted|connected)$/i';
     $self->{check_status} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
 }
 
