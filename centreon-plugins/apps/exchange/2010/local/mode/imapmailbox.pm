@@ -49,7 +49,6 @@ sub new {
                                   "mailbox:s"           => { name => 'mailbox', },
                                   "password:s"          => { name => 'password', },
                                 });
-    $self->{thresholds} = {};
     return $self;
 }
 

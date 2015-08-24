@@ -48,7 +48,6 @@ sub new {
                                   "critical-mapi:s"     => { name => 'critical_mapi', default => '%{result} !~ /Success/i' },
                                   "mailbox:s"           => { name => 'mailbox', },
                                 });
-    $self->{thresholds} = {};
     return $self;
 }
 

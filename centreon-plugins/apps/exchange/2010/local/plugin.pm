@@ -39,6 +39,7 @@ sub new {
                          'mapi-mailbox'         => 'apps::exchange::2010::local::mode::mapimailbox',
                          'owa-mailbox'          => 'apps::exchange::2010::local::mode::owamailbox',
                          'queues'               => 'apps::exchange::2010::local::mode::queues',
+                         'replication-health'   => 'apps::exchange::2010::local::mode::replicationhealth',
                          'services'             => 'apps::exchange::2010::local::mode::services',
                          );
 

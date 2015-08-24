@@ -47,7 +47,6 @@ sub new {
                                   "warning:s"           => { name => 'warning', },
                                   "critical:s"          => { name => 'critical', default => '%{status} !~ /Ready|Active/i' },
                                 });
-    $self->{thresholds} = {};
     return $self;
 }
 

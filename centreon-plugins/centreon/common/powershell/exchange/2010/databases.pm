@@ -31,6 +31,7 @@ sub get_powershell {
     my $no_mailflow = (defined($options{no_mailflow})) ? 1 : 0;
     my $no_ps = (defined($options{no_ps})) ? 1 : 0;
     my $no_mapi = (defined($options{no_mapi})) ? 1 : 0;
+    my $no_copystatus = (defined($options{no_copystatus})) ? 1 : 0;
     
     return '' if ($no_ps == 1);
     
@@ -88,6 +89,13 @@ Foreach ($DB in $MountedDB) {
             # Test Mailflow
             $MailflowResult = Test-mailflow -Targetdatabase $DB.Name
             Write-Host "[mailflow=" $MailflowResult.testmailflowresult "][latency=" $MailflowResult.MessageLatencyTime.TotalMilliseconds "]" -NoNewline
+';
+    }
+    if ($no_copystatus == 0) {
+        $ps .= '
+            # Test CopyStatus
+            $CopyStatusResult = Get-MailboxDatabaseCopyStatus -Identity $DB.Name
+            Write-Host "[contentindexstate=" $CopyStatusResult.ContentIndexState "][[contentindexerrormessage=" $CopyStatusResult.ContentIndexErrorMessage "]]" -NoNewline
 ';
     }
 
@@ -187,6 +195,45 @@ sub check_mailflow {
     }
 }
 
+sub check_copystatus {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{no_copystatus})) {
+        $self->{output}->output_add(long_msg => '    Skip copy status test');
+        return ;
+    }
+    
+    if ($options{line} !~ /\[contentindexstate=(.*?)\]\[\[contentindexerrormessage=(.*?)\]\]/) {
+        $self->{output}->output_add(long_msg => '    Skip copystatus test (information not found)');
+        return ;
+    }
+    
+    ($self->{data}->{copystatus_indexstate}, $self->{data}->{copystatus_indexerror}) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2));
+    $self->{output}->output_add(long_msg => "    Copystatus state : " . $self->{data}->{copystatus_indexstate});
+    
+    my ($status, $message) = ('ok');
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($self->{option_results}->{critical_copystatus}) && $self->{option_results}->{critical_copystatus} ne '' &&
+            eval "$self->{option_results}->{critical_copystatus}") {
+            $status = 'critical';
+        } elsif (defined($self->{option_results}->{warning_copystatus}) && $self->{option_results}->{warning_copystatus} ne '' &&
+                 eval "$self->{option_results}->{warning_copystatus}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $status,
+                                    short_msg => sprintf("Server '%s' Database '%s' copystatus state is %s [error: %s]",
+                                                         $self->{data}->{server}, $self->{data}->{database}, $self->{data}->{copystatus_indexstate}, $self->{data}->{copystatus_indexerror}));
+    }
+}
+
 sub check {
     my ($self, %options) = @_;
     # options: stdout
@@ -246,6 +293,7 @@ sub check {
         
         check_mapi($self, line => $line);
         check_mailflow($self, line => $line);
+        check_copystatus($self, line => $line);
     }
     
     if ($checked == 0) {
