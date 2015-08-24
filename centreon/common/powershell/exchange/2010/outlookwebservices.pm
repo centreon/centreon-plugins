@@ -37,7 +37,7 @@ sub get_powershell {
     $ps .= '
 try {
     $ErrorActionPreference = "Stop"    
-    $results = Test-OutlookWebServices -Identity "' . $options{mailbox} . '"
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -Identity "' . $options{mailbox} . '"
 } catch {
     Write-Host $Error[0].Exception
     exit 1
