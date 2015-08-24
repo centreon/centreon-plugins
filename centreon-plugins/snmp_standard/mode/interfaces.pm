@@ -1136,8 +1136,8 @@ sub add_result_global {
 sub add_result_status {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{opstatus} = $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}};
-    $self->{interface_selected}->{$options{instance}}->{admstatus} = $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}};
+    $self->{interface_selected}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
+    $self->{interface_selected}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
 }
 
 sub add_result_errors {
@@ -1163,8 +1163,8 @@ sub add_result_traffic {
             $self->{interface_selected}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
         }
     }
-    $self->{interface_selected}->{$options{instance}}->{in} *= 8;
-    $self->{interface_selected}->{$options{instance}}->{out} *= 8;
+    $self->{interface_selected}->{$options{instance}}->{in} *= 8 if (defined($self->{interface_selected}->{$options{instance}}->{in}));
+    $self->{interface_selected}->{$options{instance}}->{out} *= 8 if (defined($self->{interface_selected}->{$options{instance}}->{out}));
     
     $self->{interface_selected}->{$options{instance}}->{speed_in} = 0;
     $self->{interface_selected}->{$options{instance}}->{speed_out} = 0;
