@@ -94,7 +94,8 @@ Foreach ($DB in $MountedDB) {
     if ($no_copystatus == 0) {
         $ps .= '
             # Test CopyStatus
-            $CopyStatusResult = Get-MailboxDatabaseCopyStatus -Identity $DB.Name
+            $tmp_name = $DB.Name + "\" + $DB.Server
+            $CopyStatusResult = Get-MailboxDatabaseCopyStatus -Identity $tmp_name
             Write-Host "[contentindexstate=" $CopyStatusResult.ContentIndexState "][[contentindexerrormessage=" $CopyStatusResult.ContentIndexErrorMessage "]]" -NoNewline
 ';
     }
