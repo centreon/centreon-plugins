@@ -68,6 +68,7 @@ sub new {
     $self->{version} = '0.9';
     $options{options}->add_options(arguments =>
                                 {
+                                "filter:s@"               => { name => 'filter' },
                                 "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 "warning:s@"              => { name => 'warning' },
                                 "critical:s@"             => { name => 'critical' },
@@ -79,6 +80,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    $self->{filter} = [];
+    foreach my $val (@{$self->{option_results}->{filter}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
+    }
+    
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         next if (!defined($val) || $val eq '');
@@ -141,6 +149,8 @@ sub run {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
+        next if ($self->check_filter(section => 'sensor', instance => $instance));
+        
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' state is '%s' [instance: %s, value: %s]", 
                                     $result->{sensName}, $result->{sensState}, $instance, $result->{sensTemp}));
         my $exit = $self->get_severity(section => 'sensor',
@@ -151,7 +161,6 @@ sub run {
         } 
         
         if ($result->{sensTemp} =~ /\d+/) {
-            $result->{sensTemp} *= 0.1;
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, value => $result->{sensTemp});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
@@ -168,6 +177,25 @@ sub run {
     $self->{output}->display();
     $self->{output}->exit();
 }
+
+sub check_filter {
+    my ($self, %options) = @_;
+
+    foreach (@{$self->{filter}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($options{instance}) && !defined($_->{instance})) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                return 1;
+            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+
 
 sub get_severity_numeric {
     my ($self, %options) = @_;
@@ -222,6 +250,11 @@ __END__
 Check HWg-STE sensors.
 
 =over 8
+
+=item B<--filter>
+
+Exclude some parts.
+Can also exclude specific instance: --filter=sensor,10
 
 =item B<--threshold-overload>
 
