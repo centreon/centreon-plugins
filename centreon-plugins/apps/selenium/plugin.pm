@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
         'scenario'  => 'apps::selenium::mode::scenario',
     );
