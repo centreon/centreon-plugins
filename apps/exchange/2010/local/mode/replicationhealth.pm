@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::exchange::2010::local::mode::services;
+package apps::exchange::2010::local::mode::replicationhealth;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::exchange::2010::services;
+use centreon::common::powershell::exchange::2010::replicationhealth;
 
 sub new {
     my ($class, %options) = @_;
@@ -43,9 +43,9 @@ sub new {
                                   "command:s"           => { name => 'command', default => 'powershell.exe' },
                                   "command-path:s"      => { name => 'command_path' },
                                   "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only', },
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', default => '%{requiredservicesrunning} =~ /True/i and %{servicesnotrunning} ne ""' },
+                                  "ps-exec-only"            => { name => 'ps_exec_only', },
+                                  "warning:s"               => { name => 'warning', },
+                                  "critical:s"              => { name => 'critical', default => '%{result} !~ /Passed/i' },
                                 });
     return $self;
 }
@@ -70,12 +70,12 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::services::get_powershell(
-                                                                                   remote_host => $self->{option_results}->{remote_host},
-                                                                                   remote_user => $self->{option_results}->{remote_user},
-                                                                                   remote_password => $self->{option_results}->{remote_password},
-                                                                                   no_ps => $self->{option_results}->{no_ps},
-                                                                                  );
+    my $ps = centreon::common::powershell::exchange::2010::replicationhealth::get_powershell(
+                                                                                  remote_host => $self->{option_results}->{remote_host},
+                                                                                  remote_user => $self->{option_results}->{remote_user},
+                                                                                  remote_password => $self->{option_results}->{remote_password},
+                                                                                  no_ps => $self->{option_results}->{no_ps},
+                                                                                 );
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
                                                             timeout => $self->{option_results}->{timeout},
@@ -88,7 +88,7 @@ sub run {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    centreon::common::powershell::exchange::2010::services::check($self, stdout => $stdout);
+    centreon::common::powershell::exchange::2010::replicationhealth::check($self, stdout => $stdout);
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -100,7 +100,7 @@ __END__
 
 =head1 MODE
 
-Check exchange services.
+Check replication health.
 
 =over 8
 
@@ -144,12 +144,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+Can used special variables like: %{result}, %{server}, %{isvalid}, %{check}
 
 =item B<--critical>
 
-Set critical threshold (Default: '%{requiredservicesrunning} =~ /True/i and %{servicesnotrunning} ne ""').
-Can used special variables like: %{servicesrunning}, %{servicesnotrunning}, %{role}, %{requiredservicesrunning}
+Set critical threshold (Default: '%{result} !~ /Passed/i').
+Can used special variables like: %{result}, %{server}, %{isvalid}, %{check}
 
 =back
 

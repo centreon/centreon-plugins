@@ -51,7 +51,6 @@ sub new {
                                   "password:s"          => { name => 'password', },
                                   "no-trust-ssl"        => { name => 'no_trust_ssl', },
                                 });
-    $self->{thresholds} = {};
     return $self;
 }
 
