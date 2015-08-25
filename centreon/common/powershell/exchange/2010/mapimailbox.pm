@@ -63,27 +63,36 @@ sub check {
                                     short_msg => 'Cannot find informations');
         return ;
     }
-    my ($database, $server, $result, $error) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                                centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
+    $self->{data} = {};
+    ($self->{data}->{database}, $self->{data}->{server}, $self->{data}->{result}, $self->{data}->{error}) = 
+        (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+         centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "MAPI connection to '" . $options{mailbox} . "' is '" . $result . "'.");
+                                short_msg => "MAPI connection to '" . $options{mailbox} . "' is '" . $self->{data}->{result} . "'.");
     $self->{output}->output_add(long_msg => sprintf("Database: %s, Server: %s\nError: %s",
-                                                    $database, $server, $error));
-    foreach my $th (('critical_mapi', 'warning_mapi')) {
-        next if (!defined($self->{thresholds}->{$th}));
+                                                    $self->{data}->{database}, $self->{data}->{server}, $self->{data}->{error}));
+    
+    my ($status, $message) = ('ok');
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if ($self->{thresholds}->{$th}->{operator} eq '=' && 
-            $result =~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("MAPI connection to '%s' is '%s'",
-                                                             $options{mailbox}, $result));
-        } elsif ($self->{thresholds}->{$th}->{operator} eq '!=' && 
-            $result !~ /$self->{thresholds}->{$th}->{state}/) {
-            $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                        short_msg => sprintf("MAPI connection to '%s' is '%s'",
-                                                             $options{mailbox}, $result));
+        if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
+            eval "$self->{option_results}->{critical}") {
+            $status = 'critical';
+        } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
+                 eval "$self->{option_results}->{warning}") {
+            $status = 'warning';
         }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $status,
+                                    short_msg => sprintf("MAPI connection to '%s' is '%s'",
+                                                         $options{mailbox}, $self->{data}->{result}));
     }
 }
 

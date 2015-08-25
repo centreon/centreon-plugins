@@ -69,10 +69,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-
-    if (!defined($self->{option_results}->{port})) {
-        $self->{option_results}->{port} = centreon::plugins::httplib::get_port($self);
-    }
     
     my ($connection, $timing0, $timeelapsed);
     if (defined($self->{option_results}->{ssl})) {

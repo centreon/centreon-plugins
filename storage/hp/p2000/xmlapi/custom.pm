@@ -22,7 +22,7 @@ package storage::hp::p2000::xmlapi::custom;
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use XML::XPath;
 use Digest::MD5 qw(md5_hex);
 
@@ -108,7 +108,7 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
     $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
-    
+        
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -129,8 +129,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
      
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
@@ -179,9 +177,8 @@ sub DESTROY {
     my $self = shift;
     
     if ($self->{logon} == 1) {
-        $self->{option_results}->{url_path} = $self->{url_path} . 'exit';
-        centreon::plugins::httplib::connect($self, 
-                                            headers => {dataType => 'api', sessionKey => $self->{session_id} });
+        $self->{http}->request(url_path => $self->{url_path} . 'exit',
+                               header => ['dataType: api', 'sessionKey: ' . $self->{session_id}]);
     }
 }
 
@@ -191,9 +188,8 @@ sub get_infos {
     
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    $self->{option_results}->{url_path} = $self->{url_path} . $cmd;
-    my $response = centreon::plugins::httplib::connect($self, 
-                                                       headers => {dataType => 'api', sessionKey => $self->{session_id} });
+    my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
+                                         header => ['dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
@@ -232,11 +228,12 @@ sub login {
     my ($self, %options) = @_;
     
     $self->build_options_for_httplib();
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http}->set_options(%{$self->{option_results}});
     
     # Login First
     my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
-    $self->{option_results}->{url_path} = $self->{url_path} . 'login/' . $md5_hash;
-    my $response = centreon::plugins::httplib::connect($self);
+    my $response = $self->{http}->request(url_path => $self->{url_path} . 'login/' . $md5_hash);
     $self->check_login(content => $response);
 }
 

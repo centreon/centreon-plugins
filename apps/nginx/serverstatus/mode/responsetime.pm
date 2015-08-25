@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -37,7 +37,7 @@ sub new {
          {
          "hostname:s"   => { name => 'hostname' },
          "port:s"       => { name => 'port', },
-         "proto:s"      => { name => 'proto', default => "http" },
+         "proto:s"      => { name => 'proto' },
          "urlpath:s"    => { name => 'url_path', default => "/nginx_status" },
          "credentials"  => { name => 'credentials' },
          "username:s"   => { name => 'username' },
@@ -45,8 +45,12 @@ sub new {
          "proxyurl:s"   => { name => 'proxyurl' },
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '3' },
+         "timeout:s"    => { name => 'timeout' },
+         "unknown-status:s"     => { name => 'unknown_status', default => '' },
+         "warning-status:s"     => { name => 'warning_status' },
+         "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
          });
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -63,19 +67,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
@@ -83,12 +75,12 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    my $webcontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');    
+    my $webcontent = $self->{http}->request();
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Response time %fs ", $timeelapsed));
     $self->{output}->perfdata_add(label => "time",
@@ -145,6 +137,18 @@ Proxy URL if any
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--unknown-status>
+
+Threshold warning for http response code
+
+=item B<--warning-status>
+
+Threshold warning for http response code
+
+=item B<--critical-status>
+
+Threshold critical for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning>
 

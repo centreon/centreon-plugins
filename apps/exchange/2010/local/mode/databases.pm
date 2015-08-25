@@ -27,9 +27,6 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::exchange::2010::databases;
 
-my %threshold = ('warning_mapi' => 'warning', 'critical_mapi' => 'critical',
-                 'warning_mailflow' => 'warning', 'critical_mailflow' => 'critical');
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -44,6 +41,7 @@ sub new {
                                   "no-ps"             => { name => 'no_ps', },
                                   "no-mailflow"       => { name => 'no_mailflow', },
                                   "no-mapi"           => { name => 'no_mapi', },
+                                  "no-copystatus"     => { name => 'no_copystatus', },
                                   "timeout:s"         => { name => 'timeout', default => 50 },
                                   "command:s"         => { name => 'command', default => 'powershell.exe' },
                                   "command-path:s"    => { name => 'command_path' },
@@ -52,30 +50,30 @@ sub new {
                                   "ps-database-filter:s"      => { name => 'ps_database_filter', },
                                   "ps-database-test-filter:s" => { name => 'ps_database_test_filter', },
                                   "warning-mapi:s"            => { name => 'warning_mapi', },
-                                  "critical-mapi:s"           => { name => 'critical_mapi', },
+                                  "critical-mapi:s"           => { name => 'critical_mapi', default => '%{mapi_result} !~ /Success/i' },
                                   "warning-mailflow:s"        => { name => 'warning_mailflow', },
-                                  "critical-mailflow:s"       => { name => 'critical_mailflow', },
+                                  "critical-mailflow:s"       => { name => 'critical_mailflow', default => '%{mailflow_result} !~ /Success/i' },
+                                  "warning-copystatus:s"        => { name => 'warning_copystatus', },
+                                  "critical-copystatus:s"       => { name => 'critical_copystatus', default => '%{copystatus_indexstate} !~ /Healthy/i' },
                                 });
-    $self->{thresholds} = {};
     return $self;
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning_mapi', 'critical_mapi', 'warning_mailflow', 'critical_mailflow', 'warning_copystatus', 'critical_copystatus')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
+        }
+    }
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $th (keys %threshold) {
-        next if (!defined($self->{option_results}->{$th}));
-        if ($self->{option_results}->{$th} !~ /^(\!=|=){0,1}(.*){0,1}/) {
-            $th =~ s/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold for option '--" . $th . "': " . $self->{option_results}->{$th});
-            $self->{output}->option_exit();
-        }
-        
-        my $operator = defined($1) && $1 ne '' ? $1 : '!=';
-        my $state = defined($2) && $2 ne '' ? $2 : 'Success';
-        $self->{thresholds}->{$th} = { state => $state, operator => $operator, out => $threshold{$th} };
-    }
+    $self->change_macros();
 }
 
 sub run {
@@ -87,6 +85,7 @@ sub run {
                                                                                      no_mailflow => $self->{option_results}->{no_mailflow},
                                                                                      no_ps => $self->{option_results}->{no_ps},
                                                                                      no_mapi => $self->{option_results}->{no_mapi},
+                                                                                     no_copystatus => $self->{option_results}->{no_copystatus},
                                                                                      filter_database => $self->{option_results}->{ps_database_filter},
                                                                                      filter_database_test => $self->{option_results}->{ps_database_test_filter});
     $self->{option_results}->{command_options} .= " " . $ps;
@@ -113,7 +112,7 @@ __END__
 
 =head1 MODE
 
-Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working.
+Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working and CopyStatus.
 
 =over 8
 
@@ -136,6 +135,10 @@ Don't check mailflow connectivity.
 =item B<--no-mapi>
 
 Don't check mapi connectivity.
+
+=item B<--no-copystatus>
+
+Don't check copy status.
 
 =item B<--timeout>
 
@@ -172,27 +175,33 @@ Skip mapi/mailflow test (regexp can be used. In Powershell).
 
 =item B<--warning-mapi>
 
-Warning threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set warning threshold.
+Can used special variables like: %{mapi_result}, %{database}, %{server}
 
 =item B<--critical-mapi>
 
-Critical threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set critical threshold (Default: '%{mapi_result} !~ /Success/i').
+Can used special variables like: %{mapi_result}, %{database}, %{server}
 
 =item B<--warning-mailflow>
 
-Warning threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set warning threshold.
+Can used special variables like: %{mailflow_result}, %{database}, %{server}
 
 =item B<--critical-mailflow>
 
-Critical threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set critical threshold (Default: '%{mailflow_result} !~ /Success/i').
+Can used special variables like: %{mailflow_result}, %{database}, %{server}
+
+=item B<--warning-copystatus>
+
+Set warning threshold.
+Can used special variables like: %{mailflow_result}, %{database}, %{server}
+
+=item B<--critical-copystatus>
+
+Set critical threshold (Default: '%{contentindexstate} !~ /Healthy/i').
+Can used special variables like: %{copystatus_indexstate}, %{database}, %{server}
 
 =back
 

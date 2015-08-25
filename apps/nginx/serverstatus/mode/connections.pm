@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 
 my $maps = [
     { counter => 'active', output => 'Active connections %d', match => 'Active connections:\s*(\d+)' },
@@ -43,13 +43,13 @@ sub new {
             {
             "hostname:s"    => { name => 'hostname' },
             "port:s"        => { name => 'port', },
-            "proto:s"       => { name => 'proto', default => "http" },
+            "proto:s"       => { name => 'proto' },
             "urlpath:s"     => { name => 'url_path', default => "/nginx_status" },
             "credentials"   => { name => 'credentials' },
             "username:s"    => { name => 'username' },
             "password:s"    => { name => 'password' },
             "proxyurl:s"    => { name => 'proxyurl' },
-            "timeout:s"     => { name => 'timeout', default => '3' },
+            "timeout:s"     => { name => 'timeout' },
             });
     foreach (@{$maps}) {
         $options{options}->add_options(arguments => {
@@ -57,6 +57,8 @@ sub new {
                                                     'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
                                                     });
     }
+    
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -74,25 +76,14 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
 
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
         
-    my $webcontent = centreon::plugins::httplib::connect($self);
+    my $webcontent = $self->{http}->request();
     foreach (@{$maps}) {
         if ($webcontent !~ /$_->{match}/msi) {
             $self->{output}->output_add(severity => 'UNKNOWN',

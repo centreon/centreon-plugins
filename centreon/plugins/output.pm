@@ -41,6 +41,7 @@ sub new {
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "change-perfdata:s@"      => { name => 'change_perfdata' },
                                   "verbose"                 => { name => 'verbose' },
+                                  "debug"                   => { name => 'debug' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
                                   "output-xml"              => { name => 'output_xml' },
                                   "output-json"             => { name => 'output_json' },
@@ -156,6 +157,7 @@ sub output_add {
     my %args = (
                 severity => 'OK',
                 separator => ' - ',
+                debug => 0,
                 short_msg => undef,
                 long_msg => undef
                 );
@@ -172,7 +174,8 @@ sub output_add {
         push @{$self->{global_short_outputs}->{uc($options->{severity})}}, $options->{short_msg};
         $self->set_status(exit_litteral => $options->{severity});
     }
-    if (defined($options->{long_msg})) {
+    if (defined($options->{long_msg}) && 
+        ($options->{debug} == 0 || defined($self->{option_results}->{debug}))) {
         chomp $options->{long_msg};
         push @{$self->{global_long_output}}, $options->{long_msg};
     }
@@ -427,6 +430,7 @@ sub display {
     my $nolabel = defined($options{nolabel}) ? 1 : 0;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
+    $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
@@ -747,6 +751,10 @@ Output class
 =item B<--verbose>
 
 Display long output.
+
+=item B<--debug>
+
+Display also debug messages.
 
 =item B<--filter-perfdata>
 

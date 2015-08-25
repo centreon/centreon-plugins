@@ -34,8 +34,14 @@ sub new {
     %{$self->{modes}} = (
                          'activesync-mailbox'   => 'apps::exchange::2010::local::mode::activesyncmailbox',
                          'databases'            => 'apps::exchange::2010::local::mode::databases',
+                         'list-databases'       => 'apps::exchange::2010::local::mode::listdatabases',
                          'imap-mailbox'         => 'apps::exchange::2010::local::mode::imapmailbox',
-                         'mapi-mailbox'         => 'apps::exchange::2010::local::mode::mapimailbox',                         
+                         'mapi-mailbox'         => 'apps::exchange::2010::local::mode::mapimailbox',
+                         'outlook-webservices'  => 'apps::exchange::2010::local::mode::outlookwebservices',
+                         'owa-mailbox'          => 'apps::exchange::2010::local::mode::owamailbox',
+                         'queues'               => 'apps::exchange::2010::local::mode::queues',
+                         'replication-health'   => 'apps::exchange::2010::local::mode::replicationhealth',
+                         'services'             => 'apps::exchange::2010::local::mode::services',
                          );
 
     return $self;

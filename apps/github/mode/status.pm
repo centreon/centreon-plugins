@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use JSON;
 
 my $thresholds = {
@@ -50,25 +50,17 @@ sub new {
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout', default => '3' },
+            "timeout:s"         => { name => 'timeout' },
             "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
 
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
@@ -84,6 +76,8 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
+    
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub get_severity {
@@ -110,12 +104,10 @@ sub get_severity {
 sub run {
     my ($self, %options) = @_;
 
-    my $jsoncontent = centreon::plugins::httplib::connect($self, connection_exit => 'critical');
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
-
     my $webcontent;
-
     eval {
         $webcontent = $json->decode($jsoncontent);
     };
@@ -132,7 +124,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
 
 1;
@@ -175,7 +166,7 @@ Specify password
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 3)
+Threshold for HTTP timeout (Default: 5
 
 =item B<--threshold-overload>
 

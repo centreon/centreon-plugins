@@ -27,8 +27,6 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::exchange::2010::imapmailbox;
 
-my %threshold = ('warning' => 'warning', 'critical' => 'critical');
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -47,12 +45,21 @@ sub new {
                                   "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
                                   "ps-exec-only"        => { name => 'ps_exec_only', },
                                   "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', },
+                                  "critical:s"          => { name => 'critical', default => '%{result} !~ /Success/i' },
                                   "mailbox:s"           => { name => 'mailbox', },
                                   "password:s"          => { name => 'password', },
                                 });
-    $self->{thresholds} = {};
     return $self;
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning', 'critical')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
+        }
+    }
 }
 
 sub check_options {
@@ -67,17 +74,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--password' option.");
         $self->{output}->option_exit();
     }
-    foreach my $th (keys %threshold) {
-        next if (!defined($self->{option_results}->{$th}));
-        if ($self->{option_results}->{$th} !~ /^(\!=|=){0,1}(.*){0,1}/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold for option '--" . $th . "': " . $self->{option_results}->{$th});
-            $self->{output}->option_exit();
-        }
-        
-        my $operator = defined($1) && $1 ne '' ? $1 : '!=';
-        my $state = defined($2) && $2 ne '' ? $2 : 'Success';
-        $self->{thresholds}->{$th} = { state => $state, operator => $operator, out => $threshold{$th} };
-    }
+    $self->change_macros();
 }
 
 sub run {
@@ -158,15 +155,13 @@ Print powershell output.
 
 =item B<--warning>
 
-Warning threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set warning threshold.
+Can used special variables like: %{result}, %{scenario}
 
 =item B<--critical>
 
-Critical threshold
-(If set without value, it's: "!=Success". Need to change if your not US language.
-Regexp can be used)
+Set critical threshold (Default: '%{result} !~ /Success/i').
+Can used special variables like: %{result}, %{scenario}
 
 =item B<--mailbox>
 

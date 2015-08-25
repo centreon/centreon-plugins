@@ -23,7 +23,7 @@ package apps::tomcat::web::mode::traffic;
 use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
-use centreon::plugins::httplib;
+use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
@@ -39,12 +39,12 @@ sub new {
             {
             "hostname:s"            => { name => 'hostname' },
             "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto', default => "http" },
+            "proto:s"               => { name => 'proto' },
             "credentials"           => { name => 'credentials' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout', default => '3' },
+            "timeout:s"             => { name => 'timeout' },
             "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
             "name:s"                => { name => 'name' },
             "regexp"                => { name => 'use_regexp' },
@@ -59,6 +59,7 @@ sub new {
     $self->{result} = {};
     $self->{hostname} = undef;
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -66,18 +67,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{option_results}->{proto} ne 'http') && ($self->{option_results}->{proto} ne 'https')) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
-    if ((defined($self->{option_results}->{credentials})) && (!defined($self->{option_results}->{username}) || !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
-        $self->{output}->option_exit();
-    }
     if (($self->{perfdata}->threshold_validate(label => 'warning-in', value => $self->{option_results}->{warning_in})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning 'in' threshold '" . $self->{option_results}->{warning_in} . "'.");
         $self->{output}->option_exit();
@@ -109,6 +98,8 @@ sub check_options {
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
+    
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 my %xpath_to_check = (
@@ -119,7 +110,7 @@ my %xpath_to_check = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $webcontent = centreon::plugins::httplib::connect($self);  
+    my $webcontent = $self->{http}->request();
     my $port = $self->{option_results}->{port};
 
     #EXAMPLE 1:
@@ -207,7 +198,7 @@ sub run {
     $self->manage_selection();
 
     my $new_datas = {};
-    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname} . '_' . centreon::plugins::httplib::get_port($self) . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
+    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname} . '_' . $self->{http}->get_port() . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
     $new_datas->{last_timestamp} = time();
     my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
 
