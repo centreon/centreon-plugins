@@ -1,37 +1,22 @@
-################################################################################
-# Copyright 2005-2014 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an executable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting executable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package centreon::common::powershell::exchange::2010::imapmailbox;
 
@@ -85,28 +70,37 @@ sub check {
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
     while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
-        my ($scenario, $result, $latency, $error) = ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-                                                    centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
+        $self->{data} = {};
+        ($self->{data}->{scenario}, $self->{data}->{result}, $self->{data}->{latency}, $self->{data}->{error}) = 
+            ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
+             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4));
         
         $checked++;
-        foreach my $th (('critical', 'warning')) {
-            next if (!defined($self->{thresholds}->{$th}));
         
-            if ($self->{thresholds}->{$th}->{operator} eq '=' && 
-                $result =~ /$self->{thresholds}->{$th}->{state}/) {
-                $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                            short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
-                                                                 $scenario, $options{mailbox}, $result));
-            } elsif ($self->{thresholds}->{$th}->{operator} eq '!=' && 
-                $result !~ /$self->{thresholds}->{$th}->{state}/) {
-                $self->{output}->output_add(severity => $self->{thresholds}->{$th}->{out},
-                                            short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
-                                                                 $scenario, $options{mailbox}, $result));
+        my ($status, $message) = ('ok');
+        eval {
+            local $SIG{__WARN__} = sub { $message = $_[0]; };
+            local $SIG{__DIE__} = sub { $message = $_[0]; };
+            
+            if (defined($self->{option_results}->{critical}) && $self->{option_results}->{critical} ne '' &&
+                eval "$self->{option_results}->{critical}") {
+                $status = 'critical';
+            } elsif (defined($self->{option_results}->{warning}) && $self->{option_results}->{warning} ne '' &&
+                     eval "$self->{option_results}->{warning}") {
+                $status = 'warning';
             }
+        };
+        if (defined($message)) {
+            $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+        }
+        if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $status,
+                                        short_msg => sprintf("Imap scenario '%s' to '%s' is '%s'",
+                                                             $self->{data}->{scenario}, $options{mailbox}, $self->{data}->{result}));
         }
         
-        if ($latency =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => $scenario, unit => 's',
+        if ($self->{data}->{latency} =~ /^(\d+)/) {
+            $self->{output}->perfdata_add(label => $self->{data}->{scenario}, unit => 's',
                                           value => sprintf("%.3f", $1 / 1000),
                                           min => 0);
         }

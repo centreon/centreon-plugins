@@ -1,37 +1,22 @@
-################################################################################
-# Copyright 2005-2013 MERETHIS
-# Centreon is developped by : Julien Mathis and Romain Le Merlus under
-# GPL Licence 2.0.
-# 
-# This program is free software; you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the Free Software 
-# Foundation ; either version 2 of the License.
-# 
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
-# PARTICULAR PURPOSE. See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with 
-# this program; if not, see <http://www.gnu.org/licenses>.
-# 
-# Linking this program statically or dynamically with other modules is making a 
-# combined work based on this program. Thus, the terms and conditions of the GNU 
-# General Public License cover the whole combination.
-# 
-# As a special exception, the copyright holders of this program give MERETHIS 
-# permission to link this program with independent modules to produce an executable, 
-# regardless of the license terms of these independent modules, and to copy and 
-# distribute the resulting executable under terms of MERETHIS choice, provided that 
-# MERETHIS also meet, for each linked independent module, the terms  and conditions 
-# of the license of that module. An independent module is a module which is not 
-# derived from this program. If you modify this program, you may extend this 
-# exception to your version of the program, but you are not obliged to do so. If you
-# do not wish to do so, delete this exception statement from your version.
-# 
-# For more information : contact@centreon.com
-# Authors : Quentin Garnier <qgarnier@merethis.com>
 #
-####################################################################################
+# Copyright 2015 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 package snmp_standard::mode::listinterfaces;
 
@@ -40,23 +25,74 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my @operstatus = ("up", "down", "testing", "unknown", "dormant", "notPresent", "lowerLayerDown");
-my %oids_iftable = (
-    'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-    'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-    'ifname' => '.1.3.6.1.2.1.31.1.1.1.1'
-);
-
-my $oid_adminstatus = '.1.3.6.1.2.1.2.2.1.7';
-my $oid_operstatus = '.1.3.6.1.2.1.2.2.1.8';
 my $oid_speed32 = '.1.3.6.1.2.1.2.2.1.5'; # in b/s
 my $oid_speed64 = '.1.3.6.1.2.1.31.1.1.1.15';
 
+sub set_oids_status {
+    my ($self, %options) = @_;
+    
+    $self->{oid_adminstatus} = '.1.3.6.1.2.1.2.2.1.7';
+    $self->{oid_adminstatus_mapping} = {
+        1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
+    };
+    $self->{oid_opstatus} = '.1.3.6.1.2.1.2.2.1.8';
+    $self->{oid_opstatus_mapping} = {
+        1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
+    };
+}
+
+sub check_oids_label {
+    my ($self, %options) = @_;
+    
+    foreach (('oid_filter', 'oid_display')) {
+        $self->{option_results}->{$_} = lc($self->{option_results}->{$_}) if (defined($self->{option_results}->{$_}));
+        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}})) {
+            my $label = $_;
+            $label =~ s/_/-/g;
+            $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
+            $self->{output}->option_exit();
+        }
+    }
+}
+
+sub set_oids_label {
+    my ($self, %options) = @_;
+
+    $self->{oids_label} = {
+        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
+        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
+        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+    };
+}
+
+sub default_oid_filter_name {
+    my ($self, %options) = @_;
+    
+    return 'ifname';
+}
+
+sub default_oid_display_name {
+    my ($self, %options) = @_;
+    
+    return 'ifname';
+}
+
+sub is_admin_status_down {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{use_adminstatus}) && defined($options{admin_status}) && 
+        $self->{oid_adminstatus_mapping}->{$options{admin_status}} ne 'up') {
+        return 1;
+    }
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => defined($options{package}) ? $options{package} : __PACKAGE__, %options);
     bless $self, $class;
     
+    $self->{no_speed} = defined($options{no_speed}) && $options{no_speed} =~ /^[01]$/ ? $options{no_speed} : 0;
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
@@ -66,12 +102,11 @@ sub new {
                                   "filter-status:s"         => { name => 'filter_status' },
                                   "skip-speed0"             => { name => 'skip_speed0' },
                                   "use-adminstatus"         => { name => 'use_adminstatus' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'ifname'},
-                                  "oid-display:s"           => { name => 'oid_display', default => 'ifname'},
+                                  "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
+                                  "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
+                                  "add-extra-oid:s@"        => { name => 'add_extra_oid' },
                                 });
 
     $self->{interface_id_selected} = [];
@@ -83,21 +118,24 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
-    if ($self->{option_results}->{oid_filter} !~ /^(ifdesc|ifalias|ifname)$/) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported --oid-filter option.");
-        $self->{output}->option_exit();
-    }
-    $self->{option_results}->{oid_display} = lc($self->{option_results}->{oid_display});
-    if ($self->{option_results}->{oid_display} !~ /^(ifdesc|ifalias|ifname)$/) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported --oid-display option.");
-        $self->{output}->option_exit();
+    $self->set_oids_label();
+    $self->check_oids_label();
+    $self->set_oids_status();
+    
+    $self->{extra_oids} = {};
+    foreach (@{$self->{option_results}->{add_extra_oid}}) {
+        next if ($_ eq '');
+        my ($name, $oid) = split /,/;
+        if (!defined($oid) || $oid !~ /^(\.\d+){1,}$/ || $name eq '') {
+            $self->{output}->add_option_msg(short_msg => "Wrong syntax for add-extra-oid '" . $_ . "' option.");
+            $self->{output}->option_exit();
+        }
+        $self->{extra_oids}->{$name} = $oid;
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
@@ -106,7 +144,11 @@ sub run {
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
 
-        my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_}) : (int($result->{$oid_speed32 . "." . $_} / 1000 / 1000)));        
+        my $interface_speed = 0;
+        if ($self->{no_speed} == 0) {
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
+                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+        }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
@@ -115,16 +157,23 @@ sub run {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': interface speed is 0 and option --skip-speed0 is set");
             next;
         }
-        if (defined($self->{option_results}->{filter_status}) && $operstatus[$result->{$oid_operstatus . "." . $_} - 1] !~ /$self->{option_results}->{filter_status}/i) {
+        if (defined($self->{option_results}->{filter_status}) && defined($result->{$self->{oid_opstatus} . "." . $_}) && 
+            $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i) {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': no matching filter status");
             next;
         }
-        if (defined($self->{option_results}->{use_adminstatus}) && $operstatus[$result->{$oid_adminstatus . "." . $_} - 1] ne 'up') {
+        if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_})) {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': adminstatus is not 'up' and option --use-adminstatus is set");
             next;
         }
+        my $extra_display = '';
+        my $extra_display_append = ' ';
+        foreach my $name (keys %{$self->{extra_oids}}) {
+            $extra_display .= $extra_display_append . $name . ' = ' . (defined($result->{$self->{extra_oids}->{$name} . "." . $_}) ? $result->{$self->{extra_oids}->{$name} . "." . $_} : '');
+            $extra_display_append = ', ';
+        }
 
-        $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . $operstatus[$result->{$oid_operstatus . "." . $_} - 1] . ", id = $_]");
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} . ', id = ' . $_ . $extra_display . ']');
     }
 
     $self->{output}->output_add(severity => 'OK',
@@ -136,9 +185,13 @@ sub run {
 sub get_additional_information {
     my ($self, %options) = @_;
 
-    my $oids = [$oid_adminstatus, $oid_operstatus, $oid_speed32];
-    if (!$self->{snmp}->is_snmpv1()) {
-        push @$oids, $oid_speed64;
+    my $oids = [];
+    push @$oids, $self->{oid_adminstatus} if (defined($self->{oid_adminstatus}));
+    push @$oids, $self->{oid_opstatus} if (defined($self->{oid_opstatus}));
+    push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
+    push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
+    if (scalar(keys %{$self->{extra_oids}}) > 0) {
+        push @$oids, values %{$self->{extra_oids}};
     }
     
     $self->{snmp}->load(oids => $oids, instances => $self->{interface_id_selected});
@@ -160,12 +213,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{datas} = {};
-    $self->{datas}->{oid_filter} = $self->{option_results}->{oid_filter};
-    $self->{datas}->{oid_display} = $self->{option_results}->{oid_display};
-    my $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_filter}});
+    my $result = $self->{snmp}->get_table(oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}});
     $self->{datas}->{all_ids} = [];
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
+        next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/);
         $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
@@ -176,60 +227,52 @@ sub manage_selection {
     }
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-       $result = $self->{snmp}->get_table(oid => $oids_iftable{$self->{option_results}->{oid_display}});
+       $result = $self->{snmp}->get_table(oid => $self->{oids_label}->{$self->{option_results}->{oid_display}});
        foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-            next if ($key !~ /\.([0-9]+)$/);
+            next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/);
             $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
        }
     }
     
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
-        # get by ID
-        push @{$self->{interface_id_selected}}, $self->{option_results}->{interface}; 
-        my $name = $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $self->{option_results}->{interface}};
-        if (!defined($name)) {
-            $self->{output}->add_option_msg(short_msg => "No interface found for id '" . $self->{option_results}->{interface} . "'.");
-            $self->{output}->option_exit();
+        foreach (@{$self->{datas}->{all_ids}}) {
+            if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
+                push @{$self->{interface_id_selected}}, $_;
+            }
         }
     } else {
-        foreach my $i (@{$self->{datas}->{all_ids}}) {
-            my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $i};
+        foreach (@{$self->{datas}->{all_ids}}) {
+            my $filter_name = $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $_};
             next if (!defined($filter_name));
+            
             if (!defined($self->{option_results}->{interface})) {
-                push @{$self->{interface_id_selected}}, $i; 
+                push @{$self->{interface_id_selected}}, $_;
                 next;
             }
-            if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{interface}/i) {
-                push @{$self->{interface_id_selected}}, $i; 
-            }
-            if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{interface}/) {
-                push @{$self->{interface_id_selected}}, $i; 
-            }
-            if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{interface}) {
-                push @{$self->{interface_id_selected}}, $i; 
+            if ($filter_name =~ /$self->{option_results}->{interface}/) {
+                push @{$self->{interface_id_selected}}, $_; 
             }
         }
-        
-        if (scalar(@{$self->{interface_id_selected}}) <= 0 && !defined($options{disco})) {
-            if (defined($self->{option_results}->{interface})) {
-                $self->{output}->add_option_msg(short_msg => "No interface found for name '" . $self->{option_results}->{interface} . "'.");
-            } else {
-                $self->{output}->add_option_msg(short_msg => "No interface found.");
-            }
-            $self->{output}->option_exit();
-        }
+    }
+    
+    if (scalar(@{$self->{interface_id_selected}}) <= 0 && !defined($options{disco})) {
+        $self->{output}->add_option_msg(short_msg => "No entry found");
+        $self->{output}->option_exit();
     }
 }
 
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'total', 'status', 'interfaceid']);
+    my $names = ['name', 'total', 'status', 'interfaceid'];
+    if (scalar(keys %{$self->{extra_oids}}) > 0) {
+        push @$names, keys %{$self->{extra_oids}};
+    }
+    $self->{output}->add_disco_format(elements => $names);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection(disco => 1);
@@ -238,22 +281,30 @@ sub disco_show {
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
         
-        my $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' ? ($result->{$oid_speed64 . "." . $_}) : (int($result->{$oid_speed32 . "." . $_} / 1000 / 1000)));        
+        my $interface_speed = 0;
+        if ($self->{no_speed} == 0) {
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
+                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+        }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
         }
         next if (defined($self->{option_results}->{skip_speed0}) && $interface_speed == 0);
-        if (defined($self->{option_results}->{filter_status}) && $operstatus[$result->{$oid_operstatus . "." . $_} - 1] !~ /$self->{option_results}->{filter_status}/i) {
-            next;
-        }
-        if (defined($self->{option_results}->{use_adminstatus}) && $operstatus[$result->{$oid_adminstatus . "." . $_} - 1] ne 'up') {
-            next;
+        next if (defined($self->{option_results}->{filter_status}) && defined($result->{$self->{oid_opstatus} . "." . $_}) && 
+            $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i);
+        next if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_}));
+        
+        my %extra_values = ();
+        foreach my $name (keys %{$self->{extra_oids}}) {
+            $extra_values{$name} = defined($result->{$self->{extra_oids}->{$name} . "." . $_}) ?
+                $result->{$self->{extra_oids}->{$name} . "." . $_} : '';
         }
         
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $interface_speed,
-                                         status => $result->{$oid_operstatus . "." . $_},
-                                         interfaceid => $_);
+                                         status => $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}},
+                                         interfaceid => $_,
+                                         %extra_values);
     }
 }
 
@@ -267,19 +318,11 @@ __END__
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1, 2,... (empty means 'check all interface').
+Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index.
-
-=item B<--regexp>
-
-Allows to use regexp to filter interfaces (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
 
 =item B<--speed>
 
@@ -312,6 +355,10 @@ Regexp src to transform display value. (security risk!!!)
 =item B<--display-transform-dst>
 
 Regexp dst to transform display value. (security risk!!!)
+
+=item B<--add-extra-oid>
+
+Display an OID. Example: --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'
 
 =back
 

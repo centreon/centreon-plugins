@@ -635,13 +635,25 @@ Linux
 Check all interface traffics in SNMP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Warning if traffic in/out used > 80% and critical if traffic in/out used > 90%. It also skips errors from down interface (option ``--skip``):
+Warning if traffic in/out used > 80% and critical if traffic in/out used > 90%:
 ::
 
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --regexp --skip --warning-in=80 --critical-in=90 --warning-out=80 --critical-out=90
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=interfaces --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --interface='.*' --name --add-traffic --warning-in-traffic=80 --critical-in-traffic=90 --warning-out-traffic=80 --critical-out-traffic=90
   OK: All traffic are ok | 'traffic_in_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_out_lo'=126.58b/s;0.00:8000000.00;0.00:9000000.00;0;10000000 'traffic_in_eth0'=1872.00b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth0'=266.32b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_in_eth1'=976.65b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000 'traffic_out_eth1'=1021.68b/s;0.00:800000000.00;0.00:900000000.00;0;1000000000
   Interface 'lo' Traffic In : 126.58b/s (0.00 %), Out : 126.58b/s (0.00 %)
   Interface 'eth0' Traffic In : 1.87Kb/s (0.00 %), Out : 266.32b/s (0.00 %)
   Interface 'eth1' Traffic In : 976.65b/s (0.00 %), Out : 1.02Kb/s (0.00 %)
 
 
+-------------
+HTTP Protocol
+-------------
+
+Check authentification of an application (POST request)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An example for authentification form of ``demo.centreon.com``:
+::
+
+  $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
+  OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
