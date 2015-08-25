@@ -399,7 +399,7 @@ sub manage_selection {
         
         
         $self->{dg}->{$name} = { display => $name, total => $total_mb * 1024 * 1024,
-                                 used => $usable_file_mb * 1024 * 1024,
+                                 used => ($total_mb * 1024 * 1024) - ($usable_file_mb * 1024 * 1024),
                                  state => $state, type => lc($type), offline_disks => $offline_disks };                        
     }
     
