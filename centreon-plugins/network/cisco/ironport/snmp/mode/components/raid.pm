@@ -30,8 +30,8 @@ my %map_raid_status = (
 );
 
 my $mapping = {
-    raidStatus => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.2', map => \%map_raid_status },
-    raidID => { oid => '.1.3.6.1.4.1.15497.1.1.1.8.1.4' },
+    raidStatus => { oid => '.1.3.6.1.4.1.15497.1.1.1.18.1.2', map => \%map_raid_status },
+    raidID => { oid => '.1.3.6.1.4.1.15497.1.1.1.18.1.3' },
 };
 my $oid_raidEntry = '.1.3.6.1.4.1.15497.1.1.1.18.1';
 
