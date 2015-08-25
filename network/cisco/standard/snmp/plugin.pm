@@ -39,6 +39,7 @@ sub new {
                          'ipsla'            => 'centreon::common::cisco::standard::snmp::mode::ipsla',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
+                         'memory-flash'     => 'centreon::common::cisco::standard::snmp::mode::memoryflash',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
                          );
