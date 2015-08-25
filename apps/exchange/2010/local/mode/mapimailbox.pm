@@ -44,8 +44,8 @@ sub new {
                                   "command-path:s"      => { name => 'command_path' },
                                   "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
                                   "ps-exec-only"        => { name => 'ps_exec_only', },
-                                  "warning-mapi:s"      => { name => 'warning_mapi', },
-                                  "critical-mapi:s"     => { name => 'critical_mapi', default => '%{result} !~ /Success/i' },
+                                  "warning:s"           => { name => 'warning', },
+                                  "critical:s"          => { name => 'critical', default => '%{result} !~ /Success/i' },
                                   "mailbox:s"           => { name => 'mailbox', },
                                 });
     return $self;
