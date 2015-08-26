@@ -224,7 +224,8 @@ sub get_severity {
     
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
+            if ($options{value} =~ /$_->{filter}/i && 
+                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
                 $status = $_->{status};
                 return $status;
             }
