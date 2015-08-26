@@ -108,18 +108,18 @@ sub run {
 
             next if ($self->check_filter(section => 'fan', instance => $instance));
             
-            $self->{output}->output_add(long_msg => sprintf("Fan '%s' state is '%s' and speed-threshold-raised is '%s'", 
+            $self->{output}->output_add(long_msg => sprintf("Fan '%s' state is '%s' and speed-threshold-exceeded is '%s'", 
                                                             $instance, 
                                                             $items->{$engine_name}->{$fan_name}->{'operational-status'},
                                                             $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'}));
 
-            my $exit = $self->get_severity(section => 'fan_opstatus', value => $items->{$engine_name}->{$fan_name}->{'operational-status'});
+            my $exit = $self->get_severity(section => 'fan_opstatus', instance => $instance, value => $items->{$engine_name}->{$fan_name}->{'operational-status'});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan '%s' operational status is %s", 
                                                             $instance, $items->{$engine_name}->{$fan_name}->{'operational-status'}));
             }
-            $exit = $self->get_severity(section => 'fan', value => $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'});
+            $exit = $self->get_severity(section => 'fan', instance => $instance, value => $items->{$engine_name}->{$fan_name}->{'speed-threshold-exceeded'});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan '%s' is over speed threshold (%s)", 
@@ -154,9 +154,12 @@ sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
     
+    return if (defined($options{instance}) && ) {
+    
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
+            if ($options{value} =~ /$_->{filter}/i && 
+                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
                 $status = $_->{status};
                 return $status;
             }
