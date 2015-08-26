@@ -110,7 +110,7 @@ sub run {
                                                             $instance, 
                                                             $items->{$cluster_name}->{$device_name}->{'health-state'}));
 
-            my $exit = $self->get_severity(section => 'volume_health', instance => $instance, value => $items->{$cluster_name}->{$device_name}->{'health-state'});
+            my $exit = $self->get_severity(section => 'device_health', instance => $instance, value => $items->{$cluster_name}->{$device_name}->{'health-state'});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Device '%s' health state is '%s'", 

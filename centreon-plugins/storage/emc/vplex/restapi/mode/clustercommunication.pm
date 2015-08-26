@@ -91,6 +91,9 @@ sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'All Cluster Witness components are OK');
+    
     my $urlbase = '/vplex/cluster-witness/components/';     
     my $items = $vplex->get_items(url => $urlbase);
     foreach my $name (sort keys %{$items}) {
