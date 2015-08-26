@@ -100,6 +100,7 @@ sub run {
                                 short_msg => 'All Fans are OK');
 
     my $items = $vplex->get_items(url => $urlbase,
+                                  parent => 'engine',
                                   engine => $self->{option_results}->{engine},
                                   obj => 'fans');
     foreach my $engine_name (sort keys %{$items}) {
@@ -153,9 +154,7 @@ sub check_filter {
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
-    
-    return if (defined($options{instance}) && ) {
-    
+        
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
             if ($options{value} =~ /$_->{filter}/i && 

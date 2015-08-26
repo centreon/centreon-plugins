@@ -108,6 +108,7 @@ sub run {
     
     my $urlbase = '/vplex/engines/';
     my $items = $vplex->get_items(url => $urlbase,
+                                  parent => 'engine',
                                   engine => $self->{option_results}->{engine},
                                   obj => 'directors');
 
