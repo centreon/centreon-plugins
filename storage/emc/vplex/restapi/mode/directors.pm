@@ -25,6 +25,29 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+my $thresholds = {
+    director_health => [
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    director_communication => [
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    director_temperature => [
+        ['false', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    director_voltage => [
+        ['false', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    director_vplex_splitter => [
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+};
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -32,10 +55,10 @@ sub new {
 
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
-                                {
-                                 "engine:s"        => { name => 'engine', default => '1-1' },
-                                 "filter-name:s"   => { name => 'filter_name'},
-                                 "detailed:s"      => { name => 'detailed'},
+               {
+                "engine:s"        => { name => 'engine' },
+                "filter:s@"      => { name => 'filter' },
+                "threshold-overload:s@"   => { name => 'threshold_overload' },
                });
     return $self;
 }
@@ -43,97 +66,144 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{engine})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify engine number.");
-        $self->{output}->option_exit();
+    
+    $self->{filter} = [];
+    foreach my $val (@{$self->{option_results}->{filter}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
 
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        if (scalar(@values) < 3) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $instance, $status, $filter);
+        if (scalar(@values) == 3) {
+            ($section, $status, $filter) = @values;
+            $instance = '.*';
+        } else {
+             ($section, $instance, $status, $filter) = @values;
+        }
+        if ($section !~ /^director/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
-    my $urlbase = '/vplex/engines/engine-';
-
-   $vplex->connect();
-
-    my @items = $vplex->get_items(url => $urlbase,
+    my $urlbase = '/vplex/engines/';
+    my $items = $vplex->get_items(url => $urlbase,
                                   engine => $self->{option_results}->{engine},
                                   obj => 'directors');
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All Directors are OK');
+    foreach my $engine_name (sort keys %{$items}) {
+        foreach my $director_name (sort keys %{$items->{$engine_name}}) {
+            my $instance = $engine_name . '_' . $director_name;
 
-    if (defined($self->{option_results}->{detailed})) {
+            next if ($self->check_filter(section => 'director', instance => $instance));
+            
+            $self->{output}->output_add(long_msg => sprintf("Director '%s' health state is '%s' [communication status: %s, temperature threshold exceeded: %s, voltage threshold exceeded: %s, vplex splitter status: %s]", 
+                                                            $instance, 
+                                                            $items->{$engine_name}->{$director_name}->{'health-state'},
+                                                            $items->{$engine_name}->{$director_name}->{'communication-status'},
+                                                            $items->{$engine_name}->{$director_name}->{'temperature-threshold-exceeded'},
+                                                            $items->{$engine_name}->{$director_name}->{'voltage-threshold-exceeded'},
+                                                            $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'}));
 
-        foreach my $item (@items) {
-
-            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                $item !~ /$self->{option_results}->{filter_name}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping storage '%s'.", $item));
-                next;
+            my $exit = $self->get_severity(section => 'director_health', instance => $instance, value => $items->{$engine_name}->{$director_name}->{'health-state'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Director '%s' health state is %s", 
+                                                            $instance, $items->{$engine_name}->{$director_name}->{'health-state'}));
             }
-
-            my $details = $vplex->get_infos(url => $urlbase,
-                                             obj => 'directors',
-                                             engine => $self->{option_results}->{engine},
-                                             item => $item);
-
-            $self->{output}->output_add(long_msg => sprintf("Director '%s': communication-status -> '%s' health-state -> '%s' temp thresold exceeded -> '%s' voltage thresold exceeded -> '%s'", 
-                                                            $item, 
-                                                            $details->{context}->[0]->{attributes}->[5]->{value},
-                                                            $details->{context}->[0]->{attributes}->[15]->{value},
-                                                            $details->{context}->[0]->{attributes}->[28]->{value},
-                                                            $details->{context}->[0]->{attributes}->[29]->{value}
-                                                           ));
-
-            if (($details->{context}->[0]->{attributes}->[15]->{value} ne 'ok') || ($details->{context}->[0]->{attributes}->[5]->{value} ne 'ok')) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Director '%s' communication-status is '%s' (health='%s')",
-                                                                 $item,
-                                                                 $details->{context}->[0]->{attributes}->[5]->{value},
-                                                                 $details->{context}->[0]->{attributes}->[15]->{value}->[0]));
-            } elsif (($details->{context}->[0]->{attributes}->[28]->{value} ne 'false') || ($details->{context}->[0]->{attributes}->[29]->{value}  ne 'false')) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Director '%s' temp threshold is '%s' and voltage threshold is '%s'",
-                                                                 $details->{context}->[0]->{attributes}->[28]->{value},
-                                                                 $details->{context}->[0]->{attributes}->[29]->{value}));                                                                
+            $exit = $self->get_severity(section => 'director_communication', value => $items->{$engine_name}->{$director_name}->{'communication-status'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Director '%s' communication status is %s", 
+                                                                 $instance, $items->{$engine_name}->{$director_name}->{'communication-status'}));
             }
-
+            $exit = $self->get_severity(section => 'director_temperature', value => $items->{$engine_name}->{$director_name}->{'temperature-threshold-exceeded'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Director '%s' temperature threshold exceeded is %s", 
+                                                                 $instance, $items->{$engine_name}->{$director_name}->{'temperature-threshold-exceeded'}));
+            }
+            $exit = $self->get_severity(section => 'director_voltage', value => $items->{$engine_name}->{$director_name}->{'voltage-threshold-exceeded'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Director '%s' voltage threshold exceeded is %s", 
+                                                                 $instance, $items->{$engine_name}->{$director_name}->{'voltage-threshold-exceeded'}));
+            }
+            $exit = $self->get_severity(section => 'director_vplex_splitter', value => $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Director '%s' vplex splitter status is %s", 
+                                                                 $instance, $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'}));
+            }
         }
+    }
 
-    } else {
+    $self->{output}->display();
+    $self->{output}->exit();
+}
 
-       foreach my $item (@items) {
+sub check_filter {
+    my ($self, %options) = @_;
 
-            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                $item !~ /$self->{option_results}->{filter_name}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping storage '%s'.", $item));
-                next;
+    foreach (@{$self->{filter}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($options{instance}) && !defined($_->{instance})) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                return 1;
+            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                return 1;
             }
+        }
+    }
+    
+    return 0;
+}
 
-            my $details = $vplex->get_param(url => $urlbase,
-                                            obj => 'directors',
-                                            engine => $self->{option_results}->{engine},
-                                            param => 'health-state',
-                                            item => $item);
-
-            $self->{output}->output_add(long_msg => sprintf("Director '%s' health-state -> '%s'",
-                                                            $item, $details->{context}->[0]->{attributes}->[0]->{value}));
- 
-            if ($details->{context}->[0]->{attributes}->[0]->{value} ne 'ok') {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Director '%s' health is '%s'",
-                                                                  $item,
-                                                                  $details->{context}->[0]->{attributes}->[0]->{value}));
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+           if ($options{value} =~ /$_->{filter}/i && 
+                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
+                $status = $_->{status};
+                return $status;
             }
-       }
-   }
-
-     $self->{output}->display();
-     $self->{output}->exit();
+        }
+    }
+    my $label = defined($options{label}) ? $options{label} : $options{section};
+    foreach (@{$thresholds->{$label}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -150,13 +220,16 @@ Check Directors state for VPlex
 
 Specify the engine number to be checked (1-1 or 2-1 usually)
 
-=item B<--detailed>
+=item B<--filter>
 
-Not mandatory, if used, display details about temp and voltage, otherwise only global health-state
+Filter some parts (comma seperated list)
+Can also exclude specific instance: --filter=director,engine-1-1_director-1-1-B
 
-=item B<--filter-name>
+=item B<--threshold-overload>
 
-Filter some elements by name (can be a regexp)
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='director_temperature,CRITICAL,^(?!(false)$)'
 
 =back
 

@@ -121,13 +121,14 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = 443;
     $self->{option_results}->{proto} = 'https';
     $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{headers} = { Username => $self->{vplex_username}, Password => $self->{vplex_password} };
 }
 
 sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
+    $self->{http}->add_header(key => 'Username', value => $self->{vplex_username});
+    $self->{http}->add_header(key => 'Password', value => $self->{vplex_password});
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -141,7 +142,7 @@ sub get_items {
     } else {
         $options{url} .= '*';
     }
-    $options{url} = '/' . $options{obj} . '/*';
+    $options{url} .= '/' . $options{obj} . '/*';
     
     my $response = $self->{http}->request(url_path => $options{url});
     my $decoded;
@@ -155,7 +156,7 @@ sub get_items {
         
     my $items = {};
     foreach my $context (@{$decoded->{response}->{context}}) { 
-        $context->{parent} =~ /\engines\/(.*?)\//;
+        $context->{parent} =~ /engines\/(.*?)\//;
         my $engine_name = $1;
         $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
         

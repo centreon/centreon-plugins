@@ -24,6 +24,17 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+my $thresholds = {
+    psu_opstatus => [
+        ['online', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    psu => [
+        ['false', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+};
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -32,8 +43,9 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
                {
-                   "engine:s"        => { name => 'engine' },
-                   "filter-name:s"   => { name => 'filter_name' },
+                   "engine:s"       => { name => 'engine' },
+                   "filter:s@"      => { name => 'filter' },
+                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                });
 
     return $self;
@@ -44,58 +56,123 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    $self->{filter} = [];
+    foreach my $val (@{$self->{option_results}->{filter}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
+    }
+
+    $self->{overload_th} = {};
+    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        if (scalar(@values) < 3) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        my ($section, $instance, $status, $filter);
+        if (scalar(@values) == 3) {
+            ($section, $status, $filter) = @values;
+            $instance = '.*';
+        } else {
+             ($section, $instance, $status, $filter) = @values;
+        }
+        if ($section !~ /^psu|psu_opstatus$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{output}->is_litteral_status(status => $status) == 0) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
+        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
     
-    my $urlbase = '/vplex/engines/engine-';
-
-    $vplex->connect();
-
-    my @items = $vplex->get_items(url => $urlbase,
+    my $urlbase = '/vplex/engines/';
+    my $items = $vplex->get_items(url => $urlbase,
                                   engine => $self->{option_results}->{engine},
                                   obj => 'power-supplies');
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All PSUs are OK');
+                                short_msg => 'All Power supplies are OK');
 
-    foreach my $item (@items) {
+    foreach my $engine_name (sort keys %{$items}) {
+        foreach my $psu_name (sort keys %{$items->{$engine_name}}) {
+            my $instance = $engine_name . '_' . $psu_name;
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $item !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping storage '%s'.", $item));
-            next;
+            next if ($self->check_filter(section => 'psu', instance => $instance));
+            
+            $self->{output}->output_add(long_msg => sprintf("Power supply '%s' state is '%s' and temperature-threshold-exceeded is '%s'", 
+                                                            $instance, 
+                                                            $items->{$engine_name}->{$psu_name}->{'operational-status'},
+                                                            $items->{$engine_name}->{$psu_name}->{'temperature-threshold-exceeded'}));
+
+            my $exit = $self->get_severity(section => 'psu_opstatus', instance => $instance, value => $items->{$engine_name}->{$psu_name}->{'operational-status'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Power supply '%s' operational status is %s", 
+                                                            $instance, $items->{$engine_name}->{$psu_name}->{'operational-status'}));
+            }
+            $exit = $self->get_severity(section => 'psu', instance => $instance, value => $items->{$engine_name}->{$psu_name}->{'temperature-threshold-exceeded'});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Power supply '%s' is over temperature threshold (%s)", 
+                                                                 $instance, $items->{$engine_name}->{$psu_name}->{'temperature-threshold-exceeded'}));
+            }
         }
-
-        my $details = $vplex->get_infos(url => $urlbase,
-                                        obj => 'power-supplies',
-                                        engine => $self->{option_results}->{engine},
-                                        item => $item);
-
-        $self->{output}->output_add(long_msg => sprintf("PSU '%s' state is '%s' and temperature-threshold-exceeded is '%s'", 
-                                                        $details->{context}->[0]->{attributes}->[0]->{value}, 
-                                                        $details->{context}->[0]->{attributes}->[2]->{value},
-                                                        $details->{context}->[0]->{attributes}->[6]->{value}));
-
-
-        if ($details->{context}->[0]->{attributes}->[2]->{value} ne 'online') {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("PSU '%s' state is '%s'",
-                                                             $details->{context}->[0]->{attributes}->[0]->{value},
-                                                             $details->{context}->[0]->{attributes}->[1]->{value}));
-        } elsif ($details->{context}->[0]->{attributes}->[6]->{value} ne 'false') {
-            $self->{output}->output_add(severity => 'WARNING',
-                                        short_msg => sprintf("PSU '%s' temperature exceeds threshold ('%s')",
-                                                             $details->{context}->[0]->{attributes}->[0]->{value},
-                                                             $details->{context}->[0]->{attributes}->[2]->{value}));                                                                
-        }
-     
     }
     
-     $self->{output}->display();
-     $self->{output}->exit();
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+sub check_filter {
+    my ($self, %options) = @_;
+
+    foreach (@{$self->{filter}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($options{instance}) && !defined($_->{instance})) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                return 1;
+            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default 
+    
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+           if ($options{value} =~ /$_->{filter}/i && 
+                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    my $label = defined($options{label}) ? $options{label} : $options{section};
+    foreach (@{$thresholds->{$label}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+    
+    return $status;
 }
 
 1;
@@ -112,9 +189,16 @@ Check Power-supplies infos for VPlex
 
 Specify the engine number to be checked (1-1 or 2-1 usually)
 
-=item B<--filter-name>
+=item B<--filter>
 
-Filter by name - can be a regexp
+Filter some parts (comma seperated list)
+Can also exclude specific instance: --filter=psu,engine-1-1_power-supply-b1
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='psu,CRITICAL,^(?!(false)$)'
 
 =back
 
