@@ -137,12 +137,17 @@ sub get_items {
 
     $self->settings();
 
-    if (defined($options{engine}) && $options{engine} ne '') {
-        $options{url} .= 'engine-' . $options{engine};
-    } else {
-        $options{url} .= '*';
+    if (defined($options{parent})) {
+        if (defined($options{$options{parent}}) && $options{$options{parent}} ne '') {
+            $options{url} .= $options{parent} . '-' . $options{engine} . '/';
+        } else {
+            $options{url} .= '*' . '/';
+        }
     }
-    $options{url} .= '/' . $options{obj} . '/*';
+    if (defined($options{obj}) && $options{obj} ne '') {
+        $options{url} .= $options{obj} . '/';
+    }
+    $options{url} .= '*';
     
     my $response = $self->{http}->request(url_path => $options{url});
     my $decoded;
@@ -155,17 +160,25 @@ sub get_items {
     }
         
     my $items = {};
-    foreach my $context (@{$decoded->{response}->{context}}) { 
-        $context->{parent} =~ /engines\/(.*?)\//;
-        my $engine_name = $1;
-        $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
+    foreach my $context (@{$decoded->{response}->{context}}) {
+        my $engine_name;
+        
+        if (defined($options{parent})) {
+            $context->{parent} =~ /\/$options{parent}-(.*?)\//;
+            $engine_name = $options{parent} . '-' . $1;
+            $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
+        }
         
         my $attributes = {};
         foreach my $attribute (@{$context->{attributes}}) {
             $attributes->{$attribute->{name}} = $attribute->{value};
         }
         
-        $items->{$engine_name}->{$attributes->{name}} = $attributes;
+        if (defined($engine_name)) {
+            $items->{$engine_name}->{$attributes->{name}} = $attributes;
+        } else {
+            $items->{$attributes->{name}} = $attributes;
+        }
     }
 
     return $items;
