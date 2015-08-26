@@ -127,8 +127,8 @@ sub check_options {
         } else {
              ($section, $instance, $status, $filter) = @values;
         }
-        if ($section !~ /^sensor$/) {
-            $self->{output}->add_option_msg(short_msg => "Wronghreshold-overload section '" . $val . "'.");
+        if ($section !~ /^sensor|disk|sensor_opstatus$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
             $self->{output}->option_exit();
         }
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
@@ -303,7 +303,6 @@ sub get_severity {
     
     return $status;
 }
-
 
 1;
 
