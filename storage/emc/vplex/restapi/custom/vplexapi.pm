@@ -46,10 +46,11 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
-                      "hostname:s@"      => { name => 'hostname', },
-                      "proxyurl:s@"      => { name => 'proxyurl', },
-                      "timeout:s@"       => { name => 'timeout', },
-                      "header:s@"        => { name => 'header', },
+                      "hostname:s@"         => { name => 'hostname', },
+                      "vplex-username:s@"   => { name => 'vplex_username', },
+                      "vplex-password:s@"   => { name => 'vplex_password', },
+                      "proxyurl:s@"         => { name => 'proxyurl', },
+                      "timeout:s@"          => { name => 'timeout', },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -95,24 +96,15 @@ sub check_options {
 #    # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
+    $self->{vplex_username} = (defined($self->{option_results}->{vplex_username})) ? shift(@{$self->{option_results}->{vplex_username}}) : '';
+    $self->{vplex_password} = (defined($self->{option_results}->{vplex_password})) ? shift(@{$self->{option_results}->{vplex_password}}) : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'https';
     $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
  
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-
-    if (defined($self->{option_results}->{header})) {
-        $self->{headers} = {};
-        foreach (@{$self->{option_results}->{header}}) {
-            if (/^(.*?):(.*)/) {
-                $self->{headers}->{$1} = $2;
-            }
-       }
-   }
 
     if (!defined($self->{hostname}) ||
         scalar(@{$self->{option_results}->{hostname}}) == 0) {
@@ -129,40 +121,53 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = 443;
     $self->{option_results}->{proto} = 'https';
     $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{url_path} = $self->{url_path};
-   
+    $self->{option_results}->{headers} = { Username => $self->{vplex_username}, Password => $self->{vplex_password} };
 }
 
-sub connect {
+sub settings {
     my ($self, %options) = @_;
 
     $self->build_options_for_httplib();
     $self->{http}->set_options(%{$self->{option_results}});
-
 }
 
 sub get_items {
     my ($self, %options) = @_;
 
-    my $url = $options{url};
-    my $obj = $options{obj};
-    my $engine = $options{engine};
+    $self->settings();
 
-    my @items;
-    if ($engine) {
-        $url .= $engine.'/'.$obj.'/';
-    } elsif (defined $obj) {
-        $url .= '/'.$obj;
+    if (defined($options{engine}) && $options{engine} ne '') {
+        $options{url} .= 'engine-' . $options{engine};
+    } else {
+        $options{url} .= '*';
+    }
+    $options{url} = '/' . $options{obj} . '/*';
+    
+    my $response = $self->{http}->request(url_path => $options{url});
+    my $decoded;
+    eval {
+        $decoded = decode_json($response);
     };
-
-    my $response = $self->{http}->request(url_path => $url);
-    my $decoded = decode_json($response);
-
-    foreach my $child (@{ $decoded->{response}->{context}->[0]->{children} } ) {
-        push @items, $child->{name};
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
+    }
+        
+    my $items = {};
+    foreach my $context (@{$decoded->{response}->{context}}) { 
+        $context->{parent} =~ /\engines\/(.*?)\//;
+        my $engine_name = $1;
+        $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
+        
+        my $attributes = {};
+        foreach my $attribute (@{$context->{attributes}}) {
+            $attributes->{$attribute->{name}} = $attribute->{value};
+        }
+        
+        $items->{$engine_name}->{$attributes->{name}} = $attributes;
     }
 
-    return @items;
+    return $items;
 }
 
 sub get_param {
@@ -230,7 +235,15 @@ Vplex Rest API custom mode
 
 =item B<--hostname>
 
-Vplex Hostname.
+Vplex hostname.
+
+=item B<--vplex-username>
+
+Vplex username.
+
+=item B<--vplex-password>
+
+Vplex password.
 
 =item B<--proxyurl>
 
@@ -239,10 +252,6 @@ Proxy URL if any
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--header>
-
-Set HTTPS Headers (specify multiple time e.g )
 
 =back
 
