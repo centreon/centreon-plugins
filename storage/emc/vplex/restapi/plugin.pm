@@ -34,7 +34,7 @@ sub new {
     %{$self->{modes}} = (
                          'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
                          'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
-                         'distribued-devices'    => 'storage::emc::vplex::restapi::mode::distribueddevices',
+                         'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
                          'cluster-devices'       => 'storage::emc::vplex::restapi::mode::clusterdevices',
                          'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes',
                          'directors'             => 'storage::emc::vplex::restapi::mode::directors',

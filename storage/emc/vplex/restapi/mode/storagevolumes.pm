@@ -27,7 +27,7 @@ use warnings;
 
 my $thresholds = {
     volume_health => [
-        ['online', 'ok'],
+        ['ok', 'ok'],
         ['.*', 'CRITICAL'],
     ],
 };

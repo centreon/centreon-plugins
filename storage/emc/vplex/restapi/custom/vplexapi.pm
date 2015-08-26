@@ -184,53 +184,6 @@ sub get_items {
     return $items;
 }
 
-sub get_param {
-    my ($self, %options) = @_;
-
-    my $url = $options{url};
-    my $obj = $options{obj};
-    my $engine = $options{engine};
-    my $item = $options{item};
-    my $param = $options{param};
-
-    if ( (defined $engine) && (defined $obj) ) {
-        $url .= $engine.'/'.$obj.'/'.$item.'?'.$param;
-    } elsif (defined $engine) {
-        $url .= $engine.'/'.$item.'?'.$param;
-    } else {
-        $url .= '/'.$item.'?'.$param;
-    }
-
-    my $response = $self->{http}->request(url_path => $url);
-    my $decoded = decode_json($response);
-
-    return $decoded->{response};
-    
-}
-
-sub get_infos {
-    my ($self, %options) = @_;
-    
-    my $url = $options{url};
-    my $obj = $options{obj};
-    my $engine = $options{engine};
-    my $item = $options{item};
-    
-    if (defined $engine) {
-        $url .= $engine.'/'.$obj.'/'.$item;
-    } elsif (defined $obj) {
-        $url .= '/'.$obj;
-    } else {
-        $url .= '/'.$item;
-    }
-
-    my $response = $self->{http}->request(url_path => $url);
-    my $decoded = decode_json($response);
-
-    return $decoded->{response};
-
-}
-
 1;
 
 __END__
