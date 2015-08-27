@@ -92,7 +92,7 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Humidity '%s' value is %s %%", $result->{rPDU2SensorTempHumidityStatusName}, $value));
             }
-            $self->{output}->perfdata_add(label => $result->{rPDU2SensorTempHumidityStatusName}, unit => '%',
+            $self->{output}->perfdata_add(label => 'hum_' . $result->{rPDU2SensorTempHumidityStatusName}, unit => '%',
                                           value => $value,
                                           warning => $warn,
                                           critical => $crit,

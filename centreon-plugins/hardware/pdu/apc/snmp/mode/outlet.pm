@@ -163,7 +163,7 @@ sub run {
                                                              $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}));
         }
         
-        if (defined($result->{rPDUOutletStatusLoad}) && $result->{rPDUOutletStatusLoad} =~ /[0-9]/) {
+        if (defined($result->{rPDUOutletStatusLoad}) && $result->{rPDUOutletStatusLoad} =~ /[0-9]/ && $result->{rPDUOutletStatusLoad} != 0) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDUOutletStatusLoad});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
@@ -171,8 +171,9 @@ sub run {
                                                                  $result->{rPDUOutletStatusOutletName}, $result->{rPDUOutletStatusLoad}, 
                                                                  $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}));
             }
-            $self->{output}->perfdata_add(label => 'load_' . $result->{rPDUOutletStatusOutletName} . '_bank_' . $result->{rPDUOutletStatusOutletBank} . '_' . $result->{rPDUOutletStatusOutletPhase}, unit => 'A',
-                                          value => $result->{rPDULoadStatusLoad},
+            $self->{output}->perfdata_add(label => 'load_' . $result->{rPDUOutletStatusOutletName} . '_bank_' . $result->{rPDUOutletStatusOutletBank} . '_' . $result->{rPDUOutletStatusOutletPhase} . '_' . $instance, 
+                                          unit => 'A',
+                                          value => $result->{rPDUOutletStatusLoad},
                                           warning => $warn,
                                           critical => $crit,
                                           min => 0);
