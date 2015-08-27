@@ -49,7 +49,7 @@ sub check {
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
     
-    if (!defined($self->{results}->{$oid_rPDUPowerSupplyDevice}));
+    return if (!defined($self->{results}->{$oid_rPDUPowerSupplyDevice}));
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rPDUPowerSupplyDevice}, instance => '0');
     for (my $i = 1; $i <= 2; $i++) {
         next if (!defined($result->{'rPDUPowerSupply' . $i . 'Status'}));
