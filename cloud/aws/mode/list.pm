@@ -41,8 +41,9 @@ use warnings;
 use Switch;
 use centreon::plugins::misc;
 use Data::Dumper;
+use JSON;
 
-my @AWSServices = ['EC2', 'S3', 'RDS'];
+my $AWSServices = 'EC2,S3,RDS';
 my @EC2_instance_states = ['pending','running','shutting-down','terminated','stopping','stopped'];
 my $EC2_includeallinstances = 1;
 
@@ -57,8 +58,9 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                  "service:s@"     => { name => 'service', default => @AWSServices },
+                                  "service:s"     => { name => 'service', default => $AWSServices },
                                   "region:s"      => { name => 'region' },
+                                  "exclude:s"     => { name => 'exclude' },
                                 });
     $self->{result} = {};
     return $self;
@@ -68,25 +70,26 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (!defined($self->{option_results}->{region})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the region. ex: --region \"eu-west-1\"");
-        $self->{output}->option_exit();
-    }
+#    if (!defined($self->{option_results}->{region})) {
+#        $self->{output}->add_option_msg(short_msg => "Please set the region. ex: --region \"eu-west-1\"");
+#        $self->{output}->option_exit();
+#    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    #my @result;
 
-    foreach my $service (@{$self->{option_results}->{service}}) {
-		$PAWS = Paws->service($service, 'region' => $self->{option_results}->{region});
-		
+    @{$self->{option_results}->{servicetab}} = split(/,/, $self->{option_results}->{service});
+    foreach my $service (@{$self->{option_results}->{servicetab}}) {
         $self->{result}->{count}->{$service} = '0';
 		switch ($service) {
 			case 'EC2' { $self->EC2(); }
 			case 'S3' { $self->S3(); }
 			case 'RDS' { $self->RDS(); }
-			else { print "previous case not true" }
+			else {
+				$self->{output}->add_option_msg(short_msg => "Service $service doesn't exists");
+        		$self->{output}->option_exit();
+			}
 		}
 	}
 }
@@ -94,10 +97,25 @@ sub manage_selection {
 sub EC2 {
 	my ($self, %options) = @_;
 	
-	$self->{status_command} = $PAWS->DescribeInstances();
-	
+	# Build command
+    my $awscommand = "aws ec2 describe-instances ";
+    if ($self->{option_results}->{region}) {
+    	$awscommand = $awscommand . "--region ".$self->{option_results}->{region}." ";
+    }
+    
+    # Exec command
+    my $jsoncontent = `$awscommand`;
+    my $json = JSON->new;
+    eval {
+        $self->{command_return} = $json->decode($jsoncontent);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
+        $self->{output}->option_exit();
+    }
+    
 	# Compute data
-   	foreach my $instance (@{$self->{status_command}->{Reservations}}) {
+   	foreach my $instance (@{$self->{command_return}->{Reservations}}) {
    		foreach my $tags (@{$instance->{Instances}[0]->{Tags}}){
    			if ($tags->{Key} eq 'Name'){
    				$instance->{Instances}[0]->{Name} = $tags->{Value};
@@ -113,11 +131,25 @@ sub EC2 {
 
 sub S3 {
 	my ($self, %options) = @_;
+	my (@buckets,@return) = ();
 	
-	$self->{status_command} = $PAWS->ListBuckets();
-	
+	# Build command
+    my $awscommand = "aws s3 ls ";
+    if ($self->{option_results}->{region}) {
+    	$awscommand = $awscommand . "--region ".$self->{option_results}->{region}." ";
+    }
+    
+    # Exec command
+    @return = `$awscommand`;
+    foreach my $line (@return) {
+    	chomp $line;
+    	my ($date, $time, $name) = split(/ /,$line);
+    	my $creationdate = $date . " " . $time;
+    	push(@buckets,{Name=>$name,CreationDate=>$creationdate});
+    }
+
     # Compute data
-   	foreach my $bucket (@{$self->{status_command}->{Buckets}}) {
+   	foreach my $bucket (@buckets) {
    		$self->{result}->{'S3'}->{$bucket->{Name}} = {'Creation date' => $bucket->{CreationDate}};
    		$self->{result}->{count}->{'S3'}++;
 	}
@@ -126,10 +158,25 @@ sub S3 {
 sub RDS {
 	my ($self, %options) = @_;
 	
-	$self->{status_command} = $PAWS->DescribeDBInstances();
-	
+	# Build command
+    my $awscommand = "aws rds describe-db-instances ";
+    if ($self->{option_results}->{region}) {
+    	$awscommand = $awscommand . "--region ".$self->{option_results}->{region}." ";
+    }
+    
+    # Exec command
+    my $jsoncontent = `$awscommand`;
+    my $json = JSON->new;
+    eval {
+        $self->{command_return} = $json->decode($jsoncontent);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
+    }
+    
 	# Compute data
-   	foreach my $dbinstance (@{$self->{status_command}->{DBInstances}}) {
+   	foreach my $dbinstance (@{$self->{command_return}->{DBInstances}}) {
    		$self->{result}->{'RDS'}->{$dbinstance->{DBInstanceIdentifier}} = {'State' => $dbinstance->{DBInstanceStatus}};
    		$self->{result}->{count}->{'RDS'}++;
 	}
@@ -141,7 +188,7 @@ sub run {
     $self->manage_selection();
 
     # Send formated data to Centreon
-    foreach my $service (@{$self->{option_results}->{service}}) {
+    foreach my $service (@{$self->{option_results}->{servicetab}}) {
         $self->{output}->output_add(long_msg => sprintf("AWS service: %s", $service));
         foreach my $device (keys %{$self->{result}->{$service}}) {
             my $output = $device." [";

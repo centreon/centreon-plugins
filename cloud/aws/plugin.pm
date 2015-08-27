@@ -39,13 +39,6 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::script_simple);
 use File::Temp qw(tempfile);
-use Data::Printer;
-
-# Declare cloud modules
-# AWS
-use lib '/usr/src/dsabatie/centreon-plugins/cloud/aws/lib';
-use lib 'cloud/aws/lib';
-use cloud::aws::lib::Paws;
 
 sub new {
     my ($class, %options) = @_;
@@ -75,11 +68,9 @@ Check Amazon AWS cloud.
 
 =over 8
 
-You need to specify the following options.
-
-=item B<--region>
-
-Region to query.
+For this plugin to work, you have to install and configure:
+awscli (http://docs.aws.amazon.com/cli/latest/userguide/installing.html#install-bundle-other-os).
+perl-DateTime
 
 =back
 

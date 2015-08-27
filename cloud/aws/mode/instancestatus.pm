@@ -61,7 +61,6 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                  "service:s"     => { name => 'service', default => 'EC2' },
                                   "state:s"     => { name => 'state', default => 'all' },
                                   "no-includeallinstances"     => { name => 'includeallinstances' },
                                   "region:s"      => { name => 'region' },
@@ -75,11 +74,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (!defined($self->{option_results}->{region})) {
-        $self->{output}->add_option_msg(severity => 'UNKNOWN',
-	       								short_msg => "Please set the region. ex: --region \"eu-west-1\"");
-        $self->{output}->option_exit();
-    }
+#    if (!defined($self->{option_results}->{region})) {
+#        $self->{output}->add_option_msg(severity => 'UNKNOWN',
+#	       								short_msg => "Please set the region. ex: --region \"eu-west-1\"");
+#        $self->{output}->option_exit();
+#    }
 }
 
 sub manage_selection {
@@ -118,25 +117,44 @@ sub manage_selection {
     }
     
     # Getting data from AWS
-    my $Instance = Paws->service($self->{option_results}->{service}, region => $self->{option_results}->{region});
-
-    $self->{status_command} = $Instance->DescribeInstanceStatus(IncludeAllInstances => $self->{option_results}->{includeallinstances},
-    															Filters => [{'Name' => 'instance-state-name', 'Values' => $self->{option_results}->{statetab}}]
-    															);
+    # Build command
+    my $awscommand = "aws ec2 describe-instance-status ";
+    if ($self->{option_results}->{includeallinstances}) {
+    	$awscommand = $awscommand . "--include-all-instances ";
+    }
+    if ($self->{option_results}->{region}) {
+    	$awscommand = $awscommand . "--region ".$self->{option_results}->{region}." ";
+    }
+    $awscommand = $awscommand . "--filters Name=instance-state-name,Values=";
+    foreach my $filter (@{$self->{option_results}->{statetab}}) {
+    	$awscommand = $awscommand . $filter . ",";
+    }
+    chop($awscommand);
+    
+    # Exec command
+    my $jsoncontent = `$awscommand`;
+    my $json = JSON->new;
+    eval {
+        $self->{command_return} = $json->decode($jsoncontent);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
+        $self->{output}->option_exit();
+    }
 
     # Compute data
     $self->{option_results}->{instancecount}->{'total'} = '0';
     foreach my $curstate (@{$self->{option_results}->{statetab}}){
     	$self->{option_results}->{instancecount}->{$curstate} = '0';
     }
-   	foreach my $l (@{$self->{status_command}->{InstanceStatuses}}) {
-   		$self->{result}->{instance}->{$l->InstanceId} = $l->InstanceState->Name;
+   	foreach my $l (@{$self->{command_return}->{InstanceStatuses}}) {
+   		$self->{result}->{instance}->{$l->{InstanceId}} = $l->{InstanceState}->{Name};
    		
    		# long output for each instance
-   		$self->{output}->output_add(long_msg => "'" . $l->InstanceId . "' [state = " . $l->InstanceState->Name . ']');
+   		$self->{output}->output_add(long_msg => "'" . $l->{InstanceId} . "' [state = " . $l->{InstanceState}->{Name} . ']');
    		
    		foreach my $curstate (@{$self->{option_results}->{statetab}}){
-   			if($l->InstanceState->Name eq $curstate){
+   			if($l->{InstanceState}->{Name} eq $curstate){
    				$self->{option_results}->{instancecount}->{$curstate}++;
    			}
    		}

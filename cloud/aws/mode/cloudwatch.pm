@@ -40,12 +40,12 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::statefile;
 use Data::Dumper;
 use POSIX;
 use Switch;
+use JSON;
 
-my @EC2_statistics = ('Average', 'Minimum', 'Maximum', 'Sum', 'SampleCount');
+my $EC2_statistics = 'Average Minimum Maximum Sum SampleCount';
 my $EC2_service = 'CloudWatch';
 my $def_endtime = time();
 
@@ -75,7 +75,6 @@ sub new {
                                   "critical:s"     => { name => 'critical' },
                                 });
     $self->{result} = {};
-#    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -109,15 +108,13 @@ sub check_options {
 	       								short_msg => "Please give the object to request (instanceid, ...).");
         $self->{output}->option_exit();
     }
-#    $self->{statefile_value}->check_options(%options);
-#    $self->{statefile_value}->read(statefile => $self->{mode} . '_'.$self->{option_results}->{metric}.'_toto');
     
     if (!defined($self->{option_results}->{endtime})) {
-        $self->{option_results}->{endtime} = strftime("%FT%X.000Z", gmtime($def_endtime));
+        $self->{option_results}->{endtime} = strftime("%FT%H:%M:%S.000Z", gmtime($def_endtime));
     }
     
     if (!defined($self->{option_results}->{starttime})) {
-        $self->{option_results}->{starttime} = strftime("%FT%X.000Z", gmtime($def_endtime - 600));
+        $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($def_endtime - 600));
     }
     switch ($self->{option_results}->{metric}) {
 			case 'cpu' { $self->{metric} = $EC2_cpu }
@@ -132,39 +129,51 @@ sub manage_selection {
 	# Getting some parameters
 	# statistics
 	if ($self->{option_results}->{statistics} eq 'all'){
-		@{$self->{option_results}->{statisticstab}} = @EC2_statistics;
+		$self->{option_results}->{statistics} = $EC2_statistics;
     }
     else {
     	@{$self->{option_results}->{statisticstab}} = split(/,/, $self->{option_results}->{statistics});
     	foreach my $curstate (@{$self->{option_results}->{statisticstab}}) {
-    		if (! grep { /^$curstate$/ } @EC2_statistics ) {
+    		if (! grep { /^$curstate$/ } split(/ /, $EC2_statistics) ) {
 	       		$self->{output}->add_option_msg(severity => 'UNKNOWN',
-	       										short_msg => "The state doesn't exist.");
+	       										short_msg => "The state $curstate doesn't exist.");
         		$self->{output}->option_exit();
 	    	}
     	}
+    	$self->{option_results}->{statistics} =~ s/,/ /g ;
     }
     
     # exclusions
-    if (defined($self->{option_results}->{'exclude-statistics'})){
-    	my @excludetab = split(/,/, $self->{option_results}->{'exclude-statistics'});
-		my %array1 = map { $_ => 1 } @excludetab;
-		@{$self->{option_results}->{statisticstab}} = grep { not $array1{$_} } @{$self->{option_results}->{statisticstab}};
-    }
+#    if (defined($self->{option_results}->{'exclude-statistics'})){
+#    	my @excludetab = split(/,/, $self->{option_results}->{'exclude-statistics'});
+#		my %array1 = map { $_ => 1 } @excludetab;
+#		@{$self->{option_results}->{statisticstab}} = grep { not $array1{$_} } @{$self->{option_results}->{statisticstab}};
+#    }
 	
 	# Getting data from AWS
-	my $Instance = Paws->service($EC2_service, region => $self->{option_results}->{region});
-
-    $self->{status_command} = $Instance->GetMetricStatistics('Namespace' => $self->{metric}->{NameSpace},
-                                                             'Dimensions' => [{'Name' => $self->{metric}->{ObjectName}, 'Value' => $self->{option_results}->{object}}],
-                                                             'MetricName' => $self->{metric}->{MetricName},
-                                                             'StartTime' => $self->{option_results}->{starttime},
-                                                             'EndTime' => $self->{option_results}->{endtime},
-                                                             'Statistics' => $self->{option_results}->{statisticstab},
-                                                             'Period' => $self->{option_results}->{period},
-    														);
-#   print Dumper($self->{status_command}->{Datapoints});
-#   exit;
+    # Build command
+    my $awscommand = "aws cloudwatch get-metric-statistics ";
+    if ($self->{option_results}->{region}) {
+    	$awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
+    }
+    $awscommand = $awscommand . "--namespace " . $self->{metric}->{NameSpace} . " ";
+    $awscommand = $awscommand . "--metric-name " . $self->{metric}->{MetricName} . " ";
+    $awscommand = $awscommand . "--start-time " . $self->{option_results}->{starttime} . " ";
+    $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
+    $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
+    $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
+    $awscommand = $awscommand . "--dimensions Name=$self->{metric}->{ObjectName},Value=$self->{option_results}->{object}";
+    
+    # Exec command
+    my $jsoncontent = `$awscommand`;
+    my $json = JSON->new;
+    eval {
+        $self->{command_return} = $json->decode($jsoncontent);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -176,46 +185,14 @@ sub run {
     
     $self->manage_selection();
 
-#    my $mod_name = "cloud::aws::mode::metrics::$self->{option_results}->{metric}";
-#    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-#                                           error_msg => "Cannot load module '$mod_name'.");
-##    my $func = $mod_name->can('load');
-#    my $func = $mod_name->can('check');
-#    $func->($self);
-    
-#    $datas->{'date'} = $def_endtime;
-#    $self->{statefile_value}->write('data' => $datas);
-    
-    # Send formated data to Centreon
-    # Perf data
-#	$self->{output}->perfdata_add(label => 'total',
-#                                  value => $self->{option_results}->{instancecount}->{'total'},
-#                                  );
-#                                  
-#    foreach my $curstate (@{$self->{option_results}->{statetab}}){
-#    	$self->{output}->perfdata_add(label => $curstate,
-#                                  value => $self->{option_results}->{instancecount}->{$curstate},
-#                                  );
-#        # Most critical state
-##        if ($self->{option_results}->{instancecount}->{$curstate} != '0') {
-##        	$exit_code = $EC2_instance_states{$curstate};
-##        	$exit_code = $self->{output}->get_most_critical(status => [ $exit_code, $old_status ]);
-##        	$old_status = $exit_code;
-##        }
-#    }
-#    
-#    # Output message
-#    $self->{output}->output_add(severity => $exit_code,
-#                                short_msg => sprintf("Total instances: %s", $self->{option_results}->{instancecount}->{'total'})
-#                                );
-    $self->{output}->output_add(long_msg => sprintf("CPU Usage is %.2f%%", $self->{status_command}->{Datapoints}[0]->{Average}));
+    $self->{output}->output_add(long_msg => sprintf("CPU Usage is %.2f%%", $self->{command_return}->{Datapoints}[0]->{Average}));
 
-    $exit_code = $self->{perfdata}->threshold_check(value => $self->{status_command}->{Datapoints}[0]->{Average}, 
+    $exit_code = $self->{perfdata}->threshold_check(value => $self->{command_return}->{Datapoints}[0]->{Average}, 
                             threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU usage is: %.2f%%", $self->{status_command}->{Datapoints}[0]->{Average}));
+                                short_msg => sprintf("CPU usage is: %.2f%%", $self->{command_return}->{Datapoints}[0]->{Average}));
     $self->{output}->perfdata_add(label => 'cpu', unit => '%',
-                                  value => sprintf("%.2f", $self->{status_command}->{Datapoints}[0]->{Average}),
+                                  value => sprintf("%.2f", $self->{command_return}->{Datapoints}[0]->{Average}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
