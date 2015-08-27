@@ -16,70 +16,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-
-package hardware::sensors::hwgste::snmp::mode::sensors;
+package hardware::pdu::apc::snmp::mode::load;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
+use centreon::plugins::misc;
 
 my $thresholds = {
-    sensor => [
-        ['invalid', 'UNKNOWN'],
-        ['normal', 'OK'],
-        ['outOfRangeLo', 'WARNING'],
-        ['outOfRangeHi', 'WARNING'],
-        ['alarmLo', 'CRITICAL'],
-        ['alarmHi', 'CRITICAL'],
-     ],
+    load => [
+        ['phaseLoadNormal', 'OK'],
+        ['phaseLoadLow', 'WARNING'],
+        ['phaseLoadNearOverload', 'WARNING'],
+        ['phaseLoadOverload', 'CRITICAL'],
+    ],
 };
-
-my %map_temp_status = (
-    0 => 'invalid',
-    1 => 'normal',
-    2 => 'outOfRangeLo',
-    3 => 'outOfRangeHi',
-    4 => 'alarmLo',
-    5 => 'alarmHi',
+my %map_status = (
+    1 => 'phaseLoadNormal',
+    2 => 'phaseLoadLow',
+    3 => 'phaseLoadNearOverload',
+    4 => 'phaseLoadOverload',
 );
-my %map_temp_unit = (
-    0 => '', # none
-    1 => 'C',
-    2 => 'F',
-    3 => 'K',
-    4 => '%',
-);
-
-my $mapping = {
-    sensName  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.2' },
-    sensState => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.3', map => \%map_temp_status },
-    sensTemp  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.4' },
-    sensUnit  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.7', map => \%map_temp_unit },
-};
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
-    $self->{version} = '0.9';
+    
+    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
-                                "filter:s@"               => { name => 'filter' },
-                                "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                "warning:s@"              => { name => 'warning' },
-                                "critical:s@"             => { name => 'critical' },
+                                { 
+                                  "filter:s@"               => { name => 'filter' },
+                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
+                                  "warning:s@"              => { name => 'warning' },
+                                  "critical:s@"             => { name => 'critical' },
                                 });
-     return $self;
+    
+    return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
+    
     $self->{filter} = [];
     foreach my $val (@{$self->{option_results}->{filter}}) {
         next if (!defined($val) || $val eq '');
@@ -102,6 +84,10 @@ sub check_options {
         } else {
              ($section, $instance, $status, $filter) = @values;
         }
+        if ($section !~ /^load$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
@@ -113,13 +99,14 @@ sub check_options {
     $self->{numeric_threshold} = {};
     foreach my $option (('warning', 'critical')) {
         foreach my $val (@{$self->{option_results}->{$option}}) {
+            next if (!defined($val) || $val eq '');
             if ($val !~ /^(.*?),(.*?),(.*)$/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();
             }
-            my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /^(sensor)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: sensor).");
+            my ($section, $instance, $value) = ($1, $2, $3);
+            if ($section !~ /^load$/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -131,49 +118,60 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
-            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
+            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, instance => $instance };
         }
     }
 }
+
+my $mapping = {
+    rPDULoadStatusLoad => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.2' },
+    rPDULoadStatusLoadState => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.3', map => \%map_status },
+    rPDULoadStatusPhaseNumber => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.4' },
+    rPDULoadStatusBankNumber => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.5' },
+};
 
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    $self->{index} = {};
-    my $oid_sensEntry = '.1.3.6.1.4.1.21796.4.1.3.1';
+    my $oid_rPDULoadStatusEntry = '.1.3.6.1.4.1.318.1.1.12.2.3.1.1';
 
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_sensEntry, nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}}) {
-        next if ($oid !~ /$mapping->{sensState}->{oid}\.(\d+)$/);
+    $self->{results} = $self->{snmp}->get_table(oid => $oid_rPDULoadStatusEntry, nothing_quit => 1);
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'All phase/bank loads are ok');
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
+        next if ($oid !~ /^$mapping->{rPDULoadStatusLoadState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-
-        next if ($self->check_filter(section => 'sensor', instance => $instance));
         
-        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' state is '%s' [instance: %s, value: %s]", 
-                                    $result->{sensName}, $result->{sensState}, $instance, $result->{sensTemp}));
-        my $exit = $self->get_severity(section => 'sensor',
-                                       instance => $instance, value => $result->{sensState});
+        next if ($self->check_filter(section => 'load', instance => $instance));
+
+        $self->{output}->output_add(long_msg => sprintf("Phase '%s' on Bank '%s' status is '%s' [instance: %s, value: %s]", 
+                                    $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoadState},
+                                    $instance, $result->{rPDULoadStatusLoad}));
+        my $exit = $self->get_severity(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoadState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s' state is '%s'", $result->{sensName}, $result->{sensState}));
-        } 
+                                        short_msg => sprintf("Phase '%s' on Bank '%s' status is '%s'", 
+                                                             $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoadState}));
+        }
         
-        if ($result->{sensTemp} =~ /\d+/) {
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, value => $result->{sensTemp});
+        if (defined($result->{rPDULoadStatusLoad}) && $result->{rPDULoadStatusLoad} =~ /[0-9]/) {
+            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoad});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Sensor '%s' value is %s %s", $result->{sensName}, $result->{sensTemp}, $result->{sensUnit}));
+                                            short_msg => sprintf("Phase '%s' on Bank '%s' load is %s A", 
+                                                                 $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoad}));
             }
-            $self->{output}->perfdata_add(label => 'sensor_' . $result->{sensName}, unit => $result->{sensUnit},
-                                          value => $result->{sensTemp},
+            $self->{output}->perfdata_add(label => 'load_bank_' . $result->{rPDULoadStatusBankNumber} . '_phase_' . $result->{rPDULoadStatusPhaseNumber}, unit => 'A',
+                                          value => $result->{rPDULoadStatusLoad},
                                           warning => $warn,
-                                          critical => $crit);
+                                          critical => $crit,
+                                          min => 0);
         }
     }
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All sensors are ok."));
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -187,6 +185,7 @@ sub check_filter {
                 $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
                 return 1;
             } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{components}->{$options{section}}->{skip}++ if (defined($self->{components}->{$options{section}}));
                 $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
                 return 1;
             }
@@ -195,7 +194,6 @@ sub check_filter {
     
     return 0;
 }
-
 
 sub get_severity_numeric {
     my ($self, %options) = @_;
@@ -206,7 +204,7 @@ sub get_severity_numeric {
     if (defined($self->{numeric_threshold}->{$options{section}})) {
         my $exits = [];
         foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
-            if ($options{instance} =~ /$_->{regexp}/) {
+            if ($options{instance} =~ /$_->{instance}/) {
                 push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
                 $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
                 $checked = 1;
@@ -248,31 +246,30 @@ __END__
 
 =head1 MODE
 
-Check HWg-STE sensors.
+Check phase/bank load state.
 
 =over 8
 
 =item B<--filter>
 
-Exclude some parts.
-Can also exclude specific instance: --filter=sensor,10
+Exclude some parts (comma seperated list)
+Can also exclude specific instance: --filter=load,1
 
 =item B<--threshold-overload>
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='sensor,CRITICAL,^(?!(normal)$)'
+Example: --threshold-overload='load,CRITICAL,^(?!(PhaseLoadNormal)$)'
 
 =item B<--warning>
 
 Set warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='sensor,.*,30'
+Example: --warning='load,.*,30'
 
 =item B<--critical>
 
 Set critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='sensor,.*,40'
-
+Example: --critical='load,.*,40'
 =back
 
 =cut

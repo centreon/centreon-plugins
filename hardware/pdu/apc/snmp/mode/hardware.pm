@@ -18,13 +18,37 @@
 # limitations under the License.
 #
 
-package hardware::pdu::raritan::snmp::mode::ocprotsensors;
+package hardware::pdu::apc::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use hardware::pdu::raritan::snmp::mode::components::resources qw($thresholds %raritan_type);
+use centreon::plugins::misc;
+
+my $thresholds = {
+    humidity => [
+        ['notPresent', 'OK'],
+        ['belowMin', 'CRITICAL'],
+        ['belowLow', 'WARNING'],
+        ['normal', 'OK'],
+        ['aboveHigh', 'WARNING'],
+        ['aboveMax', 'CRITICAL'],
+    ],
+    temperature => [
+        ['notPresent', 'OK'],
+        ['belowMin', 'CRITICAL'],
+        ['belowLow', 'WARNING'],
+        ['normal', 'OK'],
+        ['aboveHigh', 'WARNING'],
+        ['aboveMax', 'CRITICAL'],
+    ],
+    psu => [
+        ['ok', 'OK'],
+        ['failed', 'CRITICAL'],
+        ['notPresent', 'OK'],
+    ],
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -35,6 +59,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "filter:s@"               => { name => 'filter' },
+                                  "absent-problem:s@"       => { name => 'absent_problem' },
                                   "component:s"             => { name => 'component', default => '.*' },
                                   "no-component:s"          => { name => 'no_component' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
@@ -67,6 +92,13 @@ sub check_options {
         push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
     }
     
+    $self->{absent_problem} = [];
+    foreach my $val (@{$self->{option_results}->{absent_problem}}) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        push @{$self->{absent_problem}}, { filter => $values[0], instance => $values[1] }; 
+    }
+    
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         next if (!defined($val) || $val eq '');
@@ -81,6 +113,10 @@ sub check_options {
             $instance = '.*';
         } else {
              ($section, $instance, $status, $filter) = @values;
+        }
+        if ($section !~ /^humidity|temperature|psu$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
         }
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
@@ -99,7 +135,7 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $instance, $value) = ($1, $2, $3);
-            if (!defined($raritan_type{$section})) {
+            if ($section !~ /^humidity|temperature$/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();
             }
@@ -122,18 +158,31 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [];
+    my @components = ('psu', 'humidity', 'temperature');
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "hardware::pdu::apc::snmp::mode::components::$_";
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
+                                                   error_msg => "Cannot load module '$mod_name'.");
+            my $func = $mod_name->can('load');
+            $func->(request => $snmp_request); 
+        }
+    }
     
-    my $mod_name = "hardware::pdu::raritan::snmp::mode::components::sensor";
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                          error_msg => "Cannot load module '$mod_name'.");
-    my $func = $mod_name->can('load');
-    $func->(type => 'ocprot', request => $snmp_request); 
+    if (scalar(@{$snmp_request}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
     
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request, return_type => 1);
+    foreach (@components) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = "hardware::pdu::apc::snmp::mode::components::$_";
+            my $func = $mod_name->can('check');
+            $func->($self); 
+        }
+    }
     
-    $func = $mod_name->can('check');
-    $func->($self, component => $self->{option_results}->{component}, type => 'ocprot'); 
-
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
@@ -147,18 +196,37 @@ sub run {
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s sensors are ok [%s].", 
+                                short_msg => sprintf("All %s components are ok [%s].", 
                                                      $total_components,
                                                      $display_by_component)
                                 );
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No sensors are checked.');
+                                    short_msg => 'No components are checked.');
     }
 
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub absent_problem {
+    my ($self, %options) = @_;
+    
+    foreach (@{$self->{absent_problem}}) {
+        if ($options{section} =~ /$_->{filter}/) {
+            if (!defined($_->{instance}) || $options{instance} =~ /$_->{instance}/) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("Component '%s' instance '%s' is not present", 
+                                                                 $options{section}, $options{instance}));
+                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
+                $self->{components}->{$options{section}}->{skip}++;
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
 }
 
 sub check_filter {
@@ -170,6 +238,7 @@ sub check_filter {
                 $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
                 return 1;
             } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
+                $self->{components}->{$options{section}}->{skip}++ if (defined($self->{components}->{$options{section}}));
                 $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
                 return 1;
             }
@@ -230,18 +299,24 @@ __END__
 
 =head1 MODE
 
-Check overcurrent protectors sensors.
+Check components (humidity, temperature, power supplies).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
+Can be: 'psu', 'humidity', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=airPressure --filter=rmsVoltage)
-Can also exclude specific instance: --filter=rmsVoltage,C1
+Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=humidity)
+Can also exclude specific instance: --filter=temperature,1
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=psu
 
 =item B<--no-component>
 
@@ -252,18 +327,17 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='powerQuality,CRITICAL,^(?!(normal)$)'
+Example: --threshold-overload='temperature,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
 Set warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='powerQuality,.*,30'
+Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
 Set critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='powerQuality,.*,40'
-
+Example: --critical='temperature,.*,40'
 =back
 
 =cut
