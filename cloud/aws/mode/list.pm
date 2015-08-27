@@ -105,6 +105,10 @@ sub EC2 {
     
     # Exec command
     my $jsoncontent = `$awscommand`;
+    if ($? > 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot run aws");
+        $self->{output}->option_exit();
+    }
     my $json = JSON->new;
     eval {
         $self->{command_return} = $json->decode($jsoncontent);

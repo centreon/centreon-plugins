@@ -44,15 +44,11 @@ use Data::Dumper;
 use POSIX;
 use Switch;
 use JSON;
+use cloud::aws::mode::metrics::instanceCpu;
+use cloud::aws::mode::metrics::instanceNetwork;
 
-my $EC2_statistics = 'Average Minimum Maximum Sum SampleCount';
-my $EC2_service = 'CloudWatch';
+my $StatisticsType = 'Average Minimum Maximum Sum SampleCount';
 my $def_endtime = time();
-
-my $EC2_cpu = {'NameSpace' => 'AWS/EC2',
-			   'MetricName' => 'CPUUtilization',
-			   'ObjectName' => 'InstanceId',
-               };
 			   
 sub new {
     my ($class, %options) = @_;
@@ -91,12 +87,6 @@ sub check_options {
        $self->{output}->option_exit();
     }
     
-    if (!defined($self->{option_results}->{region})) {
-        $self->{output}->add_option_msg(severity => 'UNKNOWN',
-	       								short_msg => "Please set the region. ex: --region \"eu-west-1\"");
-        $self->{output}->option_exit();
-    }
-    
     if (!defined($self->{option_results}->{metric})) {
         $self->{output}->add_option_msg(severity => 'UNKNOWN',
 	       								short_msg => "Please give a metric to watch (cpu, disk, ...).");
@@ -116,25 +106,16 @@ sub check_options {
     if (!defined($self->{option_results}->{starttime})) {
         $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($def_endtime - 600));
     }
-    switch ($self->{option_results}->{metric}) {
-			case 'cpu' { $self->{metric} = $EC2_cpu }
-			else { print "previous case not true" }
-		}
-}
-
-sub manage_selection {
-    my ($self, %options) = @_;
-    my @result;
-
-	# Getting some parameters
+    
+    # Getting some parameters
 	# statistics
 	if ($self->{option_results}->{statistics} eq 'all'){
-		$self->{option_results}->{statistics} = $EC2_statistics;
+		$self->{option_results}->{statistics} = $StatisticsType;
     }
     else {
     	@{$self->{option_results}->{statisticstab}} = split(/,/, $self->{option_results}->{statistics});
     	foreach my $curstate (@{$self->{option_results}->{statisticstab}}) {
-    		if (! grep { /^$curstate$/ } split(/ /, $EC2_statistics) ) {
+    		if (! grep { /^$curstate$/ } split(/ /, $StatisticsType) ) {
 	       		$self->{output}->add_option_msg(severity => 'UNKNOWN',
 	       										short_msg => "The state $curstate doesn't exist.");
         		$self->{output}->option_exit();
@@ -149,6 +130,11 @@ sub manage_selection {
 #		my %array1 = map { $_ => 1 } @excludetab;
 #		@{$self->{option_results}->{statisticstab}} = grep { not $array1{$_} } @{$self->{option_results}->{statisticstab}};
 #    }
+}
+
+sub manage_selection {
+    my ($self, $metric) = @_;
+    my @result;
 	
 	# Getting data from AWS
     # Build command
@@ -156,16 +142,20 @@ sub manage_selection {
     if ($self->{option_results}->{region}) {
     	$awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
     }
-    $awscommand = $awscommand . "--namespace " . $self->{metric}->{NameSpace} . " ";
-    $awscommand = $awscommand . "--metric-name " . $self->{metric}->{MetricName} . " ";
+    $awscommand = $awscommand . "--namespace " . $metric->{NameSpace} . " ";
+    $awscommand = $awscommand . "--metric-name " . $metric->{MetricName} . " ";
     $awscommand = $awscommand . "--start-time " . $self->{option_results}->{starttime} . " ";
     $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
     $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
     $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
-    $awscommand = $awscommand . "--dimensions Name=$self->{metric}->{ObjectName},Value=$self->{option_results}->{object}";
+    $awscommand = $awscommand . "--dimensions Name=$metric->{ObjectName},Value=$self->{option_results}->{object}";
     
     # Exec command
     my $jsoncontent = `$awscommand`;
+    if ($? > 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot run aws");
+        $self->{output}->option_exit();
+    }
     my $json = JSON->new;
     eval {
         $self->{command_return} = $json->decode($jsoncontent);
@@ -181,21 +171,35 @@ sub run {
 #    my $datas = {};
     
     my ($msg, $exit_code);
-    my $old_status = 'OK';
     
-    $self->manage_selection();
+    switch ($self->{option_results}->{metric}) {
+		case 'cpu' { cloud::aws::mode::metrics::instanceCpu::check($self); }
+		case 'traffic' { cloud::aws::mode::metrics::instanceNetwork::check($self); }
+		else {
+			$self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find metric '" . $self->{option_results}->{metric} . "'.");
+        	$self->{output}->option_exit();
+		}
+	}
 
-    $self->{output}->output_add(long_msg => sprintf("CPU Usage is %.2f%%", $self->{command_return}->{Datapoints}[0]->{Average}));
-
-    $exit_code = $self->{perfdata}->threshold_check(value => $self->{command_return}->{Datapoints}[0]->{Average}, 
-                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU usage is: %.2f%%", $self->{command_return}->{Datapoints}[0]->{Average}));
-    $self->{output}->perfdata_add(label => 'cpu', unit => '%',
-                                  value => sprintf("%.2f", $self->{command_return}->{Datapoints}[0]->{Average}),
+    foreach my $metric (@{$self->{metric}}) {
+    	$self->manage_selection($metric);
+    	
+    	$self->{output}->perfdata_add(label => sprintf($metric->{Labels}->{PerfData}, unit => $metric->{Labels}->{Unit}),
+                                  value => sprintf($metric->{Labels}->{Value}, $self->{command_return}->{Datapoints}[0]->{Average}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
+        $exit_code = $self->{perfdata}->threshold_check(value => $self->{command_return}->{Datapoints}[0]->{Average}, 
+                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        
+        $self->{output}->output_add(long_msg => sprintf($metric->{Labels}->{LongOutput}, $self->{command_return}->{Datapoints}[0]->{Average}));
+
+        $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf($metric->{Labels}->{ShortOutput}, $self->{command_return}->{Datapoints}[0]->{Average}));
+    }
+	
+    
+    
                                   
     $self->{output}->display();
     $self->{output}->exit();
