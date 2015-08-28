@@ -35,7 +35,7 @@ sub new {
               'domain-usage'    => 'network::alcatel::oxe::snmp::mode::domainusage',
               'memory'          => 'snmp_standard::mode::memory',
               'pbx-state'       => 'network::alcatel::oxe::snmp::mode::pbxstate',
-			  'pbx-role'        => 'network::alcatel::oxe::snmp::mode::pbxrole',
+	      'pbx-role'        => 'network::alcatel::oxe::snmp::mode::pbxrole',
               'storage'         => 'snmp_standard::mode::storage',
               'swap'            => 'snmp_standard::mode::swap',
     );
