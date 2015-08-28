@@ -256,7 +256,7 @@ __END__
 
 =head1 NAME
 
-centreon_plugins.pl - main program to call Merethis plugins.
+centreon_plugins.pl - main program to call Centreon plugins.
 
 =head1 SYNOPSIS
 
