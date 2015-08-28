@@ -40,8 +40,17 @@ sub new {
     $self->{plugin} = undef;
     $self->{help} = undef;
 
+    # Avoid to destroy because it keeps a ref on the object. 
+    # A problem if we execute it multiple times in the same perl execution
+    # Use prepare_destroy
     $self->set_signal_handlers;
     return $self;
+}
+
+sub prepare_destroy {
+    my $self = shift;
+
+    delete $handlers{DIE}->{$self};
 }
 
 sub set_signal_handlers {
