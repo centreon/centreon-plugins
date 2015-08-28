@@ -22,12 +22,10 @@ package centreon::plugins::options;
 
 use Pod::Usage;
 use Pod::Find qw(pod_where);
-use Getopt::Long;
-Getopt::Long::Configure("pass_through");
-Getopt::Long::Configure('bundling');
-Getopt::Long::Configure('no_auto_abbrev');
 use strict;
 use warnings;
+
+my $alternative = 0;
 
 sub new {
     my $class = shift;
@@ -38,13 +36,29 @@ sub new {
     $self->{options} = {};
     @{$self->{pod_package}} = ();
     $self->{pod_packages_once} = {};
+    
+    if ($alternative == 0) {
+        require Getopt::Long;
+        Getopt::Long->import();
+        Getopt::Long::Configure("pass_through");
+        Getopt::Long::Configure('bundling');
+        Getopt::Long::Configure('no_auto_abbrev');
+    } else {
+        require centreon::plugins::alternative::Getopt;
+        centreon::plugins::alternative::Getopt->import();
+    }
+    
     return $self;
 }
 
 sub set_sanity {
     my ($self, %options) = @_;
     
-    Getopt::Long::Configure('no_pass_through');
+    if ($alternative == 0) {
+        Getopt::Long::Configure('no_pass_through');
+    } else {
+        $centreon::plugins::alternative::Getopt::warn_message = 1;
+    }
     $SIG{__WARN__} = sub { 
         $self->{output}->add_option_msg(short_msg => $_[0]);
         $self->{output}->option_exit(nolabel => 1);
