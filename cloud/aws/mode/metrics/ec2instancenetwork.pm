@@ -18,11 +18,14 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::metrics::instanceNetwork;
+package cloud::aws::mode::metrics::ec2instancenetwork;
 
 use strict;
 use warnings;
 use Data::Dumper;
+use Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
@@ -48,7 +51,7 @@ $Param[1] = {'NameSpace' => 'AWS/EC2',
                          }
                      };
                
-sub check {
+sub cloudwatchCheck {
     my ($self) = @_;
     
     @{$self->{metric}} = @Param;

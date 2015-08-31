@@ -18,24 +18,27 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::metrics::instanceCpu;
+package cloud::aws::mode::metrics::ec2instancecpucreditusage;
 
 use strict;
 use warnings;
+use Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
 $Param[0] = {'NameSpace' => 'AWS/EC2',
-			          'MetricName' => 'CPUUtilization',
+			          'MetricName' => 'CPUCreditUsage',
 			          'ObjectName' => 'InstanceId',
-                      'Labels' => {'ShortOutput' => "CPU Usage is %.2f%%",
-	                     'LongOutput' => "CPU Usage is %.2f%%",
-			             'PerfData' => 'cpu',
-			             'Unit' => '%',
+                      'Labels' => {'ShortOutput' => "CPUCreditUsage is %.2f%%",
+	                     'LongOutput' => "CPUCreditUsage is %.2f%%",
+			             'PerfData' => 'CPUCreditUsage',
+			             'Unit' => 'Count',
 			             'Value' => "%.2f",
                         }
                      };              
-sub check {
+sub cloudwatchCheck {
     my ($self) = @_;
     
     @{$self->{metric}} = @Param;

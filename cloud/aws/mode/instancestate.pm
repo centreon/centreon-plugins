@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package cloud::aws::mode::instancestatus;
+package cloud::aws::mode::instancestate;
 
 use base qw(centreon::plugins::mode);
 
@@ -207,62 +207,25 @@ __END__
 
 =head1 MODE
 
-Show number of current active calls
+Get the state of your EC2 instances (running, stopped, ...)
 
 =over 8
 
-=item B<--warning>
+=item B<--state>
 
-Threshold warning.
+(optional) Specific state to query.
 
-=item B<--critical>
+=item B<--no-includeallinstances>
 
-Threshold critical.
+(optional) Includes the health status for running instances only.
 
-=item B<--remote>
+=item B<--region>
 
-Execute command remotely; can be 'ami' or 'ssh' (default: ssh).
+(optional) The region to use (should be configured directly in aws).
 
-=item B<--hostname>
+=item B<--exclude>
 
-Hostname to query (need --remote option).
-
-=item B<--port>
-
-AMI remote port (default: 5038).
-
-=item B<--username>
-
-AMI username.
-
-=item B<--password>
-
-AMI password.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'asterisk_sendcommand.pm').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: /home/centreon/bin).
+(optional) State to exclude from the query.
 
 =back
 

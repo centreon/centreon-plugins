@@ -44,8 +44,16 @@ use Data::Dumper;
 use POSIX;
 use Switch;
 use JSON;
-use cloud::aws::mode::metrics::instanceCpu;
-use cloud::aws::mode::metrics::instanceNetwork;
+use Module::Load;
+
+my $CloudwatchMetrics = {
+	'cpu'=> "cloud::aws::mode::metrics::ec2instancecpu",
+	'traffic' => "cloud::aws::mode::metrics::ec2instancenetwork",
+	'cpucreditusage' => "cloud::aws::mode::metrics::ec2instancecpucreditusage",
+	'cpucreditbalance' => "cloud::aws::mode::metrics::ec2instancecpucreditbalance",
+	'bucketsize' => "cloud::aws::mode::metrics::s3bucketsize",
+	'rdscpu'=> "cloud::aws::mode::metrics::rdsinstancecpu",
+};
 
 my $StatisticsType = 'Average Minimum Maximum Sum SampleCount';
 my $def_endtime = time();
@@ -78,6 +86,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
+    $self->{option_results}->{def_endtime} = $def_endtime;
+    
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -100,11 +110,11 @@ sub check_options {
     }
     
     if (!defined($self->{option_results}->{endtime})) {
-        $self->{option_results}->{endtime} = strftime("%FT%H:%M:%S.000Z", gmtime($def_endtime));
+        $self->{option_results}->{endtime} = strftime("%FT%H:%M:%S.000Z", gmtime($self->{option_results}->{def_endtime}));
     }
     
     if (!defined($self->{option_results}->{starttime})) {
-        $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($def_endtime - 600));
+        $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($self->{option_results}->{def_endtime} - 600));
     }
     
     # Getting some parameters
@@ -148,8 +158,12 @@ sub manage_selection {
     $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
     $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
     $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
-    $awscommand = $awscommand . "--dimensions Name=$metric->{ObjectName},Value=$self->{option_results}->{object}";
+    $awscommand = $awscommand . "--dimensions Name=" . $metric->{ObjectName} . ",Value=" . $self->{option_results}->{object};
+    if ($metric->{ExtraDimensions}) {
+    	$awscommand = $awscommand . " " . $metric->{ExtraDimensions};
+    }
     
+#    print $awscommand;
     # Exec command
     my $jsoncontent = `$awscommand`;
     if ($? > 0) {
@@ -164,21 +178,22 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
         $self->{output}->option_exit();
     }
+#    print Dumper($self->{command_return});
+#    exit;
 }
 
 sub run {
     my ($self, %options) = @_;
-#    my $datas = {};
     
     my ($msg, $exit_code);
-    
-    switch ($self->{option_results}->{metric}) {
-		case 'cpu' { cloud::aws::mode::metrics::instanceCpu::check($self); }
-		case 'traffic' { cloud::aws::mode::metrics::instanceNetwork::check($self); }
-		else {
-			$self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find metric '" . $self->{option_results}->{metric} . "'.");
-        	$self->{output}->option_exit();
-		}
+
+	if (defined($CloudwatchMetrics->{$self->{option_results}->{metric}})) {
+		load $CloudwatchMetrics->{$self->{option_results}->{metric}}, qw/cloudwatchCheck/;;
+        cloudwatchCheck($self);
+	}
+	else {
+		$self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find metric '" . $self->{option_results}->{metric} . "'.");
+        $self->{output}->option_exit();
 	}
 
     foreach my $metric (@{$self->{metric}}) {
@@ -188,7 +203,8 @@ sub run {
                                   value => sprintf($metric->{Labels}->{Value}, $self->{command_return}->{Datapoints}[0]->{Average}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
+#                                  min => 0, max => 100
+                                  );
         $exit_code = $self->{perfdata}->threshold_check(value => $self->{command_return}->{Datapoints}[0]->{Average}, 
                             threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
@@ -211,62 +227,53 @@ __END__
 
 =head1 MODE
 
-Show number of current active calls
+Get cloudwatch metrics.
+This doc is partly based on the official AWS CLI documentation.
 
 =over 8
 
+=item B<--region>
+
+(optional) The region to use (should be configured directly in aws).
+
+=item B<--exclude-statistics>
+
+(optional) Statistics to exclude from the query.
+
+=item B<--metric>
+
+Metric to query.
+
+=item B<--period>
+
+(optional) The granularity, in seconds, of the returned datapoints. period must be at least 60 seconds and must be a multiple of 60. The default value is 300.
+
+=item B<--start-time>
+
+(optional) The time stamp to use for determining the first datapoint to return. The value specified is inclusive; results include datapoints with the time stamp specified.
+exemple: 2014-04-09T23:18:00
+
+=item B<--end-time>
+
+(optional) The time stamp to use for determining the last datapoint to return. The value specified is exclusive; results will include datapoints up to the time stamp specified.
+exemple: 2014-04-09T23:18:00
+
+=item B<--statistics>
+
+(optional) The metric statistics to return. For information about specific statistics returned by GetMetricStatistics, go to statistics in the Amazon CloudWatch Developer Guide.
+Valid Values: Average | Sum | SampleCount | Maximum | Minimum
+
+=item B<--object>
+
+Name of the object to request (InstanceId for an EC2 instance, for exemple).
+
 =item B<--warning>
 
-Threshold warning.
+(optional) Threshold warning.
 
 =item B<--critical>
 
-Threshold critical.
-
-=item B<--remote>
-
-Execute command remotely; can be 'ami' or 'ssh' (default: ssh).
-
-=item B<--hostname>
-
-Hostname to query (need --remote option).
-
-=item B<--port>
-
-AMI remote port (default: 5038).
-
-=item B<--username>
-
-AMI username.
-
-=item B<--password>
-
-AMI password.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'asterisk_sendcommand.pm').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: /home/centreon/bin).
+(optional) Threshold critical.
 
 =back
 

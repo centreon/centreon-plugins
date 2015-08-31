@@ -41,13 +41,6 @@ use base qw(centreon::plugins::script_simple);
 use File::Temp qw(tempfile);
 use Data::Printer;
 
-# Declare cloud modules
-# AWS
-use lib 'cloud/aws/lib';
-use cloud::aws::lib::Paws;
-
-# Docker
-
 sub new {
     my ($class, %options) = @_;
     
@@ -70,15 +63,11 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon AWS cloud.
+Scan your cloud infrastructure.
 
 =over 8
 
-You need to specify the following options.
-
-=item B<--region>
-
-Region to query.
+You can use this plugin to scan your cloud infrastructure.
 
 =back
 

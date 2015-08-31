@@ -217,62 +217,21 @@ __END__
 
 =head1 MODE
 
-Show number of current active calls
+List your EC2, RDS instance and S3 buckets
 
 =over 8
 
-=item B<--warning>
+=item B<--service>
 
-Threshold warning.
+(optional) List one particular service.
 
-=item B<--critical>
+=item B<--region>
 
-Threshold critical.
+(optional) The region to use (should be configured directly in aws).
 
-=item B<--remote>
+=item B<--exclude>
 
-Execute command remotely; can be 'ami' or 'ssh' (default: ssh).
-
-=item B<--hostname>
-
-Hostname to query (need --remote option).
-
-=item B<--port>
-
-AMI remote port (default: 5038).
-
-=item B<--username>
-
-AMI username.
-
-=item B<--password>
-
-AMI password.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--command>
-
-Command to get information (Default: 'asterisk_sendcommand.pm').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: /home/centreon/bin).
+(optional) Service to exclude from the scan.
 
 =back
 
