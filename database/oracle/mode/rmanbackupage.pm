@@ -85,21 +85,13 @@ sub run {
     $self->{sql}->connect();
     my $query;
     if (defined($self->{option_results}->{incremental_level})) {
-        $query = q{SELECT
-  j.input_type as object_type,
-  ((max(j.start_time) - date '1970-01-01')*24*60*60) as last_time,  
-  x.incremental_level 
-  FROM v$rman_backup_job_details j
-  LEFT OUTER JOIN (SELECT
-                     d.session_recid, d.session_stamp,
-                     (case when sum(case when d.backup_type||d.incremental_level = 'I1' then 1 else 0 end) = 0 then 0 else 1 end) incremental_level
-                    FROM
-                     v$backup_set_details d
-                     JOIN V$backup_set s on s.set_stamp = d.set_stamp and s.set_count = d.set_count
-                    WHERE s.input_file_scan_only = 'NO'
-                    GROUP BY d.session_recid, d.session_stamp) x
-    on x.session_recid = j.session_recid and x.session_stamp = j.session_stamp
-  GROUP BY input_type, incremental_level ORDER BY last_time DESC};
+        $query = q{SELECT v$rman_status.object_type,
+                    ((max(v$rman_status.start_time) - date '1970-01-01')*24*60*60) as last_time,
+                    NVL(v$backup_set_details.incremental_level, 0)
+                    FROM v$rman_status LEFT JOIN v$backup_set_details ON v$rman_status.session_recid = v$backup_set_details.session_recid
+                    WHERE operation='BACKUP'
+                    GROUP BY object_type, incremental_level ORDER BY last_time DESC
+        };
     } else {
         $query = q{SELECT object_type,
                     ((max(start_time) - date '1970-01-01')*24*60*60) as last_time
@@ -115,7 +107,7 @@ sub run {
 
     my $count_backups = 0;
     my $already_checked = {};
-    foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
+    foreach (('db full', 'db incr', 'archivelog', 'controlfile')) {
         my $executed = 0;
         my $label = $_;
         $label =~ s/ /-/g;
