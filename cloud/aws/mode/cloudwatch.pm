@@ -79,6 +79,7 @@ sub new {
                                   "critical:s"     => { name => 'critical' },
                                 });
     $self->{result} = {};
+    create_json();
     return $self;
 }
 
@@ -180,6 +181,63 @@ sub manage_selection {
     }
 #    print Dumper($self->{command_return});
 #    exit;
+}
+
+sub create_json {
+	#{
+#"Namespace": "AWS/RDS",
+#    "MetricName": "CPUUtilization",
+#    "Dimensions": [
+#        {
+#            "Name": "DBInstanceIdentifier",
+#            "Value": "centreon"
+#        }
+#    ], 
+#    "StartTime": "2015-08-28T14:32:30Z",
+#    "EndTime": "2015-08-28T14:34:30Z",
+#    "Period": "300",
+#    "Statistics": [
+#        "Average Minimum Maximum Sum SampleCount",
+#    ], 
+#    "Unit": "",
+#};
+#    if ($self->{option_results}->{region}) {
+#        $awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
+#    }
+#    $awscommand = $awscommand . "--namespace " . $metric->{NameSpace} . " ";
+#    $awscommand = $awscommand . "--metric-name " . $metric->{MetricName} . " ";
+#    $awscommand = $awscommand . "--start-time " . $self->{option_results}->{starttime} . " ";
+#    $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
+#    $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
+#    $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
+#    $awscommand = $awscommand . "--dimensions Name=" . $metric->{ObjectName} . ",Value=" . $self->{option_results}->{object};
+#    if ($metric->{ExtraDimensions}) {
+#        $awscommand = $awscommand . " " . $metric->{ExtraDimensions};
+#    }
+    my $json = JSON->new;
+    my $perl_scalar = $json->decode('{"Namespace": "AWS/RDS","MetricName": "CPUUtilization","Dimensions": [{"Name": "DBInstanceIdentifier","Value": "centreon"}],"StartTime": "2015-08-28T14:32:30Z","EndTime": "2015-08-28T14:34:30Z","Period": "300","Statistics": ["Average","Minimum","Maximum","Sum","SampleCount"],"Unit": "Percent"}');
+    print Dumper($perl_scalar);
+    print "decode\n";
+    my $tab = {
+          'StartTime' => '2015-08-28T14:32:30Z',
+          'EndTime' => '2015-08-28T14:34:30Z',
+          'Period' => '300',
+          'MetricName' => 'CPUUtilization',
+          'Unit' => 'Percent',
+          'Statistics' => [
+                            "Average","Minimum","Maximum","Sum","SampleCount"
+                          ],
+          'Dimensions' => [
+                            {
+                              'Value' => 'centreon',
+                              'Name' => 'DBInstanceIdentifier'
+                            }
+                          ],
+          'Namespace' => 'AWS/RDS'
+        };
+        
+     print $json->encode($tab);
+    exit;
 }
 
 sub run {

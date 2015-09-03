@@ -37,15 +37,13 @@ package cloud::aws::plugin;
 
 use strict;
 use warnings;
+#use base qw(centreon::plugins::script_custom);
 use base qw(centreon::plugins::script_simple);
-use File::Temp qw(tempfile);
 
 sub new {
     my ($class, %options) = @_;
-    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
@@ -54,7 +52,14 @@ sub new {
                          'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
                          );
 
+    #$self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
+}
+
+sub init {
+    my ($self, %options) = @_;
+
+    $self->SUPER::init(%options);
 }
 
 1;
@@ -71,7 +76,16 @@ For this plugin to work, you have to install and configure:
 awscli (http://docs.aws.amazon.com/cli/latest/userguide/installing.html#install-bundle-other-os).
 perl-DateTime
 perl-Module-Load
+perl-YAML
+perl-File-Slurp.noarch
+perl-Pod-Coverage
+openssl-devel
 
+CPAN:
+Data::Printer
+HTTP::Tiny
+PerlIO::utf8_strict
+Paws
 =back
 
 =cut
