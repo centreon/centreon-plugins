@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::vplex::restapi::mode::clusterdevices;
+package storage::emc::vplex::restapi::mode::distributeddevices;
 
 use base qw(centreon::plugins::mode);
 
@@ -27,7 +27,15 @@ use warnings;
 
 my $thresholds = {
     device_health => [
-        ['ok', 'ok'],
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    device_opstatus => [
+        ['ok', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+    device_service => [
+        ['running', 'OK'],
         ['.*', 'CRITICAL'],
     ],
 };
@@ -39,11 +47,10 @@ sub new {
 
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
-                                {
-                                "cluster:s"             => { name => 'cluster' },
-                                "filter:s@"             => { name => 'filter' },
-                                "threshold-overload:s@" => { name => 'threshold_overload' },
-                                });
+               {
+               "filter:s@"               => { name => 'filter' },
+               "threshold-overload:s@"   => { name => 'threshold_overload' },
+               });
 
     return $self;
 }
@@ -90,35 +97,44 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     my $vplex = $options{custom};
-        
-    my $urlbase = '/vplex/clusters/';     
-    my $items = $vplex->get_items(url => $urlbase,
-                                  parent => 'cluster',
-                                  engine => $self->{option_results}->{cluster},
-                                  obj => 'devices');
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Cluster Devices are OK');
-                                
-    foreach my $cluster_name (sort keys %{$items}) {
-        foreach my $device_name (sort keys %{$items->{$cluster_name}}) {
-            my $instance = $cluster_name . '_' . $device_name;
+                                short_msg => 'All Distributed devices are OK');
+    
+    my $urlbase = '/vplex/distributed-storage/distributed-devices/';     
+    my $items = $vplex->get_items(url => $urlbase);
+    foreach my $name (sort keys %{$items}) {
+        my $instance = $name;
 
-            next if ($self->check_filter(section => 'device', instance => $instance));
-            
-            $self->{output}->output_add(long_msg => sprintf("Device '%s' health state is '%s'", 
-                                                            $instance, 
-                                                            $items->{$cluster_name}->{$device_name}->{'health-state'}));
+        next if ($self->check_filter(section => 'device', instance => $instance));
+        
+        $self->{output}->output_add(long_msg => sprintf("Distributed device '%s' health state is '%s' [service status: %s, operational status: %s]", 
+                                                        $instance, 
+                                                        $items->{$name}->{'health-state'}, 
+                                                        $items->{$name}->{'service-status'},
+                                                        $items->{$name}->{'operational-status'},
+                                                        ));
 
-            my $exit = $self->get_severity(section => 'device_health', instance => $instance, value => $items->{$cluster_name}->{$device_name}->{'health-state'});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Device '%s' health state is '%s'", 
-                                                            $instance, $items->{$cluster_name}->{$device_name}->{'health-state'}));
-            }
+        my $exit = $self->get_severity(section => 'device_health', instance => $instance, value => $items->{$name}->{'health-state'});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Distributed device '%s' health state is %s", 
+                                                        $instance, $items->{$name}->{'health-state'}));
+        }
+        $exit = $self->get_severity(section => 'device_service', value => $items->{$name}->{'service-status'});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Distributed device '%s' service status is %s", 
+                                                             $instance, $items->{$name}->{'service-status'}));
+        }
+        $exit = $self->get_severity(section => 'device_opstatus', value => $items->{$name}->{'operational-status'});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Distributed device '%s' operational status is %s", 
+                                                             $instance, $items->{$name}->{'operational-status'}));
         }
     }
-    
+     
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -171,24 +187,20 @@ __END__
 
 =head1 MODE
 
-Check Cluster devices health for VPlex
+Check distributed devices for VPlex
 
 =over 8
-
-=item B<--cluster>
-
-Set cluster name to check (Example: '1')
 
 =item B<--filter>
 
 Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=device,cluster-1_xxxx
+Can also exclude specific instance: --filter=component,cluster-1
 
 =item B<--threshold-overload>
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='device_health,CRITICAL,^(?!(ok)$)'
+Example: --threshold-overload='component_opstatus,CRITICAL,^(?!(in-contact|cluster-in-contact)$)'
 
 =back
 

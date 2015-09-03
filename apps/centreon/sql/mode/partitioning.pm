@@ -74,6 +74,7 @@ sub run {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All table partitions are up to date"));
     foreach my $value (@{$self->{option_results}->{tablename}}) {
+        next if ($value eq '');
         if ($value !~ /(\S+)\.(\S+)/) {
             $self->{output}->output_add(severity => 'UNKNOWN',
                                         short_msg => sprintf("Wrong table name '%s'", $value));

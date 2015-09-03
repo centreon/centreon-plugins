@@ -263,23 +263,24 @@ sub check {
                                              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
         $self->{output}->output_add(long_msg => sprintf("Test database '%s' server '%s':", $self->{data}->{database}, $self->{data}->{server}));
-        if ($self->{data}->{size} =~ /\((.*?)\s*bytes/) {
-            my $total_bytes = $1;
-            $total_bytes =~ s/[.,]//g;
-            $self->{output}->perfdata_add(label => 'size_' . $self->{data}->{database}, unit => 'B',
-                                          value => $total_bytes,
-                                          min => 0);
-            my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
-            $self->{output}->output_add(long_msg => sprintf("    Size %s", $total_value . ' ' . $total_unit));
-        }
         if ($self->{data}->{asize} =~ /\((.*?)\s*bytes/) {
-            my $total_bytes = $1;
-            $total_bytes =~ s/[.,]//g;
-            $self->{output}->perfdata_add(label => 'asize_' . $self->{data}->{database}, unit => 'B',
-                                          value => $total_bytes,
-                                          min => 0);
-            my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
-            $self->{output}->output_add(long_msg => sprintf("    Available Size %s", $total_value . ' ' . $total_unit));
+            my $free_bytes = $1;
+            $free_bytes =~ s/[.,]//g;
+            
+            my $total_bytes; 
+            if ($self->{data}->{size} =~ /\((.*?)\s*bytes/) {
+                $total_bytes = $1;
+                $total_bytes =~ s/[.,]//g;
+                my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_bytes);
+                $self->{output}->output_add(long_msg => sprintf("    Size %s", $total_value . ' ' . $total_unit));
+            }
+            my $used_bytes = $total_bytes - $free_bytes;
+            
+            $self->{output}->perfdata_add(label => 'used_' . $self->{data}->{database}, unit => 'B',
+                                          value => $used_bytes,
+                                          min => 0, max => $total_bytes);
+            my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used_bytes);
+            $self->{output}->output_add(long_msg => sprintf("    Used Size %s", $used_value . ' ' . $used_unit));
         }
         
         

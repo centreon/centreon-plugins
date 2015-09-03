@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::oxe::snmp::plugin;
+package hardware::pdu::apc::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,17 +28,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
-    $self->{version} = '1.0';
+    # $options->{options} = options object    
+    
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-              'cpu'             => 'snmp_standard::mode::cpu',
-              'domain-usage'    => 'network::alcatel::oxe::snmp::mode::domainusage',
-              'memory'          => 'snmp_standard::mode::memory',
-              'pbx-state'       => 'network::alcatel::oxe::snmp::mode::pbxstate',
-              'pbx-role'        => 'network::alcatel::oxe::snmp::mode::pbxrole',
-              'storage'         => 'snmp_standard::mode::storage',
-              'swap'            => 'snmp_standard::mode::swap',
-    );
+                         'load'             => 'hardware::pdu::apc::snmp::mode::load',
+                         'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
+                         'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
+                         );
 
     return $self;
 }
@@ -49,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alcatel OXE (A4400) in SNMP.
+Check APC PDU in SNMP (PowerNet-MIB).
 
 =cut
