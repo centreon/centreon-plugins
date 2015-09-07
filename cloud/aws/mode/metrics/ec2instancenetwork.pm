@@ -24,37 +24,41 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Exporter;
-our @ISA = qw(Exporter);
+our @ISA    = qw(Exporter);
 our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
-$Param[0] = {'NameSpace' => 'AWS/EC2',
-			          'MetricName' => 'NetworkIn',
-			          'ObjectName' => 'InstanceId',
-                      'Labels' => {'ShortOutput' => "Traffic In %s Bytes",
-	                      'LongOutput' => "Traffic In %s Bytes",
-			              'PerfData' => 'traffic_in',
-			              'Unit' => 'B',
-			              'Value' => "%.2f",
-                         }
-                     };
-                     
-$Param[1] = {'NameSpace' => 'AWS/EC2',
-			          'MetricName' => 'NetworkOut',
-			          'ObjectName' => 'InstanceId',
-                      'Labels' => {'ShortOutput' => "Traffic Out %s Bytes",
-	                      'LongOutput' => "Traffic Out %s Bytes",
-			              'PerfData' => 'traffic_out',
-			              'Unit' => 'B',
-			              'Value' => "%.2f",
-                         }
-                     };
-               
+$Param[0] = {
+    'NameSpace'  => 'AWS/EC2',
+    'MetricName' => 'NetworkIn',
+    'ObjectName' => 'InstanceId',
+    'Labels'     => {
+        'ShortOutput' => "Traffic In %s Bytes",
+        'LongOutput'  => "Traffic In %s Bytes",
+        'PerfData'    => 'traffic_in',
+        'Unit'        => 'B',
+        'Value'       => "%.2f",
+    }
+};
+
+$Param[1] = {
+    'NameSpace'  => 'AWS/EC2',
+    'MetricName' => 'NetworkOut',
+    'ObjectName' => 'InstanceId',
+    'Labels'     => {
+        'ShortOutput' => "Traffic Out %s Bytes",
+        'LongOutput'  => "Traffic Out %s Bytes",
+        'PerfData'    => 'traffic_out',
+        'Unit'        => 'B',
+        'Value'       => "%.2f",
+    }
+};
+
 sub cloudwatchCheck {
     my ($self) = @_;
-    
-    @{$self->{metric}} = @Param;
-};
+
+    @{ $self->{metric} } = @Param;
+}
 
 1;

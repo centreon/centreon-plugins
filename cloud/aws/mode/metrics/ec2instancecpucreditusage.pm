@@ -23,25 +23,28 @@ package cloud::aws::mode::metrics::ec2instancecpucreditusage;
 use strict;
 use warnings;
 use Exporter;
-our @ISA = qw(Exporter);
+our @ISA    = qw(Exporter);
 our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
-$Param[0] = {'NameSpace' => 'AWS/EC2',
-			          'MetricName' => 'CPUCreditUsage',
-			          'ObjectName' => 'InstanceId',
-                      'Labels' => {'ShortOutput' => "CPUCreditUsage is %.2f%%",
-	                     'LongOutput' => "CPUCreditUsage is %.2f%%",
-			             'PerfData' => 'CPUCreditUsage',
-			             'Unit' => 'Count',
-			             'Value' => "%.2f",
-                        }
-                     };              
+$Param[0] = {
+    'NameSpace'  => 'AWS/EC2',
+    'MetricName' => 'CPUCreditUsage',
+    'ObjectName' => 'InstanceId',
+    'Labels'     => {
+        'ShortOutput' => "CPUCreditUsage is %.2f%%",
+        'LongOutput'  => "CPUCreditUsage is %.2f%%",
+        'PerfData'    => 'CPUCreditUsage',
+        'Unit'        => 'Count',
+        'Value'       => "%.2f",
+    }
+};
+
 sub cloudwatchCheck {
     my ($self) = @_;
-    
-    @{$self->{metric}} = @Param;
+
+    @{ $self->{metric} } = @Param;
 }
 
 1;

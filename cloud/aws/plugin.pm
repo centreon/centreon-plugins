@@ -23,26 +23,25 @@ package cloud::aws::plugin;
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
-#use base qw(centreon::plugins::script_simple);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'instancestate'    => 'cloud::aws::mode::instancestatus',
-                         'list'    => 'cloud::aws::mode::list',
-                         'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
-                         );
+    %{ $self->{modes} } = (
+        'instancestate' => 'cloud::aws::mode::instancestatus',
+        'list'          => 'cloud::aws::mode::list',
+        'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
+    );
 
     $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
 sub init {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
     $self->SUPER::init(%options);
 }

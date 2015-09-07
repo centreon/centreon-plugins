@@ -24,26 +24,29 @@ use strict;
 use warnings;
 use POSIX;
 use Exporter;
-our @ISA = qw(Exporter);
+our @ISA    = qw(Exporter);
 our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
-$Param[0] = {'NameSpace' => 'AWS/RDS',
-			          'MetricName' => 'CPUUtilization',
-			          'ObjectName' => 'DBInstanceIdentifier',
-                      'Labels' => {'ShortOutput' => "CPU Usage is %.2f%%",
-	                     'LongOutput' => "CPU Usage is %.2f%%",
-			             'PerfData' => 'cpu',
-			             'Unit' => '%',
-			             'Value' => "%.2f",
-                        }
-                     };              
+$Param[0] = {
+    'NameSpace'  => 'AWS/RDS',
+    'MetricName' => 'CPUUtilization',
+    'ObjectName' => 'DBInstanceIdentifier',
+    'Labels'     => {
+        'ShortOutput' => "CPU Usage is %.2f%%",
+        'LongOutput'  => "CPU Usage is %.2f%%",
+        'PerfData'    => 'cpu',
+        'Unit'        => '%',
+        'Value'       => "%.2f",
+    }
+};
+
 sub cloudwatchCheck {
     my ($self) = @_;
-    
-    @{$self->{metric}} = @Param;
-    $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($self->{option_results}->{def_endtime} - 300));
+
+    @{ $self->{metric} } = @Param;
+    $self->{option_results}->{starttime} = strftime( "%FT%H:%M:%S.000Z", gmtime( $self->{option_results}->{def_endtime} - 300 ) );
 }
 
 1;

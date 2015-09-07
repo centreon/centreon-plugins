@@ -24,39 +24,43 @@ use strict;
 use warnings;
 use POSIX;
 use Exporter;
-our @ISA = qw(Exporter);
+our @ISA    = qw(Exporter);
 our @EXPORT = qw(&cloudwatchCheck);
 
 my @Param;
 
-$Param[0] = {'NameSpace' => 'AWS/S3',
-			          'MetricName' => 'BucketSizeBytes',
-			          'ObjectName' => 'BucketName',
-			          'ExtraDimensions' => 'Name=StorageType,Value=StandardStorage',
-                      'Labels' => {'ShortOutput' => "Bucket size is %s Bytes",
-	                     'LongOutput' => "Bucket size is %s Bytes",
-			             'PerfData' => 'size',
-			             'Unit' => 'Bytes',
-			             'Value' => "%s",
-                        }
-                     };
-$Param[1] = {'NameSpace' => 'AWS/S3',
-			          'MetricName' => 'NumberOfObjects',
-			          'ObjectName' => 'BucketName',
-			          'ExtraDimensions' => 'Name=StorageType,Value=AllStorageTypes',
-                      'Labels' => {'ShortOutput' => "Number of objects is %s",
-	                     'LongOutput' => "Number of objects is %s",
-			             'PerfData' => 'number',
-			             'Unit' => '',
-			             'Value' => "%s",
-                        }
-                     };
-                                
+$Param[0] = {
+    'NameSpace'       => 'AWS/S3',
+    'MetricName'      => 'BucketSizeBytes',
+    'ObjectName'      => 'BucketName',
+    'ExtraDimensions' => 'Name=StorageType,Value=StandardStorage',
+    'Labels'          => {
+        'ShortOutput' => "Bucket size is %s Bytes",
+        'LongOutput'  => "Bucket size is %s Bytes",
+        'PerfData'    => 'size',
+        'Unit'        => 'Bytes',
+        'Value'       => "%s",
+    }
+};
+$Param[1] = {
+    'NameSpace'       => 'AWS/S3',
+    'MetricName'      => 'NumberOfObjects',
+    'ObjectName'      => 'BucketName',
+    'ExtraDimensions' => 'Name=StorageType,Value=AllStorageTypes',
+    'Labels'          => {
+        'ShortOutput' => "Number of objects is %s",
+        'LongOutput'  => "Number of objects is %s",
+        'PerfData'    => 'number',
+        'Unit'        => '',
+        'Value'       => "%s",
+    }
+};
+
 sub cloudwatchCheck {
     my ($self) = @_;
-    
-    @{$self->{metric}} = @Param;
-    $self->{option_results}->{starttime} = strftime("%FT%H:%M:%S.000Z", gmtime($self->{option_results}->{def_endtime} - 86400));
+
+    @{ $self->{metric} } = @Param;
+    $self->{option_results}->{starttime} = strftime( "%FT%H:%M:%S.000Z", gmtime( $self->{option_results}->{def_endtime} - 86400 ) );
 }
 
 1;
