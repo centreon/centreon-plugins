@@ -40,8 +40,13 @@ my $CloudwatchMetrics = {
 	'rdscpu'=> "cloud::aws::mode::metrics::rdsinstancecpu",
 };
 
-my $StatisticsType = 'Average Minimum Maximum Sum SampleCount';
+my $StatisticsType = "Average,Minimum,Maximum,Sum,SampleCount";
 my $def_endtime = time();
+
+my $apiRequest = {
+    'command' => 'cloudwatch',
+    'subcommand' => 'get-metric-statistics'
+};
 			   
 sub new {
     my ($class, %options) = @_;
@@ -54,7 +59,7 @@ sub new {
                                 {
                                   "metric:s"        => { name => 'metric' },
                                   "region:s"      => { name => 'region' },
-                                  "period:s"      => { name => 'period', default => '300' },
+                                  "period:s"      => { name => 'period', default => 300 },
                                   "starttime:s"      => { name => 'starttime' },
                                   "endtime:s"      => { name => 'endtime' },
                                   "statistics:s"  => { name => 'statistics', default => 'all' },
@@ -64,7 +69,7 @@ sub new {
                                   "critical:s"     => { name => 'critical' },
                                 });
     $self->{result} = {};
-    create_json();
+    #create_json();
     return $self;
 }
 
@@ -106,7 +111,7 @@ sub check_options {
     # Getting some parameters
 	# statistics
 	if ($self->{option_results}->{statistics} eq 'all'){
-		$self->{option_results}->{statistics} = $StatisticsType;
+        @{$self->{option_results}->{statisticstab}} = split(/,/, $StatisticsType);
     }
     else {
     	@{$self->{option_results}->{statisticstab}} = split(/,/, $self->{option_results}->{statistics});
@@ -117,7 +122,6 @@ sub check_options {
         		$self->{output}->option_exit();
 	    	}
     	}
-    	$self->{option_results}->{statistics} =~ s/,/ /g ;
     }
     
     # exclusions
@@ -132,103 +136,26 @@ sub manage_selection {
     my ($self, $metric) = @_;
     my @result;
 	
-	# Getting data from AWS
-    # Build command
-    my $awscommand = "aws cloudwatch get-metric-statistics ";
-    if ($self->{option_results}->{region}) {
-    	$awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
-    }
-    $awscommand = $awscommand . "--namespace " . $metric->{NameSpace} . " ";
-    $awscommand = $awscommand . "--metric-name " . $metric->{MetricName} . " ";
-    $awscommand = $awscommand . "--start-time " . $self->{option_results}->{starttime} . " ";
-    $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
-    $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
-    $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
-    $awscommand = $awscommand . "--dimensions Name=" . $metric->{ObjectName} . ",Value=" . $self->{option_results}->{object};
-    if ($metric->{ExtraDimensions}) {
-    	$awscommand = $awscommand . " " . $metric->{ExtraDimensions};
-    }
-    
-#    print $awscommand;
-    # Exec command
-    my $jsoncontent = `$awscommand`;
-    if ($? > 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot run aws");
-        $self->{output}->option_exit();
-    }
-    my $json = JSON->new;
-    eval {
-        $self->{command_return} = $json->decode($jsoncontent);
+    $apiRequest->{json} = {
+        'StartTime' => $self->{option_results}->{starttime},
+        'EndTime' => $self->{option_results}->{endtime},
+        'Period' => $self->{option_results}->{period},
+        'MetricName' => $metric->{MetricName},
+        'Unit' => 'Percent',
+        'Statistics' => $self->{option_results}->{statisticstab},
+        'Dimensions' => [{
+            'Value' => $self->{option_results}->{object},
+            'Name' => $metric->{ObjectName}
+            },
+        ],
+        'Namespace' => $metric->{NameSpace}
     };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
-        $self->{output}->option_exit();
-    }
-#    print Dumper($self->{command_return});
-#    exit;
-}
-
-sub create_json {
-	#{
-#"Namespace": "AWS/RDS",
-#    "MetricName": "CPUUtilization",
-#    "Dimensions": [
-#        {
-#            "Name": "DBInstanceIdentifier",
-#            "Value": "centreon"
-#        }
-#    ], 
-#    "StartTime": "2015-08-28T14:32:30Z",
-#    "EndTime": "2015-08-28T14:34:30Z",
-#    "Period": "300",
-#    "Statistics": [
-#        "Average Minimum Maximum Sum SampleCount",
-#    ], 
-#    "Unit": "",
-#};
-#    if ($self->{option_results}->{region}) {
-#        $awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
-#    }
-#    $awscommand = $awscommand . "--namespace " . $metric->{NameSpace} . " ";
-#    $awscommand = $awscommand . "--metric-name " . $metric->{MetricName} . " ";
-#    $awscommand = $awscommand . "--start-time " . $self->{option_results}->{starttime} . " ";
-#    $awscommand = $awscommand . "--end-time " . $self->{option_results}->{endtime} . " ";
-#    $awscommand = $awscommand . "--period " . $self->{option_results}->{period} . " ";
-#    $awscommand = $awscommand . "--statistics " . $self->{option_results}->{statistics} . " ";
-#    $awscommand = $awscommand . "--dimensions Name=" . $metric->{ObjectName} . ",Value=" . $self->{option_results}->{object};
-#    if ($metric->{ExtraDimensions}) {
-#        $awscommand = $awscommand . " " . $metric->{ExtraDimensions};
-#    }
-    my $json = JSON->new;
-    my $perl_scalar = $json->decode('{"Namespace": "AWS/RDS","MetricName": "CPUUtilization","Dimensions": [{"Name": "DBInstanceIdentifier","Value": "centreon"}],"StartTime": "2015-08-28T14:32:30Z","EndTime": "2015-08-28T14:34:30Z","Period": "300","Statistics": ["Average","Minimum","Maximum","Sum","SampleCount"],"Unit": "Percent"}');
-    print Dumper($perl_scalar);
-    print "decode\n";
-    my $tab = {
-          'StartTime' => '2015-08-28T14:32:30Z',
-          'EndTime' => '2015-08-28T14:34:30Z',
-          'Period' => '300',
-          'MetricName' => 'CPUUtilization',
-          'Unit' => 'Percent',
-          'Statistics' => [
-                            "Average","Minimum","Maximum","Sum","SampleCount"
-                          ],
-          'Dimensions' => [
-                            {
-                              'Value' => 'centreon',
-                              'Name' => 'DBInstanceIdentifier'
-                            }
-                          ],
-          'Namespace' => 'AWS/RDS'
-        };
-        
-     print $json->encode($tab);
-    exit;
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    my ($msg, $exit_code);
+    my ($msg, $exit_code, $awsapi);
 
 	if (defined($CloudwatchMetrics->{$self->{option_results}->{metric}})) {
 		load $CloudwatchMetrics->{$self->{option_results}->{metric}}, qw/cloudwatchCheck/;;
@@ -241,7 +168,8 @@ sub run {
 
     foreach my $metric (@{$self->{metric}}) {
     	$self->manage_selection($metric);
-    	
+    	$awsapi = $options{custom};
+        $self->{command_return} = $awsapi->execReq($apiRequest);
     	$self->{output}->perfdata_add(label => sprintf($metric->{Labels}->{PerfData}, unit => $metric->{Labels}->{Unit}),
                                   value => sprintf($metric->{Labels}->{Value}, $self->{command_return}->{Datapoints}[0]->{Average}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),

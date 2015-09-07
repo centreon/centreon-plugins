@@ -22,8 +22,8 @@ package cloud::aws::plugin;
 
 use strict;
 use warnings;
-#use base qw(centreon::plugins::script_custom);
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
+#use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
@@ -37,7 +37,7 @@ sub new {
                          'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
                          );
 
-    #$self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 

@@ -18,12 +18,12 @@
 # limitations under the License.
 #
 
-package storage::emc::vplex::restapi::custom::vplexapi;
+package cloud::aws::custom::awscli;
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 use JSON;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -46,21 +46,16 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
-                      "hostname:s@"         => { name => 'hostname', },
-                      "vplex-username:s@"   => { name => 'vplex_username', },
-                      "vplex-password:s@"   => { name => 'vplex_password', },
-                      "proxyurl:s@"         => { name => 'proxyurl', },
-                      "timeout:s@"          => { name => 'timeout', },
+
                     });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
 
     return $self;
-
 }
 
 # Method to manage multiples
@@ -92,96 +87,28 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-#    # return 1 = ok still hostname
-#    # return 0 = no hostname left
+    return 0;
+}
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{vplex_username} = (defined($self->{option_results}->{vplex_username})) ? shift(@{$self->{option_results}->{vplex_username}}) : '';
-    $self->{vplex_password} = (defined($self->{option_results}->{vplex_password})) ? shift(@{$self->{option_results}->{vplex_password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
- 
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+sub execReq {
+	my ($self, $options) = @_;
+	
+	my $json = JSON->new;
+	my $json_encoded = "aws ".$options->{command}." ".$options->{subcommand}." --cli-input-json '" . $json->encode($options->{json}) . "'";
+
+    my $jsoncontent = `$json_encoded`;
+    if ($? > 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot run aws");
         $self->{output}->option_exit();
     }
-
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        return 0;
-    }
-    return 1;
-}
-
-sub build_options_for_httplib {
-    my ($self, %options) = @_;
-
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = 443;
-    $self->{option_results}->{proto} = 'https';
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-}
-
-sub settings {
-    my ($self, %options) = @_;
-
-    $self->build_options_for_httplib();
-    $self->{http}->add_header(key => 'Username', value => $self->{vplex_username});
-    $self->{http}->add_header(key => 'Password', value => $self->{vplex_password});
-    $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub get_items {
-    my ($self, %options) = @_;
-
-    $self->settings();
-
-    if (defined($options{parent})) {
-        if (defined($options{$options{parent}}) && $options{$options{parent}} ne '') {
-            $options{url} .= $options{parent} . '-' . $options{engine} . '/';
-        } else {
-            $options{url} .= '*' . '/';
-        }
-    }
-    if (defined($options{obj}) && $options{obj} ne '') {
-        $options{url} .= $options{obj} . '/';
-    }
-    $options{url} .= '*';
-    
-    my $response = $self->{http}->request(url_path => $options{url});
-    my $decoded;
     eval {
-        $decoded = decode_json($response);
+        $self->{command_return} = $json->decode($jsoncontent);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
         $self->{output}->option_exit();
     }
-        
-    my $items = {};
-    foreach my $context (@{$decoded->{response}->{context}}) {
-        my $engine_name;
-        
-        if (defined($options{parent})) {
-            $context->{parent} =~ /\/$options{parent}-(.*?)\//;
-            $engine_name = $options{parent} . '-' . $1;
-            $items->{$engine_name} = {} if (!defined($items->{$engine_name}));
-        }
-        
-        my $attributes = {};
-        foreach my $attribute (@{$context->{attributes}}) {
-            $attributes->{$attribute->{name}} = $attribute->{value};
-        }
-        
-        if (defined($engine_name)) {
-            $items->{$engine_name}->{$attributes->{name}} = $attributes;
-        } else {
-            $items->{$attributes->{name}} = $attributes;
-        }
-    }
-
-    return $items;
+    return $self->{command_return};
 }
 
 1;
@@ -190,35 +117,11 @@ __END__
 
 =head1 NAME
 
-VPLEX REST API
+AWS CLI API
 
 =head1 SYNOPSIS
 
-Vplex Rest API custom mode
-
-=head1 REST API OPTIONS
-
-=over 8
-
-=item B<--hostname>
-
-Vplex hostname.
-
-=item B<--vplex-username>
-
-Vplex username.
-
-=item B<--vplex-password>
-
-Vplex password.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--timeout>
-
-Set HTTP timeout
+AWS cli API custom mode
 
 =back
 
