@@ -52,8 +52,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{mode} = $options{mode};
 
     return $self;
 }
