@@ -101,8 +101,8 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'} * 1024;
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'} * 1024;
     
     return 0 if ($self->{result_values}->{total} == 0);
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
