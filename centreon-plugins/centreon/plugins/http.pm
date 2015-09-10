@@ -167,7 +167,7 @@ sub set_proxy {
         }
     }    
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
-        $self->{ua}->proxy(['http', 'https'], $options{request_options}->{proxyurl});
+        $self->{ua}->proxy(['http', 'https'], $options{request}->{proxyurl});
     }
 }
 
