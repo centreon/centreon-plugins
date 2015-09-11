@@ -25,39 +25,43 @@ use warnings;
 
 my %map_status = (
     1 => 'active',
-    2 => 'inactive'
+    2 => 'inactive',
 );
+
+my $mapping = {
+    nsSlotType => { oid => '.1.3.6.1.4.1.3224.21.5.1.2' },
+    nsSlotStatus => { oid => '.1.3.6.1.4.1.3224.21.5.1.3', map => \%map_status },
+};
+my $oid_nsSlotEntry = '.1.3.6.1.4.1.3224.21.5.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_nsSlotEntry };
+}
 
 sub check {
     my ($self) = @_;
-
-    $self->{components}->{modules} = {name => 'modules', total => 0};
+    
     $self->{output}->output_add(long_msg => "Checking modules");
-    return if ($self->check_exclude(section => 'modules'));
+    $self->{components}->{module} = {name => 'module', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'module'));
     
-    my $oid_nsSlotEntry = '.1.3.6.1.4.1.3224.21.5.1';
-    my $oid_nsSlotType = '.1.3.6.1.4.1.3224.21.5.1.2';
-    my $oid_nsSlotStatus = '.1.3.6.1.4.1.3224.21.5.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_nsSlotEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_nsSlotStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_nsSlotEntry}})) {
+        next if ($oid !~ /^$mapping->{nsSlotStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        next if ($self->check_exclude(section => 'modules', instance => $instance));
-    
-        my $type = $result->{$oid_nsSlotType . '.' . $instance};
-        my $status = $result->{$oid_nsSlotStatus . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_nsSlotEntry}, instance => $instance);
+        
+        next if ($self->check_filter(section => 'module', instance => $instance));
+        $self->{components}->{module}->{total}++;
 
-        $self->{components}->{modules}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s].", 
-                                    $type, $map_status{$status}, $instance));
-        if ($status != 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Module '%s' status is %s", 
-                                                             $type, $map_status{$status}));
+        $self->{output}->output_add(long_msg => sprintf("Module '%s' status is '%s' [instance: %s]", 
+                                    $result->{nsSlotType}, $result->{nsSlotStatus}, $instance));
+        my $exit = $self->get_severity(section => 'module', value => $result->{nsSlotStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Module '%s' status is '%s'", 
+                                                             $result->{nsSlotType}, $result->{nsSlotStatus}));
         }
     }
 }

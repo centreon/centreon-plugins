@@ -23,45 +23,47 @@ package network::juniper::common::screenos::mode::components::temperature;
 use strict;
 use warnings;
 
+my $mapping = {
+    nsTemperatureCur => { oid => '.1.3.6.1.4.1.3224.21.4.1.3' },
+    nsTemperatureDesc => { oid => '.1.3.6.1.4.1.3224.21.4.1.4' },
+};
+my $oid_nsTemperatureEntry = '.1.3.6.1.4.1.3224.21.4.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_nsTemperatureEntry };
+}
+
 sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
-    return if ($self->check_exclude('temperatures'));
-
-    my $oid_nsTemperatureEntry = '.1.3.6.1.4.1.3224.21.4.1';
-    my $oid_nsTemperatureCur = '.1.3.6.1.4.1.3224.21.4.1.3';
-    my $oid_nsTemperatureDesc = '.1.3.6.1.4.1.3224.21.4.1.4';
-   
-    my $result = $self->{snmp}->get_table(oid => $oid_nsTemperatureEntry);
-    return if (scalar(keys %$result) <= 0); 
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_nsTemperatureCur\.(\d+)$/);
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'temperature'));
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_nsTemperatureEntry}})) {
+        next if ($oid !~ /^$mapping->{nsTemperatureCur}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_nsTemperatureEntry}, instance => $instance);
+        
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $self->{components}->{temperature}->{total}++;
 
-        next if ($self->check_exclude(section => 'temperatures', instance => $instance));
-	
-	my $temperature_name = $result->{$oid_nsTemperatureDesc . '.' . $instance};
-
-	my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_nsTemperatureCur . '.' . $instance},
-            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    	$self->{components}->{temperatures}->{total}++;
-
-    	$self->{output}->output_add(severity => $exit_code,long_msg => sprintf($temperature_name . " is %.2f C", $result->{$oid_nsTemperatureCur . '.' . $instance}));
-
-        if ($exit_code ne 'ok') {
-            $self->{output}->output_add(severity => $exit_code,short_msg => sprintf($temperature_name . " is %.2f C", $result->{$oid_nsTemperatureCur . '.' . $instance}));
+        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is '%.2f' C [instance: %s]", 
+                                    $result->{nsTemperatureDesc}, $result->{nsTemperatureCur}, 
+                                    $instance));
+        
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{nsTemperatureCur});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Temperature '%s' is %s C", $result->{nsTemperatureDesc}, $result->{nsTemperatureCur}));
         }
-
-	$temperature_name =~ s/\ /_/g;
-    	$self->{output}->perfdata_add(label => $temperature_name , unit => 'C', value => sprintf("%.2f", $result->{$oid_nsTemperatureCur . '.' . $instance}),
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));    
-        }
+        $self->{output}->perfdata_add(label => $result->{nsTemperatureDesc}, unit => 'C',
+                                      value => $result->{nsTemperatureCur},
+                                      warning => $warn,
+                                      critical => $crit);
     }
-
+}
 
 1;
