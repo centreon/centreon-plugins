@@ -25,37 +25,42 @@ use warnings;
 
 my %map_status = (
     1 => 'active',
-    2 => 'inactive'
+    2 => 'inactive',
 );
+
+my $mapping = {
+    nsFanStatus => { oid => '.1.3.6.1.4.1.3224.21.2.1.2', map => \%map_status },
+};
+my $oid_nsFanEntry = '.1.3.6.1.4.1.3224.21.2.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_nsFanEntry };
+}
 
 sub check {
     my ($self) = @_;
-
-    $self->{components}->{fans} = {name => 'fans', total => 0};
+    
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude(section => 'fans'));
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'fan'));
     
-    my $oid_nsFanEntry = '.1.3.6.1.4.1.3224.21.2.1';
-    my $oid_nsFanStatus = '.1.3.6.1.4.1.3224.21.2.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_nsFanEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_nsFanStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_nsFanEntry}})) {
+        next if ($oid !~ /^$mapping->{nsFanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        next if ($self->check_exclude(section => 'fans', instance => $instance));
-    
-        my $status = $result->{$oid_nsFanStatus . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_nsFanEntry}, instance => $instance);
+        
+        next if ($self->check_filter(section => 'fan', instance => $instance));
+        $self->{components}->{fan}->{total}++;
 
-        $self->{components}->{fans}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
-                                                        $instance, $map_status{$status}));
-        if ($status != 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Fan '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
+        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance: %s]", 
+                                    $instance, $result->{nsFanStatus}, $instance));
+        my $exit = $self->get_severity(section => 'fan', value => $result->{nsFanStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan '%s' status is '%s'", 
+                                                             $instance, $result->{nsFanStatus}));
         }
     }
 }
