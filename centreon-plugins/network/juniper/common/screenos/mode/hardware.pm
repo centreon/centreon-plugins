@@ -271,7 +271,7 @@ Can be: 'fan', 'psu', 'module', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=psu --filter=module)
+Exclude some parts (Example: --filter=psu --filter=module)
 Can also exclude specific instance: --filter=fan,1
 
 =item B<--no-component>
