@@ -32,7 +32,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"                => { name => 'hostname' },
@@ -50,6 +50,7 @@ sub new {
         });
 
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{container_infos} = ();
     return $self;
 }
 
@@ -64,7 +65,7 @@ sub check_options {
     $self->{http}->set_options(%{$self->{option_results}})
 }
 
-sub run {
+sub api_request {
     my ($self, %options) = @_;
 
     my $jsoncontent = $self->{http}->request();
@@ -85,8 +86,8 @@ sub run {
     foreach my $val (@$webcontent) {
         my $containername = $val->{Names}->[0];
         $containername =~ s/^\///;
-        my $containerid = $val->{Id};
-        my $containerimage = $val->{Image};
+        $self->{container_infos}->{$containername}->{id} = $val->{Id};
+        $self->{container_infos}->{$containername}->{image} = $val->{Image};
         my $containerstate;
         if (($val->{Status} =~ m/^Up/) && ($val->{Status} =~ m/^(?:(?!Paused).)*$/)) {
                 $containerstate = 'Running';
@@ -95,9 +96,45 @@ sub run {
             } elsif ($val->{Status} =~ m/\(Paused\)$/) {
                 $containerstate = 'Paused';
             }
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , image = %s, state = %s]",
-                                                        $containername, $containerid, $containerimage, $containerstate));
+        $self->{container_infos}->{$containername}->{state} = $containerstate;
+
     }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    my $names = ['name', 'id', 'image', 'state'];
+    $self->{output}->add_disco_format(elements => $names);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->api_request();
+
+    foreach my $containername (keys %{$self->{container_infos}}) {
+        $self->{output}->add_disco_entry(name => $containername,
+                                         id => $self->{container_infos}->{$containername}->{id},
+                                         image => $self->{container_infos}->{$containername}->{image},
+                                         state => $self->{container_infos}->{$containername}->{state},
+                                        );
+    }
+}
+
+sub run {
+    my ($self, %options) = @_;
+
+    $self->api_request();
+
+    foreach my $containername (keys %{$self->{container_infos}}) {
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , image = %s, state = %s]",
+                                                            $containername,
+                                                            $self->{container_infos}->{$containername}->{id},
+                                                            $self->{container_infos}->{$containername}->{image},
+                                                            $self->{container_infos}->{$containername}->{state}));
+    }
+
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'List containers:');
 
