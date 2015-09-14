@@ -35,7 +35,7 @@ The connector could get following indicators:
 
 You can check one or X entities for each checks. Moreover, you can also "scope" it. It means: i can check the virtual machines of a datacenter(s) and/or a cluster(s).
    
-Please follow the documentation for the installation: https://github.com/centreon/centreon-vmware/tree/master/docs/en/installation/index.rst
+Please follow the documentation for the installation: https://github.com/centreon/centreon-vmware/blob/master/doc/en/installation/index.rst
 
 ## Examples
 
