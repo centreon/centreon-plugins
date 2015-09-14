@@ -129,10 +129,10 @@ sub run {
 
     foreach my $containername (keys %{$self->{container_infos}}) {
         $self->{output}->output_add(long_msg => sprintf("%s [id = %s , image = %s, state = %s]",
-                                                            $containername,
-                                                            $self->{container_infos}->{$containername}->{id},
-                                                            $self->{container_infos}->{$containername}->{image},
-                                                            $self->{container_infos}->{$containername}->{state}));
+                                                        $containername,
+                                                        $self->{container_infos}->{$containername}->{id},
+                                                        $self->{container_infos}->{$containername}->{image},
+                                                        $self->{container_infos}->{$containername}->{state}));
     }
 
     $self->{output}->output_add(severity => 'OK',
