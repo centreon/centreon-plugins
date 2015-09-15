@@ -33,6 +33,7 @@ $Param[0] = {
     'NameSpace'  => 'AWS/RDS',
     'MetricName' => 'CPUUtilization',
     'ObjectName' => 'DBInstanceIdentifier',
+    'Unit'       => 'Percent',
     'Labels'     => {
         'ShortOutput' => "CPU Usage is %.2f%%",
         'LongOutput'  => "CPU Usage is %.2f%%",

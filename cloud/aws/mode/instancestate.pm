@@ -36,21 +36,25 @@ my %EC2_instance_states = (
     'stopping'      => 'CRITICAL',
     'stopped'       => 'CRITICAL'
 );
-my $EC2_includeallinstances = 1;
+
+my $apiRequest = {
+    'command'    => 'ec2',
+    'subcommand' => 'describe-instance-status',
+};
 
 sub new {
     my ( $class, %options ) = @_;
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.1';
 
     $options{options}->add_options(
         arguments => {
             "state:s" => { name => 'state', default => 'all' },
             "no-includeallinstances" => { name => 'includeallinstances' },
-            "region:s"               => { name => 'region' },
             "exclude:s"              => { name => 'exclude' },
+            "instanceid:s"           => { name => 'instanceid' }
         }
     );
     $self->{result} = {};
@@ -64,15 +68,16 @@ sub check_options {
 
 sub manage_selection {
     my ( $self, %options ) = @_;
-    my @result;
+    
+    my ( @result, $awsapi );
 
     # Getting some parameters
     # includeallinstances
     if ( defined( $self->{option_results}->{includeallinstances} ) ) {
-        $self->{option_results}->{includeallinstances} = 0;
+        $self->{option_results}->{includeallinstances} =  JSON::false;
     }
     else {
-        $self->{option_results}->{includeallinstances} = $EC2_includeallinstances;
+        $self->{option_results}->{includeallinstances} = JSON::true;
     }
 
     # states
@@ -95,35 +100,29 @@ sub manage_selection {
         my %array1 = map { $_ => 1 } @excludetab;
         @{ $self->{option_results}->{statetab} } = grep { not $array1{$_} } @{ $self->{option_results}->{statetab} };
     }
-
+    my $states = join(',',@{ $self->{option_results}->{statetab} });
+    
     # Getting data from AWS
-    # Build command
-    my $awscommand = "aws ec2 describe-instance-status ";
-    if ( $self->{option_results}->{includeallinstances} ) {
-        $awscommand = $awscommand . "--include-all-instances ";
-    }
-    if ( $self->{option_results}->{region} ) {
-        $awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
-    }
-    $awscommand = $awscommand . "--filters Name=instance-state-name,Values=";
-    foreach my $filter ( @{ $self->{option_results}->{statetab} } ) {
-        $awscommand = $awscommand . $filter . ",";
-    }
-    chop($awscommand);
-
-    # Exec command
-    my $jsoncontent = `$awscommand`;
-    if ( $? > 0 ) {
-        $self->{output}->add_option_msg( short_msg => "Cannot run aws" );
-        $self->{output}->option_exit();
-    }
-    my $json = JSON->new;
-    eval { $self->{command_return} = $json->decode($jsoncontent); };
-    if ($@) {
-        $self->{output}->add_option_msg( short_msg => "Cannot decode json answer" );
-        $self->{output}->option_exit();
+    # Building JSON
+    $apiRequest->{json} = {
+        'DryRun'     => JSON::false,
+        'IncludeAllInstances'    => $self->{option_results}->{includeallinstances},
+        'Filters' => [
+            {
+                'Name'  => 'instance-state-name',
+                'Values' => $self->{option_results}->{statetab},
+            }],
+    };
+    # InstanceIds
+    if ( defined( $self->{option_results}->{instanceid} ) ) {
+        my @InstanceIds = split(/,/,$self->{option_results}->{instanceid});
+        @{$apiRequest->{json}{'InstanceIds'}} = @InstanceIds;
     }
 
+    # Requesting API
+    $awsapi = $options{custom};
+    $self->{command_return} = $awsapi->execReq($apiRequest);
+        
     # Compute data
     $self->{option_results}->{instancecount}->{'total'} = '0';
     foreach my $curstate ( @{ $self->{option_results}->{statetab} } ) {
@@ -150,7 +149,7 @@ sub run {
     my ( $msg, $exit_code );
     my $old_status = 'OK';
 
-    $self->manage_selection();
+    $self->manage_selection(%options);
 
     # Send formated data to Centreon
     # Perf data

@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'instancestate' => 'cloud::aws::mode::instancestatus',
+        'instancestate' => 'cloud::aws::mode::instancestate',
         'list'          => 'cloud::aws::mode::list',
         'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
     );
@@ -58,18 +58,9 @@ Check Amazon AWS cloud.
 
 For this plugin to work, you have to install and configure:
 awscli (http://docs.aws.amazon.com/cli/latest/userguide/installing.html#install-bundle-other-os).
-perl-DateTime
+perl-json
 perl-Module-Load
-perl-YAML
-perl-File-Slurp.noarch
-perl-Pod-Coverage
-openssl-devel
 
-CPAN:
-Data::Printer
-HTTP::Tiny
-PerlIO::utf8_strict
-Paws
 =back
 
 =cut

@@ -32,6 +32,7 @@ $Param[0] = {
     'NameSpace'  => 'AWS/EC2',
     'MetricName' => 'CPUCreditUsage',
     'ObjectName' => 'InstanceId',
+    'Unit'       => 'Count',
     'Labels'     => {
         'ShortOutput' => "CPUCreditUsage is %.2f%%",
         'LongOutput'  => "CPUCreditUsage is %.2f%%",

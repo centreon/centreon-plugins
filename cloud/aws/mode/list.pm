@@ -29,22 +29,20 @@ use Data::Dumper;
 use JSON;
 
 my $AWSServices = 'EC2,S3,RDS';
-my @EC2_instance_states = [ 'pending', 'running', 'shutting-down', 'terminated', 'stopping', 'stopped' ];
-my $EC2_includeallinstances = 1;
+my @EC2_instance_states = [ 'running', 'stopped' ];
 
-my $PAWS;
+my $awsapi;
 
 sub new {
     my ( $class, %options ) = @_;
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.1';
 
     $options{options}->add_options(
         arguments => {
             "service:s" => { name => 'service', default => $AWSServices },
-            "region:s"  => { name => 'region' },
             "exclude:s" => { name => 'exclude' },
         }
     );
@@ -65,9 +63,9 @@ sub manage_selection {
     foreach my $service ( @{ $self->{option_results}->{servicetab} } ) {
         $self->{result}->{count}->{$service} = '0';
         switch ($service) {
-            case 'EC2' { $self->EC2(); }
-            case 'S3'  { $self->S3(); }
-            case 'RDS' { $self->RDS(); }
+            case 'EC2' { $self->EC2(%options); }
+            case 'S3'  { $self->S3(%options); }
+            case 'RDS' { $self->RDS(%options); }
             else {
                 $self->{output}->add_option_msg(
                     short_msg => "Service $service doesn't exists" );
@@ -80,27 +78,25 @@ sub manage_selection {
 sub EC2 {
     my ( $self, %options ) = @_;
 
-    # Build command
-    my $awscommand = "aws ec2 describe-instances ";
-    if ( $self->{option_results}->{region} ) {
-        $awscommand =
-          $awscommand . "--region " . $self->{option_results}->{region} . " ";
-    }
+    my $apiRequest = {
+        'command'    => 'ec2',
+        'subcommand' => 'describe-instances',
+    };
 
-    # Exec command
-    my $jsoncontent = `$awscommand`;
-    if ( $? > 0 ) {
-        $self->{output}->add_option_msg( short_msg => "Cannot run aws" );
-        $self->{output}->option_exit();
-    }
-    my $json = JSON->new;
-    eval { $self->{command_return} = $json->decode($jsoncontent); };
-    if ($@) {
-        $self->{output}
-          ->add_option_msg( short_msg => "Cannot decode json answer" );
-        $self->{output}->option_exit();
-    }
+    # Building JSON
+    $apiRequest->{json} = {
+        'DryRun'     => JSON::false,
+        'Filters' => [
+            {
+                'Name'  => 'instance-state-name',
+                'Values' => @EC2_instance_states,
+            }],
+    };
 
+    # Requesting API
+    $awsapi = $options{custom};
+    $self->{command_return} = $awsapi->execReq($apiRequest);
+    
     # Compute data
     foreach my $instance ( @{ $self->{command_return}->{Reservations} } ) {
         foreach my $tags ( @{ $instance->{Instances}[0]->{Tags} } ) {
@@ -122,17 +118,17 @@ sub S3 {
     my ( $self,    %options ) = @_;
     my ( @buckets, @return )  = ();
 
-    # Build command
-    my $awscommand = "aws s3 ls ";
-    if ( $self->{option_results}->{region} ) {
-        $awscommand =
-          $awscommand . "--region " . $self->{option_results}->{region} . " ";
-    }
-
+    my $apiRequest = {
+        'command'    => 's3',
+        'subcommand' => 'ls',
+        'output' => 'text'
+    };
+    # Requesting API
+    $awsapi = $options{custom};
+    $self->{command_return} = $awsapi->execReq($apiRequest);
+    
     # Exec command
-    @return = `$awscommand`;
-    foreach my $line (@return) {
-        chomp $line;
+    foreach my $line (@{$self->{command_return}}) {
         my ( $date, $time, $name ) = split( / /, $line );
         my $creationdate = $date . " " . $time;
         push( @buckets, { Name => $name, CreationDate => $creationdate } );
@@ -148,20 +144,14 @@ sub S3 {
 sub RDS {
     my ( $self, %options ) = @_;
 
-    # Build command
-    my $awscommand = "aws rds describe-db-instances ";
-    if ( $self->{option_results}->{region} ) {
-        $awscommand = $awscommand . "--region " . $self->{option_results}->{region} . " ";
-    }
+    my $apiRequest = {
+        'command'    => 'rds',
+        'subcommand' => 'describe-db-instances',
+    };
 
-    # Exec command
-    my $jsoncontent = `$awscommand`;
-    my $json        = JSON->new;
-    eval { $self->{command_return} = $json->decode($jsoncontent); };
-    if ($@) {
-        $self->{output}->add_option_msg( short_msg => "Cannot decode json response" );
-        $self->{output}->option_exit();
-    }
+    # Requesting API
+    $awsapi = $options{custom};
+    $self->{command_return} = $awsapi->execReq($apiRequest);
 
     # Compute data
     foreach my $dbinstance ( @{ $self->{command_return}->{DBInstances} } ) {
@@ -173,7 +163,7 @@ sub RDS {
 sub run {
     my ( $self, %options ) = @_;
 
-    $self->manage_selection();
+    $self->manage_selection(%options);
 
     # Send formated data to Centreon
     foreach my $service ( @{ $self->{option_results}->{servicetab} } ) {

@@ -32,6 +32,7 @@ $Param[0] = {
     'NameSpace'  => 'AWS/EC2',
     'MetricName' => 'CPUUtilization',
     'ObjectName' => 'InstanceId',
+    'Unit'       => 'Percent',
     'Labels'     => {
         'ShortOutput' => "CPU Usage is %.2f%%",
         'LongOutput'  => "CPU Usage is %.2f%%",

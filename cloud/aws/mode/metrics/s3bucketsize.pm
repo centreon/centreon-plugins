@@ -33,7 +33,11 @@ $Param[0] = {
     'NameSpace'       => 'AWS/S3',
     'MetricName'      => 'BucketSizeBytes',
     'ObjectName'      => 'BucketName',
-    'ExtraDimensions' => 'Name=StorageType,Value=StandardStorage',
+    'Unit'            => 'Bytes',
+    'ExtraDimensions' => {
+        'Name' => 'StorageType',
+        'Value'=> 'StandardStorage'
+    },
     'Labels'          => {
         'ShortOutput' => "Bucket size is %s Bytes",
         'LongOutput'  => "Bucket size is %s Bytes",
@@ -46,7 +50,11 @@ $Param[1] = {
     'NameSpace'       => 'AWS/S3',
     'MetricName'      => 'NumberOfObjects',
     'ObjectName'      => 'BucketName',
-    'ExtraDimensions' => 'Name=StorageType,Value=AllStorageTypes',
+    'Unit'            => 'Count',
+    'ExtraDimensions' => {
+        'Name' => 'StorageType',
+        'Value'=> 'AllStorageTypes'
+    },
     'Labels'          => {
         'ShortOutput' => "Number of objects is %s",
         'LongOutput'  => "Number of objects is %s",

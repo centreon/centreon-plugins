@@ -27,7 +27,6 @@ use warnings;
 use centreon::plugins::misc;
 use Data::Dumper;
 use POSIX;
-use Switch;
 use JSON;
 use Module::Load;
 
@@ -45,7 +44,7 @@ my $def_endtime    = time();
 
 my $apiRequest = {
     'command'    => 'cloudwatch',
-    'subcommand' => 'get-metric-statistics'
+    'subcommand' => 'get-metric-statistics',
 };
 
 sub new {
@@ -53,12 +52,11 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.1';
 
     $options{options}->add_options(
         arguments => {
             "metric:s"     => { name => 'metric' },
-            "region:s"     => { name => 'region' },
             "period:s"     => { name => 'period', default => 300 },
             "starttime:s"  => { name => 'starttime' },
             "endtime:s"    => { name => 'endtime' },
@@ -71,7 +69,6 @@ sub new {
     );
     $self->{result} = {};
 
-    #create_json();
     return $self;
 }
 
@@ -129,8 +126,7 @@ sub check_options {
     # Getting some parameters
     # statistics
     if ( $self->{option_results}->{statistics} eq 'all' ) {
-        @{ $self->{option_results}->{statisticstab} } =
-          split( /,/, $StatisticsType );
+        @{ $self->{option_results}->{statisticstab} } = split( /,/, $StatisticsType );
     }
     else {
         @{ $self->{option_results}->{statisticstab} } = split( /,/, $self->{option_results}->{statistics} );
@@ -157,20 +153,26 @@ sub manage_selection {
     my ( $self, $metric ) = @_;
     my @result;
 
+    my @Dimensions = (
+            {
+                'Value' => $self->{option_results}->{object},
+                'Name'  => $metric->{ObjectName}
+            }
+        );
+
+    if ( defined( $metric->{ExtraDimensions} ) ) {
+        push @Dimensions, $metric->{ExtraDimensions};
+    }
+
     $apiRequest->{json} = {
         'StartTime'  => $self->{option_results}->{starttime},
         'EndTime'    => $self->{option_results}->{endtime},
         'Period'     => $self->{option_results}->{period},
         'MetricName' => $metric->{MetricName},
-        'Unit'       => 'Percent',
+        'Unit'       => $metric->{Unit},
         'Statistics' => $self->{option_results}->{statisticstab},
-        'Dimensions' => [
-            {
-                'Value' => $self->{option_results}->{object},
-                'Name'  => $metric->{ObjectName}
-            },
-        ],
-        'Namespace' => $metric->{NameSpace}
+        'Dimensions' => [@Dimensions],
+        'Namespace'  => $metric->{NameSpace}
     };
 }
 
@@ -181,8 +183,7 @@ sub run {
 
     if ( defined( $CloudwatchMetrics->{ $self->{option_results}->{metric} } ) )
     {
-        load $CloudwatchMetrics->{ $self->{option_results}->{metric} },
-          qw/cloudwatchCheck/;
+        load $CloudwatchMetrics->{ $self->{option_results}->{metric} },qw/cloudwatchCheck/;
         cloudwatchCheck($self);
     }
     else {
@@ -249,10 +250,6 @@ Get cloudwatch metrics.
 This doc is partly based on the official AWS CLI documentation.
 
 =over 8
-
-=item B<--region>
-
-(optional) The region to use (should be configured directly in aws).
 
 =item B<--exclude-statistics>
 

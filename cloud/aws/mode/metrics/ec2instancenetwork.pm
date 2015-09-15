@@ -33,6 +33,7 @@ $Param[0] = {
     'NameSpace'  => 'AWS/EC2',
     'MetricName' => 'NetworkIn',
     'ObjectName' => 'InstanceId',
+    'Unit'       => 'Bytes',
     'Labels'     => {
         'ShortOutput' => "Traffic In %s Bytes",
         'LongOutput'  => "Traffic In %s Bytes",

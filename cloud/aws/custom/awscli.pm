@@ -46,7 +46,7 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
-
+                        "region:s"     => { name => 'region' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
@@ -91,22 +91,40 @@ sub check_options {
 
 sub execReq {
 	my ($self, $options) = @_;
+	my $jsoncontent;
 	
+	if (!defined($options->{output})) {
+        $options->{output} = 'json';
+    }
+    
 	my $json = JSON->new;
-	my $json_encoded = "aws ".$options->{command}." ".$options->{subcommand}." --cli-input-json '" . $json->encode($options->{json}) . "'";
+	my $json_encoded = "aws ".$options->{command}." ".$options->{subcommand};
+	if ( defined($self->{option_results}->{region})) {
+	    $json_encoded = $json_encoded . " --region '" . $self->{option_results}->{region} . "'";
+	}
+	if ( defined($options->{json})) {
+        $json_encoded = $json_encoded . " --cli-input-json '" . $json->encode($options->{json}) . "'";
+    }
 
-    my $jsoncontent = `$json_encoded`;
-    if ($? > 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot run aws");
-        $self->{output}->option_exit();
+    if ($options->{output} eq 'text') {
+        my @return = `$json_encoded`;
+        chomp(@return);
+        $jsoncontent = $json->encode([@return]);
     }
-    eval {
-        $self->{command_return} = $json->decode($jsoncontent);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
-        $self->{output}->option_exit();
+    else {
+        $jsoncontent = `$json_encoded`;
     }
+        if ($? > 0) {
+            $self->{output}->add_option_msg(short_msg => "Cannot run aws");
+            $self->{output}->option_exit();
+        }
+        eval {
+            $self->{command_return} = $json->decode($jsoncontent);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
+            $self->{output}->option_exit();
+        }
     return $self->{command_return};
 }
 
@@ -121,6 +139,12 @@ AWS CLI API
 =head1 SYNOPSIS
 
 AWS cli API custom mode
+
+=over 8
+
+=item B<--region>
+
+(optional) The region to use (should be configured directly in aws).
 
 =back
 
