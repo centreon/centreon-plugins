@@ -55,6 +55,7 @@ sub new {
     $self->{is_output_xml} = 0;
     $self->{is_output_json} = 0;
     $self->{errors} = {OK => 0, WARNING => 1, CRITICAL => 2, UNKNOWN => 3, PENDING => 4};
+    $self->{errors_num} = {0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN', 4 => 'PENDING'};
     $self->{myerrors} = {0 => "OK", 1 => "WARNING", 3 => "UNKNOWN", 7 => "CRITICAL"};
     $self->{myerrors_mask} = {CRITICAL => 7, WARNING => 1, UNKNOWN => 3, OK => 0};
     $self->{global_short_concat_outputs} = {OK => undef, WARNING => undef, CRITICAL => undef, UNKNOWN => undef, UNQUALIFIED_YET => undef};
@@ -533,8 +534,8 @@ sub get_litteral_status {
     my ($self, %options) = @_;
     
     if (defined($options{status})) {
-        if (defined($self->{myerrors}->{$options{status}})) {
-            return $self->{myerrors}->{$options{status}};
+        if (defined($self->{errors_num}->{$options{status}})) {
+            return $self->{errors_num}->{$options{status}};
         }
         return $options{status};
     } else {
