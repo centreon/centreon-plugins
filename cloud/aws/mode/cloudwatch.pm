@@ -60,7 +60,7 @@ sub new {
             "period:s"     => { name => 'period', default => 300 },
             "starttime:s"  => { name => 'starttime' },
             "endtime:s"    => { name => 'endtime' },
-            "statistics:s" => { name => 'statistics', default => 'all' },
+            "statistics:s" => { name => 'statistics', default => 'Average' },
             "exclude-statistics:s" => { name => 'exclude-statistics' },
             "object:s"             => { name => 'object' },
             "warning:s"            => { name => 'warning' },
@@ -131,22 +131,34 @@ sub check_options {
     else {
         @{ $self->{option_results}->{statisticstab} } = split( /,/, $self->{option_results}->{statistics} );
         foreach my $curstate ( @{ $self->{option_results}->{statisticstab} } ) {
-            if ( !grep { /^$curstate$/ } split( / /, $StatisticsType ) ) {
+            if ( !grep { /^$curstate$/ } split( /,/, $StatisticsType ) ) {
                 $self->{output}->add_option_msg(
                     severity  => 'UNKNOWN',
-                    short_msg => "The state $curstate doesn't exist."
+                    short_msg => "The statistic $curstate doesn't exist."
                 );
                 $self->{output}->option_exit();
             }
         }
     }
 
-# exclusions
-#    if (defined($self->{option_results}->{'exclude-statistics'})){
-#    	my @excludetab = split(/,/, $self->{option_results}->{'exclude-statistics'});
-#		my %array1 = map { $_ => 1 } @excludetab;
-#		@{$self->{option_results}->{statisticstab}} = grep { not $array1{$_} } @{$self->{option_results}->{statisticstab}};
-#    }
+    # exclusions
+    if (defined($self->{option_results}->{'exclude-statistics'})){
+    	my @excludetab = split(/,/, $self->{option_results}->{'exclude-statistics'});
+		my %array1 = map { $_ => 1 } @excludetab;
+		@{$self->{option_results}->{statisticstab}} = grep { not $array1{$_} } @{$self->{option_results}->{statisticstab}};
+    }
+    
+    # Force Average statistic
+    if ( ! grep $_ eq 'Average', @{$self->{option_results}->{statisticstab}} ) {
+        my $statistics = join(',',@{ $self->{option_results}->{statisticstab} });
+        if ( ! $statistics eq '' ) {
+            $statistics = $statistics . ',Average';
+        }
+        else {
+            $statistics = 'Average';
+        }
+        @{ $self->{option_results}->{statisticstab} } = split( /,/, $statistics );
+    }
 }
 
 sub manage_selection {
@@ -253,7 +265,7 @@ This doc is partly based on the official AWS CLI documentation.
 
 =item B<--exclude-statistics>
 
-(optional) Statistics to exclude from the query.
+(optional) Statistics to exclude from the query. 'Average' can't be excluded.
 
 =item B<--metric>
 
@@ -277,6 +289,8 @@ exemple: 2014-04-09T23:18:00
 
 (optional) The metric statistics to return. For information about specific statistics returned by GetMetricStatistics, go to statistics in the Amazon CloudWatch Developer Guide.
 Valid Values: Average | Sum | SampleCount | Maximum | Minimum
+Average is the default and always included.
+'all' for all statistics values.
 
 =item B<--object>
 

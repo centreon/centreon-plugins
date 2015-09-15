@@ -200,10 +200,6 @@ Get the state of your EC2 instances (running, stopped, ...)
 
 (optional) Includes the health status for running instances only.
 
-=item B<--region>
-
-(optional) The region to use (should be configured directly in aws).
-
 =item B<--exclude>
 
 (optional) State to exclude from the query.
