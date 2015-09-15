@@ -24,42 +24,51 @@ use strict;
 use warnings;
 use JSON;
 use Data::Dumper;
+use centreon::plugins::misc;
 
 sub new {
-    my ($class, %options) = @_;
-    my $self  = {};
+    my ( $class, %options ) = @_;
+    my $self = {};
     bless $self, $class;
+
     # $options{options} = options object
     # $options{output} = output object
     # $options{exit_value} = integer
     # $options{noptions} = integer
 
-    if (!defined($options{output})) {
+    if ( !defined( $options{output} ) ) {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
+    if ( !defined( $options{options} ) ) {
+        $options{output}->add_option_msg( short_msg => "Class Custom: Need to specify 'options' argument." );
         $options{output}->option_exit();
     }
-    
-    if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "region:s"     => { name => 'region' },
-                    });
+
+    if ( !defined( $options{noptions} ) ) {
+        $options{options}->add_options( arguments => {
+            "region:s"          => { name => 'region' },
+            "command:s"         => { name => 'command', default => 'aws' },
+            "command-path:s"    => { name => 'command_path' },
+            "sudo"              => { name => 'sudo' },
+        } );
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
+    $options{options}->add_help(
+        package  => __PACKAGE__,
+        sections => 'AWSCLI OPTIONS',
+        once     => 1
+    );
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{mode}   = $options{mode};
 
     return $self;
 }
 
 # Method to manage multiples
 sub set_options {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
+
     # options{options_result}
 
     $self->{option_results} = $options{option_results};
@@ -67,15 +76,17 @@ sub set_options {
 
 # Method to manage multiples
 sub set_defaults {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
+
     # options{default}
-    
+
     # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
+    foreach ( keys %{ $options{default} } ) {
+        if ( $_ eq $self->{mode} ) {
+            for ( my $i = 0 ; $i < scalar( @{ $options{default}->{$_} } ) ; $i++ )
+            {
+                foreach my $opt ( keys %{ $options{default}->{$_}[$i] } ) {
+                    if ( !defined( $self->{option_results}->{$opt}[$i] ) ) {
                         $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
                     }
                 }
@@ -85,46 +96,60 @@ sub set_defaults {
 }
 
 sub check_options {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
     return 0;
 }
 
 sub execReq {
-	my ($self, $options) = @_;
-	my $jsoncontent;
-	
-	if (!defined($options->{output})) {
+    my ( $self, $options ) = @_;
+    my $jsoncontent;
+
+    if ( !defined( $options->{output} ) ) {
         $options->{output} = 'json';
     }
-    
-	my $json = JSON->new;
-	my $json_encoded = "aws ".$options->{command}." ".$options->{subcommand};
-	if ( defined($self->{option_results}->{region})) {
-	    $json_encoded = $json_encoded . " --region '" . $self->{option_results}->{region} . "'";
-	}
-	if ( defined($options->{json})) {
-        $json_encoded = $json_encoded . " --cli-input-json '" . $json->encode($options->{json}) . "'";
-    }
 
-    if ($options->{output} eq 'text') {
-        my @return = `$json_encoded`;
-        chomp(@return);
-        $jsoncontent = $json->encode([@return]);
+    my $json = JSON->new;
+    my $json_encoded = $options->{command} . " " . $options->{subcommand};
+    if ( defined( $self->{option_results}->{region} ) ) {
+        $json_encoded = $json_encoded . " --region '". $self->{option_results}->{region} . "'";
+    }
+    if ( defined( $options->{json} ) ) {
+        $json_encoded = $json_encoded . " --cli-input-json '" . $json->encode( $options->{json} ) . "'";
+    }
+    
+    $self->{option_results}->{timeout} = 30;
+    
+    if ( $options->{output} eq 'text' ) {
+        $self->{stdout} = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $json_encoded
+        );
+        my @return = split /\n/, $self->{stdout};
+        $jsoncontent = $json->encode( [@return] );
     }
     else {
-        $jsoncontent = `$json_encoded`;
+        $jsoncontent = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $json_encoded
+        );
     }
-        if ($? > 0) {
-            $self->{output}->add_option_msg(short_msg => "Cannot run aws");
-            $self->{output}->option_exit();
-        }
-        eval {
-            $self->{command_return} = $json->decode($jsoncontent);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json answer");
-            $self->{output}->option_exit();
-        }
+    if ( $? > 0 ) {
+        $self->{output}->add_option_msg( short_msg => "Cannot run aws" );
+        $self->{output}->option_exit();
+    }
+    eval { $self->{command_return} = $json->decode($jsoncontent); };
+    if ($@) {
+        $self->{output}->add_option_msg( short_msg => "Cannot decode json answer" );
+        $self->{output}->option_exit();
+    }
     return $self->{command_return};
 }
 
@@ -145,6 +170,18 @@ AWS cli API custom mode
 =item B<--region>
 
 (optional) The region to use (should be configured directly in aws).
+
+=item B<--sudo>
+
+Use 'sudo' to execute the command.
+
+=item B<--command>
+
+(optional) Command to get information (Default: 'aws').
+
+=item B<--command-path>
+
+(optional) Command path (Default: none).
 
 =back
 
