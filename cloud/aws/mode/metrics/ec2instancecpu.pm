@@ -1,4 +1,3 @@
-#!/usr/bin/perl
 #
 # Copyright 2015 Centreon (http://www.centreon.com/)
 #
@@ -19,13 +18,34 @@
 # limitations under the License.
 #
 
+package cloud::aws::mode::metrics::ec2instancecpu;
+
 use strict;
 use warnings;
-# Not perl embedded compliant at all
-use FindBin;
-use lib "$FindBin::Bin";
-# use lib '/usr/lib/nagios/plugins/';
+use Exporter;
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(&cloudwatchCheck);
 
-use centreon::plugins::script;
+my @Param;
 
-centreon::plugins::script->new()->run();
+$Param[0] = {
+    'NameSpace'  => 'AWS/EC2',
+    'MetricName' => 'CPUUtilization',
+    'ObjectName' => 'InstanceId',
+    'Unit'       => 'Percent',
+    'Labels'     => {
+        'ShortOutput' => "CPU Usage is %.2f%%",
+        'LongOutput'  => "CPU Usage is %.2f%%",
+        'PerfData'    => 'cpu',
+        'Unit'        => '%',
+        'Value'       => "%.2f",
+    }
+};
+
+sub cloudwatchCheck {
+    my ($self) = @_;
+
+    @{ $self->{metric} } = @Param;
+}
+
+1;
