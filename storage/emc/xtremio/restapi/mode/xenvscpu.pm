@@ -60,7 +60,6 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -86,20 +85,17 @@ sub run {
 
 
         my $exit = $self->{perfdata}->threshold_check(value => $details->{'cpu-usage'}, threshold => [ { label => 'warning', 'exit_litteral' => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
-
-        $self->{output}->perfdata_add(label => 'cpu_'.$item,
-                                      value => $details->{'cpu-usage'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-
-        if ($exit ne 'ok') {
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Xenvs '%s' cpu-Usage is %i%%",
                                                              $item,
                                                              $details->{'cpu-usage'}));
         }
-
+        $self->{output}->perfdata_add(label => 'cpu_' . $item, unit => '%',
+                                      value => $details->{'cpu-usage'},
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
     }          
 
     $self->{output}->display();
