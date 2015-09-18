@@ -102,8 +102,8 @@ sub init {
 
     if (defined($self->{custommode_name}) && $self->{custommode_name} ne '') {
         $self->load_custom_mode();
-    } elsif (scalar(%{$self->{custom_modes}}) == 1) {
-        $self->{custommode_name} = keys(%{$self->{custom_modes}})[0];
+    } elsif (scalar(keys %{$self->{custom_modes}}) == 1) {
+        $self->{custommode_name} = (keys(%{$self->{custom_modes}}))[0];
         $self->load_custom_mode();
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--custommode'.");
