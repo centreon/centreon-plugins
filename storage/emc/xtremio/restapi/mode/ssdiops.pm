@@ -33,7 +33,7 @@ my $maps_counters = {
                 output_template => 'Global IOPs : %s',
                 perfdatas => [
                     { label => 'global_iops', value => 'global_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -42,7 +42,7 @@ my $maps_counters = {
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
                     { label => 'read_iops', value => 'read_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -51,7 +51,7 @@ my $maps_counters = {
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
                     { label => 'write_iops', value => 'global_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
