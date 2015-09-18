@@ -30,28 +30,28 @@ my $maps_counters = {
     ssd => {
         '000_global'   => { set => {
                 key_values => [ { name => 'global_iops' }, { name => 'display' }, ],
-                output_template => 'Global IOPs : %.2f %%',
+                output_template => 'Global IOPs : %s',
                 perfdatas => [
-                    { label => 'global_iops', value => 'global_iops_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'global_iops', value => 'global_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
                 ],
             }
         },
         '001_read'   => { set => {
                 key_values => [ { name => 'read_iops' }, { name => 'display' }, ],
-                output_template => 'Read IOPs : %.2f %%',
+                output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'read_iops', value => 'read_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
                 ],
             }
         },
         '002_write'   => { set => {
                 key_values => [ { name => 'write_iops' }, { name => 'display' }, ],
-                output_template => 'Write IOPs : %.2f %%',
+                output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'global_iops_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'write_iops', value => 'global_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'num_absolute' },
                 ],
             }
         },
@@ -95,14 +95,12 @@ sub check_options {
         foreach (keys %{$maps_counters->{$key}}) {
             $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
-    }
-    
-    $self->{statefile_cache}->check_options(%options);
+    }    
 }
 
 sub run {
     my ($self, %options) = @_;
-    my $xtremio = $options{custom};
+    $self->{xtremio} = $options{custom};
     
     $self->manage_selection();
     
@@ -167,8 +165,8 @@ sub manage_selection {
 
     $self->{ssd} = {};
     my $urlbase = '/api/json/types/';
-    my @items = $xtremio->get_items(url => $urlbase,
-                                    obj => 'ssds');
+    my @items = $self->{xtremio}->get_items(url => $urlbase,
+                                            obj => 'ssds');
     foreach my $item (@items) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $item !~ /$self->{option_results}->{filter_name}/) {
@@ -176,9 +174,9 @@ sub manage_selection {
             next;
         }
         
-        my $details = $xtremio->get_details(url  => $urlbase,
-                                            obj  => 'ssds',
-                                            name => $item);
+        my $details = $self->{xtremio}->get_details(url  => $urlbase,
+                                                    obj  => 'ssds',
+                                                    name => $item);
         
         $self->{ssd}->{$item} = { display => $item, global_iops => $details->{iops},
                                   read_iops => $details->{'rd-iops'}, write_iops => $details->{'wr-iops'} };
