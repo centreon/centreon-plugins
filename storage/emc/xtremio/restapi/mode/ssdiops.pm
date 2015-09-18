@@ -50,7 +50,7 @@ my $maps_counters = {
                 key_values => [ { name => 'write_iops' }, { name => 'display' }, ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'global_iops_absolute', template => '%s',
+                    { label => 'write_iops', value => 'write_iops_absolute', template => '%s',
                       min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
