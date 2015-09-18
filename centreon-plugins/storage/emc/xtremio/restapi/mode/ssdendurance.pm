@@ -33,9 +33,9 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter:s@"             => { name => 'filter' },
-                                "warning:s"             => { name => 'warning' },
-                                "critical:s"             => { name => 'critical' },
+                                "filter:s@"     => { name => 'filter' },
+                                "warning:s"     => { name => 'warning' },
+                                "critical:s"    => { name => 'critical' },
                                 });
 
     return $self;
@@ -53,14 +53,13 @@ sub check_options {
     }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
-
 }
 
 sub run {
@@ -85,21 +84,18 @@ sub run {
 
 
         my $exit = $self->{perfdata}->threshold_check(value => $details->{'percent-endurance-remaining'},
-                                                      threshold => [ { label => 'warning', 'exit_litteral' => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
-
-        $self->{output}->perfdata_add(label => $item."_endurance",
-                                      value => $details->{'percent-endurance-remaining'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-
-        if ($exit ne 'ok') {
+                                                      threshold => [ { label => 'warning', exit_litteral => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("SSD '%s' endurance is %i%%",
                                                              $item, $details->{'percent-endurance-remaining'}));
         }
-
-    }          
+        $self->{output}->perfdata_add(label => $item . "_endurance", unit => '%',
+                                      value => $details->{'percent-endurance-remaining'},
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();

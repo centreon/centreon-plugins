@@ -57,33 +57,30 @@ sub check_options {
     }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
-
     if (($self->{perfdata}->threshold_validate(label => 'warning-read', value => $self->{option_results}->{warning_read})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-read threshold '" . $self->{option_results}->{warning_read} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-read threshold '" . $self->{option_results}->{warning_read} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-read', value => $self->{option_results}->{critical_read})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-read threshold '" . $self->{option_results}->{critical_read} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-read threshold '" . $self->{option_results}->{critical_read} . "'.");
+        $self->{output}->option_exit();
     }
 
     if (($self->{perfdata}->threshold_validate(label => 'warning-write', value => $self->{option_results}->{warning_write})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-write threshold '" . $self->{option_results}->{warning_write} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-write threshold '" . $self->{option_results}->{warning_write} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical-write', value => $self->{option_results}->{critical_write})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-write threshold '" . $self->{option_results}->{critical_write} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-write threshold '" . $self->{option_results}->{critical_write} . "'.");
+        $self->{output}->option_exit();
     }
-
-
 }
 
 sub run {

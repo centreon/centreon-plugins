@@ -108,8 +108,6 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
     }
-
-
 }
 
 sub run {
@@ -149,7 +147,6 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
-
 }
 
 sub check_filter {
