@@ -118,7 +118,8 @@ sub component {
         # Skipping short msg when no components
         next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
         $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
+        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
+        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
     
