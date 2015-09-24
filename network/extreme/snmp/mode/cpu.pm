@@ -48,7 +48,7 @@ my $maps_counters = {
                },
         '002_30secs'   => { set => {
                         key_values => [ { name => 'extremeCpuMonitorSystemUtilization30secs' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
+                        output_template => '30 seconds : %.2f %%',
                         perfdatas => [
                             { label => 'cpu_30secs', value => 'extremeCpuMonitorSystemUtilization30secs_absolute', template => '%.2f',
                               min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
@@ -57,7 +57,7 @@ my $maps_counters = {
                },
         '003_1min'   => { set => {
                         key_values => [ { name => 'extremeCpuMonitorSystemUtilization1min' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
+                        output_template => '1 minute : %.2f %%',
                         perfdatas => [
                             { label => 'cpu_1min', value => 'extremeCpuMonitorSystemUtilization1min_absolute', template => '%.2f',
                               min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
@@ -66,7 +66,7 @@ my $maps_counters = {
                },
         '004_5min'   => { set => {
                         key_values => [ { name => 'extremeCpuMonitorSystemUtilization5mins' }, { name => 'num' }, ],
-                        output_template => '10 seconds : %.2f %%',
+                        output_template => '5 minutes : %.2f %%',
                         perfdatas => [
                             { label => 'cpu_5min', value => 'extremeCpuMonitorSystemUtilization5mins_absolute', template => '%.2f',
                               min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },

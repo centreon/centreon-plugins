@@ -24,144 +24,168 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::values;
+
+my $maps_counters = {
+    ssd => {
+        '000_global'   => { set => {
+                key_values => [ { name => 'global_iops' }, { name => 'display' }, ],
+                output_template => 'Global IOPs : %s',
+                perfdatas => [
+                    { label => 'global_iops', value => 'global_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        '001_read'   => { set => {
+                key_values => [ { name => 'read_iops' }, { name => 'display' }, ],
+                output_template => 'Read IOPs : %s',
+                perfdatas => [
+                    { label => 'read_iops', value => 'read_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        '002_write'   => { set => {
+                key_values => [ { name => 'write_iops' }, { name => 'display' }, ],
+                output_template => 'Write IOPs : %s',
+                perfdatas => [
+                    { label => 'write_iops', value => 'write_iops_absolute', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    },
+};
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
-    $self->{version} = '1.1';
+    
+    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter:s@"             => { name => 'filter' },
-                                "warning-read:s"        => { name => 'warning_read' },
-                                "critical-read:s"       => { name => 'critical_read' },
-                                "warning-write:s"       => { name => 'warning_write' },
-                                "critical-write:s"      => { name => 'critical_write' },
-                                "warning:s"             => { name => 'warning' },
-                                "critical:s"            => { name => 'critical' },
+                                  "filter-name:s"           => { name => 'filter_name' },
                                 });
 
+    foreach my $key (('ssd')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-read', value => $self->{option_results}->{warning_read})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-read threshold '" . $self->{option_results}->{warning_read} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-read', value => $self->{option_results}->{critical_read})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-read threshold '" . $self->{option_results}->{critical_read} . "'.");
-       $self->{output}->option_exit();
-    }
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-write', value => $self->{option_results}->{warning_write})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-write threshold '" . $self->{option_results}->{warning_write} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-write', value => $self->{option_results}->{critical_write})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-write threshold '" . $self->{option_results}->{critical_write} . "'.");
-       $self->{output}->option_exit();
-    }
-
-
+    
+    foreach my $key (('ssd')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
+    }    
 }
 
 sub run {
     my ($self, %options) = @_;
-    my $xtremio = $options{custom};
-        
-    my $urlbase = '/api/json/types/';
-    my @items = $xtremio->get_items(url => $urlbase,
-                                    obj => 'ssds');
-
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All SSDs Iops are OK');
-
-    foreach my $item (@items) {
-        next if ($self->check_filter(section => 'ssds', instance => $item));
-        my $details = $xtremio->get_details(url  => $urlbase,
-                                            obj  => 'ssds',
-                                            name => $item);
-
-        $self->{output}->output_add(long_msg => sprintf("SSD '%s' IOPS : Global=%i Read=%i Write=%i",
-                                                        $item, $details->{'iops'}, $details->{'rd-iops'}, $details->{'wr-iops'}));
-
-        my $exit1 = $self->{perfdata}->threshold_check(value => $details->{'iops'},
-                                                      threshold => [ { label => 'warning', 'exit_litteral' => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $details->{'rd-iops'},
-                                                       threshold => [ { label => 'warning-read', 'exit_litteral' => 'warning' }, { label => 'critical-read', exit_litteral => 'critical' } ]);
-        my $exit3 = $self->{perfdata}->threshold_check(value => $details->{'wr-iops'},
-                                                       threshold => [ { label => 'warning-write', 'exit_litteral' => 'warning' }, { label => 'critical-write', exit_litteral => 'critical' } ]);
-
-        my $exit = $self->{output}->get_most_critical(status => [$exit1, $exit2, $exit3]);
-
-        $self->{output}->perfdata_add(label => $item."_iops",
-                                      value => $details->{'iops'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-
-       $self->{output}->perfdata_add(label => $item."_rd-iops",
-                                      value => $details->{'rd-iops'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_read'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_read'),
-                                      min => 0, max => 100);
-
-       $self->{output}->perfdata_add(label => $item."_wr-iops",
-                                      value => $details->{'wr-iops'},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_write'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_write'),
-                                      min => 0, max => 100);
-
-        if ($exit ne 'ok') {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("SSD '%s' IOPS : Global=%i Read=%i Write=%i",
-                                                            $item, $details->{'iops'}, $details->{'rd-iops'}, $details->{'wr-iops'}));
-        }
-
-    }          
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
-}
-
-sub check_filter {
-    my ($self, %options) = @_;
-
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
-        }
+    $self->{xtremio} = $options{custom};
+    
+    $self->manage_selection();
+    
+    my $multiple = 1;
+    if (scalar(keys %{$self->{ssd}}) == 1) {
+        $multiple = 0;
     }
     
-    return 0;
+    if ($multiple == 1) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All SSDs usages are ok');
+    }
+    
+    foreach my $id (sort keys %{$self->{ssd}}) {
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits = ();
+        foreach (sort keys %{$maps_counters->{ssd}}) {
+            my $obj = $maps_counters->{ssd}->{$_}->{obj};
+            $obj->set(instance => $id);
+        
+            my ($value_check) = $obj->execute(values => $self->{ssd}->{$id});
+
+            if ($value_check != 0) {
+                $long_msg .= $long_msg_append . $obj->output_error();
+                $long_msg_append = ', ';
+                next;
+            }
+            my $exit2 = $obj->threshold_check();
+            push @exits, $exit2;
+
+            my $output = $obj->output();
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            
+            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+            
+            $obj->perfdata(extra_instance => $multiple);
+        }
+
+        $self->{output}->output_add(long_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $long_msg");
+        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $short_msg"
+                                        );
+        }
+        
+        if ($multiple == 0) {
+            $self->{output}->output_add(short_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $long_msg");
+        }
+    }
+     
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{ssd} = {};
+    my $urlbase = '/api/json/types/';
+    my @items = $self->{xtremio}->get_items(url => $urlbase,
+                                            obj => 'ssds');
+    foreach my $item (@items) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $item !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $item . "': no matching name.", debug => 1);
+            next;
+        }
+        
+        my $details = $self->{xtremio}->get_details(url  => $urlbase,
+                                                    obj  => 'ssds',
+                                                    name => $item);
+        
+        $self->{ssd}->{$item} = { display => $item, global_iops => $details->{iops},
+                                  read_iops => $details->{'rd-iops'}, write_iops => $details->{'wr-iops'} };
+    }
+    
+    if (scalar(keys %{$self->{ssd}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -170,38 +194,23 @@ __END__
 
 =head1 MODE
 
-Check IOPS (Global, Read, Write)  on each SSDs
+Check IOPS (Global, Read, Write) on each SSDs.
 
 =over 8
 
-=item B<--filter>
+=item B<--warning-*>
 
-Filter some parts (comma seperated list)
-Can also exclude specific instance: --filter=ssds,SSDS-Number
+Threshold warning.
+Can be: 'global' (%), 'read' (%), 'write' (%).
 
-=item B<--warning>
+=item B<--critical-*>
 
-Warning value on global IOPS
+Threshold critical.
+Can be: 'global' (%), 'read' (%), 'write' (%).
 
-=item B<--critical>
+=item B<--filter-name>
 
-Critical value on global IOPS
-
-=item B<--warning-read>
-
-Warning value on read IOPS
-
-=item B<--critical-read>
-
-Critical value on read IOPS
-
-=item B<--warning-write>
-
-Warning value on write IOPS
-
-=item B<--critical-write>
-
-Critical value on write IOPS
+Filter SSD name (can be a regexp).
 
 =back
 
