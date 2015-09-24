@@ -66,6 +66,15 @@ sub new {
     return $self;
 }
 
+sub load_custom_mode {
+    my ($self, %options) = @_;
+    
+    $self->is_custommode(custommode => $self->{custommode_name});
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
+                                           error_msg => "Cannot load module --custommode.");
+    $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+}
+
 sub init {
     my ($self, %options) = @_;
     # $options{version} = string version
@@ -92,10 +101,10 @@ sub init {
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
 
     if (defined($self->{custommode_name}) && $self->{custommode_name} ne '') {
-        $self->is_custommode(custommode => $self->{custommode_name});
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
-                                               error_msg => "Cannot load module --custommode.");
-        $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+        $self->load_custom_mode();
+    } elsif (scalar(keys %{$self->{custom_modes}}) == 1) {
+        $self->{custommode_name} = (keys(%{$self->{custom_modes}}))[0];
+        $self->load_custom_mode();
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--custommode'.");
         $self->{output}->option_exit();
