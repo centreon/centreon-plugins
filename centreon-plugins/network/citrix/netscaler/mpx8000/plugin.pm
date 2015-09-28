@@ -42,6 +42,7 @@ sub new {
             'list-vservers'         => 'network::citrix::netscaler::common::mode::listvservers',
             'vserver-status'        => 'network::citrix::netscaler::common::mode::vserverstatus',
             'memory'                => 'network::citrix::netscaler::common::mode::memory',
+            'connections'           => 'network::citrix::netscaler::common::mode::connections',
     );
 
     return $self;
