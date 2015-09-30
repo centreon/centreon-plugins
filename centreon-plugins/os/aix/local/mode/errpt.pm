@@ -225,8 +225,6 @@ Print error description in output.
 
 Filter resource (can use a regexp).
 
-Set
-
 =back
 
 =cut
