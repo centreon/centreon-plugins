@@ -88,12 +88,15 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
+    my $oid_ibm3100FaultError = '.1.3.6.1.4.1.2.6.210.3.1.1.22.1';
+    my $oid_ibm3100FaultDesc = '.1.3.6.1.4.1.2.6.210.3.1.1.24.1';
     my $oid_ibm3100StatusGlobalStatus = '.1.3.6.1.4.1.2.6.210.2.1.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_ibm3100StatusGlobalStatus], nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_ibm3100StatusGlobalStatus, $oid_ibm3100FaultError, $oid_ibm3100FaultDesc], nothing_quit => 1);
     
     $self->{output}->output_add(severity => $self->get_severity(value => $result->{$oid_ibm3100StatusGlobalStatus}),
                                 short_msg => sprintf("Overall global status is '%s'.", 
                                                 ${$states{$result->{$oid_ibm3100StatusGlobalStatus}}}[0]));
+    $self->{output}->output_add(long_msg => sprintf("Error state: '%s' Error code: '%i'", $result->{$oid_ibm3100FaultDesc}, $result->{$oid_ibm3100FaultError}));
 
     $self->{output}->display();
     $self->{output}->exit();
