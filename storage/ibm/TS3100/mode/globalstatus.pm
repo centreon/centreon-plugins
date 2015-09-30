@@ -96,7 +96,7 @@ sub run {
     $self->{output}->output_add(severity => $self->get_severity(value => $result->{$oid_ibm3100StatusGlobalStatus}),
                                 short_msg => sprintf("Overall global status is '%s'.", 
                                                 ${$states{$result->{$oid_ibm3100StatusGlobalStatus}}}[0]));
-    $self->{output}->output_add(long_msg => sprintf("Error state: %s Error code: %i", $result->{$oid_ibm3100FaultDesc}, $result->{$oid_ibm3100FaultError}));
+    $self->{output}->output_add(long_msg => sprintf("Error state: '%s' Error code: '%i'", $result->{$oid_ibm3100FaultDesc}, $result->{$oid_ibm3100FaultError}));
 
     $self->{output}->display();
     $self->{output}->exit();
