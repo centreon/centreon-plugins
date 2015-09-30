@@ -87,11 +87,13 @@ sub run {
                             threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $exit_failed = $self->{perfdata}->threshold_check(value => $prct_failed,
                             threshold => [ { label => 'critical-failed', 'exit_litteral' => 'critical' }, { label => 'warning-failed', exit_litteral => 'warning' } ]);
-    my $exit_code = $self->{output}->get_most_critical(status => [ $exit_failed, $exit_used ]);
                
-    $self->{output}->output_add(severity => $exit_code,
+    $self->{output}->output_add(severity => $exit_used,
                                 short_msg => sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
                                     $prct_used, $cp_used, $cp_total));
+    $self->{output}->output_add(severity => $exit_failed,
+                                short_msg => sprintf("%.2f%% of failed sessions (%d of max. %d)", 
+                                    $prct_failed, $cp_failed, $cp_total));
                                     
     $self->{output}->perfdata_add(label => 'sessions',
                                   value => $cp_used,
