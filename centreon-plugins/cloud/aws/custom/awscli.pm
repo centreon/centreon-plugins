@@ -23,7 +23,6 @@ package cloud::aws::custom::awscli;
 use strict;
 use warnings;
 use JSON;
-use Data::Dumper;
 use centreon::plugins::misc;
 
 sub new {
@@ -53,15 +52,10 @@ sub new {
             "sudo"              => { name => 'sudo' },
         } );
     }
-    $options{options}->add_help(
-        package  => __PACKAGE__,
-        sections => 'AWSCLI OPTIONS',
-        once     => 1
-    );
+    $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode}   = $options{mode};
-
     return $self;
 }
 
@@ -77,8 +71,6 @@ sub set_options {
 # Method to manage multiples
 sub set_defaults {
     my ( $self, %options ) = @_;
-
-    # options{default}
 
     # Manage default value
     foreach ( keys %{ $options{default} } ) {
@@ -96,30 +88,30 @@ sub set_defaults {
 }
 
 sub check_options {
-    my ( $self, %options ) = @_;
+    my ($self, %options) = @_;
     return 0;
 }
 
 sub execReq {
-    my ( $self, $options ) = @_;
+    my ($self, $options) = @_;
     my $jsoncontent;
 
-    if ( !defined( $options->{output} ) ) {
+    if (!defined($options->{output})) {
         $options->{output} = 'json';
     }
 
     my $json = JSON->new;
     my $json_encoded = $options->{command} . " " . $options->{subcommand};
-    if ( defined( $self->{option_results}->{region} ) ) {
+    if (defined($self->{option_results}->{region})) {
         $json_encoded = $json_encoded . " --region '". $self->{option_results}->{region} . "'";
     }
-    if ( defined( $options->{json} ) ) {
+    if (defined($options->{json})) {
         $json_encoded = $json_encoded . " --cli-input-json '" . $json->encode( $options->{json} ) . "'";
     }
     
     $self->{option_results}->{timeout} = 30;
     
-    if ( $options->{output} eq 'text' ) {
+    if ($options->{output} eq 'text') {
         $self->{stdout} = centreon::plugins::misc::execute(
             output => $self->{output},
             options => $self->{option_results},
@@ -130,8 +122,7 @@ sub execReq {
         );
         my @return = split /\n/, $self->{stdout};
         $jsoncontent = $json->encode( [@return] );
-    }
-    else {
+    } else {
         $jsoncontent = centreon::plugins::misc::execute(
             output => $self->{output},
             options => $self->{option_results},
@@ -141,7 +132,7 @@ sub execReq {
             command_options => $json_encoded
         );
     }
-    if ( $? > 0 ) {
+    if ($? > 0) {
         $self->{output}->add_option_msg( short_msg => "Cannot run aws" );
         $self->{output}->option_exit();
     }
