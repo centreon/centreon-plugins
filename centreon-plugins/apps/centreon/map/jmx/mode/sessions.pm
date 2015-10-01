@@ -59,20 +59,20 @@ sub run {
     $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "com.merethis.studio:name=statistics,type=session" }
+         { mbean => "com.centreon.studio:name=statistics,type=session" }
     ];
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
   
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount},
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount},
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Current sessions : %d",
-                                                      $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount}));
+                                                      $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount}));
 
     $self->{output}->perfdata_add(label => 'sessions',
-                                  value => $result->{"com.merethis.studio:name=statistics,type=session"}->{SessionCount},
+                                  value => $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
