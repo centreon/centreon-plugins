@@ -218,6 +218,7 @@ sub run {
     my ($connector) = shift;
     my $timeout_process = 0;
 
+    $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' init begin");  
     my $context = zmq_init();
 
     $backend = zmq_socket($context, ZMQ_DEALER);
@@ -235,6 +236,7 @@ sub run {
         },
     );
 
+    $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' init done");
     while (1) {
         my $progress = $connector->verify_child();
         
