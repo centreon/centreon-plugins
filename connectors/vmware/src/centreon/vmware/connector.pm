@@ -199,6 +199,10 @@ sub vsphere_event {
     while (1) {
         # Process all parts of the message
         my $message = zmq_recvmsg($backend);
+        if (!defined($message)) {
+            $connector->{logger}->writeLogError("zmq_recvmsg error: $!");
+            last;
+        }
         my $data = zmq_msg_data($message);
         
         if ($data =~ /^REQCLIENT\s+(.*)$/msi) {

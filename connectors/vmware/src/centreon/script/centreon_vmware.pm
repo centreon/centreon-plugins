@@ -458,15 +458,19 @@ sub create_vsphere_child {
     $self->{whoaim} = $options{vsphere_name};
     $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{running} = 0;
     $self->{centreon_vmware_config}->{vsphere_server}->{$self->{whoaim}}->{ready} = 0;
-    $self->{logger}->writeLogInfo("Create vsphere sub-process for '" . $options{vsphere_name} . "'");   
+    $self->{logger}->writeLogInfo("Create vsphere sub-process for '" . $options{vsphere_name} . "'");
 
     my $child_vpshere_pid = fork();
+    if (!defined($child_vpshere_pid)) {
+        $self->{logger}->writeLogError("Cannot fork for '" . $options{vsphere_name} . "': $!");   
+        return -1;
+    }
     if ($child_vpshere_pid == 0) {
         my $connector = centreon::vmware::connector->new(name => $self->{whoaim},
-                                                       modules_registry => $self->{modules_registry},
-                                                       module_date_parse_loaded => $self->{module_date_parse_loaded},
-                                                       config => $self->{centreon_vmware_config},
-                                                       logger => $self->{logger});
+                                                         modules_registry => $self->{modules_registry},
+                                                         module_date_parse_loaded => $self->{module_date_parse_loaded},
+                                                         config => $self->{centreon_vmware_config},
+                                                         logger => $self->{logger});
         $connector->run();
         exit(0);
     }
