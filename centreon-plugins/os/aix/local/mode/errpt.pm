@@ -139,7 +139,7 @@ sub run {
     
     $self->manage_selection();
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("No error found since %s seconds%s.", $extra_message));
+                                short_msg => sprintf("No error found%s.", $extra_message));
     
     my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
