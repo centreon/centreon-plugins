@@ -51,6 +51,7 @@ sub new {
                                   "timezone:s"        => { name => 'timezone' },
                                   "description"       => { name => 'description' },
                                   "filter-resource:s" => { name => 'filter_resource' },
+                                  "filter-id:s"	      => { name => 'filter_id' },
                                   "exclude-id:s"      => { name => 'exclude_id' },	
                                 });
     $self->{result} = {};
@@ -151,7 +152,8 @@ sub run {
         
         next if (defined($self->{option_results}->{filter_resource}) && $self->{option_results}->{filter_resource} ne '' &&
                  $resource_name !~ /$self->{option_results}->{filter_resource}/);
-        
+        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+                 $identifier !~ /$self->{option_results}->{filter_id}/);
         $total_error++;
         if (defined($self->{option_results}->{description})) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
@@ -241,6 +243,10 @@ Print error description in long output. [ Error 'CODE' Date: Timestamp ResourceN
 =item B<--filter-resource>
 
 Filter resource (can use a regexp).
+
+=item B<--filter-id>
+
+Filter error code (can use a regexp).
 
 =item B<--exclude-id>
 
