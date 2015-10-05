@@ -78,7 +78,7 @@ sub run {
     $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "com.merethis.studio:name=statistics,type=whatsup" }
+         { mbean => "com.centreon.studio.map:name=statistics,type=whatsup" }
     ];
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
@@ -94,10 +94,10 @@ sub run {
     }
 
     foreach my $type ('EventCount', 'EventTypeCreate', 'EventTypeUpdate', 'EventTypeRemove') {
-        $new_datas->{$type} =  $result->{"com.merethis.studio:name=statistics,type=whatsup"}->{$type}->{andIncrement};
+        $new_datas->{$type} =  $result->{"com.centreon.studio.map:name=statistics,type=whatsup"}->{$type}->{andIncrement};
         my $old_val = $self->{statefile_cache}->get(name => $type);
-        next if (!defined($old_val) || $result->{"com.merethis.studio:name=statistics,type=whatsup"}->{$type}->{andIncrement} < $old_val);
-        my $value = int(($result->{"com.merethis.studio:name=statistics,type=whatsup"}->{$type}->{andIncrement} - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));     
+        next if (!defined($old_val) || $result->{"com.centreon.studio.map:name=statistics,type=whatsup"}->{$type}->{andIncrement} < $old_val);
+        my $value = int(($result->{"com.centreon.studio.map:name=statistics,type=whatsup"}->{$type}->{andIncrement} - $old_val) / ($new_datas->{last_timestamp} - $old_timestamp));     
 
         $self->{output}->perfdata_add(label => $type,
                                       value => $value,
