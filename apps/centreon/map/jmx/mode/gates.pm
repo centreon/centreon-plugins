@@ -59,22 +59,22 @@ sub run {
     $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "com.merethis.map:name=BusinessGate,type=repo" }
+         { mbean => "com.centreon.studio.map:name=BusinessGate,type=repo" }
     ];
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);  
 
-    my $gates = $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount};
+    my $gates = $result->{"com.centreon.studio.map:name=BusinessGate,type=repo"}->{LoadedModelCount};
     
     my $exit = $self->{perfdata}->threshold_check(value => $gates,
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Business gates opened : %d",
-                                                      $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount}));
+                                                      $result->{"com.centreon.studio.map:name=BusinessGate,type=repo"}->{LoadedModelCount}));
 
     $self->{output}->perfdata_add(label => 'gates',
-                                  value => $result->{"com.merethis.map:name=BusinessGate,type=repo"}->{LoadedModelCount},
+                                  value => $result->{"com.centreon.studio.map:name=BusinessGate,type=repo"}->{LoadedModelCount},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
