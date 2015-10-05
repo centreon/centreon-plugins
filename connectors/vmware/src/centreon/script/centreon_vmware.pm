@@ -263,20 +263,23 @@ sub verify_child_vsphere {
         
         if (defined($self->{childs_vpshere_pid}->{$_})) {
             if ($self->{stop} == 0) {
+                my $name = $self->{childs_vpshere_pid}->{$_};
                 $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "'???!! we relaunch it!!!");
 
                 if ($self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}}->{dynamic} == 0) {
-                    $self->create_vsphere_child(vsphere_name => $self->{childs_vpshere_pid}->{$_}, dynamic => 0);
+                    # Can have the same pid (so we delete before)
+                    delete $self->{childs_vpshere_pid}->{$_};
+                    $self->create_vsphere_child(vsphere_name => $name, dynamic => 0);
                 } else {
                     $self->{logger}->writeLogError("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' is dead. But we don't relaunch it (dynamic sub-process)");
                     delete $self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}};
+                    delete $self->{childs_vpshere_pid}->{$_};
                 }
             } else {
                 $self->{logger}->writeLogInfo("Sub-process for '" . $self->{childs_vpshere_pid}->{$_} . "' dead ???!!");
                 $self->{centreon_vmware_config}->{vsphere_server}->{$self->{childs_vpshere_pid}->{$_}}->{running} = 0;
+                delete $self->{childs_vpshere_pid}->{$_};
             }
-            
-            delete $self->{childs_vpshere_pid}->{$_};
         }
     }
 
@@ -299,6 +302,9 @@ sub waiting_ready {
     my ($self, %options) = @_;
 
     return 1 if ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 1);
+    
+    # Need to check if we need to relaunch (maybe it can have a problem)
+    $self->check_childs();
     
     my $time = time();
     # We wait 10 seconds
@@ -452,6 +458,20 @@ sub router_event {
     }
 }
 
+sub check_childs {
+    my ($self, %options) = @_;
+
+    my $count = $self->verify_child_vsphere();
+    if ($self->{stop} == 1) {
+        # No childs
+        if ($count == 0) {
+            $self->{logger}->writeLogInfo("Quit main process");
+            zmq_close($frontend);
+            exit(0);
+        }
+    }
+}
+    
 sub create_vsphere_child {
     my ($self, %options) = @_;
 
@@ -536,17 +556,7 @@ sub run {
 
     # Switch messages between sockets
     while (1) {
-        my $count = $centreon_vmware->verify_child_vsphere();
-
-        if ($centreon_vmware->{stop} == 1) {
-            # No childs
-            if ($count == 0) {
-                $centreon_vmware->{logger}->writeLogInfo("Quit main process");
-                zmq_close($frontend);
-                exit(0);
-            }
-        }
-    
+        $centreon_vmware->check_childs();    
         zmq_poll($centreon_vmware->{poll}, 5000);
     }
 }
