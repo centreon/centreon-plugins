@@ -213,13 +213,17 @@ Filter error type separated by a coma (INFO, PEND, PERF, PERM, TEMP, UNKN).
 
 Filter error class ('H' for hardware, 'S' for software, '0' for errlogger, 'U' for undetermined).
 
+=item B<--error-id>
+
+Filter specific error code
+
 =item B<--retention>
 
 Retention time of errors in seconds.
 
-=item B<--description>
+=item B<--verbose>
 
-Print error description in output.
+Print error description in long output. [ Error 'CODE' Date: Timestamp ResourceName: RsrcName Description: Desc ]
 
 =item B<--filter-resource>
 
