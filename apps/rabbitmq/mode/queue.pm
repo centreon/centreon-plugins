@@ -66,7 +66,7 @@ sub new {
             "port:s"            => { name => 'port', default => '15672'},
             "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => '/api/queues' },
-            "vhost:s"           => { name => 'vhost', default => '%2f' },
+            "vhost:s"           => { name => 'vhost', default => '/' },
             "queue:s"           => { name => 'queue' },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
@@ -97,6 +97,10 @@ sub check_options {
     if (!defined($self->{option_results}->{queue})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify the queue option");
         $self->{output}->option_exit();
+    }
+
+    if ($self->{option_results}->{vhost} eq '/') {
+        $self->{option_results}->{vhost} = '%2f';
     }
 
     $self->{option_results}->{url_path} = $self->{option_results}->{url_path} . "/" . $self->{option_results}->{vhost} . "/" . $self->{option_results}->{queue} ;
@@ -192,8 +196,7 @@ Set path to get RabbitMQ information (Default: '/api/queues')
 
 =item B<--vhost>
 
-Specify one vhost's name (Default: '%2f')
-'%2f' equivalent to '/', the default vhost
+Specify one vhost's name (Default: '/')
 
 =item B<--queue>
 
