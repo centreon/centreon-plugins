@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
