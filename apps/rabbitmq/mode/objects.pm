@@ -143,8 +143,8 @@ sub run {
 
     my @exits;
     foreach my $object (keys %{$maps_counters}) {
+    next if ($self->check_exclude(object => $object));
         foreach my $name (keys %{$maps_counters->{$object}->{thresholds}}) {
-            return if ($self->check_exclude(object => $object));
             push @exits, $self->{perfdata}->threshold_check(value => $webcontent->{object_totals}->{$object}, threshold => [ { label => $maps_counters->{$object}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$object}->{thresholds}->{$name}->{exit_value} }]);
         }
     }
@@ -154,6 +154,7 @@ sub run {
     my $str_append = '';
 
     foreach my $object (keys %{$maps_counters}) {
+        next if ($self->check_exclude(object => $object));
         $str_output .= $str_append . sprintf($maps_counters->{$object}->{output_msg}, $webcontent->{object_totals}->{$object});
         $str_append = ', ';
         my ($warning, $critical);
