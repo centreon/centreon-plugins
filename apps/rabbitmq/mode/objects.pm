@@ -214,13 +214,15 @@ Specify username for API authentification
 
 Specify password for API authentification
 
-=item B<--warning>
+=item B<--warning-*>
 
 Threshold warning.
+Can be: 'consumers', 'queues', 'exchanges', 'connections', 'channels'.
 
-=item B<--critical>
+=item B<--critical-*>
 
 Threshold critical.
+Can be: 'consumers', 'queues', 'exchanges', 'connections', 'channels'.
 
 =item B<--exlude>
 
