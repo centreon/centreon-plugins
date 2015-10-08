@@ -65,11 +65,6 @@ sub check_options {
             $self->{output}->option_exit();
     }
 
-    if (scalar(@{$self->{option_results}->{nodes}}) < 2 ) {
-              $self->{output}->add_option_msg(short_msg => "Need to specify two nodes at least.");
-              $self->{output}->option_exit();
-    }
-
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
