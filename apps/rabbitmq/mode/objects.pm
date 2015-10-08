@@ -183,17 +183,17 @@ __END__
 
 =head1 MODE
 
-Check Elasticsearch number of objects
+Check RabbitMQ number of objects
 
 =over 8
 
 =item B<--hostname>
 
-IP Addr/FQDN of the Elasticsearch host
+IP Addr/FQDN of the RabbitMQ host
 
 =item B<--port>
 
-Port used by Elasticsearch API (Default: '9200')
+Port used by RabbitMQ API (Default: '9200')
 
 =item B<--proto>
 
@@ -201,7 +201,7 @@ Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
-Set path to get Elasticsearch information (Default: '/')
+Set path to get RabbitMQ information (Default: '/')
 
 =item B<--credentials>
 
