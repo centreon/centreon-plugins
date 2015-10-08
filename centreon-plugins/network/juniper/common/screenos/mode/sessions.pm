@@ -78,7 +78,7 @@ sub run {
     my $spu_done = 0;
     my $cp_total = $result->{$oid_nsResSessMaxium};
     my $cp_used = $result->{$oid_nsResSessAllocate};
-    my $cp_failed = $result->{oid_nsResSessAllocate};    
+    my $cp_failed = $result->{$oid_nsResSessFailed};    
     my $prct_used = $cp_used * 100 / $cp_total;
     my $prct_failed = $cp_failed * 100 / $cp_total;
     $spu_done = 1;
