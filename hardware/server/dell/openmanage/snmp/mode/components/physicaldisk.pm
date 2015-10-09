@@ -107,7 +107,8 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Physical Disk '%s' status is '%s' [instance: %s, state: %s, spare state: %s, smart alert: %s]",
                                     $result->{arrayDiskName}, $result4->{arrayDiskComponentStatus}, $instance, 
-                                    $result2->{arrayDiskState}, $result3->{arrayDiskSpareState}, $result5->{arrayDiskSmartAlertIndication}
+                                    $result2->{arrayDiskState}, $result3->{arrayDiskSpareState}, 
+                                    defined($result5->{arrayDiskSmartAlertIndication}) ? $result5->{arrayDiskSmartAlertIndication} : '-'
                                     ));
         my $exit = $self->get_severity(section => 'physicaldisk', value => $result4->{arrayDiskComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -116,11 +117,13 @@ sub check {
                                            $result->{arrayDiskName}, $result4->{arrayDiskComponentStatus}));
         }
         
-        $exit = $self->get_severity(section => 'physicaldisk_smartalert', value => $result5->{arrayDiskSmartAlertIndication});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("physical disk '%s' has received a predictive failure alert",
-                                           $result->{arrayDiskName}));
+        if (defined($result5->{arrayDiskSmartAlertIndication})) {
+            $exit = $self->get_severity(section => 'physicaldisk_smartalert', value => $result5->{arrayDiskSmartAlertIndication});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("physical disk '%s' has received a predictive failure alert",
+                                                $result->{arrayDiskName}));
+            }
         }
     }
 }

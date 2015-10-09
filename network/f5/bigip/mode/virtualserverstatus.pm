@@ -52,7 +52,6 @@ my $maps_counters = {
         },
 };
 
-
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
