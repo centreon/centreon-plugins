@@ -154,6 +154,12 @@ sub run {
             }
         }
     }
+    
+    if (scalar(@vm_array) == 0) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => "No virtual machines on the datastore");
+        return ;
+    }
 
     @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@vm_array, \@properties);
@@ -168,6 +174,12 @@ sub run {
             next;
         }
         $ref_ids_vm{${$result2}[$i]->{mo_ref}->{value}} = ${$result2}[$i]->{name};
+    }
+    
+    if ($multiple == 0 && scalar(@{$result2}) == 0) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => "No active virtual machines on the datastore");
+        return ;
     }
 
     # Vsphere >= 4.1
