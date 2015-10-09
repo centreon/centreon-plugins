@@ -83,7 +83,8 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_channelEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{channelComponentStatus}->{oid}}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{channelBusType}->{oid}}, instance => $instance);
-
+        $result3->{channelBusType} = defined($result3->{channelBusType}) ? $result3->{channelBusType} : '-';
+        
         next if ($self->check_exclude(section => 'connector', instance => $instance));
         
         $self->{components}->{connector}->{total}++;
