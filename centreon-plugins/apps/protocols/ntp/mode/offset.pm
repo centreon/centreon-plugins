@@ -82,7 +82,9 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $offset,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3fs", $offset));
+                                short_msg => sprintf("Offset: %.3fs", $offset));
+    $self->{output}->output_add(long_msg => sprintf("Host has %.5fs with its time server reference %s", $offset, $self->{option_results}->{ntp_host}));
+
     $self->{output}->perfdata_add(label => "time",
                                   value => sprintf('%.3f', $offset),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
@@ -120,7 +122,7 @@ Threshold warning in seconds
 
 =item B<--critical>
 
-Threshold critical in seconds
+Threshold critical in seconds (e.g @10:10 means CRITICAL if offset is not between -10 and +10 seconds)
 
 =back
 
