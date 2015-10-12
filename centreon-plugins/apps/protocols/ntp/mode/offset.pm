@@ -83,7 +83,7 @@ sub run {
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Offset: %.3fs", $offset));
-    $self->{output}->output_add(long_msg => sprintf("Host has %.5fs with its time server reference %s", $offset, $self->{option_results}->{ntp_host}));
+    $self->{output}->output_add(long_msg => sprintf("Host has an offset of %.5fs with its time server reference %s", $offset, $self->{option_results}->{ntp_host}));
 
     $self->{output}->perfdata_add(label => "time",
                                   value => sprintf('%.3f', $offset),
