@@ -56,7 +56,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{ntp_host})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the ntp_host option");
+        $self->{output}->add_option_msg(short_msg => "Please set the ntp-host option");
         $self->{output}->option_exit();
     }
 }
@@ -80,12 +80,12 @@ sub run {
     my $offset = ($ntp{'Receive Timestamp'} - $ntp{'Originate Timestamp'}) + ($ntp{'Transmit Timestamp'} - $localtime) / 2);    
 
     my $exit = $self->{perfdata}->threshold_check(value => $offset,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Offset: %.3fs", $offset));
     $self->{output}->output_add(long_msg => sprintf("Host has an offset of %.5fs with its time server reference %s", $offset, $self->{option_results}->{ntp_host}));
 
-    $self->{output}->perfdata_add(label => "time",
+    $self->{output}->perfdata_add(label => "time", unit => 's',
                                   value => sprintf('%.3f', $offset),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
@@ -104,7 +104,7 @@ Check Ntp server response.
 
 =over 8
 
-=item B<--ntp_host>
+=item B<--ntp-host>
 
 Ntp server address or FQDN
 
