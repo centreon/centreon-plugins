@@ -32,8 +32,8 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-                          'response-time'	=> 'apps::protocols::ntp::mode::responsetime',
-                          'offset'		=> 'apps::protocols::ntp::mode::offset',
+                          'response-time'   => 'apps::protocols::ntp::mode::responsetime',
+                          'offset'          => 'apps::protocols::ntp::mode::offset',
                         );
 
 	return $self;
