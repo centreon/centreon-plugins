@@ -340,7 +340,7 @@ sub manage_selection {
             $oid =~ /\.(\d+)$/;
             my $instance = $1;
             my $filter_name = $self->{results}->{$oid_diskIODevice}->{$oid}; 
-            if (!defined($self->{option_results}->{device})) {
+            if (!defined($self->{option_results}->{device}) || $self->{option_results}->{device} eq '') {
                 $self->add_result(instance => $instance);
                 next;
             }
