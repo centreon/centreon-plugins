@@ -52,6 +52,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check RabbitMQ through its API (with Management Plugin : https://www.rabbitmq.com/management.html)
-
+Requirements: RabbitMQ 3.5.5 and RabbitMQ Management Plugin
 
 =cut
