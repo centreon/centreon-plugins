@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check messages pending and consumers on a given queue
+Check that the RabbitMQ server is alive
 
 =over 8
 
