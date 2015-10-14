@@ -322,7 +322,7 @@ __END__
 
 =head1 MODE
 
-Check Elasticsearch number of nodes
+List Elasticsearch's object
 
 =over 8
 
