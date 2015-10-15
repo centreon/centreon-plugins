@@ -138,7 +138,7 @@ sub S3 {
     # Compute data
     foreach my $bucket (@buckets) {
         $self->{result}->{'S3'}->{ $bucket->{Name} } =
-          { Creation date => $bucket->{CreationDate} };
+          { 'Creation date' => $bucket->{CreationDate} };
         $self->{result}->{count}->{'S3'}++;
     }
 }
@@ -166,7 +166,7 @@ sub RDS {
 }
 
 sub disco_format {
-    my ( $self, %options ) = @_;
+    my ($self, %options) = @_;
 
     my $names = [ 'name', 'id', 'state', 'service' ];
     $self->{output}->add_disco_format( elements => $names );
