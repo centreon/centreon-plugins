@@ -269,7 +269,7 @@ sub manage_selection {
         $name = $result->{qrV2Vserver} . '/' if (defined($result->{qrV2Vserver}) && $result->{qrV2Vserver} ne ''); 
         $name .= $result->{qrV2VolumeName} . '/' . $result->{qrV2Tree};
         
-        $self->{qtree_selected}->{$instance} = { name => $name, used => $result->{qrV264KBytesUsed}, total => $result->{qrV264KBytesLimit} }; 
+        $self->{qtree_selected}->{$instance} = { name => $name, used => $result->{qrV264KBytesUsed} * 1024, total => $result->{qrV264KBytesLimit} * 1024 }; 
     }
     
     if (scalar(keys %{$self->{qtree_selected}}) <= 0) {

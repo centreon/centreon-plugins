@@ -25,37 +25,42 @@ use warnings;
 
 my %map_status = (
     1 => 'active',
-    2 => 'inactive'
+    2 => 'inactive',
 );
+
+my $mapping = {
+    nsPowerStatus => { oid => '.1.3.6.1.4.1.3224.21.1.1.2', map => \%map_status },
+};
+my $oid_nsPowerEntry = '.1.3.6.1.4.1.3224.21.1.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_nsPowerEntry };
+}
 
 sub check {
     my ($self) = @_;
-
-    $self->{components}->{psus} = {name => 'psus', total => 0};
+    
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if ($self->check_exclude(section => 'psus'));
+    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'psu'));
     
-    my $oid_nsPowerEntry= '.1.3.6.1.4.1.3224.21.1.1';
-    my $oid_nsPowerStatus = '.1.3.6.1.4.1.3224.21.1.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_nsPowerEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_nsPowerStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_nsPowerEntry}})) {
+        next if ($oid !~ /^$mapping->{nsPowerStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        next if ($self->check_exclude(section => 'psus', instance => $instance));
-    
-        my $status = $result->{$oid_nsPowerStatus . '.' . $instance};
-     
-        $self->{components}->{psus}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' status is %s.", 
-                                                        $instance, $map_status{$status}));
-        if ($status != 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Power Supply '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_nsPowerEntry}, instance => $instance);
+        
+        next if ($self->check_filter(section => 'psu', instance => $instance));
+        $self->{components}->{psu}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance: %s]", 
+                                    $instance, $result->{nsPowerStatus}, $instance));
+        my $exit = $self->get_severity(section => 'psu', value => $result->{nsPowerStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Power supply '%s' status is '%s'", 
+                                                             $instance, $result->{nsPowerStatus}));
         }
     }
 }

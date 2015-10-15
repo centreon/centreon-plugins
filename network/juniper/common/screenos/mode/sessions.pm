@@ -34,7 +34,9 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning:s"               => { name => 'warning', },
+                                  "warning-failed:s"        => { name => 'warning_failed', },
                                   "critical:s"              => { name => 'critical', },
+                                  "critical-failed:s"       => { name => 'critical_failed', },
                                 });
 
     return $self;
@@ -52,6 +54,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-failed', value => $self->{option_results}->{warning_failed})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-failed threshold '" . $self->{option_results}->{warning_failed} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-failed', value => $self->{option_results}->{critical_failed})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-failed threshold '" . $self->{option_results}->{critical_failed} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -61,25 +71,39 @@ sub run {
     
     my $oid_nsResSessAllocate = '.1.3.6.1.4.1.3224.16.3.2.0';
     my $oid_nsResSessMaxium = '.1.3.6.1.4.1.3224.16.3.3.0';
+    my $oid_nsResSessFailed = '.1.3.6.1.4.1.3224.16.3.4.0';
     
-    my $result = $self->{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium], nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium, $oid_nsResSessFailed], nothing_quit => 1);
     
     my $spu_done = 0;
     my $cp_total = $result->{$oid_nsResSessMaxium};
     my $cp_used = $result->{$oid_nsResSessAllocate};
-        
+    my $cp_failed = $result->{$oid_nsResSessFailed};    
     my $prct_used = $cp_used * 100 / $cp_total;
-    
+    my $prct_failed = $cp_failed * 100 / $cp_total;
     $spu_done = 1;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, 
+    
+    my $exit_used = $self->{perfdata}->threshold_check(value => $prct_used, 
                             threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
+    my $exit_failed = $self->{perfdata}->threshold_check(value => $prct_failed,
+                            threshold => [ { label => 'critical-failed', 'exit_litteral' => 'critical' }, { label => 'warning-failed', exit_litteral => 'warning' } ]);
+               
+    $self->{output}->output_add(severity => $exit_used,
                                 short_msg => sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
                                     $prct_used, $cp_used, $cp_total));
+    $self->{output}->output_add(severity => $exit_failed,
+                                short_msg => sprintf("%.2f%% of failed sessions (%d of max. %d)", 
+                                    $prct_failed, $cp_failed, $cp_total));
+                                    
     $self->{output}->perfdata_add(label => 'sessions',
                                   value => $cp_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total, cast_int => 1),
+                                  min => 0, max => $cp_total);
+    $self->{output}->perfdata_add(label => 'sessions_failed',
+                                  value => $cp_failed,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-failed', total => $cp_total, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-failed', total => $cp_total, cast_int => 1),
                                   min => 0, max => $cp_total);
 
     if ($spu_done == 0) {
@@ -95,19 +119,25 @@ sub run {
 
 __END__
 
-=head1 MODE
-
-Check Juniper sessions usage (NETSCREEN-RESOURCE-MIB).
+Check Juniper sessions usage and failed sessions (NETSCREEN-RESOURCE-MIB).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning (percentage).
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical (percentage).
+
+=item B<--warning-failed>
+
+Threshold warning on failed sessions (percentage).
+
+=item B<--critical-failed>
+
+Threshold critical in failed sessions (percentage).
 
 =back
 
