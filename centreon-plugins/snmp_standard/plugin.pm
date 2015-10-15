@@ -35,6 +35,7 @@ sub new {
                          'numeric-value'      => 'snmp_standard::mode::numericvalue',
                          'string-value'       => 'snmp_standard::mode::stringvalue',
                          'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
+                         'uptime'             => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
@@ -46,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check SNMP values (string, numeric or execute commands).
+Check SNMP values (string, numeric or execute commands) or standard (uptime).
 
 =cut
