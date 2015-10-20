@@ -134,7 +134,7 @@ my $maps_counters = {
                 per_second => 1,
                 output_template => 'R+W IOPs : %.2f', output_error_template => "R+W IOPs : %s",
                 perfdatas => [
-                    { label => 'total_read_write_iops', value => 'total_read_write_iops_per_second', template => '%.2f',
+                    { label => 'sum_read_write_iops', value => 'sum_read_write_iops_per_second', template => '%.2f',
                       unit => 'iops', min => 0 },
                 ],
             }
