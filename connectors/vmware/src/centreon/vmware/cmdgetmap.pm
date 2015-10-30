@@ -76,7 +76,7 @@ sub run {
     } else {
         $filters{name} = qr/$self->{esx_hostname}/;
     }
-    my @properties = ('name', 'vm');
+    my @properties = ('name', 'vm', 'config.product.version');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
 
@@ -84,7 +84,7 @@ sub run {
                                            short_msg => sprintf("List ESX host(s):"));
     
     foreach my $entity_view (@$result) {
-        $self->{manager}->{output}->output_add(long_msg => sprintf("  %s%s", $entity_view->name, 
+        $self->{manager}->{output}->output_add(long_msg => sprintf("  %s [v%s] %s", $entity_view->name, $entity_view->{'config.product.version'}, 
                                                                    defined($self->{vm_no}) ? '' : ':'));
         next if (defined($self->{vm_no}));
         
