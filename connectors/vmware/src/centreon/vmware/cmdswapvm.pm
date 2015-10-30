@@ -123,6 +123,7 @@ sub run {
                         [{label => 'mem.swapinRate.average', instances => ['']},
                          {label => 'mem.swapoutRate.average', instances => ['']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -145,8 +146,8 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};    
 
         # KBps
-        my $swap_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"}[0])) * 1024;
-        my $swap_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"}[0])) * 1024;
+        my $swap_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"})) * 1024;
+        my $swap_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"})) * 1024;
 
         my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $swap_in, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $swap_out, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);

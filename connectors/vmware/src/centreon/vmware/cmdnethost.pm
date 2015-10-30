@@ -209,6 +209,7 @@ sub run {
                         undef, 
                         $query_perfs,
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -225,8 +226,8 @@ sub run {
         my @exits;
         foreach (sort keys %{$pnic_def_up->{$entity_value}}) {
             # KBps
-            my $traffic_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_}[0])) * 1024 * 8;    
-            my $traffic_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_}[0])) * 1024 * 8;
+            my $traffic_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_})) * 1024 * 8;    
+            my $traffic_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_})) * 1024 * 8;
             my $interface_speed = $pnic_def_up->{$entity_value}->{$_} * 1024 * 1024;
             my $in_prct = $traffic_in  * 100 / $interface_speed;
             my $out_prct = $traffic_out * 100 / $interface_speed;

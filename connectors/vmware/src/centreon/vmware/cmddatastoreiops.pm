@@ -188,17 +188,22 @@ sub run {
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1);                  
     
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
 
+    my $interval_sec = $self->{connector}->{perfcounter_speriod};
+    if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
+        $interval_sec = $self->{sampling_period};
+    }
     foreach (keys %$values) {
         my ($vm_id, $id, $disk_name) = split(/:/);
         
         # RDM Disk. We skip. Don't know how to manage it right now.
         next if (!defined($disk_name{$disk_name}));
         
-        my $tmp_value = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$_}[0] /  $self->{connector}->{perfcounter_speriod}));
+        my $tmp_value = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$_} / $interval_sec));
         $datastore_lun{$disk_name{$disk_name}}{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $tmp_value;
         if (!defined($datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{connector}->{perfcounter_cache_reverse}->{$id}})) {
             $datastore_lun{$disk_name{$disk_name}}{$vm_id . '_' . $self->{connector}->{perfcounter_cache_reverse}->{$id}} = $tmp_value;

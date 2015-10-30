@@ -125,6 +125,7 @@ sub run {
                          {label => 'mem.consumed.average', instances => ['']},
                          {label => 'mem.shared.average', instances => ['']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -147,11 +148,11 @@ sub run {
         my $memory_size = $entity_view->{'summary.config.memorySizeMB'} * 1024 * 1024;
         
         # in KB
-        my $mem_consumed = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"}[0])) * 1024;
-        my $mem_active = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.active.average'}->{'key'} . ":"}[0])) * 1024;
-        my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"}[0])) * 1024;
-        my $mem_ballooning = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.vmmemctl.average'}->{'key'} . ":"}[0])) * 1024;
-        my $mem_shared = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.shared.average'}->{'key'} . ":"}[0])) * 1024;        
+        my $mem_consumed = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"})) * 1024;
+        my $mem_active = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.active.average'}->{'key'} . ":"})) * 1024;
+        my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"})) * 1024;
+        my $mem_ballooning = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.vmmemctl.average'}->{'key'} . ":"})) * 1024;
+        my $mem_shared = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.shared.average'}->{'key'} . ":"})) * 1024;        
         
         my $mem_free = $memory_size - $mem_consumed;
         my $prct_used = $mem_consumed * 100 / $memory_size;

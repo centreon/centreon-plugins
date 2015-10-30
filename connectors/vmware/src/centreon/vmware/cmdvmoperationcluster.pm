@@ -116,6 +116,7 @@ sub run {
                          {'label' => 'vmop.numSVMotion.latest', 'instances' => ['']},
                          {'label' => 'vmop.numClone.latest', 'instances' => ['']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -135,7 +136,7 @@ sub run {
         my @exits;
         
         foreach my $label (('Clone', 'VMotion', 'SVMotion')) {
-            $new_datas->{$label . '_' . $entity_value} = $values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'vmop.num' . $label . '.latest'}->{key} . ":"}[0];
+            $new_datas->{$label . '_' . $entity_value} = $values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'vmop.num' . $label . '.latest'}->{key} . ":"};
             $old_datas->{$label . '_' . $entity_value} = $self->{statefile_cache}->get(name => $label . '_' . $entity_value);
         
             next if (!defined($old_datas->{$label . '_' . $entity_value}));

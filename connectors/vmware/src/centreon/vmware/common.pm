@@ -203,19 +203,26 @@ sub search_in_datastore {
 }
 
 sub get_perf_metric_ids {
-    my $obj_vmware = shift;
-    my $perf_names = $_[0];
+    my (%options) = @_;
     my $filtered_list = [];
    
-    foreach (@$perf_names) {
-        if (defined($obj_vmware->{perfcounter_cache}->{$_->{label}})) {
+    foreach (@{$options{metrics}}) {
+        if (defined($options{connector}->{perfcounter_cache}->{$_->{label}})) {
             foreach my $instance (@{$_->{instances}}) {
-                my $metric = PerfMetricId->new(counterId => $obj_vmware->{perfcounter_cache}->{$_->{label}}{key},
-                                   instance => $instance);
+                if ($options{connector}->{perfcounter_cache}->{$_->{label}}{level} > $options{connector}->{sampling_periods}->{$options{interval}}->{level}) {
+                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                           short_msg => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
+                                                                        $_->{label}, $options{interval}, 
+                                                                        $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
+                                                                        $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
+                    return undef;
+                }
+                my $metric = PerfMetricId->new(counterId => $options{connector}->{perfcounter_cache}->{$_->{label}}{key},
+                                               instance => $instance);
                 push @$filtered_list, $metric;
             }
         } else {
-            $obj_vmware->{logger}->writeLogError("Metric '" . $_->{label} . "' unavailable.");
+            $options{connector}->{logger}->writeLogError("Metric '" . $_->{label} . "' unavailable.");
             $manager_display->{output}->output_add(severity => 'UNKNOWN',
                                                    short_msg => "Counter doesn't exist. VMware version can be too old.");
             return undef;
@@ -227,13 +234,16 @@ sub get_perf_metric_ids {
 sub performance_builder_specific {
     my (%options) = @_;
     
+    my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     my @perf_query_spec;
     foreach my $entry (@{$options{metrics}}) {
-        my $perf_metric_ids = get_perf_metric_ids($options{connector}, $entry->{metrics});
+        my $perf_metric_ids = get_perf_metric_ids(connector => $options{connector}, 
+                                                  metrics => $entry->{metrics}, 
+                                                  interval => $options{interval});
         return undef if (!defined($perf_metric_ids));
         
         my $tstamp = time();
-        my (@t) = gmtime($tstamp - $options{interval});
+        my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
         my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
             (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
         (@t) = gmtime($tstamp);
@@ -245,8 +255,9 @@ sub performance_builder_specific {
                                     format => 'normal',
                                     intervalId => 20,
                                     startTime => $startTime,
-                                    endTime => $endTime,
-                                    maxSample => 1);
+                                    endTime => $endTime
+                                    );
+                                    #maxSample => 1);
         } else {
             push @perf_query_spec, PerfQuerySpec->new(entity => $entry->{entity},
                                     metricId => $perf_metric_ids,
@@ -265,12 +276,15 @@ sub performance_builder_specific {
 sub performance_builder_global {
     my (%options) = @_;
     
+    my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     my @perf_query_spec;
-    my $perf_metric_ids = get_perf_metric_ids($options{connector}, $options{metrics});
+    my $perf_metric_ids = get_perf_metric_ids(connector => $options{connector}, 
+                                              metrics => $options{metrics}, 
+                                              interval => $options{interval});
     return undef if (!defined($perf_metric_ids));
     
     my $tstamp = time();
-    my (@t) = gmtime($tstamp - $options{interval});
+    my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
     my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
             (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
     (@t) = gmtime($tstamp);
@@ -284,8 +298,8 @@ sub performance_builder_global {
                                     format => 'normal',
                                     intervalId => 20,
                                     startTime => $startTime,
-                                    endTime => $endTime,
-                                    maxSample => 1);
+                                    endTime => $endTime);
+                                    #maxSample => 1);
         } else {
             push @perf_query_spec, PerfQuerySpec->new(entity => $_,
                                     metricId => $perf_metric_ids,
@@ -306,6 +320,21 @@ sub generic_performance_values_historic {
     my $counter = 0;
     my %results;
     
+    # overload the default sampling choosen
+    if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
+        $interval = $options{sampling_period};
+    }
+    # check sampling period exist
+    if (!defined($obj_vmware->{sampling_periods}->{$interval})) {
+        $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => sprintf("Sampling period '%s' not managed.", $interval));
+        return undef;
+    }
+    if ($obj_vmware->{sampling_periods}->{$interval}->{enabled} != 1) {
+        $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                               short_msg => sprintf("Sampling period '%s' collection data no enabled.", $interval));
+        return undef;
+    }
     eval {
         my $perfdata;
         
@@ -313,11 +342,11 @@ sub generic_performance_values_historic {
             $perfdata = performance_builder_global(connector => $obj_vmware,
                                                    views => $views,
                                                    metrics => $perfs,
-                                                   interval => $interval);
+                                                   interval => $interval, time_shift => $options{time_shift});
         } else {
             $perfdata = performance_builder_specific(connector => $obj_vmware,
                                                      metrics => $perfs,
-                                                     interval => $interval);
+                                                     interval => $interval, time_shift => $options{time_shift});
         }
         return undef if (!defined($perfdata));
 
@@ -337,15 +366,23 @@ sub generic_performance_values_historic {
                     return undef;
                 }
                 
+                my $aggregated_counter_value = 0;
+                foreach my $counter_value (@{$_->value}) {
+                    $aggregated_counter_value += $counter_value;
+                }
+                if (scalar(@{$_->value}) > 1) {
+                    $aggregated_counter_value /= scalar(@{$_->value});
+                }
+                
                 if (defined($options{multiples}) && $options{multiples} == 1) {
                     if (defined($options{multiples_result_by_entity}) && $options{multiples_result_by_entity} == 1) {
                         $results{$val->{entity}->{value}} = {} if (!defined($results{$val->{entity}->{value}}));
-                        $results{$val->{entity}->{value}}->{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                        $results{$val->{entity}->{value}}->{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $aggregated_counter_value;
                     } else {
-                        $results{$val->{entity}->{value} . ":" . $_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                        $results{$val->{entity}->{value} . ":" . $_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $aggregated_counter_value;
                     }
                 } else {
-                    $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $_->value;
+                    $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = $aggregated_counter_value;
                 }
             }
         }
@@ -364,16 +401,18 @@ sub cache_perf_counters {
         $obj_vmware->{perfmanager_view} = $obj_vmware->{session1}->get_view(mo_ref => $obj_vmware->{session1}->get_service_content()->perfManager, properties => ['perfCounter', 'historicalInterval']);
         foreach (@{$obj_vmware->{perfmanager_view}->perfCounter}) {
             my $label = $_->groupInfo->key . "." . $_->nameInfo->key . "." . $_->rollupType->val;
-            $obj_vmware->{perfcounter_cache}->{$label} = {'key' => $_->key, 'unitkey' => $_->unitInfo->key};
+            $obj_vmware->{perfcounter_cache}->{$label} = { key => $_->key, unitkey => $_->unitInfo->key, level => $_->level };
             $obj_vmware->{perfcounter_cache_reverse}->{$_->key} = $label;
         }
 
         my $historical_intervals = $obj_vmware->{perfmanager_view}->historicalInterval;
+        $obj_vmware->{sampling_periods} = {};
 
         foreach (@$historical_intervals) {
             if ($obj_vmware->{perfcounter_speriod} == -1 || $obj_vmware->{perfcounter_speriod} > $_->samplingPeriod) {
                 $obj_vmware->{perfcounter_speriod} = $_->samplingPeriod;
             }
+            $obj_vmware->{sampling_periods}->{$_->samplingPeriod} = $_;
         }
 
         # Put refresh = 20 (for ESX check)
@@ -491,6 +530,18 @@ sub performance_errors {
     # Error counter not available or other from function
     return 1 if (!defined($values) || scalar(keys(%$values)) <= 0);
     return 0;
+}
+
+sub get_interval_min  {
+    my (%options) = @_;
+    
+    my $interval = $options{speriod};
+    my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
+    if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
+        $interval = $options{sampling_period};
+    }
+    
+    return int(($interval + $time_shift) / 60);
 }
 
 sub is_accessible {

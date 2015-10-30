@@ -107,6 +107,7 @@ sub run {
                         [{'label' => 'datastore.read.average', 'instances' => ['']},
                          {'label' => 'datastore.write.average', 'instances' => ['']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -127,8 +128,8 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};
     
         # in KBps
-        my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.read.average'}->{'key'} . ":"}[0])) * 1024;    
-        my $write_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.write.average'}->{'key'} . ":"}[0])) * 1024;
+        my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.read.average'}->{'key'} . ":"})) * 1024;    
+        my $write_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.write.average'}->{'key'} . ":"})) * 1024;
 
         my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);

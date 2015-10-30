@@ -112,6 +112,7 @@ sub run {
                         [{'label' => 'mem.consumed.average', 'instances' => ['']},
                          {'label' => 'mem.overhead.average', 'instances' => ['']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -129,8 +130,8 @@ sub run {
         my $memory_size = $entity_view->{'summary.hardware.memorySize'}; # in B
 
         # in KB
-        my $mem_used = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"}[0])) * 1024;
-        my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"}[0])) * 1024;
+        my $mem_used = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"})) * 1024;
+        my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"})) * 1024;
         my $mem_free = $memory_size - $mem_used;
         my $prct_used = $mem_used * 100 / $memory_size;
         my $prct_free = 100 - $prct_used;

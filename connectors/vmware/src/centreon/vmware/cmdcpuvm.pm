@@ -122,6 +122,7 @@ sub run {
                          {'label' => 'cpu.usagemhz.average', 'instances' => \@instances},
                          {'label' => 'cpu.ready.summation', 'instances' => \@instances}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
     
@@ -132,6 +133,13 @@ sub run {
         $self->{manager}->{output}->output_add(severity => 'OK',
                                                short_msg => sprintf("All cpu usages are ok"));
     }
+    
+    my $interval_sec = $self->{connector}->{perfcounter_speriod};
+    if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
+        $interval_sec = $self->{sampling_period};
+    }
+    my $interval_min = centreon::vmware::common::get_interval_min(speriod => $self->{connector}->{perfcounter_speriod}, 
+                                                                  sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift});
     foreach my $entity_view (@$result) {
         next if (centreon::vmware::common::vm_state(connector => $self->{connector},
                                                   hostname => $entity_view->{name}, 
@@ -141,9 +149,9 @@ sub run {
                                                   powerstatus => $self->{nopoweredon_status},
                                                   multiple => $multiple) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
-        my $total_cpu_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"}[0] * 0.01));
-        my $total_cpu_mhz_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}[0]));
-        my $total_cpu_ready = centreon::vmware::common::simplify_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"}[0] / ($self->{connector}->{perfcounter_speriod} * 1000) * 100);
+        my $total_cpu_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usage.average'}->{'key'} . ":"} * 0.01));
+        my $total_cpu_mhz_average = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{'key'} . ":"}));
+        my $total_cpu_ready = centreon::vmware::common::simplify_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'cpu.ready.summation'}->{'key'} . ":"} / ($interval_sec * 1000) * 100);
         
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
@@ -173,7 +181,7 @@ sub run {
                                           min => $entry->{perf_min}, max => $entry->{perf_max});
         }
         
-        $long_msg .= ' on last ' . int($self->{connector}->{perfcounter_speriod} / 60) . ' min';
+        $long_msg .= ' on last ' . $interval_min . ' min';
         my $prefix_msg = "'$entity_view->{name}'";
         if (defined($self->{display_description}) && defined($entity_view->{'config.annotation'}) &&
             $entity_view->{'config.annotation'} ne '') {
@@ -200,7 +208,7 @@ sub run {
             next if ($self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} != $counter_id);
             if ($instance ne "") {
                 $self->{manager}->{output}->perfdata_add(label => 'cpu_' . $instance . '_MHz' . $extra_label, unit => 'MHz',
-                                                         value => centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$id}[0])),
+                                                         value => centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$id})),
                                                          min => 0);
             }
         }

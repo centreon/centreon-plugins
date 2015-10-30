@@ -180,9 +180,14 @@ sub run {
                         [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
                         {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
                         $self->{connector}->{perfcounter_speriod},
+                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
 
+    my $interval_sec = $self->{connector}->{perfcounter_speriod};
+    if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
+        $interval_sec = $self->{sampling_period};
+    }
     $self->{manager}->{output}->output_add(severity => 'OK',
                                            short_msg => sprintf("All Datastore IOPS counters are ok"));
     my $finded = 0;
@@ -207,15 +212,15 @@ sub run {
             next if ($disk_name{$disk_name} !~ /$ds_regexp/); 
             $datastore_lun{$disk_name{$disk_name}} = { 'disk.numberRead.summation' => 0, 
                                                        'disk.numberWrite.summation' => 0 } if (!defined($datastore_lun{$disk_name{$disk_name}}));
-            $datastore_lun{$disk_name{$disk_name}}->{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $values->{$entity_value}->{$_}[0];
+            $datastore_lun{$disk_name{$disk_name}}->{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $values->{$entity_value}->{$_};
         }
 
         foreach (sort keys %datastore_lun) {
             $finded |= 2;
-            my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $self->{connector}->{perfcounter_speriod}));
-            my $write_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $self->{connector}->{perfcounter_speriod}));
+            my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $interval_sec));
+            my $write_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($datastore_lun{$_}{'disk.numberWrite.summation'} / $interval_sec));
 
-            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             $self->{manager}->{output}->output_add(long_msg => sprintf("%s read iops on '%s' is %s", 
                                                    $prefix_msg, $_, $read_counter));
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -223,7 +228,7 @@ sub run {
                                                         short_msg => sprintf("%s read iops on '%s' is %s", 
                                                    $prefix_msg, $_, $read_counter));
             }
-            $exit = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            $exit = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             $self->{manager}->{output}->output_add(long_msg => sprintf("%s write iops on '%s' is %s", 
                                                    $prefix_msg, $_, $write_counter));
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
