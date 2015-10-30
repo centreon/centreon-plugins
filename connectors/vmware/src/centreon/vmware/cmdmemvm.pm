@@ -119,7 +119,7 @@ sub run {
     
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
                         $result, 
-                        [{label => 'mem.active.average', instancess => ['']},
+                        [{label => 'mem.active.average', instances => ['']},
                          {label => 'mem.overhead.average', instances => ['']},
                          {label => 'mem.vmmemctl.average', instances => ['']},
                          {label => 'mem.consumed.average', instances => ['']},
