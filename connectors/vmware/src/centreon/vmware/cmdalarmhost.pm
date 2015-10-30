@@ -107,7 +107,6 @@ sub run {
     $self->{manager}->{output}->output_add(severity => 'OK',
                                           short_msg => sprintf("No current alarms on host(s)"));
     
-    my $alarmMgr = centreon::vmware::common::get_view($self->{connector}, $self->{connector}->{session1}->get_service_content()->alarmManager, undef);
     my $total_alarms = { red => 0, yellow => 0 };
     my $host_alarms = {};
     my $new_datas = {};
