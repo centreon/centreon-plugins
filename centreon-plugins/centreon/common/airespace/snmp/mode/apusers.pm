@@ -221,16 +221,20 @@ my $mapping2 = {
     bsnMobileStationSsid    => { oid => '.1.3.6.1.4.1.14179.2.1.4.1.7' },
 };
 
+my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = { total => 0, total_idle => 0, total_aaapending => 0, total_authenticated => 0,
                         total_associated => 0, total_powersave => 0, total_disassociated => 0,
                         total_tobedeleted => 0, total_probing => 0, total_blacklisted => 0};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{bsnMobileStationStatus}->{oid} },
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
+                                                                   { oid => $mapping->{bsnMobileStationStatus}->{oid} },
                                                                    { oid => $mapping2->{bsnMobileStationSsid}->{oid} },
                                                                  ],
                                                          nothing_quit => 1);
+    $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }}) {
         $oid =~ /^$mapping->{bsnMobileStationStatus}->{oid}\.(.*)$/;
         my $instance = $1;
