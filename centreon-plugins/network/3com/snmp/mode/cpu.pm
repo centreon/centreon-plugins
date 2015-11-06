@@ -187,7 +187,7 @@ sub manage_selection {
     my $results = $options{snmp}->get_table(oid => $oid_hwCpuEntry, nothing_quit => 1);
     $self->{cpu} = {};
     foreach my $oid (keys %{$results}) {
-        next if ($oid !~ /^$mapping->{hwMemSize}->{oid}\.(.*)/);
+        next if ($oid !~ /^$mapping->{hwCpuCostRatePer5Min}->{oid}\.(.*)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         
