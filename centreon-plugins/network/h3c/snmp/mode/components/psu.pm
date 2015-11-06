@@ -45,6 +45,7 @@ sub check {
     foreach my $instance (sort $self->get_instance_class(class => { 6 => 1 }) ) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch} . '.19'}, instance => $instance);
 
+        next if (!defined($result->{EntityExtErrorStatus}));
         next if ($self->check_exclude(section => 'psu', instance => $instance));
         if ($result->{EntityExtErrorStatus} =~ /entityAbsent/i) {
             $self->absent_problem(section => 'psu', instance => $instance);
