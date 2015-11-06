@@ -145,9 +145,9 @@ sub run_instances {
             $obj->perfdata(extra_instance => $multiple);
         }
 
-        my $prefix = '';
+        my $prefix = "CPU Usage ";
         if ($multiple == 1) {
-            $prefix = sprintf("CPU '%s' ", $self->{cpu}->{$id}->{display});
+            $prefix = sprintf("CPU '%s' Usage ", $self->{cpu}->{$id}->{display});
         }
         $self->{output}->output_add(long_msg => "${prefix}$long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
