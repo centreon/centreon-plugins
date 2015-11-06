@@ -32,7 +32,7 @@ my $maps_counters = {
     cpu => {
         '000_5s'   => {
             set => {
-                key_values => [ { name => 'display' }, { name => 'usage_5s' } ],
+                key_values => [ { name => 'usage_5s' }, { name => 'display' } ],
                 output_template => '%s %% (5sec)', output_error_template => "%s (5sec)",
                 perfdatas => [
                     { label => 'cpu_5s', value => 'usage_5s_absolute', template => '%d',
@@ -42,7 +42,7 @@ my $maps_counters = {
         },
         '001_1m'   => {
             set => {
-                key_values => [ { name => 'display' }, { name => 'usage_1m' } ],
+                key_values => [ { name => 'usage_1m' }, { name => 'display' } ],
                 output_template => '%s %% (1m)', output_error_template => "%s (1min)",
                 perfdatas => [
                     { label => 'cpu_1m', value => 'usage_1m_absolute', template => '%d',
@@ -52,7 +52,7 @@ my $maps_counters = {
         },
         '002_5m'   => {
             set => {
-                key_values => [ { name => 'display' }, { name => 'usage_5m' } ],
+                key_values => [ { name => 'usage_5m' }, { name => 'display' } ],
                 output_template => '%s %% (5min)', output_error_template => "%s (5min)",
                 perfdatas => [
                     { label => 'cpu_5m', value => 'usage_5m_absolute', template => '%d',
