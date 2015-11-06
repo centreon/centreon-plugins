@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'cpu'              => 'network::3com::snmp::mode::cpu',
+                         'hardware'         => 'network::3com::snmp::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::3com::snmp::mode::memory',
