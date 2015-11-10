@@ -259,10 +259,6 @@ Check minimal version of mode. If not, unknown error.
 
 Display plugin version.
 
-=item B<--sanity-options>
-
-Check unknown options (for debug purpose).
-
 =item B<--sqlmode>
 
 Choose a sql mode (Default: "dbi").
