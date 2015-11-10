@@ -208,11 +208,11 @@ Threshold warning in days (Days before expiration, eg: '60:' for 60 days before)
 
 Threshold critical in days (Days before expiration, eg: '30:' for 30 days before)
 
-=item B<--subject>
+=item B<--subjectname>
 
 Subject Name pattern
 
-=item B<--issuer>
+=item B<--issuername>
 
 Issuer Name pattern
 
