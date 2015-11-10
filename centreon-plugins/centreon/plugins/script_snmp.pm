@@ -206,10 +206,6 @@ Check minimal version of mode. If not, unknown error.
 
 Display plugin version.
 
-=item B<--sanity-options>
-
-Check unknown options (for debug purpose).
-
 =back
 
 =head1 DESCRIPTION
