@@ -48,7 +48,7 @@ my %map_blade_power_state = (
     4 => 'hibernate',
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+# In MIB 'mmblade.mib' and 'cme.mib'
 my $mapping = {
     bladeId => { oid => '.1.3.6.1.4.1.2.3.51.2.22.1.5.1.1.2' },
     bladeExists => { oid => '.1.3.6.1.4.1.2.3.51.2.22.1.5.1.1.3', map => \%map_blade_exists  },

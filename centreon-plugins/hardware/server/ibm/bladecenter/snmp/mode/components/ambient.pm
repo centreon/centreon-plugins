@@ -23,18 +23,26 @@ package hardware::server::ibm::bladecenter::snmp::mode::components::ambient;
 use strict;
 use warnings;
 
-# In MIB 'mmblade.mib'
+
 my $oid_temperature = '.1.3.6.1.4.1.2.3.51.2.2.1';
+my $oid_end = '.1.3.6.1.4.1.2.3.51.2.2.1.5';
+my $oid_rearLEDCardTempMax = '.1.3.6.1.4.1.2.3.51.2.2.1.5.3.0';
+# In MIB 'mmblade.mib' and 'cme.mib'
 my $oids = {
-    mm          => '.1.3.6.1.4.1.2.3.51.2.2.1.1.2.0',
-    frontpanel  => '.1.3.6.1.4.1.2.3.51.2.2.1.5.1.0',
-    frontpanel2 => '.1.3.6.1.4.1.2.3.51.2.2.1.5.2.0',
+    bladecenter => {
+        mm          => '.1.3.6.1.4.1.2.3.51.2.2.1.1.2.0',
+        frontpanel  => '.1.3.6.1.4.1.2.3.51.2.2.1.5.1.0',
+        frontpanel2 => '.1.3.6.1.4.1.2.3.51.2.2.1.5.2.0',
+    },
+    pureflex => {
+        ambient     => '.1.3.6.1.4.1.2.3.51.2.2.1.5.1.0', # rearLEDCardTempAvg
+    }
 };
 
 sub load {
     my (%options) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperature };
+    push @{$options{request}}, { oid => $oid_temperature, end => $oid_end };
 }
 
 sub check {
@@ -44,9 +52,16 @@ sub check {
     $self->{components}->{ambient} = {name => 'ambient', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'ambient'));
 
-    foreach my $temp (('mm', 'frontpanel', 'frontpanel2')) {
-        if (!defined($self->{results}->{$oid_temperature}->{$oids->{$temp}}) || 
-            $self->{results}->{$oid_temperature}->{$oids->{$temp}} !~ /([0-9\.]+)/) {
+    my @sensors = ('mm', 'frontpanel', 'frontpanel2');
+    my $label = 'bladecenter';
+    if (defined()) {
+        @sensors = ('ambient');
+        $label = 'pureflex';
+    }
+    
+    foreach my $temp (@values) {
+        if (!defined($self->{results}->{$oid_temperature}->{$oids->{$label}->{$temp}}) || 
+            $self->{results}->{$oid_temperature}->{$oids->{$label}->{$temp}} !~ /([0-9\.]+)/) {
             $self->{output}->output_add(long_msg => sprintf("skip ambient '%s': no values", 
                                                              $temp));
             next;
