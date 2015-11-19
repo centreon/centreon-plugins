@@ -58,8 +58,8 @@ sub check {
         next if ($self->check_exclude(section => 'chassisfan', instance => $instance));
         $self->{components}->{chassisfan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Chassis fan '%s' is %d rpm [status: %s, instance: %s]", 
-                                    $instance, $result->{fanPackAverageSpeedRPM}, $result->{chassisFanState},
+        $self->{output}->output_add(long_msg => sprintf("Chassis fan '%s' is %s rpm [status: %s, instance: %s]", 
+                                    $instance, $result->{chassisFanSpeedRPM}, $result->{chassisFanState},
                                     $instance));
         my $exit = $self->get_severity(section => 'chassisfan', value => $result->{chassisFanState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

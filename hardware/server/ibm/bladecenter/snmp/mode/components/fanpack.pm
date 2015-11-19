@@ -29,10 +29,14 @@ my %map_state = (
     2 => 'warning', 
     3 => 'bad',
 );
+my %map_exists = (
+    0 => 'false',
+    1 => 'true',
+);
 
 # In MIB 'mmblade.mib' and 'cme.mib'
 my $mapping = {
-    fanPackExists => { oid => '.1.3.6.1.4.1.2.3.51.2.2.6.1.1.2' },
+    fanPackExists => { oid => '.1.3.6.1.4.1.2.3.51.2.2.6.1.1.2', map => \%map_exists },
     fanPackState => { oid => '.1.3.6.1.4.1.2.3.51.2.2.6.1.1.3', map => \%map_state },
     fanPackAverageSpeedRPM => { oid => '.1.3.6.1.4.1.2.3.51.2.2.6.1.1.6' },
 };
@@ -56,14 +60,14 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanPackEntry}, instance => $instance);
         
-        if ($result->{fanPackExists} == 1) {
+        if ($result->{fanPackExists} =~ /No/i) {
             $self->{output}->output_add(long_msg => "skipping fanpack '" . $instance . "' : not exits"); 
             next;
         }
         next if ($self->check_exclude(section => 'fanpack', instance => $instance));
         $self->{components}->{fanpack}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Fanpack '%s' is %d rpm [status: %s, instance: %s]", 
+        $self->{output}->output_add(long_msg => sprintf("Fanpack '%s' is %s rpm [status: %s, instance: %s]", 
                                     $instance, $result->{fanPackAverageSpeedRPM}, $result->{fanPackState},
                                     $instance));
         my $exit = $self->get_severity(section => 'fanpack', value => $result->{fanPackState});

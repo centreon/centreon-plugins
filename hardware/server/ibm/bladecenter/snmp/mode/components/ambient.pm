@@ -59,7 +59,7 @@ sub check {
         $label = 'pureflex';
     }
     
-    foreach my $temp (@values) {
+    foreach my $temp (@sensors) {
         if (!defined($self->{results}->{$oid_temperature}->{$oids->{$label}->{$temp}}) || 
             $self->{results}->{$oid_temperature}->{$oids->{$label}->{$temp}} !~ /([0-9\.]+)/) {
             $self->{output}->output_add(long_msg => sprintf("skip ambient '%s': no values", 

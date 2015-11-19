@@ -49,6 +49,7 @@ sub check {
     return if ($self->check_exclude(section => 'switchmodule'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{smHealthState}->{oid}}})) {
+        $oid =~ /^$mapping->{smHealthState}->{oid}\.(.*)/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{smHealthState}->{oid}}, instance => $instance);
         
