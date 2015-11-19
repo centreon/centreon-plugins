@@ -396,7 +396,7 @@ sub manage_selection {
     
     my $total_timeticks = 0;
     foreach my $oid (keys %{$self->{results}->{$oid_wlsxUserEntry}}) {
-        $oid =~ /^$mapping->{nUserAuthenticationMethod}->{oid}\.(.*)$/;
+        next if ($oid !~ /^$mapping->{nUserAuthenticationMethod}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxUserEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{nUserApBSSID}->{oid}}, instance => $instance);

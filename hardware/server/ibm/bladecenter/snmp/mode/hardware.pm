@@ -42,12 +42,30 @@ my $thresholds = {
         ['warning', 'WARNING'],
         ['notAvailable', 'UNKNOWN'],
     ],
-    blower => [
+    fanpack => [
+        ['unknown', 'UNKNOWN'],
+        ['good', 'OK'],
+        ['warning', 'WARNING'],
+        ['bad', 'CRITICAL'],
+    ],
+    chassisfan => [
         ['unknown', 'UNKNOWN'],
         ['good', 'OK'],
         ['warning', 'WARNING'],
         ['bad', 'CRITICAL'],
     ],    
+    blower => [
+        ['unknown', 'UNKNOWN'],
+        ['good', 'OK'],
+        ['warning', 'WARNING'],
+        ['bad', 'CRITICAL'],
+    ],
+    switchmodule => [
+        ['unknown', 'UNKNOWN'],
+        ['good', 'OK'],
+        ['warning', 'WARNING'],
+        ['bad', 'CRITICAL'],
+    ],
     blowerctrl => [
         ['unknown', 'UNKNOWN'],
         ['operational', 'OK'],
@@ -132,8 +150,8 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /(blower|ambient)/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: blower or ambient).");
+            if ($section !~ /(blower|ambient|fanpack|chassisfan)/) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: blower, fanpack, chassisfan or ambient).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -156,7 +174,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [];
-    my @components = ('ambient', 'powermodule', 'blade', 'blower', 'systemhealth', 'chassisstatus');
+    my @components = ('ambient', 'powermodule', 'blade', 'blower', 'fanpack', 'chassisfan', 'systemhealth', 'chassisstatus', 'switchmodule');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "hardware::server::ibm::bladecenter::snmp::mode::components::$_";
@@ -289,14 +307,15 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Health, Chassis status).
+Check Hardware (Ambient temperatures, Blowers, Power modules, Blades, System Health, Chassis status, Fanpack).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: 'all').
-Can be: 'ambient', 'powermodule', 'blower', 'blade', 'systemhealth', 'chassisstatus'.
+Can be: 'ambient', 'powermodule', 'fanpack', 'chassisfan', 
+'blower', 'blade', 'systemhealth', 'chassisstatus', 'switchmodule'.
 
 =item B<--exclude>
 

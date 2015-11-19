@@ -54,7 +54,9 @@ sub new {
                       "vsphere-username:s@"      => { name => 'vsphere_username' },
                       "vsphere-password:s@"      => { name => 'vsphere_password' },
                       "container:s@"             => { name => 'container' },
-                      "timeout:s@"               => { name => 'timeout' },                      
+                      "timeout:s@"               => { name => 'timeout' },
+                      "sampling-period:s@"       => { name => 'sampling_period' },
+                      "time-shift:s@"            => { name => 'time_shift' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
@@ -105,7 +107,9 @@ sub check_options {
     $self->{vsphere_address} = (defined($self->{option_results}->{vsphere_address})) ? shift(@{$self->{option_results}->{vsphere_address}}) : undef;
     $self->{vsphere_username} = (defined($self->{option_results}->{vsphere_username})) ? shift(@{$self->{option_results}->{vsphere_username}}) : undef;
     $self->{vsphere_password} = (defined($self->{option_results}->{vsphere_password})) ? shift(@{$self->{option_results}->{vsphere_password}}) : undef;
-
+    $self->{sampling_period} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{sampling_period}}) : undef;
+    $self->{time_shift} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{time_shift}}) : 0;
+    
     $self->{connector_port} = 5700 if ($self->{connector_port} eq '');
     $self->{container} = 'default' if ($self->{container} eq '');
     if (!defined($self->{connector_hostname}) || $self->{connector_hostname} eq '') {
@@ -198,6 +202,8 @@ sub run {
     $self->{json_send}->{vsphere_address} = $self->{vsphere_address};
     $self->{json_send}->{vsphere_username} = $self->{vsphere_username};
     $self->{json_send}->{vsphere_password} = $self->{vsphere_password};
+    $self->{json_send}->{sampling_period} = $self->{sampling_period};
+    $self->{json_send}->{time_shift} = $self->{time_shift};
     
     # Init
     my $context = zmq_init();
@@ -287,6 +293,15 @@ Password of vpshere/ESX connection (with --vsphere-address).
 =item B<--timeout>
 
 Set global execution timeout (Default: 50)
+
+=item B<--sampling-period>
+
+Choose the sampling period (can change the default sampling for counters).
+Should be not different than 300 or 20.
+
+=item B<--time-shift>
+
+Can shift the time. We the following option you can average X counters values (default: 0).
 
 =back
 

@@ -100,7 +100,8 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance: %s, location: %s, type: %s, output watts: %s, state: %s, configuration error: %s]",
                                     $instance, $result->{powerSupplyStatus}, $instance, 
-                                    $result->{powerSupplyLocationName}, $result->{powerSupplyType}, $result->{powerSupplyOutputWatts},
+                                    $result->{powerSupplyLocationName}, $result->{powerSupplyType}, 
+                                    defined($result->{powerSupplyOutputWatts}) ? $result->{powerSupplyOutputWatts} : '-',
                                     $result2->{powerSupplySensorState}, $result2->{powerSupplyConfigurationErrorType}
                                     ));
         my $exit = $self->get_severity(section => 'psu', value => $result->{powerSupplyStatus});
