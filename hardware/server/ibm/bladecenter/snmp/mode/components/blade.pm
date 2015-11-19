@@ -77,7 +77,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeSystemStatusEntry}, instance => $instance);
         
         next if ($self->check_exclude(section => 'blade', instance => $result->{bladeId}));
-        if ($result->{bladeExists} =~ /No/i) {
+        if ($result->{bladeExists} =~ /false/i) {
             $self->{output}->output_add(long_msg => "skipping blade '" . $instance . "' : not exits"); 
             next;
         }

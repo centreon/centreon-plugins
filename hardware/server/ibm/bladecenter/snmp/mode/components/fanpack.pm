@@ -60,7 +60,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanPackEntry}, instance => $instance);
         
-        if ($result->{fanPackExists} =~ /No/i) {
+        if ($result->{fanPackExists} =~ /false/i) {
             $self->{output}->output_add(long_msg => "skipping fanpack '" . $instance . "' : not exits"); 
             next;
         }
