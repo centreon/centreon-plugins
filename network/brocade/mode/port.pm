@@ -74,8 +74,8 @@ sub new {
     $options{options}->add_options(arguments =
 				{
 				"threshold-overload:s@" => { name => 'threshold_overload' }, 
-				"warning:s"		  		=> { name => 'warning' },
-				"critical:s"		  	=> { name => 'critical' },
+				"warning:s"  		=> { name => 'warning' },
+				"critical:s	  	=> { name => 'critical' },
         			"filter:s@"             => { name => 'filter' },
                 		});
     return $self;
