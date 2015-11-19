@@ -54,7 +54,7 @@ sub check {
 
     my @sensors = ('mm', 'frontpanel', 'frontpanel2');
     my $label = 'bladecenter';
-    if (defined()) {
+    if (defined($self->{results}->{$oid_temperature}->{$oid_rearLEDCardTempMax})) {
         @sensors = ('ambient');
         $label = 'pureflex';
     }
