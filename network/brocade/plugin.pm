@@ -33,6 +33,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'cpu'              => 'network::brocade::mode::cpu',
+                         'port'             => 'network::brocade::mode::port',
                          'hardware'         => 'network::brocade::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
