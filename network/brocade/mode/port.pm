@@ -60,8 +60,8 @@ my $thresholds = {
         ['noSync', 'WARNING'],
         ['inSync', 'OK'],
         ['portFault', 'CRITICAL'],
-		['diagFault', 'WARNING' ],
-		['lockref', 'CRITICAL' ]
+	['diagFault', 'WARNING' ],
+	['lockref', 'CRITICAL' ]
     ],
 };
 
@@ -72,12 +72,12 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =
-					{
-					"threshold-overload:s@" => { name => 'threshold_overload' }, 
-					"warning:s"		  		=> { name => 'warning' },
-					"critical:s"		  	=> { name => 'critical' },
-                    "filter:s@"             => { name => 'filter' },
-                    });
+				{
+				"threshold-overload:s@" => { name => 'threshold_overload' }, 
+				"warning:s"		  		=> { name => 'warning' },
+				"critical:s"		  	=> { name => 'critical' },
+        			"filter:s@"             => { name => 'filter' },
+                		});
     return $self;
 }
 
@@ -132,11 +132,11 @@ sub run {
     my $oid_swFwFabricWatchLicense = '.1.3.6.1.4.1.1588.2.1.1.1.10.1.0';
 
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [{ oid => $oid_swFcPortEntry },
-																  { oid => $oid_swFcPortOperState },
-																  { oid =>  $oid_swFcPortPhysicalState },
-																  { oid =>  $oid_swFcPortDescription },
+								  { oid => $oid_swFcPortOperState },
+								  { oid =>  $oid_swFcPortPhysicalState },
+								  { oid =>  $oid_swFcPortDescription },
                                                                   { oid =>  $oid_swFcPortTemperature }],
-														 nothing_quit => 1);
+							 nothing_quit => 1);
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_swFcPortTempThreshold, $oid_swFwFabricWatchLicense],
 					 nothing_quit => 1);
