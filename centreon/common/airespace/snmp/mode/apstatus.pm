@@ -161,7 +161,7 @@ sub run {
     $self->manage_selection();
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{ap_selected}}) == 1) {
+    if (scalar(keys %{$self->{ap_selected}}) <= 1) {
         $multiple = 0;
     }
     
@@ -234,15 +234,19 @@ my $mapping3 = {
     bsnAPAdminStatus        => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => \%map_admin_status },
 };
 
+my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{ap_selected} = {};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{bsnAPName}->{oid} },
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
+                                                                   { oid => $mapping->{bsnAPName}->{oid} },
                                                                    { oid => $mapping2->{bsnAPOperationStatus}->{oid} },
                                                                    { oid => $mapping3->{bsnAPAdminStatus}->{oid} },
                                                                  ],
                                                          nothing_quit => 1);
+    $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnAPName}->{oid} }}) {
         $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
         my $instance = $1;
@@ -251,7 +255,7 @@ sub manage_selection {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{bsnAPName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{bsnAPName} . "': no matching filter.");
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{bsnAPName} . "': no matching filter.", debug => 1);
             next;
         }
         
@@ -260,8 +264,8 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{ap_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'No AP associated (can be: slave wireless controller or your filter)');
     }
 }
 

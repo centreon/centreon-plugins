@@ -43,7 +43,7 @@ sub new {
                                                 'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
                                                 'list-sqlmode'   => { name => 'list_sqlmode' },
                                                 'multiple'       => { name => 'multiple' },
-                                                'sanity-options' => { name => 'sanity_options' },
+                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -85,9 +85,7 @@ sub init {
     if (defined($self->{list_sqlmode})) {
         $self->list_sqlmode();
     }
-    if (defined($self->{sanity_options})) {
-        $self->{options}->set_sanity();
-    }
+    $self->{options}->set_sanity();
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -260,10 +258,6 @@ Check minimal version of mode. If not, unknown error.
 =item B<--version>
 
 Display plugin version.
-
-=item B<--sanity-options>
-
-Check unknown options (for debug purpose).
 
 =item B<--sqlmode>
 

@@ -29,7 +29,9 @@ use FindBin;
 use Pod::Usage;
 use Pod::Find qw(pod_where);
 
-my %handlers = ('DIE' => {});
+my %handlers = (DIE => {});
+
+my $global_version = 20151110;
 
 sub new {
     my $class = shift;
@@ -242,6 +244,10 @@ sub run {
         $self->{output}->option_exit();
     }
     if (!defined($self->{plugin}) || $self->{plugin} eq '') {
+        if (defined($self->{version})) {
+            $self->{output}->add_option_msg(short_msg => "Global Version: " . $global_version);
+            $self->{output}->option_exit(nolabel => 1);
+        }
         $self->{output}->add_option_msg(short_msg => "Need to specify '--plugin' option.");
         $self->{output}->option_exit();
     }
@@ -285,7 +291,7 @@ Print available plugins.
 
 =item B<--version>
 
-Print plugin version.
+Print global version.
 
 =item B<--help>
 

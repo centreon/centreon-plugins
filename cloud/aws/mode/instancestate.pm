@@ -51,7 +51,7 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            "state:s" => { name => 'state', default => 'all' },
+            "state:s"                => { name => 'state', default => 'all' },
             "no-includeallinstances" => { name => 'includeallinstances' },
             "exclude:s"              => { name => 'exclude' },
             "instanceid:s"           => { name => 'instanceid' }
@@ -62,45 +62,43 @@ sub new {
 }
 
 sub check_options {
-    my ( $self, %options ) = @_;
+    my ($self, %options) = @_;
     $self->SUPER::init(%options);
 }
 
 sub manage_selection {
-    my ( $self, %options ) = @_;
+    my ($self, %options) = @_;
     
-    my ( @result, $awsapi );
+    my (@result, $awsapi);
 
     # Getting some parameters
     # includeallinstances
-    if ( defined( $self->{option_results}->{includeallinstances} ) ) {
-        $self->{option_results}->{includeallinstances} =  JSON::false;
-    }
-    else {
+    if (defined($self->{option_results}->{includeallinstances})) {
+        $self->{option_results}->{includeallinstances} = JSON::false;
+    } else {
         $self->{option_results}->{includeallinstances} = JSON::true;
     }
 
     # states
-    if ( $self->{option_results}->{state} eq 'all' ) {
-        @{ $self->{option_results}->{statetab} } = keys(%EC2_instance_states);
-    }
-    else {
-        @{ $self->{option_results}->{statetab} } = split( /,/, $self->{option_results}->{state} );
-        foreach my $curstate ( @{ $self->{option_results}->{statetab} } ) {
-            if ( !grep { /^$curstate$/ } keys(%EC2_instance_states) ) {
-                $self->{output}->add_option_msg( severity  => 'UNKNOWN', short_msg => "The state doesn't exist." );
+    if ($self->{option_results}->{state} eq 'all') {
+        @{$self->{option_results}->{statetab} } = keys %EC2_instance_states;
+    } else {
+        @{$self->{option_results}->{statetab}} = split /,/, $self->{option_results}->{state};
+        foreach my $curstate (@{$self->{option_results}->{statetab}}) {
+            if (!grep { /^$curstate$/ } keys(%EC2_instance_states)) {
+                $self->{output}->add_option_msg(severity  => 'UNKNOWN', short_msg => "The state doesn't exist.");
                 $self->{output}->option_exit();
             }
         }
     }
 
     # exclusions
-    if ( defined( $self->{option_results}->{exclude} ) ) {
-        my @excludetab = split( /,/, $self->{option_results}->{exclude} );
+    if (defined($self->{option_results}->{exclude})) {
+        my @excludetab = split /,/, $self->{option_results}->{exclude};
         my %array1 = map { $_ => 1 } @excludetab;
-        @{ $self->{option_results}->{statetab} } = grep { not $array1{$_} } @{ $self->{option_results}->{statetab} };
+        @{$self->{option_results}->{statetab}} = grep { not $array1{$_} } @{$self->{option_results}->{statetab}};
     }
-    my $states = join(',',@{ $self->{option_results}->{statetab} });
+    my $states = join(',',@{$self->{option_results}->{statetab}});
     
     # Getting data from AWS
     # Building JSON
@@ -114,9 +112,9 @@ sub manage_selection {
             }],
     };
     # InstanceIds
-    if ( defined( $self->{option_results}->{instanceid} ) ) {
-        my @InstanceIds = split(/,/,$self->{option_results}->{instanceid});
-        @{$apiRequest->{json}{'InstanceIds'}} = @InstanceIds;
+    if (defined($self->{option_results}->{instanceid})) {
+        my @InstanceIds = split(/,/, $self->{option_results}->{instanceid});
+        @{$apiRequest->{json}{InstanceIds}} = @InstanceIds;
     }
 
     # Requesting API
@@ -124,22 +122,22 @@ sub manage_selection {
     $self->{command_return} = $awsapi->execReq($apiRequest);
         
     # Compute data
-    $self->{option_results}->{instancecount}->{'total'} = '0';
-    foreach my $curstate ( @{ $self->{option_results}->{statetab} } ) {
-        $self->{option_results}->{instancecount}->{$curstate} = '0';
+    $self->{option_results}->{instancecount}->{total} = 0;
+    foreach my $curstate (@{$self->{option_results}->{statetab}}) {
+        $self->{option_results}->{instancecount}->{$curstate} = 0;
     }
-    foreach my $l ( @{ $self->{command_return}->{InstanceStatuses} } ) {
-        $self->{result}->{instance}->{ $l->{InstanceId} } = $l->{InstanceState}->{Name};
+    foreach my $l (@{$self->{command_return}->{InstanceStatuses}}) {
+        $self->{result}->{instance}->{$l->{InstanceId}} = $l->{InstanceState}->{Name};
 
         # long output for each instance
-        $self->{output}->output_add( long_msg => "'" . $l->{InstanceId} . "' [state = " . $l->{InstanceState}->{Name} . ']' );
+        $self->{output}->output_add(long_msg => "'" . $l->{InstanceId} . "' [state = " . $l->{InstanceState}->{Name} . ']');
 
-        foreach my $curstate ( @{ $self->{option_results}->{statetab} } ) {
-            if ( $l->{InstanceState}->{Name} eq $curstate ) {
+        foreach my $curstate (@{$self->{option_results}->{statetab}}) {
+            if ($l->{InstanceState}->{Name} eq $curstate) {
                 $self->{option_results}->{instancecount}->{$curstate}++;
             }
         }
-        $self->{option_results}->{instancecount}->{'total'}++;
+        $self->{option_results}->{instancecount}->{total}++;
     }
 }
 
@@ -158,16 +156,16 @@ sub run {
         value => $self->{option_results}->{instancecount}->{'total'},
     );
 
-    foreach my $curstate ( @{ $self->{option_results}->{statetab} } ) {
+    foreach my $curstate (@{$self->{option_results}->{statetab}}) {
         $self->{output}->perfdata_add(
             label => $curstate,
             value => $self->{option_results}->{instancecount}->{$curstate},
         );
 
         # Most critical state
-        if ( $self->{option_results}->{instancecount}->{$curstate} != '0' ) {
+        if ($self->{option_results}->{instancecount}->{$curstate} != 0) {
             $exit_code = $EC2_instance_states{$curstate};
-            $exit_code = $self->{output}->get_most_critical( status => [ $exit_code, $old_status ] );
+            $exit_code = $self->{output}->get_most_critical(status => [ $exit_code, $old_status ]);
             $old_status = $exit_code;
         }
     }
@@ -175,7 +173,7 @@ sub run {
     # Output message
     $self->{output}->output_add(
         severity  => $exit_code,
-        short_msg => sprintf( "Total instances: %s", $self->{option_results}->{instancecount}->{'total'} )
+        short_msg => sprintf("Total instances: %s", $self->{option_results}->{instancecount}->{total})
     );
 
     $self->{output}->display();

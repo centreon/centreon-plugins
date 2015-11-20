@@ -46,35 +46,25 @@ sub new
     return $self;
 }
 
-sub check_options
-{
+sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 }
 
-sub api_request
-{
+sub api_request {
     my ($self, %options) = @_;
-    @{$self->{option_results}->{servicetab}} =
-        split(/,/, $self->{option_results}->{service});
-    foreach my $service (@{$self->{option_results}->{servicetab}})
-    {
-        $self->{result}->{count}->{$service} = '0';
-        if ($service eq 'EC2')
-        {
+
+    @{$self->{option_results}->{servicetab}} = split( /,/, $self->{option_results}->{service} );
+    foreach my $service (@{$self->{option_results}->{servicetab}}) {
+        $self->{result}->{count}->{$service} = 0;
+        if ($service eq 'EC2') {
             $self->EC2(%options);
-        }
-        elsif ($service eq 'S3')
-        {
+        } elsif ($service eq 'S3') {
             $self->S3(%options);
-        }
-        elsif ($service eq 'RDS')
-        {
+        } elsif ($service eq 'RDS') {
             $self->RDS(%options);
-        }
-        else
-        {
-            $self->{output}->add_option_msg(short_msg => "Service $service doesn't exists");
+        } else {
+            $self->{output}->add_option_msg(short_msg => "Service $service doesn't exists" );
             $self->{output}->option_exit();
         }
     }
@@ -104,19 +94,18 @@ sub EC2
     $self->{command_return} = $awsapi->execReq($apiRequest);
 
     # Compute data
-    foreach my $instance (@{$self->{command_return}->{Reservations}})
-    {
-        foreach my $tags (@{$instance->{Instances}[0]->{Tags}})
-        {
-            if ($tags->{Key} eq 'Name')
-            {
+    foreach my $instance (@{$self->{command_return}->{Reservations}}) {
+        foreach my $tags (@{$instance->{Instances}[0]->{Tags}}) {
+            if ($tags->{Key} eq 'Name') {
                 $instance->{Instances}[0]->{Name} = $tags->{Value};
             }
         }
-        $self->{result}->{'EC2'}->{$instance->{Instances}[0]->{InstanceId}} = {
-            'State' => $instance->{Instances}[0]->{State}->{Name},
-            'Name'  => $instance->{Instances}[0]->{Name}
-        };
+        $self->{result}->{'EC2'}->{$instance->{Instances}[0]->{InstanceId}} =
+          {
+            State => $instance->{Instances}[0]->{State}->{Name},
+            Name   => $instance->{Instances}[0]->{Name}
+          };
+
         $self->{result}->{count}->{'EC2'}++;
     }
 }
@@ -136,11 +125,10 @@ sub S3
     $self->{command_return} = $awsapi->execReq($apiRequest);
 
     # Exec command
-    foreach my $line (@{$self->{command_return}})
-    {
-        my ($date, $time, $name) = split(/ /, $line);
+    foreach my $line (@{$self->{command_return}}) {
+        my ($date, $time, $name) = split / /, $line;
         my $creationdate = $date . " " . $time;
-        push(@buckets, {Name => $name, CreationDate => $creationdate});
+        push(@buckets, { Name => $name, CreationDate => $creationdate });
     }
 
     # Compute data
@@ -165,31 +153,28 @@ sub RDS
     $self->{command_return} = $awsapi->execReq($apiRequest);
 
     # Compute data
-    foreach my $dbinstance (@{$self->{command_return}->{DBInstances}})
-    {
+    foreach my $dbinstance (@{$self->{command_return}->{DBInstances}}) {
         $self->{result}->{'RDS'}->{$dbinstance->{DBInstanceIdentifier}} = {
-            'State' => $dbinstance->{DBInstanceStatus},
-            'Name'  => $dbinstance->{DBInstanceIdentifier}
+            State => $dbinstance->{DBInstanceStatus},
+            Name  => $dbinstance->{DBInstanceIdentifier}
         };
-        $self->{result}->{count}->{'RDS'}++;
+        $self->{result}->{count}->{RDS}++;
     }
 }
 
-sub disco_format
-{
+sub disco_format {
     my ($self, %options) = @_;
-    my $names = ['name', 'id', 'state', 'service'];
-    $self->{output}->add_disco_format(elements => $names);
+
+    my $names = [ 'name', 'id', 'state', 'service' ];
+    $self->{output}->add_disco_format( elements => $names );
 }
 
 sub disco_show
 {
     my ($self, %options) = @_;
     $self->api_request(%options);
-    foreach my $service (@Disco_service_tab)
-    {
-        foreach my $device (keys %{$self->{result}->{$service}})
-        {
+    foreach my $service (@Disco_service_tab) {
+        foreach my $device (keys %{$self->{result}->{$service}}) {
             $self->{output}->add_disco_entry(
                 name    => $self->{result}->{$service}->{$device}->{Name},
                 id      => $device,
@@ -206,15 +191,15 @@ sub run
     $self->api_request(%options);
 
     # Send formated data to Centreon
-    foreach my $service (@{$self->{option_results}->{servicetab}})
-    {
+    foreach my $service (@{$self->{option_results}->{servicetab}}) {
         $self->{output}->output_add(long_msg => sprintf("AWS service: %s", $service));
-        foreach my $device (keys %{$self->{result}->{$service}})
-        {
+        foreach my $device (keys %{$self->{result}->{$service}}) {
             my $output = $device . " [";
-            foreach my $value (sort(keys %{$self->{result}->{$service}->{$device}}))
-            {
-                $output = $output . $value . " = " . $self->{result}->{$service}->{$device}->{$value} . ", ";
+            foreach my $value (sort(keys %{$self->{result}->{$service}->{$device}})) {
+                $output =
+                    $output 
+                  . $value . " = "
+                  . $self->{result}->{$service}->{$device}->{$value} . ", ";
             }
             $output =~ s/, $//;
             $output = $output . "]";

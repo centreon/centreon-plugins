@@ -73,6 +73,26 @@ sub check_options {
     }
 }
 
+sub check_nexus_cpu {
+    my ($self, %options) = @_;
+    
+    if (!defined($self->{results}->{$options{oid}}->{$options{oid} . '.0'})) {
+        return 0;
+    }
+    
+    my $cpu = $self->{results}->{$options{oid}}->{$options{oid} . '.0'};
+    my $exit = $self->{perfdata}->threshold_check(value => $cpu, 
+                                                  threshold => [ { label => 'crit5m', exit_litteral => 'critical' }, { label => 'warn5m', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("CPU Usage : %s %%", $cpu));
+    $self->{output}->perfdata_add(label => "cpu", unit => '%',
+                                  value => $cpu,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
+                                  min => 0, max => 100);
+    return 1;
+}
+
 sub check_table_cpu {
     my ($self, %options) = @_;
     
@@ -113,21 +133,21 @@ sub check_table_cpu {
         }
         
         if (defined($cpu5sec)) {
-            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5s",
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5s", unit => '%',
                                           value => $cpu5sec,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5s'),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5s'),
                                           min => 0, max => 100);
         }
         if (defined($cpu1min)) {
-            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_1m",
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_1m", unit => '%',
                                           value => $cpu1min,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1m'),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1m'),
                                           min => 0, max => 100);
         }
         if (defined($cpu5min)) {
-            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5m",
+            $self->{output}->perfdata_add(label => "cpu_" . $instance . "_5m", unit => '%',
                                           value => $cpu5min,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5m'),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5m'),
@@ -157,14 +177,18 @@ sub run {
     my $oid_busyPer = '.1.3.6.1.4.1.9.2.1.56'; # .0 in reality
     my $oid_avgBusy1 = '.1.3.6.1.4.1.9.2.1.57'; # .0 in reality
     my $oid_avgBusy5 = '.1.3.6.1.4.1.9.2.1.58'; # .0 in reality
+    # Cisco Nexus
+    my $oid_cseSysCPUUtilization = '.1.3.6.1.4.1.9.9.305.1.1.1'; # .0 in reality
     
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
                                                             { oid => $oid_cpmCPUTotalEntry,
                                                               start => $oid_cpmCPUTotal5sec, end => $oid_cpmCPUTotal5minRev
                                                             },
                                                             { oid => $oid_lcpu,
-                                                              start => $oid_busyPer, end => $oid_avgBusy5 }],
-                                                   nothing_quit => 1);
+                                                              start => $oid_busyPer, end => $oid_avgBusy5 },
+                                                            { oid => $oid_cseSysCPUUtilization },
+                                                         ],
+                                                         nothing_quit => 1);
     
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All CPUs are ok.');
@@ -173,8 +197,10 @@ sub run {
         && !$self->check_table_cpu(entry => $oid_cpmCPUTotalEntry, sec5 => $oid_cpmCPUTotal5sec, min1 => $oid_cpmCPUTotal1min, min5 => $oid_cpmCPUTotal5min)
         && !$self->check_table_cpu(entry => $oid_lcpu, sec5 => $oid_busyPer, min1 => $oid_avgBusy1, min5 => $oid_avgBusy5)
        ) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf("Cannot find CPU informations."));
+        if (!$self->check_nexus_cpu(oid => $oid_cseSysCPUUtilization)) {
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => sprintf("Cannot find CPU informations."));
+        }
     }
     
     $self->{output}->display();
@@ -187,17 +213,19 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (CISCO-PROCESS-MIB).
+Check cpu usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
 
 =over 8
 
 =item B<--warning>
 
 Threshold warning in percent (5s,1min,5min).
+Used 5min threshold when you have only 'cpu' metric.
 
 =item B<--critical>
 
 Threshold critical in percent (5s,1min,5min).
+Used 5min threshold when you have only 'cpu' metric.
 
 =back
 

@@ -50,29 +50,6 @@ my $thresholds = {
     ],
 };
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default
-
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    foreach (@{$thresholds->{$options{section}}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-
-    return $status;
-}
-
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -127,8 +104,7 @@ sub run {
 
     my $result = $self->{snmp}->get_table(oid => $oid_bgpPeerTable, nothing_quit => 1);
     
-    if (defined $self->{option_results}->{peer}) {
-
+    if (defined($self->{option_results}->{peer})) {
         my $bgpPeerState = $result->{$oid_bgpPeerState . '.' . $self->{option_results}->{peer}};
         my $bgpPeerAdminStatus = $result->{$oid_bgpPeerAdminStatus . '.' . $self->{option_results}->{peer}};
         my $bgpPeerRemoteAs = $result->{$oid_bgpPeerRemoteAs . '.' . $self->{option_results}->{peer}};
@@ -136,29 +112,28 @@ sub run {
         my $bgpLocalInfos = $result->{$oid_bgpPeerLocalAddr . '.' . $self->{option_results}->{peer}} . ':' . $result->{$oid_bgpPeerLocalPort . '.' . $self->{option_results}->{peer}};
         my $bgpRemoteInfos = $result->{$oid_bgpPeerRemoteAddr. '.' . $self->{option_results}->{peer}} . ':' . $result->{$oid_bgpPeerRemotePort . '.' . $self->{option_results}->{peer}};
 
-
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",                                                              $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}                                                             , $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
-
+                                    short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",  
+                                                         $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState},
+                                                         $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
         if ($bgpPeerAdminStatus < 2) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("Peer '%s' AdminState is '%s' Remote AS: %s Remote Addr: %s",
                                                              $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $bgpPeerRemoteAs, $bgpRemoteInfos)
                                         );
-        } elsif ($bgpPeerState != 6) {
+        } else {
             my $exit = $self->get_severity(section => 'peers', value => $map_peer_state{$bgpPeerState});
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",                                                             $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
-
-        }
-   
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]", 
+                                                    $self->{option_results}->{peer}, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
+            }
+        }   
     } else {
-
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("All BGP peers are in an OK state"));
 
         foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-     
             next if ($key !~ /^$oid_bgpPeerState\.(.*)$/);
             my $instance = $1;
             next if ($instance eq '0.0.0.0');
@@ -171,26 +146,48 @@ sub run {
             my $bgpRemoteInfos = $result->{$oid_bgpPeerRemoteAddr. '.' . $instance} . ':' . $result->{$oid_bgpPeerRemotePort . '.' . $instance};
         
             if ($bgpPeerAdminStatus < 2) {
-		$self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Peer '%s' AdminState is '%s' Remote AS: %s Remote Addr: %s \n",
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("Peer '%s' AdminState is '%s' Remote AS: %s Remote Addr: %s",
                                                                  $instance, $map_admin_state{$bgpPeerAdminStatus}, $bgpPeerRemoteAs, 
-								 $bgpRemoteInfos));
-            } elsif ($bgpPeerState != 6) {
+                                                                 $bgpRemoteInfos));
+            } else {
                 my $exit = $self->get_severity(section => 'peers', value => $map_peer_state{$bgpPeerState});
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg =>  sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s] \n",                                                             $instance, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
-
+                if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                    $self->{output}->output_add(severity => $exit,
+                                                short_msg => sprintf("Peer %s AdminState=%s Connection=%s [Remote Addr:%s AS:%d] [Last Update %d s]",
+                                                                  $instance, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpRemoteInfos, $bgpPeerRemoteAs, $bgpPeerInUpdateElpasedTime));
+                }
             }
 
-            $self->{output}->output_add(long_msg => sprintf("Peer:%s Local:%s Remote:%s AS:%d AdminState:'%s' Connection:'%s' Last Update:%d sec \n", $instance, $bgpLocalInfos, $bgpRemoteInfos, $bgpPeerRemoteAs, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpPeerInUpdateElpasedTime));
-
-
+            $self->{output}->output_add(long_msg => sprintf("Peer:%s Local:%s Remote:%s AS:%d AdminState:'%s' Connection:'%s' Last Update:%d sec", 
+                                                            $instance, $bgpLocalInfos, $bgpRemoteInfos, $bgpPeerRemoteAs, $map_admin_state{$bgpPeerAdminStatus}, $map_peer_state{$bgpPeerState}, $bgpPeerInUpdateElpasedTime));
         }
-
     }
     
     $self->{output}->display();
     $self->{output}->exit();       
+}
+
+sub get_severity {
+    my ($self, %options) = @_;
+    my $status = 'UNKNOWN'; # default
+
+    if (defined($self->{overload_th}->{$options{section}})) {
+        foreach (@{$self->{overload_th}->{$options{section}}}) {
+            if ($options{value} =~ /$_->{filter}/i) {
+                $status = $_->{status};
+                return $status;
+            }
+        }
+    }
+    foreach (@{$thresholds->{$options{section}}}) {
+        if ($options{value} =~ /$$_[0]/i) {
+            $status = $$_[1];
+            return $status;
+        }
+    }
+
+    return $status;
 }
 
 1; 
