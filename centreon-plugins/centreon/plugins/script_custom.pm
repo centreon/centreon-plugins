@@ -42,7 +42,7 @@ sub new {
                                                 'custommode:s'    => { name => 'custommode_name' },
                                                 'list-custommode' => { name => 'list_custommode' },
                                                 'multiple'        => { name => 'multiple' },
-                                                'sanity-options'  => { name => 'sanity_options' },
+                                                'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -66,6 +66,15 @@ sub new {
     return $self;
 }
 
+sub load_custom_mode {
+    my ($self, %options) = @_;
+    
+    $self->is_custommode(custommode => $self->{custommode_name});
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
+                                           error_msg => "Cannot load module --custommode.");
+    $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+}
+
 sub init {
     my ($self, %options) = @_;
     # $options{version} = string version
@@ -84,18 +93,16 @@ sub init {
     if (defined($self->{list_custommode})) {
         $self->list_custommode();
     }
-    if (defined($self->{sanity_options})) {
-        $self->{options}->set_sanity();
-    }
+    $self->{options}->set_sanity();
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
 
     if (defined($self->{custommode_name}) && $self->{custommode_name} ne '') {
-        $self->is_custommode(custommode => $self->{custommode_name});
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
-                                               error_msg => "Cannot load module --custommode.");
-        $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+        $self->load_custom_mode();
+    } elsif (scalar(keys %{$self->{custom_modes}}) == 1) {
+        $self->{custommode_name} = (keys(%{$self->{custom_modes}}))[0];
+        $self->load_custom_mode();
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--custommode'.");
         $self->{output}->option_exit();
@@ -254,10 +261,6 @@ Check minimal version of mode. If not, unknown error.
 =item B<--version>
 
 Display plugin version.
-
-=item B<--sanity-options>
-
-Check unknown options (for debug purpose).
 
 =item B<--custommode>
 

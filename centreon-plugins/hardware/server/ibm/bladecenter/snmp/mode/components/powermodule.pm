@@ -35,7 +35,7 @@ my %map_pw_exists = (
     1 => 'true',
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+# In MIB 'mmblade.mib' and 'cme.mib'
 my $mapping = {
     powerModuleExists => { oid => '.1.3.6.1.4.1.2.3.51.2.2.4.1.1.2', map => \%map_pw_exists },
     powerModuleState => { oid => '.1.3.6.1.4.1.2.3.51.2.2.4.1.1.3', map => \%map_pw_state  },

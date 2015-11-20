@@ -87,14 +87,13 @@ sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-
+    
     my $oid_ibm3200StatusGlobalStatus = '.1.3.6.1.4.1.2.6.211.2.1.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_ibm3200StatusGlobalStatus], nothing_quit => 1);
     
     $self->{output}->output_add(severity => $self->get_severity(value => $result->{$oid_ibm3200StatusGlobalStatus}),
                                 short_msg => sprintf("Overall global status is '%s'.", 
                                                 ${$states{$result->{$oid_ibm3200StatusGlobalStatus}}}[0]));
-
     $self->{output}->display();
     $self->{output}->exit();
 }

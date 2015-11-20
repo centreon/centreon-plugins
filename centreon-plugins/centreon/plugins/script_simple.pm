@@ -39,7 +39,7 @@ sub new {
                                                 'dyn-mode:s'     => { name => 'dynmode_name' },
                                                 'list-mode'      => { name => 'list_mode' },
                                                 'mode-version:s' => { name => 'mode_version' },
-                                                'sanity-options' => { name => 'sanity_options' },
+                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
                                                 }
                                   );
     $self->{version} = '1.0';
@@ -74,9 +74,7 @@ sub init {
     if (defined($self->{list_mode})) {
         $self->list_mode();
     }
-    if (defined($self->{sanity_options})) {
-        $self->{options}->set_sanity();
-    }
+    $self->{options}->set_sanity();
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -199,10 +197,6 @@ Check minimal version of mode. If not, unknown error.
 =item B<--version>
 
 Display plugin version.
-
-=item B<--sanity-options>
-
-Check unknown options (for debug purpose).
 
 =back
 

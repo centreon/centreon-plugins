@@ -98,8 +98,12 @@ sub run {
                                 
     $self->{output}->perfdata_add(label => "time", unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
+                                  min => 0);
+    $self->{output}->perfdata_add(label => "entries",
+                                  value => $num_entries,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();

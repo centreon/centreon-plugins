@@ -557,15 +557,6 @@ The mapping between 'snmpwalk' options and "centreon-plugins" options:
 Miscellaneous
 -------------
 
-I use an option but it doesn't seem to work
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Before opening a ticket on the github, please use the option ``--sanity-options``. It checks if you have misspell an option:
-::
-
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
-  Unknown option: regex
-
 I get the error: "UNKNOWN: Need to specify '--custommode'."
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
