@@ -50,6 +50,7 @@ sub new {
                       "password:s@"        => { name => 'password' },
                       "connect-options:s@" => { name => 'connect_options' },
                       "sql-errors-exit:s"  => { name => 'sql_errors_exit', default => 'unknown' },
+                      "timeout:i"          => { name => 'timeout', default => '10' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -110,6 +111,7 @@ sub check_options {
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
+    $self->{timeout} = $self->{option_results}->{timeout};
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
@@ -169,12 +171,15 @@ sub connect {
         }
     }
     
-    $self->{instance} = DBI->connect(
-        "DBI:". $self->{data_source},
-        $self->{username},
-        $self->{password},
-        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
-    );
+    local $SIG{ALRM} = sub { die "Timeout \n" };
+    eval {
+      alarm($self->{timeout});
+      $self->{instance} = DBI->connect(
+         "DBI:". $self->{data_source},
+         $self->{username},
+         $self->{password},
+         { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} });
+    };
 
     if (!defined($self->{instance})) {
         my $err_msg = sprintf("Cannot connect: %s", defined($DBI::errstr) ? $DBI::errstr : "(no error string)");
