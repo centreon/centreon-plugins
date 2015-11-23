@@ -277,6 +277,10 @@ Format: name=value,name2=value2,...
 
 Exit code for DB Errors (default: unknown)
 
+=item B<--timeout>
+
+Timeout in seconds for DBI->connect()
+
 =back
 
 =head1 DESCRIPTION
