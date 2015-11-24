@@ -25,6 +25,8 @@ use warnings;
 use DBI;
 use Digest::MD5 qw(md5_hex);
 
+my %handlers = (ALRM => {} );
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -66,11 +68,29 @@ sub new {
     $self->{password} = undef;
     $self->{connect_options} = undef;
     $self->{connect_options_hash} = {};
-    
     # Sometimes, we need to set ENV
     $self->{env} = undef;
     
+    $self->set_signal_handlers();
     return $self;
+}
+
+sub set_signal_handlers {
+    my $self = shift;
+
+    $SIG{ALRM} = \&class_handle_ALRM;
+    $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
+}
+
+sub class_handle_ALRM {
+    foreach (keys %{$handlers{ALRM}}) {
+        &{$handlers{ALRM}->{$_}}();
+    }
+}
+
+sub handle_ALRM {
+    my $self = shift;
+    alarm(0);
 }
 
 # Method to manage multiples
@@ -112,6 +132,7 @@ sub check_options {
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     $self->{timeout} = $self->{option_results}->{timeout};
+    alarm($self->{timeout});
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
