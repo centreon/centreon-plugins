@@ -56,6 +56,11 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcPhysicalStatus}, instance => $instance);
         my $physical_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
+        if (!defined($physical_descr)) {
+            $self->{output}->output_add(long_msg => sprintf("skipped instance '%s': no description", $instance));
+            next;
+        }
+        
         next if ($self->check_exclude(section => 'physical', instance => $instance));
         
         $self->{components}->{physical}->{total}++;
