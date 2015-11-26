@@ -1217,6 +1217,13 @@ sub add_result_cast {
         }
     }
     
+    $self->{interface_selected}->{$options{instance}}->{iucast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{iucast};
+    $self->{interface_selected}->{$options{instance}}->{imcast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{imcast};
+    $self->{interface_selected}->{$options{instance}}->{ibcast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{ibcast};
+    $self->{interface_selected}->{$options{instance}}->{oucast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{oucast};
+    $self->{interface_selected}->{$options{instance}}->{omcast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{omcast};
+    $self->{interface_selected}->{$options{instance}}->{obcast} = 0 unless defined $self->{interface_selected}->{$options{instance}}->{obcast};
+    
     $self->{interface_selected}->{$options{instance}}->{total_in_packets} = $self->{interface_selected}->{$options{instance}}->{iucast} + $self->{interface_selected}->{$options{instance}}->{imcast} + $self->{interface_selected}->{$options{instance}}->{ibcast};
     $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
 }
