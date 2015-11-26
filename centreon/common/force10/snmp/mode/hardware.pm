@@ -161,7 +161,7 @@ sub run {
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
                                                    error_msg => "Cannot load module '$mod_name'.");
             my $func = $mod_name->can('load');
-            $func->(request => $snmp_request); 
+            $func->(request => $snmp_request);
         }
     }
     
