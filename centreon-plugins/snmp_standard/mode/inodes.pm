@@ -91,6 +91,11 @@ sub run {
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
+        if (!defined($result->{$oid_dskPercentNode . '.' . $_})) {
+            $self->{output}->output_add(long_msg => "Cannot usage for '" . $name_diskpath . "'", debug => 1);
+            next;
+        }
+        
         my $prct_used = $result->{$oid_dskPercentNode . '.' . $_};
         my $prct_free = 100 - $prct_used;
 
