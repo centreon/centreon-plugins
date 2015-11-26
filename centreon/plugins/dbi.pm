@@ -25,6 +25,8 @@ use warnings;
 use DBI;
 use Digest::MD5 qw(md5_hex);
 
+my %handlers = ( ALRM => {} );
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -50,6 +52,7 @@ sub new {
                       "password:s@"        => { name => 'password' },
                       "connect-options:s@" => { name => 'connect_options' },
                       "sql-errors-exit:s"  => { name => 'sql_errors_exit', default => 'unknown' },
+                      "timeout:i"          => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -69,7 +72,31 @@ sub new {
     # Sometimes, we need to set ENV
     $self->{env} = undef;
     
+    $self->set_signal_handlers();
+    
     return $self;
+}
+
+sub set_signal_handlers {
+    my $self = shift;
+
+    $SIG{ALRM} = \&class_handle_ALRM;
+    $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
+}
+
+sub class_handle_ALRM {
+    foreach (keys %{$handlers{ALRM}}) {
+        &{$handlers{ALRM}->{$_}}();
+    }
+}
+
+sub handle_ALRM {
+    my $self = shift;
+    
+    $self->{output}->output_add(severity => $self->{sql_errors_exit},
+                                short_msg => "Timeout");
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 # Method to manage multiples
@@ -110,6 +137,12 @@ sub check_options {
     $self->{connect_options} = (defined($self->{option_results}->{connect_options})) ? shift(@{$self->{option_results}->{connect_options}}) : undef;
     $self->{env} = (defined($self->{option_results}->{env})) ? shift(@{$self->{option_results}->{env}}) : undef;
     $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
+    
+    $self->{timeout} = 10;
+    if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
+        $self->{option_results}->{timeout} > 0) {
+        $self->{timeout} = $self->{option_results}->{timeout};
+    }
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
@@ -169,12 +202,14 @@ sub connect {
         }
     }
     
+    alarm($self->{timeout}) if (defined($self->{timeout}));
     $self->{instance} = DBI->connect(
         "DBI:". $self->{data_source},
         $self->{username},
         $self->{password},
         { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
     );
+    alarm(0) if (defined($self->{timeout}));
 
     if (!defined($self->{instance})) {
         my $err_msg = sprintf("Cannot connect: %s", defined($DBI::errstr) ? $DBI::errstr : "(no error string)");
@@ -271,6 +306,10 @@ Format: name=value,name2=value2,...
 =item B<--sql-errors-exit>
 
 Exit code for DB Errors (default: unknown)
+
+=item B<--timeout>
+
+Timeout in seconds for connection
 
 =back
 
