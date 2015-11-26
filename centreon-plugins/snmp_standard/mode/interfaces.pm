@@ -1217,6 +1217,10 @@ sub add_result_cast {
         }
     }
     
+    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'omcast')) {
+        $self->{interface_selected}->{$_} = 0 if (!defined($self->{interface_selected}->{$_}));
+    }
+    
     $self->{interface_selected}->{$options{instance}}->{total_in_packets} = $self->{interface_selected}->{$options{instance}}->{iucast} + $self->{interface_selected}->{$options{instance}}->{imcast} + $self->{interface_selected}->{$options{instance}}->{ibcast};
     $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
 }
