@@ -1,4 +1,7 @@
 # centreon-plugins
+
+|downloads|
+
 “centreon-plugins” is a free and open source project to monitor systems. The project can be used with Centreon and all monitoring softwares compatible with Nagios plugins.
 
 You can monitor many systems:
