@@ -295,6 +295,8 @@ __END__
 =head1 MODE
 
 Check ESXi Hardware.
+Example: centreon_plugins.pl --plugin=apps::vmware::wsman::plugin --mode=hardware --hostname='XXX.XXX.XXX.XXX' 
+--wsman-username='XXXX' --wsman-password='XXXX'  --wsman-scheme=https --wsman-port=443 --verbose
 
 =over 8
 
