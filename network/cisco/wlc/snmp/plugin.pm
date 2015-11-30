@@ -37,6 +37,7 @@ sub new {
                          'ap-status'                => 'centreon::common::airespace::snmp::mode::apstatus',
                          'ap-users'                 => 'centreon::common::airespace::snmp::mode::apusers',
                          'cpu'                      => 'centreon::common::airespace::snmp::mode::cpu',
+                         'userbyssid'               => 'centreon::common::airespace::snmp::mode::userbyssid',
                          'hardware'         => 'centreon::common::airespace::snmp::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
