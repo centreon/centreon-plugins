@@ -312,8 +312,8 @@ sub request {
     
     ######
     # Check options
-    if (!defined($options{uri}) || !defined($options{wql_filter})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify wql_filter and uri options');
+    if (!defined($options{uri})) {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify uri option');
         $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
     }
     
@@ -328,10 +328,13 @@ sub request {
     
     ######
     # Filter/Enumerate
-    my $filter = new openwsman::Filter::()
+    my $filter;
+    if (defined($options{wql_filter})) {
+        $filter = new openwsman::Filter::()
                                         or $self->internal_exit(msg => 'Could not create filter');
-    $filter->wql($options{wql_filter});
-    
+        $filter->wql($options{wql_filter});
+    }
+
     my $result = $self->{client}->enumerate($client_options, $filter, $options{uri});
     return undef if ($self->handle_dialog_fault(result => $result, msg => 'Could not enumerate instances: ', dont_quit => $dont_quit));
 
