@@ -182,7 +182,7 @@ sub run {
         my @exits;
         foreach (keys %{$maps_counters}) {
             foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-                if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present}) {
+                if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} ne '' && $self->{counters_value}->{$instance}->{$_} != $maps_counters->{$_}->{no_present}) {
                     push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
                 }
             }
@@ -195,7 +195,7 @@ sub run {
         my $str_output = "Output Line '$instance_output' ";
         my $str_append = '';
         foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present});
+            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present} || $self->{counters_value}->{$instance}->{$_} eq '');
             
             $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
             $str_append = ', ';
