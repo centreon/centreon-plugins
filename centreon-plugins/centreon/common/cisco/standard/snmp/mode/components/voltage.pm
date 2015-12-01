@@ -77,8 +77,8 @@ sub check {
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{ciscoEnvMonVoltageStatusValue});
         if ($checked == 0) {
             my $warn_th = undef;
-            my $crit_th = (defined($result->{ciscoEnvMonVoltageThresholdLow}) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdLow}) : 0) . ':' . 
-                (defined($result->{ciscoEnvMonVoltageThresholdHigh}) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdHigh}) : '');
+            my $crit_th = ((defined($result->{ciscoEnvMonVoltageThresholdLow}) && $result->{ciscoEnvMonVoltageThresholdLow} =~ /\d/) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdLow} / 1000) : 0) . ':' . 
+                ((defined($result->{ciscoEnvMonVoltageThresholdHigh}) && $result->{ciscoEnvMonVoltageThresholdHigh} =~ /\d/) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdHigh} / 1000) : '');
             $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
