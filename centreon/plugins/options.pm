@@ -25,7 +25,7 @@ use Pod::Find qw(pod_where);
 use strict;
 use warnings;
 
-my $alternative = 0;
+my $alternative = 1;
 
 sub new {
     my $class = shift;
