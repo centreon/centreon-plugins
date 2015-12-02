@@ -24,10 +24,22 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
+use centreon::plugins::values;
 
-my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
-my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
+my $maps_counters = {
+    disk => {
+        '000_usage'   => {
+            set => {
+                key_values => [ { name => 'usage' }, { name => 'display' } ],
+                output_template => 'Used: %s %%', output_error_template => "%s",
+                perfdatas => [
+                    { label => 'used', value => 'usage_absolute', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            },
+        },
+    }
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -36,21 +48,29 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                {
                                   "name"                    => { name => 'use_name' },
                                   "diskpath:s"              => { name => 'diskpath' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "show-cache"              => { name => 'show_cache' },
                                 });
 
-    $self->{diskpath_id_selected} = [];
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    foreach my $key (('disk')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            my ($id, $name) = split /_/;
+            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                                               });
+            }
+            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+                                                      label => $name);
+            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
+        }
+    }
     
     return $self;
 }
@@ -58,151 +78,135 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
     
-    $self->{statefile_cache}->check_options(%options);
+    foreach my $key (('disk')) {
+        foreach (keys %{$maps_counters->{$key}}) {
+            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
+        }
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
 
     $self->manage_selection();
-
-    $self->{snmp}->load(oids => [$oid_dskPercentNode], instances => $self->{diskpath_id_selected});
-    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
-
-    if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All inode partitions are ok.');
+    
+    my $multiple = 1;
+    if (scalar(keys %{$self->{disk_selected}}) == 1) {
+        $multiple = 0;
     }
+    
+    if ($multiple == 1) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => 'All inode partitions are ok');
+    }
+    
+    foreach my $id (sort keys %{$self->{disk_selected}}) {     
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+        my @exits;
+        foreach (sort keys %{$maps_counters->{disk}}) {
+            my $obj = $maps_counters->{disk}->{$_}->{obj};
+            $obj->set(instance => $id);
+        
+            my ($value_check) = $obj->execute(values => $self->{disk_selected}->{$id});
 
-    foreach (sort @{$self->{diskpath_id_selected}}) {
-        my $name_diskpath = $self->get_display_value(id => $_);
+            if ($value_check != 0) {
+                $long_msg .= $long_msg_append . $obj->output_error();
+                $long_msg_append = ', ';
+                next;
+            }
+            my $exit2 = $obj->threshold_check();
+            push @exits, $exit2;
 
-        if (!defined($result->{$oid_dskPercentNode . '.' . $_})) {
-            $self->{output}->output_add(long_msg => "Cannot usage for '" . $name_diskpath . "'", debug => 1);
-            next;
+            my $output = $obj->output();
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            
+            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
+            
+            $obj->perfdata(extra_instance => $multiple);
+        }
+
+        $self->{output}->output_add(long_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
+        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $short_msg"
+                                        );
         }
         
-        my $prct_used = $result->{$oid_dskPercentNode . '.' . $_};
-        my $prct_free = 100 - $prct_used;
-
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-        $self->{output}->output_add(long_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name_diskpath, $prct_used, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{diskpath}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name_diskpath, $prct_used, $prct_free));
-        }    
-
-        my $label = 'used';
-        my $extra_label = '';
-        $extra_label = '_' . $name_diskpath if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => '%',
-                                      value => $prct_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        if ($multiple == 0) {
+            $self->{output}->output_add(short_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
+        }
     }
-
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
 
-sub reload_cache {
-    my ($self) = @_;
-    my $datas = {};
-
-    my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
-    $datas->{last_timestamp} = time();
-    $datas->{all_ids} = [];
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /\.([0-9]+)$/);
-        push @{$datas->{all_ids}}, $1;
-        $datas->{'dskPath_' . $1} = $self->{output}->to_utf8($result->{$key});
-    }
-    
-    if (scalar(@{$datas->{all_ids}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_cache}->write(data => $datas);
-}
+my $mapping = {
+    dskPath => { oid => '.1.3.6.1.4.1.2021.9.1.2' },
+    dskDevice => { oid => '.1.3.6.1.4.1.2021.9.1.3' },
+    dskPercentNode => { oid => '.1.3.6.1.4.1.2021.9.1.10' },
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
-    }
-
-    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || 
-        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-            $self->reload_cache();
-            $self->{statefile_cache}->read();
-    }
-
-    my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
-    if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
-        # get by ID
-        push @{$self->{diskpath_id_selected}}, $self->{option_results}->{diskpath}; 
-        my $name = $self->{statefile_cache}->get(name => 'dskPath_' . $self->{option_results}->{diskpath});
-        if (!defined($name)) {
-            $self->{output}->add_option_msg(short_msg => "No disk path found for id '" . $self->{option_results}->{diskpath} . "'.");
-            $self->{output}->option_exit();
+    
+    my $results = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{dskPath}->{oid} }, 
+                                                              { oid => $mapping->{dskDevice}->{oid} }, 
+                                                              { oid => $mapping->{dskPercentNode}->{oid} } ],
+                                                    return_type => 1, nothing_quit => 1);
+    $self->{disk_selected} = {};
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$results})) {
+        next if ($oid !~ /^$mapping->{dskPath}->{oid}\.(.*)/);
+        my $instance = $1;
+        
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        $result->{dskPath} = $self->get_display_value(value => $result->{dskPath});
+        
+        if (!defined($result->{dskPercentNode})) {
+            $self->{output}->output_add(long_msg => sprintf("skipping '%s' : no inode usage value", $result->{dskPath}), debug => 1);
+            next;
         }
-    } else {
-        foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => 'dskPath_' . $i);
-            next if (!defined($filter_name));
-            if (!defined($self->{option_results}->{diskpath})) {
-                push @{$self->{diskpath_id_selected}}, $i; 
+        
+        if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
+            if ($self->{option_results}->{diskpath} !~ /(^|\s|,)$instance(\s*,|$)/) {
+                $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter id disk path", $result->{dskPath}), debug => 1);
                 next;
             }
-            if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{diskpath}/i) {
-                push @{$self->{diskpath_id_selected}}, $i; 
+        } elsif (defined($self->{option_results}->{diskpath}) && $self->{option_results}->{diskpath} ne '') {
+            if (defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) && $result->{dskPath} !~ /$self->{option_results}->{diskpath}/i) {
+                $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk path", $result->{dskPath}), debug => 1);
+                next;
             }
-            if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name =~ /$self->{option_results}->{diskpath}/) {
-                push @{$self->{diskpath_id_selected}}, $i; 
+            if (defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $result->{dskPath} !~ /$self->{option_results}->{diskpath}/) {
+                $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk path", $result->{dskPath}), debug => 1);
+                next;
             }
-            if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $filter_name eq $self->{option_results}->{diskpath}) {
-                push @{$self->{diskpath_id_selected}}, $i; 
+            if (!defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) && $result->{dskPath} ne $self->{option_results}->{diskpath}) {
+                $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk path", $result->{dskPath}), debug => 1);
+                next;
             }
         }
         
-        if (scalar(@{$self->{diskpath_id_selected}}) <= 0) {
-            if (defined($self->{option_results}->{diskpath})) {
-                $self->{output}->add_option_msg(short_msg => "No disk path found for name '" . $self->{option_results}->{diskpath} . "' (maybe you should reload cache file).");
-            } else {
-                $self->{output}->add_option_msg(short_msg => "No disk path found (maybe you should reload cache file).");
-            }
-            $self->{output}->option_exit();
-        }
+        $self->{disk_selected}->{$instance} = { display => $result->{dskPath}, 
+                                                usage => $result->{dskPercentNode} };
+    }
+    
+    if (scalar(keys %{$self->{disk_selected}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->option_exit();
     }
 }
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => 'dskPath_' . $options{id});
+    my $value = $options{value};
 
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
@@ -222,11 +226,11 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
 
@@ -246,10 +250,6 @@ Allows to use regexp to filter diskpath (with option --name).
 
 Allows to use regexp non case-sensitive (with --regexp).
 
-=item B<--reload-cache-time>
-
-Time in seconds before reloading cache file (default: 180).
-
 =item B<--display-transform-src>
 
 Regexp src to transform display value. (security risk!!!)
@@ -257,10 +257,6 @@ Regexp src to transform display value. (security risk!!!)
 =item B<--display-transform-dst>
 
 Regexp dst to transform display value. (security risk!!!)
-
-=item B<--show-cache>
-
-Display cache storage datas.
 
 =back
 
