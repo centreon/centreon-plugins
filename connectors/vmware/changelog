@@ -1,0 +1,10 @@
+2015-12-02 Quentin Garnier <qgarnier@centreon.com> - 2.1.0
+ * Enhance: Add a command to monitor ESX services (issue #3)
+ * Enhance: Can choose the sampling period (issue #1)
+ * Enhance: Display ESX version in command 'getmap' (issue #2)
+ * Fix: Hardening connector (issue #5)
+ * Fix: error for 'alarm-*' commands (issue #4)
+ * Fix: counter 'active' for command 'memory-vm' (issue #6)
+
+2015-09-23 Quentin Garnier <qgarnier@centreon.com> - 2.0.0
+ * initial release
