@@ -53,6 +53,7 @@ sub new {
                                   "diskpath:s"              => { name => 'diskpath' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },
+                                  "filter-device:s"         => { name => 'filter_device' },
                                   "display-transform-src:s" => { name => 'display_transform_src' },
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
                                 });
@@ -169,10 +170,17 @@ sub manage_selection {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         $result->{dskPath} = $self->get_display_value(value => $result->{dskPath});
         
+        $self->{output}->output_add(long_msg => sprintf("disk path : '%s', device : '%s'", $result->{dskPath}, $result->{dskDevice}), debug => 1);
+        
         if (!defined($result->{dskPercentNode})) {
             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : no inode usage value", $result->{dskPath}), debug => 1);
             next;
         }
+        if (defined($result->{dskDevice}) && defined($self->{option_results}->{filter_device}) && 
+            $self->{option_results}->{filter_device} ne '' && $result->{dskDevice} !~ /$self->{option_results}->{filter_device}/) {
+            $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk device", $result->{dskPath}), debug => 1);
+            next;
+        }   
         
         if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
             if ($self->{option_results}->{diskpath} !~ /(^|\s|,)$instance(\s*,|$)/) {
@@ -257,6 +265,10 @@ Regexp src to transform display value. (security risk!!!)
 =item B<--display-transform-dst>
 
 Regexp dst to transform display value. (security risk!!!)
+
+=item B<--filter-device>
+
+Filter device name (Can be a regexp).
 
 =back
 
