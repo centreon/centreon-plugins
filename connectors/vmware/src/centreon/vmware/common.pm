@@ -633,6 +633,21 @@ sub host_state {
     return 1;
 }
 
+sub host_maintenance {
+    my (%options) = @_;
+    
+    if ($options{maintenance} =~ /^true|1$/) {
+        my $output = "Host '" . $options{hostname} . "' is in maintenance mode.";
+        if ($options{multiple} == 0) {
+            $manager_display->{output}->output_add(severity => 'OK',
+                                                   short_msg => $output);
+        }
+        return 0;
+    }
+    
+    return 1;
+}
+
 sub substitute_name {
     my (%options) = @_;
     

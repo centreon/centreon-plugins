@@ -68,6 +68,7 @@ my @load_modules = (
     'centreon::vmware::cmdmaintenancehost',
     'centreon::vmware::cmdmemvm',
     'centreon::vmware::cmdnethost',
+    'centreon::vmware::cmdservicehost',
     'centreon::vmware::cmdsnapshotvm',
     'centreon::vmware::cmdstatushost',
     'centreon::vmware::cmdstatusvm',

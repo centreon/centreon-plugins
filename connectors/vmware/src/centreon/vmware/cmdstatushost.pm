@@ -110,10 +110,10 @@ sub run {
     
     foreach my $entity_view (@$result) {
         next if (centreon::vmware::common::host_state(connector => $self->{connector},
-                                                    hostname => $entity_view->{name}, 
-                                                    state => $entity_view->{'runtime.connectionState'}->val,
-                                                    status => $self->{disconnect_status},
-                                                    multiple => $multiple) == 0);
+                                                      hostname => $entity_view->{name}, 
+                                                      state => $entity_view->{'runtime.connectionState'}->val,
+                                                      status => $self->{disconnect_status},
+                                                      multiple => $multiple) == 0);
         
         my $status_esx = $entity_view->{'summary.overallStatus'}->val;
         $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' %s", $entity_view->{name}, $overallStatus{$status_esx}));
