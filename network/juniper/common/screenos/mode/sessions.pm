@@ -121,8 +121,8 @@ sub run {
                                 short_msg => sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
                                     $prct_used, $cp_used, $cp_total));
     $self->{output}->output_add(severity => $exit_failed,
-                                short_msg => sprintf("%.2f%% of failed sessions (%d of max. %d)", 
-                                    $prct_failed, $cp_failed, $cp_total));
+                                short_msg => sprintf("'%i' failed sessions/s", 
+                                                     $sessFailedPerSec));
     
     $self->{output}->perfdata_add(label => 'sessions',
                                   value => $cp_used,
