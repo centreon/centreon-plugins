@@ -64,7 +64,7 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Temperature '%s' status is %s [instance: %s] [value: %s C]", 
                                     $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureState},
-                                    $instance, $result->{ciscoEnvMonTemperatureStatusValue}));
+                                    $instance, defined($result->{ciscoEnvMonTemperatureStatusValue}) ? $result->{ciscoEnvMonTemperatureStatusValue} : '-'));
         my $exit = $self->get_severity(section => 'temperature', value => $result->{ciscoEnvMonTemperatureState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -72,6 +72,8 @@ sub check {
                                                              $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureState}));
         }
      
+        next if (!defined($result->{ciscoEnvMonTemperatureStatusValue}));
+        
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{ciscoEnvMonTemperatureStatusValue});
         if ($checked == 0) {
             my $warn_th = undef;

@@ -76,11 +76,15 @@ sub run {
     
     my $result = $self->{snmp}->get_table(oid => $oid_upsBattery, nothing_quit => 1);
 
-    my $current = defined($result->{$oid_upsBatteryCurrent}) ? $result->{$oid_upsBatteryCurrent} * 0.1 : 0;
-    my $voltage = defined($result->{$oid_upsBatteryVoltage}) ? $result->{$oid_upsBatteryVoltage} * 0.1 : 0;
+    my $current = (defined($result->{$oid_upsBatteryCurrent}) && $result->{$oid_upsBatteryCurrent} =~ /\d/) ? 
+        $result->{$oid_upsBatteryCurrent} * 0.1 : 0;
+    my $voltage = (defined($result->{$oid_upsBatteryVoltage}) && $result->{$oid_upsBatteryVoltage} =~ /\d/) ? 
+        $result->{$oid_upsBatteryVoltage} * 0.1 : 0;
     my $temp = defined($result->{$oid_upsBatteryTemperature}) ? $result->{$oid_upsBatteryTemperature} : 0;
-    my $min_remain = defined($result->{$oid_upsEstimatedMinutesRemaining}) ? $result->{$oid_upsEstimatedMinutesRemaining} : 'unknown';
-    my $charge_remain = defined($result->{$oid_upsEstimatedChargeRemaining}) ? $result->{$oid_upsEstimatedChargeRemaining} : 'unknown';
+    my $min_remain = (defined($result->{$oid_upsEstimatedMinutesRemaining}) && $result->{$oid_upsEstimatedMinutesRemaining} =~ /\d/) ? 
+        $result->{$oid_upsEstimatedMinutesRemaining} : 'unknown';
+    my $charge_remain = (defined($result->{$oid_upsEstimatedChargeRemaining}) && $result->{$oid_upsEstimatedChargeRemaining} =~ /\d/) ? 
+        $result->{$oid_upsEstimatedChargeRemaining} : 'unknown';
     my $status = defined($result->{$oid_upsBatteryStatus}) ? $result->{$oid_upsBatteryStatus} : 1; # we put unknown ???
   
     $self->{output}->output_add(severity => ${$battery_status{$status}}[1],

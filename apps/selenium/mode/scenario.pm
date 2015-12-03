@@ -94,7 +94,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please specify a scenario name" . $self->{option_results}->{scenario} . ".");
         $self->{output}->option_exit();
     }
-
 }
 
 sub run {
