@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 
 sub new {
     my ($class, %options) = @_;
@@ -38,6 +39,7 @@ sub new {
                                   "critical:s"              => { name => 'critical', },
                                   "critical-failed:s"       => { name => 'critical_failed', },
                                 });
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -62,12 +64,22 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-failed threshold '" . $self->{option_results}->{critical_failed} . "'.");
         $self->{output}->option_exit();
     }
+    
+    $self->{statefile_value}->check_options(%options);
 }
 
 sub run {
     my ($self, %options) = @_;
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
+    $self->{hostname} = $self->{snmp}->get_hostname();
+    $self->{snmp_port} = $self->{snmp}->get_port();
+    
+    my $new_datas = {};
+    my $old_timestamp = undef;
+    my $old_failed = undef;
+    
+    $self->{statefile_value}->read(statefile => 'juniper_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
     
     my $oid_nsResSessAllocate = '.1.3.6.1.4.1.3224.16.3.2.0';
     my $oid_nsResSessMaxium = '.1.3.6.1.4.1.3224.16.3.3.0';
@@ -80,37 +92,55 @@ sub run {
     my $cp_used = $result->{$oid_nsResSessAllocate};
     my $cp_failed = $result->{$oid_nsResSessFailed};    
     my $prct_used = $cp_used * 100 / $cp_total;
-    my $prct_failed = $cp_failed * 100 / $cp_total;
     $spu_done = 1;
+    
+    $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
+    $old_failed = $self->{statefile_value}->get(name => 'session_failed');
+    $new_datas->{last_timestamp} = time();
+    $new_datas->{session_failed} = $cp_failed;
+
+    if (!defined($old_timestamp) || !defined($old_failed) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Buffer creation...");
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    
+    $old_failed = 0 if ($old_failed > $new_datas{session_failed});
+    my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
+    $delta_time = 1 if ($delta_time == 0);
+    
+    my $sessFailedPerSec = ($new_datas->{session_failed} - $old_failed) / $delta_time;
     
     my $exit_used = $self->{perfdata}->threshold_check(value => $prct_used, 
                             threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $exit_failed = $self->{perfdata}->threshold_check(value => $prct_failed,
+    my $exit_failed = $self->{perfdata}->threshold_check(value => $sessFailedPerSec,
                             threshold => [ { label => 'critical-failed', 'exit_litteral' => 'critical' }, { label => 'warning-failed', exit_litteral => 'warning' } ]);
-               
+   
     $self->{output}->output_add(severity => $exit_used,
                                 short_msg => sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
                                     $prct_used, $cp_used, $cp_total));
     $self->{output}->output_add(severity => $exit_failed,
                                 short_msg => sprintf("%.2f%% of failed sessions (%d of max. %d)", 
                                     $prct_failed, $cp_failed, $cp_total));
-                                    
+    
     $self->{output}->perfdata_add(label => 'sessions',
                                   value => $cp_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total, cast_int => 1),
                                   min => 0, max => $cp_total);
-    $self->{output}->perfdata_add(label => 'sessions_failed',
-                                  value => $cp_failed,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-failed', total => $cp_total, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-failed', total => $cp_total, cast_int => 1),
-                                  min => 0, max => $cp_total);
+    $self->{output}->perfdata_add(label => 'failed_sessions_Per_Sec',
+                                  value => $sessFailedPerSec,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-failed', cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-failed', cast_int => 1),);
 
     if ($spu_done == 0) {
         $self->{output}->add_option_msg(short_msg => "Cannot check sessions usage (no total values).");
         $self->{output}->option_exit();
     }
     
+    $self->{statefile_value}->write(data => $new_datas);
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -118,6 +148,8 @@ sub run {
 1;
 
 __END__
+
+=head1 MODE
 
 Check Juniper sessions usage and failed sessions (NETSCREEN-RESOURCE-MIB).
 
@@ -133,11 +165,11 @@ Threshold critical (percentage).
 
 =item B<--warning-failed>
 
-Threshold warning on failed sessions (percentage).
+Threshold warning on failed sessions (failed sesssions / seconds).
 
 =item B<--critical-failed>
 
-Threshold critical in failed sessions (percentage).
+Threshold critical in failed sessions (failed sessions / seconds).
 
 =back
 
