@@ -324,13 +324,13 @@ sub generic_performance_values_historic {
     if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
         $interval = $options{sampling_period};
     }
-    # check sampling period exist
-    if (!defined($obj_vmware->{sampling_periods}->{$interval})) {
+    # check sampling period exist (period 20 is not listed)
+    if ($interval != 20 && !defined($obj_vmware->{sampling_periods}->{$interval})) {
         $manager_display->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => sprintf("Sampling period '%s' not managed.", $interval));
         return undef;
     }
-    if ($obj_vmware->{sampling_periods}->{$interval}->{enabled} != 1) {
+    if ($interval != 20 && $obj_vmware->{sampling_periods}->{$interval}->{enabled} != 1) {
         $manager_display->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => sprintf("Sampling period '%s' collection data no enabled.", $interval));
         return undef;
