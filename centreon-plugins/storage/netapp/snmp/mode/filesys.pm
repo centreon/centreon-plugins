@@ -28,14 +28,23 @@ use centreon::plugins::values;
 
 my $maps_counters = {
     '000_usage' => { set => {
-                        key_values => [ { name => 'name' }, { name => 'used' }, { name => 'total' }, 
-                                        { name => 'dfCompressSavedPercent' }, { name => 'dfDedupeSavedPercent' } ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
+            key_values => [ { name => 'name' }, { name => 'used' }, { name => 'total' }, 
+                            { name => 'dfCompressSavedPercent' }, { name => 'dfDedupeSavedPercent' } ],
+            closure_custom_calc => \&custom_usage_calc,
+            closure_custom_output => \&custom_usage_output,
+            closure_custom_perfdata => \&custom_usage_perfdata,
+            closure_custom_threshold_check => \&custom_usage_threshold,
+        }
+    },
+    '001_inodes' => { set => {
+            key_values => [ { name => 'dfPerCentInodeCapacity' }, { name => 'name' } ],
+            output_template => 'Inodes Used: %s %%', output_error_template => "%s",
+            perfdatas => [
+                { label => 'inodes', value => 'dfPerCentInodeCapacity_absolute', template => '%d',
+                  unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name_absolute' },
+            ],
+        }
+    },
 };
 
 my $instance_mode;
@@ -178,7 +187,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
@@ -249,10 +257,11 @@ my $mapping = {
     dfType      => { oid => '.1.3.6.1.4.1.789.1.5.4.1.23', map => \%map_types },
 };
 my $mapping2 = {
-    dfKBytesTotal   => { oid => '.1.3.6.1.4.1.789.1.5.4.1.3' },
-    dfKBytesUsed    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.4' },
-    df64TotalKBytes => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
-    df64UsedKBytes  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
+    dfKBytesTotal           => { oid => '.1.3.6.1.4.1.789.1.5.4.1.3' },
+    dfKBytesUsed            => { oid => '.1.3.6.1.4.1.789.1.5.4.1.4' },
+    dfPerCentInodeCapacity  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.9' },
+    df64TotalKBytes         => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
+    df64UsedKBytes          => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
     dfCompressSavedPercent  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.38' },
     dfDedupeSavedPercent    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.40' },
 };
@@ -308,6 +317,7 @@ sub manage_selection {
         }
         $self->{filesys_selected}->{$_}->{dfCompressSavedPercent} = $result->{dfCompressSavedPercent};
         $self->{filesys_selected}->{$_}->{dfDedupeSavedPercent} = $result->{dfDedupeSavedPercent};
+        $self->{filesys_selected}->{$_}->{dfPerCentInodeCapacity} = $result->{dfPerCentInodeCapacity};
     }
 }
 
@@ -321,13 +331,15 @@ Check filesystem usage (volumes, snapshots and aggregates also).
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
 Threshold warning.
+Can be: usage, inodes (%).
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
 Threshold critical.
+Can be: usage, inodes (%).
 
 =item B<--units>
 
