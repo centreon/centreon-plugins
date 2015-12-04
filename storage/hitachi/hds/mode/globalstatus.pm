@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hitachi::hds::snmp::mode::globalstatus;
+package storage::hitachi::hds::mode::globalstatus;
 
 use base qw(centreon::plugins::mode);
 
