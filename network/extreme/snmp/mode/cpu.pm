@@ -260,6 +260,10 @@ sub manage_selection {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremeCpuMonitorSystemEntry}, instance => $instance);
         
+        foreach (keys %{$mapping}) {
+            $result->{$_} = undef if (defined($result->{$_}) && $result->{$_} =~ /n\/a/i);
+        }
+        
         $self->{cpu}->{$instance} = {num => $instance, %$result};
     }
 

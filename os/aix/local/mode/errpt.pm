@@ -46,10 +46,13 @@ sub new {
                                   "command-options:s" => { name => 'command_options', default => '' },
                                   "error-type:s"      => { name => 'error_type' },
                                   "error-class:s"     => { name => 'error_class' },
+                                  "error-id:s"        => { name => 'error_id' },
                                   "retention:s"       => { name => 'retention' },
                                   "timezone:s"        => { name => 'timezone' },
                                   "description"       => { name => 'description' },
-                                  "filter-resource:s"   => { name => 'filter_resource' },
+                                  "filter-resource:s" => { name => 'filter_resource' },
+                                  "filter-id:s"	      => { name => 'filter_id' },
+                                  "exclude-id:s"      => { name => 'exclude_id' },	
                                 });
     $self->{result} = {};
     return $self;
@@ -58,6 +61,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    if (defined($self->{option_results}->{exclude_id}) && defined($self->{option_results}->{error_id})) {
+    	$self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
+    	$self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
@@ -69,6 +77,12 @@ sub manage_selection {
     }
     if (defined($self->{option_results}->{error_class})){
         $extra_options .= ' -d '.$self->{option_results}->{error_class};
+    }
+    if (defined($self->{option_results}->{error_id}) && $self->{option_results}->{error_id} ne ''){
+    	$extra_options.= ' -j '.$self->{option_results}->{error_id};
+    }
+    if (defined($self->{option_results}->{exclude_id}) && $self->{option_results}->{exclude_id} ne ''){
+    	$extra_options.= ' -k '.$self->{option_results}->{exclude_id};
     }
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} ne ''){
         my $retention = time() - $self->{option_results}->{retention};
@@ -126,7 +140,7 @@ sub run {
     
     $self->manage_selection();
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("No error found since %s seconds%s.", $extra_message));
+                                short_msg => sprintf("No error found%s.", $extra_message));
     
     my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
@@ -138,7 +152,8 @@ sub run {
         
         next if (defined($self->{option_results}->{filter_resource}) && $self->{option_results}->{filter_resource} ne '' &&
                  $resource_name !~ /$self->{option_results}->{filter_resource}/);
-        
+        next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+                 $identifier !~ /$self->{option_results}->{filter_id}/);
         $total_error++;
         if (defined($self->{option_results}->{description})) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
@@ -213,17 +228,29 @@ Filter error type separated by a coma (INFO, PEND, PERF, PERM, TEMP, UNKN).
 
 Filter error class ('H' for hardware, 'S' for software, '0' for errlogger, 'U' for undetermined).
 
+=item B<--error-id>
+
+Filter specific error code (can be a comma separated list).
+
 =item B<--retention>
 
 Retention time of errors in seconds.
 
-=item B<--description>
+=item B<--verbose>
 
-Print error description in output.
+Print error description in long output. [ Error 'CODE' Date: Timestamp ResourceName: RsrcName Description: Desc ]
 
 =item B<--filter-resource>
 
 Filter resource (can use a regexp).
+
+=item B<--filter-id>
+
+Filter error code (can use a regexp).
+
+=item B<--exclude-id>
+
+Filter on specific error code (can be a comma separated list).
 
 =back
 

@@ -85,7 +85,8 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Cpu '%s' status is '%s' [instance: %s, manufacturer name: %s, brand name: %s, state: %s, speed: %s]",
                                     $instance, $result->{processorDeviceStatus}, $instance, 
-                                    $result2->{processorDeviceManufacturerName}, $result4->{processorDeviceBrandName},
+                                    $result2->{processorDeviceManufacturerName}, 
+                                    defined($result4->{processorDeviceBrandName}) ? $result4->{processorDeviceBrandName} : '-',
                                     $result2->{processorDeviceStatusState}, $result3->{processorDeviceCurrentSpeed}
                                     ));
         my $exit = $self->get_severity(section => 'cpu', value => $result->{processorDeviceStatus});

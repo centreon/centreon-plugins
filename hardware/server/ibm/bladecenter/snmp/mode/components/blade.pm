@@ -48,7 +48,7 @@ my %map_blade_power_state = (
     4 => 'hibernate',
 );
 
-# In MIB 'CPQSTDEQ-MIB.mib'
+# In MIB 'mmblade.mib' and 'cme.mib'
 my $mapping = {
     bladeId => { oid => '.1.3.6.1.4.1.2.3.51.2.22.1.5.1.1.2' },
     bladeExists => { oid => '.1.3.6.1.4.1.2.3.51.2.22.1.5.1.1.3', map => \%map_blade_exists  },
@@ -77,8 +77,10 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeSystemStatusEntry}, instance => $instance);
         
         next if ($self->check_exclude(section => 'blade', instance => $result->{bladeId}));
-        next if ($result->{bladeExists} =~ /No/i && 
-                 $self->absent_problem(section => 'blade', instance => $result->{bladeId}));
+        if ($result->{bladeExists} =~ /false/i) {
+            $self->{output}->output_add(long_msg => "skipping blade '" . $instance . "' : not exits"); 
+            next;
+        }
         $self->{components}->{blade}->{total}++;
         
         if ($result->{bladePowerState} =~ /off/) {

@@ -115,6 +115,29 @@ my $maps_counters = {
                       unit => 'iops', min => 0 },
                 ],
             }
+        },  
+    },
+    sum => {
+        '000_sum-read-write'   => { set => {
+                key_values => [ { name => 'sum_read_write', diff => 1 } ],
+                per_second => 1,
+                output_template => 'R+W I/O : %s %s/s', output_error_template => "R+W I/O : %s",
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'sum_read_write', value => 'sum_read_write_per_second', template => '%d',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        }, 
+        '001_sum-read-write-iops'   => { set => {
+                key_values => [ { name => 'sum_read_write_iops', diff => 1 } ],
+                per_second => 1,
+                output_template => 'R+W IOPs : %.2f', output_error_template => "R+W IOPs : %s",
+                perfdatas => [
+                    { label => 'sum_read_write_iops', value => 'sum_read_write_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0 },
+                ],
+            }
         },
     },
 };
@@ -141,8 +164,8 @@ sub new {
 
     $self->{device_id_selected} = {};
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-     
-    foreach my $key (('total', 'disk')) {
+    
+    foreach my $key (('total', 'disk', 'sum')) {
         foreach (keys %{$maps_counters->{$key}}) {
             my ($id, $name) = split /_/;
             if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
@@ -165,7 +188,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $key (('total', 'disk')) {
+    foreach my $key (('total', 'disk', 'sum')) {
         foreach (keys %{$maps_counters->{$key}}) {
             $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
@@ -193,7 +216,7 @@ sub check_total {
         }
         my $exit2 = $obj->threshold_check();
         push @exits, $exit2;
-
+       
         my $output = $obj->output();
         $long_msg .= $long_msg_append . $output;
         $long_msg_append = ', ';
@@ -208,17 +231,58 @@ sub check_total {
 
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Total $short_msg"
+       $self->{output}->output_add(severity => $exit,
+                                    short_msg => "All devices [$short_msg]"
                                     );
     } else {
-        $self->{output}->output_add(short_msg => "Total $long_msg");
+        $self->{output}->output_add(short_msg => "All devices [$long_msg]");
+    }
+}
+
+sub check_sum {
+    my ($self, %options) = @_;
+
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits = ();
+    foreach (sort keys %{$maps_counters->{sum}}) {
+        my $obj = $maps_counters->{sum}->{$_}->{obj};
+        $obj->set(instance => 'sum');
+        
+        my ($value_check) = $obj->execute(values => $self->{sum_global},
+                                          new_datas => $self->{new_datas});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+   
+        my $output = $obj->output();
+   
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+
+        $obj->perfdata();
+    }
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "Server overall [$short_msg]"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "Server overall [$long_msg]");
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->{hostname} = $self->{snmp}->get_hostname();
     $self->{snmp_port} = $self->{snmp}->get_port();
@@ -241,6 +305,7 @@ sub run {
     
     if ($multiple == 1) {
         $self->check_total();
+        $self->check_sum();
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All devices are ok.');
     }
@@ -250,7 +315,7 @@ sub run {
         my @exits;
         foreach (sort keys %{$maps_counters->{disk}}) {
             my $obj = $maps_counters->{disk}->{$_}->{obj};
-        
+            
             $obj->set(instance => $id);
             my ($value_check) = $obj->execute(values => $self->{device_id_selected}->{$id},
                                               new_datas => $self->{new_datas});
@@ -287,7 +352,8 @@ sub run {
             $self->{output}->output_add(short_msg => "Device '" . $self->{device_id_selected}->{$id}->{display} . "' $long_msg");
         }
     }
-    
+ 
+
     $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
@@ -314,12 +380,20 @@ sub add_result {
         $self->{device_id_selected}->{$options{instance}}->{write_iops} = $self->{results}->{$oid_diskIOWrites}->{$oid_diskIOWrites . '.' . $options{instance}};
         $self->{global}->{total_write_iops} += $self->{device_id_selected}->{$options{instance}}->{write_iops};
     }
+
+    if ($self->{global}->{total_read} && $self->{global}->{total_write}) {
+        $self->{sum_global}->{sum_read_write} = $self->{global}->{total_read} + $self->{global}->{total_write};
+    }
+    if ($self->{global}->{total_read_iops} && $self->{global}->{total_write_iops}) {
+        $self->{sum_global}->{sum_read_write_iops} = $self->{global}->{total_read_iops} + $self->{global}->{total_write_iops};
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{global} = { total_read => 0, total_write => 0, total_read_iops => 0, total_write_iops => 0 };
+    $self->{sum_global} = { sum_read_write => 0, sum_read_write_iops => 0 };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_diskIODevice },
                                                             { oid => $oid_diskIOReads },
@@ -340,7 +414,7 @@ sub manage_selection {
             $oid =~ /\.(\d+)$/;
             my $instance = $1;
             my $filter_name = $self->{results}->{$oid_diskIODevice}->{$oid}; 
-            if (!defined($self->{option_results}->{device})) {
+            if (!defined($self->{option_results}->{device}) || $self->{option_results}->{device} eq '') {
                 $self->add_result(instance => $instance);
                 next;
             }
@@ -400,13 +474,15 @@ Check read/write I/O disks (bytes per secondes, IOPs).
 
 Threshold warning.
 Can be: 'read', 'write', 'read-iops', 'write-iops',
-'total-read', 'total-write', 'total-read-iops', 'total-write-iops'.
+'total-read', 'total-write', 'total-read-iops', 'total-write-iops',
+'sum-read-write', 'sum-read-write-iops'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'read', 'write', 'read-iops', 'write-iops',
-'total-read', 'total-write', 'total-read-iops', 'total-write-iops'.
+'total-read', 'total-write', 'total-read-iops', 'total-write-iops',
+'sum-read-write', 'sum-read-write-iops'.
 
 =item B<--device>
 
