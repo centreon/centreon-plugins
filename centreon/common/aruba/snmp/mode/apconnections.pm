@@ -55,11 +55,11 @@ my $maps_counters = {
                         ],
                     }
                },
-        '003_nsr'   => { set => {
+        '003_snr'   => { set => {
                         key_values => [ { name => 'apSignalToNoiseRatio' }, { name => 'bssid' }, ],
                         output_template => 'Signal to noise ratio : %d',
                         perfdatas => [
-                            { label => 'nsr', value => 'apSignalToNoiseRatio_absolute', template => '%d',
+                            { label => 'snr', value => 'apSignalToNoiseRatio_absolute', template => '%d',
                               label_extra_instance => 1, instance_use => 'bssid_absolute' },
                         ],
                     }

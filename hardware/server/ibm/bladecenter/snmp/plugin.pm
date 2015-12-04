@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check IBM Chassis BladeCenter (H, HT, T) in SNMP.
+Check IBM Chassis BladeCenter (H, HT, T, Pureflex) in SNMP.
 
 =cut

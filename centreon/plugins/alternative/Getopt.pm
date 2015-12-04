@@ -89,7 +89,7 @@ sub GetOptions {
             splice @ARGV, $i, 1;
             $num_args--;
         } else {
-            warn "argument $ARGV[$i] alone" if ($warn_message == 1);
+            warn "argument $ARGV[$i] alone" if ($warn_message == 1 && $i != 0);
             $i++;
         }
     }

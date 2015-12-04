@@ -61,7 +61,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_deviceDiskValueEntry}, instance => $instance);
         
-        next if ($result->{deviceDiskStatus} !~ /notpresent/i && 
+        next if ($result->{deviceDiskStatus} =~ /notpresent/i && 
                  $self->absent_problem(section => 'disk', instance => $instance));
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
@@ -72,7 +72,7 @@ sub check {
         my $exit = $self->get_severity(section => 'disk', value => $result->{deviceDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s' operational status is %s", 
+                                        short_msg => sprintf("Disk '%s' status is %s", 
                                                             $result->{deviceDiskSerialN}, $result->{deviceDiskStatus}));
         }
     }

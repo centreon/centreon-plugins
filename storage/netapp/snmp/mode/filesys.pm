@@ -28,14 +28,23 @@ use centreon::plugins::values;
 
 my $maps_counters = {
     '000_usage' => { set => {
-                        key_values => [ { name => 'name' }, { name => 'used' }, { name => 'total' }, 
-                                        { name => 'dfCompressSavedPercent' }, { name => 'dfDedupeSavedPercent' } ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
+            key_values => [ { name => 'name' }, { name => 'used' }, { name => 'total' }, 
+                            { name => 'dfCompressSavedPercent' }, { name => 'dfDedupeSavedPercent' } ],
+            closure_custom_calc => \&custom_usage_calc,
+            closure_custom_output => \&custom_usage_output,
+            closure_custom_perfdata => \&custom_usage_perfdata,
+            closure_custom_threshold_check => \&custom_usage_threshold,
+        }
+    },
+    '001_inodes' => { set => {
+            key_values => [ { name => 'dfPerCentInodeCapacity' }, { name => 'name' } ],
+            output_template => 'Inodes Used : %s %%', output_error_template => "Inodes : %s",
+            perfdatas => [
+                { label => 'inodes', value => 'dfPerCentInodeCapacity_absolute', template => '%d',
+                  unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name_absolute' },
+            ],
+        }
+    },
 };
 
 my $instance_mode;
@@ -178,7 +187,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
@@ -249,29 +257,41 @@ my $mapping = {
     dfType      => { oid => '.1.3.6.1.4.1.789.1.5.4.1.23', map => \%map_types },
 };
 my $mapping2 = {
-    dfKBytesTotal   => { oid => '.1.3.6.1.4.1.789.1.5.4.1.3' },
-    dfKBytesUsed    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.4' },
-    df64TotalKBytes => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
-    df64UsedKBytes  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
+    dfFileSys               => { oid => '.1.3.6.1.4.1.789.1.5.4.1.2' },
+    dfKBytesTotal           => { oid => '.1.3.6.1.4.1.789.1.5.4.1.3' },
+    dfKBytesUsed            => { oid => '.1.3.6.1.4.1.789.1.5.4.1.4' },
+    dfPerCentInodeCapacity  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.9' },
+    df64TotalKBytes         => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
+    df64UsedKBytes          => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
     dfCompressSavedPercent  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.38' },
     dfDedupeSavedPercent    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.40' },
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $oid_dfFileSys = '.1.3.6.1.4.1.789.1.5.4.1.2';
     
-    my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                       { oid => $oid_dfFileSys },
-                                                       { oid => $mapping->{dfType}->{oid} },
-                                                    ], nothing_quit => 1);
+    my $oids = [
+        { oid => $mapping->{dfType}->{oid} },
+        { oid => $mapping2->{dfFileSys}->{oid} },
+        { oid => $mapping2->{dfKBytesTotal}->{oid} },
+        { oid => $mapping2->{dfKBytesUsed}->{oid} },
+        { oid => $mapping2->{dfPerCentInodeCapacity}->{oid} },
+        { oid => $mapping2->{dfCompressSavedPercent}->{oid} },
+        { oid => $mapping2->{dfDedupeSavedPercent}->{oid} },
+    ];
+    if (!$self->{snmp}->is_snmpv1()) {
+        push @{$oids}, { oid => $mapping2->{df64TotalKBytes}->{oid} }, { oid => $mapping2->{df64UsedKBytes}->{oid} };
+    }
+    
+    my $results = $self->{snmp}->get_multiple_table(oids => $oids, return_type => 1, nothing_quit => 1);
     $self->{filesys_selected} = {};
-    foreach my $oid (keys %{$results->{$oid_dfFileSys}}) {
-        $oid =~ /^$oid_dfFileSys\.(\d+)/;
+    foreach my $oid (keys %{$results}) {
+        next if ($oid !~ /^$mapping2->{dfFileSys}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $name = $results->{$oid_dfFileSys}->{$oid};
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results->{$mapping->{dfType}->{oid}}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
+        
+        my $name = $result2->{dfFileSys};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter name.");
@@ -283,31 +303,23 @@ sub manage_selection {
             next;
         }
     
-        $self->{filesys_selected}->{$instance} = { name => $name }; 
+        $self->{filesys_selected}->{$instance} = { name => $name };
+        $self->{filesys_selected}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
+        $self->{filesys_selected}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
+        if (defined($result2->{df64TotalKBytes}) && $result2->{df64TotalKBytes} > 0) {
+            $self->{filesys_selected}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
+            $self->{filesys_selected}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
+        }
+        $self->{filesys_selected}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
+        $self->{filesys_selected}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
+        if ($self->{filesys_selected}->{$instance}->{total} > 0) {
+            $self->{filesys_selected}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
+        }
     }
     
     if (scalar(keys %{$self->{filesys_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
-    }
-    
-    my $instances = [keys %{$self->{filesys_selected}}];
-    if (!$self->{snmp}->is_snmpv1()) {
-        $self->{snmp}->load(oids => [$mapping2->{df64TotalKBytes}->{oid}, $mapping2->{df64UsedKBytes}->{oid}], instances => $instances);
-    }
-    $self->{snmp}->load(oids => [$mapping2->{dfKBytesTotal}->{oid}, $mapping2->{dfKBytesUsed}->{oid}, 
-                                 $mapping2->{dfDedupeSavedPercent}->{oid}, $mapping2->{dfCompressSavedPercent}->{oid}], instances => $instances);
-    my $result = $self->{snmp}->get_leef();
-    foreach (@$instances) {
-        my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $result, instance => $_);
-        $self->{filesys_selected}->{$_}->{total} = $result->{dfKBytesTotal} * 1024;
-        $self->{filesys_selected}->{$_}->{used} = $result->{dfKBytesUsed} * 1024;
-        if (defined($result->{df64TotalKBytes}) && $result->{df64TotalKBytes} > 0) {
-            $self->{filesys_selected}->{$_}->{total} = $result->{df64TotalKBytes} * 1024;
-            $self->{filesys_selected}->{$_}->{used} = $result->{df64UsedKBytes} * 1024;
-        }
-        $self->{filesys_selected}->{$_}->{dfCompressSavedPercent} = $result->{dfCompressSavedPercent};
-        $self->{filesys_selected}->{$_}->{dfDedupeSavedPercent} = $result->{dfDedupeSavedPercent};
     }
 }
 
@@ -321,13 +333,15 @@ Check filesystem usage (volumes, snapshots and aggregates also).
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
 Threshold warning.
+Can be: usage, inodes (%).
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
 Threshold critical.
+Can be: usage, inodes (%).
 
 =item B<--units>
 

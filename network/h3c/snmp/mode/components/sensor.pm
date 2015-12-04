@@ -58,6 +58,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch} . '.19'}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
         
+        next if (!defined($result->{EntityExtErrorStatus}));
         next if ($self->check_exclude(section => 'sensor', instance => $instance));
         if ($result->{EntityExtErrorStatus} =~ /entityAbsent/i) {
             $self->absent_problem(section => 'sensor', instance => $instance);

@@ -23,7 +23,7 @@ package hardware::server::ibm::bladecenter::snmp::mode::components::chassisstatu
 use strict;
 use warnings;
 
-# In MIB 'mmblade.mib'
+# In MIB 'mmblade.mib' and 'cme.mib'
 my $oid_mmBistAndChassisStatus = '.1.3.6.1.4.1.2.3.51.2.2.5.2';
 my $oid_bistLogicalNetworkLink = '.1.3.6.1.4.1.2.3.51.2.2.5.2.30.0';
 my $oids = {

@@ -72,11 +72,13 @@ sub check {
                                         short_msg => sprintf("Voltage '%s' status is %s", 
                                                              $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageState}));
         }
-     
+
+        $result->{ciscoEnvMonVoltageStatusValue} = $result->{ciscoEnvMonVoltageStatusValue} / 1000;
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{ciscoEnvMonVoltageStatusValue});
         if ($checked == 0) {
             my $warn_th = undef;
-            my $crit_th = $result->{ciscoEnvMonVoltageThresholdLow} . ':' . $result->{ciscoEnvMonVoltageThresholdHigh};
+            my $crit_th = ((defined($result->{ciscoEnvMonVoltageThresholdLow}) && $result->{ciscoEnvMonVoltageThresholdLow} =~ /\d/) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdLow} / 1000) : 0) . ':' . 
+                ((defined($result->{ciscoEnvMonVoltageThresholdHigh}) && $result->{ciscoEnvMonVoltageThresholdHigh} =~ /\d/) ? sprintf("%.3f", $result->{ciscoEnvMonVoltageThresholdHigh} / 1000) : '');
             $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
@@ -84,10 +86,10 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Voltage '%s' is %s V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue}));
+                                        short_msg => sprintf("Voltage '%s' is %.3f V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue}));
         }
         $self->{output}->perfdata_add(label => "voltage_" . $result->{ciscoEnvMonVoltageStatusDescr}, unit => 'V',
-                                      value => $result->{ciscoEnvMonVoltageStatusValue},
+                                      value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
                                       warning => $warn,
                                       critical => $crit);
     }
