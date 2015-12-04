@@ -27,11 +27,10 @@ use warnings;
 use centreon::plugins::misc;
 use POSIX;
 use JSON;
-use Module::Load;
 
 my $CloudwatchMetrics = {
     cpu                => "cloud::aws::mode::metrics::ec2instancecpu",
-    traffic'           => "cloud::aws::mode::metrics::ec2instancenetwork",
+    traffic            => "cloud::aws::mode::metrics::ec2instancenetwork",
     cpucreditusage     => "cloud::aws::mode::metrics::ec2instancecpucreditusage",
     cpucreditbalance   => "cloud::aws::mode::metrics::ec2instancecpucreditbalance",
     bucketsize         => "cloud::aws::mode::metrics::s3bucketsize",
@@ -192,12 +191,12 @@ sub run {
 
     my ( $msg, $exit_code, $awsapi );
 
-    if ( defined( $CloudwatchMetrics->{ $self->{option_results}->{metric} } ) )
-    {
-        load $CloudwatchMetrics->{ $self->{option_results}->{metric} },qw/cloudwatchCheck/;
-        cloudwatchCheck($self);
-    }
-    else {
+    if ( defined( $CloudwatchMetrics->{ $self->{option_results}->{metric} } ) ) {
+        centreon::plugins::misc::mymodule_load(output => $options{output}, module => $CloudwatchMetrics->{$self->{option_results}->{metric}},
+                                               error_msg => "Cannot load module '" . $CloudwatchMetrics->{$self->{option_results}->{metric}} . "'.");
+        my $func = $CloudwatchMetrics->{$self->{option_results}->{metric}}->can('cloudwatchCheck');
+        $func->($self);
+    } else {
         $self->{output}
           ->add_option_msg( short_msg => "Wrong option. Cannot find metric '"
               . $self->{option_results}->{metric}

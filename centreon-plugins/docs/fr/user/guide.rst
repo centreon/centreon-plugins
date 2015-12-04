@@ -557,15 +557,6 @@ L'association entre les options 'snmpwalk' et les options "centreon-plugins" :
 Divers
 ------
 
-J'utilise une options mais il semblerait qu'elle ne fonctionne pas
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Avant d'ouvrir un ticket sur github, utilisez l'option ``--sanity-options``. Cela vérifie si vous avez mal orthographié une option :
-::
-
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --interface='.*' --name --regex --verbose --skip --skip-speed0 --sanity-options
-  Unknown option: regex
-
 J'ai l'erreur: "UNKNOWN: Need to specify '--custommode'."
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
