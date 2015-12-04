@@ -26,8 +26,8 @@ use strict;
 use warnings;
 
 my $mapping_type = {
-	0 => 'drive',     
-	1 => 'spare drive'
+    0 => 'drive',     
+    1 => 'spare drive'
     2 => 'data drive',
     3 => 'ENC',
     5 => 'notUsed',
