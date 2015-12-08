@@ -58,7 +58,7 @@ sub GetOptions {
     my $search_str = ',' . join(',', keys %opts) . ',';
     my $num_args = scalar(@ARGV);
     for (my $i = 0; $i < $num_args;) {
-        if ($ARGV[$i] =~ /^--(.*?)(?:=|$)(.*)/) {
+        if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)(.*)/) {
             my ($option, $value) = ($1, $2);
             
             # find type of option
@@ -89,7 +89,7 @@ sub GetOptions {
             splice @ARGV, $i, 1;
             $num_args--;
         } else {
-            warn "argument $ARGV[$i] alone" if ($warn_message == 1 && $i != 0);
+            warn "argument $ARGV[$i] alone" if ($warn_message == 1 && $i != 0 && defined($ARGV[$i]));
             $i++;
         }
     }
