@@ -31,10 +31,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "ntp-hostname:s"          => { name => 'ntp_hostname' },
                                   "ntp-port:s"              => { name => 'ntp_port', default => 123 },
                                   "warning:s"               => { name => 'warning' },
@@ -47,7 +47,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -78,7 +78,7 @@ sub run {
     }
     if (defined($self->{option_results}->{ntp_hostname})) {
         my %ntp;
-        
+
         eval {
             %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
         };
@@ -88,12 +88,12 @@ sub run {
             $self->{output}->display();
             $self->{output}->exit();
         }
-        
+
         $ref_time = $ntp{'Transmit Timestamp'};
     } else {
         $ref_time = time();
     }
-    
+
     my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
     my $timezone = 'UTC';
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
@@ -101,7 +101,7 @@ sub run {
     } elsif (defined($remote_date[9])) {
         $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
     }
-    
+
     my $dt = DateTime->new(
       year       => $remote_date[0],
       month      => $remote_date[1],
@@ -109,16 +109,28 @@ sub run {
       hour       => $remote_date[3],
       minute     => $remote_date[4],
       second     => $remote_date[5],
-      time_zone  => $timezone, 
+      time_zone  => $timezone,
     );
     $distant_time = $dt->epoch;
-    
+
     my $diff = $distant_time - $ref_time;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $diff, 
+
+    # keep diff in a buffer just for threshold_check because negative threshold are not handeled
+    my $diff_threshold = $diff;
+
+    # If diff is negative put it positive for threshold_check
+    if ( $diff_threshold < 0 )
+    {
+        $diff_threshold = $diff_threshold * -1;
+    }
+
+    # ISO 8601
+    my $remote_date_formated=sprintf "%02d-%02d-%02dT%02d:%02d:%02d (%s)",$remote_date[0],$remote_date[1],$remote_date[2],$remote_date[3],$remote_date[4],$remote_date[5],$timezone;
+
+    my $exit = $self->{perfdata}->threshold_check(value => $diff_threshold,
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Time offset %d second(s)", $diff));
+                                short_msg => sprintf("Time offset %d second(s) : %s", $diff, $remote_date_formated));
 
     $self->{output}->perfdata_add(label => 'offset', unit => 's',
                                   value => sprintf("%d", $diff),
@@ -136,7 +148,7 @@ __END__
 
 =head1 MODE
 
-Check time offset of server with ntp server. Use local time if ntp-host option is not set. 
+Check time offset of server with ntp server. Use local time if ntp-host option is not set.
 SNMP gives a date with second precision (no milliseconds). Time precision is not very accurate.
 Use threshold with (+-) 2 seconds offset (minimum).
 
