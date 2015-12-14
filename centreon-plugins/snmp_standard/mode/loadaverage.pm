@@ -87,6 +87,9 @@ sub run {
     my $result = $self->{snmp}->get_leef(oids => [$oid_CpuLoad1m, $oid_CpuLoad5m, $oid_CpuLoad15m], nothing_quit => 1);
     
     my ($msg, $cpu_load1, $cpu_load5, $cpu_load15);
+    $result->{$oid_CpuLoad1m} =~ s/,/\./g;
+    $result->{$oid_CpuLoad5m} =~ s/,/\./g;
+    $result->{$oid_CpuLoad15m} =~ s/,/\./g;
 
     if (defined($self->{option_results}->{average})) {    
         my $result2 = $self->{snmp}->get_table(oid => $oid_CountCpu);
