@@ -113,6 +113,9 @@ sub run {
                 a.tablespace_name = c.tablespace_name (+)
                 AND a.tablespace_name = b.tablespace_name
                 AND a.tablespace_name = d.tablespace_name (+)
+                AND (b.contents = 'PERMANENT'
+                OR (b.contents <> 'PERMANENT'
+                AND a.tablespace_name=(select value from v$parameter where name='undo_tablespace')))
             UNION ALL
             SELECT
                 d.tablespace_name "Tablespace",
@@ -180,6 +183,9 @@ sub run {
             WHERE
                 a.tablespace_name = c.tablespace_name (+)
                 AND a.tablespace_name = b.tablespace_name
+                AND (b.contents = 'PERMANENT'
+                OR (b.contents <> 'PERMANENT'
+                AND a.tablespace_name=(select value from v$parameter where name='undo_tablespace')))
             UNION ALL
             SELECT
                 a.tablespace_name "Tablespace",
