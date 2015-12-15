@@ -37,8 +37,8 @@ sub new {
         {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', default => '9200'},
-            "proto:s"           => { name => 'proto' },
-            "urlpath:s"         => { name => 'url_path' },
+            "proto:s"           => { name => 'proto', default => 'http'},
+            "urlpath:s"         => { name => 'url_path', default => '/'},
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
