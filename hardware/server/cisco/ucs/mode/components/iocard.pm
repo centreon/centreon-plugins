@@ -50,7 +50,7 @@ sub check {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentIOCardDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;  
+        my $instance = $1;
         my $iocard_dn = $self->{results}->{$oid_cucsEquipmentIOCardDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentIOCardPresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentIOCardOperState}->{oid}}, instance => $instance);
@@ -60,10 +60,10 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
                                                         $iocard_dn, $result2->{cucsEquipmentIOCardOperState},
-                                                        $result->{cucsEquipmentIOCardPresence}
-                                    ));
+                                                        $result->{cucsEquipmentIOCardPresence})
+                                    );
         
-        my $exit = $self->get_severity(section => 'default.presence', label => 'iocard.presence', value => $result->{cucsEquipmentIOCardPresence});
+        my $exit = $self->get_severity(section => 'iocard.presence', label => 'default.presence', value => $result->{cucsEquipmentIOCardPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' presence is: '%s'",

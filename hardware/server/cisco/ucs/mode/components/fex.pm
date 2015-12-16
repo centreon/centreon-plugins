@@ -49,7 +49,7 @@ sub check {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentFexDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;  
+        my $instance = $1;
         my $fex_dn = $self->{results}->{$oid_cucsEquipmentFexDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentFexPresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentFexOperState}->{oid}}, instance => $instance);
@@ -59,21 +59,21 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Fabric extender '%s' state is '%s' [presence: %s].",
                                                         $fex_dn, $result2->{cucsEquipmentFexOperState},
-                                                        $result->{cucsEquipmentFexPresence}
-                                    ));
+                                                        $result->{cucsEquipmentFexPresence})
+                                    );
         
-        my $exit = $self->get_severity(section => 'default.presence', label => 'fex.presence', value => $result->{cucsEquipmentFexPresence});
+        my $exit = $self->get_severity(section => 'fex.presence', label => 'default.presence', value => $result->{cucsEquipmentFexPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fabric extender '%s' presence is: '%s'",
-                                                             $fex_dn, $result->{cucsEquipmentFexPresence}
+                                                             $fex_dn, $result->{cucsEquipmentFexPresence})
                                         );
             next;
         }
         
         $self->{components}->{fex}->{total}++;
 
-        $exit = $self->get_severity(section => 'default.presence', label => 'fex.operability', value => $result2->{cucsEquipmentFexOperState});
+        $exit = $self->get_severity(section => 'fex.presence', label => 'default.operability', value => $result2->{cucsEquipmentFexOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fabric extender '%s' state is '%s'.",

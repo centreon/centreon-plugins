@@ -47,7 +47,7 @@ sub check {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentChassisDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;        
+        my $instance = $1;
         my $chassis_dn = $self->{results}->{$oid_cucsEquipmentChassisDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentChassisOperState}->{oid}}, instance => $instance);
 
@@ -57,12 +57,12 @@ sub check {
         $self->{components}->{chassis}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("chassis '%s' state is '%s'.",
-                                                        $chassis_dn, $result->{cucsEquipmentChassisOperState}
-                                    ));
-        my $exit = $self->get_severity(section => 'default.operability', label => 'chassis.operability', value => $result->{cucsEquipmentChassisOperState});
+                                                        $chassis_dn, $result->{cucsEquipmentChassisOperState})
+                                    );
+        my $exit = $self->get_severity(section => 'chassis.operability', label => 'default.operability', value => $result->{cucsEquipmentChassisOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("chassis '%s' state is '%s'.",
+                                        short_msg => sprintf("chassis '%s' state is '%s'",
                                                              $chassis_dn, $result->{cucsEquipmentChassisOperState}
                                                              )
                                         );

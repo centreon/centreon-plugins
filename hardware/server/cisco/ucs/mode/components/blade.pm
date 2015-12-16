@@ -49,8 +49,8 @@ sub check {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsComputeBladeDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;        
-        my $fan_dn = $self->{results}->{$oid_cucsComputeBladeDn}->{$oid};
+        my $instance = $1;
+        my $blade_dn = $self->{results}->{$oid_cucsComputeBladeDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsComputeBladePresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsComputeBladeOperState}->{oid}}, instance => $instance);
 
@@ -58,11 +58,11 @@ sub check {
         next if ($self->check_exclude(section => 'blade', instance => $blade_dn));
 
         $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
-                                                        $blade_dn, $result2->{cucsComputeBladeOperState}),
+                                                        $blade_dn, $result2->{cucsComputeBladeOperState},
                                                         $result->{cucsComputeBladePresence})
-                                    ));
+                                    );
         
-        my $exit = $self->get_severity(section => 'default.presence', label => 'blade.presence', value => $result->{cucsComputeBladePresence}));
+        my $exit = $self->get_severity(section => 'blade.presence', label => 'default.presence', value => $result->{cucsComputeBladePresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("blade '%s' presence is: '%s'",
@@ -73,11 +73,11 @@ sub check {
         
         $self->{components}->{blade}->{total}++;
 
-        $exit = $self->get_severity(section => 'default.overall_status', label => 'blade.overall_status', value => $result2->{cucsComputeBladeOperState}));
+        $exit = $self->get_severity(section => 'blade.overall_status', label => 'default.overall_status', value => $result2->{cucsComputeBladeOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("blade '%s' state is '%s'.",
-                                                             $blade_dn, $result2->{cucsComputeBladeOperState})
+                                        short_msg => sprintf("blade '%s' state is '%s'",
+                                                             $blade_dn, $result2->{cucsComputeBladeOperState}
                                                              )
                                         );
         }
