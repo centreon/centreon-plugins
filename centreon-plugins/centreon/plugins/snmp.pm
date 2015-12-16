@@ -52,6 +52,7 @@ sub new {
                   "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
                   "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
                   "subsetleef:s"              => { name => 'subsetleef', default => 50 },
+                  "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
                   "snmp-username:s"           => { name => 'snmp_security_name' },
                   "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
                   "authprotocol:s"            => { name => 'snmp_auth_protocol' },
@@ -354,7 +355,7 @@ sub get_multiple_table {
         
         my $vb = new SNMP::VarList(@bindings);
         
-        if ($self->is_snmpv1()) {
+        if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
             $self->{session}->getnext($vb);
         } else {
             my $current_repeat_count = floor($repeat_count / (scalar(keys %{$working_oids})));
@@ -419,6 +420,12 @@ sub get_multiple_table {
             }
 
             $working_oids->{ $bases[$pos % $current_oids] }->{start} = $complete_oid;
+        }
+        
+        # infinite loop. Some equipments it returns nothing!!??
+        if ($pos == -1) {
+            $self->{output}->add_option_msg(short_msg => "SNMP Table Request: problem to get values (try --snmp-force-getnext option)");
+            $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
         }
     }
     
@@ -495,7 +502,7 @@ sub get_table {
         $last_oid =~ /(.*)\.(\d+)([\.\s]*)$/;
         my $vb = new SNMP::VarList([$1, $2]);
     
-        if ($self->is_snmpv1()) {
+        if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
             $self->{session}->getnext($vb);
         } else {
             $self->{session}->getbulk(0, $repeat_count, $vb);
@@ -636,6 +643,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{snmp_force_getnext} = $options{option_results}->{snmp_force_getnext};
     $self->{maxrepetitions} = $options{option_results}->{maxrepetitions};
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
@@ -841,6 +849,10 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 =item B<--subsetleef>
 
 How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious whe you set it. Prefer to let the default value).
+
+=item B<--snmp-force-getnext>
+
+Use snmp getnext function (even in snmp v2c and v3).
 
 =item B<--snmp-username>
 
