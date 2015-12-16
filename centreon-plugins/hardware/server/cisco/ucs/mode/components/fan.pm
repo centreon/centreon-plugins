@@ -49,7 +49,7 @@ sub check {
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentFanDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;  
+        my $instance = $1;
         my $fan_dn = $self->{results}->{$oid_cucsEquipmentFanDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentFanPresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentFanOperState}->{oid}}, instance => $instance);
@@ -59,10 +59,10 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
                                                         $fan_dn, $result2->{cucsEquipmentFanOperState},
-                                                        $result->{cucsEquipmentFanPresence}
-                                    ));
+                                                        $result->{cucsEquipmentFanPresence})
+                                    );
 
-        my $exit = $self->get_severity(section => 'default.presence', label => 'fan.presence', value => $result->{cucsEquipmentFanPresence});
+        my $exit = $self->get_severity(section => 'fan.presence', label => 'default.presence', value => $result->{cucsEquipmentFanPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s' presence is: '%s'",
@@ -73,7 +73,7 @@ sub check {
         
         $self->{components}->{fan}->{total}++;
 
-        $exit = $self->get_severity(section => 'default.operability', label => 'fan.operability', value => $result2->{cucsEquipmentFanOperState});
+        $exit = $self->get_severity(section => 'fan.operability', label => 'default.operability', value => $result2->{cucsEquipmentFanOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s' state is '%s'.",

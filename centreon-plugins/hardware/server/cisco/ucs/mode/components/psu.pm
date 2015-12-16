@@ -50,7 +50,7 @@ sub check {
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentPsuDn}})) {
         $oid =~ /\.(\d+)$/;
-        my $instance = $1;  
+        my $instance = $1;
         my $psu_dn = $self->{results}->{$oid_cucsEquipmentPsuDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentPsuPresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentPsuOperState}->{oid}}, instance => $instance);
@@ -60,10 +60,10 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
                                                         $psu_dn, $result2->{cucsEquipmentPsuOperState},
-                                                        $result->{cucsEquipmentPsuPresence}
-                                    ));
+                                                        $result->{cucsEquipmentPsuPresence})
+                                    );
         
-        my $exit = $self->get_severity(section => 'default.presence', label => 'psu.presence', value => $result->{cucsEquipmentPsuPresence});
+        my $exit = $self->get_severity(section => 'psu.presence', label => 'default.presence', value => $result->{cucsEquipmentPsuPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' presence is: '%s'",
@@ -74,7 +74,7 @@ sub check {
         
         $self->{components}->{psu}->{total}++;
         
-        $exit = $self->get_severity(section => 'default.operability', label => 'psu.operability', value => $result2->{cucsEquipmentPsuOperState});
+        $exit = $self->get_severity(section => 'psu.operability', label => 'default.operability', value => $result2->{cucsEquipmentPsuOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' state is '%s'.",
