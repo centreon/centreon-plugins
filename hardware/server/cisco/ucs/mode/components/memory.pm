@@ -51,6 +51,7 @@ sub check {
         $oid =~ /\.(\d+)$/;
         my $instance = $1;
         my $memory_dn = $self->{results}->{$oid_cucsMemoryUnitDn}->{$oid};
+        $memory_dn =~ s/\n$//ms;
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsMemoryUnitPresence}->{oid}}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsMemoryUnitOperState}->{oid}}, instance => $instance);
         

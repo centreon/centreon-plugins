@@ -90,6 +90,7 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
     105 => 'upgradeProblem',
     106 => 'peerCommProblem',
     107 => 'autoUpgrade',
+    108 => 'linkActivateBlocked',
 );
 %mapping_overall_status = (
     0 => 'indeterminate',

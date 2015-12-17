@@ -22,14 +22,14 @@ package hardware::server::cisco::ucs::mode::components::localdisk;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_drive_status);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
 
 # In MIB 'CISCO-UNIFIED-COMPUTING-STORAGE-MIB'
 my $mapping1 = {
     cucsStorageLocalDiskPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.10', map => \%mapping_presence },
 };
 my $mapping2 = {
-    cucsStorageLocalDiskDiskState => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.18', map => \%mapping_drive_status },
+    cucsStorageLocalDiskOperability => { oid => '.1.3.6.1.4.1.9.9.719.1.45.4.1.18', map => \%mapping_operability },
 };
 my $oid_cucsStorageLocalDiskDn = '.1.3.6.1.4.1.9.9.719.1.30.11.1.2';
 
@@ -37,7 +37,7 @@ sub load {
     my (%options) = @_;
     
     push @{$options{request}}, { oid => $mapping1->{cucsStorageLocalDiskPresence}->{oid} },
-        { oid => $mapping2->{cucsStorageLocalDiskDiskState}->{oid} }, { oid => $oid_cucsStorageLocalDiskDn };
+        { oid => $mapping2->{cucsStorageLocalDiskOperability}->{oid} }, { oid => $oid_cucsStorageLocalDiskDn };
 }
 
 sub check {
@@ -52,13 +52,13 @@ sub check {
         my $instance = $1;
         my $localdisk_dn = $self->{results}->{$oid_cucsStorageLocalDiskDn}->{$oid};
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsStorageLocalDiskPresence}->{oid}}, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsStorageLocalDiskDiskState}->{oid}}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsStorageLocalDiskOperability}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'localdisk', instance => $localdisk_dn));
         next if ($self->check_exclude(section => 'localdisk', instance => $localdisk_dn));
 
         $self->{output}->output_add(long_msg => sprintf("local disk '%s' state is '%s' [presence: %s].",
-                                                        $localdisk_dn, $result2->{cucsStorageLocalDiskDiskState},
+                                                        $localdisk_dn, $result2->{cucsStorageLocalDiskOperability},
                                                         $result->{cucsStorageLocalDiskPresence})
                                     );
 
@@ -73,11 +73,11 @@ sub check {
         
         $self->{components}->{localdisk}->{total}++;
 
-        $exit = $self->get_severity(section => 'localdisk.drivestatus', label => 'default.drivestatus', value => $result2->{cucsStorageLocalDiskDiskState});
+        $exit = $self->get_severity(section => 'localdisk.operability', label => 'default.operability', value => $result2->{cucsStorageLocalDiskOperability});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("local disk '%s' state is '%s'",
-                                                             $localdisk_dn, $result2->{cucsStorageLocalDiskDiskState}
+                                                             $localdisk_dn, $result2->{cucsStorageLocalDiskOperability}
                                                              )
                                         );
         }
