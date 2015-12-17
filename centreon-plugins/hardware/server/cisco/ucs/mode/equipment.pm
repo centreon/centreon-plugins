@@ -79,7 +79,7 @@ sub check_options {
         } else {
              ($section, $instance, $status, $filter) = @values;
         }
-        if ($section !~ /^(fan|psu|chassis|iocard|blade|fex)\.(presence|operability|overall_status)$/) {
+        if ($section !~ /^(fan|psu|chassis|iocard|blade|fex|cpu|memory|localdisk)\.(presence|operability|overall_status)$/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
             $self->{output}->option_exit();
         }
@@ -97,7 +97,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [];
-    my @components = ('fan', 'psu', 'chassis', 'iocard', 'blade', 'fex');
+    my @components = ('fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "hardware::server::cisco::ucs::mode::components::$_";
@@ -221,7 +221,7 @@ Check Hardware (Fans, Power supplies, chassis, io cards, blades, fabric extender
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex'.
+Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'.
 
 =item B<--exclude>
 
