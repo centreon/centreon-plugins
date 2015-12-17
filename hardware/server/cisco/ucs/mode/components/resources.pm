@@ -28,10 +28,27 @@ our $thresholds;
 our %mapping_presence;
 our %mapping_operability;
 our %mapping_overall_status;
+our %mapping_drive_status;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_overall_status);
+our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_overall_status %mapping_drive_status);
 
+%mapping_drive_status = (
+    0 => 'unknown',
+    1 => 'online',
+    2 => 'unconfiguredGood',
+    3 => 'globalHotSpare',
+    4 => 'dedicatedHotSpare',
+    5 => 'jbod',
+    6 => 'offline',
+    7 => 'rebuilding',
+    8 => 'copyback',
+    9 => 'failed',
+    10 => 'unconfiguredBad',
+    11 => 'predictiveFailure',
+    12 => 'disabledForRemoval',
+    13 => 'foreignConfiguration',
+);
 %mapping_presence = (
     0 => 'unknown', 
     1 => 'empty', 
@@ -108,6 +125,22 @@ our @EXPORT_OK = qw($thresholds %mapping_presence %mapping_operability %mapping_
 );
 
 $thresholds = {
+    'default.drivestatus' => [
+        ['unknown', 'UNKNOWN'], 
+        ['online', 'OK'],
+        ['unconfiguredGood', 'OK'], 
+        ['globalHotSpare', 'OK'], 
+        ['dedicatedHotSpare', 'OK'], 
+        ['jbod', 'OK'], 
+        ['offline', 'OK'], 
+        ['rebuilding', 'WARNING'], 
+        ['copyback', 'OK'], 
+        ['failed', 'CRITICAL'], 
+        ['unconfiguredBad', 'CRITICAL'], 
+        ['predictiveFailure', 'WARNING'], 
+        ['disabledForRemoval', 'OK'],
+        ['foreignConfiguration', 'OK'], 
+    ],
     'default.presence' => [
         ['unknown', 'UNKNOWN'], 
         ['empty', 'OK'], 

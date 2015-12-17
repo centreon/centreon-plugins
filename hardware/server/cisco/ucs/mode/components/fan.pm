@@ -76,7 +76,7 @@ sub check {
         $exit = $self->get_severity(section => 'fan.operability', label => 'default.operability', value => $result2->{cucsEquipmentFanOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s' state is '%s'.",
+                                        short_msg => sprintf("fan '%s' state is '%s'",
                                                              $fan_dn, $result2->{cucsEquipmentFanOperState}
                                                              )
                                         );
