@@ -226,12 +226,12 @@ Can be: 'fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'loc
 =item B<--exclude>
 
 Exclude some parts (comma seperated list) (Example: --exclude=fan)
-Can be specific or global: --absent-problem=fan,/sys/chassis-7/fan-module-1-7/fan-1
+Can be specific or global: --exclude=fan#/sys/chassis-7/fan-module-1-7/fan-1#
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --exclude=fan#/sys/chassis-7/fan-module-1-7/fan-1#
+Can be specific or global: --absent-problem=fan,/sys/chassis-7/fan-module-1-7/fan-1
 
 =item B<--no-component>
 
