@@ -212,7 +212,6 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{global} = { };
     my $result = $options{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
                                                    $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
                                                    $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns],
