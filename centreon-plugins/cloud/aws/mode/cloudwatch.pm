@@ -30,12 +30,12 @@ use JSON;
 use Module::Load;
 
 my $CloudwatchMetrics = {
-    cpu                => "cloud::aws::mode::metrics::ec2instancecpu",
-    traffic            => "cloud::aws::mode::metrics::ec2instancenetwork",
-    cpucreditusage     => "cloud::aws::mode::metrics::ec2instancecpucreditusage",
-    cpucreditbalance   => "cloud::aws::mode::metrics::ec2instancecpucreditbalance",
-    bucketsize         => "cloud::aws::mode::metrics::s3bucketsize",
-    rdscpu             => "cloud::aws::mode::metrics::rdsinstancecpu",
+    cpu              => "cloud::aws::mode::metrics::ec2instancecpu",
+    traffic          => "cloud::aws::mode::metrics::ec2instancenetwork",
+    cpucreditusage   => "cloud::aws::mode::metrics::ec2instancecpucreditusage",
+    cpucreditbalance => "cloud::aws::mode::metrics::ec2instancecpucreditbalance",
+    bucketsize       => "cloud::aws::mode::metrics::s3bucketsize",
+    rdscpu           => "cloud::aws::mode::metrics::rdsinstancecpu",
 };
 
 my $StatisticsType = "Average,Minimum,Maximum,Sum,SampleCount";

@@ -27,7 +27,7 @@ use JSON;
 
 my $AWSServices         = 'EC2,S3,RDS';
 my @Disco_service_tab   = ('EC2', 'RDS');
-my @EC2_instance_states = ['running', 'stopped'];
+my $EC2_instance_states = 'running,stopped';
 my $awsapi;
 
 sub new
@@ -39,7 +39,9 @@ sub new
     $options{options}->add_options(
         arguments => {
             "service:s" => {name => 'service', default => $AWSServices},
-            "exclude:s" => {name => 'exclude'},
+            "exclude-service:s" => {name => 'exclude_service'},
+            "ec2-state:s"=>{name=> 'ec2_state', default => $EC2_instance_states},
+            "ec2-exclude-state:s" => {name => 'ec2_exclude_state'},
         }
     );
     $self->{result} = {};
@@ -55,6 +57,13 @@ sub api_request {
     my ($self, %options) = @_;
 
     @{$self->{option_results}->{servicetab}} = split( /,/, $self->{option_results}->{service} );
+    # exclusions
+    if (defined($self->{option_results}->{exclude_service})) {
+        my @excludetab = split /,/, $self->{option_results}->{exclude_service};
+        my %array1 = map { $_ => 1 } @excludetab;
+        @{$self->{option_results}->{servicetab}} = grep { not $array1{$_} } @{$self->{option_results}->{servicetab}};
+    }
+
     foreach my $service (@{$self->{option_results}->{servicetab}}) {
         $self->{result}->{count}->{$service} = 0;
         if ($service eq 'EC2') {
@@ -79,12 +88,19 @@ sub EC2
     };
 
     # Building JSON
+    my @ec2_statestab = split(/,/, $self->{option_results}->{ec2_state});
+    # exclusions
+    if (defined($self->{option_results}->{ec2_exclude_state})) {
+        my @excludetab = split /,/, $self->{option_results}->{ec2_exclude_state};
+        my %array1 = map { $_ => 1 } @excludetab;
+        @ec2_statestab = grep { not $array1{$_} } @ec2_statestab;
+    }
     $apiRequest->{json} = {
         'DryRun'  => JSON::false,
         'Filters' => [
             {
                 'Name'   => 'instance-state-name',
-                'Values' => @EC2_instance_states,
+                'Values' => [@ec2_statestab],
             }
         ],
     };
@@ -103,7 +119,7 @@ sub EC2
         $self->{result}->{'EC2'}->{$instance->{Instances}[0]->{InstanceId}} =
           {
             State => $instance->{Instances}[0]->{State}->{Name},
-            Name   => $instance->{Instances}[0]->{Name}
+            Name => $instance->{Instances}[0]->{Name}
           };
 
         $self->{result}->{count}->{'EC2'}++;
@@ -132,8 +148,7 @@ sub S3
     }
 
     # Compute data
-    foreach my $bucket (@buckets)
-    {
+    foreach my $bucket (@buckets) {
         $self->{result}->{'S3'}->{$bucket->{Name}} =
             {'Creation date' => $bucket->{CreationDate}};
         $self->{result}->{count}->{'S3'}++;
@@ -196,10 +211,7 @@ sub run
         foreach my $device (keys %{$self->{result}->{$service}}) {
             my $output = $device . " [";
             foreach my $value (sort(keys %{$self->{result}->{$service}->{$device}})) {
-                $output =
-                    $output 
-                  . $value . " = "
-                  . $self->{result}->{$service}->{$device}->{$value} . ", ";
+                $output = $output . $value . " = " . $self->{result}->{$service}->{$device}->{$value} . ", ";
             }
             $output =~ s/, $//;
             $output = $output . "]";
@@ -227,9 +239,17 @@ List your EC2, RDS instance and S3 buckets
 
 (optional) List one particular service.
 
-=item B<--exclude>
+=item B<--exclude-service>
 
 (optional) Service to exclude from the scan.
+
+=item B<--ec2-state>
+
+(optional) State to request (default: 'running','stopped')
+
+=item B<--ec2-exclude-state>
+
+(optional) State to exclude from the scan.
 
 =back
 
