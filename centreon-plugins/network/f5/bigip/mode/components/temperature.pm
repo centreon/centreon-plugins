@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my $mapping = {
-    sysChassisTempTemperature => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1.2', map => \%map_status },
+    sysChassisTempTemperature => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1.2' },
 };
 
 sub load {
@@ -54,7 +54,7 @@ sub check {
                                     
         if (defined($result->{sysChassisTempTemperature}) && $result->{sysChassisTempTemperature} =~ /[0-9]/) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{sysChassisTempTemperature});
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Temperature '%s' is %.2f C", $instance, $result->{sysChassisTempTemperature}));
             }
