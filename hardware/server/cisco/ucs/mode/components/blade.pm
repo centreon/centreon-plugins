@@ -22,59 +22,62 @@ package hardware::server::cisco::ucs::mode::components::blade;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_overall_status);
+
+# In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
+my $mapping1 = {
+    cucsComputeBladePresence => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.45', map => \%mapping_presence },
+};
+my $mapping2 = {
+    cucsComputeBladeOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.9.2.1.42', map => \%mapping_overall_status },
+};
+my $oid_cucsComputeBladeDn = '.1.3.6.1.4.1.9.9.719.1.9.2.1.2';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping1->{cucsComputeBladePresence}->{oid} },
+        { oid => $mapping2->{cucsComputeBladeOperState}->{oid} }, { oid => $oid_cucsComputeBladeDn };
+}
 
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking blades");
     $self->{components}->{blade} = {name => 'blades', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'blade'));
-    
-    my $oid_cucsComputeBladePresence = '.1.3.6.1.4.1.9.9.719.1.9.2.1.45';
-    my $oid_cucsComputeBladeOperState = '.1.3.6.1.4.1.9.9.719.1.9.2.1.42';
-    my $oid_cucsComputeBladeDn = '.1.3.6.1.4.1.9.9.719.1.9.2.1.2';
 
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsComputeBladePresence },
-                                                            { oid => $oid_cucsComputeBladeOperState },
-                                                            { oid => $oid_cucsComputeBladeDn },
-                                                            ]
-                                                   );
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsComputeBladePresence}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $blade_index = $1;        
-        my $blade_dn = $result->{$oid_cucsComputeBladeDn}->{$oid_cucsComputeBladeDn . '.' . $blade_index};
-        my $blade_operstate = defined($result->{$oid_cucsComputeBladeOperState}->{$oid_cucsComputeBladeOperState . '.' . $blade_index}) ?
-                                $result->{$oid_cucsComputeBladeOperState}->{$oid_cucsComputeBladeOperState . '.' . $blade_index} : 0; # unknown
-        my $blade_presence = defined($result->{$oid_cucsComputeBladePresence}->{$oid_cucsComputeBladePresence . '.' . $blade_index}) ? 
-                                $result->{$oid_cucsComputeBladePresence}->{$oid_cucsComputeBladePresence . '.' . $blade_index} : 0;
-        
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsComputeBladeDn}})) {
+        $oid =~ /\.(\d+)$/;
+        my $instance = $1;
+        my $blade_dn = $self->{results}->{$oid_cucsComputeBladeDn}->{$oid};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsComputeBladePresence}->{oid}}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsComputeBladeOperState}->{oid}}, instance => $instance);
+
         next if ($self->absent_problem(section => 'blade', instance => $blade_dn));
         next if ($self->check_exclude(section => 'blade', instance => $blade_dn));
 
-        my $exit = $self->get_severity(section => 'blade', threshold => 'presence', value => $blade_presence);
+        $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
+                                                        $blade_dn, $result2->{cucsComputeBladeOperState},
+                                                        $result->{cucsComputeBladePresence})
+                                    );
+        
+        my $exit = $self->get_severity(section => 'blade.presence', label => 'default.presence', value => $result->{cucsComputeBladePresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("blade '%s' presence is: '%s'",
-                                                             $blade_dn, ${$thresholds->{presence}{$blade_presence}}[0])
+                                                             $blade_dn, $result->{cucsComputeBladePresence})
                                         );
             next;
         }
         
         $self->{components}->{blade}->{total}++;
-        
-        $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
-                                                        $blade_dn, ${$thresholds->{overall_status}->{$blade_operstate}}[0],
-                                                        ${$thresholds->{presence}->{$blade_presence}}[0]
-                                    ));
-        $exit = $self->get_severity(section => 'blade', threshold => 'overall_status', value => $blade_operstate);
+
+        $exit = $self->get_severity(section => 'blade.overall_status', label => 'default.overall_status', value => $result2->{cucsComputeBladeOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("blade '%s' state is '%s'.",
-                                                             $blade_dn, ${$thresholds->{overall_status}->{$blade_operstate}}[0]
+                                        short_msg => sprintf("blade '%s' state is '%s'",
+                                                             $blade_dn, $result2->{cucsComputeBladeOperState}
                                                              )
                                         );
         }

@@ -22,58 +22,62 @@ package hardware::server::cisco::ucs::mode::components::fan;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+
+# In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
+my $mapping1 = {
+    cucsEquipmentFanPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.15.12.1.13', map => \%mapping_presence },
+};
+my $mapping2 = {
+    cucsEquipmentFanOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.12.1.9', map => \%mapping_operability },
+};
+my $oid_cucsEquipmentFanDn = '.1.3.6.1.4.1.9.9.719.1.15.12.1.2';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentFanPresence}->{oid} },
+        { oid => $mapping2->{cucsEquipmentFanOperState}->{oid} }, { oid => $oid_cucsEquipmentFanDn };
+}
 
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'fan'));
-    
-    my $oid_cucsEquipmentFanPresence = '.1.3.6.1.4.1.9.9.719.1.15.12.1.13';
-    my $oid_cucsEquipmentFanOperState = '.1.3.6.1.4.1.9.9.719.1.15.12.1.9';
-    my $oid_cucsEquipmentFanDn = '.1.3.6.1.4.1.9.9.719.1.15.12.1.2';
 
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsEquipmentFanPresence },
-                                                            { oid => $oid_cucsEquipmentFanOperState },
-                                                            { oid => $oid_cucsEquipmentFanDn },
-                                                            ]
-                                                   );
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsEquipmentFanPresence}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $fan_index = $1;        
-        my $fan_dn = $result->{$oid_cucsEquipmentFanDn}->{$oid_cucsEquipmentFanDn . '.' . $fan_index};
-        my $fan_operstate = defined($result->{$oid_cucsEquipmentFanOperState}->{$oid_cucsEquipmentFanOperState . '.' . $fan_index}) ?
-                                $result->{$oid_cucsEquipmentFanOperState}->{$oid_cucsEquipmentFanOperState . '.' . $fan_index} : 0; # unknown
-        my $fan_presence = defined($result->{$oid_cucsEquipmentFanPresence}->{$oid_cucsEquipmentFanPresence . '.' . $fan_index}) ? 
-                                $result->{$oid_cucsEquipmentFanPresence}->{$oid_cucsEquipmentFanPresence . '.' . $fan_index} : 0;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentFanDn}})) {
+        $oid =~ /\.(\d+)$/;
+        my $instance = $1;
+        my $fan_dn = $self->{results}->{$oid_cucsEquipmentFanDn}->{$oid};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentFanPresence}->{oid}}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentFanOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'fan', instance => $fan_dn));
         next if ($self->check_exclude(section => 'fan', instance => $fan_dn));
 
-        my $exit = $self->get_severity(section => 'fan', threshold => 'presence', value => $fan_presence);
+        $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
+                                                        $fan_dn, $result2->{cucsEquipmentFanOperState},
+                                                        $result->{cucsEquipmentFanPresence})
+                                    );
+
+        my $exit = $self->get_severity(section => 'fan.presence', label => 'default.presence', value => $result->{cucsEquipmentFanPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s' presence is: '%s'",
-                                                             $fan_dn, ${$thresholds->{presence}->{$fan_presence}}[0])
+                                                             $fan_dn, $result->{cucsEquipmentFanPresence})
                                         );
             next;
         }
         
-        $self->{components}->{fan}->{total}++;      
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
-                                                        $fan_dn, ${$thresholds->{operability}->{$fan_operstate}}[0],
-                                                        ${$thresholds->{presence}->{$fan_presence}}[0]
-                                    ));
-        $exit = $self->get_severity(section => 'fan', threshold => 'operability', value => $fan_operstate);
+        $self->{components}->{fan}->{total}++;
+
+        $exit = $self->get_severity(section => 'fan.operability', label => 'default.operability', value => $result2->{cucsEquipmentFanOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s' state is '%s'.",
-                                                             $fan_dn, ${$thresholds->{operability}->{$fan_operstate}}[0]
+                                        short_msg => sprintf("fan '%s' state is '%s'",
+                                                             $fan_dn, $result2->{cucsEquipmentFanOperState}
                                                              )
                                         );
         }

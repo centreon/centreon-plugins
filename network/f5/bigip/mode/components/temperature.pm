@@ -23,37 +23,46 @@ package network::f5::bigip::mode::components::temperature;
 use strict;
 use warnings;
 
+my $mapping = {
+    sysChassisTempTemperature => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1.2' },
+};
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping->{sysChassisTempTemperature}->{oid} };
+}
+
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'temperature'));
 
-    my $oid_sysChassisTempEntry = '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1';
-    my $oid_sysChassisTempTemperature = '.1.3.6.1.4.1.3375.2.1.3.2.3.2.1.2';
-   
-    my $result = $self->{snmp}->get_table(oid => $oid_sysChassisTempEntry);
-    return if (scalar(keys %$result) <= 0); 
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysChassisTempTemperature\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{sysChassisTempTemperature}->{oid}}})) {
+        $oid =~ /^$mapping->{sysChassisTempTemperature}->{oid}\.(.*)$/;
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{sysChassisTempTemperature}->{oid}}, instance => $instance);
+    
         next if ($self->check_exclude(section => 'temperature', instance => $instance));
 	
-        my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_sysChassisTempTemperature . '.' . $instance},
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    	$self->{components}->{temperature}->{total}++;
-    	$self->{output}->output_add(severity => $exit_code,long_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,short_msg => sprintf("temp_" . $instance . " is %.2f C", $result->{$oid_sysChassisTempTemperature . '.' . $instance}));
+        $self->{components}->{temperature}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %.2f C [instance: %s].", 
+                                    $instance, $result->{sysChassisTempTemperature}, $instance
+                                    ));
+                                    
+        if (defined($result->{sysChassisTempTemperature}) && $result->{sysChassisTempTemperature} =~ /[0-9]/) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{sysChassisTempTemperature});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Temperature '%s' is %.2f C", $instance, $result->{sysChassisTempTemperature}));
+            }
+            $self->{output}->perfdata_add(label => "temp_" . $instance, unit => 'C',
+                                          value => sprintf("%.2f", $result->{sysChassisTempTemperature}),
+                                          warning => $warn,
+                                          critical => $crit);
         }
-
-    	$self->{output}->perfdata_add(label => "temp_" . $instance , unit => 'C', 
-                                      value => sprintf("%.2f", $result->{$oid_sysChassisTempTemperature . '.' . $instance}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
     }
 }
 

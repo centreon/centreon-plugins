@@ -22,7 +22,23 @@ package hardware::server::cisco::ucs::mode::components::iocard;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+
+# In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
+my $mapping1 = {
+    cucsEquipmentIOCardPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.15.30.1.31', map => \%mapping_presence },
+};
+my $mapping2 = {
+    cucsEquipmentIOCardOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.30.1.25', map => \%mapping_operability },
+};
+my $oid_cucsEquipmentIOCardDn = '.1.3.6.1.4.1.9.9.719.1.15.30.1.2';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentIOCardPresence}->{oid} },
+        { oid => $mapping2->{cucsEquipmentIOCardOperState}->{oid} }, { oid => $oid_cucsEquipmentIOCardDn };
+}
 
 sub check {
     my ($self) = @_;
@@ -31,50 +47,38 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking io cards");
     $self->{components}->{iocard} = {name => 'io cards', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'iocard'));
-    
-    my $oid_cucsEquipmentIOCardPresence = '.1.3.6.1.4.1.9.9.719.1.15.30.1.31';
-    my $oid_cucsEquipmentIOCardOperState = '.1.3.6.1.4.1.9.9.719.1.15.30.1.25';
-    my $oid_cucsEquipmentIOCardDn = '.1.3.6.1.4.1.9.9.719.1.15.30.1.2';
 
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsEquipmentIOCardPresence },
-                                                            { oid => $oid_cucsEquipmentIOCardOperState },
-                                                            { oid => $oid_cucsEquipmentIOCardDn },
-                                                            ]
-                                                   );
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsEquipmentIOCardPresence}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $iocard_index = $1;        
-        my $iocard_dn = $result->{$oid_cucsEquipmentIOCardDn}->{$oid_cucsEquipmentIOCardDn . '.' . $iocard_index};
-        my $iocard_operstate = defined($result->{$oid_cucsEquipmentIOCardOperState}->{$oid_cucsEquipmentIOCardOperState . '.' . $iocard_index}) ?
-                                $result->{$oid_cucsEquipmentIOCardOperState}->{$oid_cucsEquipmentIOCardOperState . '.' . $iocard_index} : 0; # unknown
-        my $iocard_presence = defined($result->{$oid_cucsEquipmentIOCardPresence}->{$oid_cucsEquipmentIOCardPresence . '.' . $iocard_index}) ? 
-                                $result->{$oid_cucsEquipmentIOCardPresence}->{$oid_cucsEquipmentIOCardPresence . '.' . $iocard_index} : 0;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentIOCardDn}})) {
+        $oid =~ /\.(\d+)$/;
+        my $instance = $1;
+        my $iocard_dn = $self->{results}->{$oid_cucsEquipmentIOCardDn}->{$oid};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentIOCardPresence}->{oid}}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentIOCardOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'iocard', instance => $iocard_dn));
         next if ($self->check_exclude(section => 'iocard', instance => $iocard_dn));
 
-        my $exit = $self->get_severity(section => 'iocard', threshold => 'presence', value => $iocard_presence);
+        $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
+                                                        $iocard_dn, $result2->{cucsEquipmentIOCardOperState},
+                                                        $result->{cucsEquipmentIOCardPresence})
+                                    );
+        
+        my $exit = $self->get_severity(section => 'iocard.presence', label => 'default.presence', value => $result->{cucsEquipmentIOCardPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' presence is: '%s'",
-                                                             $iocard_dn, ${$thresholds->{presence}->{$iocard_presence}}[0])
+                                                             $iocard_dn, $result->{cucsEquipmentIOCardPresence})
                                         );
             next;
         }
         
         $self->{components}->{iocard}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
-                                                        $iocard_dn, ${$thresholds->{operability}->{$iocard_operstate}}[0],
-                                                        ${$thresholds->{presence}->{$iocard_presence}}[0]
-                                    ));
-        $exit = $self->get_severity(section => 'iocard', threshold => 'operability', value => $iocard_operstate);
+        $exit = $self->get_severity(section => 'default.operability', label => 'iocard.operability', value => $result2->{cucsEquipmentIOCardOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' state is '%s'.",
-                                                             $iocard_dn, ${$thresholds->{operability}->{$iocard_operstate}}[0]
+                                                             $iocard_dn, $result2->{cucsEquipmentIOCardOperState}
                                                              )
                                         );
         }
