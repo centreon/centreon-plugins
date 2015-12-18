@@ -32,6 +32,11 @@ my $thresholds = {
         ['good', 'OK'],
         ['notPresent', 'OK'],
     ],
+    psu => [
+        ['bad', 'CRITICAL'],
+        ['good', 'OK'],
+        ['notPresent', 'OK'],
+    ],
 };
 
 sub new {
@@ -65,13 +70,6 @@ sub check_options {
         } else {
             $self->{no_components} = 'critical';
         }
-    }
-    
-    $self->{absent_problem} = [];
-    foreach my $val (@{$self->{option_results}->{absent_problem}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{absent_problem}}, { filter => $values[0], instance => $values[1] }; 
     }
     
     $self->{absent_problem} = [];
@@ -117,7 +115,7 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $instance, $value) = ($1, $2, $3);
-            if (!defined($thresholds->{$section})) {
+            if ($section !~ /^(temperature|fan)$/) {
                 $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                 $self->{output}->option_exit();
             }
