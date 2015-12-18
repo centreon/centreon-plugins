@@ -24,11 +24,11 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::values;
 
 my $maps_counters = {
     global => [
-        { set => {
-                label => 'client',
+        { label => 'client', set => {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Current client connections : %s',
                 perfdatas => [
@@ -37,18 +37,16 @@ my $maps_counters = {
                 ],
             }
         },
-        { set => {
-                label => 'client-ssl',
+        { label => 'client-ssl', set => {
                 key_values => [ { name => 'client_ssl' } ],
                 output_template => 'Current client SSL connections : %s',
                 perfdatas => [
-                    { label => 'ClientSSL', value => 'client_absolute', template => '%s', 
+                    { label => 'ClientSSL', value => 'client_ssl_absolute', template => '%s', 
                       min => 0, unit => 'con' },
                 ],
             }
         },
-        { set => {
-                label => 'server',
+        { label => 'server', set => { 
                 key_values => [ { name => 'server' } ],
                 output_template => 'Current server connections: %s',
                 perfdatas => [
@@ -57,8 +55,7 @@ my $maps_counters = {
                 ],
             }
         },
-        { set => {
-                label => 'server-ssl',
+        { label => 'server-ssl', set => {
                 key_values => [ { name => 'server_ssl' } ],
                 output_template => 'Current server SSL connections : %s',
                 perfdatas => [
@@ -219,4 +216,3 @@ Can be: 'client', 'server', 'client-ssl', 'server-ssl'.
 =back
 
 =cut
-    
