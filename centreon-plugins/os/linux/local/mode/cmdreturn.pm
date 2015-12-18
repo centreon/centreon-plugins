@@ -99,6 +99,11 @@ sub run {
                                     short_msg => 'Exit code from command');
     }
     
+    if (defined($exit_code)) {
+        $self->{output}->perfdata_add(label => "code",
+                                      value => $exit_code);
+    }
+    
     $self->{output}->display();
     $self->{output}->exit();
 }

@@ -29,43 +29,59 @@ my %map_status = (
     2 => 'notPresent',
 );
 
+my $mapping = {
+    sysChassisFanStatus => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.2', map => \%map_status },
+    sysChassisFanSpeed => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.3' },
+};
+my $oid_sysChassisFanEntry = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $oid_sysChassisFanEntry };
+}
+
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'fan'));
-    
-    my $oid_sysChassisFanEntry = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1';
-    my $oid_sysChassisFanStatus = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.2';
-    my $oid_sysChassisFanSpeed = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_sysChassisFanEntry);
-    return if (scalar(keys %$result) <= 0);
 
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_sysChassisFanStatus\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sysChassisFanEntry}})) {
+        next if ($oid !~ /^$mapping->{sysChassisFanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sysChassisFanEntry}, instance => $instance);
     
+        next if ($result->{sysChassisFanStatus} =~ /notPresent/i && 
+                 $self->absent_problem(section => 'fan', instance => $instance));
         next if ($self->check_exclude(section => 'fan', instance => $instance));
-    
-        my $status = $result->{$oid_sysChassisFanStatus . '.' . $instance};
-        my $speed = $result->{$oid_sysChassisFanSpeed . '.' . $instance};
-
+        
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s.", 
-                                                        $instance, $map_status{$status}));
-        if ($status < 1) {
-            $self->{output}->output_add(severity =>  'CRITICAL',
-                                        short_msg => sprintf("Fan '%s' status is %s", 
-                                                             $instance, $map_status{$status}));
+        
+        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is '%s' [instance: %s, speed: %s].", 
+                                    $instance, $result->{sysChassisFanStatus}, $instance,
+                                    defined($result->{sysChassisFanSpeed}) ? $result->{sysChassisFanSpeed} : '-'));
+        my $exit = $self->get_severity(section => 'fan', value => $result->{sysChassisFanStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan '%s' status is '%s'", 
+                                            $instance, $result->{sysChassisFanStatus}));
         }
-
-        $self->{output}->perfdata_add(label => "fan_" . $instance,
-                                      value => $speed,
-                                      );
-    }   
-
+        
+        if (defined($result->{sysChassisFanSpeed}) && $result->{sysChassisFanSpeed} =~ /[0-9]/) {
+            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{sysChassisFanSpeed});
+            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit2,
+                                            short_msg => sprintf("fan speed '%s' is %s rpm", $instance, $result->{sysChassisFanSpeed}));
+            }
+            $self->{output}->perfdata_add(label => "fan_" . $instance, unit => 'rpm',
+                                          value => $result->{sysChassisFanSpeed},
+                                          warning => $warn,
+                                          critical => $crit,
+                                          min => 0);
+        }
+    }
 }
 
 1;
