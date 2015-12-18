@@ -111,7 +111,7 @@ sub custom_failoverstatus_threshold {
     return $status;
 }
 
-sub custom_syncstatus_output {
+sub custom_failoverstatus_output {
     my ($self, %options) = @_;
     my $msg = "Failover status is '" . $self->{result_values}->{failoverstatus} . "'";
 
@@ -189,7 +189,7 @@ sub run_global {
 
         if ($value_check != 0) {
             $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
+            $long_msg_append = ' - ';
             next;
         }
         my $exit2 = $obj->threshold_check();
@@ -197,11 +197,11 @@ sub run_global {
 
         my $output = $obj->output();
         $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
+        $long_msg_append = ' - ';
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
             $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
+            $short_msg_append = ' - ';
         }
         
         $obj->perfdata();
@@ -263,29 +263,29 @@ my %map_failover_status = (
 );
 
 my $mapping = {
-    sysAttrFailoverIsRedundant  => { oid => '.1.3.6.1.4.1.3375.2.1.1.1.1.13.0', map => \%map_boolean },
-    sysAttrModeMaint            => { oid => '.1.3.6.1.4.1.3375.2.1.1.1.1.21.0', map => \%map_boolean },
-    sysCmSyncStatusId           => { oid => '.1.3.6.1.4.1.3375.2.1.14.1.1.0', map => \%map_sync_status },
-    sysCmFailoverStatusId       => { oid => '.1.3.6.1.4.1.3375.2.1.14.3.1.0', map => \%map_failover_status },
+    sysAttrFailoverIsRedundant  => { oid => '.1.3.6.1.4.1.3375.2.1.1.1.1.13', map => \%map_boolean },
+    sysAttrModeMaint            => { oid => '.1.3.6.1.4.1.3375.2.1.1.1.1.21', map => \%map_boolean },
+    sysCmSyncStatusId           => { oid => '.1.3.6.1.4.1.3375.2.1.14.1.1', map => \%map_sync_status },
+    sysCmFailoverStatusId       => { oid => '.1.3.6.1.4.1.3375.2.1.14.3.1', map => \%map_failover_status },
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{snmp}->get_leef(oids => [$mapping->{sysAttrFailoverIsRedundant}->{oid},
-                                                   $mapping->{sysAttrModeMaint}->{oid},
-                                                   $mapping->{sysCmSyncStatusId}->{oid},
-                                                   $mapping->{sysCmFailoverStatusId}->{oid}],
+    my $result = $options{snmp}->get_leef(oids => [$mapping->{sysAttrFailoverIsRedundant}->{oid} . '.0',
+                                                   $mapping->{sysAttrModeMaint}->{oid} . '.0',
+                                                   $mapping->{sysCmSyncStatusId}->{oid} . '.0',
+                                                   $mapping->{sysCmFailoverStatusId}->{oid} . '.0'],
                                          nothing_quit => 1);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $result, instance => '0');
+    my $result2 = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => '0');
     
-    if ($result->{sysAttrModeMaint} eq 'true') {
+    if ($result2->{sysAttrModeMaint} eq 'true') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'maintenance mode is active');
         $self->{output}->display();
         $self->{output}->exit();
     }
-    if ($result->{sysAttrFailoverIsRedundant} eq 'false') {
+    if ($result2->{sysAttrFailoverIsRedundant} eq 'false') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'failover mode is disable');
         $self->{output}->display();
@@ -293,8 +293,8 @@ sub manage_selection {
     }
     
     $self->{global} = { 
-        syncstatus => $result->{sysCmSyncStatusId},
-        failoverstatus => $result->{sysCmFailoverStatusId},
+        syncstatus => $result2->{sysCmSyncStatusId},
+        failoverstatus => $result2->{sysCmFailoverStatusId},
     };
 }
     
