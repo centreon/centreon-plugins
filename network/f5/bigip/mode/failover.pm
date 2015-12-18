@@ -136,6 +136,8 @@ sub new {
                                 "filter-counters:s" => { name => 'filter_counters' },
                                 "warning-sync-status:s"        => { name => 'warning_sync_status', default => '' },
                                 "critical-sync-status:s"       => { name => 'critical_sync_status', default => '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/' },
+                                "warning-failover-status:s"        => { name => 'warning_failover_status', default => '' },
+                                "critical-failover-status:s"       => { name => 'critical_failover_status', default => '%{failoverstatus} =~ /unknown/' },
                                 });
 
     foreach my $key (('global')) {
@@ -312,13 +314,23 @@ Only display some counters (regexp can be used).
 
 =item B<--warning-sync-status>
 
-Set warning threshold for status
+Set warning threshold for sync status
 Can used special variables like: %{syncstatus}
 
 =item B<--critical-sync-status>
 
-Set critical threshold for status (Default: '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/').
+Set critical threshold for sync status (Default: '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/').
 Can used special variables like: %{syncstatus}
+
+=item B<--warning-failover-status>
+
+Set warning threshold for failover status
+Can used special variables like: %{failoverstatus}
+
+=item B<--critical-failover-status>
+
+Set critical threshold for failover status (Default: '%{failoverstatus} =~ /unknown/').
+Can used special variables like: %{failoverstatus}
 
 =back
 
