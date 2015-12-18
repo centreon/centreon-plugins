@@ -44,6 +44,25 @@ my %map_sensor_type = (
     13 => 'specialEnum',
     14 => 'dBm',
 );
+my %map_scale = (
+    1 => -24, # yocto, 
+    2 => -21, # zepto
+    3 => -18, # atto
+    4 => -15, # femto 
+    5 => -12, # pico
+    6 => -9, # nano
+    7 => -6, # micro
+    8 => -3, # milli
+    9 => 0, #units
+    10 => 3, #kilo
+    11 => 6, #mega
+    12 => 9, #giga
+    13 => 12, #tera
+    14 => 18, #exa
+    15 => 15, #peta
+    16 => 21, #zetta
+    17 => 24, #yotta
+);
 my %map_severity = (
     1 => 'other',
     10 => 'minor',
@@ -58,10 +77,27 @@ my %map_relation = (
     5 => 'equalTo',
     6 => 'notEqualTo',
 );
+my %perfdata_unit = (
+    'other' => '',
+    'unknown' => '',
+    'voltsAC' => 'V',
+    'voltsDC' => 'V',
+    'amperes' => 'A',
+    'watts' => 'W',
+    'hertz' => 'Hz',
+    'celsius' => 'C',
+    'percentRH' => '%',
+    'rpm' => 'rpm',
+    'cmm' => '',
+    'truthvalue' => '',
+    'specialEnum' => '',
+    'dBm' => 'dBm',
+);
 
 # In MIB 'CISCO-ENTITY-SENSOR-MIB'
 my $mapping = {
     entSensorType => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.1', map => \%map_sensor_type },
+    entSensorScale => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.2', map => \%map_scale },
     entSensorPrecision => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.3' },
     entSensorValue => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.4' },
     entSensorStatus => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.5', map => \%map_sensor_status },
@@ -73,6 +109,7 @@ my $mapping2 = {
 };
 my $oid_entSensorValueEntry = '.1.3.6.1.4.1.9.9.91.1.1.1.1';
 my $oid_entSensorThresholdEntry = '.1.3.6.1.4.1.9.9.91.1.2.1.1';
+my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
     my (%options) = @_;
@@ -82,18 +119,59 @@ sub load {
 
 sub get_default_warning_threshold {
     my ($self, %options) = @_;
-    my $th = '';
+    my ($high_th, $low_th);
 
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entSensorThresholdEntry}})) {
+        next if ($oid !~ /^$mapping2->{entSensorThresholdSeverity}->{oid}\.$options{instance}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_entSensorThresholdEntry}, instance => $options{instance} . '.' . $instance);
+        next if ($result->{entSensorThresholdSeverity} ne 'minor');
+        
+        my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
+        if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
+            $high_th = $value - 0.01;
+        } elsif ($result->{entSensorThresholdRelation} eq 'greaterThan') {
+            $high_th = $value;
+        } elsif ($result->{entSensorThresholdRelation} eq 'lessOrEqual') {
+            $low_th = $value + 0.01;
+        } elsif ($result->{entSensorThresholdRelation} eq 'lessThan') {
+            $low_th = $value;
+        }
+    }
+    
+    my $th = '';
+    $th = $low_th . ':' if (defined($low_th));
+    $th .= $high_th if (defined($high_th));
     return $th;
 }
 
 sub get_default_critical_threshold {
     my ($self, %options) = @_;
-    my $th = '';
+    my ($high_th, $low_th);
 
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entSensorThresholdEntry}})) {
+        next if ($oid !~ /^$mapping2->{entSensorThresholdSeverity}->{oid}\.$options{instance}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_entSensorThresholdEntry}, instance => $options{instance} . '.' . $instance);
+        next if ($result->{entSensorThresholdSeverity} !~ /major|critical/);
+        
+        my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
+        if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
+            $high_th = $value - 0.01;
+        } elsif ($result->{entSensorThresholdRelation} eq 'greaterThan') {
+            $high_th = $value;
+        } elsif ($result->{entSensorThresholdRelation} eq 'lessOrEqual') {
+            $low_th = $value + 0.01;
+        } elsif ($result->{entSensorThresholdRelation} eq 'lessThan') {
+            $low_th = $value;
+        }
+    }
+    
+    my $th = '';
+    $th = $low_th . ':' if (defined($low_th));
+    $th .= $high_th if (defined($high_th));
     return $th;
 }
-
 
 sub check {
     my ($self) = @_;
@@ -112,13 +190,13 @@ sub check {
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
-           $result->{entSensorValue} * 10 ** -($result->{entSensorPrecision}) : undef;
+           $result->{entSensorValue} * (10 ** ($result->{entSensorScale}) * (10 ** -($result->{entSensorPrecision}))) : undef;
         
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
                                     $sensor_descr, $result->{entSensorStatus},
                                     $instance, 
-                                    defined($result->{entSensorValue}) ? $result->{entSensorValue} : '-'),
-                                    $result->{entSensorType});
+                                    defined($result->{entSensorValue}) ? $result->{entSensorValue} : '-',
+                                    $result->{entSensorType}));
         my $exit = $self->get_severity(section => $result->{entSensorType}, label => 'sensor', value => $result->{entSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -131,8 +209,8 @@ sub check {
         my $component = 'sensor.' . $result->{entSensorType};
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $result->{entSensorValue});
         if ($checked == 0) {
-            my $warn_th = get_default_warning_threshold($self);
-            my $crit_th = get_default_critical_threshold($self);
+            my $warn_th = get_default_warning_threshold($self, instance => $instance, result => $result);
+            my $crit_th = get_default_critical_threshold($self, instance => $instance, result => $result);
             $self->{perfdata}->threshold_validate(label => 'warning-' . $component . '-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);
@@ -142,7 +220,7 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Sensor '%s' is %s %s", $sensor_descr, $result->{entSensorStatus}, $result->{entSensorType}));
         }
-        $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr,
+        $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr, unit => $perfdata_unit{$result->{entSensorType}},
                                       value => $result->{entSensorValue},
                                       warning => $warn,
                                       critical => $crit);
