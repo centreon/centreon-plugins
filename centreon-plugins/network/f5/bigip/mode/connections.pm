@@ -25,6 +25,8 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
 my $maps_counters = {
     global => [
@@ -43,6 +45,17 @@ my $maps_counters = {
                 perfdatas => [
                     { label => 'ClientSSL', value => 'client_ssl_absolute', template => '%s', 
                       min => 0, unit => 'con' },
+                ],
+            }
+        },
+        { label => 'client-ssl-tps', set => {        
+                key_values => [ { name => 'client_ssl_tot_native', diff => 1 }, { name => 'client_ssl_tot_compat', diff => 1 } ],
+                output_template => 'TPS client SSL connections : %.2f', threshold_use => 'client_ssl_tps', output_use => 'client_ssl_tps',
+                closure_custom_calc => \&custom_client_tps_calc,
+                per_second => 1,
+                perfdatas => [
+                    { label => 'ClientSSL_Tps', value => 'client_ssl_tps', template => '%.2f',
+                      unit => 'tps', min => 0 },
                 ],
             }
         },
@@ -67,6 +80,16 @@ my $maps_counters = {
     ]
 };
 
+sub custom_client_tps_calc {
+    my ($self, %options) = @_;
+
+    my $diff_native = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_native'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_native'};
+    my $diff_compat = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_compat'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_compat'};
+    $self->{result_values}->{client_ssl_tps} = ($diff_native + $diff_compat) / $options{delta_time};
+    
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -75,8 +98,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter:s"           => { name => 'filter' },
+                                "filter-counters:s" => { name => 'filter_counters' },
                                 });
+    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
 
     foreach my $key (('global')) {
         foreach (@{$maps_counters->{$key}}) {
@@ -86,7 +110,8 @@ sub new {
                                                             'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
                                                });
             }
-            $_->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+            $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
+                                                       output => $self->{output}, perfdata => $self->{perfdata},
                                                        label => $_->{label});
             $_->{obj}->set(%{$_->{set}});
         }
@@ -104,6 +129,8 @@ sub check_options {
             $_->{obj}->init(option_results => $self->{option_results});
         }
     }
+    
+    $self->{statefile_value}->check_options(%options);
 }
 
 sub run_global {
@@ -114,12 +141,12 @@ sub run_global {
     foreach (@{$maps_counters->{global}}) {
         my $obj = $_->{obj};
 
-        next if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter}/);
+        next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter_counters}/);
         
         $obj->set(instance => 'global');
     
-        my ($value_check) = $obj->execute(values => $self->{global});
+        my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{global});
 
         if ($value_check != 0) {
             $long_msg .= $long_msg_append . $obj->output_error();
@@ -153,12 +180,16 @@ sub run_global {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
     
-    $self->manage_selection();
+    $self->manage_selection(%options);
+    
+    $self->{new_datas} = {};
+    $self->{statefile_value}->read(statefile => $self->{cache_name});
+    $self->{new_datas}->{last_timestamp} = time();
     
     $self->run_global();
 
+    $self->{statefile_value}->write(data => $self->{new_datas});
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -166,23 +197,31 @@ sub run {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "f5_bipgip_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    
     my $oid_sysStatClientCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.1.8.0';
     my $oid_sysStatServerCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.1.15.0';
     my $oid_sysClientsslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.9.2.0';
     my $oid_sysServersslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.10.2.0';
+    my $oid_sysClientsslStatTotNativeConns = '.1.3.6.1.4.1.3375.2.1.1.2.9.6.0';
+    my $oid_sysClientsslStatTotCompatConns = '.1.3.6.1.4.1.3375.2.1.1.2.9.9.0';
     
-    if ($self->{snmp}->is_snmpv1()) {
+    if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
     
     $self->{global} = { };
-    my $result = $self->{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
-                                                  $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns],
+    my $result = $options{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
+                                                   $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
+                                                   $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns],
                                          nothing_quit => 1);
     $self->{global} = { 
         client => $result->{$oid_sysStatClientCurConns},
         client_ssl => $result->{$oid_sysClientsslStatCurConns},
+        client_ssl_tot_native => $result->{$oid_sysClientsslStatTotNativeConns},
+        client_ssl_tot_compat => $result->{$oid_sysClientsslStatTotCompatConns},
         server => $result->{$oid_sysStatServerCurConns},
         server_ssl => $result->{$oid_sysServersslStatCurConns},
     };
@@ -198,20 +237,20 @@ Check current connections on F5 BIG IP device.
 
 =over 8
 
-=item B<--filter>
+=item B<--filter-counters>
 
-Filter (can be a regexp) to filter output.
-Example to check SSL connections only : --filter='^client-ssl|server-ssl$'
+Only display some counters (regexp can be used).
+Example to check SSL connections only : --filter-counters='^client-ssl|server-ssl$'
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'client', 'server', 'client-ssl', 'server-ssl'.
+Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'client', 'server', 'client-ssl', 'server-ssl'.
+Can be: 'client', 'server', 'client-ssl', 'server-ssl', 'client-ssl-tps'.
 
 =back
 
