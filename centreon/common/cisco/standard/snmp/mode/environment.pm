@@ -94,6 +94,11 @@ my $thresholds = {
         ['incompatible|unsupported', 'CRITICAL'],
         ['supported', 'OK'],
     ],
+    sensor => [
+        ['ok', 'OK'],
+        ['unavailable', 'OK'],
+        ['nonoperational', 'CRITICAL'],
+    ],
 };
 
 sub new {
@@ -133,17 +138,29 @@ sub check_options {
     
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
+        next if (!defined($val) || $val eq '');
+        my @values = split (/,/, $val);
+        if (scalar(@values) < 3) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        my ($section, $status, $filter) = ($1, $2, $3);
+        my ($section, $instance, $status, $filter);
+        if (scalar(@values) == 3) {
+            ($section, $status, $filter) = @values;
+            $instance = '.*';
+        } else {
+             ($section, $instance, $status, $filter) = @values;
+        }
+        if ($section !~ /^(temperature|fan|psu)$/) {
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
+            $self->{output}->option_exit();
+        }
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
+        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
     }
     
     $self->{numeric_threshold} = {};
@@ -154,8 +171,8 @@ sub check_options {
                 $self->{output}->option_exit();
             }
             my ($section, $regexp, $value) = ($1, $2, $3);
-            if ($section !~ /(temperature|voltage)/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature or voltage).");
+            if ($section !~ /(temperature|voltage|sensor)/i) {
+                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "' (type must be: temperature, voltage or sensor).");
                 $self->{output}->option_exit();
             }
             my $position = 0;
@@ -181,7 +198,7 @@ sub run {
     my $oid_ciscoEnvMonPresent = ".1.3.6.1.4.1.9.9.13.1.1";
     my $snmp_request = [ { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent } ];
     
-    my @components = ('fan', 'psu', 'temperature', 'voltage', 'module', 'physical');
+    my @components = ('fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor');
     foreach (@components) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = "centreon::common::cisco::standard::snmp::mode::components::$_";
@@ -278,7 +295,7 @@ sub get_severity_numeric {
     if (defined($self->{numeric_threshold}->{$options{section}})) {
         my $exits = [];
         foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
-            if ($options{instance} =~ /$_->{regexp}/) {
+            if ($options{instance} =~ /$_->{regexp}/i) {
                 push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
                 $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
                 $checked = 1;
@@ -296,13 +313,15 @@ sub get_severity {
     
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
+            if ($options{value} =~ /$_->{filter}/i && 
+                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
                 $status = $_->{status};
                 return $status;
             }
         }
     }
-    foreach (@{$thresholds->{$options{section}}}) {           
+    my $label = defined($options{label}) ? $options{label} : $options{section};
+    foreach (@{$thresholds->{$label}}) {
         if ($options{value} =~ /$$_[0]/i) {
             $status = $$_[1];
             return $status;
@@ -325,7 +344,7 @@ Check environment (Power Supplies, Fans, Temperatures, Voltages, Modules, Physic
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'temperature', 'voltage', 'module', 'physical'.
+Can be: 'fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'.
 
 =item B<--exclude>
 
@@ -350,12 +369,12 @@ Example: --threshold-overload='fan,CRITICAL,^(?!(up|normal)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures, voltages (syntax: type,regexp,treshold)
+Set warning threshold for temperatures, voltages, sensors (syntax: type,regexp,treshold)
 Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for temperatures, voltages (syntax: type,regexp,treshold)
+Set critical threshold for temperatures, voltages, sensors (syntax: type,regexp,treshold)
 Example: --critical='temperature,.*,40'
 
 =back
