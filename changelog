@@ -1,2 +1,27 @@
-2015-11-26 Quentin Garnier
+2015-12-18 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Add a plugin to check VMWare ESX with WSMAN
+ * Configuration: centreon-plugins don't use GetOptions anymore (custom library instead)
+ * Add option '--snmp-force-getnext' in core snmp library
+ * Mode added: [F5 BigIP] 'failover'
+ * Mode added: [vmware connector] for centreon-vmware 2.1.0
+ * Enhancement: [extreme]{cpu} 'n/a' value managed (#223)
+ * Enhancement: [snmp standard]{inodes} add filter type option (#224)
+ * Enhancement: [netapp]{filesys} add inodes usage
+ * Enhancement: [snmp_standard]{ntp} change output (#232)
+ * Enhancement: [snmp_standard]{processcount} improve performance
+ * Enhancement: [cisco standard]{ipsla} manage no tag name
+ * Enhancement: [snmp_standard]{loadaverage} manage load with coma
+ * Enhancement: [oracle]{tablespaces} manage 'UNDO' tablespaces (#242)
+ * Enhancement: [cisco ucs]{equipment} add cpu, memory and localdisk monitoring
+ * Enhancement: [cisco wlc]{ap-status} can monitor the number of APs
+ * Enhancement: [F5 BigIP]{hardware} refactoring
+ * Enhancement: [cisco standard]{environment} add sensors monitoring (#160)
+ * Enhancement: [aws]{list} add exclude service (#248)
+ * Fix: [protocol x509]{validity} add default port (#240)
+ * Fix: [ups standard]{battery-status} hardened code (#225)
+ * Fix: [cisco standard]{environment} voltage threshold value issue
+ * Fix: [kayako api]{ticketcount} mode crash
+ * Fix: [elasticsearch] Crash without some values in command line (#243)
+ 
+2015-11-26 Quentin Garnier <qgarnier@centreon.com>
  * initial release
