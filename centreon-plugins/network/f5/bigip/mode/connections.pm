@@ -25,6 +25,51 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+my $maps_counters = {
+    global => [
+        { set => {
+                label => 'client',
+                key_values => [ { name => 'client' } ],
+                output_template => 'Current client connections : %s',
+                perfdatas => [
+                    { label => 'Client', value => 'client_absolute', template => '%s', 
+                      min => 0, unit => 'con' },
+                ],
+            }
+        },
+        { set => {
+                label => 'client-ssl',
+                key_values => [ { name => 'client_ssl' } ],
+                output_template => 'Current client SSL connections : %s',
+                perfdatas => [
+                    { label => 'ClientSSL', value => 'client_absolute', template => '%s', 
+                      min => 0, unit => 'con' },
+                ],
+            }
+        },
+        { set => {
+                label => 'server',
+                key_values => [ { name => 'server' } ],
+                output_template => 'Current server connections: %s',
+                perfdatas => [
+                    { label => 'Server', value => 'server_absolute', template => '%s', 
+                      min => 0, unit => 'con' },
+                ],
+            }
+        },
+        { set => {
+                label => 'server-ssl',
+                key_values => [ { name => 'server_ssl' } ],
+                output_template => 'Current server SSL connections : %s',
+                perfdatas => [
+                    { label => 'ServerSSL', value => 'server_ssl_absolute', template => '%s', 
+                      min => 0, unit => 'con' },
+                ],
+            }
+        },
+    ]
+};
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -33,12 +78,23 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning-client:s"    => { name => 'warning_client' },
-                                  "critical-client:s"   => { name => 'critical_client' },
-                                  "warning-server:s"    => { name => 'warning_server' },
-                                  "critical-server:s"   => { name => 'critical_server' },
+                                "filter:s"           => { name => 'filter' },
                                 });
 
+    foreach my $key (('global')) {
+        foreach (@{$maps_counters->{$key}}) {
+            if (!defined($_->{threshold}) || $_->{threshold} != 0) {
+                $options{options}->add_options(arguments => {
+                                                            'warning-' . $_->{label} . ':s'    => { name => 'warning-' . $_->{label} },
+                                                            'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
+                                               });
+            }
+            $_->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
+                                                       label => $_->{label});
+            $_->{obj}->set(%{$_->{set}});
+        }
+    }
+                                
     return $self;
 }
 
@@ -46,71 +102,93 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning-client', value => $self->{option_results}->{warning_client})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-client threshold '" . $self->{option_results}->{option_results}->{warning_client} . "'.");
-       $self->{output}->option_exit();
+     foreach my $key (('global')) {
+        foreach (@{$maps_counters->{$key}}) {
+            $_->{obj}->init(option_results => $self->{option_results});
+        }
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-client', value => $self->{option_results}->{critical_client})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-client threshold '" . $self->{option_results}->{critical_client} . "'.");
-       $self->{output}->option_exit();
+}
+
+sub run_global {
+    my ($self, %options) = @_;
+    
+    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
+    my @exits;
+    foreach (@{$maps_counters->{global}}) {
+        my $obj = $_->{obj};
+
+        next if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter}/);
+        
+        $obj->set(instance => 'global');
+    
+        my ($value_check) = $obj->execute(values => $self->{global});
+
+        if ($value_check != 0) {
+            $long_msg .= $long_msg_append . $obj->output_error();
+            $long_msg_append = ', ';
+            next;
+        }
+        my $exit2 = $obj->threshold_check();
+        push @exits, $exit2;
+
+        my $output = $obj->output();
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        
+        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        $obj->perfdata();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-server', value => $self->{option_results}->{warning_server})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning-server threshold '" . $self->{option_results}->{warning_client} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-server', value => $self->{option_results}->{critical_server})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical-server threshold '" . $self->{option_results}->{critical_client} . "'.");
-       $self->{output}->option_exit();
+
+    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => "$short_msg"
+                                    );
+    } else {
+        $self->{output}->output_add(short_msg => "$long_msg");
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
-    if ($self->{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
-        $self->{output}->option_exit();
-    }
+    $self->manage_selection();
+    
+    $self->run_global();
+
+    $self->{output}->display();
+    $self->{output}->exit();
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
 
     my $oid_sysStatClientCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.1.8.0';
     my $oid_sysStatServerCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.1.15.0';
     my $oid_sysClientsslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.9.2.0';
     my $oid_sysServersslStatCurConns = '.1.3.6.1.4.1.3375.2.1.1.2.10.2.0';
-      
-    my $result = $self->{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns], nothing_quit => 1);
     
-    my $sysStatClientCurConns = $result->{$oid_sysStatClientCurConns};
-    my $sysStatServerCurConns = $result->{$oid_sysStatServerCurConns};
-    my $sysClientsslStatCurConns = $result->{$oid_sysClientsslStatCurConns};
-    my $sysServersslStatCurConns = $result->{$oid_sysServersslStatCurConns};
+    if ($self->{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->option_exit();
+    }
     
-    my $exit1 = $self->{perfdata}->threshold_check(value => $sysStatClientCurConns, threshold => [ { label => 'critical-client', 'exit_litteral' => 'critical' }, { label => 'warning-client', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $sysStatServerCurConns, threshold => [ { label => 'critical-server', 'exit_litteral' => 'critical' }, { label => 'warning-server', exit_litteral => 'warning' } ]);
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Current connections : Client = %d (SSL: %d) , Server = %d (SSL: %d)",
-                                                     $sysStatClientCurConns, $sysClientsslStatCurConns, 
-                                                     $sysStatServerCurConns, $sysServersslStatCurConns));
-    $self->{output}->perfdata_add(label => "Client", unit => 'con',
-                                  value => $sysStatClientCurConns,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-client'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-client'),
-                                  );
-    $self->{output}->perfdata_add(label => "Server", unit => 'con',
-                                  value => $sysStatServerCurConns,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-server'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-server'),
-                                  );
-    $self->{output}->perfdata_add(label => "ClientSSL", unit => 'con',
-                                  value => $sysClientsslStatCurConns);
-    $self->{output}->perfdata_add(label => "ServerSSL", unit => 'con',
-                                  value => $sysServersslStatCurConns);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = { };
+    my $result = $self->{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
+                                                  $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns],
+                                         nothing_quit => 1);
+    $self->{global} = { 
+        client => $result->{$oid_sysStatClientCurConns},
+        client_ssl => $result->{$oid_sysClientsslStatCurConns},
+        server => $result->{$oid_sysStatServerCurConns},
+        server_ssl => $result->{$oid_sysServersslStatCurConns},
+    };
 }
     
 1;
@@ -123,21 +201,20 @@ Check current connections on F5 BIG IP device.
 
 =over 8
 
-=item B<--warning-client>
+=item B<--filter>
 
-Threshold warning (current client connection number)
+Filter (can be a regexp) to filter output.
+Example to check SSL connections only : --filter='^client-ssl|server-ssl$'
 
-=item B<--critical-client>
+=item B<--warning-*>
 
-Threshold critical (current client connection number)
+Threshold warning.
+Can be: 'client', 'server', 'client-ssl', 'server-ssl'.
 
-=item B<--warning-server>
+=item B<--critical-*>
 
-Threshold warning (current server connection number)
-
-=item B<--critical-server>
-
-Threshold critical (current server connection number)
+Threshold critical.
+Can be: 'client', 'server', 'client-ssl', 'server-ssl'.
 
 =back
 
