@@ -184,6 +184,8 @@ sub check {
         next if ($oid !~ /^$mapping->{entSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_entSensorValueEntry}, instance => $instance);
+        
+        next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
         my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
         next if ($self->check_exclude(section => 'sensor', instance => $instance));
