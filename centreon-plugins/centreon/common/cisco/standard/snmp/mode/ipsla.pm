@@ -972,7 +972,7 @@ sub manage_selection {
             my $i = 1;
             my $instances = [];
             foreach my $oid2 ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
-                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.\d+.(\d+)/);
+                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.$instance.(\d+)/);
                 push @{$instances}, $1;
                 $self->{datas}->{$tag_name}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
                 $i++;
