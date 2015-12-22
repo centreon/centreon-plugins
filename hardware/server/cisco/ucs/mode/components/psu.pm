@@ -22,7 +22,23 @@ package hardware::server::cisco::ucs::mode::components::psu;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_presence %mapping_operability);
+
+# In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
+my $mapping1 = {
+    cucsEquipmentPsuPresence => { oid => '.1.3.6.1.4.1.9.9.719.1.15.56.1.11', map => \%mapping_presence },
+};
+my $mapping2 = {
+    cucsEquipmentPsuOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.56.1.7', map => \%mapping_operability },
+};
+my $oid_cucsEquipmentPsuDn = '.1.3.6.1.4.1.9.9.719.1.15.56.1.2';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentPsuPresence}->{oid} },
+        { oid => $mapping2->{cucsEquipmentPsuOperState}->{oid} }, { oid => $oid_cucsEquipmentPsuDn };
+}
 
 sub check {
     my ($self) = @_;
@@ -32,49 +48,37 @@ sub check {
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'psu'));
     
-    my $oid_cucsEquipmentPsuPresence = '.1.3.6.1.4.1.9.9.719.1.15.56.1.11';
-    my $oid_cucsEquipmentPsuOperState = '.1.3.6.1.4.1.9.9.719.1.15.56.1.7';
-    my $oid_cucsEquipmentPsuDn = '.1.3.6.1.4.1.9.9.719.1.15.56.1.2';
-
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsEquipmentPsuPresence },
-                                                            { oid => $oid_cucsEquipmentPsuOperState },
-                                                            { oid => $oid_cucsEquipmentPsuDn },
-                                                            ]
-                                                   );
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsEquipmentPsuPresence}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $psu_index = $1;        
-        my $psu_dn = $result->{$oid_cucsEquipmentPsuDn}->{$oid_cucsEquipmentPsuDn . '.' . $psu_index};
-        my $psu_operstate = defined($result->{$oid_cucsEquipmentPsuOperState}->{$oid_cucsEquipmentPsuOperState . '.' . $psu_index}) ?
-                                $result->{$oid_cucsEquipmentPsuOperState}->{$oid_cucsEquipmentPsuOperState . '.' . $psu_index} : 0; # unknown
-        my $psu_presence = defined($result->{$oid_cucsEquipmentPsuPresence}->{$oid_cucsEquipmentPsuPresence . '.' . $psu_index}) ? 
-                                $result->{$oid_cucsEquipmentPsuPresence}->{$oid_cucsEquipmentPsuPresence . '.' . $psu_index} : 0;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentPsuDn}})) {
+        $oid =~ /\.(\d+)$/;
+        my $instance = $1;
+        my $psu_dn = $self->{results}->{$oid_cucsEquipmentPsuDn}->{$oid};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentPsuPresence}->{oid}}, instance => $instance);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentPsuOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'psu', instance => $psu_dn));
         next if ($self->check_exclude(section => 'psu', instance => $psu_dn));
 
-         my $exit = $self->get_severity(section => 'psu', threshold => 'presence', value => $psu_presence);
+        $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
+                                                        $psu_dn, $result2->{cucsEquipmentPsuOperState},
+                                                        $result->{cucsEquipmentPsuPresence})
+                                    );
+        
+        my $exit = $self->get_severity(section => 'psu.presence', label => 'default.presence', value => $result->{cucsEquipmentPsuPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' presence is: '%s'",
-                                                             $psu_dn, ${$thresholds->{presence}->{$psu_presence}}[0])
+                                                             $psu_dn, $result->{cucsEquipmentPsuPresence})
                                         );
             next;
         }
         
         $self->{components}->{psu}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
-                                                        $psu_dn, ${$thresholds->{operability}->{$psu_operstate}}[0],
-                                                        ${$thresholds->{presence}->{$psu_presence}}[0]
-                                    ));
-        $exit = $self->get_severity(section => 'psu', threshold => 'operability', value => $psu_operstate);
+        $exit = $self->get_severity(section => 'psu.operability', label => 'default.operability', value => $result2->{cucsEquipmentPsuOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("power supply '%s' state is '%s'.",
-                                                             $psu_dn, ${$thresholds->{operability}->{$psu_operstate}}[0]
+                                                             $psu_dn, $result2->{cucsEquipmentPsuOperState}
                                                              )
                                         );
         }

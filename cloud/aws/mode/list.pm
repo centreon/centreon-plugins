@@ -17,33 +17,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 package cloud::aws::mode::list;
 
 use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use Data::Dumper;
 use JSON;
 
-my $AWSServices = 'EC2,S3,RDS';
-my @Disco_service_tab = ('EC2', 'RDS');
-my @EC2_instance_states = [ 'running', 'stopped' ];
-
+my $AWSServices         = 'EC2,S3,RDS';
+my @Disco_service_tab   = ('EC2', 'RDS');
+my $EC2_instance_states = 'running,stopped';
 my $awsapi;
 
-sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+sub new
+{
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
     $self->{version} = '0.1';
-
     $options{options}->add_options(
         arguments => {
-            "service:s" => { name => 'service', default => $AWSServices },
-            "exclude:s" => { name => 'exclude' },
+            "service:s" => {name => 'service', default => $AWSServices},
+            "exclude-service:s" => {name => 'exclude_service'},
+            "ec2-state:s"=>{name=> 'ec2_state', default => $EC2_instance_states},
+            "ec2-exclude-state:s" => {name => 'ec2_exclude_state'},
         }
     );
     $self->{result} = {};
@@ -59,6 +57,13 @@ sub api_request {
     my ($self, %options) = @_;
 
     @{$self->{option_results}->{servicetab}} = split( /,/, $self->{option_results}->{service} );
+    # exclusions
+    if (defined($self->{option_results}->{exclude_service})) {
+        my @excludetab = split /,/, $self->{option_results}->{exclude_service};
+        my %array1 = map { $_ => 1 } @excludetab;
+        @{$self->{option_results}->{servicetab}} = grep { not $array1{$_} } @{$self->{option_results}->{servicetab}};
+    }
+
     foreach my $service (@{$self->{option_results}->{servicetab}}) {
         $self->{result}->{count}->{$service} = 0;
         if ($service eq 'EC2') {
@@ -74,21 +79,28 @@ sub api_request {
     }
 }
 
-sub EC2 {
-    my ( $self, %options ) = @_;
-
+sub EC2
+{
+    my ($self, %options) = @_;
     my $apiRequest = {
         'command'    => 'ec2',
         'subcommand' => 'describe-instances',
     };
 
     # Building JSON
+    my @ec2_statestab = split(/,/, $self->{option_results}->{ec2_state});
+    # exclusions
+    if (defined($self->{option_results}->{ec2_exclude_state})) {
+        my @excludetab = split /,/, $self->{option_results}->{ec2_exclude_state};
+        my %array1 = map { $_ => 1 } @excludetab;
+        @ec2_statestab = grep { not $array1{$_} } @ec2_statestab;
+    }
     $apiRequest->{json} = {
         'DryRun'  => JSON::false,
         'Filters' => [
             {
                 'Name'   => 'instance-state-name',
-                'Values' => @EC2_instance_states,
+                'Values' => [@ec2_statestab],
             }
         ],
     };
@@ -107,17 +119,17 @@ sub EC2 {
         $self->{result}->{'EC2'}->{$instance->{Instances}[0]->{InstanceId}} =
           {
             State => $instance->{Instances}[0]->{State}->{Name},
-            Name   => $instance->{Instances}[0]->{Name}
+            Name => $instance->{Instances}[0]->{Name}
           };
 
         $self->{result}->{count}->{'EC2'}++;
     }
 }
 
-sub S3 {
-    my ( $self,    %options ) = @_;
-    my ( @buckets, @return )  = ();
-
+sub S3
+{
+    my ($self,    %options) = @_;
+    my (@buckets, @return)  = ();
     my $apiRequest = {
         'command'    => 's3',
         'subcommand' => 'ls',
@@ -137,15 +149,15 @@ sub S3 {
 
     # Compute data
     foreach my $bucket (@buckets) {
-        $self->{result}->{'S3'}->{ $bucket->{Name} } =
-          { 'Creation date' => $bucket->{CreationDate} };
+        $self->{result}->{'S3'}->{$bucket->{Name}} =
+            {'Creation date' => $bucket->{CreationDate}};
         $self->{result}->{count}->{'S3'}++;
     }
 }
 
-sub RDS {
-    my ( $self, %options ) = @_;
-
+sub RDS
+{
+    my ($self, %options) = @_;
     my $apiRequest = {
         'command'    => 'rds',
         'subcommand' => 'describe-db-instances',
@@ -172,25 +184,25 @@ sub disco_format {
     $self->{output}->add_disco_format( elements => $names );
 }
 
-sub disco_show {
-    my ( $self, %options ) = @_;
-
+sub disco_show
+{
+    my ($self, %options) = @_;
     $self->api_request(%options);
     foreach my $service (@Disco_service_tab) {
         foreach my $device (keys %{$self->{result}->{$service}}) {
             $self->{output}->add_disco_entry(
-                name  => $self->{result}->{$service}->{$device}->{Name},
-                id    => $device,
-                state => $self->{result}->{$service}->{$device}->{State},
+                name    => $self->{result}->{$service}->{$device}->{Name},
+                id      => $device,
+                state   => $self->{result}->{$service}->{$device}->{State},
                 service => $service,
             );
         }
     }
 }
 
-sub run {
-    my ( $self, %options ) = @_;
-
+sub run
+{
+    my ($self, %options) = @_;
     $self->api_request(%options);
 
     # Send formated data to Centreon
@@ -199,21 +211,14 @@ sub run {
         foreach my $device (keys %{$self->{result}->{$service}}) {
             my $output = $device . " [";
             foreach my $value (sort(keys %{$self->{result}->{$service}->{$device}})) {
-                $output =
-                    $output 
-                  . $value . " = "
-                  . $self->{result}->{$service}->{$device}->{$value} . ", ";
+                $output = $output . $value . " = " . $self->{result}->{$service}->{$device}->{$value} . ", ";
             }
             $output =~ s/, $//;
             $output = $output . "]";
-            $self->{output}->output_add( long_msg => $output );
+            $self->{output}->output_add(long_msg => $output);
         }
-        $self->{output}->output_add(
-            short_msg => sprintf( "%s: %s",
-                $service, $self->{result}->{count}->{$service} )
-        );
+        $self->{output}->output_add(short_msg => sprintf("%s: %s", $service, $self->{result}->{count}->{$service}));
     }
-
     $self->{output}->display(
         nolabel               => 1,
         force_ignore_perfdata => 1,
@@ -221,9 +226,7 @@ sub run {
     );
     $self->{output}->exit();
 }
-
 1;
-
 __END__
 
 =head1 MODE
@@ -236,9 +239,17 @@ List your EC2, RDS instance and S3 buckets
 
 (optional) List one particular service.
 
-=item B<--exclude>
+=item B<--exclude-service>
 
 (optional) Service to exclude from the scan.
+
+=item B<--ec2-state>
+
+(optional) State to request (default: 'running','stopped')
+
+=item B<--ec2-exclude-state>
+
+(optional) State to exclude from the scan.
 
 =back
 

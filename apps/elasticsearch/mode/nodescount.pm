@@ -36,9 +36,9 @@ sub new {
     $options{options}->add_options(arguments =>
         {
             "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', default => '9200'},
+            "port:s"            => { name => 'port', default => 9200 },
             "proto:s"           => { name => 'proto' },
-            "urlpath:s"         => { name => 'url_path' },
+            "urlpath:s"         => { name => 'url_path', default => '/_cluster/stats' },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
@@ -64,7 +64,6 @@ sub check_options {
        $self->{output}->option_exit();
     }
 
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path} . "_cluster/stats/";
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -141,7 +140,7 @@ Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
-Set path to get Elasticsearch information (Default: '/')
+Set path to get Elasticsearch information (Default: '_cluster/stats')
 
 =item B<--credentials>
 

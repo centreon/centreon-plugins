@@ -22,32 +22,34 @@ package hardware::server::cisco::ucs::mode::components::chassis;
 
 use strict;
 use warnings;
-use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
+use hardware::server::cisco::ucs::mode::components::resources qw(%mapping_operability);
+
+# In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
+# Don't do the 'presence'. Is 'unknown' ??!!!
+my $mapping1 = {
+    cucsEquipmentChassisOperState => { oid => '.1.3.6.1.4.1.9.9.719.1.15.7.1.27', map => \%mapping_operability },
+};
+my $oid_cucsEquipmentChassisDn = '.1.3.6.1.4.1.9.9.719.1.15.7.1.2';
+
+sub load {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentChassisOperState}->{oid} },
+        { oid => $oid_cucsEquipmentChassisDn };
+}
 
 sub check {
     my ($self) = @_;
 
-    # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking chassis");
     $self->{components}->{chassis} = {name => 'chassis', total => 0, skip => 0};
     return if ($self->check_exclude(section => 'chassis'));
-    
-    # Don't do the 'presence'. Is 'unknown' ??!!!
-    my $oid_cucsEquipmentChassisOperState = '.1.3.6.1.4.1.9.9.719.1.15.7.1.27';
-    my $oid_cucsEquipmentChassisDn = '.1.3.6.1.4.1.9.9.719.1.15.7.1.2';
 
-    my $result = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_cucsEquipmentChassisOperState },
-                                                            { oid => $oid_cucsEquipmentChassisDn },
-                                                            ]
-                                                   );
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_cucsEquipmentChassisOperState}})) {
-        # index
-        $key =~ /\.(\d+)$/;
-        my $chassis_index = $1;        
-        my $chassis_dn = $result->{$oid_cucsEquipmentChassisDn}->{$oid_cucsEquipmentChassisDn . '.' . $chassis_index};
-        my $chassis_operstate = defined($result->{$oid_cucsEquipmentChassisOperState}->{$oid_cucsEquipmentChassisOperState . '.' . $chassis_index}) ?
-                                $result->{$oid_cucsEquipmentChassisOperState}->{$oid_cucsEquipmentChassisOperState . '.' . $chassis_index} : 0; # unknown
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentChassisDn}})) {
+        $oid =~ /\.(\d+)$/;
+        my $instance = $1;
+        my $chassis_dn = $self->{results}->{$oid_cucsEquipmentChassisDn}->{$oid};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentChassisOperState}->{oid}}, instance => $instance);
 
         next if ($self->absent_problem(section => 'chassis', instance => $chassis_dn));
         next if ($self->check_exclude(section => 'chassis', instance => $chassis_dn));
@@ -55,13 +57,13 @@ sub check {
         $self->{components}->{chassis}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("chassis '%s' state is '%s'.",
-                                                        $chassis_dn, ${$thresholds->{operability}->{$chassis_operstate}}[0]
-                                    ));
-        my $exit = $self->get_severity(section => 'chassis', threshold => 'operability', value => $chassis_operstate);
+                                                        $chassis_dn, $result->{cucsEquipmentChassisOperState})
+                                    );
+        my $exit = $self->get_severity(section => 'chassis.operability', label => 'default.operability', value => $result->{cucsEquipmentChassisOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("chassis '%s' state is '%s'.",
-                                                             $chassis_dn, ${$thresholds->{operability}->{$chassis_operstate}}[0]
+                                        short_msg => sprintf("chassis '%s' state is '%s'",
+                                                             $chassis_dn, $result->{cucsEquipmentChassisOperState}
                                                              )
                                         );
         }
