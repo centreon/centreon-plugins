@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::statefile;
 use centreon::plugins::values;
+use Digest::MD5 qw(md5_hex);
 use Math::Complex;
 
 my $maps_counters = {
@@ -319,7 +320,7 @@ sub get_my_delta {
     my $value;
     my ($old_time1, $old_time2) = split /_/, $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_times'};
     my ($new_time1, $new_time2) = split /_/, $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_times'};
-    if ($old_time1 == $new_time1) {
+    if (defined($old_time1) && defined($new_time1) && $old_time1 == $new_time1) {
         $value = $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_1'} - $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_1'} +
                  $options{new_datas}->{$self->{instance} . '_' . $options{name} . '_2'} - $options{old_datas}->{$self->{instance} . '_' . $options{name} . '_2'};
     } else {
@@ -868,7 +869,8 @@ sub run {
     $self->manage_selection();
     
     $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "cache_cisco_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+    $self->{statefile_value}->read(statefile => "cache_cisco_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . 
+            (defined($self->{option_results}->{filter_tag}) ? md5_hex($self->{option_results}->{filter_tag}) : md5_hex('all')));
     $self->{new_datas}->{last_timestamp} = time();
     
     my $multiple = 1;
@@ -944,13 +946,17 @@ sub manage_selection {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
         my $tag_name = $result->{rttMonCtrlAdminTag};
+        if (!defined($tag_name) || $tag_name eq '') {
+            $self->{output}->output_add(long_msg => "skipping: please set a tag name");
+            next;
+        }
         if (defined($self->{datas}->{$tag_name})) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $tag_name . "': duplicate (please change the tag name).");
+            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': duplicate (please change the tag name).");
             next;
         }
         if (defined($self->{option_results}->{filter_tag}) && $self->{option_results}->{filter_tag} ne '' &&
             $tag_name !~ /$self->{option_results}->{filter_tag}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $tag_name . "': no matching filter.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': no matching filter.");
             next;
         }
         $self->{datas}->{$tag_name} = { %{$result} };
@@ -966,7 +972,7 @@ sub manage_selection {
             my $i = 1;
             my $instances = [];
             foreach my $oid2 ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
-                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.\d+.(\d+)/);
+                next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.$instance.(\d+)/);
                 push @{$instances}, $1;
                 $self->{datas}->{$tag_name}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
                 $i++;

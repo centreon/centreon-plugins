@@ -32,14 +32,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'node-status'          => 'network::f5::bigip::mode::nodestatus',
-                         'pool-status'          => 'network::f5::bigip::mode::poolstatus',
-                         'virtualserver-status' => 'network::f5::bigip::mode::virtualserverstatus',
+                         'connections'          => 'network::f5::bigip::mode::connections',
+                         'failover'             => 'network::f5::bigip::mode::failover',
+                         'hardware'             => 'network::f5::bigip::mode::hardware',
                          'list-nodes'           => 'network::f5::bigip::mode::listnodes',
                          'list-pools'           => 'network::f5::bigip::mode::listpools',
                          'list-virtualservers'  => 'network::f5::bigip::mode::listvirtualservers',
-                         'hardware'             => 'network::f5::bigip::mode::hardware',
-                         'connections'          => 'network::f5::bigip::mode::connections',
+                         'node-status'          => 'network::f5::bigip::mode::nodestatus',
+                         'pool-status'          => 'network::f5::bigip::mode::poolstatus',
+                         'virtualserver-status' => 'network::f5::bigip::mode::virtualserverstatus',
                          );
 
     return $self;

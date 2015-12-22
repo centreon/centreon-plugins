@@ -37,7 +37,7 @@ sub new {
     $options{options}->add_options(arguments =>
          {
          "hostname:s"        => { name => 'hostname' },
-         "port:s"            => { name => 'port' },
+         "port:s"            => { name => 'port', default => 443 },
          "validity-mode:s"   => { name => 'validity_mode' },
          "warning-date:s"    => { name => 'warning' },
          "critical-date:s"   => { name => 'critical' },

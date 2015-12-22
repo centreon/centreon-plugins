@@ -114,11 +114,13 @@ sub run {
     $distant_time = $dt->epoch;
     
     my $diff = $distant_time - $ref_time;
+    my $remote_date_formated = sprintf("%02d-%02d-%02dT%02d:%02d:%02d (%s)", $remote_date[0], $remote_date[1], $remote_date[2],
+                                       $remote_date[3], $remote_date[4], $remote_date[5], $timezone);
     
     my $exit = $self->{perfdata}->threshold_check(value => $diff, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Time offset %d second(s)", $diff));
+                                short_msg => sprintf("Time offset %d second(s) : %s", $diff, $remote_date_formated));
 
     $self->{output}->perfdata_add(label => 'offset', unit => 's',
                                   value => sprintf("%d", $diff),
