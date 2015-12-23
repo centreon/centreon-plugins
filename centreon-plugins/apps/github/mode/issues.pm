@@ -74,11 +74,9 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{option_results}->{url_path} = "/repos/" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository} . "/issues";
+    $self->{option_results}->{url_path} = "/search/issues?q=state:open+repo:" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository};
     if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
-        $self->{option_results}->{get_param} = ['state=open', 'labels=' . $self->{option_results}->{label}, 'per_page=100'];
-    } else {
-        $self->{option_results}->{get_param} = ['state=open', 'per_page=100'];
+        $self->{option_results}->{url_path} .= "+label:" . $self->{option_results}->{label};
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -86,61 +84,22 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $pagination = 1;
 
-    my $nb_issues = 0;
-    my $header;
-    my $attemps = 3;
-    my $next_url = "";
+    my $jsoncontent;
+    $jsoncontent = $self->{http}->request();
 
-    while ($pagination && $attemps > 0) {
-        $attemps -= 1;
+    my $json = JSON->new;
+    my $webcontent;
+    eval {
+        $webcontent = $json->decode($jsoncontent);
+    };
 
-        my $jsoncontent;
-        if ($next_url eq "") {
-            print 'Next url null.\n';
-            $jsoncontent = $self->{http}->request();
-        }
-        else {
-            print 'New next url: ' . $next_url . '\n';
-            #$next_url = "/repositories/9074774/issues?per_page=100&state=open&page=3";
-            $self->{option_results}->{url_path} = $next_url;
-            $self->{http}->set_options(%{$self->{option_results}});
-            $jsoncontent = $self->{http}->request(url_path => $next_url, get_param => $self->{option_results}->{get_param});
-            #$jsoncontent = $self->{http}->request(url_path => $next_url);
-        }
-
-        my $json = JSON->new;
-        my $webcontent;
-        eval {
-            $webcontent = $json->decode($jsoncontent);
-        };
-
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-            $self->{output}->option_exit();
-        }
-
-        # Number of issues is array length
-        $nb_issues += @{$webcontent};
-
-        $header = $self->{http}->get_header();
-        #use Data::Dumper;
-        #print Dumper($header);
-        if (defined($header->header('link'))) {
-            print "Link found\n";
-            if ($header->header('link') =~ /<https:\/\/api.github.com(\/.*)>; rel="next"/) {
-                print "Found regex\n";
-                $next_url = $1;
-                print $next_url . "\n";
-            } else {
-                $pagination = 0;
-            }
-        } else {
-            $pagination = 0;
-            print "No link found\n";
-        }
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
     }
+    
+    my $nb_issues = $webcontent->{total_count};
 
     my $exit = $self->{perfdata}->threshold_check(value => $nb_issues, threshold => [ { label => 'critical', exit_litteral => 'critical' }, , { label => 'warning', exit_litteral => 'warning' } ]);
 
