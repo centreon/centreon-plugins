@@ -73,18 +73,17 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    
-    $self->{option_results}->{url_path} = "/repos/" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository} . "/issues";
+
+    $self->{option_results}->{url_path} = "/search/issues?q=state:open+repo:" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository};
     if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
-        $self->{option_results}->{get_param} = ['state=open', 'labels=' . $self->{option_results}->{label}, 'per_page=1000'];
-    } else {
-        $self->{option_results}->{get_param} = ['state=open', 'per_page=1000'];
+        $self->{option_results}->{url_path} .= "+label:" . $self->{option_results}->{label};
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
+
 
     my $jsoncontent = $self->{http}->request();
 
@@ -98,9 +97,8 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
-
-    # Number of issues is array length
-    my $nb_issues = @{$webcontent};
+    
+    my $nb_issues = $webcontent->{total_count};
 
     my $exit = $self->{perfdata}->threshold_check(value => $nb_issues, threshold => [ { label => 'critical', exit_litteral => 'critical' }, , { label => 'warning', exit_litteral => 'warning' } ]);
 
