@@ -217,6 +217,8 @@ sub check {
             $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $component  . '-instance-' . $instance);
+            $exit2 = $self->{perfdata}->threshold_check(value => $result->{entSensorValue}, threshold => [ { label => 'critical-' . $component  . '-instance-' . $instance, exit_litteral => 'critical' }, 
+                                                                                             { label => 'warning-' . $component . '-instance-' . $instance, exit_litteral => 'warning' } ]);
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
