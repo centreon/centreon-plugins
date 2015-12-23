@@ -43,13 +43,13 @@ sub new {
         warning_status => undef,
         critical_status => undef,
     };
-    $self->{add_headers} = {}; 
+    $self->{add_headers} = {};
     return $self;
 }
 
 sub set_options {
     my ($self, %options) = @_;
-    
+
     $self->{options} = { %{$self->{options}} };
     foreach (keys %options) {
         $self->{options}->{$_} = $options{$_} if (defined($options{$_}));
@@ -58,13 +58,13 @@ sub set_options {
 
 sub add_header {
     my ($self, %options) = @_;
-    
+
     $self->{add_headers}->{$options{key}} = $options{value};
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    
+
     if (($options{request}->{proto} ne 'http') && ($options{request}->{proto} ne 'https')) {
         $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
         $self->{output}->option_exit();
@@ -81,9 +81,9 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --cert-file= and --cert-pwd= options when --pkcs12 is used");
         $self->{output}->option_exit();
     }
-    
+
     $options{request}->{port} = $self->get_port_request();
-    
+
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
@@ -95,7 +95,7 @@ sub check_options {
     foreach (keys %{$self->{add_headers}}) {
         $options{request}->{headers}->{$_} = $self->{add_headers}->{$_};
     }
-    
+
     foreach my $method (('get', 'post')) {
         if (defined($options{request}->{$method . '_param'})) {
             $self->{$method . '_params'} = {};
@@ -115,7 +115,7 @@ sub check_options {
             }
         }
     }
-    
+
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
             $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
@@ -139,7 +139,7 @@ sub get_port {
 
 sub get_port_request {
     my ($self, %options) = @_;
-    
+
     my $port = '';
     if (defined($self->{options}->{port}) && $self->{options}->{port} ne '') {
         $port = $self->{options}->{port};
@@ -149,7 +149,7 @@ sub get_port_request {
 
 sub set_proxy {
     my ($self, %options) = @_;
-    
+
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
                                                error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
@@ -165,7 +165,7 @@ sub set_proxy {
         if (defined($res->direct) && $res->direct != 1) {
             $self->{ua}->proxy(['http', 'https'], $res->proxy);
         }
-    }    
+    }
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
         $self->{ua}->proxy(['http', 'https'], $options{request}->{proxyurl});
     }
@@ -173,13 +173,13 @@ sub set_proxy {
 
 sub request {
     my ($self, %options) = @_;
-    
+
     my $request_options = { %{$self->{options}} };
     foreach (keys %options) {
         $request_options->{$_} = $options{$_} if (defined($options{$_}));
     }
     $self->check_options(request => $request_options);
-    
+
     if (!defined($self->{ua})) {
         $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
         if (defined($request_options->{cookies_file})) {
@@ -212,7 +212,7 @@ sub request {
 
     my $content_type_forced;
     foreach my $key (keys %{$request_options->{headers}}) {
-        if ($key !~ /content-type/i) {        
+        if ($key !~ /content-type/i) {
             $req->header($key => $request_options->{headers}->{$key});
         } else {
             $content_type_forced = $request_options->{headers}->{$key};
@@ -258,7 +258,7 @@ sub request {
         $ssl_context->{SSL_key_file} = $request_options->{key_file} if (defined($request_options->{key_file}));
         $ssl_context->{SSL_ca_file} = $request_options->{cacert_file} if (defined($request_options->{cacert_file}));
     }
-    
+
     if (defined($ssl_context)) {
         my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
         IO::Socket::SSL::set_default_context($context);
@@ -269,11 +269,11 @@ sub request {
     # Check response
     my $status = 'ok';
     my $message;
-    
+
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
             eval "$request_options->{critical_status}") {
             $status = 'critical';
@@ -289,15 +289,22 @@ sub request {
         $self->{output}->add_option_msg(short_msg => 'filter status issue: ' . $message);
         $self->{output}->option_exit();
     }
-    
+
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $status,
                                     short_msg => $response->status_line);
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
-    return $response->content;    
+
+    $self->{headers} = $response->headers;
+    return $response->content;
+}
+
+sub get_header {
+    my ($self, %options) = @_;
+
+    return $self->{headers};
 }
 
 1;
