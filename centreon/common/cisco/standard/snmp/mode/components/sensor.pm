@@ -222,7 +222,7 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Sensor '%s' is %s %s", $sensor_descr, $result->{entSensorStatus}, $result->{entSensorType}));
+                                        short_msg => sprintf("Sensor '%s' is %s %s", $sensor_descr, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
         }
         $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr, unit => $perfdata_unit{$result->{entSensorType}},
                                       value => $result->{entSensorValue},
