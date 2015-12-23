@@ -85,8 +85,7 @@ sub run {
     my ($self, %options) = @_;
 
 
-    my $jsoncontent;
-    $jsoncontent = $self->{http}->request();
+    my $jsoncontent = $self->{http}->request();
 
     my $json = JSON->new;
     my $webcontent;
