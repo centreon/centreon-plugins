@@ -124,8 +124,7 @@ sub run {
     my $step = $listActionNode->get_nodelist;
     my $temp_step = 0;
     my $stepOk = 0;
-    my $last_echo_msg = undef;
-    my $last_cmd = undef;
+    my ($last_echo_msg, $last_cmd);
     my $exit1 = 'UNKNOWN';
     foreach my $actionNode ($listActionNode->get_nodelist) {
         ($action, $filter, $value) = $xp->find('./td', $actionNode)->get_nodelist;
@@ -149,6 +148,8 @@ sub run {
         # in case of a failure as an info message
         } elsif ($trim_action eq 'echo'){
             $last_echo_msg = $trim_filter;
+            # Prevent output breakage in case of echo message contains invalid chars
+            $last_echo_msg =~ s/\||\n/ - /msg;
             $stepOk += 1;
         } else {
             my $exit_command;
