@@ -614,7 +614,7 @@ Warning if space used > 80% and critical if space used > 90%:
 Warning if space free < 5G and critical if space free < 2G:
 ::
 
-  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=5497558138880 --critical=2199023255552 --units='B' --free
+  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=5497558138880: --critical=2199023255552: --units='B' --free
   OK: All storages are ok. | 'free_C:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800 'free_D:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800
   Storage 'C:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
   Storage 'D:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
