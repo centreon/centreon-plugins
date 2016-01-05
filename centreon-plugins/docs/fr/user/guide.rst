@@ -616,7 +616,7 @@ Dégradé si l'espace utilisé > 80% et critique sur l'espace utilisé > 90% :
 Dégradé si l'espace disponible < 5G et critique si l'espace disponible < 2G :
 ::
 
-  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=5497558138880 --critical=2199023255552 --units='B' --free
+  $ perl centreon_plugins.pl --plugin=os::windows::snmp::plugin --mode=storage --hostname=xxx.xxx.xxx.xxx --snmp-version=2c --snmp-public=community  --verbose --storage='.*' --name --regexp --display-transform-src='(..).*' --display-transform-dst='$1' --warning=5497558138880: --critical=2199023255552: --units='B' --free
   OK: All storages are ok. | 'free_C:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800 'free_D:'=97372344320B;0:5497558138880;0:2199023255552;0;135996108800
   Storage 'C:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
   Storage 'D:' Total: 126.66 GB Used: 35.97 GB (28.40%) Free: 90.69 GB (71.60%)
