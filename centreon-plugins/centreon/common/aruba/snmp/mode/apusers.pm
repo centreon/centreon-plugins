@@ -401,15 +401,17 @@ sub manage_selection {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxUserEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{nUserApBSSID}->{oid}}, instance => $instance);
         
+        # security
+        next if (!defined($result2->{nUserApBSSID}));
         my $bssid = join('.', unpack('C*', $result2->{nUserApBSSID}));
         next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
             $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
         next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
             $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
-        
+    
         $self->{ap_selected}->{$bssid} = { users => 0, bssid => $bssid } if (!defined($self->{ap_selected}->{$bssid}));
         $self->{ap_selected}->{$bssid}->{users}++;
-        
+    
         $self->{essid_selected}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid_selected}->{$map_ap{$bssid}->{essid}}));
         $self->{essid_selected}->{$map_ap{$bssid}->{essid}}->{users}++;
 
