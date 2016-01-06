@@ -20,105 +20,110 @@
 
 package centreon::common::airespace::snmp::mode::apusers;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {               
-    '000_total'   => { set => {
-                        key_values => [ { name => 'total' } ],
-                        output_template => 'Total Users : %s',
-                        perfdatas => [
-                            { label => 'total', value => 'total_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '001_total-idle'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [ { name => 'total_idle' } ],
-                        output_template => 'Total Idle Users : %s',
-                        perfdatas => [
-                            { label => 'total_idle', value => 'total_idle_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-     '002_total-aaapending'  => { set => {
-                        key_values => [ { name => 'total_aaapending' } ],
-                        output_template => 'Total AaaPending Users : %s',
-                        perfdatas => [
-                            { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '003_total-authenticated'   => { set => {
-                        key_values => [ { name => 'total_authenticated' } ],
-                        output_template => 'Total Authenticated Users : %s',
-                        perfdatas => [
-                            { label => 'total_authenticated', value => 'total_authenticated_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '004_total-associated'   => { set => {
-                        key_values => [ { name => 'total_associated' } ],
-                        output_template => 'Total Associated Users : %s',
-                        perfdatas => [
-                            { label => 'total_associated', value => 'total_associated_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '005_total-powersave'   => { set => {
-                        key_values => [ { name => 'total_powersave' } ],
-                        output_template => 'Total Powersave Users : %s',
-                        perfdatas => [
-                            { label => 'total_powersave', value => 'total_powersave_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '006_total-disassociated'   => { set => {
-                        key_values => [ { name => 'total_disassociated' } ],
-                        output_template => 'Total Disassociated Users : %s',
-                        perfdatas => [
-                            { label => 'total_disassociated', value => 'total_disassociated_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '007_total-tobedeleted'   => { set => {
-                        key_values => [ { name => 'total_tobedeleted' } ],
-                        output_template => 'Total ToBeDeleted Users : %s',
-                        perfdatas => [
-                            { label => 'total_tobedeleted', value => 'total_tobedeleted_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '008_total-probing'   => { set => {
-                        key_values => [ { name => 'total_probing' } ],
-                        output_template => 'Total Probing Users : %s',
-                        perfdatas => [
-                            { label => 'total_probing', value => 'total_probing_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-    '009_total-blacklisted'   => { set => {
-                        key_values => [ { name => 'total_blacklisted' } ],
-                        output_template => 'Total Blacklisted Users : %s',
-                        perfdatas => [
-                            { label => 'total_blacklisted', value => 'total_blacklisted_absolute', template => '%s', 
-                              unit => 'users', min => 0 },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total Users : %s',
+                perfdatas => [
+                    { label => 'total', value => 'total_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-idle', set => {
+                key_values => [ { name => 'total_idle' } ],
+                output_template => 'Total Idle Users : %s',
+                perfdatas => [
+                    { label => 'total_idle', value => 'total_idle_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-aaapending', set => {
+                key_values => [ { name => 'total_aaapending' } ],
+                output_template => 'Total AaaPending Users : %s',
+                perfdatas => [
+                    { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-authenticated', set => {
+                key_values => [ { name => 'total_authenticated' } ],
+                output_template => 'Total Authenticated Users : %s',
+                perfdatas => [
+                    { label => 'total_authenticated', value => 'total_authenticated_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-associated', set => {
+                key_values => [ { name => 'total_aaapending' } ],
+                output_template => 'Total AaaPending Users : %s',
+                perfdatas => [
+                    { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-powersave', set => {
+                key_values => [ { name => 'total_powersave' } ],
+                output_template => 'Total Powersave Users : %s',
+                perfdatas => [
+                    { label => 'total_powersave', value => 'total_powersave_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-disassociated', set => {
+                key_values => [ { name => 'total_disassociated' } ],
+                output_template => 'Total Disassociated Users : %s',
+                perfdatas => [
+                    { label => 'total_disassociated', value => 'total_disassociated_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-tobedeleted', set => {
+                key_values => [ { name => 'total_tobedeleted' } ],
+                output_template => 'Total ToBeDeleted Users : %s',
+                perfdatas => [
+                    { label => 'total_tobedeleted', value => 'total_tobedeleted_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-probing', set => {
+                key_values => [ { name => 'total_probing' } ],
+                output_template => 'Total Probing Users : %s',
+                perfdatas => [
+                    { label => 'total_probing', value => 'total_probing_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-blacklisted', set => {
+                key_values => [ { name => 'total_blacklisted' } ],
+                output_template => 'Total Blacklisted Users : %s',
+                perfdatas => [
+                    { label => 'total_blacklisted', value => 'total_blacklisted_absolute', template => '%s', 
+                      unit => 'users', min => 0 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -130,77 +135,8 @@ sub new {
                                 { 
                                   "filter-ssid:s"     => { name => 'filter_ssid' },
                                 });
-
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                                     label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }    
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-    
-    $self->manage_selection();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->set(instance => 'global');
-    
-        my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $maps_counters->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $maps_counters->{$_}->{obj}->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-     
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my %map_station_status = (
@@ -229,7 +165,7 @@ sub manage_selection {
     $self->{global} = { total => 0, total_idle => 0, total_aaapending => 0, total_authenticated => 0,
                         total_associated => 0, total_powersave => 0, total_disassociated => 0,
                         total_tobedeleted => 0, total_probing => 0, total_blacklisted => 0};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
                                                                    { oid => $mapping->{bsnMobileStationStatus}->{oid} },
                                                                    { oid => $mapping2->{bsnMobileStationSsid}->{oid} },
                                                                  ],
@@ -238,8 +174,8 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }}) {
         $oid =~ /^$mapping->{bsnMobileStationStatus}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnMobileStationSsid}->{oid} }, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnMobileStationSsid}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
             $result2->{bsnMobileStationSsid} !~ /$self->{option_results}->{filter_ssid}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result2->{bsnMobileStationSsid} . "': no matching filter.");
@@ -259,6 +195,11 @@ __END__
 Check total users connected and status on AP.
 
 =over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example to check SSL connections only : --filter-counters='^total|total-idle$'
 
 =item B<--warning-*>
 
