@@ -20,57 +20,12 @@
 
 package centreon::common::airespace::snmp::mode::apstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
 my $instance_mode;
-
-my $maps_counters = {
-    ap => {
-        '000_status' => { threshold => 0, 
-            set => {
-                key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
-                threshold => 0,
-                closure_custom_calc => \&custom_status_calc,
-                closure_custom_output => \&custom_status_output,
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&custom_threshold_output,
-            }
-        },
-    },
-    global => {
-        '000_total'   => { set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'Total ap : %s',
-                perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
-                      min => 0 },
-                ],
-            }
-        },
-        '001_total-associated'   => { set => {
-                key_values => [ { name => 'associated' } ],
-                output_template => 'Total ap associated : %s',
-                perfdatas => [
-                    { label => 'total_associated', value => 'associated_absolute', template => '%s', 
-                      min => 0 },
-                ],
-            }
-        },
-        '002_total-disassociating'   => { set => {
-                key_values => [ { name => 'disassociating' } ],
-                output_template => 'Total ap disassociating : %s',
-                perfdatas => [
-                    { label => 'total_disassociating', value => 'disassociating_absolute', template => '%s', 
-                      min => 0 },
-                ],
-            }
-        },
-    }
-};
 
 sub custom_threshold_output {
     my ($self, %options) = @_; 
@@ -118,6 +73,55 @@ sub custom_status_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_init => 'skip_global', },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All AP status are ok' }
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total ap : %s',
+                perfdatas => [
+                    { label => 'total', value => 'total_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-associated', set => {
+                key_values => [ { name => 'associated' } ],
+                output_template => 'Total ap associated : %s',
+                perfdatas => [
+                    { label => 'total_associated', value => 'associated_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-disassociating', set => {
+                key_values => [ { name => 'disassociating' } ],
+                output_template => 'Total ap disassociating : %s',
+                perfdatas => [
+                    { label => 'total_disassociating', value => 'disassociating_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{ap} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -129,22 +133,7 @@ sub new {
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/' },
-                                });                         
-     
-    foreach my $key (('global', 'ap')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
+                                });
     
     return $self;
 }
@@ -152,124 +141,21 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    foreach my $key (('global', 'ap')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
 
     $instance_mode = $self;
     $self->change_macros();
 }
 
-sub run_instance {
+sub skip_global {
     my ($self, %options) = @_;
     
-    if ($self->{multiple} == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All AP status are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{ap_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{ap}}) {
-            my $obj = $maps_counters->{ap}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{ap_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $self->{multiple});
-        }
-
-        $self->{output}->output_add(long_msg => "AP '" . $self->{ap_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "AP '" . $self->{ap_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($self->{multiple} == 0) {
-            $self->{output}->output_add(short_msg => "AP '" . $self->{ap_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
+    scalar(keys %{$self->{ap}}) > 0 ? return(1) : return(0);
 }
 
-sub run_global {
+sub prefix_ap_output {
     my ($self, %options) = @_;
     
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters->{global}}) {
-        my $obj = $maps_counters->{global}->{$_}->{obj};
-                
-        $obj->set(instance => 'global');
-    
-        my ($value_check) = $obj->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    if ($self->{multiple} == 1) {
-        $self->run_global();
-    }
-    
-    $self->run_instance();
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    return "AP '" . $options{instance_value}->{display} . "' ";
 }
 
 sub change_macros {
@@ -305,9 +191,9 @@ my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{ap_selected} = {};
+    $self->{ap} = {};
     $self->{global} = { total => 0, associated => 0, disassociating => 0, downloading => 0 };
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
                                                                    { oid => $mapping->{bsnAPName}->{oid} },
                                                                    { oid => $mapping2->{bsnAPOperationStatus}->{oid} },
                                                                    { oid => $mapping3->{bsnAPAdminStatus}->{oid} },
@@ -317,9 +203,9 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnAPName}->{oid} }}) {
         $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnAPName}->{oid} }, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnAPOperationStatus}->{oid} }, instance => $instance);
-        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnAPName}->{oid} }, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnAPOperationStatus}->{oid} }, instance => $instance);
+        my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{bsnAPName} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{bsnAPName} . "': no matching filter.", debug => 1);
@@ -329,18 +215,13 @@ sub manage_selection {
         $self->{global}->{total}++;
         $self->{global}->{$result2->{bsnAPOperationStatus}}++;
         
-        $self->{ap_selected}->{$instance} = { display => $result->{bsnAPName}, 
+        $self->{ap}->{$instance} = { display => $result->{bsnAPName}, 
                                               opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
     }
     
-    if (scalar(keys %{$self->{ap_selected}}) <= 0) {
+    if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'No AP associated (can be: slave wireless controller or your filter)');
-    }
-    
-    $self->{multiple} = 1;
-    if (scalar(keys %{$self->{ap_selected}}) <= 1) {
-        $self->{multiple} = 0;
     }
 }
 
@@ -353,6 +234,11 @@ __END__
 Check AP status.
 
 =over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example to check SSL connections only : --filter-counters='^total-disassociating|total-associated$'
 
 =item B<--filter-name>
 
