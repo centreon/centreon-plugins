@@ -208,15 +208,15 @@ sub get_perf_metric_ids {
    
     foreach (@{$options{metrics}}) {
         if (defined($options{connector}->{perfcounter_cache}->{$_->{label}})) {
-            foreach my $instance (@{$_->{instances}}) {
-                if ($options{connector}->{perfcounter_cache}->{$_->{label}}{level} > $options{connector}->{sampling_periods}->{$options{interval}}->{level}) {
-                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                           short_msg => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
-                                                                        $_->{label}, $options{interval}, 
-                                                                        $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
-                                                                        $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
-                    return undef;
-                }
+            if ($options{interval} != 20 && $options{connector}->{perfcounter_cache}->{$_->{label}}{level} > $options{connector}->{sampling_periods}->{$options{interval}}->{level}) {
+                $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                       short_msg => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
+                                                                    $_->{label}, $options{interval}, 
+                                                                    $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
+                                                                    $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
+                return undef;
+            }
+            foreach my $instance (@{$_->{instances}}) {    
                 my $metric = PerfMetricId->new(counterId => $options{connector}->{perfcounter_cache}->{$_->{label}}{key},
                                                instance => $instance);
                 push @$filtered_list, $metric;
