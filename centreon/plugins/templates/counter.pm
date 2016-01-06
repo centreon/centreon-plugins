@@ -169,7 +169,7 @@ sub run_global {
     my $prefix_output;
     $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}) 
         if (defined($options{config}->{cb_prefix_output}));
-    $prefix_output = '' if (defined($prefix_output));
+    $prefix_output = '' if (!defined($prefix_output));
     
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
@@ -198,11 +198,15 @@ sub run_instances {
     
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
-    foreach my $id (sort keys %{$options{config}->{name}}) {     
+    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
             my $obj = $_->{obj};
+            
+            next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
+                $_->{name} !~ /$self->{option_results}->{filter_counters}/);
+            
             $obj->set(instance => $id);
         
             my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
@@ -231,7 +235,7 @@ sub run_instances {
         my $prefix_output;
         $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
             if (defined($options{config}->{cb_prefix_output}));
-        $prefix_output = '' if (defined($prefix_output));
+        $prefix_output = '' if (!defined($prefix_output));
 
         $self->{output}->output_add(long_msg => "${prefix_output}$long_msg");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -260,9 +264,9 @@ sub run {
     }
     
     foreach my $entry (@{$self->{maps_counters_type}}) {
-        if ($_->{type} == 0) {
+        if ($entry->{type} == 0) {
             $self->run_global(config => $entry);
-        } elsif ($_->{type} == 1) {
+        } elsif ($entry->{type} == 1) {
             $self->run_instances(config => $entry);
         }
     }

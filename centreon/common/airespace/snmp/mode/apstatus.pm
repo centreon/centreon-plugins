@@ -149,7 +149,7 @@ sub check_options {
 sub skip_global {
     my ($self, %options) = @_;
     
-    scalar(keys %{$self->{ap}}) > 0 ? return(1) : return(0);
+    scalar(keys %{$self->{ap}}) > 1 ? return(0) : return(1);
 }
 
 sub prefix_ap_output {
