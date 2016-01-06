@@ -82,7 +82,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{ap} = {};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_bsnAPName },
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_bsnAPName },
                                                                    { oid => $oid_bsnAPIfInterferencePower },
                                                                    { oid => $oid_bsnAPIfInterferenceUtilization },
                                                                  ],

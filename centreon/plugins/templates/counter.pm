@@ -140,7 +140,7 @@ sub run_global {
         my $obj = $_->{obj};
 
         next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_counters}/);
+            $_->{label} !~ /$self->{option_results}->{filter_counters}/);
         
         $obj->set(instance => $options{config}->{name});
     
@@ -205,7 +205,7 @@ sub run_instances {
             my $obj = $_->{obj};
             
             next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
-                $_->{name} !~ /$self->{option_results}->{filter_counters}/);
+                $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             $obj->set(instance => $id);
         
