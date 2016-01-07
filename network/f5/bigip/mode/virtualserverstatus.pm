@@ -20,11 +20,10 @@
 
 package network::f5::bigip::mode::virtualserverstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
 my $thresholds = {
     vs => [
@@ -37,20 +36,6 @@ my $thresholds = {
     ],
 };
 my $instance_mode;
-
-my $maps_counters = {
-    vs => { 
-        '000_status'   => { set => {
-                        key_values => [ { name => 'AvailState' } ],
-                        closure_custom_calc => \&custom_status_calc,
-                        output_template => 'Status : %s', output_error_template => 'Status : %s',
-                        output_use => 'AvailState',
-                        closure_custom_perfdata => sub { return 0; },
-                        closure_custom_threshold_check => \&custom_threshold_output,
-                    }
-               },
-        },
-};
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
@@ -65,6 +50,31 @@ sub custom_status_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual Servers are ok' },
+    ];
+    $self->{maps_counters}->{vs} = [
+        { label => 'status', set => {
+                key_values => [ { name => 'AvailState' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => 'Status : %s', output_error_template => 'Status : %s',
+                output_use => 'AvailState',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+    ];
+}
+
+sub prefix_node_output {
+    my ($self, %options) = @_;
+    
+    return "Virtual Server '" . $options{instance_value}->{Name} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -76,21 +86,6 @@ sub new {
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
- 
-    foreach my $key (('vs')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
     
     return $self;
 }
@@ -98,12 +93,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    foreach my $key (('vs')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
     
     $instance_mode = $self;
     
@@ -121,69 +110,6 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-    
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{vs}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Virtual Servers are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{vs}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{vs}}) {
-            my $obj = $maps_counters->{vs}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{vs}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{vs}->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $long_msg [Status Reason: $self->{vs}->{$id}->{StatusReason}]");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Virtual Server '$self->{vs}->{$id}->{Name}' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub get_severity {
@@ -242,7 +168,7 @@ my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid} },
                                                             { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
                                                          ],
@@ -257,7 +183,7 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{$branch}}) {
         next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
         $result->{Name} = '';
         foreach (split /\./, $instance) {
