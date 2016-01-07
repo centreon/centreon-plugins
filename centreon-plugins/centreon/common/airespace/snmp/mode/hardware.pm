@@ -20,152 +20,48 @@
 
 package centreon::common::airespace::snmp::mode::hardware;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
 
-my $thresholds = {
-    psu => [
-        ['not operational', 'CRITICAL'],
-        ['operational', 'OK'],
-    ],
-};
+sub set_system {
+    my ($self, %options) = @_;
+    
+    $self->{regexp_threshold_overload_check_section_option} = '^(psu)$';
+    
+    $self->{cb_hook2} = 'snmp_execute';
+    
+    #Example for threshold:
+    $self->{thresholds} = {
+        psu => [
+            ['not operational', 'CRITICAL'],
+            ['operational', 'OK'],
+        ],
+    };
+    
+    $self->{components_path} = 'centreon::common::airespace::snmp::mode::components';
+    $self->{components_module} = ['psu'];
+}
+
+sub snmp_execute {
+    my ($self, %options) = @_;
+    
+    $self->{snmp} = $options{snmp};
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "absent-problem:s" => { name => 'absent' },
-                                  "component:s"      => { name => 'component', default => '.*' },
-                                  "no-component:s"   => { name => 'no_component' },
                                 });
-
-    $self->{components} = {};
-    $self->{no_components} = undef;
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    my $snmp_request = [];
-    my @components = ('psu');
-    foreach (@components) {
-        if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::airespace::snmp::mode::components::$_";
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.");
-            my $func = $mod_name->can('load');
-            $func->(request => $snmp_request); 
-        }
-    }
-    
-    if (scalar(@{$snmp_request}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
-    
-    foreach (@components) {
-        if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::airespace::snmp::mode::components::$_";
-            my $func = $mod_name->can('check');
-            $func->($self); 
-        }
-    }
-    
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok [%s].", 
-                                                     $total_components,
-                                                     $display_by_component)
-                                );
-
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
-        }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-        return 1;
-    }
-    return 0;
-}
-
-sub absent_problem {
-    my ($self, %options) = @_;
-    
-    if (defined($self->{option_results}->{absent}) && 
-        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
-                                                         $options{section}, $options{instance}));
-    }
-
-    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
-    $self->{components}->{$options{section}}->{skip}++;
-    return 1;
-}
-
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 1;

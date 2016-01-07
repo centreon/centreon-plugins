@@ -32,9 +32,9 @@ my %map_psu_status = (
 my $oid_agentSwitchInfoGroup = '.1.3.6.1.4.1.14179.1.1.3';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_agentSwitchInfoGroup };
+    push @{$self->{request}}, { oid => $oid_agentSwitchInfoGroup };
 }
 
 sub check {
@@ -42,14 +42,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
  
     foreach my $instances ([1, 3], [2, 5]) {
         next if (!defined($self->{results}->{$oid_agentSwitchInfoGroup}->{ $oid_agentSwitchInfoGroup . '.' . $$instances[1] . '.0' }));
         my $present = $self->{results}->{$oid_agentSwitchInfoGroup}->{ $oid_agentSwitchInfoGroup . '.' . ($$instances[1] - 1) . '.0' };
         my $operational = $map_psu_status{ $self->{results}->{$oid_agentSwitchInfoGroup}->{ $oid_agentSwitchInfoGroup . '.' . $$instances[1] . '.0' } };
 
-        next if ($self->check_exclude(section => 'psu', instance => $$instances[0]));
+        next if ($self->check_filter(section => 'psu', instance => $$instances[0]));
         next if ($present =~ /0/i && 
                  $self->absent_problem(section => 'psu', instance => $$instances[0]));
         $self->{components}->{psu}->{total}++;
