@@ -79,20 +79,26 @@ Check Hardware (Power Supplies).
 Which component to check (Default: '.*').
 Can be: 'psu'.
 
-=item B<--exclude>
+=item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --exclude=psu)
-Can also exclude specific instance: --exclude=psu#1#
+Exclude some parts (comma seperated list) (Example: --filter=psu)
+Can also exclude specific instance: --filter=psu,1
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=psu#1#
+Can be specific or global: --absent-problem=psu,1
 
 =item B<--no-component>
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='psu,WARNING,not operational'
 
 =back
 
