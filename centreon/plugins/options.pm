@@ -32,6 +32,7 @@ sub new {
     my $self  = {};
     bless $self, $class;
 
+    $self->{sanity} = 0;
     $self->{options_stored} = {};
     $self->{options} = {};
     @{$self->{pod_package}} = ();
@@ -59,10 +60,8 @@ sub set_sanity {
     } else {
         $centreon::plugins::alternative::Getopt::warn_message = 1;
     }
-    $SIG{__WARN__} = sub { 
-        $self->{output}->add_option_msg(short_msg => $_[0]);
-        $self->{output}->option_exit(nolabel => 1);
-    };
+
+    $self->{sanity} == 1;
 }
 
 sub set_output {
@@ -127,10 +126,21 @@ sub parse_options {
     my $self = shift;
     #%{$self->{options_stored}} = ();
 
+    my $save_warn_handler;
+    if ($self->{sanity} == 1) {
+        $save_warn_handler = $SIG{__WARN__};
+        $SIG{__WARN__} = sub {
+                $self->{output}->add_option_msg(short_msg => $_[0]);
+                $self->{output}->option_exit(nolabel => 1);
+        };
+    }
+    
     GetOptions(
        %{$self->{options}}
     );
     %{$self->{options}} = ();
+    
+    $SIG{__WARN__} = $save_warn_handler if ($self->{sanity} == 1);
 }
 
 sub get_option {
