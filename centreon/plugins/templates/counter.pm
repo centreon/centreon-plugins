@@ -166,18 +166,22 @@ sub run_global {
         $obj->perfdata();
     }
 
-    my $prefix_output;
+    my ($prefix_output, $suffix_output);
     $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}) 
         if (defined($options{config}->{cb_prefix_output}));
     $prefix_output = '' if (!defined($prefix_output));
     
+    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
+        if (defined($options{config}->{cb_suffix_output}));
+    $suffix_output = '' if (!defined($suffix_output));
+    
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => "${prefix_output}$short_msg"
+                                    short_msg => "${prefix_output}${short_msg}${suffix_output}"
                                     );
     } else {
-        $self->{output}->output_add(short_msg => "${prefix_output}$long_msg");
+        $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
     }
 }
 
@@ -232,21 +236,25 @@ sub run_instances {
             $obj->perfdata(extra_instance => $self->{multiple});
         }
 
-        my $prefix_output;
+        my ($prefix_output, $suffix_output);
         $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
             if (defined($options{config}->{cb_prefix_output}));
         $prefix_output = '' if (!defined($prefix_output));
+        
+        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
+        if (defined($options{config}->{cb_suffix_output}));
+        $suffix_output = '' if (!defined($suffix_output));
 
-        $self->{output}->output_add(long_msg => "${prefix_output}$long_msg");
+        $self->{output}->output_add(long_msg => "${prefix_output}${long_msg}${suffix_output}");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "${prefix_output}$short_msg"
+                                        short_msg => "${prefix_output}${short_msg}${suffix_output}"
                                         );
         }
         
         if ($self->{multiple} == 0) {
-            $self->{output}->output_add(short_msg => "${prefix_output}$long_msg");
+            $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
         }
     }
 }
