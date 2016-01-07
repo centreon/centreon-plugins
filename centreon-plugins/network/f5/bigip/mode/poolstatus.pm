@@ -57,7 +57,7 @@ sub set_counters {
         { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All Pools are ok' },
     ];
     $self->{maps_counters}->{pool} = [
-        { label => 'status', set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'AvailState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'Status : %s', output_error_template => 'Status : %s',

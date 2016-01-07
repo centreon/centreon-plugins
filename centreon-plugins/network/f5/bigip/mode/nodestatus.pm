@@ -57,7 +57,7 @@ sub set_counters {
         { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All Nodes are ok' },
     ];
     $self->{maps_counters}->{node} = [
-        { label => 'status', set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'AvailState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'Status : %s', output_error_template => 'Status : %s',

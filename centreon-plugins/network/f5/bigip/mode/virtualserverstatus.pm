@@ -57,7 +57,7 @@ sub set_counters {
         { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual Servers are ok' },
     ];
     $self->{maps_counters}->{vs} = [
-        { label => 'status', set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'AvailState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'Status : %s', output_error_template => 'Status : %s',
@@ -69,7 +69,7 @@ sub set_counters {
     ];
 }
 
-sub prefix_node_output {
+sub prefix_vs_output {
     my ($self, %options) = @_;
     
     return "Virtual Server '" . $options{instance_value}->{Name} . "' ";
