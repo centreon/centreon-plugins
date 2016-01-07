@@ -36,6 +36,7 @@ sub new {
                         'issues'       => 'apps::github::mode::issues',
                         'commits'      => 'apps::github::mode::commits',
                         'pullrequests' => 'apps::github::mode::pullrequests',
+                        'stats'        => 'apps::github::mode::stats',
                         );
     return $self;
 }
