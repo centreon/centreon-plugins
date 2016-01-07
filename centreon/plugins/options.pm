@@ -130,8 +130,8 @@ sub parse_options {
     if ($self->{sanity} == 1) {
         $save_warn_handler = $SIG{__WARN__};
         $SIG{__WARN__} = sub {
-                $self->{output}->add_option_msg(short_msg => $_[0]);
-                $self->{output}->option_exit(nolabel => 1);
+            $self->{output}->add_option_msg(short_msg => $_[0]);
+            $self->{output}->option_exit(nolabel => 1);
         };
     }
     
