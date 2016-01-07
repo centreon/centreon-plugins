@@ -36,9 +36,9 @@ my $mapping = {
 my $oid_sysChassisFanEntry = '.1.3.6.1.4.1.3375.2.1.3.2.1.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_sysChassisFanEntry };
+    push @{$self->{request}}, { oid => $oid_sysChassisFanEntry };
 }
 
 sub check {
@@ -46,7 +46,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sysChassisFanEntry}})) {
         next if ($oid !~ /^$mapping->{sysChassisFanStatus}->{oid}\.(.*)$/);
@@ -55,7 +55,7 @@ sub check {
     
         next if ($result->{sysChassisFanStatus} =~ /notPresent/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         
         $self->{components}->{fan}->{total}++;
         

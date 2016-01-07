@@ -40,9 +40,9 @@ my $mapping = {
 my $oid_extremePowerSupplyEntry = '.1.3.6.1.4.1.1916.1.1.1.27.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_extremePowerSupplyEntry, start => $mapping->{extremePowerSupplyStatus}->{oid} };
+    push @{$self->{request}}, { oid => $oid_extremePowerSupplyEntry, start => $mapping->{extremePowerSupplyStatus}->{oid} };
 }
 
 sub check_fan_speed {
@@ -69,14 +69,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_extremePowerSupplyEntry}})) {
         next if ($oid !~ /^$mapping->{extremePowerSupplyStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremePowerSupplyEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         if ($result->{extremePowerSupplyStatus} =~ /notPresent/i) {
             $self->absent_problem(section => 'psu', instance => $instance);
             next;

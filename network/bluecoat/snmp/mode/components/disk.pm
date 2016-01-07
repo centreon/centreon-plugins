@@ -57,7 +57,7 @@ sub check {
     return if ($self->check_filter(section => 'disk'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_deviceDiskValueEntry}})) {
-        next if ($oid !~ /^$mapping->{deviceSensorStatus}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{deviceDiskStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_deviceDiskValueEntry}, instance => $instance);
         

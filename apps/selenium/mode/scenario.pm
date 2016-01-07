@@ -91,7 +91,7 @@ sub check_options {
         alarm($self->{option_results}->{timeout});
     }
     if (!defined($self->{option_results}->{scenario})) { 
-        $self->{output}->add_option_msg(short_msg => "Please specify a scenario name" . $self->{option_results}->{scenario} . ".");
+        $self->{output}->add_option_msg(short_msg => "Please specify a scenario name.");
         $self->{output}->option_exit();
     }
 }
@@ -124,6 +124,7 @@ sub run {
     my $step = $listActionNode->get_nodelist;
     my $temp_step = 0;
     my $stepOk = 0;
+    my ($last_echo_msg, $last_cmd);
     my $exit1 = 'UNKNOWN';
     foreach my $actionNode ($listActionNode->get_nodelist) {
         ($action, $filter, $value) = $xp->find('./td', $actionNode)->get_nodelist;
@@ -142,11 +143,18 @@ sub run {
             sleep($sleepTime / 1000);
             $stepOk++;
             $self->{output}->output_add(long_msg => "Step " . $temp_step . " - Pause : " . $sleepTime . "ms");
+        # It's an echo command => do not send it to Selenium server
+        # and store the associated string so that it can be displayed
+        # in case of a failure as an info message
         } elsif ($trim_action eq 'echo'){
-            next;
+            $last_echo_msg = $trim_filter;
+            # Prevent output breakage in case of echo message contains invalid chars
+            $last_echo_msg =~ s/\||\n/ - /msg;
+            $stepOk += 1;
         } else {
             my $exit_command;
             
+            $last_cmd = $trim_action . ' ' . $trim_filter . ' ' . $trim_value;
             eval {
                 $exit_command = $sel->do_command($trim_action, $trim_filter, $trim_value);
             };
@@ -172,8 +180,17 @@ sub run {
     my $exit2 = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                    threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
+    if ($exit eq 'OK') {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("%d/%d steps (%.3fs)", $stepOk, $step, $timeelapsed));
+    } else {
+        my $extra_info = $last_cmd;
+        if (defined($last_echo_msg)) {
+            $extra_info .= " - $last_echo_msg";
+        }
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("%d/%d steps (%.3fs) - %s", $stepOk, $step, $timeelapsed, $extra_info));
+    }
     $self->{output}->perfdata_add(label => "time", unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
                                   min => 0,
