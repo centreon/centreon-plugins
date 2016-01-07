@@ -135,7 +135,7 @@ Check AP Channel Interference.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example to check SSL connections only : --filter-counters='interference-util'
+Example: --filter-counters='interference-util'
 
 =item B<--warning-*>
 

@@ -238,7 +238,7 @@ Check AP status.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example to check SSL connections only : --filter-counters='^total-disassociating|total-associated$'
+Example: --filter-counters='^total-disassociating|total-associated$'
 
 =item B<--filter-name>
 
