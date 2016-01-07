@@ -20,25 +20,10 @@
 
 package network::redback::snmp::mode::disk;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $maps_counters = {
-    '0_usage' => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'display' }, { name => 'total' }, { name => 'used' },
-                                      ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -87,6 +72,31 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disk usages are ok' }
+    ];
+    
+    $self->{maps_counters}->{disk} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+    
+    return "Disk '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -97,93 +107,8 @@ sub new {
                                 { 
                                   "filter-name:s"     => { name => 'filter_name' },
                                 });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{disk_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All disk usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{disk_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{disk_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Disk '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -195,14 +120,14 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{disk_selected} = {};
+    $self->{disk} = {};
     my $oid_rbnSRStorageEntry = '.1.3.6.1.4.1.2352.2.24.1.2.1.1';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_rbnSRStorageEntry,
+    $self->{results} = $options{snmp}->get_table(oid => $oid_rbnSRStorageEntry,
                                                 nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{rbnSRStorageSize}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{rbnSRStorageDescr} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{rbnSRStorageDescr} . "': no matching filter.");
@@ -213,11 +138,11 @@ sub manage_selection {
             next;
         }
         
-        $self->{disk_selected}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
-                                                used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
+        $self->{disk}->{$instance} = { display => $result->{rbnSRStorageDescr}, 
+                                       used => $result->{rbnSRStorageUtilization}, total =>  $result->{rbnSRStorageSize} * 1024};
     }
     
-    if (scalar(keys %{$self->{disk_selected}}) <= 0) {
+    if (scalar(keys %{$self->{disk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }

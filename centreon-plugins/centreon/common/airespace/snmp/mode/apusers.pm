@@ -199,7 +199,7 @@ Check total users connected and status on AP.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example to check SSL connections only : --filter-counters='^total|total-idle$'
+Example: --filter-counters='^total|total-idle$'
 
 =item B<--warning-*>
 
