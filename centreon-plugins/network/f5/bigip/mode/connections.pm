@@ -20,16 +20,29 @@
 
 package network::f5::bigip::mode::connections;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $maps_counters = {
-    global => [
+sub custom_client_tps_calc {
+    my ($self, %options) = @_;
+
+    my $diff_native = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_native'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_native'};
+    my $diff_compat = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_compat'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_compat'};
+    $self->{result_values}->{client_ssl_tps} = ($diff_native + $diff_compat) / $options{delta_time};
+    
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+    $self->{maps_counters}->{global} = [
         { label => 'client', set => {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Current client connections : %s',
@@ -48,10 +61,10 @@ my $maps_counters = {
                 ],
             }
         },
-        { label => 'client-ssl-tps', set => {        
+        { label => 'client-ssl-tps', set => {
                 key_values => [ { name => 'client_ssl_tot_native', diff => 1 }, { name => 'client_ssl_tot_compat', diff => 1 } ],
                 output_template => 'TPS client SSL connections : %.2f', threshold_use => 'client_ssl_tps', output_use => 'client_ssl_tps',
-                closure_custom_calc => \&custom_client_tps_calc,
+                closure_custom_calc => $self->can('custom_client_tps_calc'),
                 per_second => 1,
                 perfdatas => [
                     { label => 'ClientSSL_Tps', value => 'client_ssl_tps', template => '%.2f',
@@ -59,7 +72,7 @@ my $maps_counters = {
                 ],
             }
         },
-        { label => 'server', set => { 
+        { label => 'server', set => {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Current server connections: %s',
                 perfdatas => [
@@ -77,22 +90,12 @@ my $maps_counters = {
                 ],
             }
         },
-    ]
-};
-
-sub custom_client_tps_calc {
-    my ($self, %options) = @_;
-
-    my $diff_native = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_native'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_native'};
-    my $diff_compat = $options{new_datas}->{$self->{instance} . '_client_ssl_tot_compat'} - $options{old_datas}->{$self->{instance} . '_client_ssl_tot_compat'};
-    $self->{result_values}->{client_ssl_tps} = ($diff_native + $diff_compat) / $options{delta_time};
-    
-    return 0;
+    ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -100,98 +103,8 @@ sub new {
                                 {
                                 "filter-counters:s" => { name => 'filter_counters' },
                                 });
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-
-    foreach my $key (('global')) {
-        foreach (@{$maps_counters->{$key}}) {
-            if (!defined($_->{threshold}) || $_->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $_->{label} . ':s'    => { name => 'warning-' . $_->{label} },
-                                                            'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
-                                               });
-            }
-            $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                       output => $self->{output}, perfdata => $self->{perfdata},
-                                                       label => $_->{label});
-            $_->{obj}->set(%{$_->{set}});
-        }
-    }
                                 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-     foreach my $key (('global')) {
-        foreach (@{$maps_counters->{$key}}) {
-            $_->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    
-    $self->{statefile_value}->check_options(%options);
-}
-
-sub run_global {
-    my ($self, %options) = @_;
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (@{$maps_counters->{global}}) {
-        my $obj = $_->{obj};
-
-        next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_counters}/);
-        
-        $obj->set(instance => 'global');
-    
-        my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    
-    $self->manage_selection(%options);
-    
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => $self->{cache_name});
-    $self->{new_datas}->{last_timestamp} = time();
-    
-    $self->run_global();
-
-    $self->{statefile_value}->write(data => $self->{new_datas});
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub manage_selection {

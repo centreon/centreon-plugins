@@ -155,7 +155,11 @@ sub set_proxy {
                                                error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
         my $pac;
         eval {
-            $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
+            if ($options{request}->{proxypac} =~ /^(http|https):\/\//) {
+                $pac = HTTP::ProxyPAC->new(URI->new($options{request}->{proxypac}));
+            } else {
+                $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
+            }
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => 'issue to load proxypac: ' . $@);
