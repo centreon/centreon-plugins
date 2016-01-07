@@ -148,13 +148,21 @@ sub run {
 
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
-            my $subject_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_subject_name($cert));
-            if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
-                $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name '%s' is present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
-            } else {
+            my $subject_altname;
+            my @subject_name = Net::SSLeay::X509_get_subjectAltNames($cert);
+            foreach my $subject_name (@subject_name) {
+                if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
+                    $subject_altname = $subject_name;
+                    next;
+                }
+            }
+
+            if (!defined($subject_altname)) {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate: %s", $self->{option_results}->{subjectname}, $subject_name));
+                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate", $self->{option_results}->{subjectname}));
+            } else {
+                $self->{output}->output_add(severity => 'OK',
+                                            short_msg => sprintf("Subject Name '%s' is present in Certificate", $self->{option_results}->{subjectname}));
             }
 
             $self->{output}->display();
@@ -210,7 +218,7 @@ Threshold critical in days (Days before expiration, eg: '30:' for 30 days before
 
 =item B<--subjectname>
 
-Subject Name pattern
+Subject Name pattern (SNI support)
 
 =item B<--issuername>
 
