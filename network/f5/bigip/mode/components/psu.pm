@@ -34,9 +34,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{sysChassisPowerSupplyStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{sysChassisPowerSupplyStatus}->{oid} };
 }
 
 sub check {
@@ -44,7 +44,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{sysChassisPowerSupplyStatus}->{oid}}})) {
         $oid =~ /^$mapping->{sysChassisPowerSupplyStatus}->{oid}\.(.*)$/;
@@ -53,7 +53,7 @@ sub check {
     
         next if ($result->{sysChassisPowerSupplyStatus} =~ /notPresent/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
         

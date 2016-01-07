@@ -28,9 +28,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{sysChassisTempTemperature}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{sysChassisTempTemperature}->{oid} };
 }
 
 sub check {
@@ -38,14 +38,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{sysChassisTempTemperature}->{oid}}})) {
         $oid =~ /^$mapping->{sysChassisTempTemperature}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{sysChassisTempTemperature}->{oid}}, instance => $instance);
     
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
 	
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %.2f C [instance: %s].", 
