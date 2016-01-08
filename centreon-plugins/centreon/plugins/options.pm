@@ -61,7 +61,7 @@ sub set_sanity {
         $centreon::plugins::alternative::Getopt::warn_message = 1;
     }
 
-    $self->{sanity} == 1;
+    $self->{sanity} = 1;
 }
 
 sub set_output {
