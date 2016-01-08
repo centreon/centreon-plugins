@@ -53,9 +53,9 @@ my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
 my $oid_enclEntry = '.1.3.6.1.4.1.789.1.21.1.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclEntry, begin => $mapping->{enclTempSensorsPresent}->{oid}, end => $mapping->{enclTempSensorsUnderTempWarnThr}->{oid} };
+    push @{$self->{request}}, { oid => $oid_enclEntry, begin => $mapping->{enclTempSensorsPresent}->{oid}, end => $mapping->{enclTempSensorsUnderTempWarnThr}->{oid} };
 }
 
 sub check {
@@ -63,7 +63,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_enclEntry}, instance => $i);
@@ -90,7 +90,7 @@ sub check {
             $current_temp[$num - 1] =~ /(-*[0-9]+)C/;
             my $current_value = $1;
             
-            next if ($self->check_exclude(section => 'temperature', instance => $shelf_addr . '.' . $num));
+            next if ($self->check_filter(section => 'temperature', instance => $shelf_addr . '.' . $num));
             $self->{components}->{temperature}->{total}++;
             
             my $status = 'ok';
