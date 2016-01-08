@@ -77,7 +77,7 @@ sub check {
 
         foreach my $num (split /,/, $result->{enclTempSensorsPresent}) {
             $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
+            next if ($num !~ /[0-9]/ || !defined($current_temp[$num - 1]));
     
             $warn_under_thr[$num - 1] =~ /(-*[0-9]+)C/;
             my $wu_thr = $1;

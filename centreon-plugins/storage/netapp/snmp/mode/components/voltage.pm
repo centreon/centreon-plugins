@@ -78,7 +78,7 @@ sub check {
         my @values = defined($result->{enclVoltSensorsPresent}) ? split /,/, $result->{enclVoltSensorsPresent} : ();
         foreach my $num (@values) {
             $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
+            next if ($num !~ /[0-9]/ || !defined($current_volt[$num - 1]));
     
             my $wu_thr = (defined($warn_under_thr[$num - 1]) && $warn_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
             my $cu_thr = (defined($crit_under_thr[$num - 1]) && $crit_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
