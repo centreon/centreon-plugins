@@ -91,7 +91,7 @@ sub run {
     my $stars = $webcontent->{watchers_count};
 
     $self->{output}->output_add(severity => "OK",
-                                short_msg => "");
+                                short_msg => sprintf("%d forks\n%d watchers\n%d stars", $forks, $watchers, $stars));
 
     $self->{output}->perfdata_add(label => 'forks',
                                   value => $forks);
