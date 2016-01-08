@@ -34,9 +34,9 @@ my $mapping = {
 my $oid_deviceSensorValueEntry = '.1.3.6.1.4.1.3417.2.1.1.1.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{sseries}->{Temp}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{sseries}->{Temp}->{oid} },
         { oid => $mapping->{mseries}->{Temp}->{oid} };
 }
 
