@@ -33,7 +33,6 @@ sub set_system {
     
     $self->{cb_hook2} = 'snmp_execute';
     
-    #Example for threshold:
     $self->{thresholds} = {
         fan => [
             ['bad', 'CRITICAL'],
