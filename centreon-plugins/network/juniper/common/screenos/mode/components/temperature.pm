@@ -30,9 +30,9 @@ my $mapping = {
 my $oid_nsTemperatureEntry = '.1.3.6.1.4.1.3224.21.4.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_nsTemperatureEntry };
+    push @{$self->{request}}, { oid => $oid_nsTemperatureEntry };
 }
 
 sub check {

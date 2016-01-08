@@ -36,9 +36,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{hmPSState}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{hmPSState}->{oid} };
 }
 
 sub check {
@@ -46,14 +46,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{hmPSState}->{oid}}})) {
         next if ($oid !~ /^$mapping->{hmPSState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{hmPSState}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($result->{hmPSState} =~ /notInstalled/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
