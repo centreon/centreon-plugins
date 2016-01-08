@@ -42,9 +42,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{sseries}->{OperStatus}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{sseries}->{OperStatus}->{oid} },
         { oid => $mapping->{mseries}->{OperStatus}->{oid} }, { oid => $mapping->{zseries}->{OperStatus}->{oid} };
 }
 
