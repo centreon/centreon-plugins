@@ -79,10 +79,9 @@ sub run {
     };
 
     if ($@) {
+	use Data::Dumper;
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        use Data::Dumper;
-        print Dumper($jsoncontent);
-
+        $self->{output}->output_add(long_msg => Data::Dumper::Dumper(), debug => 1);
         $self->{output}->option_exit();
     }
 
@@ -91,7 +90,7 @@ sub run {
     my $stars = $webcontent->{watchers_count};
 
     $self->{output}->output_add(severity => "OK",
-                                short_msg => sprintf("%d forks\n%d watchers\n%d stars", $forks, $watchers, $stars));
+                                short_msg => sprintf("%d forks - %d watchers - %d stars", $forks, $watchers, $stars));
 
     $self->{output}->perfdata_add(label => 'forks',
                                   value => $forks);
