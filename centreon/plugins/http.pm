@@ -153,10 +153,11 @@ sub set_proxy {
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
                                                error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
-        my $pac;
+        my ($pac, $pac_uri);
         eval {
             if ($options{request}->{proxypac} =~ /^(http|https):\/\//) {
-                $pac = HTTP::ProxyPAC->new(URI->new($options{request}->{proxypac}));
+                $pac_uri = URI->new($options{request}->{proxypac});
+                $pac = HTTP::ProxyPAC->new($pac_uri);
             } else {
                 $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
             }
@@ -167,7 +168,9 @@ sub set_proxy {
         }
         my $res = $pac->find_proxy($options{url});
         if (defined($res->direct) && $res->direct != 1) {
-            $self->{ua}->proxy(['http', 'https'], $res->proxy);
+            my $proxy_uri = URI->new($res->proxy);
+            $proxy_uri->userinfo($pac_uri->userinfo) if (defined($pac_uri->userinfo));
+            $self->{ua}->proxy(['http', 'https'], $proxy_uri->as_string);
         }
     }
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
