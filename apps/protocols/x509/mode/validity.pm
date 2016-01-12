@@ -153,7 +153,11 @@ sub run {
             foreach my $subject_name (@subject_name) {
                 if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
                     $subject_altname = $subject_name;
-                    next;
+                } else {
+                    if ($subject_name =~/[\w\-]+(\.[\w\-]+)*\.\w+/) {
+                        $subject_altname = $subject_name;
+                        $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_altname));
+                    }
                 }
             }
 
