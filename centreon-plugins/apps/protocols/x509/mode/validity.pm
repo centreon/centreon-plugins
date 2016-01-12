@@ -218,7 +218,7 @@ Threshold critical in days (Days before expiration, eg: '30:' for 30 days before
 
 =item B<--subjectname>
 
-Subject Name pattern (SNI support)
+Subject Name pattern (support alternative subject name)
 
 =item B<--issuername>
 
