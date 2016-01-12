@@ -216,7 +216,7 @@ sub manage_selection {
         $self->{global}->{$result2->{bsnAPOperationStatus}}++;
         
         $self->{ap}->{$instance} = { display => $result->{bsnAPName}, 
-                                              opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
+                                     opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
     }
     
     if (scalar(keys %{$self->{ap}}) <= 0) {
