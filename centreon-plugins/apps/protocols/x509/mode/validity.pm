@@ -142,36 +142,27 @@ sub run {
                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Certificate expiration days: %s - Validity Date: %s", $daysbefore, $notafterdate));
-
-            $self->{output}->display();
-            $self->{output}->exit()
-
         #Subject Name
         } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
-            my $subject_altname;
+            my @subject_matched = ();
             my @subject_name = Net::SSLeay::X509_get_subjectAltNames($cert);
             foreach my $subject_name (@subject_name) {
                 if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
-                    $subject_altname = $subject_name;
+                    push @subject_matched, $subject_name;
                 } else {
-                    if ($subject_name =~/[\w\-]+(\.[\w\-]+)*\.\w+/) {
-                        $subject_altname = $subject_name;
-                        $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_altname));
+                    if ($subject_name =~ /[\w\-]+(\.[\w\-]+)*\.\w+/) {
+                        $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_name), debug => 1);
                     }
                 }
             }
 
-            if (!defined($subject_altname)) {
+            if (@subject_matched == 0) {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Subject Name '%s' is not present in Certificate", $self->{option_results}->{subjectname}));
+                                            short_msg => sprintf("No Subject Name matched '%s' in Certificate", $self->{option_results}->{subjectname}));
             } else {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name '%s' is present in Certificate", $self->{option_results}->{subjectname}));
+                                            short_msg => sprintf("Subject Name [%s] is present in Certificate", join(', ', @subject_matched)));
             }
-
-            $self->{output}->display();
-            $self->{output}->exit()
-
         #Issuer Name
         } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
             my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
@@ -182,10 +173,10 @@ sub run {
                 $self->{output}->output_add(severity => 'CRITICAL',
                                             short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
             }
-
-            $self->{output}->display();
-            $self->{output}->exit()
         }
+        
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 }
 
