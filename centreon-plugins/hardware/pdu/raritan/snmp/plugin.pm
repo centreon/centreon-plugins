@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Rarian PDU in SNMP.
+Check Raritan PDU in SNMP.
 
 =cut
