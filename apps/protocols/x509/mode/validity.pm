@@ -33,11 +33,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.3';
+    $self->{version} = '1.4';
     $options{options}->add_options(arguments =>
          {
          "hostname:s"        => { name => 'hostname' },
-         "port:s"            => { name => 'port', default => 443 },
+         "port:s"            => { name => 'port' },
+         "servername:s"      => { name => 'servername' },
          "validity-mode:s"   => { name => 'validity_mode' },
          "warning-date:s"    => { name => 'warning' },
          "critical-date:s"   => { name => 'critical' },
@@ -77,107 +78,76 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    #Global variables
-    my ($connection, $ctx, $ssl, $cert);
+    # Global variables
+    my ($cert, $client);
 
-    #Create Socket connection
-    $connection = IO::Socket::INET->new(PeerAddr => $self->{option_results}->{hostname},
-                                        PeerPort => $self->{option_results}->{port},
-                                        Timeout => $self->{option_results}->{timeout},
-                                       );
-    if (!defined($connection)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("%s", $!));
-	    $self->{output}->display();
-	    $self->{output}->exit();
-    } else {
-        #Create SSL context
-        eval { $ctx = Net::SSLeay::CTX_new() };
-        if ($@) {
+    eval { $client = IO::Socket::SSL->new(
+        PeerHost => $self->{option_results}->{hostname},
+        PeerPort => $self->{option_results}->{port},
+        $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
+    ) };
+    if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf ("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
-        }
+    }
 
-        #Create SSL connection
-        Net::SSLeay::CTX_set_options($ctx, &Net::SSLeay::OP_ALL);
-
-        eval { $ssl = Net::SSLeay::new($ctx) };
-        if ($@) {
+    #Retrieve Certificat
+    eval { $cert = $client->peer_certificate() };
+    if ($@) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s", $!));
 
             $self->{output}->display();
             $self->{output}->exit()
-        }
+    }
 
-        eval { Net::SSLeay::set_fd($ssl, fileno($connection)) };
-        if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("%s", $!));
-
-            $self->{output}->display();
-            $self->{output}->exit()
-        }
-
-        eval { Net::SSLeay::connect($ssl) };
-        if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("%s", $!));
-
-            $self->{output}->display();
-            $self->{output}->exit()
-        }
-
-        #Retrieve Certificat
-        $cert = Net::SSLeay::get_peer_certificate($ssl);
-
-        #Expiration Date
-        if ($self->{option_results}->{validity_mode} eq 'expiration') {
-            (my $notafterdate = Net::SSLeay::P_ASN1_UTCTIME_put2string(Net::SSLeay::X509_get_notAfter($cert))) =~ s/ GMT//;
-            my $daysbefore = int((&UnixDate(&ParseDate($notafterdate),"%s") - time) / 86400);
-            my $exit = $self->{perfdata}->threshold_check(value => $daysbefore,
-                                                          threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Certificate expiration days: %s - Validity Date: %s", $daysbefore, $notafterdate));
-        #Subject Name
-        } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
-            my @subject_matched = ();
-            my @subject_name = Net::SSLeay::X509_get_subjectAltNames($cert);
-            foreach my $subject_name (@subject_name) {
-                if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
-                    push @subject_matched, $subject_name;
-                } else {
-                    if ($subject_name =~ /[\w\-]+(\.[\w\-]+)*\.\w+/) {
-                        $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_name), debug => 1);
-                    }
+    #Expiration Date
+    if ($self->{option_results}->{validity_mode} eq 'expiration') {
+        (my $notafterdate = Net::SSLeay::P_ASN1_UTCTIME_put2string(Net::SSLeay::X509_get_notAfter($cert))) =~ s/ GMT//;
+        my $daysbefore = int((&UnixDate(&ParseDate($notafterdate),"%s") - time) / 86400);
+        my $exit = $self->{perfdata}->threshold_check(value => $daysbefore,
+                                                      threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Certificate expiration days: %s - Validity Date: %s", $daysbefore, $notafterdate));
+    #Subject Name
+    } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
+        my @subject_matched = ();
+        my @subject_name = Net::SSLeay::X509_get_subjectAltNames($cert);
+        foreach my $subject_name (@subject_name) {
+            if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
+                push @subject_matched, $subject_name;
+            } else {
+                if ($subject_name =~ /[\w\-]+(\.[\w\-]+)*\.\w+/) {
+                    $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_name), debug => 1);
                 }
             }
-
-            if (@subject_matched == 0) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("No Subject Name matched '%s' in Certificate", $self->{option_results}->{subjectname}));
-            } else {
-                $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Subject Name [%s] is present in Certificate", join(', ', @subject_matched)));
-            }
-        #Issuer Name
-        } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
-            my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
-            if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
-                $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("Issuer Name '%s' is present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
-            } else {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
-            }
         }
-        
-        $self->{output}->display();
-        $self->{output}->exit();
+
+        if (@subject_matched == 0) {
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("No Subject Name matched '%s' in Certificate", $self->{option_results}->{subjectname}));
+        } else {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => sprintf("Subject Name [%s] is present in Certificate", join(', ', @subject_matched)));
+        }
+
+    #Issuer Name
+    } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
+        my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
+        if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => sprintf("Issuer Name '%s' is present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
+        } else {
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
+        }
     }
+
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -186,7 +156,7 @@ __END__
 
 =head1 MODE
 
-Check X509's certificate validity
+Check X509's certificate validity (for SMTPS, POPS, IMAPS, HTTPS)
 
 =over 8
 
@@ -194,9 +164,13 @@ Check X509's certificate validity
 
 IP Addr/FQDN of the host
 
+=item B<--servername>
+
+Servername of the host for SNI support (only with IO::Socket::SSL >= 1.56) (eg: foo.bar.com)
+
 =item B<--port>
 
-Port used by Server (Default: '443')
+Port used by Server
 
 =item B<--validity-mode>
 
