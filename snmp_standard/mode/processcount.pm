@@ -157,10 +157,10 @@ sub run {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
-    my $oid2check_filter;
+    my $oid2check_filter = 'status';
     # To have a better order
     foreach (('name', 'path', 'args', 'status')) {
-        if (defined($self->{option_results}->{'process_' . $_})) {
+        if (defined($self->{option_results}->{'process_' . $_}) && $self->{option_results}->{'process_' . $_} ne '') {
             $oid2check_filter = $_;
             last;
         }
@@ -175,7 +175,7 @@ sub run {
         push @{$more_oids}, $oid_hrSWRunPerfCPU;
     }
     foreach (keys %$oids) {
-        if ($_ ne $oid2check_filter && defined($self->{option_results}->{'process_' . $_})) {
+        if ($_ ne $oid2check_filter && defined($self->{option_results}->{'process_' . $_}) && $self->{option_results}->{'process_' . $_} ne '') {
             push @{$more_oids}, $oids->{$_};
             $mores_filters->{$_} = 1;
         }

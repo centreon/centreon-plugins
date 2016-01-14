@@ -35,9 +35,9 @@ my $mapping = {
 my $oid_extremeFanStatusEntry = '.1.3.6.1.4.1.1916.1.1.1.9.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_extremeFanStatusEntry, end => $mapping->{extremeFanOperational}->{oid} };
+    push @{$self->{request}}, { oid => $oid_extremeFanStatusEntry, end => $mapping->{extremeFanOperational}->{oid} };
 }
 
 sub check {
@@ -45,7 +45,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     my ($exit, $warn, $crit, $checked);
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_extremeFanStatusEntry}})) {
@@ -53,7 +53,7 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremeFanStatusEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
 
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance = %s, speed = %s]",

@@ -36,7 +36,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     my $mapping = {
         EntityExtErrorStatus => { oid => $self->{branch} . '.19', map => \%map_fan_status },
@@ -46,7 +46,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch} . '.19'}, instance => $instance);
 
         next if (!defined($result->{EntityExtErrorStatus}));
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         if ($result->{EntityExtErrorStatus} =~ /entityAbsent/i) {
             $self->absent_problem(section => 'fan', instance => $instance);
             next;

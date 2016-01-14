@@ -28,9 +28,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{extremeCurrentTemperature}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{extremeCurrentTemperature}->{oid} };
 }
 
 sub check {
@@ -38,13 +38,13 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     return if (!defined($self->{results}->{$mapping->{extremeCurrentTemperature}->{oid}}->{$mapping->{extremeCurrentTemperature}->{oid} . '.0'}));
     my $instance = 0;
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{extremeCurrentTemperature}->{oid}}, instance => $instance);
         
-    next if ($self->check_exclude(section => 'temperature', instance => $instance));
+    next if ($self->check_filter(section => 'temperature', instance => $instance));
     $self->{components}->{temperature}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("temperature is %dC [instance: %s].", 

@@ -64,9 +64,9 @@ my %map_test_state = (
 );
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_mmBistAndChassisStatus, end => $oid_bistLogicalNetworkLink };
+    push @{$self->{request}}, { oid => $oid_mmBistAndChassisStatus, end => $oid_bistLogicalNetworkLink };
 }
 
 sub check {
@@ -74,7 +74,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking chassis status");
     $self->{components}->{chassisstatus} = {name => 'chassis-status', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'chassisstatus'));
+    return if ($self->check_filter(section => 'chassisstatus'));
 
     foreach my $name (sort keys %{$oids}) {
         if (!defined($self->{results}->{$oid_mmBistAndChassisStatus}->{$oids->{$name}})) {
@@ -84,7 +84,7 @@ sub check {
         }
         
         my $value = $map_test_state{$self->{results}->{$oid_mmBistAndChassisStatus}->{$oids->{$name}}};
-        next if ($self->check_exclude(section => 'chassisstatus', instance => $name));
+        next if ($self->check_filter(section => 'chassisstatus', instance => $name));
         $self->{components}->{chassisstatus}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Chassis status '%s' state is %s", 
