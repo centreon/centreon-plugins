@@ -20,27 +20,10 @@
 
 package network::3com::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $instance_mode;
-
-my $maps_counters = {
-    mem => {
-        '000_usage'   => {
-            set => {
-                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
-            },
-        },
-    }
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -89,6 +72,34 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok' }
+    ];
+    
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+    
+    if ($self->{multiple} == 1) {
+        return "Memory '" . $options{instance_value}->{display} . "' "; 
+    }
+    return '';
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -98,105 +109,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                 });
-                                
-    foreach my $key (('mem')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('mem')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    $instance_mode = $self;
-}
-
-sub run_instances {
-    my ($self, %options) = @_;
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{mem}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All memory usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{mem}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{mem}}) {
-            my $obj = $maps_counters->{mem}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{mem}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        my $prefix = '';
-        if ($multiple == 1) {
-            $prefix = sprintf("Memory '%s' ", $self->{mem}->{$id}->{display});
-        }
-        $self->{output}->output_add(long_msg => "${prefix}$long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "${prefix}$short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "${prefix}$long_msg");
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-
-    $self->manage_selection(%options);
-    $self->run_instances();
-     
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -210,7 +124,7 @@ sub manage_selection {
     # a3com-huawei-splat-devm.mib
     my $oid_hwMemEntry = '.1.3.6.1.4.1.43.45.1.6.1.2.1.1';
     my $results = $options{snmp}->get_table(oid => $oid_hwMemEntry, nothing_quit => 1);
-    $self->{mem} = {};
+    $self->{memory} = {};
     foreach my $oid (keys %{$results}) {
         next if ($oid !~ /^$mapping->{hwMemSize}->{oid}\.(.*)/);
         my $instance = $1;
@@ -218,10 +132,10 @@ sub manage_selection {
         
         my $total = $result->{hwMemSize};
         my $used = $result->{hwMemSize} - $result->{hwMemFree};
-        $self->{mem}->{$instance} = { display => $instance, used => $used, total => $total }; 
+        $self->{memory}->{$instance} = { display => $instance, used => $used, total => $total }; 
     }
     
-    if (scalar(keys %{$self->{mem}}) <= 0) {
+    if (scalar(keys %{$self->{memory}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }

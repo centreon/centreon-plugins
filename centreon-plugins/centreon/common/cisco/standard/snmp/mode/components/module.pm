@@ -53,7 +53,7 @@ my %map_module_state = (
     27 => 'fwDownloadFailure',
 );
 
-# In MIB 'CISCO-ENTITY-SENSOR-MIB'
+# In MIB 'CISCO-ENTITY-FRU-CONTROL-MIB'
 my $mapping = {
     cefcModuleOperStatus => { oid => '.1.3.6.1.4.1.9.9.117.1.2.1.1.2', map => \%map_module_state },
 };

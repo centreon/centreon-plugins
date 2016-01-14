@@ -140,7 +140,7 @@ sub reload_cache {
 	my $salt = '';
     $salt .= int(rand(10)) for 1..10;
     my $digest = hmac_sha256_base64 ($salt, $self->{option_results}->{kayako_secret_key});
-	my $webcontent = $self->{http}->request(url_path => $url_original_path . "/Base/Department&apikey=" . $self->{option_results}->{kayako_api_key} . "&salt=" . $salt . "&signature=" . $digest . "=";);
+	my $webcontent = $self->{http}->request(url_path => $url_original_path . "/Base/Department&apikey=" . $self->{option_results}->{kayako_api_key} . "&salt=" . $salt . "&signature=" . $digest . "=");
     
     my $xp = XML::XPath->new($webcontent);
     my $nodes = $xp->find('departments/department');

@@ -20,24 +20,10 @@
 
 package network::digi::portserverts::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $maps_counters = {
-    global => {
-        '000_usage'   => { set => {
-                key_values => [ { name => 'free' }, { name => 'total' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
-            }
-        },
-    },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -81,6 +67,25 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0 }
+    ];
+    
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'free' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -90,85 +95,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 });
-    
-    foreach my $key (('global')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
+       
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    foreach my $key (('global')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    
-    foreach (sort keys %{$maps_counters->{global}}) {
-        my $obj = $maps_counters->{global}->{$_}->{obj};
-
-        use Data::Dumper;
-        Data::Dumper::Dumper($obj);
-        $obj->set(instance => 'global');
-    
-        my ($value_check) = $obj->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub manage_selection {
@@ -176,9 +104,9 @@ sub manage_selection {
     
     my $oid_memoryTotalMemory = '.1.3.6.1.4.1.332.11.5.3.3.22.11.0';
     my $oid_memoryAvailable = '.1.3.6.1.4.1.332.11.5.3.3.22.12.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_memoryTotalMemory, $oid_memoryAvailable],
-                                         nothing_quit => 1);
-    $self->{global} = { free => $result->{$oid_memoryAvailable}, total =>  $result->{$oid_memoryTotalMemory} };
+    my $result = $options{snmp}->get_leef(oids => [$oid_memoryTotalMemory, $oid_memoryAvailable],
+                                          nothing_quit => 1);
+    $self->{memory} = { free => $result->{$oid_memoryAvailable}, total => $result->{$oid_memoryTotalMemory} };
 }
 
 1;

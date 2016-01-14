@@ -356,11 +356,11 @@ Threshold critical if the string match
 
 =item B<--warning-time>
 
-Threshold warning in ms of webservice response time
+Threshold warning in seconds of webservice response time
 
 =item B<--critical-time>
 
-Threshold critical in ms of webservice response time
+Threshold critical in seconds of webservice response time
 
 =back
 

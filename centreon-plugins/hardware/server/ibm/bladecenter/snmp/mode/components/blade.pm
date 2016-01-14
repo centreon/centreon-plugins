@@ -59,9 +59,9 @@ my $mapping = {
 my $oid_bladeSystemStatusEntry = '.1.3.6.1.4.1.2.3.51.2.22.1.5.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_bladeSystemStatusEntry, start => $mapping->{bladeId}->{oid}, end => $mapping->{bladeName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_bladeSystemStatusEntry, start => $mapping->{bladeId}->{oid}, end => $mapping->{bladeName}->{oid} };
 }
 
 sub check {
@@ -69,14 +69,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking blades");
     $self->{components}->{blade} = {name => 'blades', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'blade'));
+    return if ($self->check_filter(section => 'blade'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_bladeSystemStatusEntry}})) {
         next if ($oid !~ /^$mapping->{bladeExists}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeSystemStatusEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'blade', instance => $result->{bladeId}));
+        next if ($self->check_filter(section => 'blade', instance => $result->{bladeId}));
         if ($result->{bladeExists} =~ /false/i) {
             $self->{output}->output_add(long_msg => "skipping blade '" . $instance . "' : not exits"); 
             next;

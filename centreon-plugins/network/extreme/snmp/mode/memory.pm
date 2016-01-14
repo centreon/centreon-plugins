@@ -20,24 +20,10 @@
 
 package network::extreme::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $maps_counters = {
-    '000_usage' => { set => {
-                        key_values => [
-                                        { name => 'display' }, { name => 'free' }, { name => 'total' },
-                                      ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -86,6 +72,31 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok' }
+    ];
+    
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'display' }, { name => 'free' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+    
+    return "Memory '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -94,93 +105,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
+                                });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{memory_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All memory usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{memory_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{memory_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -191,17 +118,17 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{memory_selected} = {};
+    $self->{memory} = {};
     my $oid_extremeMemoryMonitorSystemEntry = '.1.3.6.1.4.1.1916.1.32.2.2.1';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_extremeMemoryMonitorSystemEntry,
-                                                nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_table(oid => $oid_extremeMemoryMonitorSystemEntry,
+                                                 nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{extremeMemoryMonitorSystemFree}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
         
-        $self->{memory_selected}->{$instance} = { display => $instance, 
-                                                  free => $result->{extremeMemoryMonitorSystemFree} * 1024, total =>  $result->{extremeMemoryMonitorSystemTotal} * 1024};
+        $self->{memory}->{$instance} = { display => $instance, 
+                                         free => $result->{extremeMemoryMonitorSystemFree} * 1024, total =>  $result->{extremeMemoryMonitorSystemTotal} * 1024};
     }
 }
 
