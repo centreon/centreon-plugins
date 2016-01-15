@@ -25,17 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my %battery_status = (
-    1 => ['unknown', 'UNKNOWN'], 
-    2 => ['batteryNormal', 'OK'], 
-    3 => ['batteryLow', 'WARNING'], 
-);
-
-my %battery_replace_indicator = (
-    1 => ['noBatteryNeedsReplacing', 'OK'],
-    2 => ['batteryNeedsReplacing', 'CRITICAL'],
-);
-
 my $instance_mode;
 
 sub custom_threshold_output {
