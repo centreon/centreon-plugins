@@ -74,7 +74,7 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Power Supplies).
+Check Hardware.
 
 =over 8
 
