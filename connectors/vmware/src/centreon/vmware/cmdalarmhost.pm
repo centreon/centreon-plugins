@@ -125,10 +125,10 @@ sub run {
             my $entity = centreon::vmware::common::get_view($self->{connector}, $_->entity, ['name']);
             my $alarm = centreon::vmware::common::get_view($self->{connector}, $_->alarm, ['info']);
             
-            $host_alarms->{$host_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, name => $entity->name, 
-                                                                          time => $_->time, name => $alarm->info->name, 
-                                                                          description => $alarm->info->description, 
-                                                                          status => $_->overallStatus->val};
+            $host_alarms->{$host_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, entity_name => $entity->name, 
+                                                                      time => $_->time, name => $alarm->info->name, 
+                                                                      description => $alarm->info->description, 
+                                                                      status => $_->overallStatus->val};
             $host_alarms->{$host_view->name}->{$_->overallStatus->val}++;
             $total_alarms->{$_->overallStatus->val}++;
         }
@@ -151,11 +151,12 @@ sub run {
         $self->{manager}->{output}->output_add(long_msg => sprintf("    %s warn alarm(s) found(s) - %s critical alarm(s) found(s)", 
                                                     $host_alarms->{$host_name}->{yellow},  $host_alarms->{$host_name}->{red}));
         foreach my $alert (keys %{$host_alarms->{$host_name}->{alarms}}) {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("    [%s] [%s] [%s] [%s] %s", 
+            $self->{manager}->{output}->output_add(long_msg => sprintf("    [%s] [%s] [%s] [%s] %s/%s", 
                                                                $host_alarms->{$host_name}->{alarms}->{$alert}->{status},
-                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{name},
-                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{time},
                                                                $host_alarms->{$host_name}->{alarms}->{$alert}->{type},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{entity_name},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{time},
+                                                               $host_alarms->{$host_name}->{alarms}->{$alert}->{name},
                                                                $host_alarms->{$host_name}->{alarms}->{$alert}->{description}
                                                                ));
         }

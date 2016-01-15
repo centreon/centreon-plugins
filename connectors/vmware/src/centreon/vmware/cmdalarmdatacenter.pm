@@ -126,7 +126,7 @@ sub run {
             my $entity = centreon::vmware::common::get_view($self->{connector}, $_->entity, ['name']);
             my $alarm = centreon::vmware::common::get_view($self->{connector}, $_->alarm, ['info']);
             
-            $dc_alarms->{$datacenter_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, name => $entity->name, 
+            $dc_alarms->{$datacenter_view->name}->{alarms}->{$_->key} = { type => $_->entity->type, entity_name => $entity->name, 
                                                                           time => $_->time, name => $alarm->info->name, 
                                                                           description => $alarm->info->description, 
                                                                           status => $_->overallStatus->val};
@@ -152,11 +152,12 @@ sub run {
         $self->{manager}->{output}->output_add(long_msg => sprintf("    %s warn alarm(s) found(s) - %s critical alarm(s) found(s)", 
                                                     $dc_alarms->{$dc_name}->{yellow},  $dc_alarms->{$dc_name}->{red}));
         foreach my $alert (keys %{$dc_alarms->{$dc_name}->{alarms}}) {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("    [%s] [%s] [%s] [%s] %s", 
+            $self->{manager}->{output}->output_add(long_msg => sprintf("    [%s] [%s] [%s] [%s] %s/%s", 
                                                                $dc_alarms->{$dc_name}->{alarms}->{$alert}->{status},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{name},
-                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{time},
                                                                $dc_alarms->{$dc_name}->{alarms}->{$alert}->{type},
+                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{entity_name},
+                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{time},
+                                                               $dc_alarms->{$dc_name}->{alarms}->{$alert}->{name},
                                                                $dc_alarms->{$dc_name}->{alarms}->{$alert}->{description}
                                                                ));
         }
