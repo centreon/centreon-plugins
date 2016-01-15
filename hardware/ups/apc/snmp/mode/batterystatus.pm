@@ -208,15 +208,19 @@ sub manage_selection {
 
     $self->{global} = {};
     $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_upsBasicBattery },
-                                                                   { oid => $oid_upsAdvBattery },
-                                                                 ],
-                                                         nothing_quit => 1);
+                                                                    { oid => $oid_upsAdvBattery },
+                                                                  ],
+                                                          nothing_quit => 1);
                                                          
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_upsBasicBattery}, instance => '0');
     my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_upsAdvBattery}, instance => '0');
                                                          
-    $self->{global}->{$name} = $result->{$name} foreach my $name (keys %{$mapping});
-    $self->{global}->{$name} = $result2->{$name} foreach my $name (keys %{$mapping2});
+    foreach my $name (keys %{$mapping}) {
+        $self->{global}->{$name} = $result->{$name};
+    }
+    foreach my $name (keys %{$mapping2}) {
+        $self->{global}->{$name} = $result2->{$name};
+    }
 }
 
 1;
