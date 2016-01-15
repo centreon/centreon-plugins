@@ -45,6 +45,19 @@ sub checkArgs {
                                                 short_msg => "Argument error: esx hostname cannot be null");
         return 1;
     }
+    if (defined($options{arguments}->{disconnect_status}) && 
+        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
+        return 1;
+    }
+    foreach my $label (('warning_time', 'critical_time')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
+    }
     return 0;
 }
 
@@ -56,6 +69,9 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    foreach my $label (('warning_time', 'critical_time')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
 }
 
 sub set_connector {
@@ -87,16 +103,22 @@ sub run {
 
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
     return if (!defined($result));
+    
+    if (scalar(@$result) > 1) {
+        $multiple = 1;
+    }
 
-    $self->{manager}->{output}->output_add(severity => 'OK',
-                                           short_msg => 'Time Host(s):');
+    if ($multiple == 1) {
+        $self->{manager}->{output}->output_add(severity => 'OK',
+                                               short_msg => 'All Times are ok');
+    }
     my @host_array = ();
     foreach my $entity_view (@$result) {
-        if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->{val}) == 0) {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("  '%s' is disconnected", 
-                                                                            $entity_view->{name}));
-            next;
-        }
+        next if (centreon::vmware::common::host_state(connector => $self->{connector},
+                                                      hostname => $entity_view->{name}, 
+                                                      state => $entity_view->{'runtime.connectionState'}->{val},
+                                                      status => $self->{disconnect_status},
+                                                      multiple => $multiple) == 0);
         if (defined($entity_view->{'configManager.dateTimeSystem'})) {
             push @host_array, $entity_view->{'configManager.dateTimeSystem'};
         }
@@ -106,14 +128,35 @@ sub run {
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@host_array, \@properties);
     return if (!defined($result2));
     
+    my $localtime = time();
     foreach my $entity_view (@$result) {
         my $host_dts_value = $entity_view->{'configManager.dateTimeSystem'}->{value};
         foreach my $host_dts_view (@$result2) {
             if ($host_dts_view->{mo_ref}->{value} eq $host_dts_value) {
                 my $time = $host_dts_view->QueryDateTime();
                 my $timestamp = Date::Parse::str2time($time);
-                $self->{manager}->{output}->output_add(long_msg => sprintf("  '%s': unix timestamp %s, date: %s", 
-                                                                            $entity_view->{name}, $timestamp, $time));
+                my $offset = $localtime - $timestamp;
+                
+                my $exit = $self->{manager}->{perfdata}->threshold_check(value => $offset, threshold => [ { label => 'critical_time', exit_litteral => 'critical' }, { label => 'warning_time', exit_litteral => 'warning' } ]);
+                $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' date: %s, offset: %s second(s)", 
+                                                                           $entity_view->{name},
+                                                                           $time, $offset));
+                if ($multiple == 0 ||
+                    !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                     $self->{manager}->{output}->output_add(severity => $exit,
+                                                            short_msg => sprintf("'%s' Time offset %d second(s) : %s", 
+                                                                                $entity_view->{name}, $offset,
+                                                                                $time));
+                }
+                
+                my $extra_label = '';
+                $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
+                $self->{manager}->{output}->perfdata_add(label => 'offset' . $extra_label, unit => 's',
+                                                         value => $offset,
+                                                         warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_time'),
+                                                         critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_time'),
+                                                         min => 0);
+                
                 last;
             }
         }

@@ -52,14 +52,14 @@ sub checkArgs {
         return 1;
     }
     if (($options{manager}->{perfdata}->threshold_validate(label => 'warning', value => $options{arguments}->{warning})) == 0) {
-       $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Argument error: wrong value for warning value '" . $options{arguments}->{warning} . "'.");
-       return 1;
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for warning value '" . $options{arguments}->{warning} . "'.");
+        return 1;
     }
     if (($options{manager}->{perfdata}->threshold_validate(label => 'critical', value => $options{arguments}->{critical})) == 0) {
-       $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Argument error: wrong value for critical value '" . $options{arguments}->{critical} . "'.");
-       return 1;
+        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => "Argument error: wrong value for critical value '" . $options{arguments}->{critical} . "'.");
+        return 1;
     }
     return 0;
 }
