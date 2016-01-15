@@ -59,7 +59,7 @@ sub check {
     }
 
     return if ($self->check_filter(section => 'global', instance => $instance));
-    $self->{components}->{physicaldrive}->{total}++;
+    $self->{components}->{global}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("library global status is %s [instance: %s].",
                                                     $result->{libraryGlobalStatus}, $instance

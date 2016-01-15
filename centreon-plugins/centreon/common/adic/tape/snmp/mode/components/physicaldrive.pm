@@ -22,6 +22,7 @@ package centreon::common::adic::tape::snmp::mode::components::physicaldrive;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 my %map_status = (
     1 => 'good',
@@ -64,7 +65,8 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("physical drive '%s' status is %s [instance: %s, model: %s, serial: %s].",
                                     $instance, $result->{phDriveRasStatus},
-                                    $instance, $result->{phDriveModel}, $result->{phDriveSerialNumber}
+                                    $instance, centreon::plugins::misc::trim($result->{phDriveModel}), 
+                                    centreon::plugins::misc::trim($result->{phDriveSerialNumber})
                                     ));
         my $exit = $self->get_severity(section => 'physicaldrive', label => 'default', value => $result->{phDriveRasStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
