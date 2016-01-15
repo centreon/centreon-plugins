@@ -74,7 +74,7 @@ sub check {
         
         $self->{components}->{iocard}->{total}++;
         
-        $exit = $self->get_severity(section => 'default.operability', label => 'iocard.operability', value => $result2->{cucsEquipmentIOCardOperState});
+        $exit = $self->get_severity(section => 'iocard.operability', label => 'default.operability', value => $result2->{cucsEquipmentIOCardOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' state is '%s'.",
