@@ -1,3 +1,7 @@
+2016-01-15 Quentin Garnier <qgarnier@centreon.com> - 2.2.0
+ * Enhance: Can check ESX time offset (issue #9)
+ * Fix: displaying object name in alarm-* modes (issue #12)
+
 2015-12-03 Quentin Garnier <qgarnier@centreon.com> - 2.1.0
  * Enhance: Add a command to monitor ESX services (issue #3)
  * Enhance: Can choose the sampling period (issue #1)
