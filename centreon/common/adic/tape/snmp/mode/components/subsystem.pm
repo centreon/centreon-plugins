@@ -66,7 +66,7 @@ sub check {
         }
 
         next if ($self->check_filter(section => 'subsystem', instance => $mapping->{$name}->{instance}));
-        $self->{components}->{physicaldrive}->{total}++;
+        $self->{components}->{subsystem}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("%s status is %s [instance: %s].",
                                     $mapping->{$name}->{label}, $result->{$name},
