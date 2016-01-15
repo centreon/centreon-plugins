@@ -35,8 +35,11 @@ sub new {
                                 {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
                                   "filter"                  => { name => 'filter' },
+                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
                                   "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                   "scope-cluster:s"         => { name => 'scope_cluster' },
+                                  "warning-time:s"          => { name => 'warning_time' },
+                                  "critical-time:s"         => { name => 'critical_time' },
                                 });
     return $self;
 }
@@ -44,6 +47,19 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    
+    foreach my $label (('warning_time', 'critical_time')) {
+        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
+            my ($label_opt) = $label;
+            $label_opt =~ tr/_/-/;
+            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
+            $self->{output}->option_exit();
+        }
+    }
+    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -83,6 +99,17 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
+=item B<--disconnect-status>
+
+Status if VM disconnected (default: 'unknown').
+
+=item B<--warning-time>
+
+Threshold warning in seconds.
+
+=item B<--critical-time>
+
+Threshold critical in seconds.
 
 =back
 
