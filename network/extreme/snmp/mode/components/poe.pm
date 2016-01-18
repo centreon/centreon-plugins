@@ -80,7 +80,7 @@ sub check {
             next;
         }
         
-        next if ($result2->{extremePethSlotMeasuredPower}) !~ /\d+/);
+        next if ($result2->{extremePethSlotMeasuredPower} !~ /\d+/);
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'poe', instance => $instance, value => $result2->{extremePethSlotMeasuredPower});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
