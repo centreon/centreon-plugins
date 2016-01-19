@@ -26,9 +26,11 @@ use Exporter;
 
 our $map_managed_status;
 our $map_reason_code;
+our $map_moduleport_loop_status;
+our $map_moduleport_protection_status;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw($map_managed_status $map_reason_code);
+our @EXPORT_OK = qw($map_managed_status $map_reason_code $map_moduleport_loop_status $map_moduleport_protection_status);
 
 $map_managed_status = {
     1 => 'unknown', 
@@ -101,6 +103,17 @@ $map_reason_code = {
     802 => 'vcDomainSflowFailed',
     803 => 'vcDomainSflowDegraded',
     901 => 'vcDomainPortMonitorIndirectlyDisabled',
+};
+
+$map_moduleport_protection_status = {
+    1 => 'ok',
+    2 => 'pause-flood-detected',
+    3 => 'in-pause-condition',
+};
+
+$map_moduleport_loop_status = {
+    1 => 'ok',
+    2 => 'loop-dectected',
 };
 
 1;

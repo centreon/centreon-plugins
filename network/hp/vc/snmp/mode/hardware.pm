@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(domain|enclosure|module|port|physicalserver|enet|fc|profile)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(domain|enclosure|module|port|moduleport|physicalserver|enet|fc|profile)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -43,10 +43,19 @@ sub set_system {
             ['disabled', 'OK'],
             ['info', 'OK'],
         ],
+        'moduleport.loop' => [
+            ['ok', 'OK'],
+            ['loop-detected', 'CRITICAL'],
+        ],
+        'moduleport.protection' => [
+            ['ok', 'OK'],
+            ['pause-flood-detected', 'CRITICAL'],
+            ['in-pause-condition', 'WARNING'],
+        ],
     };
     
     $self->{components_path} = 'network::hp::vc::snmp::mode::components';
-    $self->{components_module} = ['domain', 'enclosure', 'module', 'port', 'physicalserver', 'enet', 'fc', 'profile'];
+    $self->{components_module} = ['domain', 'enclosure', 'module', 'moduleport', 'port', 'physicalserver', 'enet', 'fc', 'profile'];
 }
 
 sub snmp_execute {
@@ -82,7 +91,7 @@ Check Hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'domain', 'enclosure', 'module', 'port', 'physicalserver', 'enet', 'fc', 'profile'.
+Can be: 'domain', 'enclosure', 'module', 'moduleport', 'port', 'physicalserver', 'enet', 'fc', 'profile'.
 
 =item B<--filter>
 
