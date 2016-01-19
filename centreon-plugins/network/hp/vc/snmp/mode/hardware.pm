@@ -86,8 +86,8 @@ Can be: 'domain', 'enclosure', 'module', 'port', 'physicalserver', 'enet', 'fc',
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=fan,1
+Exclude some parts (comma seperated list) (Example: --filter=enet --filter=fc)
+Can also exclude specific instance: --filter=fc,1
 
 =item B<--no-component>
 
@@ -98,7 +98,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='fan,CRITICAL,^(?!(normal)$)'
+Example: --threshold-overload='module,CRITICAL,^(?!(normal)$)'
 
 =back
 
