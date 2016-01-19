@@ -87,21 +87,21 @@ sub run {
         $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
     ) };
     if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf ("%s", $!));
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("%s", $@));
 
-            $self->{output}->display();
-            $self->{output}->exit()
+        $self->{output}->display();
+        $self->{output}->exit()
     }
 
     #Retrieve Certificat
     eval { $cert = $client->peer_certificate() };
     if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("%s", $!));
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("%s", $@));
 
-            $self->{output}->display();
-            $self->{output}->exit()
+        $self->{output}->display();
+        $self->{output}->exit()
     }
 
     #Expiration Date
