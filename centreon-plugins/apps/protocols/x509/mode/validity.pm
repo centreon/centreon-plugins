@@ -84,7 +84,7 @@ sub run {
         PeerHost => $self->{option_results}->{hostname},
         PeerPort => $self->{option_results}->{port},
         $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
-    )
+    );
     if (!defined($client)) {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => "failed to accept or ssl handshake: $!,$SSL_ERROR");
