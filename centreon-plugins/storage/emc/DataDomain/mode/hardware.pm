@@ -102,7 +102,7 @@ sub get_version {
     my ($self, %options) = @_;
     
     my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_sysDescr ]);
+    my $result = $options{snmp}->get_leef(oids => [ $oid_sysDescr ]);
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'Cannot get DataDomain OS version.');
