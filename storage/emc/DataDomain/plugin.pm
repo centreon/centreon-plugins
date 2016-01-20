@@ -34,6 +34,7 @@ sub new {
     %{$self->{modes}} = (
                          'hardware'         => 'storage::emc::DataDomain::mode::hardware',
                          'filesystem-usage' => 'storage::emc::DataDomain::mode::filesystem',
+                         'replication'      => 'storage::emc::DataDomain::mode::replication',
                          );
 
     return $self;
