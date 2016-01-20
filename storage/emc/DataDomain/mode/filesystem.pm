@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
     ];
     
-    $self->{maps_counters}->{ap} = [
+    $self->{maps_counters}->{fs} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_used_calc'),
@@ -104,10 +104,10 @@ my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceA
 sub add_result {
     my ($self, %options) = @_;
     
-    $self->{filesystem_id_selected}->{$options{instance}} = {};
-    $self->{filesystem_id_selected}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
-    $self->{filesystem_id_selected}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
-    $self->{filesystem_id_selected}->{$options{instance}}->{used} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{$options{instance}} = {};
+    $self->{fs}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
+    $self->{fs}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{$options{instance}}->{used} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
 }
 
 sub manage_selection {
@@ -161,7 +161,7 @@ sub manage_selection {
         }    
     }
     
-    if (scalar(keys %{$self->{filesystem_id_selected}}) <= 0 && !defined($options{disco})) {
+    if (scalar(keys %{$self->{fs}}) <= 0 && !defined($options{disco})) {
         if (defined($self->{option_results}->{device})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found '" . $self->{option_results}->{filesystem} . "'.");
         } else {
@@ -183,8 +183,8 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->manage_selection(disco => 1);
-    foreach (sort keys %{$self->{filesystem_id_selected}}) {
-        $self->{output}->add_disco_entry(name => $self->{filesystem_id_selected}->{$_}->{display},
+    foreach (sort keys %{$self->{fs}}) {
+        $self->{output}->add_disco_entry(name => $self->{fs}->{$_}->{display},
                                          deviceid => $_);
     }
 }
