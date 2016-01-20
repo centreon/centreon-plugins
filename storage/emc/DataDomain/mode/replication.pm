@@ -66,10 +66,10 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'repl', type => 1, cb_prefix_output => 'prefix_repl_output', message_multiple => 'All replications are ok' } },
+        { name => 'repl', type => 1, cb_prefix_output => 'prefix_repl_output', message_multiple => 'All replications are ok' },
     ];
         
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{repl} = [
          { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' } ],
                 output_template => "status is '%s'",
@@ -163,7 +163,7 @@ sub manage_selection {
         $oid_replSource = '.1.3.6.1.4.1.19746.1.8.1.1.1.7';
         $oid_replDestination = '.1.3.6.1.4.1.19746.1.8.1.1.1.8';
         $oid_replState = '.1.3.6.1.4.1.19746.1.8.1.1.1.3';
-    } else if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.0') {
+    } elsif (centreon::plugins::misc::minimal_version($self->{os_version}, '5.0')) {
         $oid_replSource = '.1.3.6.1.4.1.19746.1.8.1.1.1.7';
         $oid_replDestination = '.1.3.6.1.4.1.19746.1.8.1.1.1.8';
         $oid_replState = '.1.3.6.1.4.1.19746.1.8.1.1.1.3';
@@ -181,11 +181,12 @@ sub manage_selection {
     };
     
     foreach my $oid (keys %{$self->{results}->{$oid_replicationInfoEntry}}) {
-        next if ($oid !~ /^$mapping->{replState}->{oid}\.(.*)$/;
+        next if ($oid !~ /^$mapping->{replState}->{oid}\.(.*)$/);
+        my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_replicationInfoEntry}, instance => $instance);
         $self->{repl}->{$instance} = { display => $result->{replSource} . '/' . $result->{replDestination},
                                        state => $result->{replState},
-                                       offset => (time() - $result->{replSyncedAsOfTime}) * -1
+                                       offset => (time() - $result->{replSyncedAsOfTime})
                                      };
         
     }
@@ -197,14 +198,14 @@ __END__
 
 =head1 MODE
 
-Check Battery Status and battery charge remaining.
+Check replication.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^status|load$'
+Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
