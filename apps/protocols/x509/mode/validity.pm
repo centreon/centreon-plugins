@@ -79,29 +79,27 @@ sub run {
     my ($self, %options) = @_;
 
     # Global variables
-    my ($cert, $client);
 
-    eval { $client = IO::Socket::SSL->new(
+    my $client = IO::Socket::SSL->new(
         PeerHost => $self->{option_results}->{hostname},
         PeerPort => $self->{option_results}->{port},
         $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
-    ) };
-    if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf ("%s", $!));
-
-            $self->{output}->display();
-            $self->{output}->exit()
+    );
+    if (!defined($client)) {
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => "failed to accept or ssl handshake: $!,$SSL_ERROR");
+        $self->{output}->display();
+        $self->{output}->exit()
     }
 
     #Retrieve Certificat
+    my $cert;
     eval { $cert = $client->peer_certificate() };
     if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("%s", $!));
-
-            $self->{output}->display();
-            $self->{output}->exit()
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("%s", $@));
+        $self->{output}->display();
+        $self->{output}->exit()
     }
 
     #Expiration Date
