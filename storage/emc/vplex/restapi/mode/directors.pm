@@ -126,7 +126,7 @@ sub run {
                                                             $items->{$engine_name}->{$director_name}->{'communication-status'},
                                                             $items->{$engine_name}->{$director_name}->{'temperature-threshold-exceeded'},
                                                             $items->{$engine_name}->{$director_name}->{'voltage-threshold-exceeded'},
-                                                            $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'}));
+                                                            defined($items->{$engine_name}->{$director_name}->{'vplex-splitter-status'}) ? $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'} : '-'));
 
             my $exit = $self->get_severity(section => 'director_health', instance => $instance, value => $items->{$engine_name}->{$director_name}->{'health-state'});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -152,11 +152,14 @@ sub run {
                                             short_msg => sprintf("Director '%s' voltage threshold exceeded is %s", 
                                                                  $instance, $items->{$engine_name}->{$director_name}->{'voltage-threshold-exceeded'}));
             }
-            $exit = $self->get_severity(section => 'director_vplex_splitter', value => $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'});
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Director '%s' vplex splitter status is %s", 
+            
+            if (defined($items->{$engine_name}->{$director_name}->{'vplex-splitter-status'})) {
+                $exit = $self->get_severity(section => 'director_vplex_splitter', value => $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'});
+                if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                    $self->{output}->output_add(severity => $exit,
+                                                short_msg => sprintf("Director '%s' vplex splitter status is %s", 
                                                                  $instance, $items->{$engine_name}->{$director_name}->{'vplex-splitter-status'}));
+                }
             }
         }
     }
