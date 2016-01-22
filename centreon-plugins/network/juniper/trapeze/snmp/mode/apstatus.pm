@@ -222,6 +222,13 @@ Can used special variables like: %{opstatus}, %{display}
 Set critical threshold for status (Default: '%{opstatus} !~ /init|redundant|operationnal/').
 Can used special variables like: %{opstatus}, %{display}
 
+=item B<--warning-total>
+
+Set warning threshold for number of AP linked to the WLC
+
+=item B<--critical-total>
+
+Set critical threshold for number of AP linked to the WLC
 
 =back
 
