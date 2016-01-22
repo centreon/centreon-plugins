@@ -148,19 +148,19 @@ sub change_macros {
 }
 
 my %map_ap_status = ( 
-	1 => 'cleared',
-	2 => 'init',
-	3 => 'bootStarted',
-	4 => 'imageDownloaded',
-	5 => 'connectFailed',
-	6 => 'configuring',
-	7 => 'operationnal',
-	10 => 'redundant',
-	20 => 'connOutage',
+    1 => 'cleared',
+    2 => 'init',
+    3 => 'bootStarted',
+    4 => 'imageDownloaded',
+    5 => 'connectFailed',
+    6 => 'configuring',
+    7 => 'operationnal',
+    10 => 'redundant',
+    20 => 'connOutage',
 );
 
 my $mapping_name_oid = {
-    trpzApStatApStatusApName	=> { oid => '.1.3.6.1.4.1.14525.4.5.1.1.2.1.8' },
+    trpzApStatApStatusApName   => { oid => '.1.3.6.1.4.1.14525.4.5.1.1.2.1.8' },
 };
 my $mapping_state_oid = {
     trpzApStatApStatusApState    => { oid => '.1.3.6.1.4.1.14525.4.5.1.1.2.1.5', map => \%map_ap_status },
@@ -175,7 +175,7 @@ sub manage_selection {
                                                                    { oid => $mapping_state_oid->{trpzApStatApStatusApState}->{oid} },
                                                                  ],
                                                           nothing_quit => 1);
-														  
+                                            
     foreach my $oid (keys %{$self->{results}->{ $mapping_name_oid->{trpzApStatApStatusApName}->{oid} }}) {
         $oid =~ /^$mapping_name_oid->{trpzApStatApStatusApName}->{oid}\.(.*)$/;
         my $instance = $1;

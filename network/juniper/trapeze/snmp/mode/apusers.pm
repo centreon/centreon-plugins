@@ -100,13 +100,12 @@ sub prefix_ap_output {
 }
 
 my $mapping = {
-    trpzClSessClientSessApSerialNum	=> { oid => '.1.3.6.1.4.1.14525.4.4.1.1.1.1.7' },
+    trpzClSessClientSessApSerialNum   => { oid => '.1.3.6.1.4.1.14525.4.4.1.1.1.1.7' },
 };
 
 my $mapping1 = {
     trpzClSessClientSessSsid => { oid => '.1.3.6.1.4.1.14525.4.4.1.1.1.1.15' },
 };
-
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -119,18 +118,18 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_multiple_table(oids => [{ oid => $oid_trpzApStatApStatusApName }, { oid => $mapping->{trpzClSessClientSessApSerialNum}->{oid} },
                                                                    { oid => $mapping1->{trpzClSessClientSessSsid}->{oid} }],
                                                           nothing_quit => 1);
-														  
+                                            
     foreach my $oid (keys %{$self->{results}->{ $mapping->{trpzClSessClientSessApSerialNum}->{oid} }}) {
         $oid =~ /^$mapping->{trpzClSessClientSessApSerialNum}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{trpzClSessClientSessApSerialNum}->{oid} }, instance => $instance);
         my $result1 = $options{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{ $mapping1->{trpzClSessClientSessSsid}->{oid} }, instance => $instance);
-	    my @chars = split(//,$result->{trpzClSessClientSessApSerialNum});
-	    my $ap_oid = '12';
-	    foreach my $char (@chars) {
-		    $ap_oid .= '.'.ord($char);
-	    }
-	    my $ap_name = $self->{results}->{$oid_trpzApStatApStatusApName}->{$oid_trpzApStatApStatusApName . '.' . $ap_oid};
+        my @chars = split(//,$result->{trpzClSessClientSessApSerialNum});
+        my $ap_oid = '12';
+        foreach my $char (@chars) {
+            $ap_oid .= '.'.ord($char);
+        }
+        my $ap_name = $self->{results}->{$oid_trpzApStatApStatusApName}->{$oid_trpzApStatApStatusApName . '.' . $ap_oid};
         if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' && 
             $ap_name !~ /$self->{option_results}->{filter_ap}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $ap_name . "': no matching filter.", debug => 1);
@@ -142,12 +141,11 @@ sub manage_selection {
             next;
         }
         
-	    $self->{global}->{total}++; 
-	    $self->{ap}->{$ap_name} = { total => 0, display => $ap_name } if (!defined($self->{ap}->{$ap_name}));
+        $self->{global}->{total}++;
+        $self->{ap}->{$ap_name} = { total => 0, display => $ap_name } if (!defined($self->{ap}->{$ap_name}));
         $self->{ap}->{$ap_name}->{total}++;
-	    $self->{ssid}->{$result1->{trpzClSessClientSessSsid}} = { total => 0, display => $result1->{trpzClSessClientSessSsid} } if (!defined($self->{ssid}->{$result1->{trpzClSessClientSessSsid}}));
-	    $self->{ssid}->{$result1->{trpzClSessClientSessSsid}}->{total}++  
-	    
+        $self->{ssid}->{$result1->{trpzClSessClientSessSsid}} = { total => 0, display => $result1->{trpzClSessClientSessSsid} } if (!defined($self->{ssid}->{$result1->{trpzClSessClientSessSsid}}));
+        $self->{ssid}->{$result1->{trpzClSessClientSessSsid}}->{total}++;
     }
     
     if (scalar(keys %{$self->{ap}}) <= 0 && scalar(keys %{$self->{ssid}}) <= 0) {
