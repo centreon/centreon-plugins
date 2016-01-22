@@ -70,7 +70,7 @@ sub set_counters {
                 ],
             }
         },
-    ];	
+    ];   
 }
 
 sub prefix_memory_output {
@@ -84,7 +84,6 @@ sub prefix_flash_output {
 
     return "Flash ";
 }
-
 
 sub new {
     my ($class, %options) = @_;
@@ -102,10 +101,8 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $total_bytes;
-    my $used_bytes;
-    my $free_bytes;
-	
+    my ($total_bytes, $used_bytes, $free_bytes);
+   
     #  TRAPEZE-NETWORKS-SYSTEM-MIB
     my $oid_trpzSysFlashMemoryUsedBytes = '.1.3.6.1.4.1.14525.4.8.1.1.3.0';
     my $oid_trpzSysFlashMemoryTotalBytes = '.1.3.6.1.4.1.14525.4.8.1.1.4.0';
@@ -131,19 +128,18 @@ sub manage_selection {
     my $free_bytes_flash = $results->{$oid_trpzSysFlashMemoryTotalBytes} - $results->{$oid_trpzSysFlashMemoryUsedBytes};
 
     $self->{memory} = {display => 'memory',
-		       prct_used => $used_bytes * 100 / $total_bytes,
-		       used => $used_bytes,
-		       free => $free_bytes,
-		       total => $total_bytes,
-		       };
-					  
+             prct_used => $used_bytes * 100 / $total_bytes,
+             used => $used_bytes,
+             free => $free_bytes,
+             total => $total_bytes,
+             };
+    
     $self->{flash} = {display => 'flash',
-		      prct_used => $results->{$oid_trpzSysFlashMemoryUsedBytes} * 100 / $results->{$oid_trpzSysFlashMemoryTotalBytes},
-		      used => $results->{$oid_trpzSysFlashMemoryUsedBytes},
-		      free => $free_bytes_flash,
-		      total => $results->{$oid_trpzSysFlashMemoryTotalBytes},
-		     };
-					   
+            prct_used => $results->{$oid_trpzSysFlashMemoryUsedBytes} * 100 / $results->{$oid_trpzSysFlashMemoryTotalBytes},
+            used => $results->{$oid_trpzSysFlashMemoryUsedBytes},
+            free => $free_bytes_flash,
+            total => $results->{$oid_trpzSysFlashMemoryTotalBytes},
+           };         
 }
 
 1;

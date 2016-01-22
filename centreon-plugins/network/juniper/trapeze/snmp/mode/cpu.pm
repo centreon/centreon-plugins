@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
-	    { label => 'average', set => {
+       { label => 'average', set => {
                 key_values => [ { name => 'trpzSysCpuAverageLoad' } ],
                 output_template => 'average : %.2f %%',
                 perfdatas => [
@@ -99,7 +99,7 @@ sub manage_selection {
     my $oid_trpzSysCpuLastMinuteLoad = '.1.3.6.1.4.1.14525.4.8.1.1.11.2.0';
     my $oid_trpzSysCpuLast5MinutesLoad = '.1.3.6.1.4.1.14525.4.8.1.1.11.3.0';
     my $oid_trpzSysCpuLastHourLoad = '.1.3.6.1.4.1.14525.4.8.1.1.11.4.0';
-	
+   
     my $results = $options{snmp}->get_leef(oids => [$oid_trpzSysCpuAverageLoad, $oid_trpzSysCpuLastMinuteLoad, 
                                                     $oid_trpzSysCpuLast5MinutesLoad, $oid_trpzSysCpuLastHourLoad ],
                                            nothing_quit => 1);
