@@ -31,7 +31,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20151218;
+my $global_version = 20160122;
 
 sub new {
     my $class = shift;
