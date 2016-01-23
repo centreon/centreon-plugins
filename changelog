@@ -1,3 +1,32 @@
+2016-01-22 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Add a plugin to check Juniper Trapeze in SNMP
+ * Plugin added: Add a plugin to check Dell ML6000 in SNMP
+ * Plugin added: Add a plugin to check UPS APC in SNMP
+ * Plugin added: Add a plugin to check HP VC in SNMP
+ * Major fix on sanity mechanism for options
+ * Add option '--filter-uom' in core library (#220)
+ * Add some new classes for code refactoring
+ * Add 'get_header' method in http library
+ * Fix 'proxypac' in http library (#263)
+ * Mode added: [github] 'stats'
+ * Mode added: [netapp] 'cache-age'
+ * Mode added: [datadomain] 'replication'
+ * Enhancement: [cisco standard]{ipsla} hardened code
+ * Enhancement: [github]{issues} change api call method (#257)
+ * Enhancement: [selenium]{scenario} add echo command (#258)
+ * Enhancement: [protocol x509]{validity} add SNI support (#241)
+ * Enhancement: [snmp_standard]{interfaces} add option '--force-counters32' (#213)
+ * Enhancement: [protocol x509]{validity} add support for alternative subject names (#277)
+ * Enhancement: [juniper sa]{users} add filter (#192)
+ * Enhancement: [cisco wlc]{ap-users} add users by ssid (#227)
+ * Enhancement: [juniper ssg]{sessions} better counters (#233)
+ * Enhancement: [vmware connector]{time-host} new options
+ * Enhancement: [extreme]{hardware} add poe status
+ * Enhancement: [vplex]{directors} hardened code
+ * Fix: [bluecoat]{hardware} problem with sensor
+ * Fix: [cisco ucs]{equipment} fix severity for iocard (#283)
+ * Fix: [exchange 2010]{queues} perdata infinity not raising anymore
+ 
 2015-12-18 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Add a plugin to check VMWare ESX with WSMAN
  * Configuration: centreon-plugins don't use GetOptions anymore (custom library instead)

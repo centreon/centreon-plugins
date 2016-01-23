@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,35 +20,40 @@
 
 package storage::emc::DataDomain::mode::filesystem;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use storage::emc::DataDomain::lib::functions;
-use centreon::plugins::values;
 
-my $oid_fileSystemSpaceEntry = '.1.3.6.1.4.1.19746.1.3.2.1.1';
-my $oid_sysDescr = '.1.3.6.1.2.1.1.1'; # 'Data Domain OS 5.4.1.1-411752'
-my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail);
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
+    ];
+    
+    $self->{maps_counters}->{fs} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_used_calc'),
+                closure_custom_output => $self->can('custom_used_output'),
+                threshold_use => 'used_prct', output_error_template => '%s',
+                perfdatas => [
+                    { value => 'used', label => 'used', cast_int => 1,
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
+                      label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    ];
+}
 
-my $maps_counters = {
-    usage => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'free' }, { name => 'used' }, { name => 'display' },
-                                      ],
-                        closure_custom_calc => \&custom_used_calc,
-                        closure_custom_output => \&custom_used_output,
-                        threshold_use => 'used_prct',
-                        output_error_template => '%s',
-                        perfdatas => [
-                            { value => 'used', label => 'used', cast_int => 1,
-                              unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
-                              label_extra_instance => 1, instance_use => 'display' },
-                        ],
-                    }
-               },
-};
+sub prefix_fs_output {
+    my ($self, %options) = @_;
+    
+    return "Filesystem '" . $options{instance_value}->{display} . "' ";
+}
 
 sub custom_used_calc {
     my ($self, %options) = @_;
@@ -87,113 +92,32 @@ sub new {
                                   "filesystem:s"            => { name => 'filesystem' },
                                   "regexp"                  => { name => 'use_regexp' },
                                   "regexp-isensitive"       => { name => 'use_regexpi' },                                  
-                                });
-
-    $self->{filesystem_id_selected} = {};
-     
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
-                                                  output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
+                                });     
     
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{filesystem_id_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All filesystems are ok.');
-    }
-    
-    foreach my $id (sort keys %{$self->{filesystem_id_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{filesystem_id_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Filesystem '" . $self->{filesystem_id_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Filesystem '" . $self->{filesystem_id_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Filesystem '" . $self->{filesystem_id_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
+my $oid_fileSystemSpaceEntry = '.1.3.6.1.4.1.19746.1.3.2.1.1';
+my $oid_sysDescr = '.1.3.6.1.2.1.1.1'; # 'Data Domain OS 5.4.1.1-411752'
+my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceAvail);
 
 sub add_result {
     my ($self, %options) = @_;
     
-    $self->{filesystem_id_selected}->{$options{instance}} = {};
-    $self->{filesystem_id_selected}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
-    $self->{filesystem_id_selected}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
-    $self->{filesystem_id_selected}->{$options{instance}}->{used} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{$options{instance}} = {};
+    $self->{fs}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
+    $self->{fs}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
+    $self->{fs}->{$options{instance}}->{used} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceUsed . '.' . $options{instance}} * 1024 * 1024 * 1024);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_sysDescr },
                                                             { oid => $oid_fileSystemSpaceEntry },
-                                                         ],
-                                                         , nothing_quit => 1);
+                                                         ], 
+                                                         nothing_quit => 1);
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'Cannot get DataDomain OS version.');
@@ -237,7 +161,7 @@ sub manage_selection {
         }    
     }
     
-    if (scalar(keys %{$self->{filesystem_id_selected}}) <= 0 && !defined($options{disco})) {
+    if (scalar(keys %{$self->{fs}}) <= 0 && !defined($options{disco})) {
         if (defined($self->{option_results}->{device})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found '" . $self->{option_results}->{filesystem} . "'.");
         } else {
@@ -259,12 +183,11 @@ sub disco_show {
     # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     $self->manage_selection(disco => 1);
-    foreach (sort keys %{$self->{filesystem_id_selected}}) {
-        $self->{output}->add_disco_entry(name => $self->{filesystem_id_selected}->{$_}->{display},
+    foreach (sort keys %{$self->{fs}}) {
+        $self->{output}->add_disco_entry(name => $self->{fs}->{$_}->{display},
                                          deviceid => $_);
     }
 }
-
 
 1;
 

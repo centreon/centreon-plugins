@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,19 +35,23 @@ my %map_disk_status = (
     6 => 'available', # since OS 5.4
 );
 
-sub check {
+sub load {
     my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking disks");
-    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
     
-    my $oid_diskPropState;
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_diskPropState = '.1.3.6.1.4.1.19746.1.6.1.1.1.8';
     } else {
         $oid_diskPropState = '.1.3.6.1.4.1.19746.1.6.1.1.1.7';
     }
+    push @{$self->{request}}, { oid => $oid_diskPropState };
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking disks");
+    $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'disk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_diskPropState}})) {
         $oid =~ /^$oid_diskPropState\.(.*)$/;
@@ -55,7 +59,7 @@ sub check {
         my $disk_status = defined($map_disk_status{$self->{results}->{$oid_diskPropState}->{$oid}}) ?
                             $map_disk_status{$self->{results}->{$oid_diskPropState}->{$oid}} : 'unknown';
 
-        next if ($self->check_exclude(section => 'disk', instance => $instance));
+        next if ($self->check_filter(section => 'disk', instance => $instance));
         next if ($disk_status =~ /absent/i && 
                  $self->absent_problem(section => 'disk', instance => $instance));
         
