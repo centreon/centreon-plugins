@@ -47,6 +47,7 @@ sub new {
                          'sql'                          => 'centreon::common::protocols::sql::mode::sql',
                          'threads-connected'            => 'database::mysql::mode::threadsconnected',
                          'uptime'                       => 'database::mysql::mode::uptime',
+                         'tables-size'                  => 'database::mysql::mode::tablessize',
                          );
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
