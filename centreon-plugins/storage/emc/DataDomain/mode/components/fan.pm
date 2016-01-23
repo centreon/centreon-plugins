@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,12 +39,18 @@ my %level_map = (
 my ($oid_fanDescription, $oid_fanLevel, $oid_fanStatus);
 my $oid_fanPropertiesEntry = '.1.3.6.1.4.1.19746.1.1.3.1.1.1';
 
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_fanPropertiesEntry };
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
     
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_fanDescription = '.1.3.6.1.4.1.19746.1.1.3.1.1.1.4';
@@ -64,7 +70,7 @@ sub check {
                             $map_fan_status{$self->{results}->{$oid_fanPropertiesEntry}->{$oid}} : 'unknown';
         my $fan_level = $self->{results}->{$oid_fanPropertiesEntry}->{$oid_fanLevel . '.' . $instance};
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($fan_status =~ /notfound/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         
