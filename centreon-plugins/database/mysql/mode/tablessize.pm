@@ -120,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check AP status.
+Check size of one (or more) table from one (or more) databases
 
 =over 8
 
