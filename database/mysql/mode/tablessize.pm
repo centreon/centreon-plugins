@@ -20,10 +20,44 @@
 
 package database::mysql::mode::tablessize;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'table', type => 1, cb_prefix_output => 'prefix_table_output', message_multiple => 'All tables sizes are ok' },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total Size : %s%s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'total', value => 'total_absolute', template => '%s',
+                      unit => 'B', min => 0 },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{table} = [
+        { label => 'table', set => {
+                key_values => [ { name => 'size' }, { name => 'display' } ],
+                output_template => 'size : %s%s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'table', value => 'size_absolute', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,48 +67,26 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "db-table:s@"              => { name => 'db_table', },
+                                "filter-db:s" => { name => 'filter_db' },
+                                "filter-table:s" => { name => 'filter_table' },
                                 });
-    $self->{filter} = {};
     return $self;
 }
 
-sub check_options {
+sub prefix_table_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (!defined(@{$self->{option_results}->{db_table}})) {
-        $self->{output}->add_option_msg(short_msg => "Please define --db-table option");
-        $self->{output}->option_exit();
-    }
-    foreach (@{$self->{option_results}->{db_table}}) {
-        my ($db, $table) = split /\./;
-        if (!defined($db) || !defined($table)) {
-            $self->{output}->add_option_msg(short_msg => "Check --db-table option formatting : '" . $_ . "'");
-            $self->{output}->option_exit();
-        }
-        $self->{filter}->{$db.$table} = 1;
-    }
+    return "Table '" . $options{instance_value}->{display} . "' ";
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
+
     $self->{sql}->query(query => "SELECT table_schema AS DB, table_name AS NAME, ROUND(data_length + index_length)
                                   FROM information_schema.TABLES");
-                                  
     my $result = $self->{sql}->fetchall_arrayref();
 
     if (!($self->{sql}->is_version_minimum(version => '5'))) {
@@ -82,27 +94,24 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All tables are ok.");
+    $self->{global} = { total => 0 };
+    $self->{table} = {};
 
     foreach my $row (@$result) {
-        next if (!defined($self->{filter}->{$$row[0].$$row[1]}) || !defined($$row[2]));
-        my $exit_code = $self->{perfdata}->threshold_check(value => $$row[2], threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $$row[2]);
-        $self->{output}->output_add(long_msg => sprintf("Database: '%s' Table: '%s' Size: '%s%s'", $$row[0], $$row[1], $value, $value_unit));
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Table '%s' size in db '%s' is '%i%s'", $$row[0], $$row[1], $value, $value_unit));
+        next if (!defined($$row[2]));
+        if (defined($self->{option_results}->{filter_table}) && $self->{option_results}->{filter_table} ne '' &&
+            $$row[1] !~ /$self->{option_results}->{filter_table}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
+            next;
         }
-        $self->{output}->perfdata_add(label => $$row[0] . '_' . $$row[1] . '_size', unit => 'B',
-                                      value => $$row[2],
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        if (defined($self->{option_results}->{filter_db}) && $self->{option_results}->{filter_db} ne '' &&
+            $$row[0] !~ /$self->{option_results}->{filter_db}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
+            next
+        }
+        $self->{table}->{$$row[0].'.'.$$row[1]} = { size => $$row[2], display => $$row[0].'.'.$$row[1] };
+        $self->{global}->{total} += $$row[2] if defined($self->{table}->{$$row[0].'.'.$$row[1]});
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -111,21 +120,29 @@ __END__
 
 =head1 MODE
 
-Check MySQL tables size.
+Check AP status.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning in bytes.
+Only display some counters (regexp can be used).
 
-=item B<--critical>
+=item B<--filter-db>
 
-Threshold critical in bytes.
+Filter DB name (can be a regexp).
 
-=item B<--db-table>
+=item B<--filter-table>
 
-Filter database and table to check (multiple: eg: --db-table centreon_storage.data_bin --db-table centreon_storage.logs)
+Filter table name (can be a regexp).
+
+=item B<--warning-*>
+
+Set warning threshold for number of user. Can be : 'total', 'table'
+
+=item B<--critical-*>
+
+Set critical threshold for number of user. Can be : 'total', 'table'
 
 =back
 
