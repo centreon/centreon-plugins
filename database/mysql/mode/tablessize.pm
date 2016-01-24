@@ -37,7 +37,7 @@ sub new {
                                   "critical:s"              => { name => 'critical', },
                                   "db-table:s@"              => { name => 'db_table', },
                                 });
-
+    $self->{filter} = {};
     return $self;
 }
 
