@@ -296,8 +296,7 @@ sub run {
             $size = $bytes_max;
             $free = $bytes_max - $bytes;
             $used = $bytes;
-        }
-        elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
+        } elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
             $percent_used = ($bytes - $bytes_free) / $bytes * 100;
             $size = $bytes;
             $free = $bytes_free;
