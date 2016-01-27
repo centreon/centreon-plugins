@@ -183,7 +183,7 @@ sub getDataSourceType() {
 ##################################################
 sub retrieve_by_regexp() {	
     my $row2;
-    my $query2 = "SELECT s.perfdata FROM services s WHERE s.description LIKE '".$regexp."' AND s.enable = 1";
+    my $query2 = "SELECT s.perfdata FROM services s WHERE s.description LIKE '".$regexp."' AND s.enabled = 1";
     my $DBRES2 = $db_centstorage->prepare($query2);
     if (!$DBRES2->execute) {
 	die "Error:" . $DBRES2->errstr . "\n";
