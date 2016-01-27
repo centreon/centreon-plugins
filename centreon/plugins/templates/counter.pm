@@ -181,7 +181,7 @@ sub run_global {
                                     short_msg => "${prefix_output}${short_msg}${suffix_output}"
                                     );
     } else {
-        $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
+        $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}") if ($long_msg ne '');
     }
 }
 
