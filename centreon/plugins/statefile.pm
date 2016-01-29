@@ -82,12 +82,12 @@ sub check_options {
 }
 
 sub error {
-     my ($self) = shift;
+    my ($self) = shift;
      
-     if (@_) {
+    if (@_) {
         $self->{error} = $_[0];
-     }
-     return $self->{error};
+    }
+    return $self->{error};
 }
 
 sub read {
