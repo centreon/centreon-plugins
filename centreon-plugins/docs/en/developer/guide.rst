@@ -2097,7 +2097,7 @@ The model can also be used to check strings (not only counters). So we want to c
   
   sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     # Sometimes, you'll need to have access of the current object in the callback
     $instance_mode = $self;
