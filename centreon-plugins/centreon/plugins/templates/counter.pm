@@ -116,7 +116,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-     foreach my $key (keys %{$self->{maps_counters}}) {
+    foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             $_->{obj}->init(option_results => $self->{option_results});
         }

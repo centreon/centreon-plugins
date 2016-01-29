@@ -92,7 +92,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
     $instance_mode = $self;
     
