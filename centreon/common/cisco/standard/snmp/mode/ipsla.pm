@@ -812,7 +812,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
