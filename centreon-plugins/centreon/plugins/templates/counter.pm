@@ -146,6 +146,7 @@ sub run_global {
     
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
 
+        next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
         if ($value_check != 0) {
             $long_msg .= $long_msg_append . $obj->output_error();
             $long_msg_append = $message_separator;
@@ -215,7 +216,7 @@ sub run_instances {
         
             my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
                                               values => $self->{$options{config}->{name}}->{$id});
-
+            next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
                 $long_msg_append = $message_separator;
