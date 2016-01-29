@@ -851,7 +851,7 @@ sub manage_selection {
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonCtrlAdminEntry}})) {
         next if ($oid !~ /^$mapping->{rttMonCtrlAdminTag}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
         my $tag_name = $result->{rttMonCtrlAdminTag};
         if (!defined($tag_name) || $tag_name eq '') {
             $self->{output}->output_add(long_msg => "skipping: please set a tag name");
@@ -867,9 +867,9 @@ sub manage_selection {
             next;
         }
         $self->{tag}->{$tag_name} = { %{$result} };
-        $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_rttMonEchoAdminPrecision}, instance => $instance);
+        $result = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_rttMonEchoAdminPrecision}, instance => $instance);
         $self->{tag}->{$tag_name} = { %{$result}, %{$self->{tag}->{$tag_name}} };
-        $result = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_rttMonLatestRttOperEntry}, instance => $instance);
+        $result = $options{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_rttMonLatestRttOperEntry}, instance => $instance);
         $self->{tag}->{$tag_name} = { %{$result}, %{$self->{tag}->{$tag_name}} };
         
         # there are two entries with rotation: 1 -> last hour, 2 -> current hour.
@@ -878,7 +878,7 @@ sub manage_selection {
             $self->{tag}->{$tag_name}->{$key . '_2'} = 0;
             my $i = 1;
             my $instances = [];
-            foreach my $oid2 ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
+            foreach my $oid2 ($options{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonJitterStatsEntry}})) {
                 next if ($oid2 !~ /^$oids_jitter_stats->{$key}\.$instance.(\d+)/);
                 push @{$instances}, $1;
                 $self->{tag}->{$tag_name}->{$key . '_' . $i} = $self->{results}->{$oid_rttMonJitterStatsEntry}->{$oid2};
