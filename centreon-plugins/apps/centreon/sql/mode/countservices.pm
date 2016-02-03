@@ -83,7 +83,7 @@ sub manage_selection {
     $options{sql}->connect();
     $options{sql}->query(query => $query);
 
-    # check by ssid
+    # check by poller
     $self->{poller} = {};
     while ((my $row = $options{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{filter_poller}) && $self->{option_results}->{filter_poller} ne '' &&
