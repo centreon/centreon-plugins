@@ -264,6 +264,9 @@ sub run {
     #Busy Ticks:              462350
     #Idle Ticks:              388743630
     #Raid Group ID:           0
+
+    # Add a "\n" for the end.
+    $response .= "\n";
     while ($response =~ /^Bus\s+(\S+)\s+Enclosure\s+(\S+)\s+Disk\s+(\S+)(.*?)\n\n/msgi) {
         my $disk_instance = "$1_$2_$3";
         my $values = $4;
@@ -319,7 +322,6 @@ sub run {
                 $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
             }
             
-            $self->{output}->output_add(long_msg => "Disk '$disk_instance':$long_msg");
             $self->{output}->perfdata_add(label => $_ . '_' . $disk_instance, unit => $maps_counters->{$_}->{unit},
                                           value => sprintf($maps_counters->{$_}->{perfdata}, $value_check),
                                           warning => $warning,
@@ -327,6 +329,7 @@ sub run {
                                           min => 0);
         }
 
+        $self->{output}->output_add(long_msg => "Disk '$disk_instance':$long_msg");
         $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,

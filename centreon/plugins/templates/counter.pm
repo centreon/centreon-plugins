@@ -116,7 +116,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-     foreach my $key (keys %{$self->{maps_counters}}) {
+    foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             $_->{obj}->init(option_results => $self->{option_results});
         }
@@ -146,6 +146,7 @@ sub run_global {
     
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
 
+        next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
         if ($value_check != 0) {
             $long_msg .= $long_msg_append . $obj->output_error();
             $long_msg_append = $message_separator;
@@ -181,7 +182,7 @@ sub run_global {
                                     short_msg => "${prefix_output}${short_msg}${suffix_output}"
                                     );
     } else {
-        $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
+        $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}") if ($long_msg ne '');
     }
 }
 
@@ -215,7 +216,7 @@ sub run_instances {
         
             my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
                                               values => $self->{$options{config}->{name}}->{$id});
-
+            next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
                 $long_msg_append = $message_separator;
