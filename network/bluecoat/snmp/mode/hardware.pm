@@ -25,10 +25,6 @@ use base qw(centreon::plugins::templates::hardware);
 use strict;
 use warnings;
 
-my $thresholds = {
-    
-};
-
 sub set_system {
     my ($self, %options) = @_;
     

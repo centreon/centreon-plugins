@@ -155,7 +155,7 @@ Check memory usage
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(1m|5m)$'
+Example: --filter-counters='^(memory)$'
 
 =item B<--warning-*>
 
