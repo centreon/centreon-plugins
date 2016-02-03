@@ -89,7 +89,7 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
-                                        short_msg => sprintf("Replicatin test '%s' status on '%s' is '%s' [error: %s]",
+                                        short_msg => sprintf("Replication test '%s' status on '%s' is '%s' [error: %s]",
                                                              $self->{data}->{check}, $self->{data}->{server}, $self->{data}->{result}, $self->{data}->{error}));
         }
     }

@@ -29,10 +29,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "warning:s"           => { name => 'warning', },
                                   "critical:s"          => { name => 'critical', },
                                   "filter:s"            => { name => 'filter', },
@@ -67,7 +67,24 @@ sub run {
 
     $self->{sql}->connect();
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '9')) {
+    if ($self->{sql}->is_version_minimum(version => '11')) {
+        $query = q{
+            SELECT
+              tum.tablespace_name "Tablespace",
+              t.status "Status",
+              t.contents "Type",
+              t.extent_management "Extent Mgmt",
+              tum.used_space*t.block_size bytes,
+              tum.tablespace_size*t.block_size bytes_max
+            FROM
+              DBA_TABLESPACE_USAGE_METRICS tum
+            INNER JOIN
+              dba_tablespaces t on tum.tablespace_name=t.tablespace_name
+            WHERE
+              t.contents<>'UNDO'
+              OR (t.contents='UNDO' AND t.tablespace_name =(SELECT value FROM v$parameter WHERE name='undo_tablespace'))
+        };
+    } elsif ($self->{sql}->is_version_minimum(version => '9')) {
         $query = q{
             SELECT
                 a.tablespace_name         "Tablespace",
@@ -263,18 +280,23 @@ sub run {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
         next if (defined($self->{option_results}->{filter}) && $name !~ /$self->{option_results}->{filter}/);
         next if (defined($self->{option_results}->{skip}) && $status =~ /offline/i);
-        
+
         if (!defined($bytes)) {
             # seems corrupted, cannot get value
             $self->{output}->output_add(severity => 'UNKNOWN',
                                         short_msg => sprintf("tbs '%s' cannot get data", $name));
             next;
         }
-        
+
         $status = lc $status;
         $type = lc $type;
         my ($percent_used, $percent_free, $used, $free, $size);
-        if ((!defined($bytes_max)) || ($bytes_max == 0)) {
+        if ($self->{sql}->is_version_minimum(version => '11')) {
+            $percent_used = $bytes / $bytes_max * 100;
+            $size = $bytes_max;
+            $free = $bytes_max - $bytes;
+            $used = $bytes;
+        } elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
             $percent_used = ($bytes - $bytes_free) / $bytes * 100;
             $size = $bytes;
             $free = $bytes_free;
@@ -306,7 +328,7 @@ sub run {
                                           min => 0,
                                           max => $size);
         } else {
-            my $exit_code = $self->{perfdata}->threshold_check(value => $percent_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]); 
+            my $exit_code = $self->{perfdata}->threshold_check(value => $percent_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit_code,
                                             short_msg => sprintf("tbs '%s' Used: %.2f%s (%.2f%%) Size: %.2f%s", $name, $used_value, $used_unit, $percent_used, $size_value, $size_unit));

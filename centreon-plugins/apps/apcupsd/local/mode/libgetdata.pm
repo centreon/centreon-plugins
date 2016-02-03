@@ -41,7 +41,7 @@ sub getdata {
     my ($value);
     #print $stdout;
     foreach (split(/\n/, $stdout)) {
-        if (/^$searchpattern\s*:\s*(.*)\s(Percent Load Capacity|Percent|Minutes|Seconds|Volts|Hz|seconds|C|F Internal)/i) {
+        if (/^$searchpattern\s*:\s*(.*)\s(Percent Load Capacity|Percent|Minutes|Seconds|Volts|Hz|seconds|C Internal|F Internal|C|F)/i) {
             $valueok = "1";
             $value = $1;
             #print $value;
