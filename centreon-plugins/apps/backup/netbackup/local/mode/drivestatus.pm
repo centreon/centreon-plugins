@@ -153,6 +153,12 @@ sub manage_selection {
         my ($robot_num, $drives) = ($1, $2);
         while ($drives =~ /drive\s+\S+\s+(\d+)\s+\S+\s+\S+\s+(\S+)/msig) {
             my $name = $robot_num . '.' . $1;
+            
+            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                $name !~ /$self->{option_results}->{filter_name}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+                next;
+            }
             $self->{drive}->{$name} = { display => $name, status => $2 };
         }
     }
