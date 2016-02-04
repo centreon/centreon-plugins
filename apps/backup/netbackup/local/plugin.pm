@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
                          'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
                          );
 
