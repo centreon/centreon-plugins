@@ -99,7 +99,7 @@ sub run {
                 SELECT
                     a.tablespace_name,
                     SUM(a.bytes)          bytes,
-                    SUM(DECODE(a.autoextensible, 'YES', a.maxbytes, 'NO', a.bytes)) maxbytes
+                    SUM(DECODE(a.autoextensible, 'YES', CASE WHEN (a.bytes > a.maxbytes) THEN 0 ELSE a.maxbytes END, 'NO', a.bytes)) maxbytes
                 FROM
                     dba_data_files a
                 GROUP BY
@@ -140,7 +140,7 @@ sub run {
                 b.contents "Type",
                 b.extent_management "Extent Mgmt",
                 sum(a.bytes_free + a.bytes_used) bytes,   -- allocated
-                SUM(DECODE(d.autoextensible, 'YES', d.maxbytes, 'NO', d.bytes)) bytes_max,
+                SUM(DECODE(d.autoextensible, 'YES', CASE WHEN (d.bytes > d.maxbytes) THEN 0 ELSE d.maxbytes END, 'NO', d.bytes)) bytes_max,
                 SUM(a.bytes_free + a.bytes_used - NVL(c.bytes_used, 0)) bytes_free
             FROM
                 sys.v_$TEMP_SPACE_HEADER a,
