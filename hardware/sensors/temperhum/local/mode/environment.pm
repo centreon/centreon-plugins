@@ -104,7 +104,7 @@ sub prefix_device_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{device} = {};
+    $self->{drive} = {};
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
                                                   options => $self->{option_results},
                                                   sudo => $self->{option_results}->{sudo},
@@ -115,8 +115,8 @@ sub manage_selection {
     foreach (split(/\n/, $stdout)) {
         next if !/(\/dev\/[a-z0-9]+).*temperature\s(\d*\.?\d+).*relative\shumidity\s(\d*\.?\d+).*dew\spoint\s(\d*\.?\d+)/;
         my ($drive, $temp, $hum, $dew) = ($1, $2, $3, $4);
-        next if $drive !~ /$self->{option_results}->{filter_drive}/;
-        $self->{drive}{$drive} = { humidity => $hum, temperature => $temp, dewpoint => $dew, delta => ($temp - $dew), display => $drive };
+        next if ($drive !~ /$self->{option_results}->{filter_drive}/);
+        $self->{drive}->{$drive} = { humidity => $hum, temperature => $temp, dewpoint => $dew, delta => ($temp - $dew), display => $drive };
     }
 
     if (scalar(keys %{$self->{drive}}) <= 0) {
