@@ -205,7 +205,9 @@ sub request {
 
     my ($response, $content);
     my ($req, $url);
-    if (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
+    if (defined($request_options->{full_url})) {
+        $url = $request_options->{full_url};
+    } elsif (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
         $url = $request_options->{proto}. "://" . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
     } else {
         $url = $request_options->{proto}. "://" . $request_options->{hostname} . $request_options->{url_path};
@@ -304,7 +306,8 @@ sub request {
         $self->{output}->exit();
     }
 
-    $self->{headers} = $response->headers;
+    $self->{headers} = $response->{headers};
+    $self->{response} = $response;
     return $response->content;
 }
 
@@ -312,6 +315,12 @@ sub get_header {
     my ($self, %options) = @_;
 
     return $self->{headers};
+}
+
+sub get_response {
+    my ($self, %options) = @_;
+
+    return $self->{response};
 }
 
 1;
