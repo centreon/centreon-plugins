@@ -200,17 +200,16 @@ Check IOPS (Global, Read, Write) on each SSDs.
 
 =item B<--warning-*>
 
-Threshold warning.
-Can be: 'global' (%), 'read' (%), 'write' (%).
+Threshold warning (number of iops)
+Can be: 'global', 'read', 'write'.
 
 =item B<--critical-*>
-
-Threshold critical.
-Can be: 'global' (%), 'read' (%), 'write' (%).
+Threshold critical (number of iops)
+Can be: 'global', 'read', 'write'.
 
 =item B<--filter-name>
 
-Filter SSD name (can be a regexp).
+Filter SSD name (can be a regexp). (e.g --filter-name '.*' for all SSDs)
 
 =back
 
