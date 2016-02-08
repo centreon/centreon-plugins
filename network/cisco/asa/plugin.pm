@@ -37,7 +37,7 @@ sub new {
                          'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sessions'         => 'network::cisco::asa::mode::sessions',
+                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
                          );
 
     return $self;
