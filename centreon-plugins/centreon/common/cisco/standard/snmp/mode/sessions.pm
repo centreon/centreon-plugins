@@ -45,7 +45,7 @@ sub set_counters {
         },
         { label => 'connections-1m', set => {
                 key_values => [ { name => 'cufwConnGlobalConnSetupRate1' } ],
-                output_template => 'average last 1min %s', output_error_template => "average last 1min : %s",
+                output_template => 'average last 1min : %s', output_error_template => "average last 1min : %s",
                 perfdatas => [
                     { label => 'connections_1m', value => 'cufwConnGlobalConnSetupRate1_absolute', template => '%d',
                       min => 0 },
