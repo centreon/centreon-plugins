@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'unique' } ],
                 output_template => '%d Unique users',
                 perfdatas => [
-                    { label => 'total_users', value => 'unique_absolute', template => '%d',
+                    { label => 'unique_users', value => 'unique_absolute', template => '%d',
                       unit => 'users', min => 0, label_extra_instance => 0 },
                 ],
             }
