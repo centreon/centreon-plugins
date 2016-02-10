@@ -202,8 +202,8 @@ sub check {
         my $exit = $self->get_severity(section => $result->{entSensorType}, label => 'sensor', value => $result->{entSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s' status is '%s'", 
-                                                             $sensor_descr, $result->{entSensorStatus}));
+                                        short_msg => sprintf("Sensor '%s/%s' status is '%s'", 
+                                                             $sensor_descr, $instance, $result->{entSensorStatus}));
         }
      
         next if (!defined($result->{entSensorValue}) || $result->{entSensorValue} !~ /[0-9]/);
@@ -222,7 +222,7 @@ sub check {
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Sensor '%s' is %s %s", $sensor_descr, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
+                                        short_msg => sprintf("Sensor '%s/%s' is %s %s", $sensor_descr, $instance, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
         }
         $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr, unit => $perfdata_unit{$result->{entSensorType}},
                                       value => $result->{entSensorValue},
