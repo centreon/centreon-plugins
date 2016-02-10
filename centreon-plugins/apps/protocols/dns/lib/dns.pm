@@ -72,7 +72,7 @@ sub search {
         }
     }
     
-    return @results;
+    return sort @results;
 }
 
 sub connect {
