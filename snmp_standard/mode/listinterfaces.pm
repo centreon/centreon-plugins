@@ -146,8 +146,10 @@ sub run {
 
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
-            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
-                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0) ? 
+                                ($result->{$oid_speed64 . "." . $_}) : 
+                                    (defined($result->{$oid_speed32 . "." . $_}) && $result->{$oid_speed32 . "." . $_} ne '' && $result->{$oid_speed32 . "." . $_} != 0 ?
+                                        (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)) : '');
         }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
@@ -173,7 +175,9 @@ sub run {
             $extra_display_append = ', ';
         }
 
-        $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} . ', id = ' . $_ . $extra_display . ']');
+        $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . 
+            (defined($result->{$self->{oid_opstatus} . "." . $_}) ?  $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} : '') . 
+            ', id = ' . $_ . $extra_display . ']');
     }
 
     $self->{output}->output_add(severity => 'OK',
@@ -283,8 +287,10 @@ sub disco_show {
         
         my $interface_speed = 0;
         if ($self->{no_speed} == 0) {
-            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0 ? 
-                                ($result->{$oid_speed64 . "." . $_}) : (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)));
+            $interface_speed = (defined($result->{$oid_speed64 . "." . $_}) && $result->{$oid_speed64 . "." . $_} ne '' && $result->{$oid_speed64 . "." . $_} != 0) ? 
+                                ($result->{$oid_speed64 . "." . $_}) : 
+                                    (defined($result->{$oid_speed32 . "." . $_}) && $result->{$oid_speed32 . "." . $_} ne '' && $result->{$oid_speed32 . "." . $_} != 0 ?
+                                        (sprintf("%g", $result->{$oid_speed32 . "." . $_} / 1000 / 1000)) : '');
         }
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
             $interface_speed = $self->{option_results}->{speed};
@@ -302,7 +308,7 @@ sub disco_show {
         
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $interface_speed,
-                                         status => $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}},
+                                         status => defined($result->{$self->{oid_opstatus} . "." . $_}) ? $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} : '',
                                          interfaceid => $_,
                                          %extra_values);
     }
