@@ -42,7 +42,7 @@ sub new {
                          'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'memory'           => 'snmp_standard::mode::memory',
+                         'memory'           => 'os::freebsd::snmp::mode::memory',
                          'processcount'     => 'snmp_standard::mode::processcount',
                          'storage'          => 'snmp_standard::mode::storage',
                          'swap'             => 'snmp_standard::mode::swap',
