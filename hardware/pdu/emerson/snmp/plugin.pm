@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::asa::plugin;
+package hardware::pdu::emerson::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,16 +28,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'failover'         => 'network::cisco::asa::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
+                         'global-status'    => 'hardware::pdu::emerson::snmp::mode::globalstatus',
+                         'ps-usage'         => 'hardware::pdu::emerson::snmp::mode::psusage',
+                         'rb-usage'         => 'hardware::pdu::emerson::snmp::mode::rbusage',
                          );
 
     return $self;
@@ -49,7 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco ASA in SNMP.
-!!! Be careful: Cisco ASA had an internal SNMP buffer of 512B. Use --subsetleef=20 (or lower) option !!!
+Check Emerson Liebert PDU in SNMP.
 
 =cut

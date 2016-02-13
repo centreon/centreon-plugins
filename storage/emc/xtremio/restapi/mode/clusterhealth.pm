@@ -131,6 +131,7 @@ sub run {
                                             name => $item);
 
         foreach my $sensor (@sensors) {
+            next if (!defined($details->{$sensor}) || $details->{$sensor} eq '');
             $self->{output}->output_add(long_msg => sprintf("Sensor '%s' state is '%s'",
                                                             $sensor, $details->{$sensor}));
                                                             

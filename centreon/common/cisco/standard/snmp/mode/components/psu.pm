@@ -119,7 +119,7 @@ sub check_psu_entity {
         my $exit = $self->get_severity(section => 'psu', value => $result->{cefcFRUPowerOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is %s.", $psu_descr, $result->{cefcFRUPowerOperStatus}));
+                                        short_msg => sprintf("Power supply '%s/%s' status is %s", $psu_descr, $instance, $result->{cefcFRUPowerOperStatus}));
         }
     }
 }

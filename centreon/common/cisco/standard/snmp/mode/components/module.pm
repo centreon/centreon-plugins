@@ -87,7 +87,8 @@ sub check {
         my $exit = $self->get_severity(section => 'module', value => $result->{cefcModuleOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Module '%s' status is %s", $module_descr, $result->{cefcModuleOperStatus}));
+                                        short_msg => sprintf("Module '%s/%s' status is %s", $module_descr, 
+                                                        $instance, $result->{cefcModuleOperStatus}));
         }
     }
 }
