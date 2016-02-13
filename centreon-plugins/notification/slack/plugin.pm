@@ -18,26 +18,20 @@
 # limitations under the License.
 #
 
-package network::cisco::asa::plugin;
+package notification::slack::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'failover'         => 'network::cisco::asa::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
+                         'alert'            => 'notification::slack::mode::alert',
                          );
 
     return $self;
@@ -49,7 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco ASA in SNMP.
-!!! Be careful: Cisco ASA had an internal SNMP buffer of 512B. Use --subsetleef=20 (or lower) option !!!
+Send Slack notifications.
 
 =cut

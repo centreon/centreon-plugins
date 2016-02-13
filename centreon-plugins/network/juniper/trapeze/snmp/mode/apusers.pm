@@ -160,7 +160,7 @@ __END__
 
 =head1 MODE
 
-Check AP status.
+Check AP users.
 
 =over 8
 
