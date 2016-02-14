@@ -28,7 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(psu|punit|temperature|voltage|amperage|systembattery|coolingunit|coolingdevice|processor|memory|pci|network)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|amperage|coolingdevice)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -59,13 +58,32 @@ sub set_system {
             ['nonRecoverableLower', 'CRITICAL'],
             ['failed', 'CRITICAL'],
         ],
+        'pdisk.state' => [
+            ['unknown', 'UNKNOWN'],
+            ['ready', 'OK'],
+            ['online', 'OK'],
+            ['foreign', 'OK'],
+            ['offline', 'WARNING'],
+            ['blocked', 'WARNING'],
+            ['failed', 'CRITICAL'],
+            ['non-raid', 'OK'],
+            ['removed', 'OK'],
+        ],
+        'vdisk.state' => [
+            ['unknown', 'UNKNOWN'],
+            ['online', 'OK'],
+            ['failed', 'CRITICAL'],
+            ['degraded', 'WARNING'],
+        ],
     };
-    
-    # need also: fru, systemslot, storagectrl (storage controller), storagebattery
-    # physicaldisk, virtualdisk
+
     $self->{components_path} = 'hardware::server::dell::idrac::snmp::mode::components';
     $self->{components_module} = ['psu', 'punit', 'temperature', 'voltage', 'amperage', 
-        'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network'];
+        'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
+        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'];
+
+    $self->{regexp_threshold_overload_check_section_option} = 
+        '^(' . join('|', @{$self->{components_module}}). ')$';
 }
 
 sub snmp_execute {
@@ -94,14 +112,16 @@ __END__
 
 =head1 MODE
 
-Check hardware components (temperatures,...).
+Check hardware components.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'temperature', 
+Can be: 'psu', 'punit', 'temperature', 'voltage', 'amperage', 
+'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
+'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'.
 
 =item B<--filter>
 
@@ -121,12 +141,12 @@ Example: --threshold-overload='temperature.state,CRITICAL,^(?!(enabled)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperature (syntax: type,regexp,treshold)
+Set warning threshold (syntax: type,regexp,treshold)
 Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for temperature (syntax: type,regexp,treshold)
+Set critical threshold (syntax: type,regexp,treshold)
 Example: --critical='temperature,.*,40'
 
 =back

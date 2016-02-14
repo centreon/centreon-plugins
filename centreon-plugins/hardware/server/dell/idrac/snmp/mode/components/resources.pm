@@ -28,9 +28,11 @@ our %map_state;
 our %map_status;
 our %map_probe_status;
 our %map_amperage_type;
+our %map_pdisk_state;
+our %map_vdisk_state;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type);
+our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type %map_pdisk_state %map_vdisk_state);
 
 %map_probe_status = (
     1 => 'other', 
@@ -59,6 +61,25 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type)
     2 => 'enabled', 
     4 => 'notReady', 
     6 => 'enabledAndNotReady',
+);
+
+%map_pdisk_state = (
+    1 => 'unknown',
+    2 => 'ready',
+    3 => 'online',
+    4 => 'foreign',
+    5 => 'offline',
+    6 => 'blocked',
+    7 => 'failed',
+    8 => 'non-raid',
+    9 => 'removed',
+);
+
+%map_vdisk_state = (
+    1 => 'unknown',
+    2 => 'online',
+    3 => 'failed',
+    4 => 'degraded',
 );
 
 %map_amperage_type = (
