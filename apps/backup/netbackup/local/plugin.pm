@@ -32,8 +32,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'dedup-status'     => 'apps::backup::netbackup::local::mode::dedupstatus',
                          'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
                          'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
+                         'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
+                         'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
                          );
 
     return $self;
