@@ -112,7 +112,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'nbdevquery' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-listdv -U -stype PureDisk 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-listdv -U -stype PureDisk' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /up/i' },
@@ -148,12 +148,12 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});    
+    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    sudo => $self->{option_results}->{sudo},
+                                                    command => $self->{option_results}->{command},
+                                                    command_path => $self->{option_results}->{command_path},
+                                                    command_options => $self->{option_results}->{command_options});    
     $self->{pool} = {};
     #Disk Pool Name      : NBU-MASTER-DP
     #Disk Type           : PureDisk
@@ -238,7 +238,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-listdv -U -stype PureDisk 2>&1').
+Command options (Default: '-listdv -U -stype PureDisk').
 
 =item B<--filter-name>
 

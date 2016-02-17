@@ -100,21 +100,21 @@ sub disco_show {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    sudo => $self->{option_results}->{sudo},
+                                                    command => $self->{option_results}->{command},
+                                                    command_path => $self->{option_results}->{command_path},
+                                                    command_options => $self->{option_results}->{command_options});
     $self->{policies} = {};
     my @lines = split /\n/, $stdout;
     foreach my $policy_name (@lines) {
         my $command2 = $self->{option_results}->{command2};
         $command2 =~ s/%{policy_name}/$policy_name/g;
-        my $stdout2 = centreon::plugins::misc::execute(output => $self->{output},
-                                                       options => $self->{option_results},
-                                                       sudo => $self->{option_results}->{sudo},
-                                                       command => $command2);
+        my ($stdout2) = centreon::plugins::misc::execute(output => $self->{output},
+                                                         options => $self->{option_results},
+                                                         sudo => $self->{option_results}->{sudo},
+                                                         command => $command2);
         
         #Policy Type:            NBU-Catalog (35)
         #Active:                 yes        

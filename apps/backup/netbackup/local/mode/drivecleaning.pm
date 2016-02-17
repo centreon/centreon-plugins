@@ -63,7 +63,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'tpconfig' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-l 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-l' },
                                   "filter-name:s"     => { name => 'filter_name' },
                                 });
     
@@ -73,12 +73,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   sudo => $self->{option_results}->{sudo},
-                                                   command => $self->{option_results}->{command},
-                                                   command_path => $self->{option_results}->{command_path},
-                                                   command_options => $self->{option_results}->{command_options});    
+    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    sudo => $self->{option_results}->{sudo},
+                                                    command => $self->{option_results}->{command},
+                                                    command_path => $self->{option_results}->{command_path},
+                                                    command_options => $self->{option_results}->{command_options});    
     $self->{drive} = { total => 0, num_cleaning => 0 };
     #Drive Name              Type      Mount Time  Frequency   Last Cleaned         Comment
     #**********              ****      **********  *********   ****************     *******
@@ -158,7 +158,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-l 2>&1').
+Command options (Default: '-l').
 
 =item B<--filter-name>
 
