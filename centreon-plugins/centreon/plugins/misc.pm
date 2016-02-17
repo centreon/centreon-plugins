@@ -24,6 +24,16 @@ use strict;
 use warnings;
 use utf8;
 
+sub execute {
+    my (%options) = @_;
+    
+    if ($^O eq 'MSWin32') {
+        return windows_execute(%options, timeout => $options{options}->{timeout});
+    } else {
+        return unix_execute(%options);
+    }
+}
+
 sub windows_execute {
     my (%options) = @_;
     my $result;
@@ -109,7 +119,7 @@ sub windows_execute {
     return ($stdout, $result->{$pid}->{exitcode});
 }
 
-sub execute {
+sub unix_execute {
     my (%options) = @_;
     my $cmd = '';
     my $args = [];

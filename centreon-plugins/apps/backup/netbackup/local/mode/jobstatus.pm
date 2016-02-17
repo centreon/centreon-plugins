@@ -221,7 +221,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'bpdbjobs' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-report -most_columns 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-report -most_columns' },
                                   "filter-policy-name:s"    => { name => 'filter_policy_name' },
                                   "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
                                   "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
@@ -285,12 +285,12 @@ sub manage_selection {
     $self->{cache_name} = "netbackup_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{sudo} : 'me') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});    
+    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    sudo => $self->{option_results}->{sudo},
+                                                    command => $self->{option_results}->{command},
+                                                    command_path => $self->{option_results}->{command_path},
+                                                    command_options => $self->{option_results}->{command_options});    
     $self->{job} = {};
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
@@ -298,7 +298,7 @@ sub manage_selection {
         my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_start_time, $job_end_time, $job_kb) = 
             ($values[0], $values[1], $values[2], $values[3], $values[4], $values[8], $values[10], $values[14]);
         
-        my $display = $job_pname . '/' . $job_id;
+        my $display = (defined($job_pname) ? $job_pname : '-') . '/' . $job_id;
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
@@ -313,7 +313,7 @@ sub manage_selection {
         my $elapsed_time = $current_time - $job_start_time;
         $self->{job}->{$display} = { display => $display, elapsed => $elapsed_time, 
                                      status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
-                                     kb => $job_kb };
+                                     kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef };
     }
     
     if (scalar(keys %{$self->{job}}) <= 0) {
@@ -371,7 +371,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-report -most_columns 2>&1').
+Command options (Default: '-report -most_columns').
 
 =item B<--filter-policy-name>
 
