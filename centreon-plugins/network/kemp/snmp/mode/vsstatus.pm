@@ -194,7 +194,9 @@ sub manage_selection {
         
         $self->{vs}->{$instance} = { display => $result->{vSname}, 
                                      status => $result->{vSstate}, 
-                                     vSInBytes => $result->{vSInBytes} * 8, vSOutBytes => $result->{vSOutBytes} * 8, vSActivConns => $result->{vSActivConns} };
+                                     vSInBytes => defined($result->{vSInBytes}) ? $result->{vSInBytes} * 8 : undef, 
+                                     vSOutBytes => defined($result->{vSOutBytes}) ? $result->{vSOutBytes} * 8 : undef, 
+                                     vSActivConns => $result->{vSActivConns} };
     }
     
     if (scalar(keys %{$self->{vs}}) <= 0) {

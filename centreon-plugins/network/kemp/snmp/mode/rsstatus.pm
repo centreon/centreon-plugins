@@ -196,7 +196,9 @@ sub manage_selection {
         
         $self->{rs}->{$instance} = { display => $display_name, 
                                      status => $result->{rSstate}, 
-                                     rSInBytes => $result->{rSInBytes} * 8, rSOutBytes => $result->{rSOutBytes} * 8, rSActiveConns => $result->{rSActiveConns} };
+                                     rSInBytes => defined($result->{rSInBytes}) ? $result->{rSInBytes} * 8 : undef, 
+                                     rSOutBytes => defined($result->{rSOutBytes}) ? $result->{rSOutBytes} * 8 : undef, 
+                                     rSActiveConns => $result->{rSActiveConns} };
     }
     
     if (scalar(keys %{$self->{rs}}) <= 0) {
