@@ -82,20 +82,23 @@ sub check {
             next;
         }
         $self->{components}->{blade}->{total}++;
+        $result->{bladeName} = defined($result->{bladeName}) ? $result->{bladeName} : '-';
         
         if ($result->{bladePowerState} =~ /off/) {
-            $self->{output}->output_add(long_msg => sprintf("Blade '%s' power state is %s", 
-                                                            $result->{bladeId}, $result->{bladePowerState}));
+            $self->{output}->output_add(long_msg => sprintf("Blade '%s/%s' power state is %s", 
+                                                            $result->{bladeName}, $result->{bladeId}, $result->{bladePowerState},
+                                                            ));
             next;
         }
         
-        $self->{output}->output_add(long_msg => sprintf("Blade '%s' state is %s [power state: %s]", 
-                                    $result->{bladeId}, $result->{bladeHealthState}, $result->{bladePowerState}));
+        $self->{output}->output_add(long_msg => sprintf("Blade '%s/%s' state is %s [power state: %s]", 
+                                    $result->{bladeName}, $result->{bladeId}, $result->{bladeHealthState}, $result->{bladePowerState},
+                                    ));
         my $exit = $self->get_severity(section => 'blade', value => $result->{bladeHealthState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Blade '%s' state is %s", 
-                                            $result->{bladeId}, $result->{bladeHealthState}));
+                                        short_msg => sprintf("Blade '%s/%s' state is %s", 
+                                                             $result->{bladeName}, $result->{bladeId}, $result->{bladeHealthState}));
         }
     }
 }
