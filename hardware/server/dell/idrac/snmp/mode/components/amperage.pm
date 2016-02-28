@@ -103,7 +103,7 @@ sub check {
                 $exit = $self->{perfdata}->threshold_check(value => $result->{amperageProbeReading}, threshold => [ { label => 'critical-amperage-instance-' . $instance, exit_litteral => 'critical' }, 
                                                                                                                      { label => 'warning-amperage-instance-' . $instance, exit_litteral => 'warning' } ]);
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-amperage-instance-' . $instance);
-                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-amperage-instance-' . $instance)
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-amperage-instance-' . $instance);
             }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

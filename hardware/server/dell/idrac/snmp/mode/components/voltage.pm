@@ -94,7 +94,7 @@ sub check {
                 $exit = $self->{perfdata}->threshold_check(value => $result->{voltageProbeReading}, threshold => [ { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' }, 
                                                                                                                      { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } ]);
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
-                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance)
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);
             }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
