@@ -38,7 +38,8 @@ sub new {
                                   "oid-leef:s"              => { name => 'oid_leef' },
                                   "oid-table:s"             => { name => 'oid_table' },
                                   "oid-instance:s"          => { name => 'oid_instance' },
-                                  "filter-table:s"          => { name => 'filter_table' },
+                                  "filter-table-value:s"    => { name => 'filter_table_value' },
+                                  "filter-table-instance:s" => { name => 'filter_table_instance' },
                                   
                                   "warning-regexp:s"        => { name => 'warning_regexp' },
                                   "critical-regexp:s"       => { name => 'critical_regexp' },
@@ -147,9 +148,14 @@ sub get_snmp_values {
         my $instance = $self->get_instance_value(instance => $1);
         my $value = $self->get_map_value(value => $self->{results}->{$_});
         $self->{output}->output_add(long_msg => sprintf("[instance: %s][value: %s]", $_, $value), debug => 1);
-        if (defined($self->{option_results}->{filter_table}) && $self->{option_results}->{filter_table} ne '' && 
-            $value !~ /$self->{option_results}->{filter_table}/) {
+        if (defined($self->{option_results}->{filter_table_value}) && $self->{option_results}->{filter_table_value} ne '' && 
+            $value !~ /$self->{option_results}->{filter_table_value}/) {
             $self->{output}->output_add(long_msg => sprintf("skipping oid '%s' value '%s': not matching the filter", $_, $value), debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_table_instance}) && $self->{option_results}->{filter_table_instance} ne '' && 
+            $instance !~ /$self->{option_results}->{filter_table_instance}/) {
+            $self->{output}->output_add(long_msg => sprintf("skipping oid '%s' instance '%s': not matching the filter", $_, $instance), debug => 1);
             next;
         }
         
@@ -304,7 +310,7 @@ Check SNMP string values (can be a String or an Integer).
 
 Check values absent:
 centreon_plugins.pl --plugin=snmp_standard::plugin --mode=string-value --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public 
-    --oid-table='.1.3.6.1.2.1.25.4.2.1.2' --format-ok='%{filter_rows} processes' --format-critical='processes are absent: %{details_critical}' --critical-absent='centengine' --critical-absent='crond' --filter-table='centengine|crond'
+    --oid-table='.1.3.6.1.2.1.25.4.2.1.2' --format-ok='%{filter_rows} processes' --format-critical='processes are absent: %{details_critical}' --critical-absent='centengine' --critical-absent='crond' --filter-table-value='centengine|crond'
 
 Check table status:
 centreon_plugins.pl --plugin=snmp_standard::plugin --mode=string-value --hostname=127.0.0.1 --snmp-version=2c --snmp-community=akcp 
@@ -329,9 +335,13 @@ OID table value to check (numeric format only).
 OID table value for the instance (numeric format only).
 Can be used to have human readable instance name.
 
-=item B<--filter-table>
+=item B<--filter-table-value>
 
 Filter value from --oid-table option (can be a regexp).
+
+=item B<--filter-table-instance>
+
+Filter instance from --oid-table option (can be a regexp).
 
 =item B<--warning-regexp>
 
