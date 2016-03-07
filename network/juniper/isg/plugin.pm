@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::ssg::plugin;
+package network::juniper::isg::plugin;
 
 use strict;
 use warnings;
