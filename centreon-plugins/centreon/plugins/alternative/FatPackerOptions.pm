@@ -18,36 +18,47 @@
 # limitations under the License.
 #
 
-package apps::backup::netbackup::local::plugin;
+package centreon::plugins::alternative::FatPackerOptions;
+
+use base qw(centreon::plugins::options);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use Pod::Usage;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
-
-    $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                         'dedup-status'     => 'apps::backup::netbackup::local::mode::dedupstatus',
-                         'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
-                         'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
-                         'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
-                         'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
-                         );
-
+    
     return $self;
+}
+
+sub display_help {
+    my ($self, %options) = @_;
+    
+    my $stdout;
+    foreach (@{$self->{pod_package}}) {
+        
+        {
+            my $pp = $_->{package} . ".pm";
+            $pp =~ s{::}{/}g;
+            my $content_class = $INC{$pp}->{$pp};
+            open my $str_fh, '<', \$content_class;
+            
+            local *STDOUT;
+            open STDOUT, '>', \$stdout;
+            pod2usage(-exitval => 'NOEXIT', -input => $str_fh,
+                      -verbose => 99, 
+                      -sections => $_->{sections});
+            
+            close $str_fh;
+        }
+        
+        $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
+    }
 }
 
 1;
 
 __END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Netbackup through local commands (the plugin can use SSH).
-
-=cut

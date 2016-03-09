@@ -258,10 +258,6 @@ perl centreon_plugins.pl --plugin=apps::protocols::jmx::plugin --custommode=jolo
 
 =over 8
 
-=item B<--oid>
-
-OID value to check (numeric format only).
-
 =item B<--lookup-path>
 
 What to lookup (from internal Jmx4Perl). Use --lookup-jpath for complex matching. 
@@ -279,9 +275,9 @@ Threshold warning.
 
 Threshold critical.
 
-=item B<--oid-type>
+=item B<--type>
 
-Type of the OID (Default: 'gauge').
+Type (Default: 'gauge').
 Can be 'counter' also. 'counter' will use a retention file.
 
 =item B<--counter-per-seconds>

@@ -18,25 +18,28 @@
 # limitations under the License.
 #
 
-package apps::backup::netbackup::local::plugin;
+package network::kemp::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'dedup-status'     => 'apps::backup::netbackup::local::mode::dedupstatus',
-                         'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
-                         'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
-                         'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
-                         'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
+                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'load'             => 'snmp_standard::mode::loadaverage',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-vs'          => 'network::kemp::snmp::mode::listvs',
+                         'ha-status'        => 'network::kemp::snmp::mode::hastatus',
+                         'memory'           => 'snmp_standard::mode::memory',
+                         'rs-status'        => 'network::kemp::snmp::mode::rsstatus',
+                         'vs-status'        => 'network::kemp::snmp::mode::vsstatus',
                          );
 
     return $self;
@@ -48,6 +51,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Netbackup through local commands (the plugin can use SSH).
+Check Kemp equipments in SNMP.
 
 =cut

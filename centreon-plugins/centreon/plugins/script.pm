@@ -22,7 +22,6 @@ package centreon::plugins::script;
 
 use strict;
 use warnings;
-use centreon::plugins::options;
 use centreon::plugins::output;
 use centreon::plugins::misc;
 use FindBin;
@@ -31,7 +30,8 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20160122;
+my $global_version = 20160220;
+my $alternative_fatpacker = 0;
 
 sub new {
     my $class = shift;
@@ -84,7 +84,13 @@ sub get_plugin {
     ######
     # Need to load global 'Output' and 'Options'
     ######
-    $self->{options} = centreon::plugins::options->new();
+    if ($alternative_fatpacker == 0) {
+        require centreon::plugins::options;
+        $self->{options} = centreon::plugins::options->new();
+    } else {
+        require centreon::plugins::alternative::FatPackerOptions;
+        $self->{options} = centreon::plugins::alternative::FatPackerOptions->new();
+    }
     $self->{output} = centreon::plugins::output->new(options => $self->{options});
     $self->{options}->set_output(output => $self->{output});
 
@@ -122,7 +128,17 @@ sub display_local_help {
     if ($self->{help}) {
         local *STDOUT;
         open STDOUT, '>', \$stdout;
-        pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+        
+        if ($alternative_fatpacker == 0) {
+            pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+        } else {
+            my $pp = __PACKAGE__ . ".pm";
+            $pp =~ s{::}{/}g;
+            my $content_class = $INC{$pp}->{$pp};
+            open my $str_fh, '<', \$content_class;
+            pod2usage(-exitval => "NOEXIT", -input => $str_fh);
+            close $str_fh;
+        }
     }
     
     $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
