@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::backup::netbackup::local::mode::drivestatus;
+package apps::backup::netbackup::local::mode::dedupstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -71,16 +71,25 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'drive', type => 1, cb_prefix_output => 'prefix_drive_output', message_multiple => 'All drive status are ok' }
+        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All dedup status are ok' }
     ];
     
-    $self->{maps_counters}->{drive} = [
+    $self->{maps_counters}->{pool} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+        { label => 'usage', set => {
+                key_values => [ { name => 'usage' }, { name => 'display' } ],
+                output_template => 'Use: %s %%',
+                perfdatas => [
+                    { label => 'used', value => 'usage_absolute', template => '%s', 
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -101,9 +110,9 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tpconfig' },
+                                  "command:s"         => { name => 'command', default => 'nbdevquery' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-l' },
+                                  "command-options:s" => { name => 'command_options', default => '-listdv -U -stype PureDisk' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /up/i' },
@@ -120,10 +129,10 @@ sub check_options {
     $self->change_macros();
 }
 
-sub prefix_drive_output {
+sub prefix_pool_output {
     my ($self, %options) = @_;
     
-    return "Drive '" . $options{instance_value}->{display} . "' ";
+    return "Disk pool name '" . $options{instance_value}->{display} . "' ";
 }
 
 sub change_macros {
@@ -145,26 +154,37 @@ sub manage_selection {
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
                                                     command_options => $self->{option_results}->{command_options});    
-    $self->{drive} = {};
-    #robot      0    -    TLD    -       -  -          -                    {3,0,0,1}
-    #  drive    -    0 hcart2    2      UP  -          IBM.ULT3580-HH5.000  {3,0,1,0}
-    #  drive    -    2 hcart2    1      UP  -          IBM.ULT3580-HH5.002  {3,0,0,0}
-    while ($stdout =~ /^robot\s+(\d+)(.*?)(?=robot\s+\d+|\z)/msig) {
-        my ($robot_num, $drives) = ($1, $2);
-        while ($drives =~ /drive\s+\S+\s+(\d+)\s+\S+\s+\S+\s+(\S+)/msig) {
-            my $name = $robot_num . '.' . $1;
-            
-            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                $name !~ /$self->{option_results}->{filter_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
-                next;
-            }
-            $self->{drive}->{$name} = { display => $name, status => $2 };
+    $self->{pool} = {};
+    #Disk Pool Name      : NBU-MASTER-DP
+    #Disk Type           : PureDisk
+    #Disk Volume Name    : PureDiskVolume
+    #Disk Media ID       : @aaaah
+    #Total Capacity (GB) : 9777.56
+    #Free Space (GB)     : 837.72
+    #Use%                : 91
+    #Status              : UP
+    #Flag                : ReadOnWrite
+    #Flag                : AdminUp
+    #Flag                : InternalUp
+    while ($stdout =~ /^(Disk Pool Name.*?)(?=Disk Pool Name|\z)/msig) {
+        my $pool = $1;
+        
+        my ($display, $usage, $status);
+        $display = centreon::plugins::misc::trim($1) if ($pool =~ /^Disk Pool Name\s*:\s*(.*?)\n/msi);
+        $status = $1 if ($pool =~ /^Status\s*:\s*(.*?)\n/msi);
+        $usage = $1 if ($pool =~ /^Use%\s*:\s*(.*?)\n/msi);
+        
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $display !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+            next;
         }
+        
+        $self->{pool}->{$display} = { display => $display, usage => $usage, status => $status };
     }
     
-    if (scalar(keys %{$self->{drive}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No drives found.");
+    if (scalar(keys %{$self->{pool}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No pool found.");
         $self->{output}->option_exit();
     }
 }
@@ -175,7 +195,7 @@ __END__
 
 =head1 MODE
 
-Check drive status.
+Check deduplication status.
 
 =over 8
 
@@ -209,7 +229,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'tpconfig').
+Command to get information (Default: 'nbdevquery').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -218,11 +238,19 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-l').
+Command options (Default: '-listdv -U -stype PureDisk').
 
 =item B<--filter-name>
 
-Filter drive name (can be a regexp).
+Filter pool name (can be a regexp).
+
+=item B<--warning-usage>
+
+Set warning threshold in percent.
+
+=item B<--critical-usage>
+
+Set critical threshold in percent.
 
 =item B<--warning-status>
 

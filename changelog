@@ -1,3 +1,23 @@
+2016-02-20 Quentin Garnier <qgarnier@centreon.com>
+ * Add a class for FatPacker system
+
+2016-02-17 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check Kemp
+ * Plugin added: to check Netbackup
+ * Plugin added: to check Ucopia Wireless Controller
+ * Plugin added: to check Emerson Liebert PDU
+ * Plugin added: to check Microsoft Lync 2013
+ * Plugin added: to check TemPERHum sensors
+ * Mode added: [mysql] 'table-size'
+ * Mode added: [centreon] 'count-services'
+ * Mode added: [iDrac] 'hardware' (for iDrac 8)
+ * Enhancement: [xtremio] hardened code
+ * Enhancement: [cisco asa]{sessions} better metrics (#315)
+ * Enhancement: [freebsd]{memory} More real values
+ * Fix: [oracle]{tablespace-usage} Usage more than 100%
+ * Fix: [clariion]{disks} Last disks was missing
+ * Fix: [mssql]{failed-jobs} wrong thresholds
+
 2016-01-22 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Add a plugin to check Juniper Trapeze in SNMP
  * Plugin added: Add a plugin to check Dell ML6000 in SNMP

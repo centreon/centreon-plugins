@@ -18,33 +18,13 @@
 # limitations under the License.
 #
 
-package apps::backup::netbackup::local::mode::drivecleaning;
+package apps::backup::netbackup::local::mode::listpolicies;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'drive', type => 0 }
-    ];
-    
-    $self->{maps_counters}->{drive} = [
-        { label => 'cleaning', set => {
-                key_values => [ { name => 'num_cleaning' }, { name => 'total' } ],
-                output_template => '%d drives needs a reset mount time',
-                perfdatas => [
-                    { label => 'cleaning', value => 'num_cleaning_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
-                ],
-            }
-        },
-    ];
-}
 
 sub new {
     my ($class, %options) = @_;
@@ -61,13 +41,60 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tpconfig' },
+                                  "command:s"         => { name => 'command', default => 'bppllist' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-l' },
+                                  "command-options:s" => { name => 'command_options', default => '' },
+                                  "command2:s"        => { name => 'command2', default => 'bpplinfo %{policy_name} -L' },
                                   "filter-name:s"     => { name => 'filter_name' },
                                 });
     
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
+sub run {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+
+    foreach (sort keys %{$self->{policies}}) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && 
+            $_ !~ /$self->{option_results}->{filter_name}/i) {
+            $self->{output}->output_add(long_msg => "skipping policy '" . $_ . "': no type or no matching filter type");
+            next;
+        }
+        
+        $self->{output}->output_add(long_msg => "'" . $_ . "' [active = " . $self->{policies}->{$_}->{active}  . "]");
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List policy:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_disco_format(elements => ['name', 'active']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach (sort keys %{$self->{policies}}) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && 
+                 $_ !~ /$self->{option_results}->{filter_name}/i);
+
+        $self->{output}->add_disco_entry(name => $_,
+                                         active => $self->{policies}->{$_}->{active}
+                                         );
+    }
 }
 
 sub manage_selection {
@@ -78,34 +105,22 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
-    $self->{drive} = { total => 0, num_cleaning => 0 };
-    #Drive Name              Type      Mount Time  Frequency   Last Cleaned         Comment
-    #**********              ****      **********  *********   ****************     *******
-    #IBM.ULT3580-HH5.000     hcart2*   18.3        96          05:29 21/12/2015
-    #IBM.ULT3580-HH5.002     hcart2*   36.8        0           11:10 20/12/2015
+                                                    command_options => $self->{option_results}->{command_options});
+    $self->{policies} = {};
     my @lines = split /\n/, $stdout;
-    splice(@lines, 0, 2);
-    foreach my $line (@lines) {
-        $line =~ /^(\S+)/;
-        my $name = $1;
+    foreach my $policy_name (@lines) {
+        my $command2 = $self->{option_results}->{command2};
+        $command2 =~ s/%{policy_name}/$policy_name/g;
+        my ($stdout2) = centreon::plugins::misc::execute(output => $self->{output},
+                                                         options => $self->{option_results},
+                                                         sudo => $self->{option_results}->{sudo},
+                                                         command => $command2);
         
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
-        $self->{output}->output_add(long_msg => "drive '" . $name . "' checked.", debug => 1);
-        
-        $self->{drive}->{total}++;
-        if ($line =~ /NEEDS CLEANING/i) {
-            $self->{drive}->{num_cleaning}++;
-        }
-    }
-    
-    if (scalar(keys %{$self->{drive}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No drives found.");
-        $self->{output}->option_exit();
+        #Policy Type:            NBU-Catalog (35)
+        #Active:                 yes        
+        my $active = '';
+        $active = $1 if ($stdout2 =~ /^Active\s*:\s+(\S+)/msi);
+        $self->{policies}->{$policy_name} = { active => $active };
     }
 }
 
@@ -115,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check drive cleaning.
+List policies.
 
 =over 8
 
@@ -149,7 +164,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'tpconfig').
+Command to get information (Default: 'bppllist').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -158,21 +173,16 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-l').
+Command options (Default: none).
+
+=item B<--command2>
+
+Command to get active policy information (Default: 'bpplinfo %{policy_name} -L').
+Can be changed if you have output in a file.
 
 =item B<--filter-name>
 
-Filter drive name (can be a regexp).
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'cleaning'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'cleaning'.
+Filter policy name (can be a regexp).
 
 =back
 

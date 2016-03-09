@@ -191,7 +191,7 @@ $thresholds = {
     ],
     onoff => [
         ['unavailable', 'UNKNOWN'],
-        ['ok', 'OK'],
+        ['on', 'OK'],
         ['off', 'OK'],
     ],
     contact => [

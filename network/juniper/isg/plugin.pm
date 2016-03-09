@@ -18,25 +18,25 @@
 # limitations under the License.
 #
 
-package apps::backup::netbackup::local::plugin;
+package network::juniper::isg::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'dedup-status'     => 'apps::backup::netbackup::local::mode::dedupstatus',
-                         'drive-cleaning'   => 'apps::backup::netbackup::local::mode::drivecleaning',
-                         'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
-                         'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
-                         'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
+                        'cpu'               => 'network::juniper::common::screenos::mode::cpu',
+                        'memory'            => 'network::juniper::common::screenos::mode::memory',
+                        'sessions'          => 'network::juniper::common::screenos::mode::sessions',
+                        'hardware'          => 'network::juniper::common::screenos::mode::hardware',
+                        'interfaces'        => 'snmp_standard::mode::interfaces', 
+                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                          );
 
     return $self;
@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Netbackup through local commands (the plugin can use SSH).
+Check Juniper ISG series in SNMP.
 
 =cut
