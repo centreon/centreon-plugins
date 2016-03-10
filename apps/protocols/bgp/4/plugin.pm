@@ -44,7 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Arkoon firewall in SNMP.
-!!! Be careful: ifAlias and ifName are empty. Use --oid-filter and --oid-display on ifDesc !!!
+Check BGP protocol in SNMP.
 
 =cut
