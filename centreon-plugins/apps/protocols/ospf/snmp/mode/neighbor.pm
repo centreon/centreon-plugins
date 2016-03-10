@@ -155,7 +155,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{NbrState} ~ /down/i' },
+                                  "critical-status:s"       => { name => 'critical_status', default => '%{NbrState} =~ /down/i' },
                                   "warning-total-change:s"  => { name => 'warning_total_change', default => '' },
                                   "critical-total-change:s" => { name => 'critical_total_change', default => '' },
                                 });
@@ -253,7 +253,7 @@ Can used special variables like: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{NbrState} ~ /down/i').
+Set critical threshold for status (Default: '%{NbrState} =~ /down/i').
 Can used special variables like: %{NbrState}, %{NbrRtrId}, %{NbrIpAddr}
 
 =item B<--warning-total-change>
