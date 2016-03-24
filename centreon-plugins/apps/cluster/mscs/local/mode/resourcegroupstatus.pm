@@ -94,7 +94,13 @@ sub custom_threshold_output {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'state : ' . $self->{result_values}->{state} . ' [node: ' . $self->{result_values}->{owner_node}  . ']';
+    my $pref_nodes = 'any';
+    if (defined($instance_current->{result_values}->{preferred_owners}) &&
+        scalar(@{$instance_current->{result_values}->{preferred_owners}}) > 0) {
+        $pref_nodes = join(', ', @{$instance_current->{result_values}->{preferred_owners}});
+    }
+
+    my $msg = 'state : ' . $self->{result_values}->{state} . ' [node: ' . $self->{result_values}->{owner_node}  . '] [preferred nodes: ' . $pref_nodes . ']';
     return $msg;
 }
 
@@ -168,9 +174,25 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{rg} = {};
-    my $query = "Select * from MSCluster_ResourceGroup";
+    my $query = "Select * from MSCluster_ResourceGroupToPreferredNode";
     my $resultset = $wmi->ExecQuery($query);
+    my $preferred_nodes = {};
+    foreach my $obj (in $resultset) {
+        use Data::Dumper;
+        
+        # MSCluster_ResourceGroup.Name="xxx"
+        if ($obj->GroupComponent =~ /MSCluster_ResourceGroup.Name="(.*?)"/i) {
+            my $rg = $1;
+            next if ($obj->PartComponent !~ /MSCluster_Node.Name="(.*?)"/i);
+            my $node = $1;
+            $preferred_nodes->{$rg} = [] if (!defined($preferred_nodes->{$rg}));
+            push @{$preferred_nodes->{$rg}}, $node;
+        }
+    }
+    
+    $self->{rg} = {};
+    $query = "Select * from MSCluster_ResourceGroup";
+    $resultset = $wmi->ExecQuery($query);
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $state = $map_state{$obj->{State}};
@@ -180,11 +202,9 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-        my $preferred_owners = [];
-        $obj->GetPreferredOwners(\$preferred_owners) if ($obj->can('GetPreferredOwners'));
     
         $self->{rg}->{$obj->{Id}} = { display => $name, state => $state, owner_node => $obj->{OwnerNode},
-                                      preferred_owners => $preferred_owners };
+                                      preferred_owners => defined($preferred_nodes->{$name}) ? $preferred_nodes->{$name} : [] };
     }
 }
 
