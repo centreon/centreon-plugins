@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::bgp::4::plugin;
+package storage::dell::compellent::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,11 +28,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
+                         'hardware'         => 'storage::dell::compellent::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          );
 
     return $self;
@@ -44,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BGP protocol in SNMP.
+Check Dell Compellent in SNMP.
 
 =cut

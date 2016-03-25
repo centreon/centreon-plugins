@@ -18,21 +18,20 @@
 # limitations under the License.
 #
 
-package apps::protocols::bgp::4::plugin;
+package storage::dell::compellent::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
+                         'volume-usage' => 'storage::dell::compellent::local::mode::volumeusage',
                          );
 
     return $self;
@@ -44,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BGP protocol in SNMP.
+Check Dell Compellent Storage. Need Dell Storage PowerShell SDK.
 
 =cut

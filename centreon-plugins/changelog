@@ -1,3 +1,12 @@
+2016-03-24 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check AKCP SensorProbe
+ * Plugin added: to check Juniper ISG
+ * Plugin added: to check OSPF protocol
+ * Plugin added: to check Microsoft Cluster Service
+ * Plugin added: to check Dell Compellent in SNMP and Powershell SDK
+ * Enhancement: [snmp_standard]{string-value} Many changes (#228)
+ * Fix: [raritan] OnOff sending errors (#348)
+
 2016-02-20 Quentin Garnier <qgarnier@centreon.com>
  * Add a class for FatPacker system
 

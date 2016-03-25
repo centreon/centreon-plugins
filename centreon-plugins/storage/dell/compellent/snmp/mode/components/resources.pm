@@ -18,32 +18,21 @@
 # limitations under the License.
 #
 
-package apps::protocols::bgp::4::plugin;
+package storage::dell::compellent::snmp::mode::components::resources;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Exporter;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    # $options->{options} = options object
+our %map_sc_status;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
-                         );
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(%map_sc_status);
 
-    return $self;
-}
+%map_sc_status = (
+    1 => 'up',
+    2 => 'down',
+    3 => 'degraded',
+);
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check BGP protocol in SNMP.
-
-=cut

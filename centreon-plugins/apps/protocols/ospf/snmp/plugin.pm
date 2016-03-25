@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::protocols::bgp::4::plugin;
+package apps::protocols::ospf::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,11 +28,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
+                         'neighbor'     => 'apps::protocols::ospf::snmp::mode::neighbor',
                          );
 
     return $self;
@@ -44,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BGP protocol in SNMP.
+Check OSPF protocol in SNMP.
 
 =cut
