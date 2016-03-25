@@ -45,7 +45,7 @@ sub custom_threshold_output {
             $status = 'warning';
         } elsif (defined($instance_mode->{option_results}->{unknown_status}) && $instance_mode->{option_results}->{unknown_status} ne '' &&
                  eval "$instance_mode->{option_results}->{unknown_status}") {
-            $status = 'warning';
+            $status = 'unknown';
         }
     };
     if (defined($message)) {
