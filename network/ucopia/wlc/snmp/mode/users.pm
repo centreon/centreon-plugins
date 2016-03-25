@@ -65,8 +65,8 @@ sub run {
     $result->{$oid_licenceUsers} = undef if ($result->{$oid_licenceUsers} == 0);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("'%d' connected users (Available licence: %s)", 
-                                                $result->{$oid_totalConnectedUsers}),
-                                                defined($result->{$oid_licenceUsers}) ? $result->{$oid_licenceUsers} : '-');
+                                                $result->{$oid_totalConnectedUsers},
+                                                defined($result->{$oid_licenceUsers}) ? $result->{$oid_licenceUsers} : '-'));
     $self->{output}->perfdata_add(value => $result->{$oid_totalConnectedUsers}, label => 'users',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

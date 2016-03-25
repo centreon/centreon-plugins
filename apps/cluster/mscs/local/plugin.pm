@@ -18,21 +18,25 @@
 # limitations under the License.
 #
 
-package apps::protocols::bgp::4::plugin;
+package apps::cluster::mscs::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
+                         'list-nodes'           => 'apps::cluster::mscs::local::mode::listnodes',
+                         'list-resources'       => 'apps::cluster::mscs::local::mode::listresources',
+                         'network-status'       => 'apps::cluster::mscs::local::mode::networkstatus',
+                         'node-status'          => 'apps::cluster::mscs::local::mode::nodestatus',
+                         'resource-status'      => 'apps::cluster::mscs::local::mode::resourcestatus',
+                         'resourcegroup-status' => 'apps::cluster::mscs::local::mode::resourcegroupstatus',
                          );
 
     return $self;
@@ -44,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BGP protocol in SNMP.
+Check Microsoft Cluster Service.
 
 =cut
