@@ -34,6 +34,7 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
+                         'connections'          => 'network::netasq::snmp::mode::connections',
                          'interfaces'           => 'snmp_standard::mode::interfaces',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
