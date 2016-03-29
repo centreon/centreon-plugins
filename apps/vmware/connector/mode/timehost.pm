@@ -66,7 +66,6 @@ sub run {
     my ($self, %options) = @_;
     $self->{connector} = $options{custom};
 
-    $self->{connector}->set_discovery();
     $self->{connector}->add_params(params => $self->{option_results},
                                    command => 'timehost');
     $self->{connector}->run();
