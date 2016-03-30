@@ -118,7 +118,7 @@ sub new {
                                 "warning-status:s"          => { name => 'warning_status', default => '' },
                                 "critical-status:s"         => { name => 'critical_status', default => '' },
                                 "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
-                                "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /system|offline|recover/i' },
+                                "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
                                 });
     return $self;
 }
@@ -210,7 +210,7 @@ Can used special variables like: %{display}, %{online_status}
 
 =item B<--critical-online-status>
 
-Set critical threshold for online status (Default: '%{online_status} =~ /system|offline|recover/i').
+Set critical threshold for online status (Default: '%{online_status} =~ /offline|recover/i').
 Can used special variables like: %{display}, %{online_status}
 
 =back
