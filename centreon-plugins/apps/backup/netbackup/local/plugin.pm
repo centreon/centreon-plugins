@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
@@ -37,6 +36,7 @@ sub new {
                          'drive-status'     => 'apps::backup::netbackup::local::mode::drivestatus',
                          'job-status'       => 'apps::backup::netbackup::local::mode::jobstatus',
                          'list-policies'    => 'apps::backup::netbackup::local::mode::listpolicies',
+                         'tape-usage'       => 'apps::backup::netbackup::local::mode::tapeusage',
                          );
 
     return $self;

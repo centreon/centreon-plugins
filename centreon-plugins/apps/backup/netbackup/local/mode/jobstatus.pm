@@ -173,7 +173,9 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1 } }
+        { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output', message_multiple => 'All policies are ok',
+          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ] 
+        }
     ];
     
     $self->{maps_counters}->{job} = [
@@ -244,10 +246,22 @@ sub check_options {
     $self->change_macros();
 }
 
+sub policy_long_output {
+    my ($self, %options) = @_;
+    
+    return "checking policy '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_policy_output {
+    my ($self, %options) = @_;
+    
+    return "policy '" . $options{instance_value}->{display} . "' ";
+}
+
 sub prefix_job_output {
     my ($self, %options) = @_;
     
-    return "Job '" . $options{instance_value}->{display} . "' ";
+    return "job '" . $options{instance_value}->{display} . "' ";
 }
 
 sub change_macros {
@@ -291,32 +305,34 @@ sub manage_selection {
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
                                                     command_options => $self->{option_results}->{command_options});    
-    $self->{job} = {};
+    $self->{policy} = {};
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
         my @values = split /,/, $line;
         my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_start_time, $job_end_time, $job_kb) = 
             ($values[0], $values[1], $values[2], $values[3], $values[4], $values[8], $values[10], $values[14]);
         
-        my $display = (defined($job_pname) ? $job_pname : '-') . '/' . $job_id;
+        $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
+        $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : undef;
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
             defined($job_end_time) && $job_end_time =~ /[0-9]+/ && $job_end_time < $current_time - $self->{option_results}->{filter_end_time}) {
-            $self->{output}->output_add(long_msg => "skipping '" . $display . "': too old.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': too old.", debug => 1);
             next;
         }
         
+        $self->{policy}->{$job_pname} = { job => {}, display => $job_pname } if (!defined($self->{policy}->{$job_pname}));
         my $elapsed_time = $current_time - $job_start_time;
-        $self->{job}->{$display} = { display => $display, elapsed => $elapsed_time, 
-                                     status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
-                                     kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef };
+        $self->{policy}->{$job_pname}->{job}->{$job_id} = { display => $job_id, elapsed => $elapsed_time, 
+                                                            status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
+                                                            kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef };
     }
     
-    if (scalar(keys %{$self->{job}}) <= 0) {
+    if (scalar(keys %{$self->{policy}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No job found.");
         $self->{output}->option_exit();
     }
