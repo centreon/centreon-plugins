@@ -77,7 +77,7 @@ sub run {
     }
     
     my $localtime = time();
-    my $offset = ($ntp{'Receive Timestamp'} - $ntp{'Originate Timestamp'}) + ($ntp{'Transmit Timestamp'} - $localtime) / 2);    
+    my $offset = (($ntp{'Receive Timestamp'} - $ntp{'Originate Timestamp'}) + ($ntp{'Transmit Timestamp'} - $localtime)) / 2;    
 
     my $exit = $self->{perfdata}->threshold_check(value => $offset,
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
