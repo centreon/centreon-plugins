@@ -131,7 +131,7 @@ sub read_files {
 
 sub send_email {
     my ($self, %options) = @_;
-
+    
     #######
     # Check SMTP options
     return if (!((defined($self->{option_results}->{email_warning}) && $self->{option_results}->{email_warning} ne '')
@@ -154,7 +154,7 @@ sub send_email {
     if (defined($self->{option_results}->{email_smtp_username}) && defined($self->{option_results}->{email_smtp_password})) {
         $smtp_options{-pass} = $self->{option_results}->{email_smtp_password};
     }    
-    foreach my $option (@{$self->{option_results}->{smtp_options}}) {
+    foreach my $option (@{$self->{option_results}->{email_smtp_options}}) {
         next if ($option !~ /^(.+?)=(.+)$/);
         $smtp_options{-$1} = $2;
     }
