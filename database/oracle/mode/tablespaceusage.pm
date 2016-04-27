@@ -20,10 +20,47 @@
 
 package database::oracle::mode::tablespaceusage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max_absolute});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+
+    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                      $total_size_value . " " . $total_size_unit,
+                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
+                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'tablespace', type => 1, cb_prefix_output => 'prefix_tablespace_output', message_multiple => 'All tablespaces are OK' },
+    ];
+
+    $self->{maps_counters}->{tablespace} = [
+        { label => 'tablespace', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'max' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used_absolute',
+                perfdatas => [
+                    { label => 'used', value => 'used_absolute', template => '%s',
+                      unit => 'B', min => 0, max => 'max_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'free', value => 'free_absolute', template => '%s',
+                      unit => 'B', min => 0, max => 'max_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,39 +70,24 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', },
-                                  "filter:s"            => { name => 'filter', },
-                                  "skip:s"              => { name => 'skip', },
-                                  "free"                => { name => 'free', },
+                                "filter-tablespace:s" => { name => 'filter_tablespace' },
+                                "skip"                => { name => 'skip' },
                                 });
-
     return $self;
 }
 
-sub check_options {
+sub prefix_tablespace_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    return "Tablespace '" . $options{instance_value}->{display} . "' ";
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
     # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
-
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All tablespaces are ok.");
-
     $self->{sql}->connect();
+
     my $query;
     if ($self->{sql}->is_version_minimum(version => '11')) {
         $query = q{
@@ -276,75 +298,41 @@ sub run {
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
 
-    foreach my $row (@$result) {
-        my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
-        next if (defined($self->{option_results}->{filter}) && $name !~ /$self->{option_results}->{filter}/);
-        next if (defined($self->{option_results}->{skip}) && $status =~ /offline/i);
+    $self->{tablespace} = {};
 
+    foreach my $row (@$result) {
+        my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max) = @$row;
+        my $bytes_free = defined($bytes_max) ? $bytes_max - $bytes : -1;
         if (!defined($bytes)) {
             # seems corrupted, cannot get value
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("tbs '%s' cannot get data", $name));
+            $self->{output}->output_add(long_msg => sprintf("tbs '%s' cannot get data", $name), debug => 1);
             next;
         }
 
-        $status = lc $status;
-        $type = lc $type;
-        my ($percent_used, $percent_free, $used, $free, $size);
-        if ($self->{sql}->is_version_minimum(version => '11')) {
-            $percent_used = $bytes / $bytes_max * 100;
-            $size = $bytes_max;
-            $free = $bytes_max - $bytes;
-            $used = $bytes;
-        } elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
-            $percent_used = ($bytes - $bytes_free) / $bytes * 100;
-            $size = $bytes;
-            $free = $bytes_free;
-            $used = $size - $free;
-        } else {
-            $percent_used = ($bytes - $bytes_free) / $bytes_max * 100;
-            $size = $bytes_max;
-            $free = $bytes_free + ($bytes_max - $bytes);
-            $used = $size - $free;
+        if (defined($self->{option_results}->{filter_tablespace}) && $self->{option_results}->{filter_tablespace} ne '' &&
+            $name !~ /$self->{option_results}->{filter_tablespace}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter.", debug => 1);
+            next;
         }
-        $percent_free = 100 - $percent_used;
-        my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
-        my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
-        my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
-        $self->{output}->output_add(long_msg => sprintf("tbs '%s' Used: %.2f%s (%.2f%%) Free: %.2f%s (%.2f%%) Size: %.2f%s",
-                                                        $name, $used_value, $used_unit, $percent_used, $free_value, $free_unit, $percent_free, $size_value, $size_unit));
-
-        if (defined($self->{option_results}->{free})) {
-            my $exit_code = $self->{perfdata}->threshold_check(value => $percent_free, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit_code,
-                                            short_msg => sprintf("tbs '%s' Free: %.2f%s (%.2f%%) Size: %.2f%s", $name, $free_value, $free_unit, $percent_free, $size_value, $size_unit));
-            }
-            $self->{output}->perfdata_add(label => sprintf("tbs_%s_free",lc $name),
-                                          unit => 'B',
-                                          value => $free,
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
-                                          min => 0,
-                                          max => $size);
-        } else {
-            my $exit_code = $self->{perfdata}->threshold_check(value => $percent_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit_code,
-                                            short_msg => sprintf("tbs '%s' Used: %.2f%s (%.2f%%) Size: %.2f%s", $name, $used_value, $used_unit, $percent_used, $size_value, $size_unit));
-            }
-            $self->{output}->perfdata_add(label => sprintf("tbs_%s_usage",lc $name),
-                                          unit => 'B',
-                                          value => $used,
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $size, cast_int => 1),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $size, cast_int => 1),
-                                          min => 0,
-                                          max => $size);
+        if (defined($self->{option_results}->{skip}) && $status eq 'OFFLINE')  {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': tbs is offline", debug => 1);
+            next;
         }
+        $self->{output}->output_add(long_msg => sprintf("tbs '%s' status '%s' type '%s' extent '%s' used:'%i' max:'%i'",
+                                                        $name, $status, $type, $extentmgmt, $bytes, $bytes_max),
+                                    debug => 1);
+        if (!defined($bytes)) {
+            # seems corrupted, cannot get value
+            $self->{output}->output_add(long_msg => sprintf("tbs '%s' cannot get data", $name), debug => 1);
+            next;
+        }
+        $self->{tablespace}->{$name} = { used => $bytes,
+                                         free => $bytes_free,
+                                         max => defined($bytes_max) ? $bytes_max : 0,
+                                         prct_used => ($bytes/$bytes_max*100),
+                                         display => $name };
     }
 
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -357,25 +345,21 @@ Check Oracle tablespaces usage.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-tablespace>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-tablespace>
 
 Threshold critical.
 
-=item B<--filter>
+=item B<--filter-tablespace>
 
-Filter tablespace.
+Filter tablespace by name. Can be a regex
 
 =item B<--skip>
 
 Skip offline tablespaces.
-
-=item B<--free>
-
-Check free space instead of used space.
 
 =back
 
