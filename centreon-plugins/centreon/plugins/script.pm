@@ -273,8 +273,9 @@ sub run {
 
     $self->check_relaunch();
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
-                                           error_msg => "Cannot load module --plugin.");
+    (undef, $self->{plugin}) = 
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
+                                               error_msg => "Cannot load module --plugin.");
     my $plugin = $self->{plugin}->new(options => $self->{options}, output => $self->{output});
     $plugin->init(help => $self->{help},
                   version => $self->{version});
