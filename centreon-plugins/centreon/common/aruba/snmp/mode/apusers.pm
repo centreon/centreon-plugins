@@ -406,7 +406,7 @@ sub manage_selection {
         my $bssid = join('.', unpack('C*', $result2->{nUserApBSSID}));
         next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
             $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
-        next if (defined($self->{option_results}->{filter_ip_address}) && $self->{option_results}->{filter_ip_address} ne '' &&
+        next if (defined($self->{option_results}->{filter_essid}) && $self->{option_results}->{filter_essid} ne '' &&
             $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
     
         $self->{ap_selected}->{$bssid} = { users => 0, bssid => $bssid } if (!defined($self->{ap_selected}->{$bssid}));
