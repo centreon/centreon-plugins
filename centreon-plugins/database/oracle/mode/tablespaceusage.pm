@@ -25,19 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_usage_output {
-    my ($self, %options) = @_;
-
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
-
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
-    return $msg;
-}
+my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -62,6 +50,77 @@ sub set_counters {
     ];
 }
 
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my $label = $self->{result_values}->{display} . '_used';
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($instance_mode->{option_results}->{free})) {
+        $label = $self->{result_values}->{display} . '_free';
+        $value_perf = $self->{result_values}->{free};
+    }
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
+                                  value => $value_perf,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label =
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_resul
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{opt
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { labe}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->
+    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                   $total_size_value . " " . $total_size_unit,
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_us
+                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_fr
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
+
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    # snapshot can be over 100%
+    if ($self->{result_values}->{free} < 0) {
+        $self->{result_values}->{free} = 0;
+        $self->{result_values}->{prct_free} = 0;
+    }
+
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -71,6 +130,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-tablespace:s" => { name => 'filter_tablespace' },
+                                "units:s"             => { name => 'units', default => '%' },
+                                "free"                => { name => 'free' },
                                 "skip"                => { name => 'skip' },
                                 });
     return $self;
@@ -80,6 +141,13 @@ sub prefix_tablespace_output {
     my ($self, %options) = @_;
 
     return "Tablespace '" . $options{instance_value}->{display} . "' ";
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
 }
 
 sub manage_selection {
@@ -301,35 +369,45 @@ sub manage_selection {
     $self->{tablespace} = {};
 
     foreach my $row (@$result) {
-        my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max) = @$row;
-        my $bytes_free = defined($bytes_max) ? $bytes_max - $bytes : -1;
-        if (!defined($bytes)) {
-            # seems corrupted, cannot get value
-            $self->{output}->output_add(long_msg => sprintf("tbs '%s' cannot get data", $name), debug => 1);
-            next;
-        }
+        my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
 
         if (defined($self->{option_results}->{filter_tablespace}) && $self->{option_results}->{filter_tablespace} ne '' &&
             $name !~ /$self->{option_results}->{filter_tablespace}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{skip}) && $status eq 'OFFLINE')  {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': tbs is offline", debug => 1);
-            next;
-        }
-        $self->{output}->output_add(long_msg => sprintf("tbs '%s' status '%s' type '%s' extent '%s' used:'%i' max:'%i'",
-                                                        $name, $status, $type, $extentmgmt, $bytes, $bytes_max),
-                                    debug => 1);
         if (!defined($bytes)) {
             # seems corrupted, cannot get value
             $self->{output}->output_add(long_msg => sprintf("tbs '%s' cannot get data", $name), debug => 1);
             next;
         }
-        $self->{tablespace}->{$name} = { used => $bytes,
-                                         free => $bytes_free,
-                                         max => defined($bytes_max) ? $bytes_max : 0,
-                                         prct_used => ($bytes/$bytes_max*100),
+        if (defined($self->{option_results}->{skip}) && $status eq 'OFFLINE')  {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': tbs is offline", debug => 1);
+            next;
+        }
+
+        my ($percent_used, $percent_free, $used, $free, $size);
+        if ($self->{sql}->is_version_minimum(version => '11')) {
+            $percent_used = $bytes / $bytes_max * 100;
+            $size = $bytes_max;
+            $free = $bytes_max - $bytes;
+            $used = $bytes;
+        } elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
+            $percent_used = ($bytes - $bytes_free) / $bytes * 100;
+            $size = $bytes;
+            $free = $bytes_free;
+            $used = $size - $free;
+        } else {
+            $percent_used = ($bytes - $bytes_free) / $bytes_max * 100;
+            $size = $bytes_max;
+            $free = $bytes_free + ($bytes_max - $bytes);
+            $used = $size - $free;
+        }
+
+        $self->{tablespace}->{$name} = { used => $used,
+                                         free => $free,
+                                         total => $size,
+                                         prct_used => $percent_used,
                                          display => $name };
     }
 
@@ -356,6 +434,14 @@ Threshold critical.
 =item B<--filter-tablespace>
 
 Filter tablespace by name. Can be a regex
+
+=item B<--units>
+
+Default is '%', can be 'B'
+
+=item B<--free>
+
+Perfdata show free space
 
 =item B<--skip>
 
