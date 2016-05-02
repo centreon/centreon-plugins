@@ -90,7 +90,7 @@ sub run {
 
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("System uptime is: %s", 
-                                    defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($value / 86400 / 100) . " days" ));
+                                    defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($value / 100 / (24 * 60 * 60)) . " days " . floor($value / 100 / (60 * 60))%24 . " Hours " . floor($value / 100 / 60)%60 . " Minutes " . floor($value / 100)%60 . " Seconds" ));
 
     $self->{output}->display();
     $self->{output}->exit();
