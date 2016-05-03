@@ -154,6 +154,7 @@ sub manage_selection {
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $state = $map_state{$obj->{State}};
+        my $id = defined($obj->{ID}) ? $obj->{ID} : $name;
     
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
@@ -161,7 +162,7 @@ sub manage_selection {
             next;
         }
     
-        $self->{network}->{$obj->{ID}} = { display => $name, state => $state };
+        $self->{network}->{$id} = { display => $name, state => $state };
     }
 }
 

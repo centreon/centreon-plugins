@@ -159,14 +159,16 @@ sub manage_selection {
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $state = $map_state{$obj->{State}};
+        my $id = defined($obj->{Id}) ? $obj->{Id} : $name;
+        my $owner_node = defined($obj->{OwnerNode}) ? $obj->{OwnerNode} : '-';
     
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
             next;
         }
     
-        $self->{resource}->{$obj->{Id}} = { display => $name, state => $state, owner_node => $obj->{OwnerNode} };
+        $self->{resource}->{$id} = { display => $name, state => $state, owner_node => $owner_node };
     }
 }
 
