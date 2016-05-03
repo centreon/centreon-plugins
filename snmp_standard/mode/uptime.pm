@@ -89,7 +89,7 @@ sub run {
 
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("System uptime is: %s",
-                                                     centreon::plugins::misc::change_seconds(value => floor($value / 100))));
+                                                     centreon::plugins::misc::change_seconds(value => floor($value / 100), start => 'd')));
 
     $self->{output}->display();
     $self->{output}->exit();
