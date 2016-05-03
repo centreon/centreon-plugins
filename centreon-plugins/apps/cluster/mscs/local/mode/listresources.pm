@@ -79,7 +79,7 @@ sub manage_selection {
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $state = $map_state{$obj->{State}};
-        my $class = $map_class{$obj->{ResourceClass}};
+        my $class = defined($obj->{ResourceClass}) ? $map_class{$obj->{ResourceClass}} : '-';
         my $id = defined($obj->{Id}) ? $obj->{Id} : $name;
         my $owner_node = defined($obj->{OwnerNode}) ? $obj->{OwnerNode} : '-';
     
