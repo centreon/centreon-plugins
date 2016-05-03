@@ -36,15 +36,11 @@ sub set_counters {
 
     $self->{maps_counters}->{tablespace} = [
         { label => 'tablespace', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'max' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
-                perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%s',
-                      unit => 'B', min => 0, max => 'max_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
-                    { label => 'free', value => 'free_absolute', template => '%s',
-                      unit => 'B', min => 0, max => 'max_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_calc => \&custom_usage_calc,
+                closure_custom_output => \&custom_usage_output,
+                closure_custom_perfdata => \&custom_usage_perfdata,
+                closure_custom_threshold_check => \&custom_usage_threshold,
             }
         },
     ];
@@ -60,7 +56,7 @@ sub custom_usage_perfdata {
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
     if ($instance_mode->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -69,8 +65,8 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
                                   value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label =
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
                                   min => 0, max => $self->{result_values}->{total});
 }
 
@@ -79,25 +75,25 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_resul
+    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
     if ($instance_mode->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{opt
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { labe}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
                    $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_us
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_fr
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
     return $msg;
 }
 
@@ -109,8 +105,8 @@ sub custom_usage_calc {
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
 
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     # snapshot can be over 100%
     if ($self->{result_values}->{free} < 0) {
