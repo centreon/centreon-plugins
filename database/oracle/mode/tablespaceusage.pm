@@ -49,10 +49,10 @@ sub set_counters {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = $self->{result_values}->{display} . '_used';
+    my $label = 'tbs_' . $self->{result_values}->{display} . '_used';
     my $value_perf = $self->{result_values}->{used};
     if (defined($instance_mode->{option_results}->{free})) {
-        $label = $self->{result_values}->{display} . '_free';
+        $label = 'tbs_' . $self->{result_values}->{display} . '_free';
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
@@ -404,7 +404,7 @@ sub manage_selection {
                                          free => $free,
                                          total => $size,
                                          prct_used => $percent_used,
-                                         display => $name };
+                                         display => lc $name };
     }
 
 }
