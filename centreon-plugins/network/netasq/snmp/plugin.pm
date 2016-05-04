@@ -34,11 +34,12 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
+                         'connections'          => 'network::netasq::snmp::mode::connections',
                          'interfaces'           => 'snmp_standard::mode::interfaces',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
                          'ha-status'            => 'network::netasq::snmp::mode::hastatus',
-                         'memory'               => 'snmp_standard::mode::memory',
+                         'memory'               => 'os::freebsd::snmp::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
                          'swap'                 => 'snmp_standard::mode::swap',
                          'vpn-status'           => 'network::netasq::snmp::mode::vpnstatus',
