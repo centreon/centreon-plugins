@@ -49,7 +49,7 @@ sub set_counters {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'tbs_' . $self->{result_values}->{display} . '_used';
+    my $label = 'tbs_' . $self->{result_values}->{display} . '_usage';
     my $value_perf = $self->{result_values}->{used};
     if (defined($instance_mode->{option_results}->{free})) {
         $label = 'tbs_' . $self->{result_values}->{display} . '_free';
@@ -108,12 +108,7 @@ sub custom_usage_calc {
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    # snapshot can be over 100%
-    if ($self->{result_values}->{free} < 0) {
-        $self->{result_values}->{free} = 0;
-        $self->{result_values}->{prct_free} = 0;
-    }
-
+    
     return 0;
 }
 
