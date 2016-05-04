@@ -39,6 +39,7 @@ sub set_system {
     #$self->{cb_hook1} = 'callbackname'; # before the loads
     #$self->{cb_hook2} = 'callbackname'; # between loads and requests
     #$self->{cb_hook3} = 'callbackname'; # after requests
+    #$self->{cb_hook4} = 'callbackname'; # after output
     
     # Example for threshold:
     #$self->{thresholds} = {
@@ -283,6 +284,8 @@ sub run {
                                     short_msg => 'No components are checked.');
     }
 
+    $self->call_object_callback(method_name => $self->{cb_hook4}, %options);
+    
     $self->{output}->display();
     $self->{output}->exit();
 }

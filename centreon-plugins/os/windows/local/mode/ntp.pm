@@ -99,7 +99,7 @@ sub run {
     }
 
     my %ntp;
-
+    # Need to set following patch: https://rt.cpan.org/Public/Bug/Display.html?id=59607
     eval {
         %ntp = Net::NTP::get_ntp_response($ntp_hostname, $self->{option_results}->{ntp_port});
     };

@@ -214,11 +214,13 @@ sub unix_execute {
 sub mymodule_load {
     my (%options) = @_;
     my $file;
-    ($file = $options{module} . ".pm") =~ s{::}{/}g;
-     
+    ($file = ($options{module} =~ /\.pm$/ ? $options{module} : $options{module} . ".pm")) =~ s{::}{/}g;
+    
     eval {
         local $SIG{__DIE__} = 'IGNORE';
         require $file;
+        $file =~ s{/}{::}g;
+        $file =~ s/\.pm$//;
     };
     if ($@) {
         return 1 if (defined($options{no_quit}) && $options{no_quit} == 1);
@@ -226,7 +228,7 @@ sub mymodule_load {
         $options{output}->add_option_msg(short_msg => $options{error_msg});
         $options{output}->option_exit();
     }
-    return 0;
+    return wantarray ? (0, $file) : 0;
 }
 
 sub backtick {
@@ -372,8 +374,10 @@ sub change_seconds {
                     { unit => 'm', value => 60 },
                     { unit => 's', value => 1 },
     ];
+    my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
 
     foreach (@$periods) {
+        next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($options{value} / $_->{value});
 
         next if ($count == 0);

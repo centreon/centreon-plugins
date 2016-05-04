@@ -91,8 +91,8 @@ sub init {
                                                error_msg => "Cannot load module --mode.");
         $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
-                                               error_msg => "Cannot load module --dyn-mode.");
+        (undef, $self->{dynmode_name}) = centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
+                                                                                error_msg => "Cannot load module --dyn-mode.");
         $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mode' or '--dyn-mode' option.");

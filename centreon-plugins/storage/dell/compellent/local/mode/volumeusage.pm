@@ -37,10 +37,10 @@ sub set_counters {
     $self->{maps_counters}->{sc} = [
         { label => 'sc-total', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' }, { name => 'type' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
     ];
@@ -48,10 +48,10 @@ sub set_counters {
     $self->{maps_counters}->{volume} = [
         { label => 'volume-usage', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' }, { name => 'type' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
         { label => 'volume-overhead', set => {
