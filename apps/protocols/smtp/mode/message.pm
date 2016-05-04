@@ -113,7 +113,7 @@ Check send a message to a SMTP Server.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the ftp host
+IP Addr/FQDN of the smtp host
 
 =item B<--port>
 

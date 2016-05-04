@@ -190,13 +190,16 @@ sub run_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
+    my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     
+    $self->{lproblems} = 0;
     $self->{multiple} = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
         $self->{multiple} = 0;
     }
     
-    if ($self->{multiple} == 1) {
+    if ($self->{multiple} == 1 && $resume == 0) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $options{config}->{message_multiple});
     }
@@ -230,6 +233,7 @@ sub run_instances {
             $long_msg_append = $message_separator;
             
             if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
+                $self->{lproblems}++;
                 $short_msg .= $short_msg_append . $output;
                 $short_msg_append = $message_separator;
             }
@@ -246,8 +250,13 @@ sub run_instances {
         if (defined($options{config}->{cb_suffix_output}));
         $suffix_output = '' if (!defined($suffix_output));
 
-        $self->{output}->output_add(long_msg => "${prefix_output}${long_msg}${suffix_output}");
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}");
+        if ($resume == 1) {
+            $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
+            next;
+        }
+        
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => "${prefix_output}${short_msg}${suffix_output}"
@@ -256,6 +265,57 @@ sub run_instances {
         
         if ($self->{multiple} == 0) {
             $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
+        }
+    }
+}
+
+sub run_group {
+    my ($self, %options) = @_;
+
+    my $multiple = 1;
+    if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
+        $multiple = 0;
+    }
+    
+    if ($multiple == 1) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $options{config}->{message_multiple});
+    }
+    
+    my ($global_exit, $total_problems) = ([], 0);
+    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
+        $self->{most_critical_instance} = 'ok';
+        if (defined($options{config}->{cb_long_output})) {
+            $self->{output}->output_add(long_msg => $self->call_object_callback(method_name => $options{config}->{cb_long_output},
+                                                                                instance_value => $self->{$options{config}->{name}}->{$id}));
+        }
+        
+        foreach my $group (@{$options{config}->{group}}) {
+            $self->{$group->{name}} = $self->{$options{config}->{name}}->{$id}->{$group->{name}};
+            
+            # we resume datas
+            $self->run_instances(config => $group, display_status_long_output => 1, resume => 1);
+            
+            push @{$global_exit}, $self->{most_critical_instance};
+            $total_problems += $self->{lproblems};
+            
+            my $prefix_output;
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
+            if (defined($options{config}->{cb_prefix_output}));
+            $prefix_output = '' if (!defined($prefix_output));
+            
+            if ($multiple == 0) {
+                $self->{output}->output_add(severity => $self->{most_critical_instance},
+                                            short_msg => "${prefix_output}$self->{lproblems} problem(s) detected");
+            }
+        }
+    }
+    
+    if ($multiple == 1) {
+        my $exit = $self->{output}->get_most_critical(status => [ @{$global_exit} ]);
+        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => "$total_problems problem(s) detected");
         }
     }
 }
@@ -277,6 +337,8 @@ sub run {
             $self->run_global(config => $entry);
         } elsif ($entry->{type} == 1) {
             $self->run_instances(config => $entry);
+        } elsif ($entry->{type} == 2) {
+            $self->run_group(config => $entry);
         }
     }
         

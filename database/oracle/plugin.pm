@@ -29,7 +29,6 @@ sub new {
     
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
@@ -37,6 +36,7 @@ sub new {
                          'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
                          'connected-users'          => 'database::oracle::mode::connectedusers',
                          'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+                         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
                          'process-usage'            => 'database::oracle::mode::processusage',
                          'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',

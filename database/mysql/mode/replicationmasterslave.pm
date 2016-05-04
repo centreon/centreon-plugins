@@ -45,18 +45,17 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     
     if (ref($options{sql}) ne 'ARRAY') {
         $self->{output}->add_option_msg(short_msg => "Need to use --multiple options.");
@@ -232,7 +231,7 @@ sub run {
             my $slave_position = $result2->{Read_Master_Log_Pos}; # 'Read_Master_Log_Pos'
             my $num_sec_lates = $result2->{Seconds_Behind_Master};
 
-            my $exit_code_sec = $self->{perfdata}->threshold_check(value => $num_sec_lates, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            my $exit_code_sec = $self->{perfdata}->threshold_check(value => $num_sec_lates, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit_code_sec, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit_code_sec,
                                             short_msg => sprintf("Slave has %d seconds latency behind master", $num_sec_lates));
@@ -262,51 +261,63 @@ sub run {
                 $position_status_error .= " Slave replication has connection issue with the master.";
             } elsif (($master_file ne $slave_file || $master_position != $slave_position) && $slave_sql_thread_warning == 0) {
                 $position_status = -1;
-                $position_status_error .= " Slave replication is late but it's progressing..";
+                $position_status_error .= " Slave replication is late but it's progressing.";
             } elsif (($master_file ne $slave_file || $master_position != $slave_position) && $slave_sql_thread_ok == 0) {
                 $position_status = -1;
-                $position_status_error .= " Slave replication is late but it's progressing..";
+                $position_status_error .= " Slave replication is late but it's progressing.";
+            } else {
+                $master_file =~ /(\d+)$/;
+                my $master_bin_num = $1;
+                $slave_file =~ /(\d+)$/;
+                my $slave_bin_num = $1;
+                my $diff_binlog = abs($master_bin_num - $slave_bin_num);
+                
+                # surely of missconfiguration of the plugin
+                if ($diff_binlog > 1 && $num_sec_lates < 10) {
+                    $position_status = -3;
+                    $position_status_error .= " Surely a configuration problem of the plugin (not good master and slave server used)";
+                }
             }
         }
     }
-    
-
 
     $self->replication_add($slave_status, "Slave Thread Status", $slave_status_error);
-	$self->replication_add($position_status, "Position Status", $position_status_error);
+    $self->replication_add($position_status, "Position Status", $position_status_error);
     
     $self->{output}->display();
     $self->{output}->exit();
 }
 
 sub replication_add {
-	my ($self, $lstate, $str_display, $lerr) = @_;
-	my $status;
+    my ($self, $lstate, $str_display, $lerr) = @_;
+    my $status;
     my $status_msg;
 
-	if ($lstate == 0) {
-		$status = 'OK';
-	} elsif ($lstate == -1) {
-		$status = 'WARNING';
-	} elsif ($lstate == -2) {
-		$status = 'CRITICAL';
+    if ($lstate == 0) {
+        $status = 'OK';
+    } elsif ($lstate == -1) {
+        $status = 'WARNING';
+    } elsif ($lstate == -2) {
+        $status = 'CRITICAL';
         $status_msg = 'SKIP';
-	} else {
-		$status = 'CRITICAL';
-	}
+    } elsif ($lstate == -3) {
+        $status = 'UNKNOWN';
+    } else {
+        $status = 'CRITICAL';
+    }
 
     my $output;
-	if (defined($lerr) && $lerr ne "") {
-		$output = $str_display . " [" . (defined($status_msg) ? $status_msg : $status) . "] [" . $lerr . "]";
-	} else {
-		$output = $str_display . " [" . (defined($status_msg) ? $status_msg : $status) . "]";
-	}
+    if (defined($lerr) && $lerr ne "") {
+        $output = $str_display . " [" . (defined($status_msg) ? $status_msg : $status) . "] [" . $lerr . "]";
+    } else {
+        $output = $str_display . " [" . (defined($status_msg) ? $status_msg : $status) . "]";
+    }
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $status,
                                     short_msg => $output);
     }
     
-	$self->{output}->output_add(long_msg => $output);
+    $self->{output}->output_add(long_msg => $output);
 }
 
 1;

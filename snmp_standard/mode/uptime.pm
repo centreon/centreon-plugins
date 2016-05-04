@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use POSIX;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -36,7 +37,6 @@ sub new {
                                 { 
                                   "warning:s"          => { name => 'warning', },
                                   "critical:s"         => { name => 'critical', },
-                                  "seconds"            => { name => 'seconds', },
                                   "force-oid:s"        => { name => 'force_oid', },
                                 });
 
@@ -59,7 +59,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     # To be used first for OS
@@ -89,8 +88,8 @@ sub run {
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s", 
-                                    defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($value / 86400 / 100) . " days" ));
+                                short_msg => sprintf("System uptime is: %s",
+                                                     centreon::plugins::misc::change_seconds(value => floor($value / 100), start => 'd')));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -113,10 +112,6 @@ Threshold warning in seconds.
 =item B<--critical>
 
 Threshold critical in seconds.
-
-=item B<--seconds>
-
-Display uptime in seconds.
 
 =item B<--force-oid>
 

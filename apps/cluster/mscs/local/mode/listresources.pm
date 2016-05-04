@@ -79,7 +79,9 @@ sub manage_selection {
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
         my $state = $map_state{$obj->{State}};
-        my $class = $map_class{$obj->{ResourceClass}};
+        my $class = defined($obj->{ResourceClass}) ? $map_class{$obj->{ResourceClass}} : '-';
+        my $id = defined($obj->{Id}) ? $obj->{Id} : $name;
+        my $owner_node = defined($obj->{OwnerNode}) ? $obj->{OwnerNode} : '-';
     
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
@@ -87,8 +89,8 @@ sub manage_selection {
             next;
         }
     
-        $self->{resources}->{$obj->{Id}} = { name => $name, state => $state, owner_node => $obj->{OwnerNode},
-                                             class =>  $class };
+        $self->{resources}->{$id} = { name => $name, state => $state, owner_node => $owner_node,
+                                      class =>  $class };
     }
 }
 

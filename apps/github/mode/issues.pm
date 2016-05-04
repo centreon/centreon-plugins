@@ -74,7 +74,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{option_results}->{url_path} = "/search/issues?q=state:open+repo:" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository};
+    $self->{option_results}->{url_path} = "/search/issues?q=state:open+is:issue+repo:" . $self->{option_results}->{owner} . "/" . $self->{option_results}->{repository};
     if (defined($self->{option_results}->{label}) && $self->{option_results}->{label} ne '') {
         $self->{option_results}->{url_path} .= "+label:" . $self->{option_results}->{label};
     }
