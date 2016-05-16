@@ -68,15 +68,17 @@ sub parse_output {
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Resource '%s' constraint location is OK", $self->{option_results}->{resource}));
 
-    my @lines = split /\n/, $options{output};
-    foreach my $line (@lines) {
-        next if $line !~ /^\s+:\sNode/;
-        if ($line =~ /Connection to cluster failed\:(.*)/i ) {
+    if ($options{output} =~ /Connection to cluster failed\:(.*)/i ) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => "Connection to cluster FAILED: $1");
             return ;
-        } elsif ($line =~ /^\s+:\sNode/) {
-            $self->{output}->output_add(long_msg => sprintf('Processed %s', $line));
+    }
+
+    my @lines = split /\n/, $options{output};
+    foreach my $line (@lines) {
+        next if $line !~ /^\s+:\sNode/;
+        if ($line =~ /^\s+:\sNode/) {
+            $self->{output}->output_add(long_msg => sprintf('Processed %s', $line), debug => 1);
             $line =~ /^\s+:\sNode\s([a-zA-Z0-9-_]+)\s+\(score=([a-zA-Z0-9-_]+),\sid=([a-zA-Z0-9-_]+)/;
             my ($node, $score, $rule) = ($1, $2, $3);
             if ($score eq '-INFINITY' && $rule =~ /^cli-ban/) {
