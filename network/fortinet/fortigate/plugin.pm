@@ -42,6 +42,7 @@ sub new {
                          'memory'               => 'centreon::common::fortinet::fortigate::mode::memory',
                          'sessions'             => 'centreon::common::fortinet::fortigate::mode::sessions',
                          'virus'                => 'centreon::common::fortinet::fortigate::mode::virus',
+                         'vpn'                  => 'centreon::common::fortinet::fortigate::mode::vpn',
                          );
 
     return $self;
