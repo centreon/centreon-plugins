@@ -96,9 +96,9 @@ sub set_counters {
         },
         { label => 'time', set => {
                 key_values => [ { name => 'upsAdvBatteryRunTimeRemaining' } ],
-                output_template => 'Remaining time : %s minutes',
+                output_template => 'Remaining time : %.2f minutes',
                 perfdatas => [
-                    { label => 'load_time', value => 'upsAdvBatteryRunTimeRemaining_absolute', template => '%s', 
+                    { label => 'load_time', value => 'upsAdvBatteryRunTimeRemaining_absolute', template => '%.2f', 
                       min => 0, unit => 'm' },
                 ],
             }
