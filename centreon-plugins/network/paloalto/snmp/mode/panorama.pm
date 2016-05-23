@@ -47,7 +47,7 @@ sub new {
     return $self;
 }
 
-sub check_treshold_overload {
+sub check_threshold_overload {
     my ($self, %options) = @_;
     
     $self->{overload_th} = {};
@@ -69,7 +69,7 @@ sub check_treshold_overload {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    $self->check_treshold_overload();
+    $self->check_threshold_overload();
 }
 
 sub check_exclude {
