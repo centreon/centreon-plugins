@@ -151,12 +151,12 @@ Example: --threshold-overload='fan,CRITICAL,^(?!(ok)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: type,regexp,treshold)
+Set warning threshold for temperatures (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,20'
 
 =item B<--critical>
 
-Set critical threshold for temperatures and battery charge (syntax: type,regexp,treshold)
+Set critical threshold for temperatures and battery charge (syntax: type,regexp,threshold)
 Example: --critical='temperature,1.1,25' --critical='battery,.*,20:'
 
 =back
