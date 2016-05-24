@@ -158,6 +158,7 @@ sub run {
         }
         
         if (defined($result->{rPDULoadStatusLoad}) && $result->{rPDULoadStatusLoad} =~ /[0-9]/) {
+            $result->{rPDULoadStatusLoad} /= 10;
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoad});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
