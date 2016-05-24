@@ -1,3 +1,19 @@
+2016-05-24 Quentin Garnier <qgarnier@centreon.com>
+ * Can use '/' instead '::' for plugin option (#380)
+ * Mode added: [pacemaker] 'constraints'
+ * Mode added: [netbackup] 'tape-usage'
+ * Mode added: [oracle] 'data-files-status'
+ * Mode added: [netasq] 'connections'
+ * Enhancement: [cisco wlc]{ap-users} get users by AP (#375)
+ * Enhancement: [oracle]{tablespace} can use free size left
+ * Fix: [pdu apc]{load} incorrect values (#408)
+ * Fix: [mscs] Issue with old versions
+ * Fix: [postgres]{timesync} threshold issue
+ * Fix: [ntp]{offset} time formula issue
+ * Fix: [github]{issues} Get only issue
+ * Fix: [netasq]{memory} Use BSD memory check
+ * Fix: [tomcat]{applications} Issue on Windows (#356)
+
 2016-03-24 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check AKCP SensorProbe
  * Plugin added: to check Juniper ISG
