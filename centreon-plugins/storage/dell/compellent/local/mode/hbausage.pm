@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::dell::compellent::volumeusage;
+use centreon::common::powershell::dell::compellent::hbausage;
 use DateTime;
 
 sub set_counters {
@@ -47,7 +47,7 @@ sub set_counters {
         },
         { label => 'read-usage', set => {
                 key_values => [ { name => 'read_bps' }, { name => 'display' } ],
-                output_template => 'Read usage : %s %s',
+                output_template => 'Read usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'read_usage', value => 'read_bps_absolute', template => '%d',
@@ -75,7 +75,7 @@ sub set_counters {
         },
         { label => 'write-usage', set => {
                 key_values => [ { name => 'write_bps' }, { name => 'display' } ],
-                output_template => 'Write Usage : %s %s',
+                output_template => 'Write Usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'write_usage', value => 'read_bps_absolute', template => '%d',
@@ -158,6 +158,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
+ 	$self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
     foreach my $label (('cem_host', 'cem_user', 'cem_password', 'cem_port', 'sdk_path_dll')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
@@ -186,7 +187,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::dell::compellent::volumeusage::get_powershell(cem_host => $self->{option_results}->{cem_host},
+    my $ps = centreon::common::powershell::dell::compellent::hbausage::get_powershell(cem_host => $self->{option_results}->{cem_host},
                                                                             cem_user => $self->{option_results}->{cem_user},
                                                                             cem_password => $self->{option_results}->{cem_password},
                                                                             cem_port => $self->{option_results}->{cem_port},
@@ -211,14 +212,13 @@ sub manage_selection {
     # microseconds for latencies
     #[sc=PRD-SAN-01][name=xxxx][ReadIops=39,5][ReadKbPerSecond=1220,75][ReadLatency=3997][WriteIops=95,75][WriteKbPerSecond=1217][WriteLatency=3903,25]
     $self->{hba} = {};
-    $self->{sc} = {};
     $stdout =~ s/,/\./msg;
     while ($stdout =~ /^\[sc=(.*?)\]\[name=(.*?)\]\[ReadIops=(.*?)\]\[ReadKbPerSecond=(.*?)\]\[ReadLatency=(.*?)\]\[WriteIops=(.*?)\]\[WriteKbPerSecond=(.*?)\]\[WriteLatency=(.*?)\]/mig) {
-        my ($sc, $volume, $read_iops, $read_kbps, $read_latency, $write_iops, $write_kbps, $write_latency) = 
+        my ($sc, $name, $read_iops, $read_kbps, $read_latency, $write_iops, $write_kbps, $write_latency) = 
             ($1, $2, $3, $4, $5, $6, $7, $8);
-        my $name = $sc . '/' . $name;
+        my $display = $sc . '/' . $name;
         
-        $self->{hba}->{$name} = { display => $name, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
+        $self->{hba}->{$name} = { display => $display, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
                                   write_iops => $write_iops, write_bps => $write_kbps * 1000, write_latency => $write_latency / 1000 };
     }
 }
@@ -294,7 +294,7 @@ Format: 2016-05-25T15:30:00
 
 =item B<--timezone>
 
-Timezone of time options.
+Timezone of time options. Default is 'GMT'.
 
 =item B<--filter-counters>
 
