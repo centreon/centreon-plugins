@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'hba-usage'    => 'storage::dell::compellent::local::mode::hbausage',
                          'volume-usage' => 'storage::dell::compellent::local::mode::volumeusage',
                          );
 
