@@ -69,6 +69,8 @@ sub custom_usage_perfdata {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(label => 'total' . $extra_label, unit => 'B',
+                                  value => $self->{result_values}->{total});
 }
 
 sub custom_usage_threshold {
