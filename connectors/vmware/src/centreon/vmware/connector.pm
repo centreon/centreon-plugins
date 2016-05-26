@@ -264,13 +264,15 @@ sub run {
         ###
         # Manage vpshere connection
         ###
-        if (defined($connector->{last_time_vsphere}) && defined($connector->{last_time_check}) 
-            && $connector->{last_time_vsphere} < $connector->{last_time_check}) {
+        if ($connector->{vsphere_connected} == 1 &&
+            defined($connector->{last_time_vsphere}) && defined($connector->{last_time_check}) &&
+            $connector->{last_time_vsphere} < $connector->{last_time_check}) {
             $connector->{logger}->writeLogError("'" . $connector->{whoaim} . "' Disconnect");
             $connector->{vsphere_connected} = 0;
             eval {
                 $connector->{session1}->logout();
             };
+            delete $connector->{session1};
         }
         
         if ($connector->{vsphere_connected} == 0) {
@@ -295,7 +297,8 @@ sub run {
         ###
         # Manage session time
         ###
-        if (defined($connector->{keeper_session_time}) && 
+        if ($connector->{vsphere_connected} == 1 &&
+            defined($connector->{keeper_session_time}) && 
             (time() - $connector->{keeper_session_time}) > ($connector->{config_vsphere_session_heartbeat} * 60)) {
             centreon::vmware::common::heartbeat(connector => $connector);
         }
