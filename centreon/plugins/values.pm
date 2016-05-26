@@ -22,9 +22,9 @@ package centreon::plugins::values;
 
 use strict;
 use warnings;
-
-# le label de perfdata: on peut le surcharger (au lieu du label)
-# le warning/critical: on peut surcharger 
+# Warning message with sprintf and too much arguments.
+# Really annoying. Need to disable that warning
+no if ($^V gt v5.22.0), 'warnings' => 'redundant';
 
 sub new {
     my ($class, %options) = @_;
