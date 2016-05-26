@@ -44,8 +44,10 @@ sub new {
                                   "display-description"     => { name => 'display_description' },
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
-                                  "datastore-name:s"        => { name => 'datastore_name' },
-                                  "filter-datastore:s"      => { name => 'filter_datastore' },
+                                  "warning-max-total-latency:s"     => { name => 'warning_max_total_latency' },
+                                  "critical-max-total-latency:s"    => { name => 'critical_max_total_latency' },
+                                  "datastore-name:s"                => { name => 'datastore_name' },
+                                  "filter-datastore:s"              => { name => 'filter_datastore' },
                                 });
     return $self;
 }
@@ -54,7 +56,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $label (('warning', 'critical')) {
+    foreach my $label (('warning', 'critical', 'warning_max_total_latency', 'critical_max_total_latency')) {
         if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
             my ($label_opt) = $label;
             $label_opt =~ tr/_/-/;
@@ -145,6 +147,14 @@ Threshold warning in IOPs.
 =item B<--critical>
 
 Threshold critical in IOPs.
+
+=item B<--warning-max-total-latency>
+
+Threshold warning in ms.
+
+=item B<--critical-max-total-latency>
+
+Threshold critical in ms.
 
 =back
 
