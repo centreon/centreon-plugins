@@ -78,7 +78,7 @@ sub set_counters {
                 output_template => 'Write Usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_usage', value => 'read_bps_absolute', template => '%d',
+                    { label => 'write_usage', value => 'write_bps_absolute', template => '%d',
                       unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
