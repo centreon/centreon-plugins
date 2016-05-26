@@ -139,7 +139,7 @@ sub output {
         return $self->{closure_custom_output}->($self);
     }
     my $first = ${${$self->{key_values}}[0]}{name};
-    my ($value, $unit) = ($self->{result_values}->{$first . '_absolute'}, $self->{result_values}->{output_absolute_unit});
+    my ($value, $unit) = ($self->{result_values}->{$first . '_absolute'}, $self->{output_absolute_unit});
     
     if (!defined($self->{output_use})) {
         if ($self->{per_second} == 1) {
