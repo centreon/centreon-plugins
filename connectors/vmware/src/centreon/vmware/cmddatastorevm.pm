@@ -63,7 +63,7 @@ sub checkArgs {
                                                 short_msg => "Argument error: wrong value for nopoweredon status '" . $options{arguments}->{nopoweredon_status} . "'");
         return 1;
     }
-    foreach my $label (('warning', 'critical')) {
+    foreach my $label (('warning', 'critical', 'warning_max_total_latency', 'critical_max_total_latency')) {
         if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
             $options{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                     short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
@@ -81,7 +81,7 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    foreach my $label (('warning', 'critical')) {
+    foreach my $label (('warning', 'critical', 'warning_max_total_latency', 'critical_max_total_latency')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
 }
@@ -171,19 +171,20 @@ sub run {
         #if ($_->info->isa('NasDatastoreInfo')) {
             # Zero disk Info
         #}
-    }
-
+    }    
+    
     # Vsphere >= 4.1
     # We don't filter. To filter we'll need to get disk from vms
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
                         $result, 
-                        [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
-                        {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
+                        [{label => 'disk.numberRead.summation', instances => ['*']},
+                        {label => 'disk.numberWrite.summation', instances => ['*']},
+                        {label => 'disk.maxTotalLatency.latest', instances => ['']}],
                         $self->{connector}->{perfcounter_speriod},
                         sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
-
+    
     my $interval_sec = $self->{connector}->{perfcounter_speriod};
     if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
         $interval_sec = $self->{sampling_period};
@@ -215,6 +216,8 @@ sub run {
             $datastore_lun{$disk_name{$disk_name}}->{$self->{connector}->{perfcounter_cache_reverse}->{$id}} += $values->{$entity_value}->{$_};
         }
 
+        my $extra_label = '';
+        $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
         foreach (sort keys %datastore_lun) {
             $finded |= 2;
             my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($datastore_lun{$_}{'disk.numberRead.summation'} / $interval_sec));
@@ -237,8 +240,6 @@ sub run {
                                                    $prefix_msg, $_, $write_counter));
             }
             
-            my $extra_label = '';
-            $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
             $self->{manager}->{output}->perfdata_add(label => 'riops' . $extra_label . '_' . $_, unit => 'iops',
                                                      value => $read_counter,
                                                      warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
@@ -250,6 +251,21 @@ sub run {
                                                      critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                                      min => 0);
         }
+        
+        my $max_total_latency = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'disk.maxTotalLatency.latest'}->{key} . ":"}));
+        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $max_total_latency, threshold => [ { label => 'critical_max_total_latency', exit_litteral => 'critical' }, { label => 'warning_max_total_latency', exit_litteral => 'warning' } ]);
+        $self->{manager}->{output}->output_add(long_msg => sprintf("%s max total latency is %s ms", 
+                                                                    $prefix_msg, $max_total_latency));
+        if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                                   short_msg => sprintf("%s max total latency is %s ms", 
+                                                   $prefix_msg, $max_total_latency));
+        }
+        $self->{manager}->{output}->perfdata_add(label => 'max_total_latency' . $extra_label, unit => 'ms',
+                                                 value => $max_total_latency,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_max_total_latency'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_max_total_latency'),
+                                                 min => 0);
     }
     
     if (($finded & 2) == 0) {
