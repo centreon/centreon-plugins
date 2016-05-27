@@ -172,10 +172,8 @@ sub run {
         
         my $extra_values = $self->get_extra_values_by_instance(instance => $_);
         my $extra_display = '';
-        my $extra_display_append = ' ';
         foreach my $name (keys %{$extra_values}) {
-            $extra_display .= $extra_display_append . $name . ' = ' . $extra_values->{$name};
-            $extra_display_append = ', ';
+            $extra_display .= ', ' . $name . ' = ' . $extra_values->{$name};
         }
 
         $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . 
