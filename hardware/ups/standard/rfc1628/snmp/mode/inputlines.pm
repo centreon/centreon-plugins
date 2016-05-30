@@ -109,7 +109,7 @@ sub manage_selection {
         next if ($oid !~ /^(.*)\.(.*?)\.(.*?)$/);
         my ($base, $instance) = ($1 . '.' . $2, $3);
         next if (!defined($oids->{$base}));
-        next if ($results->{$oid} !~ /\d/ || $results->{$oid} == 0);
+        next if ($results->{$oid} !~ /\d/);
         
         $self->{line}->{$instance} = { display => $instance } if (!defined($self->{line}->{$instance}));
         $self->{line}->{$instance}->{$oids->{$base}->{name}} = $results->{$oid} * $oids->{$base}->{factor};
