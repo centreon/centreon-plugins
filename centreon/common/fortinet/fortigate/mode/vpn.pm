@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 my $instance_mode;
 
@@ -70,34 +71,34 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'vdstats', type => 1,  cb_prefix_output => 'prefix_vd_output', message_multiple => 'All virtual domains are OK' },
         { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All VPNs states are OK' },
     ];
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{vdstats} = [
         { label => 'users', set => {
-                key_values => [ { name => 'users' } ],
+                key_values => [ { name => 'users' }, { name => 'display' } ],
                 output_template => 'Logged users: %s',
                 perfdatas => [
                     { label => 'users', value => 'users_absolute', template => '%d',
-                      min => 0, unit => 'users' },
+                      min => 0, unit => 'users', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'sessions', set => {
-                key_values => [ { name => 'sessions' } ],
+                key_values => [ { name => 'sessions' }, { name => 'display' } ],
                 output_template => 'Active web sessions: %s',
                 perfdatas => [
                     { label => 'sessions', value => 'sessions_absolute', template => '%d',
-                      min => 0, unit => 'sessions' },
+                      min => 0, unit => 'sessions', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'tunnels', set => {
-                key_values => [ { name => 'tunnels' } ],
+                key_values => [ { name => 'tunnels' }, { name => 'display' } ],
                 output_template => 'Active Tunnels: %s',
                 perfdatas => [
                     { label => 'active_tunnels', value => 'tunnels_absolute', template => '%d',
-                      min => 0, unit => 'tunnels' },
+                      min => 0, unit => 'tunnels', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -112,7 +113,33 @@ sub set_counters {
                 closure_custom_threshold_check => \&custom_threshold_output,
             }
         },
+        { label => 'traffic-in', set => {
+                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'Traffic In: %s %s/s',
+                perfdatas => [
+                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'traffic-out', set => {
+                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'Traffic Out: %s %s/s',
+                perfdatas => [
+                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        }
     ];
+}
+
+sub prefix_vd_output {
+    my ($self, %options) = @_;
+
+    return "Virtual domain '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_vpn_output {
@@ -123,13 +150,14 @@ sub prefix_vpn_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter:s"                => { name => 'filter' },
+                                "filter-vpn:s"            => { name => 'filter_vpn' },
+                                "filter-vdomain:s"        => { name => 'filter_vdomain' },
                                 "warning-status:s"        => { name => 'warning_status', default => '' },
                                 "critical-status:s"       => { name => 'critical_status', default => '%{state} eq "down"' },
                                 });
@@ -160,43 +188,66 @@ my %map_status = (
 );
 
 my $mapping = {
-    fgVpnTunEntPhase2Name               => '.1.3.6.1.4.1.12356.101.12.2.2.1.3',
-    fgVpnTunEntStatus                   => '.1.3.6.1.4.1.12356.101.12.2.2.1.20',
-
-    fgVpnSslStatsLoginUsers             => '.1.3.6.1.4.1.12356.101.12.2.3.1.2.1',
-    fgVpnSslStatsActiveWebSessions      => '.1.3.6.1.4.1.12356.101.12.2.3.1.4.1',
-    fgVpnSslStatsActiveTunnels          => '.1.3.6.1.4.1.12356.101.12.2.3.1.6.1',
+    fgVpnTunEntPhase2Name => { oid => '.1.3.6.1.4.1.12356.101.12.2.2.1.3' },
+    fgVpnTunEntInOctets => { oid => '.1.3.6.1.4.1.12356.101.12.2.2.1.18' },
+    fgVpnTunEntOutOctets => { oid => '.1.3.6.1.4.1.12356.101.12.2.2.1.19' },
+    fgVpnTunEntStatus => { oid => '.1.3.6.1.4.1.12356.101.12.2.2.1.20', map => \%map_status },
 };
 
-my $oid_fgVpnTunTable = '.1.3.6.1.4.1.12356.101.12.2.2';
+my $mapping2 = {
+    fgVpnSslStatsLoginUsers => { oid => '.1.3.6.1.4.1.12356.101.12.2.3.1.2' },
+    fgVpnSslStatsActiveWebSessions => { oid => '.1.3.6.1.4.1.12356.101.12.2.3.1.4' },
+    fgVpnSslStatsActiveTunnels => { oid => '.1.3.6.1.4.1.12356.101.12.2.3.1.6' },
+};
+
+my $oid_fgVpnTunTable = '.1.3.6.1.4.1.12356.101.12.2.2.1';
 my $oid_fgVpnSslStatsTable = '.1.3.6.1.4.1.12356.101.12.2.3';
+my $oid_fgVdEntName = '.1.3.6.1.4.1.12356.101.3.2.1.1.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{snmp} = $options{snmp};
+    $self->{cache_name} = "fortigate_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
+                                                            { oid => $oid_fgVdEntName },
                                                             { oid => $oid_fgVpnTunTable },
                                                             { oid => $oid_fgVpnSslStatsTable },
                                                          ],
                                                          , nothing_quit => 1);
 
-    foreach my $oid (keys %{$self->{results}->{$oid_fgVpnTunTable}}) {
-        next if ($oid !~ /^$mapping->{fgVpnTunEntPhase2Name}\.(.*)$/);
+    foreach my $oid (keys %{$self->{results}->{ $oid_fgVdEntName }}) {
+        $oid =~ /^$oid_fgVdEntName\.(.*)$/;
         my $instance = $1;
-        my $vpn_name = $self->{results}->{$oid_fgVpnTunTable}->{$mapping->{fgVpnTunEntPhase2Name} . '.' . $instance};
-        my $vpn_state = $map_status{$self->{results}->{$oid_fgVpnTunTable}->{$mapping->{fgVpnTunEntStatus} . '.' . $instance}};
-        if (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '' &&
-            $vpn_name !~ /$self->{option_results}->{filter}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $vpn_name . "': no matching filter.", debug => 1);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_fgVpnSslStatsTable}, instance => $instance);
+        my $vdomain_name = $self->{results}->{$oid_fgVdEntName}->{$oid_fgVdEntName.'.'.$instance};
+        if (defined($self->{option_results}->{filter_vdomain}) && $self->{option_results}->{filter_vdomain} ne '' &&
+            $vdomain_name !~ /$self->{option_results}->{filter_vdomain}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $vdomain_name . "': no matching filter.", debug => 1);
             next;
         }
-        $self->{vpn}->{$vpn_name} = { state => $vpn_state, display => $vpn_name };
+        $self->{vdstats}->{$vdomain_name} = { users => $result->{fgVpnSslStatsLoginUsers},
+                                              sessions => $result->{fgVpnSslStatsActiveWebSessions},
+                                              tunnels => $result->{fgVpnSslStatsActiveTunnels},
+                                              display => $vdomain_name };
     }
 
-    $self->{global} = { users => $self->{results}->{$oid_fgVpnSslStatsTable}->{$mapping->{fgVpnSslStatsLoginUsers}},
-                        sessions => $self->{results}->{$oid_fgVpnSslStatsTable}->{$mapping->{fgVpnSslStatsActiveWebSessions}},
-                        tunnels => $self->{results}->{$oid_fgVpnSslStatsTable}->{$mapping->{fgVpnSslStatsActiveTunnels}}
-                        };
+    foreach my $oid (sort keys %{$self->{results}->{$oid_fgVpnTunTable}}) {
+        next if ($oid !~ /^$mapping->{fgVpnTunEntStatus}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fgVpnTunTable}, instance => $instance);
+        if (defined($self->{option_results}->{filter_vpn}) && $self->{option_results}->{filter_vpn} ne '' &&
+            $result->{fgVpnTunEntPhase2Name} !~ /$self->{option_results}->{filter_vpn}/) {
+            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{fgVpnTunEntPhase2Name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        $self->{vpn}->{$result->{fgVpnTunEntPhase2Name}} = { state => $result->{fgVpnTunEntStatus},
+                                                             traffic_in => $result->{fgVpnTunEntInOctets},
+                                                             traffic_out => $result->{fgVpnTunEntOutOctets},
+                                                             display => $result->{fgVpnTunEntPhase2Name} };
+    }
 }
 
 1;
@@ -205,21 +256,21 @@ __END__
 
 =head1 MODE
 
-Check global VPN utilization statistics and VPN link state
+Check Vdomain statistics and VPN state and traffic
 
 =over 8
 
-=item B<--filter-counters>
+=item B<--filter-*>
 
-Warning on statistics. Can be ('users', 'sessions', 'tunnels', 'state')
+Filter name with regexp. Can be ('vdomain', 'vpn')
 
 =item B<--warning-*>
 
-Warning on statistics. Can be ('users', 'sessions', 'tunnels')
+Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out')
 
 =item B<--critical-*>
 
-Warning on statistics. Can be ('users', 'sessions', 'tunnels')
+Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out')
 
 =item B<--warning-status>
 
