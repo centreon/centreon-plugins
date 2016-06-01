@@ -201,7 +201,7 @@ my $mapping3 = {
 
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 my $oid_bsnDot11EssSsid = '.1.3.6.1.4.1.14179.2.1.1.1.2';
-my $oid_bsnAPName = '.1.3.6.1.4.1.14179.2.2.1.1.3 ';
+my $oid_bsnAPName = '.1.3.6.1.4.1.14179.2.2.1.1.3';
 my $oid_bsnAPIfLoadNumOfClients = '.1.3.6.1.4.1.14179.2.2.13.1.4';
 
 sub manage_selection {
@@ -266,7 +266,7 @@ sub manage_selection {
         foreach my $oid2 (keys %{$self->{results}->{ $oid_bsnAPIfLoadNumOfClients }}) {
             next if ($oid2 !~ /^$oid_bsnAPIfLoadNumOfClients\.$instance\./);
             $self->{ap}->{$instance} = { display => $ap_name, total => 0 } if (!defined($self->{ap}->{$instance}));
-            $self->{ap}->{$instance} += $self->{results}->{$oid_bsnAPIfLoadNumOfClients}->{$oid2};
+            $self->{ap}->{$instance}->{total} += $self->{results}->{$oid_bsnAPIfLoadNumOfClients}->{$oid2};
         }
     }
 }
