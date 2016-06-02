@@ -20,10 +20,109 @@
 
 package centreon::common::jvm::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'heap', type => 0 },
+        { name => 'nonheap', type => 0 },
+    ];
+    
+    $self->{maps_counters}->{heap} = [
+        { label => 'heap', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'label' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+    $self->{maps_counters}->{nonheap} = [
+        { label => 'nonheap', set => {
+                key_values => [ { name => 'used' }, { name => 'max' }, { name => 'label' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+my $instance_mode;
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+    
+    my $use_th = 1;
+    $use_th = 0 if ($instance_mode->{option_results}->{units} eq '%' && $self->{result_values}->{max} <= 0);
+    
+    my $value_perf = $self->{result_values}->{used};
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%' && $self->{result_values}->{max} > 0) {
+        $total_options{total} = $self->{result_values}->{max};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
+                                  value => $value_perf,
+                                  warning => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options) : undef,
+                                  critical => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options) : undef,
+                                  min => 0, max => $self->{result_values}->{max} > 0 ? $self->{result_values}->{max} : undef);
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+    
+    # Cannot use percent without total
+    return 'ok' if ($self->{result_values}->{max} <= 0 && $instance_mode->{option_results}->{units} eq '%');
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+    
+    my $msg;
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    if ($self->{result_values}->{max} > 0) {
+        my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max});
+        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{max} - $self->{result_values}->{used});
+        $msg = sprintf("%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $self->{result_values}->{label},
+                   $total_size_value . " " . $total_size_unit,
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used});
+    } else {
+        $msg = sprintf("%s Used: %s", $self->{result_values}->{label},
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used});
+    }
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{label} = $options{new_datas}->{$self->{label} . '_label'};    
+    $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    
+    if ($self->{result_values}->{max} > 0) {
+        $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{max};
+    }
+    
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -32,75 +131,30 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning-heap:s"      => { name => 'warning_heap' },
-                                  "critical-heap:s"     => { name => 'critical_heap' },
-                                  "warning-nonheap:s"   => { name => 'warning_nonheap' },
-                                  "critical-nonheap:s"  => { name => 'critical_nonheap' },
+                                {
+                                "units:s"               => { name => 'units', default => '%' },
                                 });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-heap', value => $self->{option_results}->{warning_heap})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-heap threshold '" . $self->{option_results}->{warning_heap} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-heap', value => $self->{option_results}->{critical_heap})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-heap threshold '" . $self->{option_results}->{critical_heap} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-nonheap', value => $self->{option_results}->{warning_nonheap})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-nonheap threshold '" . $self->{option_results}->{warning_nonheap} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-nonheap', value => $self->{option_results}->{critical_nonheap})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-nonheap threshold '" . $self->{option_results}->{critical_nonheap} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
+    
+    $instance_mode = $self;
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
     $self->{request} = [
          { mbean => "java.lang:type=Memory" }
     ];
 
-    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
+    my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
     
-    my $prct_heap = $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used} / $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{max} * 100;
-    my $prct_nonheap = $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used} / $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{max} * 100;
-
-    my $exit1 = $self->{perfdata}->threshold_check(value => $prct_heap,
-                                                   threshold => [ { label => 'critical-heap', exit_litteral => 'critical' }, { label => 'warning-heap', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $prct_nonheap,
-                                                   threshold => [ { label => 'critical-nonheap', exit_litteral => 'critical' }, { label => 'warning-nonheap', exit_litteral => 'warning'} ]);
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("HeapMemory Usage: %.2f%% - NonHeapMemoryUsage : %.2f%%",
-                                                      $prct_heap, $prct_nonheap));
-
-    $self->{output}->perfdata_add(label => 'HeapMemoryUsage', unit => 'B',
-                                  value => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-heap', total => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-heap', total => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used}, cast_int => 1),
-                                  min => 0, max => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{max});
-
-    $self->{output}->perfdata_add(label => 'NonHeapMemoryUsage', unit => 'B',
-                                  value => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-nonheap', total => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-nonheap', total => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used}, cast_int => 1),
-                                  min => 0, max => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{max});
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{heap} = { label => 'HeapMemory', used => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{used}, max => $result->{"java.lang:type=Memory"}->{HeapMemoryUsage}->{max} };
+    $self->{nonheap} = { label => 'NonHeapMemoryUsage', used => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{used}, max => $result->{"java.lang:type=Memory"}->{NonHeapMemoryUsage}->{max}  };
 }
 
 1;
@@ -131,6 +185,10 @@ Threshold warning of NonHeap memory usage
 =item B<--critical-nonheap>
 
 Threshold critical of NonHeap memory usage
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
 
 =back
 

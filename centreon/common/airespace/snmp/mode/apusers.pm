@@ -30,7 +30,8 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'ssid', type => 1, cb_prefix_output => 'prefix_ssid_output', message_multiple => 'All users by SSID are ok' }
+        { name => 'ssid', type => 1, cb_prefix_output => 'prefix_ssid_output', message_multiple => 'All users by SSID are ok' },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All users by AP are ok' },
     ];
     $self->{maps_counters}->{global} = [
         { label => 'total', set => {
@@ -136,12 +137,30 @@ sub set_counters {
             }
         },
     ];
+    
+    $self->{maps_counters}->{ap} = [
+        { label => 'ap', set => {
+                key_values => [ { name => 'total' }, { name => 'display' } ],
+                output_template => 'users : %s',
+                perfdatas => [
+                    { label => 'ap', value => 'total_absolute', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
 }
 
 sub prefix_ssid_output {
     my ($self, %options) = @_;
     
     return "SSID '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+    
+    return "AP '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -152,7 +171,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "filter-ssid:s"     => { name => 'filter_ssid' },
+                                  "filter-ssid:s"   => { name => 'filter_ssid' },
+                                  "filter-ap:s"     => { name => 'filter_ap' },
                                 });
     
     return $self;
@@ -181,6 +201,8 @@ my $mapping3 = {
 
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 my $oid_bsnDot11EssSsid = '.1.3.6.1.4.1.14179.2.1.1.1.2';
+my $oid_bsnAPName = '.1.3.6.1.4.1.14179.2.2.1.1.3';
+my $oid_bsnAPIfLoadNumOfClients = '.1.3.6.1.4.1.14179.2.2.13.1.4';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -193,6 +215,8 @@ sub manage_selection {
                                                                    { oid => $mapping2->{bsnMobileStationSsid}->{oid} },
                                                                    { oid => $oid_bsnDot11EssSsid },
                                                                    { oid => $mapping3->{bsnDot11EssNumberOfMobileStations}->{oid} },
+                                                                   { oid => $oid_bsnAPName },
+                                                                   { oid => $oid_bsnAPIfLoadNumOfClients },
                                                                  ],
                                                          nothing_quit => 1);
     $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
@@ -219,12 +243,31 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnDot11EssNumberOfMobileStations}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
             $ssid_name !~ /$self->{option_results}->{filter_ssid}/) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $ssid_name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping ssid '" . $ssid_name . "': no matching filter.", debug => 1);
             next;
         }
         
         $self->{ssid}->{$ssid_name} = { display => $ssid_name, total => 0 } if (!defined($self->{ssid}->{$ssid_name}));
         $self->{ssid}->{$ssid_name}->{total} += $result->{bsnDot11EssNumberOfMobileStations};
+    }
+    
+    # check by ap
+    $self->{ap} = {};
+    foreach my $oid (keys %{$self->{results}->{ $oid_bsnAPName }}) {
+        $oid =~ /^$oid_bsnAPName\.(.*)/;
+        my $instance = $1;
+        my $ap_name = $self->{results}->{$oid_bsnAPName}->{$oid};
+        if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' &&
+            $ap_name !~ /$self->{option_results}->{filter_ap}/) {
+            $self->{output}->output_add(long_msg => "skipping ap '" . $ap_name . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        foreach my $oid2 (keys %{$self->{results}->{ $oid_bsnAPIfLoadNumOfClients }}) {
+            next if ($oid2 !~ /^$oid_bsnAPIfLoadNumOfClients\.$instance\./);
+            $self->{ap}->{$instance} = { display => $ap_name, total => 0 } if (!defined($self->{ap}->{$instance}));
+            $self->{ap}->{$instance}->{total} += $self->{results}->{$oid_bsnAPIfLoadNumOfClients}->{$oid2};
+        }
     }
 }
 
@@ -234,7 +277,7 @@ __END__
 
 =head1 MODE
 
-Check total users connected and status on AP.
+Check users connected (total, by SSID, by AP).
 
 =over 8
 
@@ -248,18 +291,22 @@ Example: --filter-counters='^total|total-idle$'
 Threshold warning.
 Can be: 'total', 'total-idle', 'total-aaapending', 'total-authenticated',
 'total-associated', 'total-powersave', 'total-disassociated', 'total-tobedeleted',
-'total-probing', 'total-blacklisted', 'ssid'.
+'total-probing', 'total-blacklisted', 'ssid', 'ap'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'total', 'total-idle', 'total-aaapending', 'total-authenticated',
 'total-associated', 'total-powersave', 'total-disassociated', 'total-tobedeleted',
-'total-probing', 'total-blacklisted', 'ssid'.
+'total-probing', 'total-blacklisted', 'ssid', 'ap'.
 
 =item B<--filter-ssid>
 
 Filter by SSID (can be a regexp).
+
+=item B<--filter-ap>
+
+Filter by AP (can be a regexp).
 
 =back
 
