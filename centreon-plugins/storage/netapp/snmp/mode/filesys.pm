@@ -20,32 +20,56 @@
 
 package storage::netapp::snmp::mode::filesys;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    '000_usage' => { set => {
-            key_values => [ { name => 'name' }, { name => 'used' }, { name => 'total' }, 
-                            { name => 'dfCompressSavedPercent' }, { name => 'dfDedupeSavedPercent' } ],
-            closure_custom_calc => \&custom_usage_calc,
-            closure_custom_output => \&custom_usage_output,
-            closure_custom_perfdata => \&custom_usage_perfdata,
-            closure_custom_threshold_check => \&custom_usage_threshold,
-        }
-    },
-    '001_inodes' => { set => {
-            key_values => [ { name => 'dfPerCentInodeCapacity' }, { name => 'name' } ],
-            output_template => 'Inodes Used : %s %%', output_error_template => "Inodes : %s",
-            perfdatas => [
-                { label => 'inodes', value => 'dfPerCentInodeCapacity_absolute', template => '%d',
-                  unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'name_absolute' },
-            ],
-        }
-    },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
+    ];
+    
+    $self->{maps_counters}->{fs} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'inodes', set => {
+                key_values => [ { name => 'dfPerCentInodeCapacity' }, { name => 'display' } ],
+                output_template => 'Inodes Used : %s %%', output_error_template => "Inodes : %s",
+                perfdatas => [
+                    { label => 'inodes', value => 'dfPerCentInodeCapacity_absolute', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'compresssaved', set => {
+                key_values => [ { name => 'dfCompressSavedPercent' }, { name => 'display' } ],
+                output_template => 'Compress Saved : %s %%', output_error_template => "Compress Saved : %s",
+                perfdatas => [
+                    { label => 'compresssaved', value => 'dfCompressSavedPercent_absolute', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'dedupsaved', set => {
+                key_values => [ { name => 'dfDedupeSavedPercent' }, { name => 'display' } ],
+                output_template => 'Dedupe Saved : %s %%', output_error_template => "Dedupe Saved : %s",
+                perfdatas => [
+                    { label => 'dedupsaved', value => 'dfDedupeSavedPercent_absolute', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
 
 my $instance_mode;
 
@@ -60,7 +84,7 @@ sub custom_usage_perfdata {
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{name} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
     if ($instance_mode->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -72,18 +96,6 @@ sub custom_usage_perfdata {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
                                   min => 0, max => $self->{result_values}->{total});
-    if (defined($self->{result_values}->{dfCompressSavedPercent}) && $self->{result_values}->{dfCompressSavedPercent} ne '' &&
-        $self->{result_values}->{dfCompressSavedPercent} >= 0) {
-        $self->{output}->perfdata_add(label => 'compresssaved' . $extra_label, unit => '%',
-                                      value => $self->{result_values}->{dfCompressSavedPercent},
-                                      min => 0, max => 100);
-    }
-    if (defined($self->{result_values}->{dfDedupeSavedPercent}) && $self->{result_values}->{dfDedupeSavedPercent} ne '' &&
-        $self->{result_values}->{dfDedupeSavedPercent} >= 0) {
-        $self->{output}->perfdata_add(label => 'dedupsaved' . $extra_label, unit => '%',
-                                      value => $self->{result_values}->{dfDedupeSavedPercent},
-                                      min => 0, max => 100);
-    }
 }
 
 sub custom_usage_threshold {
@@ -124,11 +136,9 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};    
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};    
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{dfCompressSavedPercent} = $options{new_datas}->{$self->{instance} . '_dfCompressSavedPercent'};
-    $self->{result_values}->{dfDedupeSavedPercent} = $options{new_datas}->{$self->{instance} . '_dfDedupeSavedPercent'};
 
     return 0 if ($options{new_datas}->{$self->{instance} . '_total'} == 0);
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -144,6 +154,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_fs_output {
+    my ($self, %options) = @_;
+    
+    return "Filesys '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -156,94 +172,15 @@ sub new {
                                   "free"                  => { name => 'free' },
                                   "filter-name:s"         => { name => 'filter_name' },
                                   "filter-type:s"         => { name => 'filter_type' },
-                                });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+                                });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
+    $self->SUPER::check_options(%options);
     
     $instance_mode = $self;
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{filesys_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All filesys usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{filesys_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{filesys_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Filesys '" . $self->{filesys_selected}->{$id}->{name} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Filesys '" . $self->{filesys_selected}->{$id}->{name} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Filesys '" . $self->{filesys_selected}->{$id}->{name} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my %map_types = (
@@ -279,45 +216,45 @@ sub manage_selection {
         { oid => $mapping2->{dfCompressSavedPercent}->{oid} },
         { oid => $mapping2->{dfDedupeSavedPercent}->{oid} },
     ];
-    if (!$self->{snmp}->is_snmpv1()) {
+    if (!$options{snmp}->is_snmpv1()) {
         push @{$oids}, { oid => $mapping2->{df64TotalKBytes}->{oid} }, { oid => $mapping2->{df64UsedKBytes}->{oid} };
     }
     
-    my $results = $self->{snmp}->get_multiple_table(oids => $oids, return_type => 1, nothing_quit => 1);
-    $self->{filesys_selected} = {};
+    my $results = $options{snmp}->get_multiple_table(oids => $oids, return_type => 1, nothing_quit => 1);
+    $self->{fs} = {};
     foreach my $oid (keys %{$results}) {
         next if ($oid !~ /^$mapping2->{dfFileSys}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
         
         my $name = $result2->{dfFileSys};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter name.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $result->{dfType} !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{dfType} . "': no matching filter type.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{dfType} . "': no matching filter type.", debug => 1);
             next;
         }
     
-        $self->{filesys_selected}->{$instance} = { name => $name };
-        $self->{filesys_selected}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
-        $self->{filesys_selected}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
+        $self->{fs}->{$instance} = { display => $name };
+        $self->{fs}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
+        $self->{fs}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
         if (defined($result2->{df64TotalKBytes}) && $result2->{df64TotalKBytes} > 0) {
-            $self->{filesys_selected}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
-            $self->{filesys_selected}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
+            $self->{fs}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
+            $self->{fs}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
         }
-        $self->{filesys_selected}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
-        $self->{filesys_selected}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
-        if ($self->{filesys_selected}->{$instance}->{total} > 0) {
-            $self->{filesys_selected}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
+        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
+        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
+        if ($self->{fs}->{$instance}->{total} > 0) {
+            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
         }
     }
     
-    if (scalar(keys %{$self->{filesys_selected}}) <= 0) {
+    if (scalar(keys %{$self->{fs}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
@@ -336,12 +273,12 @@ Check filesystem usage (volumes, snapshots and aggregates also).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: usage, inodes (%).
+Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: usage, inodes (%).
+Can be: usage, inodes (%), compresssaved (%), dedupsaved (%).
 
 =item B<--units>
 

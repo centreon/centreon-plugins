@@ -125,12 +125,13 @@ sub check_options {
     $self->{extra_oids} = {};
     foreach (@{$self->{option_results}->{add_extra_oid}}) {
         next if ($_ eq '');
-        my ($name, $oid) = split /,/;
+        my ($name, $oid, $matching) = split /,/;
+        $matching = '%{instance}' if (!defined($matching));
         if (!defined($oid) || $oid !~ /^(\.\d+){1,}$/ || $name eq '') {
             $self->{output}->add_option_msg(short_msg => "Wrong syntax for add-extra-oid '" . $_ . "' option.");
             $self->{output}->option_exit();
         }
-        $self->{extra_oids}->{$name} = $oid;
+        $self->{extra_oids}->{$name} = { oid => $oid, matching => $matching };
     }
 }
 
@@ -168,11 +169,11 @@ sub run {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $display_value . "': adminstatus is not 'up' and option --use-adminstatus is set");
             next;
         }
+        
+        my $extra_values = $self->get_extra_values_by_instance(instance => $_);
         my $extra_display = '';
-        my $extra_display_append = ' ';
-        foreach my $name (keys %{$self->{extra_oids}}) {
-            $extra_display .= $extra_display_append . $name . ' = ' . (defined($result->{$self->{extra_oids}->{$name} . "." . $_}) ? $result->{$self->{extra_oids}->{$name} . "." . $_} : '');
-            $extra_display_append = ', ';
+        foreach my $name (keys %{$extra_values}) {
+            $extra_display .= ', ' . $name . ' = ' . $extra_values->{$name};
         }
 
         $self->{output}->output_add(long_msg => "'" . $display_value . "' [speed = $interface_speed, status = " . 
@@ -194,9 +195,6 @@ sub get_additional_information {
     push @$oids, $self->{oid_opstatus} if (defined($self->{oid_opstatus}));
     push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
     push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
-    if (scalar(keys %{$self->{extra_oids}}) > 0) {
-        push @$oids, values %{$self->{extra_oids}};
-    }
     
     $self->{snmp}->load(oids => $oids, instances => $self->{interface_id_selected});
     return $self->{snmp}->get_leef();
@@ -216,12 +214,22 @@ sub get_display_value {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $oids = [{ oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}} }];
+    if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
+        push @$oids, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} };
+    }
+    if (scalar(keys %{$self->{extra_oids}}) > 0) {
+        foreach (keys %{$self->{extra_oids}}) {
+            push @$oids, { oid => $self->{extra_oids}->{$_}->{oid} };
+        }
+    }
+    
     $self->{datas} = {};
-    my $result = $self->{snmp}->get_table(oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}});
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $oids);
     $self->{datas}->{all_ids} = [];
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_filter}} }})) {
         next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/);
-        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
+        $self->{datas}->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_filter}} }->{$key});
         push @{$self->{datas}->{all_ids}}, $1;
     }
     
@@ -231,11 +239,10 @@ sub manage_selection {
     }
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-       $result = $self->{snmp}->get_table(oid => $self->{oids_label}->{$self->{option_results}->{oid_display}});
-       foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oids_label}->{$self->{option_results}->{oid_display}} }})) {
             next if ($key !~ /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/);
-            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$key});
-       }
+            $self->{datas}->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($self->{results}->{$self->{oids_label}->{ $self->{option_results}->{oid_display}} }->{$key});
+        }
     }
     
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})) {
@@ -263,6 +270,27 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No entry found");
         $self->{output}->option_exit();
     }
+}
+
+sub get_extra_values_by_instance {
+    my ($self, %options) = @_;
+    
+    my $extra_values = {};
+    foreach my $name (keys %{$self->{extra_oids}}) {
+        my $matching = $self->{extra_oids}->{$name}->{matching};
+        $matching =~ s/%\{instance\}/$options{instance}/g;
+        next if (!defined($self->{results}->{ $self->{extra_oids}->{$name}->{oid} }));
+        
+        my $append = '';
+        foreach (keys %{$self->{results}->{ $self->{extra_oids}->{$name}->{oid} }}) {
+            if (/^$self->{extra_oids}->{$name}->{oid}\.$matching/) {
+                $extra_values->{$name} = '' if (!defined($extra_values->{$name}));
+                $extra_values->{$name} .= $append . $self->{results}->{$self->{extra_oids}->{$name}->{oid}}->{$_};
+                $append = ',';
+            }
+        }
+    }
+    return $extra_values;
 }
 
 sub disco_format {
@@ -299,18 +327,13 @@ sub disco_show {
         next if (defined($self->{option_results}->{filter_status}) && defined($result->{$self->{oid_opstatus} . "." . $_}) && 
             $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i);
         next if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_}));
-        
-        my %extra_values = ();
-        foreach my $name (keys %{$self->{extra_oids}}) {
-            $extra_values{$name} = defined($result->{$self->{extra_oids}->{$name} . "." . $_}) ?
-                $result->{$self->{extra_oids}->{$name} . "." . $_} : '';
-        }
-        
+         
+        my $extra_values = $self->get_extra_values_by_instance(instance => $_);
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $interface_speed,
                                          status => defined($result->{$self->{oid_opstatus} . "." . $_}) ? $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} : '',
                                          interfaceid => $_,
-                                         %extra_values);
+                                         %$extra_values);
     }
 }
 
@@ -364,7 +387,10 @@ Regexp dst to transform display value. (security risk!!!)
 
 =item B<--add-extra-oid>
 
-Display an OID. Example: --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'
+Display an OID.
+Example: --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'
+or --add-extra-oid='vlan,.1.3.6.1.2.1.31.19,%{instance}\..*'
+
 
 =back
 
