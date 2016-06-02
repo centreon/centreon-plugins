@@ -141,12 +141,12 @@ Example: --threshold-overload='temperature.state,CRITICAL,^(?!(enabled)$)'
 
 =item B<--warning>
 
-Set warning threshold (syntax: type,regexp,treshold)
+Set warning threshold (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
-Set critical threshold (syntax: type,regexp,treshold)
+Set critical threshold (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,40'
 
 =back
