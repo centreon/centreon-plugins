@@ -137,7 +137,7 @@ sub api_request {
         $webcontent = $json->decode($jsoncontent);
     };
     if ($webcontent->{port}->{name} eq '') {
-        $self->{port_infos}->{name} = "unknown";
+        $self->{port_infos}->{name} = $webcontent->{port}->{id};
     } else {
         $self->{port_infos}->{name} = $webcontent->{port}->{name};
     }
