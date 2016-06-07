@@ -136,7 +136,7 @@ sub api_request {
     eval {
         $webcontent = $json->decode($jsoncontent);
     };
-    if ($self->{port_infos}->{name} eq '') {
+    if ($webcontent->{port}->{name} eq '') {
         $self->{port_infos}->{name} = "unknown";
     } else {
         $self->{port_infos}->{name} = $webcontent->{port}->{name};
