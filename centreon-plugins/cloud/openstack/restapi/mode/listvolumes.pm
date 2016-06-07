@@ -144,7 +144,7 @@ sub disco_show {
     $self->token_request();
     $self->api_request();
 
-    foreach my $instancename (keys %{$self->{volumes_infos}}) {
+    foreach my $volumename (keys %{$self->{volumes_infos}}) {
         $self->{output}->add_disco_entry(name => $volumename,
                                          id => $self->{volumes_infos}->{$volumename}->{id},
                                          size => $self->{volumes_infos}->{$volumename}->{size},
