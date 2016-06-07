@@ -32,11 +32,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'info-instance'    => 'cloud::openstack::restapi::mode::infoinstance',
+                        'instance'         => 'cloud::openstack::restapi::mode::instance',
                         'list-instances'   => 'cloud::openstack::restapi::mode::listinstances',
                         'list-hypervisors' => 'cloud::openstack::restapi::mode::listhypervisors',
-                        'floatingips'      => 'cloud::openstack::restapi::mode::floatingips',
-                        'volumes'          => 'cloud::openstack::restapi::mode::volumes',
+                        'volume'           => 'cloud::openstack::restapi::mode::volume',
+                        'hypervisor'       => 'cloud::openstack::restapi::mode::hypervisor',
+                        'network'          => 'cloud::openstack::restapi::mode::network',
+                        'port'             => 'cloud::openstack::restapi::mode::port',
                         );
     return $self;
 }
