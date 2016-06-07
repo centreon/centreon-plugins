@@ -124,10 +124,10 @@ sub api_request {
 
     foreach my $val (@{$webcontent->{volumes}}) {
         my $volumename = $val->{name};
-        $self->{volumes_infos}->{$instancename}->{id} = $val->{id};
-        $self->{volumes_infos}->{$instancename}->{size} = $val->{size};
-        $self->{volumes_infos}->{$instancename}->{type} = $val->{ivolume_type};
-        $self->{volumes_infos}->{$instancename}->{state} = $val->{status};
+        $self->{volumes_infos}->{$volumename}->{id} = $val->{id};
+        $self->{volumes_infos}->{$volumename}->{size} = $val->{size};
+        $self->{volumes_infos}->{$volumename}->{type} = $val->{ivolume_type};
+        $self->{volumes_infos}->{$volumename}->{state} = $val->{status};
     }
 }
 
@@ -160,7 +160,7 @@ sub run {
     $self->token_request();
     $self->api_request();
 
-    foreach my $instancename (keys %{$self->{volumes_infos}}) {
+    foreach my $volumename (keys %{$self->{volumes_infos}}) {
         $self->{output}->output_add(long_msg => sprintf("%s [id = %s , size = %s, type = %s, state = %s]",
                                                         $volumename,
                                                         $self->{volumes_infos}->{$volumename}->{id},
