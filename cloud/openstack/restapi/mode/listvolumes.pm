@@ -147,7 +147,7 @@ sub disco_show {
     foreach my $volumename (keys %{$self->{volumes_infos}}) {
         $self->{output}->add_disco_entry(name => $volumename,
                                          id => $self->{volumes_infos}->{$volumename}->{id},
-                                         size => $self->{volumes_infos}->{$volumename}->{size},
+                                         size => $self->{volumes_infos}->{$volumename}->{size}."Gb",
                                          type => $self->{volumes_infos}->{$volumename}->{type},
                                          state => $self->{volumes_infos}->{$volumename}->{state},
                                         );
@@ -161,7 +161,7 @@ sub run {
     $self->api_request();
 
     foreach my $volumename (keys %{$self->{volumes_infos}}) {
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , size = %s, type = %s, state = %s]",
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , size = %sGb, type = %s, state = %s]",
                                                         $volumename,
                                                         $self->{volumes_infos}->{$volumename}->{id},
                                                         $self->{volumes_infos}->{$volumename}->{size},
