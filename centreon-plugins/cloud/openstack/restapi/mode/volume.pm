@@ -132,8 +132,8 @@ sub api_request {
     my ($self, %options) = @_;
 
     $self->{method} = 'GET';
-    $self->{option_results}->{url_path} = "/v2/".$self->{option_results}->{tenant_id}."/volume/".$self->{option_results}->{volume_id};
-    $self->{option_results}->{port} = '8774';
+    $self->{option_results}->{url_path} = "/v2/".$self->{option_results}->{tenant_id}."/volumes/".$self->{option_results}->{volume_id};
+    $self->{option_results}->{port} = '8776';
     @{$self->{option_results}->{header}} = ('X-Auth-Token:' . $self->{header}, 'Accept:application/json');
     $self->{http}->set_options(%{$self->{option_results}});
 
@@ -183,7 +183,7 @@ sub run {
 	$self->{output}->output_add(severity => $exit,
     							short_msg => sprintf("Volume %s is in %s state",
                                                     $self->{volume_infos}->{name},
-                                                    $self->{volume_infos}->{status},
+                                                    $self->{volume_infos}->{status}));
 
     $self->{output}->display();
     $self->{output}->exit();
