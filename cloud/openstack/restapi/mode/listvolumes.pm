@@ -127,7 +127,7 @@ sub api_request {
         $self->{volumes_infos}->{$volumename}->{id} = $val->{id};
         $self->{volumes_infos}->{$volumename}->{zone} = $val->{availability_zone};
         $self->{volumes_infos}->{$volumename}->{size} = $val->{size};
-        $self->{volumes_infos}->{$volumename}->{type} = $val->{ivolume_type};
+        $self->{volumes_infos}->{$volumename}->{type} = $val->{volume_type};
         $self->{volumes_infos}->{$volumename}->{state} = $val->{status};
     }
 }
