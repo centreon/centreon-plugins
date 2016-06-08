@@ -124,7 +124,7 @@ sub api_request {
     foreach my $val (@{$webcontent->{networks}}) {
         my $networkname = $val->{name};
         $self->{networks_infos}->{$networkname}->{id} = $val->{id};
-        $self->{networks_infos}->{$networkname}->{tenant_id} = $val->{tenant_id};
+        $self->{networks_infos}->{$networkname}->{tenant} = $val->{tenant_id};
         $self->{networks_infos}->{$networkname}->{state} = $val->{status};
         $self->{networks_infos}->{$networkname}->{admin_state} = $val->{admin_state_up};
     }
