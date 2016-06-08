@@ -57,7 +57,6 @@ sub new {
             "password:s"              => { name => 'password' },
             "ssl:s"                   => { name => 'ssl', },
             "header:s@"               => { name => 'header' },
-            "exclude:s"               => { name => 'exclude' },
             "timeout:s"               => { name => 'timeout' },
             "network-id:s"            => { name => 'network_id' },
 			"threshold-overload:s@"   => { name => 'threshold_overload' },
@@ -255,13 +254,15 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
-=item B<--exlude>
-
-Exclude specific instance's state (comma seperated list) (Example: --exclude=Paused,Running,Off,Exited)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='status,CRITICAL,^BUILD$)'
 
 =back
 
@@ -269,9 +270,9 @@ OPENSTACK OPTIONS:
 
 =over 8
 
-=item B<--tenant-id>
+=item B<--network-id>
 
-Set Tenant's ID
+Set Network's ID
 
 =back
 

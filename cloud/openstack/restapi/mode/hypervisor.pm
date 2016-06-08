@@ -55,7 +55,6 @@ sub new {
             "password:s"              => { name => 'password' },
             "ssl:s"                   => { name => 'ssl', },
             "header:s@"               => { name => 'header' },
-            "exclude:s"               => { name => 'exclude' },
             "timeout:s"               => { name => 'timeout' },
             "tenant-id:s"             => { name => 'tenant_id' },
             "hypervisor-id:s"         => { name => 'hypervisor_id' },
@@ -254,13 +253,15 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
-=item B<--exlude>
-
-Exclude specific instance's state (comma seperated list) (Example: --exclude=Paused,Running,Off,Exited)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='status,WARNING,^down$)'
 
 =back
 
@@ -271,6 +272,10 @@ OPENSTACK OPTIONS:
 =item B<--tenant-id>
 
 Set Tenant's ID
+
+=item B<--hypervisor-id>
+
+Set Hypervisor's ID
 
 =back
 

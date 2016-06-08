@@ -257,13 +257,17 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
-=item B<--exlude>
-
-Exclude specific instance's state (comma seperated list) (Example: --exclude=Paused,Running,Off,Exited)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
+
+=back
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='status,CRITICAL,^N\/A$)'
 
 =back
 
@@ -271,10 +275,9 @@ OPENSTACK OPTIONS:
 
 =over 8
 
-=item B<--tenant-id>
+=item B<--port-id>
 
-Set Tenant's ID
+Set Port's ID
 
 =back
 
-=cut

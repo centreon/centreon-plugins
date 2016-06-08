@@ -125,6 +125,7 @@ sub api_request {
     foreach my $val (@{$webcontent->{volumes}}) {
         my $volumename = $val->{name};
         $self->{volumes_infos}->{$volumename}->{id} = $val->{id};
+        $self->{volumes_infos}->{$volumename}->{zone} = $val->{availability_zone};
         $self->{volumes_infos}->{$volumename}->{size} = $val->{size};
         $self->{volumes_infos}->{$volumename}->{type} = $val->{ivolume_type};
         $self->{volumes_infos}->{$volumename}->{state} = $val->{status};
@@ -134,7 +135,7 @@ sub api_request {
 sub disco_format {
     my ($self, %options) = @_;
 
-    my $names = ['name', 'id', 'type', 'size', 'state'];
+    my $names = ['name', 'id', 'zone', 'type', 'size', 'state'];
     $self->{output}->add_disco_format(elements => $names);
 }
 
@@ -147,6 +148,7 @@ sub disco_show {
     foreach my $volumename (keys %{$self->{volumes_infos}}) {
         $self->{output}->add_disco_entry(name => $volumename,
                                          id => $self->{volumes_infos}->{$volumename}->{id},
+                                         zone => $self->{volumes_infos}->{$volumename}->{zone},
                                          size => $self->{volumes_infos}->{$volumename}->{size}."Gb",
                                          type => $self->{volumes_infos}->{$volumename}->{type},
                                          state => $self->{volumes_infos}->{$volumename}->{state},
@@ -161,9 +163,10 @@ sub run {
     $self->api_request();
 
     foreach my $volumename (keys %{$self->{volumes_infos}}) {
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , size = %sGb, type = %s, state = %s]",
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s, zone = %s, size = %sGb, type = %s, state = %s]",
                                                         $volumename,
                                                         $self->{volumes_infos}->{$volumename}->{id},
+                                                        $self->{volumes_infos}->{$volumename}->{zone},
                                                         $self->{volumes_infos}->{$volumename}->{size},
                                                         $self->{volumes_infos}->{$volumename}->{type},
                                                         $self->{volumes_infos}->{$volumename}->{state}));
@@ -184,7 +187,7 @@ __END__
 
 =head1 MODE
 
-List OpenStack instances through Compute API V2
+List OpenStack volumes through Block Storage API V2
 
 JSON OPTIONS:
 

@@ -139,6 +139,7 @@ sub api_request {
         }
         my $instancename = $val->{name};
         $self->{instance_infos}->{$instancename}->{id} = $val->{id};
+        $self->{instance_infos}->{$instancename}->{zone} = $val->{'OS-EXT-AZ:availability_zone'};
         $self->{instance_infos}->{$instancename}->{compute} = $val->{'OS-EXT-SRV-ATTR:host'};
         $self->{instance_infos}->{$instancename}->{osname} = $val->{'OS-EXT-SRV-ATTR:instance_name'};
         $self->{instance_infos}->{$instancename}->{state} = $instancestate;
@@ -148,7 +149,7 @@ sub api_request {
 sub disco_format {
     my ($self, %options) = @_;
 
-    my $names = ['name', 'id', 'compute', 'osname', 'state'];
+    my $names = ['name', 'id', 'zone', 'compute', 'osname', 'state'];
     $self->{output}->add_disco_format(elements => $names);
 }
 
@@ -161,6 +162,7 @@ sub disco_show {
     foreach my $instancename (keys %{$self->{instance_infos}}) {
         $self->{output}->add_disco_entry(name => $instancename,
                                          id => $self->{instance_infos}->{$instancename}->{id},
+                                         zone => $self->{instance_infos}->{$instancename}->{zone},
                                          compute => $self->{instance_infos}->{$instancename}->{compute},
                                          osname => $self->{instance_infos}->{$instancename}->{osname},
                                          state => $self->{instance_infos}->{$instancename}->{state},
@@ -175,9 +177,10 @@ sub run {
     $self->api_request();
 
     foreach my $instancename (keys %{$self->{instance_infos}}) {
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s , compute = %s, osname = %s, state = %s]",
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s, zone = %s, compute = %s, osname = %s, state = %s]",
                                                         $instancename,
                                                         $self->{instance_infos}->{$instancename}->{id},
+                                                        $self->{instance_infos}->{$instancename}->{zone},
                                                         $self->{instance_infos}->{$instancename}->{compute},
                                                         $self->{instance_infos}->{$instancename}->{osname},
                                                         $self->{instance_infos}->{$instancename}->{state}));

@@ -64,7 +64,6 @@ sub new {
             "password:s"              => { name => 'password' },
             "ssl:s"                   => { name => 'ssl', },
             "header:s@"               => { name => 'header' },
-            "exclude:s"               => { name => 'exclude' },
             "timeout:s"               => { name => 'timeout' },
             "tenant-id:s"             => { name => 'tenant_id' },
             "volume-id:s"             => { name => 'volume_id' },
@@ -261,13 +260,17 @@ Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
-=item B<--exlude>
-
-Exclude specific instance's state (comma seperated list) (Example: --exclude=Paused,Running,Off,Exited)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 3)
+
+=back
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='status,CRITICAL,^deleting$)'
 
 =back
 
@@ -279,6 +282,11 @@ OPENSTACK OPTIONS:
 
 Set Tenant's ID
 
+=item B<--volume-id>
+
+Set Volume's ID
+
 =back
 
 =cut
+
