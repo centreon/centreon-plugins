@@ -36,6 +36,7 @@ sub new {
                         'instance'         => 'cloud::openstack::restapi::mode::instance',
                         'list-hypervisors' => 'cloud::openstack::restapi::mode::listhypervisors',
                         'list-instances'   => 'cloud::openstack::restapi::mode::listinstances',
+                        'list-networks'    => 'cloud::openstack::restapi::mode::listnetworks',
                         'list-volumes'     => 'cloud::openstack::restapi::mode::listvolumes',
                         'network'          => 'cloud::openstack::restapi::mode::network',
                         'port'             => 'cloud::openstack::restapi::mode::port',
