@@ -107,7 +107,7 @@ sub api_request {
     my ($self, %options) = @_;
 
     $self->{method} = 'GET';
-    $self->{option_results}->{url_path} = "/v2.O/networks";
+    $self->{option_results}->{url_path} = "/v2.0/networks";
     $self->{option_results}->{port} = '9696';
     @{$self->{option_results}->{header}} = ('X-Auth-Token:' . $self->{header}, 'Accept:application/json');
     $self->{http}->set_options(%{$self->{option_results}});
@@ -160,7 +160,7 @@ sub run {
     $self->api_request();
 
     foreach my $networkname (keys %{$self->{networks_infos}}) {
-        $self->{output}->output_add(long_msg => sprintf("%s [id = %s, tenant = %s, state = %sGb, admin_state = %s]",
+        $self->{output}->output_add(long_msg => sprintf("%s [id = %s, tenant = %s, state = %s, admin_state = %s]",
                                                         $networkname,
                                                         $self->{networks_infos}->{$networkname}->{id},
                                                         $self->{networks_infos}->{$networkname}->{tenant},
