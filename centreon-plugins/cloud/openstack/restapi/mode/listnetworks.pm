@@ -61,6 +61,19 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if (!defined($self->{option_results}->{header}) || $self->{option_results}->{header} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify --header option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{data}) || $self->{option_results}->{data} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify --data option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "You need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
+
     $self->{http}->set_options(%{$self->{option_results}})
 }
 
