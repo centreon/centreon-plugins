@@ -254,7 +254,7 @@ Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
 
 =item B<--exlude>
 
-Exclude specific instance's state (comma seperated list) (Example: --exclude=Paused,Running,Off,Exited)
+Exclude specific instance's state (comma seperated list) (Example: --exclude=disabled)
 
 =item B<--timeout>
 
