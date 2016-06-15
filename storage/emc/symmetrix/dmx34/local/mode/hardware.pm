@@ -185,6 +185,7 @@ sub send_email {
         $send_email = 0 if ($status ne 'ok' && defined($prev_output) && $prev_output eq $subject);
         # recovery email
         $send_email = 1 if ($status eq 'ok' && defined($prev_status) && $prev_status ne 'ok');
+		$self->{statefile_cache}->write(data => $self->{new_datas});
     }
     
     my $smtp_to = '';
