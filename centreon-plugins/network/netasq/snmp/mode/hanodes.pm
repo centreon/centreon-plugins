@@ -27,6 +27,31 @@ use warnings;
 
 my $instance_mode;
 
+sub custom_node_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = defined($instance_mode->{option_results}->{percent}) ? $self->{result_values}->{prct_dead} : $self->{result_values}->{dead_nodes} ;
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_node_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Dead nodes: absolute: %d - percentage: %.2f%% ", $self->{result_values}->{dead_nodes}, $self->{result_values}->{prct_dead});
+    return $msg;
+}
+
+sub custom_node_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{dead_nodes} = $options{new_datas}->{$self->{instance} . '_dead_nodes'};
+    $self->{result_values}->{prct_dead} = $options{new_datas}->{$self->{instance} . '_prct_dead'};
+
+    return 0;
+}
+
 sub custom_threshold_output {
     my ($self, %options) = @_;
     my $status = 'ok';
@@ -70,9 +95,25 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All HA nodes are OK' },
     ];
 
+    $self->{maps_counters}->{global} = [
+        { label => 'dead-nodes', set => {
+                key_values => [ { name => 'dead_nodes' }, { name => 'prct_dead' } ],
+                closure_custom_calc => \&custom_node_calc,
+                closure_custom_output => \&custom_node_output,
+                closure_custom_threshold_check => \&custom_node_threshold,
+                perfdatas => [
+                    { label => 'dead_nodes', value => 'dead_nodes', template => '%d',
+                      min => 0, unit => 'nodes' },
+                    { label => 'prct_dead', value => 'prct_dead', template => '%.2f',
+                      min => 0, unit => '%' },
+                ],
+            }
+        }
+    ];
     $self->{maps_counters}->{nodes} = [
         { label => 'state', threshold => 0,  set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
@@ -84,7 +125,7 @@ sub set_counters {
         },
         { label => 'health', set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
-                output_template => 'node Health: %s%%',
+                output_template => 'node health: %s%%',
                 perfdatas => [
                     { label => 'health', value => 'health_absolute', template => '%d',
                       min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -109,6 +150,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-node:s"         => { name => 'filter_node' },
+                                "percent"               => { name => 'percent' },
                                 "warning-state:s"       => { name => 'warning_state', default => '' },
                                 "critical-state:s"      => { name => 'critical_state', default => '%{state} eq "offline"' },
                                 });
@@ -145,20 +187,25 @@ my $mapping = {
 };
 
 my $oid_ntqNodeTable = '.1.3.6.1.4.1.11256.1.11.7';
+my $oid_ntqNbNode = '.1.3.6.1.4.1.11256.1.11.1';
+my $oid_ntqNbDeadNode = '.1.3.6.1.4.1.11256.1.11.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    $self->{results} = $options{snmp}->get_table(oid => $oid_ntqNodeTable,
-                                                 nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}}) {
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_ntqNodeTable },
+                                                                    { oid => $oid_ntqNbNode },
+                                                                    { oid => $oid_ntqNbDeadNode } ],
+                                                          nothing_quit => 1);
+
+    foreach my $oid (keys %{$self->{results}->{$oid_ntqNodeTable}}) {
         $oid =~ /^$mapping->{ntqOnline}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ntqNodeTable}, instance => $instance);
 
-        if (defined($self->{option_results}->{filter_nodes}) && $self->{option_results}->{filter_nodes} ne '' &&
-            $result->{ntqFwSerial} !~ /$self->{option_results}->{filter_nodes}/) {
+        if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
+            $result->{ntqFwSerial} !~ /$self->{option_results}->{filter_node}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{ntqFwSerial} . "': no matching filter.", debug => 1);
             next;
         }
@@ -166,6 +213,11 @@ sub manage_selection {
                                                      health  => $result->{ntqHAQuality},
                                                      display => $result->{ntqFwSerial} };
     }
+
+    my $prct_dead = $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'}/$self->{results}->{$oid_ntqNbNode}->{$oid_ntqNbNode . '.' . '0'}*100;
+
+    $self->{global} = { dead_nodes => $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'},
+                        prct_dead => $prct_dead };
 }
 
 1;
@@ -174,13 +226,13 @@ __END__
 
 =head1 MODE
 
-Check Netasq node state and health
+Check Netasq dead nodes and state and health of nodes
 
 =over 8
 
 =item B<--filter-node>
 
-Filter name with regexp.
+Filter name with regexp (based on serial)
 
 =item B<--warning-health>
 
@@ -189,6 +241,14 @@ Warning on health level. (e.g --warning 90:)
 =item B<--critical-health>
 
 Critical on health level. (e.g --critical 80:)
+
+=item B<--warning-dead-nodes>
+
+Warning on deadnode (absolute unless --percent is used)
+
+=item B<--critical-dead-nodes>
+
+Critical on deadnode (absolute unless --percent is used)
 
 =item B<--warning-state>
 
@@ -199,6 +259,10 @@ Value can be 'online' or 'offline'.
 
 Set critical threshold for status. Use "%{state}" as a special variable.
 Value can be 'online' or 'offline'.
+
+=item B<--percent>
+
+Set this option if you want to warn on percent 
 
 =back
 
