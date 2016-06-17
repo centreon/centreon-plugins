@@ -108,8 +108,6 @@ sub set_counters {
                 perfdatas => [
                     { label => 'dead_nodes', value => 'dead_nodes', template => '%d',
                       min => 0, unit => 'nodes' },
-                    { label => 'prct_dead', value => 'prct_dead', template => '%.2f',
-                      min => 0, unit => '%' },
                 ],
             }
         }
