@@ -38,7 +38,6 @@ sub new {
                          'interfaces'           => 'snmp_standard::mode::interfaces',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
-                         'ha-status'            => 'network::netasq::snmp::mode::hastatus',
                          'ha-nodes'             => 'network::netasq::snmp::mode::hanodes',
                          'memory'               => 'os::freebsd::snmp::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
