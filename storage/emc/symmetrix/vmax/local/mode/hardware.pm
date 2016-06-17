@@ -243,7 +243,7 @@ sub send_email {
                              -from => $self->{option_results}->{email_smtp_from},
                              -subject => $subject,
                              -body => $stdout,
-                             -attachments => $self->{option_results}->{file_health_env});
+                             -attachments => $self->{option_results}->{file_health} . "," . $self->{option_results}->{file_health_env});
     $mail->bye();
     if ($result == -1) {
         $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "problem to send the email");
