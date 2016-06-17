@@ -113,17 +113,28 @@ sub run {
     #Subject Name
     } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
         my @subject_matched = ();
-        my @subject_name = Net::SSLeay::X509_get_subjectAltNames($cert);
-        foreach my $subject_name (@subject_name) {
-            if ($subject_name =~ /$self->{option_results}->{subjectname}/mi) {
-                push @subject_matched, $subject_name;
+
+        my $subject = Net::SSLeay::X509_NAME_get_text_by_NID(
+		Net::SSLeay::X509_get_subject_name($cert), 13); # NID_CommonName
+		$subject =~s{\0$}{}; # work around Bug in Net::SSLeay <1.33
+        if ($subject =~ /$self->{option_results}->{subjectname}/mi) {
+            push @subject_matched, $subject;
+        } else {
+            $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject), debug => 1);
+        }
+        
+        my @subject_alt_names = Net::SSLeay::X509_get_subjectAltNames($cert);
+        for (my $i =  0; $i < $#subject_alt_names; $i++) {
+            next if ($i % 2 == 0);
+            if ($subject_alt_names[$i] =~ /$self->{option_results}->{subjectname}/mi) {
+                push @subject_matched, $subject_alt_names[$i];
             } else {
-                if ($subject_name =~ /[\w\-]+(\.[\w\-]+)*\.\w+/) {
-                    $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_name), debug => 1);
-                }
+                $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_alt_names[$i]), debug => 1);
             }
         }
 
+        
+        
         if (@subject_matched == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("No Subject Name matched '%s' in Certificate", $self->{option_results}->{subjectname}));

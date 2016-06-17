@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::emc::symmetrix::dmx34::local::mode::hardware;
+package storage::emc::symmetrix::vmax::local::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -30,34 +30,23 @@ use centreon::plugins::statefile;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(disk)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(sparedisk)$';
     
     $self->{cb_hook1} = 'read_files';
     $self->{cb_hook4} = 'send_email';
     
     $self->{thresholds} = {
-        director => [
-            ['DD state', 'CRITICAL'],
-            ['Probe mode', 'CRITICAL'],
-            ['not comunicating', 'CRITICAL'],
-            ['unknown', 'CRITICAL'],
-            ['offline', 'OK'],
-            ['online', 'OK'],
-            ['not configured', 'OK'],
-        ],
-        xcm => [
-            ['emul', 'OK'],
-            ['.*', 'CRITICAL'],
-        ],
-        memory => [
-            ['OPER/OK', 'OK'],
-            ['\.\./.*', 'OK'],
+        default => [
+            ['Recoverable Error', 'OK'], # Fabric
+            ['Online', 'OK'],
+            ['Up', 'OK'],
+            ['OK', 'OK'],
             ['.*', 'CRITICAL'],
         ],
     };
     
-    $self->{components_path} = 'storage::emc::symmetrix::dmx34::local::mode::components';
-    $self->{components_module} = ['director', 'xcm', 'disk', 'memory', 'config', 'environment', 'test'];
+    $self->{components_path} = 'storage::emc::symmetrix::vmax::local::mode::components';
+    $self->{components_module} = ['module', 'temperature', 'director', 'cabling', 'power', 'fabric', 'voltage', 'sparedisk'];
 }
 
 sub check_options {
@@ -100,29 +89,31 @@ sub read_files {
         $self->{output}->add_option_msg(short_msg => "Please set option --file-health and --file-health-env.");
         $self->{output}->option_exit();
     }
-    $self->{content_file_health} = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $self->{option_results}->{file_health}) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{file_health} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
     
-    # We remove color syntax
-    $self->{content_file_health} =~ s/\x{1b}\[.*?m|\r//msg;
+    foreach (('file_health', 'file_health_env')) {
+        $self->{'content_' . $_} = do {
+            local $/ = undef;
+            if (!open my $fh, "<", $self->{option_results}->{$_}) {
+                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+        };
+        # We remove color syntax
+        $self->{'content_' . $_} =~ s/\x{1b}\[.*?m|\r//msg;
+    }
     
-    # *****************************************************************
-    #*            Health Check Run From Scheduler        Version 2.0 *
-    #*                                                               *
-    #* Serial: 000290103984            Run Time: 03/24/2016 12:27:07 *
-    #* Run Type: FULL                  Code Level: 5773-184-130      *
-    #*****************************************************************
- 
-    my ($serial, $site) = ('unknown', 'unknown');
-    $serial = $1 if ($self->{content_file_health} =~ /Serial:\s*(\S+)/msi);
+    #Health Check Results Log:
+    #Service Processor Date: 06/15/2016 09:26:41
+    #Symmetrix Date from director 07c: 06/15/2016 09:33:45
+    #The time difference between Service Processor and Symmetrix is : 00:07:03.672
+    #System SN: 000292602920
+    #System Model: VMAX20K
+    #mCode Level: 5876.288
+    my ($serial) = ('unknown');
+    $serial = $1 if ($self->{content_file_health} =~ /System SN:\s*(\S+)/msi);
 
-    $self->{output}->output_add(long_msg => sprintf('serial number: %s, site name: %s', $serial, $site));
+    $self->{output}->output_add(long_msg => sprintf('serial number: %s', $serial));
 }
 
 #
@@ -178,7 +169,7 @@ sub send_email {
     # Check memory file
     if (defined($self->{option_results}->{email_memory})) {
         $self->{new_datas} = { status => $status, output => $subject };
-        $self->{statefile_cache}->read(statefile => "cache_emc_symmetrix_dmx34_email");
+        $self->{statefile_cache}->read(statefile => "cache_emc_symmetrix_vmax_email");
         my $prev_status = $self->{statefile_cache}->get(name => 'status');
         my $prev_output = $self->{statefile_cache}->get(name => 'output');
         # non-ok output is the same
@@ -240,12 +231,12 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'director', 'xcm', 'disk', 'memory', 'config', 'environment', 'test'
+Can be: 'module', 'temperature', 'director, 'cabling', 'power', 'voltage', 'sparedisk'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=director --filter=xcm)
-Can also exclude specific instance: --filter=director,1
+Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=module)
+Can also exclude specific instance: --filter=temperature,ES-PWS-A ES-4
 
 =item B<--no-component>
 
@@ -256,17 +247,17 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='director,CRITICAL,^(?!(online)$)'
+Example: --threshold-overload='director,WARNING,^(?!(OK)$)'
 
 =item B<--warning>
 
 Set warning threshold for disk (syntax: type,regexp,threshold)
-Example: --warning='disk,.*,5:'
+Example: --warning='sparedisk,.*,5:'
 
 =item B<--critical>
 
 Set critical threshold for disk (syntax: type,regexp,threshold)
-Example: --critical='disk,.*,3:'
+Example: --critical='sparedisk,.*,3:'
 
 =item B<--file-health>
 
@@ -274,7 +265,7 @@ The location of the global storage file status (Should be something like: C:/xxx
 
 =item B<--file-health-env>
 
-The location of the environment storage file status (Should be something like: C:/xxxx/HealthCheck_ENV.log).
+The location of the environment storage file status (Should be something like: C:/xxxx/sumpl_env_health.log).
 
 =back
 
