@@ -179,10 +179,6 @@ sub send_email {
     if (defined($self->{option_results}->{email_smtp_username}) && defined($self->{option_results}->{email_smtp_password})) {
         $smtp_options{-pass} = $self->{option_results}->{email_smtp_password};
     }    
-    foreach my $option (@{$self->{option_results}->{email_smtp_options}}) {
-        next if ($option !~ /^(.+?)=(.+)$/);
-        $smtp_options{-$1} = $2;
-    }
     
     #######
     # Get current data
@@ -196,6 +192,17 @@ sub send_email {
     $stdout =~ /^(.*?)(\||\n)/msi;
     my $subject = $1;
     my $status = lc($self->{output}->get_litteral_status());
+    
+    foreach my $option (@{$self->{option_results}->{email_smtp_options}}) {
+        next if ($option !~ /^(.+?)=(.+)$/);
+        my ($label, $value) = ($1, $2);
+        if ($label =~ /subject/i) {
+            $value =~ s/%\{status\}/$status/g;
+            $value =~ s/%\{short_msg\}/$subject/g;
+            $label = lc($label);
+        }
+        $smtp_options{-$label} = $value;
+    }
     
     my $send_email = 0;
     $send_email = 1 if ($status ne 'ok');
@@ -241,7 +248,7 @@ sub send_email {
     }
     my $result = $mail->send(-to => $smtp_to,
                              -from => $self->{option_results}->{email_smtp_from},
-                             -subject => $subject,
+                             -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
                              -body => $stdout,
                              -attachments => $self->{option_results}->{file_health} . "," . $self->{option_results}->{file_health_env});
     $mail->bye();
