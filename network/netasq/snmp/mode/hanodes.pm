@@ -39,7 +39,8 @@ sub custom_node_threshold {
 sub custom_node_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Dead nodes: absolute: %d - percentage: %.2f%% ", $self->{result_values}->{dead_nodes}, $self->{result_values}->{prct_dead});
+    my $msg = sprintf("Dead nodes: absolute: %d/%d - percentage: %.2f%% ", 
+                    $self->{result_values}->{dead_nodes}, $self->{result_values}->{total_nodes}, $self->{result_values}->{prct_dead});
     return $msg;
 }
 
@@ -47,6 +48,7 @@ sub custom_node_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{dead_nodes} = $options{new_datas}->{$self->{instance} . '_dead_nodes'};
+    $self->{result_values}->{total_nodes} = $options{new_datas}->{$self->{instance} . '_total_nodes'};
     $self->{result_values}->{prct_dead} = $options{new_datas}->{$self->{instance} . '_prct_dead'};
 
     return 0;
@@ -101,7 +103,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'dead-nodes', set => {
-                key_values => [ { name => 'dead_nodes' }, { name => 'prct_dead' } ],
+                key_values => [ { name => 'dead_nodes' }, { name => 'prct_dead' }, { name => 'total_nodes' } ],
                 closure_custom_calc => \&custom_node_calc,
                 closure_custom_output => \&custom_node_output,
                 closure_custom_threshold_check => \&custom_node_threshold,
@@ -215,6 +217,7 @@ sub manage_selection {
     my $prct_dead = $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'}/$self->{results}->{$oid_ntqNbNode}->{$oid_ntqNbNode . '.' . '0'}*100;
 
     $self->{global} = { dead_nodes => $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'},
+                        toatl_nodes => $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbNode . '.' . '0'},
                         prct_dead => $prct_dead };
 }
 
