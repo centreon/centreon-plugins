@@ -49,11 +49,11 @@ my @states = (
     ['^.*$'          , 'CRITICAL'], 
 );
 
-sub custom_threshold_output {
+sub custom_threshold_check {
     my ($self, %options) = @_;
 
     foreach (@states) {
-        if ($self->{result_values}->{state} =~ /$_->[0]/) {
+        if ($self->{result_values}->{state} =~ /$_->[0]/i) {
             return $_->[1];
         }
     }
@@ -79,8 +79,11 @@ sub custom_state_calc {
 sub custom_utils_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    my $diff_busy = $options{new_datas}->{$self->{instance} . '_busy_ticks'} - $options{old_datas}->{$self->{instance} . '_busy_ticks'};
+    my $diff_idle = $options{new_datas}->{$self->{instance} . '_idle_ticks'} - $options{old_datas}->{$self->{instance} . '_idle_ticks'};
+    
+    $self->{result_values}->{utils} = $diff_busy * 100 / ($diff_busy + $diff_idle);
+    $self->{result_values}->{display} =  $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
 
@@ -97,7 +100,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_check'),
             }
         },
         { label => 'hard-read-errors', set => {
@@ -141,10 +144,10 @@ sub set_counters {
         { label => 'utils', set => {
                 key_values => [ { name => 'busy_ticks', diff => 1 }, { name => 'idle_ticks', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_utils_calc'),
-                output_template => 'Utils : %s %%', output_use => 'utils',
+                output_template => 'Utils : %.2f %%', output_use => 'utils',
                 perfdatas => [
-                    { label => 'utils', value => 'utils', template => '%s',
-                      min => 0, max => 100, unit => '%%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'utils', value => 'utils', template => '%.2f',
+                      min => 0, max => 100, unit => '%%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -207,28 +210,27 @@ sub manage_selection {
         # First Filters
         if (defined($self->{option_results}->{filter_disk}) && $self->{option_results}->{filter_disk} ne '' &&
             $disk_instance !~ /$self->{option_results}->{filter_disk}/) {
-            $skip_num_disks++;
             $self->{output}->output_add(long_msg => "skipping disk '" . $disk_instance . "': no matching filter disk", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_raidgroupid}) && $self->{option_results}->{filter_raidgroupid} ne '' &&
             $values =~ /^Raid Group ID:\s+(\S+)/mi && $1 !~ /$self->{option_results}->{filter_raidgroupid}/) {
-            $skip_num_disks++;
             $self->{output}->output_add(long_msg => "skipping disk '" . $disk_instance . "': no matching filter raid group id", debug => 1);
             next;
         }
         
         my $datas = {};
-        while ($value =~ /^(.*?:)(.*?)\n/msgi) {
-            $datas->{centreon::plugins::misc:trim(lc($1))} = centreon::plugins::misc:trim($2);
+        while ($values =~ /^([^\n]*?):(.*?)\n/msgi) {
+            $datas->{centreon::plugins::misc::trim(lc($1))} = centreon::plugins::misc::trim($2);
         }
         
         $self->{disk}->{$disk_instance} = {
             display => $disk_instance,
+            state => $datas->{state},
             hard_read_errors => $datas->{'hard read errors'},
             hard_write_errors => $datas->{'hard write errors'},
-            read_io => $datas->{'kbytes read'} * 1024,
-            write_io => $datas->{'kbytes write'} * 1024,
+            read_io => defined($datas->{'kbytes read'}) ? $datas->{'kbytes read'} * 1024 : undef,
+            write_io => defined($datas->{'kbytes write'}) ? $datas->{'kbytes write'} * 1024 : undef,
             busy_ticks => $datas->{'busy ticks'},
             idle_ticks => $datas->{'idle ticks'},
         };
