@@ -306,7 +306,7 @@ sub request {
         $self->{output}->exit();
     }
 
-    $self->{headers} = $response->{headers};
+    $self->{headers} = $response->headers();
     $self->{response} = $response;
     return $response->content;
 }

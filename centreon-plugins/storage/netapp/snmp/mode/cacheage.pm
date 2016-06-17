@@ -44,18 +44,17 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }    
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_cacheAge = ".1.3.6.1.4.1.789.1.2.2.23.0"; 
@@ -63,13 +62,13 @@ sub run {
     my $result = $self->{snmp}->get_leef(oids => [$oid_cacheAge],
                                          nothing_quit => 1);
                                          
-    my $exit = $self->{perfdata}->threshold_check(value => $results->{$oid_cacheAge},
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_cacheAge},
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' },
                                                                  { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Cache age is '%s' minutes", $results->{$oid_cacheAge}));
+                                short_msg => sprintf("Cache age is '%s' minutes", $result->{$oid_cacheAge}));
     $self->{output}->perfdata_add(label => 'cache_age', unit => 'm',
-                                  value => $results->{$oid_cacheAge},
+                                  value => $result->{$oid_cacheAge},
                                   warning => $self->{option_results}->{warning},
                                   critical => $self->{option_results}->{critical},
                                   min => 0);
