@@ -122,7 +122,6 @@ sub new {
                                 "filter-database:s"   => { name => 'filter_database' },
                                 "units:s"             => { name => 'units', default => '%' },
                                 "free"                => { name => 'free' },
-                                "skip"                => { name => 'skip' },
                                 });
     return $self;
 }
