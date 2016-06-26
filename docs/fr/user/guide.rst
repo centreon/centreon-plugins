@@ -509,6 +509,8 @@ Comment puis-je vérifier la version du plugin ?
 Vous pouvez vérifier la version des plugins et des modes avec l'option ``--version`` :
 ::
 
+  $ perl centreon_plugins.pl --version
+  Global Version: 20160524
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --version
   Plugin Version: 0.1
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --version
@@ -520,6 +522,59 @@ Par exemple, nous voulons exécuter le mode seulement si sa version >= 2.x :
 
   $  perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --mode-version='2.x'
   UNKNOWN: Not good version for plugin mode. Excepted at least: 2.x. Get: 1.0
+
+--------------------------------------------
+Comment puis-je avoir un seul fichier Perl ?
+--------------------------------------------
+
+Nous avons réalisé des tests et le temps d'éxecution est augmenté d'environ 4%. Nous allons créer un fichier unique pour la sonde Linux SNMP.
+
+Télécharger le module Perl ``App::FatPacker`` sur metacpan:
+::
+
+  # tar zxvf App-FatPacker-0.010005.tar.gz
+  # cd App-FatPacker-0.010005
+  # perl Makefile.PL && make && make install
+
+Créer un répertoire de construction:
+::
+
+  # mkdir -p build/plugin
+  # cd build
+
+Cloner ``centreon-plugins``:
+::
+
+  # git clone https://github.com/centreon/centreon-plugins.git
+  
+``fatpack`` inclut les fichiers ``pm`` présent dans le répertoire ``lib``:
+::
+
+  # mkdir plugin/lib && cd centreon-plugins
+
+Copier les fichiers communs à l'ensemble des sondes:
+::
+
+  # cp -R --parent centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ ../plugin/lib/
+  # cp centreon_plugins.pl ../plugin
+  # sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../plugin/lib/centreon/plugins/script.pm
+
+Copier les fichiers pour la sonde Linux SNMP:
+::
+
+  # cp -R --parent centreon/plugins/{script_snmp,snmp}.pm os/linux/snmp/ snmp_standard/mode/{cpu,cpudetailed,diskio,diskusage,inodes,interfaces,loadaverage,listdiskspath,listinterfaces,liststorages,memory,processcount,storage,swap,ntp,tcpcon,uptime}.pm ../plugin/lib/
+
+Construire le fichier Perl unique:
+::
+
+  # cd ../plugin
+  # fatpack file centreon_plugins.pl > centreon_linux_snmp.pl
+
+La sonde fonctionne de la même façon:
+::
+
+  # perl centreon_linux_snmp.pl --plugin os::linux::snmp::plugin --mode=processcount --snmp-community public --snmp-version 2c --hostname=127.0.0.1  --process-name='' --process-status='' --process-args=''
+  
 
 *********
 Dépannage
