@@ -509,6 +509,8 @@ How can i check the plugin version ?
 You can check the version of plugins and modes with option ``--version``:
 ::
 
+  $ perl centreon_plugins.pl --version
+  Global Version: 20160524
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --version
   Plugin Version: 0.1
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --version
@@ -520,6 +522,58 @@ For example, we want to execute the mode only if the version >= 2.x:
 
   $  perl  centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=storage --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --mode-version='2.x'
   UNKNOWN: Not good version for plugin mode. Excepted at least: 2.x. Get: 1.0
+
+-------------------------------------
+Can i have one standalone Perl file ?
+-------------------------------------
+
+We have done some tests and it will cost around 4% more of execution time. We are going to create a standalone Linux SNMP plugin.
+
+Download the Perl module ``App::FatPacker`` on metacpan:
+::
+
+  # tar zxvf App-FatPacker-0.010005.tar.gz
+  # cd App-FatPacker-0.010005
+  # perl Makefile.PL && make && make install
+
+Create a directory to build it:
+::
+
+  # mkdir -p build/plugin
+  # cd build
+
+Clone ``centreon-plugins``:
+::
+
+  # git clone https://github.com/centreon/centreon-plugins.git
+  
+``fatpack`` includes ``pm`` files under the directory ``lib``:
+::
+
+  # mkdir plugin/lib && cd centreon-plugins
+
+Copy the common files for all plugins:
+::
+
+  # cp -R --parent centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ ../plugin/lib/
+  # cp centreon_plugins.pl ../plugin
+  # sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../plugin/lib/centreon/plugins/script.pm
+
+Copy files for Linux SNMP plugin:
+::
+
+  # cp -R --parent centreon/plugins/{script_snmp,snmp}.pm os/linux/snmp/ snmp_standard/mode/{cpu,cpudetailed,diskio,diskusage,inodes,interfaces,loadaverage,listdiskspath,listinterfaces,liststorages,memory,processcount,storage,swap,ntp,tcpcon,uptime}.pm ../plugin/lib/
+
+Build the standalone Perl file:
+::
+
+  # cd ../plugin
+  # fatpack file centreon_plugins.pl > centreon_linux_snmp.pl
+
+The plugin works in the same way:
+::
+
+  # perl centreon_linux_snmp.pl --plugin os::linux::snmp::plugin --mode=processcount --snmp-community public --snmp-version 2c --hostname=127.0.0.1  --process-name='' --process-status='' --process-args=''
 
 ***************
 Troubleshooting
