@@ -65,9 +65,6 @@ sub check {
             next;
         }
         
-        next if (!(defined($result2->{EntityExtTemperatureThreshold}) && 
-                 $result2->{EntityExtTemperatureThreshold} > 0 && $result2->{EntityExtTemperatureThreshold} < 65535)); 
-        
         my $name = $self->get_long_name(instance => $instance);
         $self->{components}->{sensor}->{total}++;
         
