@@ -81,6 +81,8 @@ sub check {
                                             short_msg => sprintf("Sensor '%s' status is '%s'", $name, $result->{EntityExtErrorStatus}));
             }
             
+            next if (defined($result2->{EntityExtTemperature}) && $result2->{EntityExtTemperature} <= 0);
+            
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result2->{EntityExtTemperature});
             if ($checked == 0) {
                 my $crit_th = '~:' . $result2->{EntityExtTemperatureThreshold};
