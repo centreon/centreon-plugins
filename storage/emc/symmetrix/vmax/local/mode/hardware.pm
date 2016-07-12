@@ -49,11 +49,48 @@ sub set_system {
     $self->{components_module} = ['module', 'temperature', 'director', 'cabling', 'power', 'fabric', 'voltage', 'sparedisk'];
 }
 
+sub find_files {
+    my ($self, %options) = @_;
+
+    if (!opendir(DIR, $self->{option_results}->{health_directory})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot open directory: $!");
+        $self->{output}->option_exit();
+    }
+    
+    my $save_value = 0;
+    while (my $file = readdir(DIR)) {
+        next if (! -d $self->{option_results}->{health_directory} . '/' . $file || 
+            $file !~ /$self->{option_results}->{health_directory_pattern}/);
+        if (hex($1) > $save_value) {
+            $self->{option_results}->{file_health} = $self->{option_results}->{health_directory} . '/' . $file . '/' . $self->{option_results}->{file_health_name};
+            $self->{option_results}->{file_health_env} = $self->{option_results}->{health_directory} . '/' . $file . '/' . $self->{option_results}->{file_health_env_name};
+            $save_value = hex($1);
+        }
+    }
+
+    closedir(DIR);
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
     $self->{statefile_cache}->check_options(%options);
+   
+   if (!defined($self->{option_results}->{file_health_name}) || !defined($self->{option_results}->{file_health_env_name})) {
+        $self->{output}->add_option_msg(short_msg => "Please set option --file-health-name and --file-health-env-name.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{health_directory}) || ! -d $self->{option_results}->{health_directory}) {
+        $self->{output}->add_option_msg(short_msg => "Please set right option for --health-directory.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{health_directory_pattern})) {
+        $self->{output}->add_option_msg(short_msg => "Please set option for --health-directory-pattern.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->find_files();
 }
 
 sub new {
@@ -64,8 +101,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "file-health:s"         => { name => 'file_health' },
-                                "file-health-env:s"     => { name => 'file_health_env' },
+                                "health-directory:s"            => { name => 'health_directory' },
+                                "health-directory-pattern:s"    => { name => 'health_directory_pattern' },
+                                "file-health-name:s"            => { name => 'file_health_name', default => 'HealthCheck.log' },
+                                "file-health-env-name:s"        => { name => 'file_health_env_name', default => 'sympl_env_health.log' },
                                 # Email
                                 "email-warning:s"       => { name => 'email_warning' },
                                 "email-critical:s"      => { name => 'email_critical' },
@@ -84,11 +123,6 @@ sub new {
 
 sub read_files {
     my ($self, %options) = @_;
-
-    if (!defined($self->{option_results}->{file_health}) || !defined($self->{option_results}->{file_health_env})) {
-        $self->{output}->add_option_msg(short_msg => "Please set option --file-health and --file-health-env.");
-        $self->{output}->option_exit();
-    }
     
     foreach (('file_health', 'file_health_env')) {
         $self->{'content_' . $_} = do {
@@ -145,10 +179,6 @@ sub send_email {
     if (defined($self->{option_results}->{email_smtp_username}) && defined($self->{option_results}->{email_smtp_password})) {
         $smtp_options{-pass} = $self->{option_results}->{email_smtp_password};
     }    
-    foreach my $option (@{$self->{option_results}->{email_smtp_options}}) {
-        next if ($option !~ /^(.+?)=(.+)$/);
-        $smtp_options{-$1} = $2;
-    }
     
     #######
     # Get current data
@@ -163,6 +193,17 @@ sub send_email {
     my $subject = $1;
     my $status = lc($self->{output}->get_litteral_status());
     
+    foreach my $option (@{$self->{option_results}->{email_smtp_options}}) {
+        next if ($option !~ /^(.+?)=(.+)$/);
+        my ($label, $value) = ($1, $2);
+        if ($label =~ /subject/i) {
+            $value =~ s/%\{status\}/$status/g;
+            $value =~ s/%\{short_msg\}/$subject/g;
+            $label = lc($label);
+        }
+        $smtp_options{-$label} = $value;
+    }
+    
     my $send_email = 0;
     $send_email = 1 if ($status ne 'ok');
     #######
@@ -176,7 +217,7 @@ sub send_email {
         $send_email = 0 if ($status ne 'ok' && defined($prev_output) && $prev_output eq $subject);
         # recovery email
         $send_email = 1 if ($status eq 'ok' && defined($prev_status) && $prev_status ne 'ok');
-		$self->{statefile_cache}->write(data => $self->{new_datas});
+      $self->{statefile_cache}->write(data => $self->{new_datas});
     }
     
     my $smtp_to = '';
@@ -207,9 +248,9 @@ sub send_email {
     }
     my $result = $mail->send(-to => $smtp_to,
                              -from => $self->{option_results}->{email_smtp_from},
-                             -subject => $subject,
+                             -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
                              -body => $stdout,
-                             -attachments => $self->{option_results}->{file_health_env});
+                             -attachments => $self->{option_results}->{file_health} . "," . $self->{option_results}->{file_health_env});
     $mail->bye();
     if ($result == -1) {
         $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "problem to send the email");
@@ -259,13 +300,21 @@ Example: --warning='sparedisk,.*,5:'
 Set critical threshold for disk (syntax: type,regexp,threshold)
 Example: --critical='sparedisk,.*,3:'
 
-=item B<--file-health>
+=item B<--health-directory>
 
-The location of the global storage file status (Should be something like: C:/xxxx/HealthCheck.log).
+Location of health files.
 
-=item B<--file-health-env>
+=item B<--health-directory-pattern>
 
-The location of the environment storage file status (Should be something like: C:/xxxx/sumpl_env_health.log).
+Set pattern to match the most recent directory (getting the hexa value).
+
+=item B<--file-health-name>
+
+Name of the global storage file status (Default: HealthCheck.log).
+
+=item B<--file-health-env-name>
+
+Name of the environment storage file status (Default: sympl_env_health.log).
 
 =back
 
