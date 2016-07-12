@@ -157,6 +157,10 @@ Specify https if needed (Default: 'http')
 
 Set path to get Jenkins information
 
+=item B <--credentials>
+
+Required to use username/password authentication method
+
 =item B<--username>
 
 Specify username for API authentification

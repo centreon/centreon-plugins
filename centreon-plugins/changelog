@@ -1,3 +1,15 @@
+2016-06-27 Quentin Garnier <qgarnier@centreon.com>
+ * Update FAQ: build a standalone perl script
+ * Plugin added: to check Lenovo S Series (#412)
+ * Plugin added: to check Digi AnywhereUSB
+ * Mode added: [netasq] 'ha-nodes'
+ * Mode removed: [netasq] 'ha-status'
+ * Fix: [dell n4000]{environment} wrong temperature (#397)
+ * Fix: [netapp]{cache-age} not working (#422)
+ * Fix: [cisco wlc]{ap-users} wrong total
+ * Fix: [tomcat]{memory} problem with java 8
+ * Fix: [netapp]{filesys} no values (#415)
+
 2016-05-24 Quentin Garnier <qgarnier@centreon.com>
  * Can use '/' instead '::' for plugin option (#380)
  * Mode added: [pacemaker] 'constraints'
