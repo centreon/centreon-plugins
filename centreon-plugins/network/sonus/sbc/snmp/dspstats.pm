@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::sonus::sbc::1000::snmp::mode::dspstats;
+package network::sonus::sbc::snmp::mode::dspstats;
 
 use base qw(centreon::plugins::templates::counter);
 
