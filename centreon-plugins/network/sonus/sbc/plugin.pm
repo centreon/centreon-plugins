@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::sonus::sbc::1000::snmp::plugin;
+package network::sonus::sbc::snmp::plugin;
 
 use strict;
 use warnings;
