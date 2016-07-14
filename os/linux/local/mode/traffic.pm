@@ -128,8 +128,25 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $interface_name ne $self->{option_results}->{name});
 
-        $values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi;
-        $self->{result}->{$interface_name} = {state => $states, in => $1, out => $2};
+        my $in=undef;
+        my $out=undef;
+
+        if ($values =~ /(?:(?:RX bytes)(?:[[\sa-zA-Z:]+)([0-9]+)(?:\sbytes){0,1})|(?:RX)(?:[[\sa-zA-Z0-9:]+)(?:bytes\s)([0-9]+)/ms){
+            $in = $1;
+            if ($1 eq "")
+            {
+                $in = $2;
+            }
+        }
+
+        if ($values =~ /(?:(?:TX bytes)(?:[[\sa-zA-Z:]+)([0-9]+)(?:\sbytes){0,1})|(?:TX)(?:[[\sa-zA-Z0-9:]+)(?:bytes\s)([0-9]+)/ms){
+            $out = $1;
+            if ($1 eq "")
+            {
+                $out = $2;
+            }
+        }
+        $self->{result}->{$interface_name} = {state => $states, in => $in, out => $out};
     }
     
     if (scalar(keys %{$self->{result}}) <= 0) {
