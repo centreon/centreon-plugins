@@ -103,7 +103,7 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{ $oid_ahClientSSID }}) {
         $self->{global}->{total}++;
         my $ssid = $self->{results}->{ $oid_ahClientSSID }->{$oid};
-        $self->{ssid}->{$ssid}->{total}++ if defined($self->{ssid}->{$ssid});
+        $self->{ssid}->{$ssid}->{total}++ if (defined($self->{ssid}->{$ssid}));
     }
 
 }
