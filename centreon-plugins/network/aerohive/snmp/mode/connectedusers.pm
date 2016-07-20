@@ -90,8 +90,8 @@ sub manage_selection {
                                                                  ],
                                                           nothing_quit => 1);
 
-    foreach my $oid (keys %{$self->{results}->{ $oid_ahXIfEntry }}) {
-        my $ssid = $self->{results}->{ $oid_ahXIfEntry }->{$oid};
+    foreach my $oid (keys %{$self->{results}->{ $oid_ahSSIDNAME }}) {
+        my $ssid = $self->{results}->{ $oid_ahSSIDNAME }->{$oid};
         if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
             $ssid !~ /$self->{option_results}->{filter_ssid}/) {
             $self->{output}->output_add(long_msg => "skipping ssid " . $ssid . " : no matching filter.", debug => 1);
