@@ -76,7 +76,6 @@ sub new {
     return $self;
 }
 
-my $oid_ahXIfEntry = '.1.3.6.1.4.1.26928.1.1.1.2.1.1.1';
 my $oid_ahSSIDNAME = '.1.3.6.1.4.1.26928.1.1.1.2.1.1.1.2';
 my $oid_ahClientSSID = '.1.3.6.1.4.1.26928.1.1.1.2.1.2.1.10';
 
@@ -86,13 +85,12 @@ sub manage_selection {
     $self->{global} = { total => 0 };
     $self->{ssid} = {};
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_ahXIfEntry },
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_ahSSIDNAME },
                                                                     { oid => $oid_ahClientSSID },
                                                                  ],
                                                           nothing_quit => 1);
 
     foreach my $oid (keys %{$self->{results}->{ $oid_ahXIfEntry }}) {
-        next if $oid !~ /^$oid_ahSSIDNAME\.(.*)$/;
         my $ssid = $self->{results}->{ $oid_ahXIfEntry }->{$oid};
         if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
             $ssid !~ /$self->{option_results}->{filter_ssid}/) {
@@ -105,7 +103,7 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{ $oid_ahClientSSID }}) {
         $self->{global}->{total}++;
         my $ssid = $self->{results}->{ $oid_ahClientSSID }->{$oid};
-        $self->{ssid}->{$ssid}->{total}++;
+        $self->{ssid}->{$ssid}->{total}++ if defined($self->{ssid}->{$ssid});
     }
 
 }
