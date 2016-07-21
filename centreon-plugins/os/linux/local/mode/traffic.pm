@@ -113,6 +113,7 @@ sub manage_selection {
                                                   command_options => $self->{option_results}->{command_options});
     while ($stdout =~ /^(\S+)(.*?)(\n\n|\n$)/msg) {
         my ($interface_name, $values) = ($1, $2);
+        $interface_name =~ s/:$//;
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING/ms);
         $states .= 'U' if ($values =~ /UP/ms);
@@ -128,8 +129,9 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $interface_name ne $self->{option_results}->{name});
 
-        $values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi;
-        $self->{result}->{$interface_name} = {state => $states, in => $1, out => $2};
+        if ($values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi || $values =~ /RX packets\s+\d+\s+bytes\s+(\S+).*?TX packets\s+\d+\s+bytes\s+(\S+)/msi) {
+            $self->{result}->{$interface_name} = {state => $states, in => $1, out => $2};
+        }
     }
     
     if (scalar(keys %{$self->{result}}) <= 0) {
