@@ -352,7 +352,7 @@ sub generic_performance_values_historic {
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
             $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running,...)');
+                                                   short_msg => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
             return undef;
         }
         foreach my $val (@$perfdata) {
