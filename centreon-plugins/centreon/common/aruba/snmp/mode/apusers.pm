@@ -154,7 +154,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-ip-address:s"   => { name => 'filter_ip_address' },
-                                "filter_bssid:s"        => { name => 'filter_bssid' },
+                                "filter-bssid:s"        => { name => 'filter_bssid' },
                                 "filter-essid:s"        => { name => 'filter_essid' },
                                 });
                                 
