@@ -57,6 +57,14 @@ Function display_volume_information {
     foreach ($sc in $storageCenters) {
         $volumeList = Get-DellScVolume -ConnectionName $connName -StorageCenter $sc
         foreach ($vol in $volumeList) {
+';
+
+    if (defined($options{filter_vol}) && $options{filter_vol} ne '') {
+    $ps .= '
+if (-Not ($vol -match "' . $options{filter_vol} . '")) { continue }    
+';
+	}
+    $ps .= '
             $volusage = Get-DellScVolumeStorageUsageAssociation -ConnectionName $connName -Instance $vol
             $usage = Get-DellScVolumeStorageUsage -ConnectionName $connName -Instance $volusage
             
