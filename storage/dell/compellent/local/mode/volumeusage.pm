@@ -181,6 +181,7 @@ sub new {
                                   "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
+                                  "ps-sc-volume:s"      => { name => 'ps_sc_volume' },
                                   "ps-sc-filter:s"      => { name => 'ps_sc_filter' },
                                   "units:s"             => { name => 'units', default => '%' },
                                   "free"                => { name => 'free' },
@@ -191,7 +192,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+   
+    if (defined($self->{option_results}->{ps_sc_volume}) && !defined($self->{option_results}->{filter_counters})) {
+			$self->{output}->add_option_msg(short_msg => "Need to use '--filter-counters volume' when filtering with volume name");
+            $self->{output}->option_exit();
+	} 
     foreach my $label (('cem_host', 'cem_user', 'cem_password', 'cem_port', 'sdk_path_dll')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
@@ -213,7 +218,8 @@ sub manage_selection {
                                                                             cem_port => $self->{option_results}->{cem_port},
                                                                             sdk_path_dll => $self->{option_results}->{sdk_path_dll},
                                                                             no_ps => $self->{option_results}->{no_ps},
-                                                                            filter_sc => $self->{option_results}->{ps_sc_filter});
+                                                                            filter_sc => $self->{option_results}->{ps_sc_filter},
+                                                                            filter_vol => $self->{option_results}->{ps_sc_volume},);
     
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
@@ -309,6 +315,10 @@ Print powershell output.
 =item B<--ps-sc-filter>
 
 Filter Storage Center (only wilcard '*' can be used. In Powershell).
+
+=item B<--ps-sc-volume>
+
+Filter Volume Name to display (--filter-counters volume is mandatory when using this)
 
 =item B<--units>
 
