@@ -41,7 +41,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-            }sc
+            }
         },
     ];
     
@@ -193,6 +193,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
    
+    if (defined($self->{option_results}->{ps_sc_volume}) && !defined($self->{option_results}->{filter_counters})) {
+			$self->{output}->add_option_msg(short_msg => "Need to use '--filter-counters volume' when filtering with volume name");
+            $self->{output}->option_exit();
+	} 
     foreach my $label (('cem_host', 'cem_user', 'cem_password', 'cem_port', 'sdk_path_dll')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
@@ -314,7 +318,7 @@ Filter Storage Center (only wilcard '*' can be used. In Powershell).
 
 =item B<--ps-sc-volume>
 
-Filter Volume Name to display (should be used with --filter-counters sc)
+Filter Volume Name to display (--filter-counters volume is mandatory when using this)
 
 =item B<--units>
 

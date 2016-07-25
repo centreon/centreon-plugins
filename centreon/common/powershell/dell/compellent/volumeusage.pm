@@ -77,7 +77,8 @@ if (-Not ($vol -match "' . $options{filter_vol} . '")) { continue }
             write-host ("[totalDiskSpace={0}]"  -f $usage.TotalDiskSpace.GetByteSize()) -NoNewline
             write-host ("[replaySpace={0}]" -f $usage.replaySpace.GetByteSize())
         }
-
+		
+		if (-Not (Test-Path variable:global:"' . $options{filter_vol} . '")) {continue}
         $diskList = Get-DellScDisk -ConnectionName $connName -StorageCenter $sc
         foreach ($disk in $diskList) {
             $diskusage = Get-DellScDiskStorageUsageAssociation -ConnectionName $connName -Instance $disk
