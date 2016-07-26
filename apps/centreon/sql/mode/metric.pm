@@ -385,7 +385,7 @@ sub manage_selection {
         $value = sprintf("%2.f", sum(@{$self->{metrics}->{selected_value}{all}})) if ($self->{option_results}->{aggregation} eq 'sum');
         $value = sprintf("%2.f", sum(@{$self->{metrics}->{selected_value}{all}})/scalar @{$self->{metrics}->{selected_value}{all}}) if ($self->{option_results}->{aggregation} eq 'avg');
 
-        $self->{global}{computed} = { computed => $value };
+        $self->{global} = { computed => $value };
     }
 
 }
