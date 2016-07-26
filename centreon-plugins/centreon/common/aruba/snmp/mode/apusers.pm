@@ -20,15 +20,21 @@
 
 package centreon::common::aruba::snmp::mode::apusers;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    global => {
-        '000_total'   => { set => {
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'essid', type => 1, cb_prefix_output => 'prefix_essid_output', message_multiple => 'All users by ESSID are ok' },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All users by AP are ok' },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
@@ -37,7 +43,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '001_total-none'   => { set => {
+        { label => 'total-none', set => {
                 key_values => [ { name => 'total_none' } ],
                 output_template => 'Total Auth None : %s',
                 perfdatas => [
@@ -46,7 +52,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '002_total-other'  => { set => {
+        { label => 'total-other', set => {
                 key_values => [ { name => 'total_other' } ],
                 output_template => 'Total Auth Other : %s',
                 perfdatas => [
@@ -55,7 +61,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '003_total-web'   => { set => {
+        { label => 'total-web', set => {
                 key_values => [ { name => 'total_web' } ],
                 output_template => 'Total Auth Web : %s',
                 perfdatas => [
@@ -64,7 +70,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '004_total-dot1x'   => { set => {
+        { label => 'total-dot1x', set => {
                 key_values => [ { name => 'total_dot1x' } ],
                 output_template => 'Total Auth Dot1x : %s',
                 perfdatas => [
@@ -73,7 +79,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '005_total-vpn'   => { set => {
+        { label => 'total-vpn', set => {
                 key_values => [ { name => 'total_vpn' } ],
                 output_template => 'Total Auth Vpn : %s',
                 perfdatas => [
@@ -82,7 +88,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '006_total-mac'   => { set => {
+        { label => 'total-mac', set => {
                 key_values => [ { name => 'total_mac' } ],
                 output_template => 'Total Auth Mac : %s',
                 perfdatas => [
@@ -91,7 +97,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '007_avg-connection-time'   => { set => {
+        { label => 'avg-connection-time', set => {
                 key_values => [ { name => 'avg_connection_time' } ],
                 output_template => 'Users average connection time : %.3f seconds',
                 perfdatas => [
@@ -100,30 +106,44 @@ my $maps_counters = {
                 ],
             }
         },
-    },
-    total_ap => {
-        '000_total-ap'   => { set => {
-                key_values => [ { name => 'users' }, { name => 'bssid' } ],
-                output_template => 'Users : %s',
-                perfdatas => [
-                    { label => 'total', value => 'users_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'bssid_absolute' },
-                ],
-            }
-        },
-    },
-    total_essid => {
-        '000_total-essid'   => { set => {
+    ];
+    
+    $self->{maps_counters}->{essid} = [
+        { label => 'total-essid', set => {
                 key_values => [ { name => 'users' }, { name => 'essid' } ],
-                output_template => 'Users : %s',
+                output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'total', value => 'users_absolute', template => '%s', 
+                    { label => 'essid', value => 'users_absolute', template => '%s', 
                       unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'essid_absolute' },
                 ],
             }
         },
-    }
-};
+    ];
+    
+    $self->{maps_counters}->{ap} = [
+        { label => 'total-ap', set => {
+                key_values => [ { name => 'users' }, { name => 'bssid' } ],
+                output_template => 'users : %s',
+                perfdatas => [
+                    { label => 'ap', value => 'users_absolute', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_essid_output {
+    my ($self, %options) = @_;
+    
+    return "ESSID '" . $options{instance_value}->{essid} . "' ";
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+    
+    return "AP '" . $options{instance_value}->{bssid} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -134,204 +154,11 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-ip-address:s"   => { name => 'filter_ip_address' },
-                                "filter-essid:s"       => { name => 'filter_essid' },
+                                "filter-bssid:s"        => { name => 'filter_bssid' },
+                                "filter-essid:s"        => { name => 'filter_essid' },
                                 });
-
-    foreach my $key (('global', 'total_ap', 'total_essid')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output},
-                                                      perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
+                                
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('global', 'total_ap', 'total_essid')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-}
-
-sub run_total {
-    my ($self, %options) = @_;
-
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters->{global}}) {
-        my $obj = $maps_counters->{global}->{$_}->{obj};
-                
-        $obj->set(instance => 'global');
-    
-        my ($value_check) = $obj->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-}
-
-sub run_ap {
-    my ($self, %options) = @_;
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{ap_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All users by AP are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{ap_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{total_ap}}) {
-            my $obj = $maps_counters->{total_ap}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{ap_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "AP '$id' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "AP '$id' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "AP '$id' $long_msg");
-        }
-    }
-}
-
-sub run_essid {
-    my ($self, %options) = @_;
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{essid_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All users by ESSID are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{essid_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{total_essid}}) {
-            my $obj = $maps_counters->{total_essid}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{essid_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "ESSID '$id' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "ESSID '$id' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "ESSID '$id' $long_msg");
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    $self->manage_selection();
-    $self->run_total();
-    $self->run_ap();
-    $self->run_essid();
-     
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my %map_auth_method = (
@@ -368,10 +195,10 @@ sub manage_selection {
     $self->{global} = { total => 0, total_none => 0, total_web => 0, total_mac => 0, total_vpn => 0,
                         total_dot1x => 0, total_kerberos => 0, total_secureId => 0, total_pubcookie => 0,
                         total_xSec => 0, xSecMachine => 0, 'total_via-vpn' => 0, total_other => 0 };
-    $self->{ap_selected} = {};
-    $self->{essid_selected} = {};
+    $self->{ap} = {};
+    $self->{essid} = {};
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
+    $self->{results} = $options{snmp}->get_multiple_table(oids => [ 
                                                                    { oid => $oid_wlsxSwitchRole },
                                                                    { oid => $oid_wlsxUserEntry, start => $mapping->{nUserUpTime}->{oid}, end => $mapping->{nUserAuthenticationMethod}->{oid} },
                                                                    { oid => $mapping2->{nUserApBSSID}->{oid} },
@@ -398,8 +225,8 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}->{$oid_wlsxUserEntry}}) {
         next if ($oid !~ /^$mapping->{nUserAuthenticationMethod}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxUserEntry}, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{nUserApBSSID}->{oid}}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxUserEntry}, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{nUserApBSSID}->{oid}}, instance => $instance);
         
         # security
         next if (!defined($result2->{nUserApBSSID}));
@@ -408,12 +235,14 @@ sub manage_selection {
             $map_ap{$bssid}->{ip} !~ /$self->{option_results}->{filter_ip_address}/);
         next if (defined($self->{option_results}->{filter_essid}) && $self->{option_results}->{filter_essid} ne '' &&
             $map_ap{$bssid}->{essid} !~ /$self->{option_results}->{filter_essid}/);
+        next if (defined($self->{option_results}->{filter_bssid}) && $self->{option_results}->{filter_bssid} ne '' &&
+            $bssid !~ /$self->{option_results}->{filter_bssid}/);
     
-        $self->{ap_selected}->{$bssid} = { users => 0, bssid => $bssid } if (!defined($self->{ap_selected}->{$bssid}));
-        $self->{ap_selected}->{$bssid}->{users}++;
+        $self->{ap}->{$bssid} = { users => 0, bssid => $bssid } if (!defined($self->{ap}->{$bssid}));
+        $self->{ap}->{$bssid}->{users}++;
     
-        $self->{essid_selected}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid_selected}->{$map_ap{$bssid}->{essid}}));
-        $self->{essid_selected}->{$map_ap{$bssid}->{essid}}->{users}++;
+        $self->{essid}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid}->{$map_ap{$bssid}->{essid}}));
+        $self->{essid}->{$map_ap{$bssid}->{essid}}->{users}++;
 
         $self->{global}->{total}++;
         $self->{global}->{'total_' . $result->{nUserAuthenticationMethod}}++;
@@ -439,13 +268,15 @@ Check total users connected.
 
 Threshold warning.
 Can be: 'total', 'total-none', 'total-other', 'total-web',
-'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds).
+'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds),
+'total-ap', 'total-essid'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'total', 'total-none', 'total-other', 'total-web',
-'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds).
+'total-dot1x', 'total-vpn', 'total-mac', 'avg-connection-time' (seconds),
+'total-ap', 'total-essid'.
 
 =item B<--filter-ip-address>
 
@@ -454,6 +285,10 @@ Filter by ip address (regexp can be used).
 =item B<--filter-essid>
 
 Filter by ESSID (regexp can be used).
+
+=item B<--filter-bssid>
+
+Filter by BSSID (regexp can be used).
 
 =back
 
