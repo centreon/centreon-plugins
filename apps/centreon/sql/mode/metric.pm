@@ -408,7 +408,7 @@ Can be 'computed', 'computed2', 'metric'
 
 =item B<--critical-*>
 
-Warning threshold
+Critical threshold
 Can be 'computed', 'computed2', 'metric'
 
 =item B<--filter-counters>
