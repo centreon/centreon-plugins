@@ -195,7 +195,6 @@ sub manage_counters {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();

@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options->{options} = options object
     if (!defined($options{options})) {
         print "Class Output: Need to specify 'options' argument to load.\n";
         exit 3;

@@ -156,7 +156,6 @@ sub check_exclude {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_scfComponentErrorStatus = '.1.3.6.1.4.1.211.1.15.3.1.1.12.2.1.14';

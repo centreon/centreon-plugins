@@ -191,7 +191,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
