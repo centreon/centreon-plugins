@@ -75,14 +75,19 @@ sub check_options {
 sub read_scenario {
     my ($self, %options) = @_;
     
-    my $content_scenario = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $self->{option_results}->{scenario}) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{scenario} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
+    my $content_scenario;
+    if (-f $self->{option_results}->{scenario}) {
+        $content_scenario = do {
+            local $/ = undef;
+            if (!open my $fh, "<", $self->{option_results}->{scenario}) {
+                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{scenario} : $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+        };
+    } else {
+        $content_scenario = $self->{option_results}->{scenario};
+    }
     
     eval {
         $self->{json_scenario} = decode_json($content_scenario);
@@ -171,7 +176,8 @@ Check telnet scenario execution
 
 =item B<--scenario>
 
-Scenario used (Required)
+Scenario used (Required).
+Can be a file or json content.
 
 =item B<--timeout>
 
