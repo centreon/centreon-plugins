@@ -128,7 +128,6 @@ sub display_system_information {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $snmp_request = [ { oid => $oid_drsProductShortName }, { oid => $oid_drsChassisServiceTag }, { oid => $oid_drsFirmwareVersion } ];

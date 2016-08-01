@@ -100,7 +100,6 @@ sub memory_ha {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_fgSystemInfo = '.1.3.6.1.4.1.12356.101.4.1';

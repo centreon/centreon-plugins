@@ -89,7 +89,6 @@ sub check_table_cpu {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_rbnCpuMeterFiveSecondAvg = '.1.3.6.1.4.1.2352.2.6.1.1.0';

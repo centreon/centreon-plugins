@@ -227,7 +227,6 @@ sub find_values {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{connector} = $options{custom};
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
