@@ -147,7 +147,7 @@ sub set_counters {
                 output_template => 'Utils : %.2f %%', output_use => 'utils',
                 perfdatas => [
                     { label => 'utils', value => 'utils', template => '%.2f',
-                      min => 0, max => 100, unit => '%%', label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
