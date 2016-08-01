@@ -39,6 +39,8 @@ sub new {
          "scenario:s"           => { name => 'scenario' },
          "warning:s"            => { name => 'warning' },
          "critical:s"           => { name => 'critical' },
+         "hostname:s"           => { name => 'hostname' },
+         "port:s"               => { name => 'port', default => 23 },
          });
 
     return $self;
@@ -94,10 +96,18 @@ sub read_scenario {
 sub execute_scenario {
     my ($self, %options) = @_;
     
+    my $timing0 = [gettimeofday];
     my $session = new Net::Telnet();
     $session->errmode('return');
     
-    my $timing0 = [gettimeofday];
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        if (!$session->open(Host => $self->{option_results}->{hostname}, Port => $self->{option_results}->{port}, Timeout => 30)) {
+            $self->{output}->output_add(severity => 'critical',
+                                        short_msg => sprintf("cannot open session: %s", $session->errmsg()));
+            return ;
+        }
+    }
+    
     my ($step_ok, $exit1) = (0, 'OK');
     my $step_total = scalar(@{$self->{json_scenario}});
     foreach my $cmd (@{$self->{json_scenario}}) {
@@ -161,11 +171,21 @@ Check telnet scenario execution
 
 =item B<--scenario>
 
-Scenario used
+Scenario used (Required)
 
 =item B<--timeout>
 
 Set global execution timeout (Default: 50)
+
+=item B<--hostname>
+
+Set telnet hostname.
+Could be used if you want to use the same scenario for X hosts.
+
+=item B<--port>
+
+Set telnet port.
+Could be used if you want to use the same scenario for X hosts.
 
 =item B<--warning>
 
