@@ -23,17 +23,14 @@ package centreon::common::emc::navisphere::mode::spcomponents::cable;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(.*Unknown.*)$' => 'WARNING'],
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking cables");
     $self->{components}->{cable} = {name => 'cables', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cable'));
+    return if ($self->check_filter(section => 'cable'));
     
     # Enclosure SPE SPS A Cabling State: Valid
     while ($self->{response} =~ /^(?:Bus\s+(\d+)\s+){0,1}Enclosure\s+(\S+)\s+(Power|SPS)\s+(\S+)\s+Cabling\s+State:\s+(.*)$/mgi) {
@@ -42,19 +39,17 @@ sub check {
             $instance = "$1.$2.$3.$4";
         }
         
-        next if ($self->check_exclude(section => 'cable', instance => $instance));
+        next if ($self->check_filter(section => 'cable', instance => $instance));
         $self->{components}->{cable}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("cable '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("cable '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'cable', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("cable '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }
