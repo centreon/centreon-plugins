@@ -21,6 +21,8 @@ package centreon::vmware::cmdbase;
 use strict;
 use warnings;
 
+my %handlers = (ALRM => {});
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -36,10 +38,32 @@ sub getCommandName {
     return $self->{commandName};
 }
 
+sub set_signal_handlers {
+    my $self = shift;
+
+    $SIG{ALRM} = \&class_handle_ALRM;
+    $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
+}
+
+sub class_handle_ALRM {
+    foreach (keys %{$handlers{ALRM}}) {
+        &{$handlers{ALRM}->{$_}}();
+    }
+}
+
+sub handle_ALRM {
+    my $self = shift;
+    
+    $self->{logger}->writeLogError("Child process autokill!!");
+    exit(0);
+}
+
 sub set_connector {
     my ($self, %options) = @_;
     
     $self->{connector} = $options{connector};
+    $self->set_signal_handlers();
+    alarm(300);
 }
 
 1;
