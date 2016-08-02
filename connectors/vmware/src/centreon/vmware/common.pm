@@ -40,6 +40,10 @@ sub init_response {
     return $manager_display;
 }
 
+sub free_response {
+    $manager_display = {};
+}
+
 sub response {
     my (%options) = @_;
 
@@ -62,9 +66,13 @@ sub response {
          zmq_setsockopt($options{endpoint}, ZMQ_LINGER, 10000); 
     }
     if (defined($options{identity})) {
-        zmq_sendmsg($options{endpoint}, $options{identity}, $flag);
+        my $msg = zmq_msg_init_data($options{identity});
+        zmq_msg_send($msg, $options{endpoint}, $flag);
+        zmq_msg_close($msg);
     }
-    zmq_sendmsg($options{endpoint}, $options{token} . " " . $stdout, ZMQ_NOBLOCK);
+    my $msg = zmq_msg_init_data($options{token} . " " . $stdout);
+    zmq_msg_send($msg, $options{endpoint}, ZMQ_NOBLOCK);
+    zmq_msg_close($msg);
 }
 
 sub vmware_error {

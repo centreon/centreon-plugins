@@ -130,6 +130,7 @@ sub response_router {
                                    short_msg => $options{msg});
     $manager->{output}->{plugin} = $options{identity};
     centreon::vmware::common::response(token => 'RESPSERVER2', endpoint => $backend);
+    centreon::vmware::common::free_response();
 }
 
 sub verify_child {
@@ -198,12 +199,14 @@ sub reqclient {
 sub vsphere_event {
     while (1) {
         # Process all parts of the message
-        my $message = zmq_recvmsg($backend);
-        if (!defined($message)) {
+        my $msg = zmq_msg_init();
+        my $rv = zmq_msg_recv($msg, $backend, undef);
+        if ($rv == -1) {
             $connector->{logger}->writeLogError("zmq_recvmsg error: $!");
             last;
         }
-        my $data = zmq_msg_data($message);
+        my $data = zmq_msg_data($msg);
+        zmq_msg_close($msg);
         
         if ($data =~ /^REQCLIENT\s+(.*)$/msi) {
             $connector->reqclient(data => $1);

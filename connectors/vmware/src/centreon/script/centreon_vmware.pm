@@ -363,9 +363,14 @@ sub request_dynamic {
                                     identity => $options{identity}) == 0);
     
     $self->{centreon_vmware_config}->{vsphere_server}->{$container}->{last_request} = time();
+    
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
-    zmq_sendmsg($frontend, "server-" . $container, $flag);
-    zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data}, ZMQ_NOBLOCK);
+    my $msg = zmq_msg_init_data("server-" . $container);
+    zmq_msg_send($msg, $frontend, $flag);
+    zmq_msg_close($msg);
+    $msg = zmq_msg_init_data('REQCLIENT ' . $options{data});
+    zmq_msg_send($msg, $frontend, ZMQ_NOBLOCK);
+    zmq_msg_close($msg);
 }
 
 sub request {
@@ -417,9 +422,14 @@ sub request {
                                     identity => $options{identity}) == 0);
     
     $self->{counter_stats}->{$result->{container}}++;
+    
     my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
-    zmq_sendmsg($frontend, "server-" . $result->{container}, $flag);
-    zmq_sendmsg($frontend, 'REQCLIENT ' . $options{data}, ZMQ_NOBLOCK);
+    my $msg = zmq_msg_init_data("server-" . $result->{container});
+    zmq_msg_send($msg, $frontend, $flag);
+    zmq_msg_close($msg);
+    $msg = zmq_msg_init_data('REQCLIENT ' . $options{data});
+    zmq_msg_send($msg, $frontend, ZMQ_NOBLOCK);
+    zmq_msg_close($msg);
 }
 
 sub repserver {
@@ -445,11 +455,15 @@ sub repserver {
 sub router_event {
     while (1) {
         # Process all parts of the message
-        my $message = zmq_recvmsg($frontend);
-        my $identity = zmq_msg_data($message);
-        $message = zmq_recvmsg($frontend);
-       
-        my $data = zmq_msg_data($message);
+        my $msg = zmq_msg_init();
+        zmq_msg_recv($msg, $frontend, ZMQ_DONTWAIT);
+        my $identity = zmq_msg_data($msg);
+        zmq_msg_close($msg);
+        
+        $msg = zmq_msg_init();
+        zmq_msg_recv($msg, $frontend, ZMQ_DONTWAIT);
+        my $data = zmq_msg_data($msg);
+        zmq_msg_close($msg);
         
         my $manager = centreon::vmware::common::init_response();
         if ($centreon_vmware->{stop} != 0) {
@@ -466,6 +480,7 @@ sub router_event {
             $centreon_vmware->{centreon_vmware_config}->{vsphere_server}->{$1}->{ready} = 1;
         }
 
+        centreon::vmware::common::free_response();
         my $more = zmq_getsockopt($frontend, ZMQ_RCVMORE);        
         last unless $more;
     }
