@@ -22,7 +22,7 @@ package cloud::openstack::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,7 +42,15 @@ sub new {
                         'port'             => 'cloud::openstack::restapi::mode::port',
                         'volume'           => 'cloud::openstack::restapi::mode::volume',
                         );
+
+    $self->{custom_modes}{osapi} = 'cloud::openstack::restapi::custom::osapi';
     return $self;
+}
+
+sub init {
+    my ( $self, %options ) = @_;
+
+    $self->SUPER::init(%options);
 }
 
 1;
@@ -51,6 +59,4 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Openstack Components with their API.
-
-=cut
+Check Openstack Components through their API.

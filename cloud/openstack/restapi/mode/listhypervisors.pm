@@ -24,8 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use JSON;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,25 +33,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "data:s"                => { name => 'data' },
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "port:s"                => { name => 'port', default => '5000' },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path', default => '/v3/auth/tokens' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "credentials"           => { name => 'credentials' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "ssl:s"                 => { name => 'ssl', },
-            "header:s@"             => { name => 'header' },
             "exclude:s"             => { name => 'exclude' },
-            "timeout:s"             => { name => 'timeout' },
             "tenant-id:s"           => { name => 'tenant_id' },
         });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{hypervisor_infos} = ();
     return $self;
 }
@@ -62,24 +45,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{header}) || $self->{option_results}->{header} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --header option.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{data}) || $self->{option_results}->{data} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --data option.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{tenant_id}) || $self->{option_results}->{tenant_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "You need to specify --tenant-id option.");
         $self->{output}->option_exit();
     }
-
-    $self->{http}->set_options(%{$self->{option_results}})
 }
 
 sub check_exclude {
@@ -92,55 +61,18 @@ sub check_exclude {
     return 0;
 }
 
-sub token_request {
+sub listhypervisor_request {
     my ($self, %options) = @_;
 
-    $self->{method} = 'GET';
-    if (defined($self->{option_results}->{data})) {
-        local $/ = undef;
-        if (!open(FILE, "<", $self->{option_results}->{data})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-        $self->{json_request} = <FILE>;
-        close FILE;
-        $self->{method} = 'POST';
-    }
+    my $urlpath = "/v2/".$self->{option_results}->{tenant_id}."/os-hypervisors/detail";
+    my $port = '8774';
 
-    my $response = $self->{http}->request(method => $self->{method}, query_form_post => $self->{json_request});
-    my $headers = $self->{http}->get_header();
-
-    eval {
-        $self->{header} = $headers->header('X-Subject-Token');
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot retrieve API Token");
-        $self->{output}->option_exit();
-    }
-}
-
-sub api_request {
-    my ($self, %options) = @_;
-
-    $self->{method} = 'GET';
-    $self->{option_results}->{url_path} = "/v2/".$self->{option_results}->{tenant_id}."/os-hypervisors/detail";
-    $self->{option_results}->{port} = '8774';
-    @{$self->{option_results}->{header}} = ('X-Auth-Token:' . $self->{header}, 'Accept:application/json');
-    $self->{http}->set_options(%{$self->{option_results}});
-
-    my $webcontent;
-    my $jsoncontent = $self->{http}->request(method => $self->{method});
-
-    my $json = JSON->new;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
+    my $hypervisorapi = $options{custom};
+    my $webcontent = $hypervisorapi->api_request(urlpath => $urlpath,
+                                                       port => $port,);
 
     foreach my $val (@{$webcontent->{hypervisors}}) {
+        next if ($self->check_exclude(status => $val->{state}));
         my $hypervisorname = $val->{hypervisor_hostname};
         $self->{hypervisor_infos}->{$hypervisorname}->{id} = $val->{id};
         $self->{hypervisor_infos}->{$hypervisorname}->{ipaddress} = $val->{host_ip};
@@ -160,8 +92,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->token_request();
-    $self->api_request();
+    $self->listhypervisor_request(%options);
 
     foreach my $hypervisorname (keys %{$self->{hypervisor_infos}}) {
         $self->{output}->add_disco_entry(name => $hypervisorname,
@@ -177,8 +108,7 @@ sub disco_show {
 sub run {
     my ($self, %options) = @_;
 
-    $self->token_request();
-    $self->api_request();
+    $self->listhypervisor_request(%options);
 
     foreach my $hypervisorname (keys %{$self->{hypervisor_infos}}) {
         $self->{output}->output_add(long_msg => sprintf("%s [id = %s, ip = %s, type = %s, status = %s, state = %s]",
@@ -207,85 +137,15 @@ __END__
 
 List OpenStack hypervisors through Compute API V2
 
-JSON OPTIONS:
-
-=over 8
-
-=item B<--data>
-
-Set file with JSON request
-
-=back
-
-HTTP OPTIONS:
-
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of OpenStack Compute's API
-
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
-=item B<--port>
-
-Port used by OpenStack Keystone's API (Default: '5000')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'http')
-
-=item B<--urlpath>
-
-Set path to get API's Token (Default: '/v3/auth/tokens')
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
-
-=item B<--header>
-
-Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
-
-=item B<--exlude>
-
-Exclude specific instance's state (comma seperated list) (Example: --exclude=disabled)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
-
-=back
-
-OPENSTACK OPTIONS:
-
 =over 8
 
 =item B<--tenant-id>
 
 Set Tenant's ID
+
+=item B<--exlude>
+
+Exclude specific instance's state (comma seperated list) (Example: --exclude=down)
 
 =back
 

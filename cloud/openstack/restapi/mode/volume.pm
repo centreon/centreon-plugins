@@ -24,8 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use JSON;
 
 my $thresholds = {
     status => [
@@ -51,26 +49,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "data:s"                  => { name => 'data' },
-            "hostname:s"              => { name => 'hostname' },
-            "http-peer-addr:s"        => { name => 'http_peer_addr' },
-            "port:s"                  => { name => 'port', default => '5000' },
-            "proto:s"                 => { name => 'proto' },
-            "urlpath:s"               => { name => 'url_path', default => '/v3/auth/tokens' },
-            "proxyurl:s"              => { name => 'proxyurl' },
-            "proxypac:s"              => { name => 'proxypac' },
-            "credentials"             => { name => 'credentials' },
-            "username:s"              => { name => 'username' },
-            "password:s"              => { name => 'password' },
-            "ssl:s"                   => { name => 'ssl', },
-            "header:s@"               => { name => 'header' },
-            "timeout:s"               => { name => 'timeout' },
             "tenant-id:s"             => { name => 'tenant_id' },
             "volume-id:s"             => { name => 'volume_id' },
 			"threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{volume_infos} = ();
     return $self;
 }
@@ -94,18 +77,6 @@ sub check_options {
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
 
-    if (!defined($self->{option_results}->{header}) || $self->{option_results}->{header} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --header option.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{data}) || $self->{option_results}->{data} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --data option.");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{tenant_id}) || $self->{option_results}->{tenant_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "You need to specify --tenant-id option.");
         $self->{output}->option_exit();
@@ -114,57 +85,17 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify --volume-id option.");
         $self->{output}->option_exit();
     }
-
-    $self->{http}->set_options(%{$self->{option_results}})
 }
 
-sub token_request {
+sub volume_request {
     my ($self, %options) = @_;
 
-    $self->{method} = 'GET';
-    if (defined($self->{option_results}->{data})) {
-        local $/ = undef;
-        if (!open(FILE, "<", $self->{option_results}->{data})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-        $self->{json_request} = <FILE>;
-        close FILE;
-        $self->{method} = 'POST';
-    }
+    my $urlpath = "/v2/".$self->{option_results}->{tenant_id}."/volumes/".$self->{option_results}->{volume_id};
+    my $port = '8776';
 
-    my $response = $self->{http}->request(method => $self->{method}, query_form_post => $self->{json_request});
-    my $headers = $self->{http}->get_header();
-
-    eval {
-        $self->{header} = $headers->header('X-Subject-Token');
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot retrieve API Token");
-        $self->{output}->option_exit();
-    }
-}
-
-sub api_request {
-    my ($self, %options) = @_;
-
-    $self->{method} = 'GET';
-    $self->{option_results}->{url_path} = "/v2/".$self->{option_results}->{tenant_id}."/volumes/".$self->{option_results}->{volume_id};
-    $self->{option_results}->{port} = '8776';
-    @{$self->{option_results}->{header}} = ('X-Auth-Token:' . $self->{header}, 'Accept:application/json');
-    $self->{http}->set_options(%{$self->{option_results}});
-
-    my $webcontent;
-    my $jsoncontent = $self->{http}->request(method => $self->{method});
-
-    my $json = JSON->new;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
+	my $instanceapi = $options{custom};
+    my $webcontent = $instanceapi->api_request(urlpath => $urlpath,
+												port => $port,);
 
     $self->{volume_infos}->{name} = $webcontent->{volume}->{name};
     $self->{volume_infos}->{status} = $webcontent->{volume}->{status};
@@ -196,8 +127,7 @@ sub get_severity {
 sub run {
     my ($self, %options) = @_;
 
-    $self->token_request();
-    $self->api_request();
+    $self->volume_request(%options);
 
 	my $exit = $self->get_severity(section => 'status', value => $self->{volume_infos}->{status});
 	$self->{output}->output_add(severity => $exit,
@@ -219,86 +149,6 @@ __END__
 
 List OpenStack instances through Compute API V2
 
-JSON OPTIONS:
-
-=over 8
-
-=item B<--data>
-
-Set file with JSON request
-
-=back
-
-HTTP OPTIONS:
-
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of OpenStack Compute's API
-
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
-=item B<--port>
-
-Port used by OpenStack Keystone's API (Default: '5000')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'http')
-
-=item B<--urlpath>
-
-Set path to get API's Token (Default: '/v3/auth/tokens')
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
-
-=item B<--header>
-
-Set HTTP headers (Multiple option. Example: --header='Content-Type: xxxxx')
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
-
-=back
-
-=item B<--threshold-overload>
-
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='status,CRITICAL,^deleting$)'
-
-=back
-
-OPENSTACK OPTIONS:
-
-=over 8
-
 =item B<--tenant-id>
 
 Set Tenant's ID
@@ -306,6 +156,12 @@ Set Tenant's ID
 =item B<--volume-id>
 
 Set Volume's ID
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='status,WARNING,^error_deleting$)'
 
 =back
 
