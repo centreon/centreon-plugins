@@ -50,10 +50,6 @@ sub new {
                         "hostname:s"    => { name => 'hostname' },
                         "data:s"        => { name => 'data' },
                         "proto:s"       => { name => 'proto' },
-         				"credentials"   => { name => 'credentials' },
-         				"ntlm"          => { name => 'ntlm' },
-         				"username:s"    => { name => 'username' },
-         				"password:s"    => { name => 'password' },
          				"proxyurl:s"    => { name => 'proxyurl' },
          				"proxypac:s"    => { name => 'proxypac' },
          				"timeout:s"     => { name => 'timeout' },
@@ -65,7 +61,7 @@ sub new {
          				"cert-pkcs12"   => { name => 'cert_pkcs12' },
 				    });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'TOKEN REST API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
@@ -214,22 +210,6 @@ Port used by Webserver
 =item B<--proto>
 
 Specify https if needed (Default: 'http')
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
 
 =item B<--proxyurl>
 
