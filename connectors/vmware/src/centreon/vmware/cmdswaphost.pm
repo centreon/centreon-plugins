@@ -18,23 +18,20 @@
 
 package centreon::vmware::cmdswaphost;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use centreon::vmware::common;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'swaphost';
     
-    bless $self, $class;
     return $self;
-}
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
 }
 
 sub checkArgs {
@@ -74,12 +71,6 @@ sub initArgs {
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
     $self->{manager}->{perfdata}->threshold_validate(label => 'warning', value => $options{arguments}->{warning});
     $self->{manager}->{perfdata}->threshold_validate(label => 'critical', value => $options{arguments}->{critical});
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

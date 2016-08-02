@@ -18,25 +18,21 @@
 
 package centreon::vmware::cmdnethost;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use centreon::vmware::common;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'nethost';
     
-    bless $self, $class;
     return $self;
 }
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
-}
-
 
 sub checkArgs {
     my ($self, %options) = @_;
@@ -84,12 +80,6 @@ sub initArgs {
     foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

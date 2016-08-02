@@ -18,24 +18,21 @@
 
 package centreon::vmware::cmddatastorehost;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use File::Basename;
 use centreon::vmware::common;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'datastorehost';
     
-    bless $self, $class;
     return $self;
-}
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
 }
 
 sub checkArgs {
@@ -78,12 +75,6 @@ sub initArgs {
     foreach my $label (('warning', 'critical')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

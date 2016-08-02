@@ -18,23 +18,20 @@
 
 package centreon::vmware::cmdstatusvm;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use centreon::vmware::common;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'statusvm';
     
-    bless $self, $class;
     return $self;
-}
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
 }
 
 sub checkArgs {
@@ -62,12 +59,6 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

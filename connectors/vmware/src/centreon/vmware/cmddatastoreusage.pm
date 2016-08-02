@@ -18,23 +18,20 @@
 
 package centreon::vmware::cmddatastoreusage;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use centreon::vmware::common;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'datastoreusage';
     
-    bless $self, $class;
     return $self;
-}
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
 }
 
 sub checkArgs {
@@ -76,12 +73,6 @@ sub initArgs {
     foreach my $label (('warning', 'critical', 'warning_provisioned', 'critical_provisioned')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

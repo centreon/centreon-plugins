@@ -18,6 +18,8 @@
 
 package centreon::vmware::cmdvmoperationcluster;
 
+use base qw(centreon::vmware::cmdbase);
+
 use strict;
 use warnings;
 use centreon::vmware::common;
@@ -25,18 +27,13 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
-    my $class = shift;
-    my $self  = {};
-    $self->{logger} = shift;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(%options);
+    bless $self, $class;
+    
     $self->{commandName} = 'vmoperationcluster';
     
-    bless $self, $class;
     return $self;
-}
-
-sub getCommandName {
-    my $self = shift;
-    return $self->{commandName};
 }
 
 sub checkArgs {
@@ -70,12 +67,6 @@ sub initArgs {
                         'warning_clone', 'critical_clone')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
-}
-
-sub set_connector {
-    my ($self, %options) = @_;
-    
-    $self->{connector} = $options{connector};
 }
 
 sub run {

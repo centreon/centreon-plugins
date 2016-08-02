@@ -262,7 +262,7 @@ sub load_module {
     for (@_) {
         (my $file = "$_.pm") =~ s{::}{/}g;
         require $file;
-        my $obj = $_->new($self->{logger});
+        my $obj = $_->new(logger => $self->{logger});
         $self->{modules_registry}->{$obj->getCommandName()} = $obj;
     }    
 }
