@@ -80,17 +80,10 @@ sub run {
         return ;
     }
 
-    my %filters = ();
     my $multiple = 0;
-    if (defined($self->{vm_hostname}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{vm_hostname}\E$/;
-    } elsif (!defined($self->{vm_hostname})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{vm_hostname}/;
-    }
+    my $filters = $self->build_filter(label => 'name', search_option => 'vm_hostname', is_regexp => 'filter');
     if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
-        $filters{'config.annotation'} = qr/$self->{filter_description}/;
+        $filters->{'config.annotation'} = qr/$self->{filter_description}/;
     }
     
     my @properties = ('snapshot.rootSnapshotList', 'name', 'runtime.connectionState', 'runtime.powerState');
@@ -101,7 +94,7 @@ sub run {
         push @properties, 'config.annotation';
     }
 
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
     my %vm_consolidate = ();

@@ -120,6 +120,7 @@ sub new {
             vm_state_error => 'UNKNOWN',
             host_state_error => 'UNKNOWN',
             retention_dir => '/var/lib/centreon/centplugins',
+            case_insensitive => 0,
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
                 #              'username' => 'XXXXX',
@@ -262,7 +263,7 @@ sub load_module {
     for (@_) {
         (my $file = "$_.pm") =~ s{::}{/}g;
         require $file;
-        my $obj = $_->new(logger => $self->{logger});
+        my $obj = $_->new(logger => $self->{logger}, case_insensitive => $self->{centreon_vmware_config}->{case_insensitive});
         $self->{modules_registry}->{$obj->getCommandName()} = $obj;
     }    
 }

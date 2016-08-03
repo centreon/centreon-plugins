@@ -82,18 +82,10 @@ sub run {
         return ;
     }
 
-    my %filters = ();
     my $multiple = 0;
-    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
-    } elsif (!defined($self->{esx_hostname})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{esx_hostname}/;
-    }
-
+    my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('name', 'runtime.connectionState', 'summary.hardware.numCpuCores', 'summary.hardware.cpuMhz');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
     if (scalar(@$result) > 1) {

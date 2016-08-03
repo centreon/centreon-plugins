@@ -59,9 +59,9 @@ sub run {
     my $self = shift;
     my %nic_in_vswitch = ();
     
-    my %filters = (name => $self->{esx_hostname});
+    my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('config.network.pnic', 'config.network.vswitch', 'config.network.proxySwitch');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     # Get Name from vswitch

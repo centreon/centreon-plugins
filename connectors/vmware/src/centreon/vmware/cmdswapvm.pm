@@ -88,17 +88,10 @@ sub run {
         return ;
     }
 
-    my %filters = ();
     my $multiple = 0;
-    if (defined($self->{vm_hostname}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{vm_hostname}\E$/;
-    } elsif (!defined($self->{vm_hostname})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{vm_hostname}/;
-    }
+    my $filters = $self->build_filter(label => 'name', search_option => 'vm_hostname', is_regexp => 'filter');    
     if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
-        $filters{'config.annotation'} = qr/$self->{filter_description}/;
+        $filters->{'config.annotation'} = qr/$self->{filter_description}/;
     }
     
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
@@ -106,7 +99,7 @@ sub run {
         push @properties, 'config.annotation';
     }
     
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
@@ -140,8 +133,8 @@ sub run {
         my $swap_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapinRate.average'}->{'key'} . ":"})) * 1024;
         my $swap_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.swapoutRate.average'}->{'key'} . ":"})) * 1024;
 
-        my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $swap_in, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $swap_out, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $swap_in, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $swap_out, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
         my ($swap_in_value, $swap_in_unit) = $self->{manager}->{perfdata}->change_bytes(value => $swap_in);
         my ($swap_out_value, $swap_out_unit) = $self->{manager}->{perfdata}->change_bytes(value => $swap_out);

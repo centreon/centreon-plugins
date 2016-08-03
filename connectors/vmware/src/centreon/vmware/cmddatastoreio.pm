@@ -80,17 +80,10 @@ sub run {
         return ;
     }
     
-    my %filters = ();
     my $multiple = 0;
-    if (defined($self->{datastore_name}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{datastore_name}\E$/;
-    } elsif (!defined($self->{datastore_name})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{datastore_name}/;
-    }
+    my $filters = $self->build_filter(label => 'name', search_option => 'datastore_name', is_regexp => 'filter');
     my @properties = ('summary.name', 'summary.accessible');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},

@@ -64,18 +64,10 @@ sub initArgs {
 sub run {
     my $self = shift;
 
-    my %filters = ();
     my $multiple = 0;
-    
-    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
-    } elsif (!defined($self->{esx_hostname})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{esx_hostname}/;
-    }
+    my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('name', 'runtime.connectionState', 'runtime.inMaintenanceMode', 'configManager.serviceSystem');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
     my %host_names = ();

@@ -71,25 +71,16 @@ sub run {
         return if ($self->{statefile_cache}->error() == 1);
     }
     
-    my %filters = ();
     my $multiple = 0;
-
     if (defined($self->{filter_time}) && $self->{filter_time} ne '' && $self->{connector}->{module_date_parse_loaded} == 0) {
         $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                short_msg => "Need to install Date::Parse CPAN Module");
         return ;
     }
     
-    if (defined($self->{datacenter}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{datacenter}\E$/;
-    } elsif (!defined($self->{datacenter})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{datacenter}/;
-    }
-    
+    my $filters = $self->build_filter(label => 'name', search_option => 'datacenter', is_regexp => 'filter');   
     my @properties = ('name', 'triggeredAlarmState');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {

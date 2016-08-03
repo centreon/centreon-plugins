@@ -85,17 +85,10 @@ sub run {
         return ;
     }
 
-    my %filters = ();
     my $multiple = 0;
-    if (defined($self->{cluster}) && !defined($self->{cluster})) {
-        $filters{name} = qr/^\Q$self->{cluster}\E$/;
-    } elsif (!defined($self->{cluster})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{cluster}/;
-    }
+    my $filters = $self->build_filter(label => 'name', search_option => 'cluster', is_regexp => 'filter');
     my @properties = ('name');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {

@@ -71,7 +71,6 @@ sub run {
         return if ($self->{statefile_cache}->error() == 1);
     }
 
-    my %filters = ();
     my $multiple = 0;
 
     if (defined($self->{filter_time}) && $self->{filter_time} ne '' && $self->{connector}->{module_date_parse_loaded} == 0) {
@@ -80,16 +79,9 @@ sub run {
         return ;
     }
     
-    if (defined($self->{esx_hostname}) && !defined($self->{filter})) {
-        $filters{name} = qr/^\Q$self->{esx_hostname}\E$/;
-    } elsif (!defined($self->{esx_hostname})) {
-        $filters{name} = qr/.*/;
-    } else {
-        $filters{name} = qr/$self->{esx_hostname}/;
-    }
-    
+    my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('name', 'triggeredAlarmState');
-    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => \%filters);
+    my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
     if (scalar(@$result) > 1) {

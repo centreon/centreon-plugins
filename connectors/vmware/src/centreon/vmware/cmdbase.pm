@@ -29,6 +29,7 @@ sub new {
     bless $self, $class;
     
     $self->{logger} = $options{logger};
+    $self->{case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
     
     return $self;
 }
@@ -64,6 +65,29 @@ sub set_connector {
     $self->{connector} = $options{connector};
     $self->set_signal_handlers();
     alarm(300);
+}
+
+sub build_filter {
+    my ($self, %options) = @_;
+    
+    my $filters = {};
+    if (defined($self->{$options{search_option}}) && !defined($self->{$options{is_regexp}})) {
+        if ($self->{case_insensitive} == 1) {
+            $filters->{name} = qr/^\Q$self->{$options{search_option}}\E$/i;
+        } else {
+            $filters->{name} = qr/^\Q$self->{$options{search_option}}\E$/;
+        }
+    } elsif (!defined($self->{$options{search_option}})) {
+        $filters->{name} = qr/.*/;
+    } else {
+        if ($self->{case_insensitive} == 1) {
+            $filters->{name} = qr/$self->{$options{search_option}}/i;
+        } else {
+            $filters->{name} = qr/$self->{$options{search_option}}/;
+        }
+    }
+    
+    return $filters;
 }
 
 1;
