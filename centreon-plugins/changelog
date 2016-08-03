@@ -1,3 +1,13 @@
+2016-08-03 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check IBM Storwize (#438)
+ * Plugin added: to check Sonus SBC
+ * Plugin added: to check Aerohive
+ * Plugin added: to check Digi routers
+ * Plugin added: to check telnet sessions
+ * Plugin added: to check china clever PDU
+ * Plugin added: to check Cisco Voice Gateway
+ * Some minor fix and enhancement
+
 2016-06-27 Quentin Garnier <qgarnier@centreon.com>
  * Update FAQ: build a standalone perl script
  * Plugin added: to check Lenovo S Series (#412)
