@@ -360,14 +360,14 @@ Threshold for HTTP timeout
 
 Threshold unit (Default: '%'. Can be: '%' or 'absolute')
 
-=item B<--warning>
+=item B<--warning-*>
 
 Warning threshold.
 Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
 'sending', 'keepalive', 'dns-lookup', 'closing',
 'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
 
-=item B<--critical>
+=item B<--critical-*>
 
 Critical threshold.
 Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
