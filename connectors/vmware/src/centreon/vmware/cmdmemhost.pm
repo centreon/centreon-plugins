@@ -48,15 +48,12 @@ sub checkArgs {
                                                 short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
         return 1;
     }
-    if (($options{manager}->{perfdata}->threshold_validate(label => 'warning', value => $options{arguments}->{warning})) == 0) {
-       $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Argument error: wrong value for warning value '" . $options{arguments}->{warning} . "'.");
-       return 1;
-    }
-    if (($options{manager}->{perfdata}->threshold_validate(label => 'critical', value => $options{arguments}->{critical})) == 0) {
-       $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Argument error: wrong value for critical value '" . $options{arguments}->{critical} . "'.");
-       return 1;
+    foreach my $label (('warning', 'critical', 'warning_state', 'critical_state')) {
+        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
+            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
+                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
+            return 1;
+        }
     }
     return 0;
 }
@@ -69,8 +66,9 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    $self->{manager}->{perfdata}->threshold_validate(label => 'warning', value => $options{arguments}->{warning});
-    $self->{manager}->{perfdata}->threshold_validate(label => 'critical', value => $options{arguments}->{critical});
+     foreach my $label (('warning', 'critical', 'warning_state', 'critical_state')) {
+        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
+    }
 }
 
 sub run {
@@ -94,11 +92,19 @@ sub run {
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
                         $result, 
                         [{'label' => 'mem.consumed.average', 'instances' => ['']},
-                         {'label' => 'mem.overhead.average', 'instances' => ['']}],
+                         {'label' => 'mem.overhead.average', 'instances' => ['']},
+                         {'label' => 'mem.state.latest', 'instances' => ['']}],
                         $self->{connector}->{perfcounter_speriod},
                         sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
+    
+    # for mem.state:
+    # 0   (high)  Free memory >= 6% of machine memory minus Service Console memory.
+    # 1   (soft)  4%
+    # 2   (hard)  2%
+    # 3   (low)  1%
+    my %mapping_state = (0 => 'high', 1 => 'soft', 2 => 'hard', 3 => 'low');
     
     if ($multiple == 1) {
         $self->{manager}->{output}->output_add(severity => 'OK',
@@ -116,20 +122,22 @@ sub run {
         # in KB
         my $mem_used = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"})) * 1024;
         my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"})) * 1024;
+        my $mem_state = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.state.latest'}->{'key'} . ":"})) * 1024;
         my $mem_free = $memory_size - $mem_used;
         my $prct_used = $mem_used * 100 / $memory_size;
         my $prct_free = 100 - $prct_used;
         
-        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($total_value, $total_unit) = $self->{manager}->{perfdata}->change_bytes(value => $memory_size);
         my ($used_value, $used_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_used);
         my ($free_value, $free_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_free);
 
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
+        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%) - Memory state : %s", 
                                             $entity_view->{name},
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
+                                            $free_value . " " . $free_unit, $prct_free,
+                                            $mapping_state{$mem_state}));
         if ($multiple == 0 ||
             !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{manager}->{output}->output_add(severity => $exit,
@@ -138,6 +146,13 @@ sub run {
                                             $total_value . " " . $total_unit,
                                             $used_value . " " . $used_unit, $prct_used,
                                             $free_value . " " . $free_unit, $prct_free));
+        }
+        
+        $exit = $self->{manager}->{perfdata}->threshold_check(value => $mem_state, threshold => [ { label => 'critical_state', exit_litteral => 'critical' }, { label => 'warning_state', exit_litteral => 'warning' } ]);
+        if ($multiple == 0 ||
+            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{manager}->{output}->output_add(severity => $exit,
+                                                   short_msg => sprintf("Memory state : %s", $mapping_state{$mem_state}));
         }
 
         my $extra_label = '';
@@ -150,6 +165,11 @@ sub run {
         $self->{manager}->{output}->perfdata_add(label => 'overhead' . $extra_label, unit => 'B',
                                                  value => $mem_overhead,
                                                  min => 0);
+        $self->{manager}->{output}->perfdata_add(label => 'state' . $extra_label,
+                                                 value => $mem_state,
+                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_state'),
+                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_state'),
+                                                 min => 0, max => 3);
     }
 }
 
