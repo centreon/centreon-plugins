@@ -23,35 +23,31 @@ package centreon::common::emc::navisphere::mode::spcomponents::cpu;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking cpu");
     $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
+    return if ($self->check_filter(section => 'cpu'));
     
     # Enclosure SPE CPU Module A State: Present
     while ($self->{response} =~ /^Enclosure\s+(\S+)\s+CPU\s+Module\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my $instance = "$1.$2";
         my $state = $3;
         
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
+        next if ($self->check_filter(section => 'cpu', instance => $instance));
         $self->{components}->{cpu}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("cpu '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("cpu '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'cpu', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("cpu '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }
