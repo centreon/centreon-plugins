@@ -38,8 +38,10 @@ sub new {
                                   "scope-datacenter:s"      => { name => 'scope_datacenter' },
                                   "scope-cluster:s"         => { name => 'scope_cluster' },
                                   "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"               => { name => 'warning' },
+                                  "critical:s"              => { name => 'critical' },
+                                  "warning-state:s"         => { name => 'warning_state' },
+                                  "critical-state:s"        => { name => 'critical_state' },
                                 });
     return $self;
 }
@@ -48,13 +50,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+    foreach my $label (('warning', 'critical', 'warning_state', 'critical_state')) {
+        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
+            my ($label_opt) = $label;
+            $label_opt =~ tr/_/-/;
+            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
+            $self->{output}->option_exit();
+        }
     }
     if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
@@ -109,6 +111,14 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--warning-state>
+
+Threshold warning. For state != 'high': --warning-state=0
+
+=item B<--critical-state>
+
+Threshold critical. For state != 'high': --warning-state=0
 
 =back
 
