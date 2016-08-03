@@ -23,35 +23,31 @@ package centreon::common::emc::navisphere::mode::spcomponents::memory;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking dimm");
     $self->{components}->{dimm} = {name => 'dimm', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'dimm'));
+    return if ($self->check_filter(section => 'dimm'));
     
     # Enclosure SPE DIMM Module A State: Present
     while ($self->{response} =~ /^Enclosure\s+(\S+)\s+DIMM\s+Module\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my $instance = "$1.$2";
         my $state = $3;
         
-        next if ($self->check_exclude(section => 'dimm', instance => $instance));
+        next if ($self->check_filter(section => 'dimm', instance => $instance));
         $self->{components}->{dimm}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Dimm '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Dimm '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'dimm', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("dimm '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }

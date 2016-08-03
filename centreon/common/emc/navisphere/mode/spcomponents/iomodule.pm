@@ -23,35 +23,31 @@ package centreon::common::emc::navisphere::mode::spcomponents::iomodule;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid|Empty)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking I/O modules");
     $self->{components}->{io} = {name => 'IO module', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'io'));
+    return if ($self->check_filter(section => 'io'));
     
     # Enclosure SPE SP A I/O Module 0 State: Present
     while ($self->{response} =~ /^Enclosure\s+(\S+)\s+SP\s+(\S+)\s+I\/O\s+Module\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my $instance = "$1.$2.$3";
         my $state = $4;
         
-        next if ($self->check_exclude(section => 'io', instance => $instance));
+        next if ($self->check_filter(section => 'io', instance => $instance));
         $self->{components}->{io}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("I/O module '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("I/O module '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'io', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("I/O module '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }

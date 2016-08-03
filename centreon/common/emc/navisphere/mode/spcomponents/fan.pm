@@ -23,35 +23,31 @@ package centreon::common::emc::navisphere::mode::spcomponents::fan;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
     
     # Bus 0 Enclosure 0 Fan A State: Present
     while ($self->{response} =~ /^Bus\s+(\d+)\s+Enclosure\s+(\d+)\s+Fan\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my $instance = "$1.$2.$3";
         my $state = $4;
         
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("fan '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("fan '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'fan', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("fan '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }

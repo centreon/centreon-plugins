@@ -204,7 +204,7 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_upsBasicBattery}, instance => '0');
     my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_upsAdvBattery}, instance => '0');
 
-    $result2->{upsAdvBatteryRunTimeRemaining} = $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60 if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
+    $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60) if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
     
     foreach my $name (keys %{$mapping}) {
         $self->{global}->{$name} = $result->{$name};
