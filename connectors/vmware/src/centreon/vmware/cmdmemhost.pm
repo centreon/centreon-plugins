@@ -127,32 +127,43 @@ sub run {
         my $prct_used = $mem_used * 100 / $memory_size;
         my $prct_free = 100 - $prct_used;
         
-        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit1 = $self->{manager}->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my ($total_value, $total_unit) = $self->{manager}->{perfdata}->change_bytes(value => $memory_size);
         my ($used_value, $used_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_used);
         my ($free_value, $free_unit) = $self->{manager}->{perfdata}->change_bytes(value => $mem_free);
 
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%) - Memory state : %s", 
-                                            $entity_view->{name},
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free,
-                                            $mapping_state{$mem_state}));
-        if ($multiple == 0 ||
-            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{manager}->{output}->output_add(severity => $exit,
-                                                   short_msg => sprintf("'%s' Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", 
-                                            $entity_view->{name},
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
+        
+        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');        
+        my $output = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                             $total_value . " " . $total_unit,
+                             $used_value . " " . $used_unit, $prct_used,
+                             $free_value . " " . $free_unit, $prct_free);
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        if (!$self->{manager}->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
         }
         
-        $exit = $self->{manager}->{perfdata}->threshold_check(value => $mem_state, threshold => [ { label => 'critical_state', exit_litteral => 'critical' }, { label => 'warning_state', exit_litteral => 'warning' } ]);
-        if ($multiple == 0 ||
-            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $output = sprintf("Memory state : %s", $mapping_state{$mem_state});
+        my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $mem_state, threshold => [ { label => 'critical_state', exit_litteral => 'critical' }, { label => 'warning_state', exit_litteral => 'warning' } ]);
+        $long_msg .= $long_msg_append . $output;
+        $long_msg_append = ', ';
+        if (!$self->{manager}->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+            $short_msg .= $short_msg_append . $output;
+            $short_msg_append = ', ';
+        }
+        
+        my $prefix_msg = "'$entity_view->{name}'";
+        $self->{manager}->{output}->output_add(long_msg => "$prefix_msg $long_msg");
+        my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+        if (!$self->{manager}->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{manager}->{output}->output_add(severity => $exit,
-                                                   short_msg => sprintf("Memory state : %s", $mapping_state{$mem_state}));
+                                                   short_msg => "$prefix_msg $short_msg"
+                                                   );
+        }
+        if ($multiple == 0) {
+            $self->{manager}->{output}->output_add(short_msg => "$prefix_msg $long_msg");
         }
 
         my $extra_label = '';
