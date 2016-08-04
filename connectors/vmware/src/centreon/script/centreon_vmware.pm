@@ -70,6 +70,7 @@ my @load_modules = (
     'centreon::vmware::cmddatastoresnapshot',
     'centreon::vmware::cmddatastorevm',
     'centreon::vmware::cmddatastoreusage',
+    'centreon::vmware::cmddevicevm',
     'centreon::vmware::cmdgetmap',
     'centreon::vmware::cmdhealthhost',
     'centreon::vmware::cmdlimitvm',
