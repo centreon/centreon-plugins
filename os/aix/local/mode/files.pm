@@ -38,11 +38,11 @@ sub custom_attributes_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($instance_mode->{option_results}->{critical_attributes}) && $instance_mode->{option_results}->{critical_attributes} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_attributes}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_attributes}) && $instance_mode->{option_results}->{warning_attributes} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_attributes}") {
             $status = 'warning';
         }
     };
