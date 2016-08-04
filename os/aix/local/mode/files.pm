@@ -147,13 +147,12 @@ sub new {
                                   "ssh-command:s"         => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"             => { name => 'timeout', default => 30 },
                                   "sudo"                  => { name => 'sudo' },
-								  "directory:s"			  => { name => 'directory' },
+                                  "directory:s"           => { name => 'directory' },
                                   "files:s"               => { name => 'files' },
                                   "type:s"                => { name => 'type' },
                                   "zero-depth"            => { name => 'zerodepth' },
-								  "skip-dir"			  => { name => 'skipdir' },		  
+                                  "skip-dir"              => { name => 'skipdir' },		  
                                 });
-
     return $self;
 }
 
@@ -208,24 +207,24 @@ sub manage_selection {
     my $cmd_opts;
     my $cmd = "find";
 
-	if (defined($self->{option_results}->{zerodepth})) {
-		$cmd = "ls";
-		$cmd_opts = defined($self->{option_results}->{files}) ? " -Ap " . $self->{option_results}->{directory} . $self->{option_results}->{files} : " -Ap " . $self->{option_results}->{directory};
-		$cmd_opts .= " | grep -v /" if (defined($self->{option_results}->{skipdir}));
-	} else {
-		$cmd_opts = defined($self->{option_results}->{files}) ? $self->{option_results}->{directory} . "-name " . $self->{option_results}->{files} : $self->{option_results}->{directory};
-		$cmd_opts .= ' -type ' . $self->{option_results}->{type} if defined($self->{option_results}->{type});
-	}
+    if (defined($self->{option_results}->{zerodepth})) {
+        $cmd = "ls";
+        $cmd_opts = defined($self->{option_results}->{files}) ? " -Ap " . $self->{option_results}->{directory} . $self->{option_results}->{files} : " -Ap " . $self->{option_results}->{directory};
+        $cmd_opts .= " | grep -v /" if (defined($self->{option_results}->{skipdir}));
+    } else {
+        $cmd_opts = defined($self->{option_results}->{files}) ? $self->{option_results}->{directory} . "-name " . $self->{option_results}->{files} : $self->{option_results}->{directory};
+	$cmd_opts .= ' -type ' . $self->{option_results}->{type} if defined($self->{option_results}->{type});
+    }
 
     my ($stdout, $ret) = centreon::plugins::misc::execute(command => $cmd,
-                                                  options => $self->{option_results},
-                                                  command_path => '/usr/bin/',
-                                                  command_options => $cmd_opts,
-												  no_quit => 1);
+                                                          options => $self->{option_results},
+                                                          command_path => '/usr/bin/',
+                                                          command_options => $cmd_opts,
+                                                          no_quit => 1);
 												  
 	if ($ret != 0) {									  
-		$self->{output}->output_add(severity => 'UNKNOWN',
-									short_msg => "Please check --directory and --files options values, command doesn't return anything !");
+	    $self->{output}->output_add(severity => 'UNKNOWN',
+	    short_msg => "Please check --directory and --files options values, command doesn't return anything !");
 		$self->{output}->display();
 		$self->{output}->exit();
 	}
