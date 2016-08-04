@@ -1,3 +1,9 @@
+2016-08-04 Quentin Garnier <qgarnier@centreon.com> - 2.3.0
+ * Enhance: Add a mode to check connected device (issue #20)
+ * Enhance: Option to use case-insensitive search (issue #14)
+ * Enhance: Add memory state for ESX check
+ * Fix: Hardening connector about blocked childs
+
 2016-05-26 Quentin Garnier <qgarnier@centreon.com> - 2.2.1
  * Enhance: Better management of ESX/VCenter disconnect
  * Enhance: Add counter 'max-total-latency' for mode 'datastore-vm'
