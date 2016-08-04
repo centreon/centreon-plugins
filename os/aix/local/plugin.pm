@@ -35,7 +35,8 @@ sub new {
                          'errpt'            => 'os::aix::local::mode::errpt',
                          'list-storages'    => 'os::aix::local::mode::liststorages',
                          'storage'          => 'os::aix::local::mode::storage',
-                         'lvsync'         => 'os::aix::local::mode::lvsync',
+                         'lvsync'			=> 'os::aix::local::mode::lvsync',
+						 'files'			=> 'os::aix::local::mode::files',	
                          );
 
     return $self;
