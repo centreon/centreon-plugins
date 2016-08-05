@@ -10,7 +10,8 @@ But to avoid reinventing the wheel, you should first take a look at the “examp
 There are 3 chapters:
 
 * :ref:`Quick Start <quick-start>`: Howto create file structure.
-* :ref:`Libraries Reference <libraries_reference>`: API description. 
+* :ref:`Libraries Reference <libraries_reference>`: API description.
+* :ref:`Code Style Guidelines <code_style_guidelines>`: Follow it.
 * :ref:`Model Classes Usage <model_classes_usage>`: description of classes you should use for your plugin.
 
 The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
@@ -1446,7 +1447,6 @@ This is an example of how to use **fetchrow_hashref** method:
 
 Output displays Postgres databases.
 
-
 *****************
 Complete examples
 *****************
@@ -1775,6 +1775,101 @@ Output may display:
 ::
 
   OK: Dropped packets due to memory limitations : 0.00 /s | dropped_packets_Per_Sec=0.00;0;;1;2
+
+
+.. _code_style_guidelines:
+
+*********************
+Code Style Guidelines
+*********************
+
+------------
+Introduction
+------------
+
+Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
+
+-----------
+Indentation
+-----------
+
+Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
+Please use 4 for indentation space width.
+
+.. code-block:: perl
+
+    if ($1 > 1) {
+    ....return 1;
+    } else {
+        if ($i == -1) {
+        ....return 0;
+        }
+        return -1
+    }
+
+--------
+Comments
+--------
+
+There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
+
+.. code-block:: perl
+
+    # Good comment
+    #Wrong comment
+
+---------------------------
+Subroutine & Variable Names
+---------------------------
+
+Whenever possible, use underscore to seperator words and don't use uppercase characters:
+
+.. code-block:: perl
+
+    sub get_logs {}
+    my $start_time;
+
+Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
+
+.. code-block:: perl
+
+    $dogs->{meapolitan_mastiff} = 10;
+
+---------------------------
+Curly Brackets, Parenthesis
+---------------------------
+
+There should be a space between every control/loop keyword and the opening parenthesis:
+
+.. code-block:: perl
+
+    if ($i == 1) {
+        ...
+    }
+    while ($i == 2) {
+        ...
+    }
+    
+------------------
+If/Else Statements
+------------------
+
+'else', 'elsif' should be on the same line after the previous closing curly brace:
+
+.. code-block:: perl
+
+    if ($i == 1) {
+        ...
+    } else {
+        ...
+    }
+
+You can use single line if conditional:
+
+.. code-block:: perl
+
+    next if ($i == 1);
+
 
 .. _model_classes_usage:
 
