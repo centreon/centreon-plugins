@@ -33,8 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "exclude:s"             => { name => 'exclude' },
-            "tenant-id:s"           => { name => 'tenant_id' },
+            "exclude:s"     => { name => 'exclude' },
+            "tenant-id:s"   => { name => 'tenant_id' },
         });
 
     $self->{volumes_infos} = ();
@@ -69,7 +69,7 @@ sub listvolume_request {
 
     my $volumeapi = $options{custom};
     my $webcontent = $volumeapi->api_request(urlpath => $urlpath,
-                                                       port => $port,);
+                                                port => $port,);
 
     foreach my $val (@{$webcontent->{volumes}}) {
         next if ($self->check_exclude(status => $val->{status}));

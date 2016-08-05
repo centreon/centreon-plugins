@@ -27,9 +27,9 @@ use warnings;
 
 my $thresholds = {
     status => [
-        ['ACTIVE', 'OK'],
-		['DOWN', 'CRITICAL'],
-		['N/A', 'UNKNOWN'],
+            ['ACTIVE', 'OK'],
+            ['DOWN', 'CRITICAL'],
+            ['N/A', 'UNKNOWN'],
     ],
 };
 
@@ -42,7 +42,7 @@ sub new {
     $options{options}->add_options(arguments =>
         {
             "port-id:s"               => { name => 'port_id' },
-			"threshold-overload:s@"   => { name => 'threshold_overload' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     $self->{port_infos} = ();
@@ -83,6 +83,7 @@ sub port_request {
     my $instanceapi = $options{custom};
     my $webcontent = $instanceapi->api_request(urlpath => $urlpath,
                                                 port => $port,);
+
     if ($webcontent->{port}->{name} eq '') {
         $self->{port_infos}->{name} = $webcontent->{port}->{id};
     } else {
@@ -121,7 +122,7 @@ sub run {
 
 	my $exit = $self->get_severity(section => 'status', value => $self->{port_infos}->{status});
 	$self->{output}->output_add(severity => $exit,
-    							short_msg => sprintf("Port %s is in %s state (admin_state: %s)",
+                                short_msg => sprintf("Port %s is in %s state (admin_state: %s)",
                                                     $self->{port_infos}->{name},
                                                     $self->{port_infos}->{status},
                                                     $self->{port_infos}->{admin_state}));

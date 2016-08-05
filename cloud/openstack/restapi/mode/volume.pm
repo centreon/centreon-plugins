@@ -29,15 +29,15 @@ my $thresholds = {
     status => [
         ['creating', 'OK'],
         ['available', 'OK'],
-		['attaching', 'OK'],
+        ['attaching', 'OK'],
         ['in-use', 'OK'],
-		['deleting', 'OK'],
-		['backing-up', 'WARNING'],
-		['restoring-backup', 'WARNING'],
-		['error', 'CRITICAL'],
-		['error_deleting', 'CRITICAL'],
-		['error_restoring', 'CRITICAL'],
-		['error_extending', 'CRITICAL'],
+        ['deleting', 'OK'],
+        ['backing-up', 'WARNING'],
+        ['restoring-backup', 'WARNING'],
+        ['error', 'CRITICAL'],
+        ['error_deleting', 'CRITICAL'],
+        ['error_restoring', 'CRITICAL'],
+        ['error_extending', 'CRITICAL'],
     ],
 };
 
@@ -51,7 +51,7 @@ sub new {
         {
             "tenant-id:s"             => { name => 'tenant_id' },
             "volume-id:s"             => { name => 'volume_id' },
-			"threshold-overload:s@"   => { name => 'threshold_overload' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     $self->{volume_infos} = ();
@@ -93,9 +93,9 @@ sub volume_request {
     my $urlpath = "/v2/".$self->{option_results}->{tenant_id}."/volumes/".$self->{option_results}->{volume_id};
     my $port = '8776';
 
-	my $instanceapi = $options{custom};
+    my $instanceapi = $options{custom};
     my $webcontent = $instanceapi->api_request(urlpath => $urlpath,
-												port => $port,);
+                                                port => $port,);
 
     $self->{volume_infos}->{name} = $webcontent->{volume}->{name};
     $self->{volume_infos}->{status} = $webcontent->{volume}->{status};
@@ -129,9 +129,9 @@ sub run {
 
     $self->volume_request(%options);
 
-	my $exit = $self->get_severity(section => 'status', value => $self->{volume_infos}->{status});
-	$self->{output}->output_add(severity => $exit,
-    							short_msg => sprintf("Volume %s is in %s state",
+    my $exit = $self->get_severity(section => 'status', value => $self->{volume_infos}->{status});
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Volume %s is in %s state",
                                                     $self->{volume_infos}->{name},
                                                     $self->{volume_infos}->{status}));
 

@@ -33,7 +33,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "exclude:s"             => { name => 'exclude' },
+            "exclude:s" => { name => 'exclude' },
         });
 
     $self->{networks_infos} = ();
@@ -63,7 +63,7 @@ sub listnetwork_request {
 
     my $networkapi = $options{custom};
     my $webcontent = $networkapi->api_request(urlpath => $urlpath,
-                                            port => $port,);
+                                                port => $port,);
 
     foreach my $val (@{$webcontent->{networks}}) {
         next if ($self->check_exclude(status => $val->{status}));

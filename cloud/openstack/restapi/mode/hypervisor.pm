@@ -42,7 +42,7 @@ sub new {
         {
             "tenant-id:s"             => { name => 'tenant_id' },
             "hypervisor-id:s"         => { name => 'hypervisor_id' },
-			"threshold-overload:s@"   => { name => 'threshold_overload' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     $self->{hypervisor_infos} = ();

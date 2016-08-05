@@ -29,7 +29,7 @@ my $thresholds = {
     status => [
         ['ACTIVE', 'OK'],
         ['BUILD', 'OK'],
-		['DOWN', 'CRITICAL'],
+        ['DOWN', 'CRITICAL'],
         ['ERROR', 'CRITICAL'],
     ],
 };
@@ -43,7 +43,7 @@ sub new {
     $options{options}->add_options(arguments =>
         {
             "network-id:s"            => { name => 'network_id' },
-			"threshold-overload:s@"   => { name => 'threshold_overload' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     $self->{network_infos} = ();
@@ -120,7 +120,7 @@ sub run {
 
 	my $exit = $self->get_severity(section => 'status', value => $self->{network_infos}->{status});
 	$self->{output}->output_add(severity => $exit,
-    							short_msg => sprintf("Network %s is in %s state (admin_state: %s)",
+                                short_msg => sprintf("Network %s is in %s state (admin_state: %s)",
                                                     $self->{network_infos}->{name},
                                                     $self->{network_infos}->{status},
                                                     $self->{network_infos}->{admin_state}));

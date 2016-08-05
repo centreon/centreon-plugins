@@ -29,12 +29,12 @@ my $thresholds = {
     status => [
         ['ACTIVE', 'OK'],
         ['PAUSED', 'WARNING'],
-		['SUSPENDED', 'WARNING'],
+        ['SUSPENDED', 'WARNING'],
         ['SHUTOFF', 'CRITICAL'],
-		['REBUILD', 'WARNING'],
-		['HARD_REBOOT', 'WARNING'],
-		['ERROR', 'CRITCAL'],
-		['BUILDING', 'OK'],
+        ['REBUILD', 'WARNING'],
+        ['HARD_REBOOT', 'WARNING'],
+        ['ERROR', 'CRITCAL'],
+        ['BUILDING', 'OK'],
         ['STOPPED', 'WARNING'],
         ['DELETED', 'OK'],
     ],
@@ -50,7 +50,7 @@ sub new {
         {
             "tenant-id:s"             => { name => 'tenant_id' },
             "instance-id:s"           => { name => 'instance_id' },
-			"threshold-overload:s@"   => { name => 'threshold_overload' },
+            "threshold-overload:s@"   => { name => 'threshold_overload' },
         });
 
     $self->{instance_infos} = ();

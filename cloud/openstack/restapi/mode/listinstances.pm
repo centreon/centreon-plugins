@@ -33,8 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "exclude:s"             => { name => 'exclude' },
-            "tenant-id:s"           => { name => 'tenant_id' },
+            "exclude:s"     => { name => 'exclude' },
+            "tenant-id:s"   => { name => 'tenant_id' },
         });
 
     $self->{instance_infos} = ();
@@ -69,7 +69,7 @@ sub listinstance_request {
 
     my $instanceapi = $options{custom};
     my $webcontent = $instanceapi->api_request(urlpath => $urlpath,
-                                               port => $port,);
+                                                port => $port,);
 
     foreach my $val (@{$webcontent->{servers}}) {
         my $instancestate;
