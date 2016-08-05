@@ -46,15 +46,15 @@ sub new {
                         "hostname:s"    => { name => 'hostname' },
                         "data:s"        => { name => 'data' },
                         "proto:s"       => { name => 'proto' },
-         				"proxyurl:s"    => { name => 'proxyurl' },
-         				"proxypac:s"    => { name => 'proxypac' },
-         				"timeout:s"     => { name => 'timeout' },
-         				"ssl:s"         => { name => 'ssl' },
-         				"cert-file:s"   => { name => 'cert_file' },
-         				"key-file:s"    => { name => 'key_file' },
-         				"cacert-file:s" => { name => 'cacert_file' },
-         				"cert-pwd:s"    => { name => 'cert_pwd' },
-         				"cert-pkcs12"   => { name => 'cert_pkcs12' },
+                        "proxyurl:s"    => { name => 'proxyurl' },
+                        "proxypac:s"    => { name => 'proxypac' },
+                        "timeout:s"     => { name => 'timeout' },
+                        "ssl:s"         => { name => 'ssl' },
+                        "cert-file:s"   => { name => 'cert_file' },
+                        "key-file:s"    => { name => 'key_file' },
+                        "cacert-file:s" => { name => 'cacert_file' },
+                        "cert-pwd:s"    => { name => 'cert_pwd' },
+                        "cert-pkcs12"   => { name => 'cert_pkcs12' },
 				    });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -114,8 +114,8 @@ sub token_request {
     my ($self, %options) = @_;
 
     $self->{option_results}->{url_path} = '/v3/auth/tokens';
-	$self->{option_results}->{port} = '5000';
-	@{$self->{option_results}->{header}} = 'Content-Type: application/json';
+    $self->{option_results}->{port} = '5000';
+    @{$self->{option_results}->{header}} = 'Content-Type: application/json';
     $self->{http}->set_options(%{$self->{option_results}});
 
     $self->{method} = 'GET';
@@ -140,7 +140,7 @@ sub token_request {
     };
 
     if ($@) {
-		$self->{output}->add_option_msg(short_msg => "Cannot retrieve API Token");
+        $self->{output}->add_option_msg(short_msg => "Cannot retrieve API Token");
         $self->{output}->option_exit();
     }
 }
@@ -172,7 +172,6 @@ sub api_request {
 
 	return $webcontent;
 }
-
 
 1;
 
