@@ -86,10 +86,10 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'overall', type => 0 },
+        { name => 'global', type => 0 },
         { name => 'filesystem', type => 0 }
     ];
-    $self->{maps_counters}->{overall} = [
+    $self->{maps_counters}->{global} = [
         { label => 'status', set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -110,7 +110,7 @@ sub set_counters {
         },
         { label => 'read', set => {
                 key_values => [ { name => 'read' }, diff => 1 ],
-				per_second => 1,
+		        per_second => 1,
                 output_template => 'Read I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
@@ -121,7 +121,7 @@ sub set_counters {
         },
         { label => 'write', set => {
                 key_values => [ { name => 'write' }, diff => 1 ],
-				per_second => 1,
+		        per_second => 1,
                 output_template => 'Write I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
@@ -130,7 +130,7 @@ sub set_counters {
                 ],
             }
         },
-	];
+];
 }
 
 sub new {
@@ -155,7 +155,7 @@ sub check_options {
 
     $instance_mode = $self;
     $self->change_macros();
-        
+
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -213,14 +213,14 @@ sub manage_selection {
     
     $self->{results} = $self->{snmp}->get_leef(oids => $request, nothing_quit => 1);
     
-    $self->{global} = {status => $map_global_states{$self->{results}->{$oid_miscGlobalStatus}}};
+    $self->{global}->{status} = $map_global_states{$self->{results}->{$oid_miscGlobalStatus}};
     $self->{filesystem} = { read => defined($self->{results}->{$oid_misc64DiskReadBytes}) ?
 									$self->{results}->{$oid_misc64DiskReadBytes} :
 									($self->{results}->{$oid_miscHighDiskReadBytes} << 32) + $self->{results}->{$oid_miscLowDiskReadBytes},
 							write => defined($self->{results}->{$oid_misc64DiskWriteBytes}) ?
 									 $self->{results}->{$oid_misc64DiskWriteBytes} : 
 									 ($self->{results}->{$oid_miscHighDiskWriteBytes} << 32) + $self->{results}->{$oid_miscLowDiskWriteBytes},
-							status => $map_fs_states{$self->{results}->{$oid_fsOverallStatus}}},
+							status => $map_fs_states{$self->{results}->{$oid_fsOverallStatus}},
 						  };
 						  
 	$self->{extra_msg}->{global} = defined($self->{results}->{$oid_miscGlobalStatusMessage}) ?
