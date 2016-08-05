@@ -149,7 +149,7 @@ __END__
 
 Monitor instance status through Compute API V2
 
-=over 8
+=head2 OPENSTACK OPTIONS
 
 =item B<--tenant-id>
 
@@ -158,6 +158,8 @@ Set Tenant's ID
 =item B<--instance-id>
 
 Set Instance's ID
+
+=head2 MODE OPTIONS
 
 =item B<--threshold-overload>
 

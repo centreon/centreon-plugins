@@ -150,11 +150,13 @@ __END__
 
 List OpenStack instances through Compute API V2
 
-=over 8
+=head2 OPENSTACK OPTIONS
 
 =item B<--tenant-id>
 
 Set Tenant's ID
+
+=head2 MODE OPTIONS
 
 =item B<--exlude>
 

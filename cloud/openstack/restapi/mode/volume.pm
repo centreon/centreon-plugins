@@ -149,6 +149,8 @@ __END__
 
 List OpenStack instances through Compute API V2
 
+=head2 OPENSTACK OPTIONS
+
 =item B<--tenant-id>
 
 Set Tenant's ID
@@ -156,6 +158,8 @@ Set Tenant's ID
 =item B<--volume-id>
 
 Set Volume's ID
+
+=head2 MODE OPTIONS
 
 =item B<--threshold-overload>
 

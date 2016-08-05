@@ -141,9 +141,13 @@ __END__
 
 List OpenStack instances through Compute API V2
 
+=head2 OPENSTACK OPTIONS
+
 =item B<--port-id>
 
 Set Port's ID
+
+=head2 MODE OPTIONS
 
 =item B<--threshold-overload>
 

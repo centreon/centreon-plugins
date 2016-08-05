@@ -191,7 +191,7 @@ OpenStack Rest API custom mode
 
 =item B<--data>
 
-Set file with JSON request
+Set file with JSON request (see http://docs.openstack.org/developer/keystone/api_curl_examples.html for more explanations)
 
 =item B<--hostname>
 

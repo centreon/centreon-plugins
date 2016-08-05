@@ -128,7 +128,7 @@ __END__
 
 List OpenStack networks through Networking API V2.0
 
-=over 8
+=head2 MODE OPTIONS
 
 =item B<--exlude>
 
