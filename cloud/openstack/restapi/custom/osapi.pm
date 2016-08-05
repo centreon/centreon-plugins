@@ -30,10 +30,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -82,7 +78,6 @@ sub set_options {
 # Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
 
     # Manage default value
     foreach (keys %{$options{default}}) {
