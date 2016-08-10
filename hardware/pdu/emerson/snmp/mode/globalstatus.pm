@@ -156,7 +156,7 @@ sub manage_selection {
             $result->{lgpPduEntryUsrLabel} : $instance;
         my $status = 'unknow';
         foreach (keys %bitmap_status) {
-            if (($result->{lgpPduEntrySysStatus} & $_)) {
+            if (($result->{lgpPduEntrySysStatus} == $_)) {
                 $status = $bitmap_status{$_};
                 last;
             }
