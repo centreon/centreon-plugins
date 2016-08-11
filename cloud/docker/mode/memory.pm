@@ -114,6 +114,8 @@ sub run {
     my $memory_free = $webcontent->{memory_stats}->{limit} - $webcontent->{memory_stats}->{usage};
     my $prct_used = $memory_used * 100 / $total_size;
     my $prct_free = 100 - $prct_used;
+    my $failed_counter = $webcontent->{memory_stats}->{failcnt};
+
 
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
@@ -121,10 +123,11 @@ sub run {
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s %.2f%%)",
+                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s %.2f%%) Failed: %s:",
                                                     $total_value . " " . $total_unit,
                                                     $used_value . " " . $used_unit, $prct_used,
-                                                    $free_value . " " . $free_unit, $prct_free)
+                                                    $free_value . " " . $free_unit, $prct_free,
+                                                    $failed_counter)
                                 );
 
     $self->{output}->perfdata_add(label => "used",
@@ -133,6 +136,11 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0,
                                   max => $webcontent->{memory_stats}->{limit},
+                                 );
+
+	$self->{output}->perfdata_add(label => "failed",
+                                  value => $webcontent->{memory_stats}->{failcnt},
+                                  min => 0,
                                  );
 
     $self->{output}->display();
