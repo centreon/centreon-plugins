@@ -117,18 +117,24 @@ sub run {
     my $prct_used = $memory_used * 100 / $total_size;
     my $prct_free = 100 - $prct_used;
     my $failed_counter = $webcontent->{memory_stats}->{failcnt};
-
+    my $memory_cached = $webcontent->{memory_stats}->{stats}->{cache};
+    my $memory_rss = $webcontent->{memory_stats}->{stats}->{rss};
 
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
+    my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $memory_cached);
+    my ($rss_value, $rss_unit) = $self->{perfdata}->change_bytes(value => $memory_rss);
+
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s %.2f%%) Failed: %s",
+                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s %.2f%%) Cached: %s RSS: %s  Failed: %s",
                                                     $total_value . " " . $total_unit,
                                                     $used_value . " " . $used_unit, $prct_used,
                                                     $free_value . " " . $free_unit, $prct_free,
+                                                    $cached_valued . " " . $cached_unit,
+                                                    $rss_valued . " " . $rss_unit,
                                                     $failed_counter)
                                 );
 
@@ -138,6 +144,16 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
                                   min => 0,
                                   max => $webcontent->{memory_stats}->{limit},
+                                 );
+
+	$self->{output}->perfdata_add(label => "cached",
+                                  value => $webcontent->{memory_stats}->{stats}->{cache},
+                                  min => 0,
+                                 );
+
+	$self->{output}->perfdata_add(label => "rss",
+                                  value => $webcontent->{memory_stats}->{stats}->{rss},
+                                  min => 0,
                                  );
 
 	$self->{output}->perfdata_add(label => "failed",
