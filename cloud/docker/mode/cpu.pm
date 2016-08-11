@@ -33,7 +33,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
             "hostname:s"        => { name => 'hostname' },
@@ -123,14 +123,17 @@ sub run {
     my $cpu_totalusage = $webcontent->{cpu_stats}->{cpu_usage}->{total_usage};
     my $cpu_systemusage = $webcontent->{cpu_stats}->{system_cpu_usage};
     my @cpu_number = @{$webcontent->{cpu_stats}->{cpu_usage}->{percpu_usage}};
+    my $cpu_throttledtime = $webcontent->{cpu_stats}->{throttling_data}->{throttled_time};
 
     my $new_datas = {};
     $new_datas->{cpu_totalusage} = $cpu_totalusage;
     $new_datas->{cpu_systemusage} = $cpu_systemusage;
+    $new_datas->{cpu_throttledtime} = $cpu_throttledtime
     my $old_cpu_totalusage = $self->{statefile_value}->get(name => 'cpu_totalusage');
     my $old_cpu_systemusage = $self->{statefile_value}->get(name => 'cpu_systemusage');
+    my $old_cpu_throttledtime = $self->{statefile_value}->get(name => 'cpu_throttledtime');
 
-    if ((!defined($old_cpu_totalusage)) || (!defined($old_cpu_systemusage))) {
+    if ((!defined($old_cpu_totalusage)) || (!defined($old_cpu_systemusage)) || (!defined($old_cpu_throttledtime))) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "Buffer creation...");
         $self->{statefile_value}->write(data => $new_datas);
@@ -147,14 +150,22 @@ sub run {
         $old_cpu_systemusage = 0;
     }
 
+	if ($new_datas->{cpu_throttledtime} < $old_cpu_throttledtime) {
+        # We set 0. Has reboot.
+        $old_cpu_throttledtime = 0;
+    }
+
     my $delta_totalusage = $cpu_totalusage - $old_cpu_totalusage;
     my $delta_systemusage = $cpu_systemusage - $old_cpu_systemusage;
+	my $delta_throttledtime = $cpu_throttledtime - $old_cpu_throttledtime;
+	# Nano second to second
+	my $throttledtime = $delta_throttledtime / 10 ** 9
     my $prct_cpu = (($delta_totalusage / $delta_systemusage) * scalar(@cpu_number)) * 100;
 
     my $exit = $self->{perfdata}->threshold_check(value => $prct_cpu, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage is %.2f%%", $prct_cpu));
+                                short_msg => sprintf("CPU Usage is %.2f%% (Throttled Time: %.3f%s)", $prct_cpu, $throttledtime));
 
     $self->{output}->perfdata_add(label => "cpu", unit => '%',
                                   value => $prct_cpu,
@@ -163,6 +174,11 @@ sub run {
                                   min => 0,
                                   max => 100,
                                  );
+    $self->{output}->perfdata_add(label => "throttled", unit => 's',
+                                  value => $throttledtime,
+                                  min => 0,
+                                 );
+
 
     $self->{statefile_value}->write(data => $new_datas);
 
