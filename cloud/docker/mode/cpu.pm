@@ -128,7 +128,7 @@ sub run {
     my $new_datas = {};
     $new_datas->{cpu_totalusage} = $cpu_totalusage;
     $new_datas->{cpu_systemusage} = $cpu_systemusage;
-    $new_datas->{cpu_throttledtime} = $cpu_throttledtime
+    $new_datas->{cpu_throttledtime} = $cpu_throttledtime;
     my $old_cpu_totalusage = $self->{statefile_value}->get(name => 'cpu_totalusage');
     my $old_cpu_systemusage = $self->{statefile_value}->get(name => 'cpu_systemusage');
     my $old_cpu_throttledtime = $self->{statefile_value}->get(name => 'cpu_throttledtime');
@@ -159,7 +159,7 @@ sub run {
     my $delta_systemusage = $cpu_systemusage - $old_cpu_systemusage;
 	my $delta_throttledtime = $cpu_throttledtime - $old_cpu_throttledtime;
 	# Nano second to second
-	my $throttledtime = $delta_throttledtime / 10 ** 9
+	my $throttledtime = $delta_throttledtime / 10 ** 9;
     my $prct_cpu = (($delta_totalusage / $delta_systemusage) * scalar(@cpu_number)) * 100;
 
     my $exit = $self->{perfdata}->threshold_check(value => $prct_cpu, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
