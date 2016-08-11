@@ -165,7 +165,7 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $prct_cpu, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage is %.2f%% (Throttled Time: %.3f%s)", $prct_cpu, $throttledtime));
+                                short_msg => sprintf("CPU Usage is %.2f%% (Throttled Time: %.3fs)", $prct_cpu, $throttledtime));
 
     $self->{output}->perfdata_add(label => "cpu", unit => '%',
                                   value => $prct_cpu,
