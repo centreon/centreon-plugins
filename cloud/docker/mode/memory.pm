@@ -133,8 +133,8 @@ sub run {
                                                     $total_value . " " . $total_unit,
                                                     $used_value . " " . $used_unit, $prct_used,
                                                     $free_value . " " . $free_unit, $prct_free,
-                                                    $cached_valued . " " . $cached_unit,
-                                                    $rss_valued . " " . $rss_unit,
+                                                    $cached_value . " " . $cached_unit,
+                                                    $rss_value . " " . $rss_unit,
                                                     $failed_counter)
                                 );
 
