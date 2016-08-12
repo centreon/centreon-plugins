@@ -132,19 +132,11 @@ sub run {
         $self->{output}->option_exit();
     }
 
-	my $exit;
-
-    if (defined($webcontent->{message})) {
- 		$exit = "UNKNOWN";
-        $self->{output}->output_add(severity => $exit, short_msg => sprintf("%s",
-												$webcontent->{message}));
-    } else {
-		$exit = $self->get_severity(section => 'state', value => $webcontent->{Status}->{State});
-	}
+	my $exit  = $self->get_severity(section => 'state', value => $webcontent->{Status}->{State});
 
 	if (defined($webcontent->{ManagerStatus}->{Reachability})) {
 		$self->{output}->output_add(severity => $exit,
-									short_msg => sprintf("%s node is %s (Availability: %s Reachability: %s)",
+									short_msg => sprintf("%s node is %s (Availability: %s - Reachability: %s)",
 														$webcontent->{Spec}->{Role},
 														$webcontent->{Status}->{State},
 														$webcontent->{Spec}->{Availability},
