@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -34,15 +35,18 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "name:s"            => { name => 'name' },
-            "id:s"              => { name => 'id' },
-            "warning-in:s"      => { name => 'warning_in' },
-            "critical-in:s"     => { name => 'critical_in' },
-            "warning-out:s"     => { name => 'warning_out' },
-            "critical-out:s"    => { name => 'critical_out' },
+            "port:s"          => { name => 'port' },
+            "name:s"          => { name => 'name' },
+            "id:s"            => { name => 'id' },
+            "warning-in:s"    => { name => 'warning_in' },
+            "critical-in:s"   => { name => 'critical_in' },
+            "warning-out:s"   => { name => 'warning_out' },
+            "critical-out:s"  => { name => 'critical_out' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -75,6 +79,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -95,9 +100,11 @@ sub run {
     } elsif (defined($self->{option_results}->{name})) {
         $urlpath = "/containers/".$self->{option_results}->{name}."/stats";
     }
+    my $port = $self->{option_results}->{port};
     my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
     my $rx_bytes = $webcontent->{network}->{rx_bytes};
     my $tx_bytes = $webcontent->{network}->{tx_bytes};
@@ -175,6 +182,10 @@ __END__
 Check Container's Network traffic usage
 
 =head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 

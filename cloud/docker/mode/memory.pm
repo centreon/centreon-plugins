@@ -33,10 +33,11 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "name:s"            => { name => 'name' },
-            "id:s"              => { name => 'id' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
+            "port:s"      => { name => 'port' },
+            "name:s"      => { name => 'name' },
+            "id:s"        => { name => 'id' },
+            "warning:s"   => { name => 'warning' },
+            "critical:s"  => { name => 'critical' },
         });
 
     return $self;
@@ -76,9 +77,11 @@ sub run {
     } elsif (defined($self->{option_results}->{name})) {
         $urlpath = "/containers/".$self->{option_results}->{name}."/stats";
     }
+    my $port = $self->{option_results}->{port};
     my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
     my $total_size = $webcontent->{memory_stats}->{limit};
     my $memory_used = $webcontent->{memory_stats}->{usage};
@@ -144,6 +147,10 @@ __END__
 Check Container's memory usage
 
 =head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 

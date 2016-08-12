@@ -24,13 +24,18 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
+    $options{options}->add_options(arguments =>
+        {
+            "port:s" => { name => 'port' }
+        });
 
     return $self;
 }
@@ -44,9 +49,11 @@ sub run {
     my ($self, %options) = @_;
 
    	my $urlpath = "/info";
+	my $port = $self->{option_results}->{port};
 	my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath); 
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath
+                                                port => $port);
 
 	$self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Docker is running"));
@@ -89,6 +96,12 @@ __END__
 =head1 MODE
 
 Check Docker information
+
+=head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =back
 

@@ -44,6 +44,7 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
+            "port:s"                    => { name => 'port' },
             "name:s"                    => { name => 'name' },
             "id:s"                      => { name => 'id' },
             "threshold-overload:s@"     => { name => 'threshold_overload' },
@@ -112,10 +113,11 @@ sub run {
     } elsif (defined($self->{option_results}->{name})) {
         $urlpath = "/containers/".$self->{option_results}->{name}."/json";
     }
+    my $port = $self->{option_results}->{port};
     my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
- 
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
     my ($result,$containername,$containertime);
     my $exit = 'OK';
@@ -198,6 +200,10 @@ __END__
 Check Container's state
 
 =head2 DOCKER OPTIONS
+
+item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 

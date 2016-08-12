@@ -24,8 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
-use JSON;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,22 +33,18 @@ sub new {
     $self->{version} = '1.2';
     $options{options}->add_options(arguments =>
         {
-            "exclude:s"             => { name => 'exclude' },
+            "port:s"     => { name => 'port' },
+            "exclude:s"  => { name => 'exclude' },
         });
 
     $self->{container_infos} = ();
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    $self->{option_results}->{url_path} = $self->{option_results}->{url_path}."containers/json";
-    $self->{option_results}->{get_param} = [];
-    push @{$self->{option_results}->{get_param}}, "all=true";
-
-    $self->{http}->set_options(%{$self->{option_results}})
 }
 
 sub check_exclude {
@@ -67,9 +61,11 @@ sub listcontainer_request {
     my ($self, %options) = @_;
 
 	my $urlpath = "/containers/json";
+	my $port = $self->{option_results}->{port};
 	my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
     foreach my $val (@$webcontent) {
         my $containerstate;
@@ -140,6 +136,12 @@ __END__
 =head1 MODE
 
 List Docker containers
+
+=head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =head2 MODE OPTIONS
 

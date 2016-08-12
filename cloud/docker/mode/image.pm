@@ -35,6 +35,7 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
+            "port;s"                => { name => 'port' },
             "name:s"                => { name => 'name' },
             "id:s"                  => { name => 'id' },
             "image:s"               => { name => 'image' },
@@ -83,6 +84,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the registry-proto option");
         $self->{output}->option_exit();
     }
+
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
@@ -96,9 +99,11 @@ sub run {
     } elsif (defined($self->{option_results}->{name})) {
         $urlpath = "/containers/".$self->{option_results}->{name}."/stats";
     }
+    my $port = $self->{option_results}->{port};
     my $containerapi = $options{custom};
 
-    $webcontent = $containerapi->api_request(urlpath => $urlpath);
+    $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                            port => $port);
 
     my $container_id = $webcontent->{Image};
 
@@ -152,6 +157,10 @@ __END__
 Check Container's image viability with a registry
 
 =head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 

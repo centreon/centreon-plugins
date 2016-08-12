@@ -43,6 +43,7 @@ sub new {
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
 
     return $self;
 }
@@ -175,7 +176,7 @@ Check Container's CPU usage
 
 =item B<--port>
 
-Port used by Webserver
+Port used by Docker
 
 =item B<--id>
 

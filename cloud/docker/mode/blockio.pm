@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -34,6 +35,7 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
+            "port:s"            => { name => 'port' },
             "name:s"            => { name => 'name' },
             "id:s"              => { name => 'id' },
             "warning-read:s"    => { name => 'warning-read' },
@@ -43,6 +45,8 @@ sub new {
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -75,6 +79,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -95,9 +100,11 @@ sub run {
 	} elsif (defined($self->{option_results}->{name})) {
 		$urlpath = "/containers/".$self->{option_results}->{name}."/stats";
 	}
+	my $port = $self->{option_results}->{port};
 	my $containerapi = $options{custom};
 
-	my $webcontent = $containerapi->api_request(urlpath => $urlpath);
+	my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+	                                            port => $port);
 
     my $read_bytes = $webcontent->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
     my $write_bytes = $webcontent->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
@@ -176,6 +183,10 @@ __END__
 Check Container's Block I/O usage
 
 =head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 

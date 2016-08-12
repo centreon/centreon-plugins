@@ -33,6 +33,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
+            "port:s"    => { name => 'port' },
             "exclude:s" => { name => 'exclude' },
         });
 
@@ -43,7 +44,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
 }
 
 sub check_exclude {
@@ -60,9 +60,11 @@ sub listnode_request {
     my ($self, %options) = @_;
 
     my $urlpath = "/nodes";
+    my $port = $self->{option_results}->{port};
 
     my $nodeapi = $options{custom};
-	my $webcontent = $nodeapi->api_request(urlpath => $urlpath);
+	my $webcontent = $nodeapi->api_request(urlpath => $urlpath,
+	                                        port => $port);
 
     foreach my $val (@$webcontent) {
         next if ($self->check_exclude(status => $val->{Status}->{State}));
@@ -134,6 +136,12 @@ __END__
 =head1 MODE
 
 List Docker Swarm nodes
+
+=head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Docker
 
 =head2 MODE OPTIONS
 

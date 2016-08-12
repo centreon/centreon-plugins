@@ -42,11 +42,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "id:s"                      => { name => 'id' },
-            "threshold-overload:s@"     => { name => 'threshold_overload' },
+            "port:s"                 => { name => 'port' }, 
+            "id:s"                   => { name => 'id' },
+            "threshold-overload:s@"  => { name => 'threshold_overload' },
         });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
@@ -100,9 +100,11 @@ sub run {
     my ($self, %options) = @_;
 
     my $urlpath = "/nodes/".$self->{option_results}->{id};
+    my $port = $self->{option_results}->{port};
     my $nodeapi = $options{custom};
 
-    my $webcontent = $nodeapi->api_request(urlpath => $urlpath);
+    my $webcontent = $nodeapi->api_request(urlpath => $urlpath,
+                                            port => $port);
 
 	my $exit  = $self->get_severity(section => 'state', value => $webcontent->{Status}->{State});
 
@@ -135,6 +137,10 @@ __END__
 Check Swarm Node's state
 
 =head2 DOCKER OPTIONS
+
+item B<--port>
+
+Port used by Docker
 
 =item B<--id>
 
