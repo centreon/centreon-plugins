@@ -35,7 +35,7 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "port;s"                => { name => 'port' },
+            "port:s"                => { name => 'port' },
             "name:s"                => { name => 'name' },
             "id:s"                  => { name => 'id' },
             "image:s"               => { name => 'image' },
