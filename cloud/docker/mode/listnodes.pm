@@ -95,6 +95,7 @@ sub api_request {
     }
 
     foreach my $val (@$webcontent) {
+        next if ($self->check_exclude(status => $val->{Status}->{State}));
         my $nodeid = $val->{ID};
         $self->{node_infos}->{$nodeid}->{hostname} = $val->{Description}->{Hostname};
         $self->{node_infos}->{$nodeid}->{role} = $val->{Spec}->{Role};
