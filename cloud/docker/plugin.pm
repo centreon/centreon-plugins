@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     # $options->{options} = options object
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.3';
     %{$self->{modes}} = (
                         'blockio'           => 'cloud::docker::mode::blockio',
                         'containerstate'    => 'cloud::docker::mode::containerstate',
@@ -38,7 +38,9 @@ sub new {
                         'image'             => 'cloud::docker::mode::image',
                         'info'              => 'cloud::docker::mode::info',
                         'list-containers'   => 'cloud::docker::mode::listcontainers',
+                        'list-nodes'        => 'cloud::docker::mode::list-nodes',
                         'memory'            => 'cloud::docker::mode::memory',
+                        'node'              => 'cloud::docker::mode::node',
                         'traffic'           => 'cloud::docker::mode::traffic',
                         );
     return $self;
@@ -51,6 +53,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Docker and containers through its HTTPS Remote API (https://docs.docker.com/reference/api/docker_remote_api/).
-Requirements: Docker 1.7.1+ and Docker API 1.19+
+Requirements: Docker 1.12.0+ and Docker API 1.24+
 
 =cut
