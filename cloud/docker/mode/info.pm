@@ -52,7 +52,7 @@ sub run {
 	my $port = $self->{option_results}->{port};
 	my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
                                                 port => $port);
 
 	$self->{output}->output_add(severity => 'OK',
