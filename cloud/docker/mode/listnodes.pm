@@ -33,10 +33,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
         {
-            "exclude:s"             => { name => 'exclude' },
+            "exclude:s" => { name => 'exclude' },
         });
 
-    $self->{container_infos} = ();
+    $self->{node_infos} = ();
     return $self;
 }
 
@@ -60,8 +60,8 @@ sub listnode_request {
     my ($self, %options) = @_;
 
     my $urlpath = "/nodes";
-    my $nodeapi = $options{custom};
 
+    my $nodeapi = $options{custom};
 	my $webcontent = $nodeapi->api_request(urlpath => $urlpath);
 
     foreach my $val (@$webcontent) {
@@ -124,6 +124,7 @@ sub run {
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 
+    exit 0;
 }
 
 1;

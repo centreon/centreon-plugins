@@ -32,25 +32,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.2';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '2376'},
-            "proto:s"               => { name => 'proto', default => 'https' },
-            "urlpath:s"             => { name => 'url_path', default => '/' },
-            "credentials"           => { name => 'credentials' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "ssl:s"                 => { name => 'ssl', },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
             "exclude:s"             => { name => 'exclude' },
-            "timeout:s"             => { name => 'timeout' },
         });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{container_infos} = ();
     return $self;
 }
@@ -76,23 +63,13 @@ sub check_exclude {
 return 0;
 }
 
-sub api_request {
+sub listcontainer_request {
     my ($self, %options) = @_;
 
-    my $jsoncontent = $self->{http}->request();
+	my $urlpath = "/containers/json";
+	my $containerapi = $options{custom};
 
-    my $json = JSON->new;
-
-    my $webcontent;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
 
     foreach my $val (@$webcontent) {
         my $containerstate;
@@ -124,7 +101,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->api_request();
+    $self->listcontainer_request(%options);
 
     foreach my $containername (keys %{$self->{container_infos}}) {
         $self->{output}->add_disco_entry(name => $containername,
@@ -138,7 +115,7 @@ sub disco_show {
 sub run {
     my ($self, %options) = @_;
 
-    $self->api_request();
+    $self->listcontainer_request(%options);
 
     foreach my $containername (keys %{$self->{container_infos}}) {
         $self->{output}->output_add(long_msg => sprintf("%s [id = %s , image = %s, state = %s]",
@@ -164,59 +141,11 @@ __END__
 
 List Docker containers
 
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of Docker's API
-
-=item B<--port>
-
-Port used by Docker's API (Default: '2576')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'https')
-
-=item B<--urlpath>
-
-Set path to get Docker containers (Default: '/')
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
-
-=item B<--cert-file>
-
-Specify certificate to send to the webserver
-
-=item B<--key-file>
-
-Specify key to send to the webserver
-
-=item B<--cacert-file>
-
-Specify root certificate to send to the webserver
+=head2 MODE OPTIONS
 
 =item B<--exlude>
 
 Exclude specific container's state (comma seperated list) (Example: --exclude=Paused,Running)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
 
 =back
 

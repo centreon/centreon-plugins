@@ -115,6 +115,9 @@ sub api_request {
 
     $self->{option_results}->{url_path} = $options{urlpath};
     $self->{method} = 'GET';
+    $self->{option_results}->{get_param} = [];
+    push @{$self->{option_results}->{get_param}}, "all=true", "stream=false";
+
     $self->{http}->set_options(%{$self->{option_results}});
 
     my $webcontent;
