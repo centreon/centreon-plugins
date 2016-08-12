@@ -100,7 +100,7 @@ sub api_request {
         $self->{node_infos}->{$nodeid}->{role} = $val->{Spec}->{Role};
         $self->{node_infos}->{$nodeid}->{availibility} = $val->{Spec}->{Availibility};
         $self->{node_infos}->{$nodeid}->{state} = $val->{Status}->{State};
-        if ($val->{Spec}->{Role} = 'manager')
+        if ($val->{Spec}->{Role} = 'manager') {
             $self->{node_infos}->{$nodeid}->{reachability} = $val->{ManagerStatus}->{Reachability};
         } else {
             $self->{node_infos}->{$nodeid}->{reachability} = '';
