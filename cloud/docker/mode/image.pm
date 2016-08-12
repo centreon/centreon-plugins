@@ -113,12 +113,12 @@ sub run {
     $self->{option_results}->{hostname} = $self->{option_results}->{registry_hostname};
     $self->{http}->set_options(%{$self->{option_results}});
 
-    $jsoncontent2 = $self->{http}->request();
+    $jsoncontent = $self->{http}->request();
 
     my $json2 = JSON->new;
 
     eval {
-        $webcontent2 = $json2->decode($jsoncontent2);
+        $webcontent2 = $json2->decode($jsoncontent);
     };
 
     if ($@) {
