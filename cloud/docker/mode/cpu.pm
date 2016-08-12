@@ -168,16 +168,16 @@ sub run {
                                 short_msg => sprintf("CPU Usage is %.2f%% (Throttled Time: %.3fs)", $prct_cpu, $throttledtime));
 
     $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $prct_cpu,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0,
-                                  max => 100,
-                                 );
+                                    value => $prct_cpu,
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                    min => 0,
+                                    max => 100,
+                                    );
     $self->{output}->perfdata_add(label => "throttled", unit => 's',
-                                  value => $throttledtime,
-                                  min => 0,
-                                 );
+                                    value => $throttledtime,
+                                    min => 0,
+                                    );
 
 
     $self->{statefile_value}->write(data => $new_datas);

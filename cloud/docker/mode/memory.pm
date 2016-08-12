@@ -139,27 +139,27 @@ sub run {
                                 );
 
     $self->{output}->perfdata_add(label => "used",
-                                  value => $webcontent->{memory_stats}->{usage},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0,
-                                  max => $webcontent->{memory_stats}->{limit},
-                                 );
+                                    value => $webcontent->{memory_stats}->{usage},
+                                    warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                    critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+                                    min => 0,
+                                    max => $webcontent->{memory_stats}->{limit},
+                                    );
 
 	$self->{output}->perfdata_add(label => "cached",
-                                  value => $webcontent->{memory_stats}->{stats}->{cache},
-                                  min => 0,
-                                 );
+                                    value => $webcontent->{memory_stats}->{stats}->{cache},
+                                    min => 0,
+                                    );
 
 	$self->{output}->perfdata_add(label => "rss",
-                                  value => $webcontent->{memory_stats}->{stats}->{rss},
-                                  min => 0,
-                                 );
+                                    value => $webcontent->{memory_stats}->{stats}->{rss},
+                                    min => 0,
+                                    );
 
 	$self->{output}->perfdata_add(label => "failed",
-                                  value => $webcontent->{memory_stats}->{failcnt},
-                                  min => 0,
-                                 );
+                                    value => $webcontent->{memory_stats}->{failcnt},
+                                    min => 0,
+                                    );
 
     $self->{output}->display();
     $self->{output}->exit();
