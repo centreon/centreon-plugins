@@ -40,7 +40,7 @@ sub new {
                         'list-containers'   => 'cloud::docker::mode::listcontainers',
                         'list-nodes'        => 'cloud::docker::mode::listnodes',
                         'memory'            => 'cloud::docker::mode::memory',
-                        'node'              => 'cloud::docker::mode::node',
+                        'nodestate'         => 'cloud::docker::mode::nodestate',
                         'traffic'           => 'cloud::docker::mode::traffic',
                         );
     return $self;
