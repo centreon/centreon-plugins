@@ -22,13 +22,12 @@ package cloud::docker::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.3';
     %{$self->{modes}} = (
@@ -43,8 +42,17 @@ sub new {
                         'nodestate'         => 'cloud::docker::mode::nodestate',
                         'traffic'           => 'cloud::docker::mode::traffic',
                         );
+
+    $self->{custom_modes}{dockerapi} = 'cloud::docker::custom::dockerapi';
     return $self;
 }
+
+sub init {
+    my ( $self, %options ) = @_;
+
+    $self->SUPER::init(%options);
+}
+
 
 1;
 
