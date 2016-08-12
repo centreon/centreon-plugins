@@ -38,7 +38,7 @@ sub new {
                         'image'             => 'cloud::docker::mode::image',
                         'info'              => 'cloud::docker::mode::info',
                         'list-containers'   => 'cloud::docker::mode::listcontainers',
-                        'list-nodes'        => 'cloud::docker::mode::list-nodes',
+                        'list-nodes'        => 'cloud::docker::mode::listnodes',
                         'memory'            => 'cloud::docker::mode::memory',
                         'node'              => 'cloud::docker::mode::node',
                         'traffic'           => 'cloud::docker::mode::traffic',
