@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -34,10 +35,11 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "name:s"            => { name => 'name' },
-            "id:s"              => { name => 'id' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
+            "port:s"      => { name => 'port' },
+            "name:s"      => { name => 'name' },
+            "id:s"        => { name => 'id' },
+            "warning:s"   => { name => 'warning' },
+            "critical:s"  => { name => 'critical' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -69,6 +71,7 @@ sub check_options {
        $self->{output}->option_exit();
     }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
 
@@ -87,9 +90,11 @@ sub run {
 	} elsif (defined($self->{option_results}->{name})) {
 		$urlpath = "/containers/".$self->{option_results}->{name}."/stats";
 	}
+	my $port = $self->{option_results}->{port};
     my $containerapi = $options{custom};
 
-    my $webcontent = $containerapi->api_request(urlpath => $urlpath);
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
     my $cpu_totalusage = $webcontent->{cpu_stats}->{cpu_usage}->{total_usage};
     my $cpu_systemusage = $webcontent->{cpu_stats}->{system_cpu_usage};
@@ -167,6 +172,10 @@ __END__
 Check Container's CPU usage
 
 =head2 DOCKER OPTIONS
+
+=item B<--port>
+
+Port used by Webserver
 
 =item B<--id>
 

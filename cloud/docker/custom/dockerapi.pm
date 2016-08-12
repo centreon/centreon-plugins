@@ -45,7 +45,6 @@ sub new {
                     {
                         "hostname:s"    => { name => 'hostname' },
                         "proto:s"       => { name => 'proto' },
-						"port:s"        => { name => 'port' },
 						"credentials"   => { name => 'credentials' },
 						"username:s"    => { name => 'username' },
 						"password:s"    => { name => 'password' },
@@ -114,6 +113,7 @@ sub api_request {
     my ($self, %options) = @_;
 
     $self->{option_results}->{url_path} = $options{urlpath};
+    $self->{option_results}->{port} = $options{port};
     $self->{method} = 'GET';
     $self->{option_results}->{get_param} = [];
     push @{$self->{option_results}->{get_param}}, "all=true", "stream=false";
@@ -160,10 +160,6 @@ IP Addr/FQDN of the webserver host
 =item B<--proto>
 
 Specify https if needed (Default: 'http')
-
-=item B<--port>
-
-Port used by Webserver
 
 =item B<--credentials>
 
