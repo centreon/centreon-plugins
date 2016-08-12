@@ -98,9 +98,9 @@ sub api_request {
         my $nodeid = $val->{ID};
         $self->{node_infos}->{$nodeid}->{hostname} = $val->{Description}->{Hostname};
         $self->{node_infos}->{$nodeid}->{role} = $val->{Spec}->{Role};
-        $self->{node_infos}->{$nodeid}->{availibility} = $val->{Spec}->{Availibility};
+        $self->{node_infos}->{$nodeid}->{availability} = $val->{Spec}->{Availability};
         $self->{node_infos}->{$nodeid}->{state} = $val->{Status}->{State};
-        if ($val->{Spec}->{Role} = 'manager') {
+        if ($val->{Spec}->{Role} == 'manager') {
             $self->{node_infos}->{$nodeid}->{reachability} = $val->{ManagerStatus}->{Reachability};
         } else {
             $self->{node_infos}->{$nodeid}->{reachability} = '';
@@ -112,7 +112,7 @@ sub api_request {
 sub disco_format {
     my ($self, %options) = @_;
 
-    my $names = ['id', 'hostname', 'role', 'state', 'availibility', 'reachability'];
+    my $names = ['id', 'hostname', 'role', 'state', 'availability', 'reachability'];
     $self->{output}->add_disco_format(elements => $names);
 }
 
@@ -126,7 +126,7 @@ sub disco_show {
                                         hostname => $self->{node_infos}->{$nodeid}->{hostname},
                                         role => $self->{node_infos}->{$nodeid}->{role},
                                         state => $self->{node_infos}->{$nodeid}->{state},
-                                        availibility => $self->{node_infos}->{$nodeid}->{availibility},
+                                        availability => $self->{node_infos}->{$nodeid}->{availability},
                                         reachability => $self->{node_infos}->{$nodeid}->{reachability},
                                         );
     }
@@ -138,12 +138,12 @@ sub run {
     $self->api_request();
 
     foreach my $nodeid (keys %{$self->{node_infos}}) {
-        $self->{output}->output_add(long_msg => sprintf("%s [hostname = %s , role = %s, state = %s, availibility = %s, reachability = %s]",
+        $self->{output}->output_add(long_msg => sprintf("%s [hostname = %s , role = %s, state = %s, availability = %s, reachability = %s]",
                                                         $nodeid,
                                                         $self->{node_infos}->{$nodeid}->{hostname},
                                                         $self->{node_infos}->{$nodeid}->{role},
                                                         $self->{node_infos}->{$nodeid}->{state},
-                                                        $self->{node_infos}->{$nodeid}->{availibility},
+                                                        $self->{node_infos}->{$nodeid}->{availability},
                                                         $self->{node_infos}->{$nodeid}->{reachability}));
     }
 
