@@ -25,62 +25,37 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"                => { name => 'hostname' },
-            "port:s"                    => { name => 'port', default => '2376'},
-            "proto:s"                   => { name => 'proto', default => 'https' },
-            "urlpath:s"                 => { name => 'url_path', default => '/info' },
-            "credentials"               => { name => 'credentials' },
-            "username:s"                => { name => 'username' },
-            "password:s"                => { name => 'password' },
-            "ssl:s"                     => { name => 'ssl', },
-            "cert-file:s"               => { name => 'cert_file' },
-            "key-file:s"                => { name => 'key_file' },
-            "cacert-file:s"             => { name => 'cacert_file' },
-            "timeout:s"                 => { name => 'timeout' },
+            "port:s" => { name => 'port' }
         });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
+   	my $urlpath = "/info";
+	my $port = $self->{option_results}->{port};
+	my $containerapi = $options{custom};
 
-    my $jsoncontent = $self->{http}->request();;
+    my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                                port => $port);
 
-    my $json = JSON->new;
-
-    my $webcontent;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
-
-
-    $self->{output}->output_add(severity => 'OK',
+	$self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Docker is running"));
 
     $self->{output}->perfdata_add(label => "containers",
@@ -122,55 +97,11 @@ __END__
 
 Check Docker information
 
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of Docker's API
+=head2 DOCKER OPTIONS
 
 =item B<--port>
 
-Port used by Docker's API (Default: '2576')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'https')
-
-=item B<--urlpath>
-
-Set path to get Docker information (Default: '/')
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
-
-=item B<--cert-file>
-
-Specify certificate to send to the webserver
-
-=item B<--key-file>
-
-Specify key to send to the webserver
-
-=item B<--cacert-file>
-
-Specify root certificate to send to the webserver
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
+Port used by Docker
 
 =back
 
