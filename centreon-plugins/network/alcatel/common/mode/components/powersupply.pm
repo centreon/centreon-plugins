@@ -95,7 +95,7 @@ sub check {
         foreach (@oper_conditions) {
             if ($phys_oper_status{$oper_status} =~ /$$_[0]/i) {
                 $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("power supply '%s/%s/%s' oeprationnal status is %s",
+                                            short_msg => sprintf("power supply '%s/%s/%s' operationnal status is %s",
                                                         $name, $descr, $instance, $phys_oper_status{$oper_status}));
                 last;
             }
