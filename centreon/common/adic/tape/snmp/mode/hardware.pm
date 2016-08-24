@@ -28,7 +28,8 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(global|physicaldrive|subsystem)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(global|physicaldrive|subsystem|component|temperature)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -41,11 +42,33 @@ sub set_system {
             ['informational', 'OK'],
             ['unknown', 'UNKNOWN'],
             ['invalid', 'CRITICAL'],
+            
+            ['other', 'OK'],
+            ['ok', 'OK'],
+            ['non-critical', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['non-recoverable', 'CRITICAL'],
+        ],
+        component => [
+            ['unknown', 'UNKNOWN'],
+            ['unused', 'OK'],
+            ['ok', 'OK'],
+            ['warning', 'WARNING'],
+            ['failed', 'CRITICAL'],
+        ],
+        sensor => [
+            ['nominal', 'OK'],
+            ['warningLow', 'WARNING'],
+            ['warningHigh', 'CRITICAL'],
+            ['alarmLow', 'CRITICAL'],
+            ['alarmHigh', 'CRITICAL'],
+            ['notInstalled', 'OK'],
+            ['noData', 'OK'],
         ],
     };
     
     $self->{components_path} = 'centreon::common::adic::tape::snmp::mode::components';
-    $self->{components_module} = ['global', 'physicaldrive', 'subsystem'];
+    $self->{components_module} = ['global', 'physicaldrive', 'subsystem', 'component', 'temperature', 'fan'];
 }
 
 sub snmp_execute {
@@ -57,7 +80,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, no_absent => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -81,7 +104,7 @@ Check Hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'global', 'physicaldrive', 'subsystem'.
+Can be: 'global', 'physicaldrive', 'subsystem', 'component', 'temperature', 'fan'.
 
 =item B<--filter>
 
@@ -98,6 +121,16 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='physicaldrive,OK,invalid'
+
+=item B<--warning>
+
+Set warning threshold (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,40'
 
 =back
 
