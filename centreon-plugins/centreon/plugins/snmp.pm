@@ -761,8 +761,10 @@ sub map_instance {
     my ($self, %options) = @_;
     
     my $results = {};
+    my $instance = '';
+    $instance = '.' . $options{instance} if (defined($options{instance}));
     foreach my $name (keys %{$options{mapping}}) {
-        my $entry = $options{mapping}->{$name}->{oid} . '.' . $options{instance};
+        my $entry = $options{mapping}->{$name}->{oid} . $instance;
         if (defined($options{results}->{$entry})) {
             $results->{$name} = $options{results}->{$entry};
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
