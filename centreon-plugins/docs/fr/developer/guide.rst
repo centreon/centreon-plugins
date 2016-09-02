@@ -6,7 +6,7 @@ Ce document présente les bonnes pratiques pour le développement de "centreon-p
 Comme tous les plugins sont écrits en Perl, "There's more than one way to do it".
 Afib de ne pas réinventer la roue, vous devriez d'abord regarder le dossier “example”. Vous aurez alors un aperçu de la méthodologie pour construire votre propre plugin ainsi que ses modes associés.
 
-La dernière version est disponible sur le dépôt git suivant: http://git.centreon.com/centreon-plugins.git
+La dernière version est disponible sur le dépôt git suivant: https://github.com/centreon/centreon-plugins.git
 
 ****************
 Démarrage rapide
