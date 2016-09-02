@@ -1,3 +1,11 @@
+2016-09-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check HP-UX SNMP (#13)
+ * Plugin added: to check Hitachi HNAS
+ * Plugin added: to check Overland Neo Series
+ * Plugin added: to check Quantum Scalar
+ * Plugin added: to check HP Storeonce SSH
+ * Fix: [pdu emerson]{global-status} wrong status
+ 
 2016-08-03 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check IBM Storwize (#438)
  * Plugin added: to check Sonus SBC
