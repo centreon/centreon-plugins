@@ -14,7 +14,7 @@ There are 3 chapters:
 * :ref:`Code Style Guidelines <code_style_guidelines>`: Follow it.
 * :ref:`Model Classes Usage <model_classes_usage>`: description of classes you should use for your plugin.
 
-The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
+The lastest version is available on following git repository: https://github.com/centreon/centreon-plugins.git
 
 .. _quick-start:
 

@@ -27,7 +27,7 @@ It seems that 'os::linux::snmp::plugin' is the good one. So i verify with the op
     Plugin Description:
       Check Linux operating systems in SNMP.
 
-It's exactly what i need. Now i'll the option ``--list-mode`` to know what can i do with it:
+It's exactly what i need. Now i'll add the option ``--list-mode`` to know what can i do with it:
 
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --list-mode
     ...
