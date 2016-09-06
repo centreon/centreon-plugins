@@ -170,7 +170,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
     $self->{statefile_cache}->check_options(%options);
 }
