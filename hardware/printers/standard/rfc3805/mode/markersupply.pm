@@ -103,8 +103,8 @@ sub run {
         my $current_value = $result2->{$oid_prtMarkerSuppliesLevel . '.' . $instance};
         my $max_value = $result2->{$oid_prtMarkerSuppliesMaxCapacity . '.' . $instance};
         
-        if (!defined($unit_managed{$unit})) {
-            $self->{output}->output_add(long_msg => "Skipping marker supply '$descr': unit not managed."); 
+        if (!defined($unit) || !defined($unit_managed{$unit})) {
+            $self->{output}->output_add(long_msg => "Skipping marker supply '$descr': no unit or not managed."); 
             next;
         }
         if ($current_value == -1) {
