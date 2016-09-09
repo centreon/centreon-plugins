@@ -67,7 +67,11 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $icmp_sock = new IO::Socket::INET(Proto=>"icmp");
+    my $icmp_sock = new IO::Socket::INET(Proto => "icmp");
+    if (!defined($icmp_sock)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot create socket: $!");
+        $self->{output}->option_exit();
+    }
     my $read_set = new IO::Select();
     $read_set->add($icmp_sock);
 
@@ -78,7 +82,8 @@ sub run {
 
     $sock->send("Hello");
     close($sock);
-    (my $new_readable) = IO::Select->select($read_set, undef, undef, $self->{option_results}->{timeout});
+    
+    my ($new_readable) = IO::Select->select($read_set, undef, undef, $self->{option_results}->{timeout});
     my $icmp_arrived = 0;
     foreach $sock (@$new_readable) {
         if ($sock == $icmp_sock) {
@@ -89,8 +94,8 @@ sub run {
     close($icmp_sock);
 
     if ($icmp_arrived == 1) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Connection failed on port %s", $self->{option_results}->{port}));
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("Connection failed on port %s", $self->{option_results}->{port}));
     } else {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("Connection success on port %s", $self->{option_results}->{port}));
