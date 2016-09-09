@@ -56,7 +56,7 @@ sub check {
     $self->{components}->{serviceset} = {name => 'service sets', total => 0, skip => 0};
     return if ($self->check_filter(section => 'serviceset'));
 
-    return if ($self->{result} !~ />\s*serviceset show status(.*?)\n>/msi);
+    return if ($self->{result} !~ /[>#]\s*serviceset show status(.*?)\n[>#]/msi);
     my $content = $1;
     
     while ($content =~ /^Service Set (\d+).*?\n(.*?)\n\s*?\n/msgi) {

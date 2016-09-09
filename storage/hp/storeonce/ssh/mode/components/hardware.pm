@@ -65,7 +65,7 @@ sub check {
     $self->{components}->{hardware} = {name => 'hardwares', total => 0, skip => 0};
     return if ($self->check_filter(section => 'hardware'));
     
-    return if ($self->{result} !~ />\s*hardware show status details(.*?)\n>/msi);
+    return if ($self->{result} !~ /[>#]\s*hardware show status details(.*?)\n[>#]/msi);
     my $content = $1;
     
     while ($content =~ /^(\S+[^\n]*?)\n\s+(.*?)\n\s*?\n/msgi) {
