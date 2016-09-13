@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hp::storeonce::restapi::mode::servicesetusage;
+package storage::hp::storeonce::restapi::mode::clusterusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -62,7 +62,6 @@ sub custom_status_calc {
     my ($self, %options) = @_;
      
     $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{housekeeping_health} = $options{new_datas}->{$self->{instance} . '_housekeeping_health'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -135,12 +134,12 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'scs', type => 1, cb_prefix_output => 'prefix_scs_output', message_multiple => 'All service sets are ok' }
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' }
     ];
     
-    $self->{maps_counters}->{scs} = [
+    $self->{maps_counters}->{cluster} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'health' }, { name => 'housekeeping_health' }, { name => 'display' } ],
+                key_values => [ { name => 'health' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -194,10 +193,10 @@ sub check_options {
     $self->change_macros();
 }
 
-sub prefix_scs_output {
+sub prefix_cluster_output {
     my ($self, %options) = @_;
     
-    return "Service set '" . $options{instance_value}->{display} . "' ";
+    return "Cluster '" . $options{instance_value}->{display} . "' ";
 }
 
 sub change_macros {
@@ -221,28 +220,27 @@ my %mapping_health_level = (
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{scs} = {};
-    my $result = $options{custom}->get(path => '/cluster/servicesets', ForceArray => ['serviceset']);
-    if (defined($result->{servicesets}->{serviceset})) {
-        foreach my $entry (@{$result->{servicesets}->{serviceset}}) {
+    $self->{cluster} = {};
+    my $result = $options{custom}->get(path => '/cluster', ForceArray => ['cluster']);
+    if (defined($result->{cluster})) {
+        foreach my $entry (@{$result->{cluster}}) {
             if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                $entry->{properties}->{alias} !~ /$self->{option_results}->{filter_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $entry->{properties}->{alias} . "': no matching filter.", debug => 1);
+                $entry->{properties}->{applianceName} !~ /$self->{option_results}->{filter_name}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $entry->{properties}->{applianceName} . "': no matching filter.", debug => 1);
                 next;
             }
             
-            $self->{scs}->{$entry->{properties}->{ssid}} = { 
-                display => $entry->{properties}->{alias}, 
+            $self->{cluster}->{$entry->{properties}->{serialNumber}} = { 
+                display => $entry->{properties}->{applianceName}, 
                 health => $mapping_health_level{$entry->{properties}->{healthLevel}},
-                housekeeping_health => $mapping_health_level{$entry->{properties}->{housekeepingHealthLevel}},
-                total => $entry->{properties}->{capacityBytes}, 
-                used => $entry->{properties}->{capacityBytes} - $entry->{properties}->{freeBytes},
+                total => $entry->{properties}->{capacity} * 1024 * 1024 * 1024, # GB
+                used => ($entry->{properties}->{capacity} - $entry->{properties}->{freeSpace}) * 1024 * 1024 * 1024, # GB
                 dedup => $entry->{properties}->{dedupeRatio} };
         }
     }
     
-    if (scalar(keys %{$self->{scs}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No service set found.");
+    if (scalar(keys %{$self->{cluster}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No cluster found.");
         $self->{output}->option_exit();
     }
 }
@@ -253,7 +251,7 @@ __END__
 
 =head1 MODE
 
-Check service set usages.
+Check cluster usages.
 
 =over 8
 
@@ -264,17 +262,17 @@ Example: --filter-counters='^status$'
 
 =item B<--filter-name>
 
-Filter service set name (can be a regexp).
+Filter cluster name (can be a regexp).
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} =~ /warning/).
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} =~ /critical/').
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{display}
 
 =item B<--warning-*>
 

@@ -141,7 +141,7 @@ sub get {
                                           critical_status => '', warning_status => '');
     my $content;
     eval {
-        $content = XMLin($response);
+        $content = XMLin($response, ForceArray => $options{ForceArray});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
