@@ -36,7 +36,7 @@ sub set_counters {
         { label => 'user', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'user', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'user' },
-                output_template => 'User %.2f %%', output_use => 'user_prct',
+                output_template => 'User %.2f %%', output_use => 'user_prct', threshold_use => 'user_prct',
                 perfdatas => [
                     { label => 'user', value => 'user_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -45,7 +45,7 @@ sub set_counters {
         { label => 'sys', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'sys', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'sys' },
-                output_template => 'System %.2f %%', output_use => 'sys_prct',
+                output_template => 'System %.2f %%', output_use => 'sys_prct', threshold_use => 'sys_prct',
                 perfdatas => [
                     { label => 'sys', value => 'sys_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -54,7 +54,7 @@ sub set_counters {
         { label => 'nice', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'nice', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'nice' },
-                output_template => 'Nice %.2f %%', output_use => 'nice_prct',
+                output_template => 'Nice %.2f %%', output_use => 'nice_prct', threshold_use => 'nice_prct',
                 perfdatas => [
                     { label => 'nice', value => 'nice_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -63,7 +63,7 @@ sub set_counters {
         { label => 'idle', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'idle', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'idle' },
-                output_template => 'Idle %.2f %%', output_use => 'idle_prct',
+                output_template => 'Idle %.2f %%', output_use => 'idle_prct', threshold_use => 'idle_prct',
                 perfdatas => [
                     { label => 'idle', value => 'idle_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
