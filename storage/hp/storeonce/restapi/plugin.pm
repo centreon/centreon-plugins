@@ -31,6 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+                         'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
+                         'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
                          'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
                          );
 
