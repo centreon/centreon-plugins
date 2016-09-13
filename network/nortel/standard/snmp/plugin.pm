@@ -35,6 +35,7 @@ sub new {
                          'hardware'         => 'network::nortel::standard::snmp::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::nortel::standard::snmp::mode::memory',
                          );
 
     return $self;
