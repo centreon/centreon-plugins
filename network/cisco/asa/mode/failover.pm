@@ -52,7 +52,7 @@ sub custom_status_threshold {
     return $status;
 }
 
-sub custom_change_output {
+sub custom_status_output {
     my ($self, %options) = @_;
     
     my $msg = sprintf("Primary unit is '%s' [details: '%s'], Secondary unit is '%s' [details : '%s']", 
@@ -61,7 +61,7 @@ sub custom_change_output {
     return $msg;
 }
 
-sub custom_change_calc {
+sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{primaryStateLast} = $options{old_datas}->{$self->{instance} . '_primary_state'};
@@ -91,7 +91,7 @@ sub set_counters {
             }
         },
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'primary_state', diff => 1 }, { name => 'secondary_state', diff => 1 }, { name => 'primary_details' }, { name => 'secondary_details' } ],
+                key_values => [ { name => 'primary_state' }, { name => 'secondary_state' }, { name => 'primary_details' }, { name => 'secondary_details' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -132,35 +132,6 @@ sub change_macros {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    my $active_units = 0;
-    my $exit = 'ok';
-    
-    
-   
-    if ($active_units == 0) {
-        $exit = 'critical';
-    } elsif ($active_units == 1 && !defined($self->{option_results}->{dont_warn_notstandby})) {
-        # No redundant interface
-        $exit = 'warning';
-    }
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Primary unit is '%s' [details: '%s'], Secondary unit is '%s' [details : '%s']",
-                                                     $map_failover{$result->{$oid_cfwHardwareStatusValue_primary}}, $result->{$oid_cfwHardwareStatusDetail_primary},
-                                                     $map_failover{$result->{$oid_cfwHardwareStatusValue_secondary}}, $result->{$oid_cfwHardwareStatusDetail_secondary}));                                 
-                                                     
-    $self->{output}->perfdata_add(label => "active_units",
-                                  value => $active_units,
-                                  min => 0, max => 2);
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my %map_failover = (
