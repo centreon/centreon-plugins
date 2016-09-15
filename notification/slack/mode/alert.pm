@@ -128,7 +128,6 @@ sub format_payload {
 }
 
 sub host_message {
-    print 'Host message\n';
     my ($self, %options) = @_;
     
     my $url_host = $self->{option_results}->{host_name};
@@ -166,7 +165,6 @@ sub host_message {
 }
 
 sub service_message {
-    print 'Service message\n';
     my ($self, %options) = @_;
     
     my $url_service = $self->{option_results}->{service_description};
@@ -214,10 +212,6 @@ sub set_payload {
         $self->service_message();
     }
 
-#    if (defined($self->{option_results}->{zone}) && $self->{option_results}->{zone} ne '') {
-#        push @{$self->{payload_attachment}->{fields}}, { title => 'State' => $self->{option_results}->{host_state}, short => 'true'};
-#    }
-    
     if (defined($self->{option_results}->{priority}) && $self->{option_results}->{priority} ne '') {
         push @{$self->{payload_attachment}->{fields}}, { title => 'Priority', value => $self->{option_results}->{priority}, short => 'true' };
     }
