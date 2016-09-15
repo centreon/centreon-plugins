@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,9 +45,9 @@ my $entry_controller_state = '30';
 my $count = 4;
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_blowers };
+    push @{$self->{request}}, { oid => $oid_blowers };
 }
 
 sub check {
@@ -55,7 +55,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking blowers");
     $self->{components}->{blower} = {name => 'blowers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'blower'));
+    return if ($self->check_filter(section => 'blower'));
 
     for (my $i = 0; $i < $count; $i++) {
         my $instance = $i + 1;
@@ -64,7 +64,7 @@ sub check {
         my $blower_speed = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'}) ? $self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_blower_speed + $i) . '.0'} : 'unknown';
         my $ctrl_state = defined($self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}) ? $map_controller_state{$self->{results}->{$oid_blowers}->{$oid_blowers . '.' . ($entry_controller_state + $i) . '.0'}} : undef;
     
-        next if ($self->check_exclude(section => 'blower', instance => $instance));
+        next if ($self->check_filter(section => 'blower', instance => $instance));
         next if ($blower_speed =~ /No Blower/i && 
                  $self->absent_problem(section => 'blower', instance => $instance));
         $self->{components}->{blower}->{total}++;
@@ -94,7 +94,7 @@ sub check {
         
         next if (!defined($ctrl_state));
         
-        next if ($self->check_exclude(section => 'blowerctrl', instance => $instance));
+        next if ($self->check_filter(section => 'blowerctrl', instance => $instance));
         next if ($ctrl_state =~ /notPresent/i && 
                  $self->absent_problem(section => 'blowerctrl', instance => $instance));
         $self->{output}->output_add(long_msg => sprintf("Blower controller '%s' state is %s.", 

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my $mapping2 = {
 my $oid_cucsEquipmentFexDn = '.1.3.6.1.4.1.9.9.719.1.15.19.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentFexPresence}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsEquipmentFexPresence}->{oid} },
         { oid => $mapping2->{cucsEquipmentFexOperState}->{oid} }, { oid => $oid_cucsEquipmentFexDn };
 }
 
@@ -45,7 +45,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fabric extenders");
     $self->{components}->{fex} = {name => 'fabric extenders', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fex'));
+    return if ($self->check_filter(section => 'fex'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentFexDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -55,7 +55,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentFexOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'fex', instance => $fex_dn));
-        next if ($self->check_exclude(section => 'fex', instance => $fex_dn));
+        next if ($self->check_filter(section => 'fex', instance => $fex_dn));
 
         $self->{output}->output_add(long_msg => sprintf("Fabric extender '%s' state is '%s' [presence: %s].",
                                                         $fex_dn, $result2->{cucsEquipmentFexOperState},

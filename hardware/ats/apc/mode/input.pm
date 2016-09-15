@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,7 +102,7 @@ sub build_values {
         #if ($options{current} =~ /^$oid_inputs\.(.*)/) {
         if ($options{current} =~ /^$oid\.(.*)/) {
             $instance = $1;
-	    #$instance =~ s/1\.1\.3\.//g;
+            #$instance =~ s/1\.1\.3\.//g;
             last;
         }
     }
@@ -115,14 +115,13 @@ sub build_values {
     $self->{instances_done}->{$instance} = 1;
     $self->{counters_value}->{$instance} = {};
     foreach my $oid (keys %oids) {
-	my $full_oid = $oid . '.' . $instance;
+        my $full_oid = $oid . '.' . $instance;
         $self->{counters_value}->{$instance}->{$oids{$oid}->{counter}} = defined($options{result}->{$oid . '.' . $instance}) ? $options{result}->{$oid . '.' . $instance} : 0;
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $result = $self->{snmp}->get_table(oid => $oid_inputs, nothing_quit => 1);

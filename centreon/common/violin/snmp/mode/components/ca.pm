@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,9 +28,9 @@ use warnings;
 my $oid_chassisSystemLedAlarm = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.7';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_chassisSystemLedAlarm };
+    push @{$self->{request}}, { oid => $oid_chassisSystemLedAlarm };
 }
 
 sub check {
@@ -38,7 +38,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking chassis alarm");
     $self->{components}->{ca} = {name => 'chassis alarm', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'ca'));
+    return if ($self->check_filter(section => 'ca'));
 
     foreach my $oid (keys %{$self->{results}->{$oid_chassisSystemLedAlarm}}) {
         $oid =~ /^$oid_chassisSystemLedAlarm\.(.*)$/;
@@ -46,7 +46,7 @@ sub check {
         my $instance = $array_name;
         my $ca_state = $self->{results}->{$oid_chassisSystemLedAlarm}->{$oid};
 
-        next if ($self->check_exclude(section => 'ca', instance => $instance));
+        next if ($self->check_filter(section => 'ca', instance => $instance));
         
         $self->{components}->{ca}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Chassis alarm '%s' is %s.",

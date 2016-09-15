@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,7 +47,6 @@ my %states = (
     ],
 );
 
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -81,13 +80,13 @@ sub check_options {
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /(.*?):(.*?)=(.*)/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
 
         my ($label, $filter, $threshold) = ($1, $2, $3);
         if ($self->{output}->is_litteral_status(status => $threshold) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
         $self->{overload_th}->{$label} = {} if (!defined($self->{overload_th}->{$label}));

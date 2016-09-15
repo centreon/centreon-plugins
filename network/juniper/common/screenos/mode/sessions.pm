@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,99 +20,80 @@
 
 package network::juniper::common::screenos::mode::sessions;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ' },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'total' }, { name => 'used' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { label => 'sessions', value => 'used_absolute', template => '%s', 
+                      min => 0, max => 'total_absolute', threshold_total => 'total_absolute', cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'failed', set => {
+                key_values => [ { name => 'failed', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Failed sessions : %.2f/s', output_error_template => "Failed sessions : %s",
+                perfdatas => [
+                    { label => 'sessions_failed', value => 'failed_per_second', template => '%.2f', unit => '/s',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+ 
+    my $msg = sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
+                      $self->{result_values}->{prct_used_absolute}, 
+                      $self->{result_values}->{used_absolute}, 
+                      $self->{result_values}->{total_absolute});
+    return $msg;
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "warning-failed:s"        => { name => 'warning_failed', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "critical-failed:s"       => { name => 'critical_failed', },
+                                {
                                 });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-failed', value => $self->{option_results}->{warning_failed})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-failed threshold '" . $self->{option_results}->{warning_failed} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-failed', value => $self->{option_results}->{critical_failed})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-failed threshold '" . $self->{option_results}->{critical_failed} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-    
     my $oid_nsResSessAllocate = '.1.3.6.1.4.1.3224.16.3.2.0';
     my $oid_nsResSessMaxium = '.1.3.6.1.4.1.3224.16.3.3.0';
     my $oid_nsResSessFailed = '.1.3.6.1.4.1.3224.16.3.4.0';
     
-    my $result = $self->{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium, $oid_nsResSessFailed], nothing_quit => 1);
-    
-    my $spu_done = 0;
-    my $cp_total = $result->{$oid_nsResSessMaxium};
-    my $cp_used = $result->{$oid_nsResSessAllocate};
-    my $cp_failed = $result->{$oid_nsResSessFailed};    
-    my $prct_used = $cp_used * 100 / $cp_total;
-    my $prct_failed = $cp_failed * 100 / $cp_total;
-    $spu_done = 1;
-    
-    my $exit_used = $self->{perfdata}->threshold_check(value => $prct_used, 
-                            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $exit_failed = $self->{perfdata}->threshold_check(value => $prct_failed,
-                            threshold => [ { label => 'critical-failed', 'exit_litteral' => 'critical' }, { label => 'warning-failed', exit_litteral => 'warning' } ]);
-               
-    $self->{output}->output_add(severity => $exit_used,
-                                short_msg => sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
-                                    $prct_used, $cp_used, $cp_total));
-    $self->{output}->output_add(severity => $exit_failed,
-                                short_msg => sprintf("%.2f%% of failed sessions (%d of max. %d)", 
-                                    $prct_failed, $cp_failed, $cp_total));
-                                    
-    $self->{output}->perfdata_add(label => 'sessions',
-                                  value => $cp_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $cp_total, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $cp_total, cast_int => 1),
-                                  min => 0, max => $cp_total);
-    $self->{output}->perfdata_add(label => 'sessions_failed',
-                                  value => $cp_failed,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-failed', total => $cp_total, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-failed', total => $cp_total, cast_int => 1),
-                                  min => 0, max => $cp_total);
-
-    if ($spu_done == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot check sessions usage (no total values).");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $result = $options{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium, $oid_nsResSessFailed], nothing_quit => 1);
+    $self->{global} = { total => $result->{$oid_nsResSessMaxium}, 
+                        used => $result->{$oid_nsResSessAllocate}, 
+                        failed => $result->{$oid_nsResSessFailed},
+                        prct_used => $result->{$oid_nsResSessAllocate} * 100 / $result->{$oid_nsResSessMaxium},
+                      };
+                      
+    $self->{cache_name} = "juniper_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -123,21 +104,20 @@ Check Juniper sessions usage and failed sessions (NETSCREEN-RESOURCE-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning (percentage).
+Only display some counters (regexp can be used).
+Example: --filter-counters='^usage$'
 
-=item B<--critical>
+=item B<--warning-*>
 
-Threshold critical (percentage).
+Threshold warning.
+Can be: 'usage' (%), 'failed'.
 
-=item B<--warning-failed>
+=item B<--critical-*>
 
-Threshold warning on failed sessions (percentage).
-
-=item B<--critical-failed>
-
-Threshold critical in failed sessions (percentage).
+Threshold critical.
+Can be: 'usage' (%), 'failed'.
 
 =back
 

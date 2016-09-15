@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,12 +28,18 @@ my %map_temp_status = ();
 my ($oid_tempSensorDescription, $oid_tempSensorCurrentValue, $oid_tempSensorStatus);
 my $oid_temperatureSensorEntry = '.1.3.6.1.4.1.19746.1.1.2.1.1.1';
 
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_temperatureSensorEntry };
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_tempSensorDescription = '.1.3.6.1.4.1.19746.1.1.2.1.1.1.4';
@@ -57,7 +63,7 @@ sub check {
                             $map_temp_status{$self->{results}->{$oid_temperatureSensorEntry}->{$oid}} : 'unknown';
         my $temp_value = $self->{results}->{$oid_temperatureSensorEntry}->{$oid_tempSensorCurrentValue . '.' . $instance};
 
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
         next if ($temp_status =~ /absent|notfound/i && 
                  $self->absent_problem(section => 'temperature', instance => $instance));
         

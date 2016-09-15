@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use apps::protocols::dns::lib::dns;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -40,11 +42,13 @@ sub new {
          "dns-options:s@"       => { name => 'dns_options' },
          "search:s"             => { name => 'search' },
          "search-type:s"        => { name => 'search_type' },
-         "search-field:s"       => { name => 'search_field' },
          "expected-answer:s"    => { name => 'expected_answer' },
          "warning:s"            => { name => 'warning' },
          "critical:s"           => { name => 'critical' },
+         "memory"               => { name => 'memory' },
          });
+
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -65,6 +69,21 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the search option");
         $self->{output}->option_exit();
     }
+    
+    if (defined($self->{option_results}->{memory})) {
+        $self->{cache_filename} = $self->{option_results}->{search};
+        foreach (('search_type', 'search', 'nameservers')) {
+            $self->{cache_filename} .= '_';
+            if (defined($self->{option_results}->{$_})) {
+                if (ref($self->{option_results}->{$_}) eq 'ARRAY') {
+                    $self->{cache_filename} .= join('-', @{$self->{option_results}->{$_}});
+                } else {
+                    $self->{cache_filename} .= $self->{option_results}->{$_};
+                }
+            }
+        }
+        $self->{statefile_cache}->check_options(%options);
+    }
 }
 
 sub run {
@@ -79,7 +98,7 @@ sub run {
     my $result_str = join(', ', @results);
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Response time %.3f second(s) (answer: %s)", $timeelapsed, $result_str));
     $self->{output}->perfdata_add(label => "time", unit => 's',
@@ -99,6 +118,21 @@ sub run {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("No result values match expected answer (answer: %s)", $result_str));
         }
+    }
+    
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->read(statefile => 'cache_dns_' . md5_hex($self->{cache_filename}));
+        my $datas = { result => $result_str };
+        my $old_result = $self->{statefile_cache}->get(name => "result");
+        if (defined($old_result)) {
+            if ($old_result ne $result_str) {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("Result has changed [answer: %s] [old answer: %s]", $result_str, $old_result));
+            }
+        } else {
+            $self->{output}->output_add(long_msg => 'cache file created.');
+        }
+        $self->{statefile_cache}->write(data => $datas);
     }
     
     $self->{output}->display();
@@ -136,14 +170,6 @@ Set the search value (required).
 Set the search type. Can be: 'MX', 'SOA', 'NS', 'A' or 'PTR'.
 'A' or 'PTR' is used by default (depends if an IP or not).
 
-=item B<--search-field>
-
-Set the search field used for 'expected-answer'. 
-By default:
-'MX' is 'exchange', 'SOA' is 'mname', 'NS' is 'nsdname', 
-'A' is 'address' and 'PTR' is 'name'.
-'A' or 'PTR' is used by default (depends if an IP or not).
-
 =item B<--expected-answer>
 
 What the server must answer (can be a regexp).
@@ -154,13 +180,17 @@ Add custom dns options.
 Example: --dns-options='debug=1' --dns-options='retry=2' 
 --dns-options='port=972' --dns-options='recurse=0' ...
 
+=item B<--memory>
+
+Critical threshold if the answer changed between two checks.
+
 =item B<--warning>
 
-Threshold warning in seconds
+Threshold warning in seconds.
 
 =item B<--critical>
 
-Threshold critical in seconds
+Threshold critical in seconds.
 
 =back
 

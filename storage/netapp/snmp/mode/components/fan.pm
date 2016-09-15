@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,11 +31,10 @@ my $oid_enclFansFailed = '.1.3.6.1.4.1.789.1.21.1.2.1.18';
 my $oid_enclFansSpeed = '.1.3.6.1.4.1.789.1.21.1.2.1.62';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclFansPresent };
-    push @{$options{request}}, { oid => $oid_enclFansFailed };
-    push @{$options{request}}, { oid => $oid_enclFansSpeed };
+    push @{$self->{request}}, { oid => $oid_enclFansPresent }, { oid => $oid_enclFansFailed },
+        { oid => $oid_enclFansSpeed };
 }
 
 sub check {
@@ -43,7 +42,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
@@ -56,7 +55,7 @@ sub check {
             next if ($num !~ /[0-9]/);
             my $current_value = (defined($current_speed[$num - 1]) && $current_speed[$num - 1] =~ /(^|\s)([0-9]+)/) ? $2 : '';
             
-            next if ($self->check_exclude(section => 'fan', instance => $shelf_addr . '.' . $num));
+            next if ($self->check_filter(section => 'fan', instance => $shelf_addr . '.' . $num));
             $self->{components}->{fan}->{total}++;
 
             my $status = 'ok';

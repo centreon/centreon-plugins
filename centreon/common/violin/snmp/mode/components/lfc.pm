@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,9 @@ my $oid_enable = '.1.3.6.1.4.1.35897.1.2.1.6.1.3';
 my $oid_portState = '.1.3.6.1.4.1.35897.1.2.1.6.1.7';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_localTargetFcEntry };
+    push @{$self->{request}}, { oid => $oid_localTargetFcEntry };
 }
 
 sub check {
@@ -41,7 +41,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking local fc");
     $self->{components}->{lfc} = {name => 'local fc', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'lfc'));
+    return if ($self->check_filter(section => 'lfc'));
 
     foreach my $oid (keys %{$self->{results}->{$oid_localTargetFcEntry}}) {
         next if ($oid !~ /^$oid_wwn\.(.*)$/);
@@ -53,7 +53,7 @@ sub check {
             $self->{output}->output_add(long_msg => sprintf("Skipping instance '$wwn' (not enable)"));
             next;
         }
-        next if ($self->check_exclude(section => 'lfc', instance => $wwn));
+        next if ($self->check_filter(section => 'lfc', instance => $wwn));
         
         $self->{components}->{lfc}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Local FC '%s' is %s.",

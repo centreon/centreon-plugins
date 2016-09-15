@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,7 +74,7 @@ SELECT extract(epoch FROM now()) AS epok
     }
     
     my $diff = $result - $ltime;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit_code = $self->{perfdata}->threshold_check(value => $diff, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("%.3fs time diff between servers", $diff));

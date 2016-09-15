@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,9 +40,9 @@ my $oids = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperature, end => $oid_end };
+    push @{$self->{request}}, { oid => $oid_temperature, end => $oid_end };
 }
 
 sub check {
@@ -50,7 +50,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking ambient");
     $self->{components}->{ambient} = {name => 'ambient', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'ambient'));
+    return if ($self->check_filter(section => 'ambient'));
 
     my @sensors = ('mm', 'frontpanel', 'frontpanel2');
     my $label = 'bladecenter';
@@ -68,7 +68,7 @@ sub check {
         }
         
         my $value = $1;
-        next if ($self->check_exclude(section => 'ambient', instance => $temp));
+        next if ($self->check_filter(section => 'ambient', instance => $temp));
         $self->{components}->{ambient}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("ambient '%s' is %s degree centigrade.", 

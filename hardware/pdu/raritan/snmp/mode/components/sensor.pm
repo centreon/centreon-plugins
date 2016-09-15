@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,9 +25,9 @@ use warnings;
 use hardware::pdu::raritan::snmp::mode::components::resources qw($mapping %raritan_type %map_type);
 
 sub load {
-    my (%options) = @_;
+    my ($self, %options) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{$options{type} . '_label'}->{Label}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{$options{type} . '_label'}->{Label}->{oid} },
         { oid => $mapping->{$options{type}}->{Unit}->{oid} },
         { oid => $mapping->{$options{type}}->{Decimal}->{oid} },
         { oid => $mapping->{$options{type}}->{EnabledThresholds}->{oid} },

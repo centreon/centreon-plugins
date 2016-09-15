@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,9 +38,9 @@ my $mapping = {
 my $oid_rbnFanStatusEntry = '.1.3.6.1.4.1.2352.2.4.1.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_rbnFanStatusEntry };
+    push @{$self->{request}}, { oid => $oid_rbnFanStatusEntry };
 }
 
 sub check {
@@ -48,14 +48,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rbnFanStatusEntry}})) {
         next if ($oid !~ /^$mapping->{rbnFanStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rbnFanStatusEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($result->{rbnFanStatus} =~ /absent/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;

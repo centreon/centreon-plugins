@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,12 +28,18 @@ my %map_battery_status = ();
 my ($oid_nvramBatteryStatus, $oid_nvramBatteryCharge);
 my $oid_nvramBatteryEntry = '.1.3.6.1.4.1.19746.1.2.3.1.1';
 
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_nvramBatteryEntry };
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking nvram batteries");
     $self->{components}->{battery} = {name => 'nvram batteries', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'battery'));
+    return if ($self->check_filter(section => 'battery'));
     
     if (centreon::plugins::misc::minimal_version($self->{os_version}, '5.x')) {
         $oid_nvramBatteryStatus = '.1.3.6.1.4.1.19746.1.2.3.1.1.3';
@@ -53,7 +59,7 @@ sub check {
                             $map_battery_status{$self->{results}->{$oid_nvramBatteryEntry}->{$oid}} : 'unknown';
         my $batt_value = $self->{results}->{$oid_nvramBatteryEntry}->{$oid_nvramBatteryCharge . '.' . $instance};
 
-        next if ($self->check_exclude(section => 'battery', instance => $instance));
+        next if ($self->check_filter(section => 'battery', instance => $instance));
         next if ($batt_status =~ /disabled/i && 
                  $self->absent_problem(section => 'battery', instance => $instance));
         

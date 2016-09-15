@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,10 +29,9 @@ my $oid_chassisSystemPowerPSUA = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.17';
 my $oid_chassisSystemPowerPSUB = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.18';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_chassisSystemPowerPSUA };
-    push @{$options{request}}, { oid => $oid_chassisSystemPowerPSUB };
+    push @{$self->{request}}, { oid => $oid_chassisSystemPowerPSUA }, { oid => $oid_chassisSystemPowerPSUB };
 }
 
 sub psu {
@@ -45,7 +44,7 @@ sub psu {
     
     my $psu_state = $options{value};
 
-    return if ($self->check_exclude(section => 'psu', instance => $instance));
+    return if ($self->check_filter(section => 'psu', instance => $instance));
     return if ($psu_state =~ /Absent/i && 
                $self->absent_problem(section => 'psu', instance => $instance));
         
@@ -64,7 +63,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
     
     foreach my $oid (keys %{$self->{results}->{$oid_chassisSystemPowerPSUA}}) {
         psu($self, oid => $oid, oid_short => $oid_chassisSystemPowerPSUA, value => $self->{results}->{$oid_chassisSystemPowerPSUA}->{$oid},
