@@ -128,6 +128,7 @@ sub format_payload {
 }
 
 sub host_message {
+    print 'Host message\n';
     my ($self, %options) = @_;
     
     my $url_host = $self->{option_results}->{host_name};
@@ -136,10 +137,11 @@ sub host_message {
         $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     }
     $self->{payload_attachment}->{text} = "Host " . $url_host;
-    
+
     if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
         $self->{payload_attachment}->{text} .= ' is ' . $self->{option_results}->{host_state};
         $self->{payload_attachment}->{fallback} .= ' is ' . $self->{option_results}->{host_state};
+
         if (defined($slack_color_host{lc($self->{option_results}->{host_state})})) {
             $self->{payload_attachment}->{color} = $slack_color_host{lc($self->{option_results}->{host_state})};
         }
@@ -151,13 +153,20 @@ sub host_message {
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $self->{payload_attachment}->{fallback} .= ' : ' . $self->{option_results}->{link_url};
     }
-    
+
     if (defined($self->{option_results}->{host_output}) && $self->{option_results}->{host_output} ne '') {
-        push @{$self->{payload_attachment}->{fields}}, { title => 'output', value => $self->{option_results}->{host_output} };
+        push @{$self->{payload_attachment}->{fields}}, { title => 'output', value => $self->{option_results}->{host_output}, short => 'true' };
     }
+
+    if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
+        push @{$self->{payload_attachment}->{fields}}, { title => 'State', value => $self->{option_results}->{host_state}, short => 'true'};
+    }
+
+
 }
 
 sub service_message {
+    print 'Service message\n';
     my ($self, %options) = @_;
     
     my $url_service = $self->{option_results}->{service_description};
@@ -165,8 +174,8 @@ sub service_message {
         $url_service = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description} . '>';
         $self->{payload_attachment}->{fallback} = "Service " . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description};
     }
-    $self->{payload_attachment}->{text} = "Service " . $url_service;
-    
+    $self->{payload_attachment}->{text} = "Host: " . $self->{option_results}->{host_name} . " | Service " . $url_service;
+
     if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
         $self->{payload_attachment}->{text} .= ' is ' . $self->{option_results}->{service_state};
         $self->{payload_attachment}->{fallback} .= ' is ' . $self->{option_results}->{service_state};
@@ -189,27 +198,34 @@ sub service_message {
     if (defined($self->{option_results}->{graph_url}) && $self->{option_results}->{graph_url} ne '') {
         $self->{payload_attachment}->{image_url} = $self->{option_results}->{graph_url};
     }
+
+    if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
+        push @{$self->{payload_attachment}->{fields}}, { title => 'State', value => $self->{option_results}->{service_state}, short => 'true'};
+    }
+
 }
 
 sub set_payload {
     my ($self, %options) = @_;
         
-    if (!defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
+    if (!defined($self->{option_results}->{service_description})) {
         $self->host_message();
     } else {
         $self->service_message();
     }
 
-    if (defined($self->{option_results}->{slack_color}) && $self->{option_results}->{slack_color} ne '') {
-        $self->{payload_attachment}->{color} = $self->{option_results}->{slack_color};
-    }
+#    if (defined($self->{option_results}->{zone}) && $self->{option_results}->{zone} ne '') {
+#        push @{$self->{payload_attachment}->{fields}}, { title => 'State' => $self->{option_results}->{host_state}, short => 'true'};
+#    }
     
     if (defined($self->{option_results}->{priority}) && $self->{option_results}->{priority} ne '') {
         push @{$self->{payload_attachment}->{fields}}, { title => 'Priority', value => $self->{option_results}->{priority}, short => 'true' };
     }
+    
     if (defined($self->{option_results}->{zone}) && $self->{option_results}->{zone} ne '') {
         push @{$self->{payload_attachment}->{fields}}, { title => 'Zone', value => $self->{option_results}->{zone}, short => 'true' };
     }
+
 }
 
 sub run {
