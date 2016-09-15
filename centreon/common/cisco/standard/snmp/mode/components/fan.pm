@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,7 +103,7 @@ sub check_fan_entity {
         my $exit = $self->get_severity(section => 'fan', value => $result->{cefcFanTrayOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is %s.", $fan_descr, $result->{cefcFanTrayOperStatus}));
+                                        short_msg => sprintf("Fan '%s/%s' status is %s", $fan_descr, $instance, $result->{cefcFanTrayOperStatus}));
         }
     }
 }

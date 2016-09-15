@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,54 +20,76 @@
 
 package centreon::common::violin::snmp::mode::hardware;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 my $thresholds = {
-    vimm => [
-        ['not failed', 'OK'],
-        ['failed', 'CRITICAL'],
-    ],
-    ca => [
-        ['ON', 'CRITICAL'],
-        ['OFF', 'OK'],
-    ],
-    psu => [
-        ['OFF', 'CRITICAL'],
-        ['Absent', 'OK'],
-        ['ON', 'OK'],
-    ],
-    fan => [
-        ['OFF', 'CRITICAL'],
-        ['Absent', 'OK'],
-        ['Low', 'OK'],
-        ['Medium', 'OK'],
-        ['High', 'WARNING'],
-    ],
-    gfc => [
-        ['Online', 'OK'],
-        ['Unconfigured', 'OK'],
-        ['Unknown', 'UNKNOWN'],
-        ['Not\s*Supported', 'WARNING'],
-        ['Dead', 'CRITICAL'],
-        ['Lost', 'CRITICAL'],
-        ['Failover\s*Failed', 'CRITICAL'],
-        ['Failover', 'WARNING'],
-    ],
-    lfc => [
-        ['Online', 'OK'],
-        ['Unconfigured', 'OK'],
-        ['Unknown', 'UNKNOWN'],
-        ['Not\s*Supported', 'WARNING'],
-        ['Dead', 'CRITICAL'],
-        ['Lost', 'CRITICAL'],
-        ['Failover\s*Failed', 'CRITICAL'],
-        ['Failover', 'WARNING'],
-    ],
+    
 };
+
+sub set_system {
+    my ($self, %options) = @_;
+    
+    $self->{regexp_threshold_overload_check_section_option} = '^(vimm|ca|psu|fan|gfc|lfc)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
+    
+    $self->{cb_hook2} = 'snmp_execute';
+    
+    $self->{thresholds} = {
+        vimm => [
+            ['not failed', 'OK'],
+            ['failed', 'CRITICAL'],
+        ],
+        ca => [
+            ['ON', 'CRITICAL'],
+            ['OFF', 'OK'],
+        ],
+        psu => [
+            ['OFF', 'CRITICAL'],
+            ['Absent', 'OK'],
+            ['ON', 'OK'],
+        ],
+        fan => [
+            ['OFF', 'CRITICAL'],
+            ['Absent', 'OK'],
+            ['Low', 'OK'],
+            ['Medium', 'OK'],
+            ['High', 'WARNING'],
+        ],
+        gfc => [
+            ['Online', 'OK'],
+            ['Unconfigured', 'OK'],
+            ['Unknown', 'UNKNOWN'],
+            ['Not\s*Supported', 'WARNING'],
+            ['Dead', 'CRITICAL'],
+            ['Lost', 'CRITICAL'],
+            ['Failover\s*Failed', 'CRITICAL'],
+            ['Failover', 'WARNING'],
+        ],
+        lfc => [
+            ['Online', 'OK'],
+            ['Unconfigured', 'OK'],
+            ['Unknown', 'UNKNOWN'],
+            ['Not\s*Supported', 'WARNING'],
+            ['Dead', 'CRITICAL'],
+            ['Lost', 'CRITICAL'],
+            ['Failover\s*Failed', 'CRITICAL'],
+            ['Failover', 'WARNING'],
+        ],
+    };
+    
+    $self->{components_path} = 'centreon::common::violin::snmp::mode::components';
+    $self->{components_module} = ['ca', 'psu', 'fan', 'vimm', 'temperature', 'gfc', 'lfc'];
+}
+
+sub snmp_execute {
+    my ($self, %options) = @_;
+    
+    $self->{snmp} = $options{snmp};
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -76,200 +98,10 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "exclude:s"               => { name => 'exclude' },
-                                  "component:s"             => { name => 'component', default => '.*' },
-                                  "absent-problem:s"        => { name => 'absent' },
-                                  "no-component:s"          => { name => 'no_component' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "warning:s@"              => { name => 'warning' },
-                                  "critical:s@"             => { name => 'critical' },
+                                {
                                 });
 
-    $self->{components} = {};
-    $self->{no_components} = undef;
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
-    
-    $self->{numeric_threshold} = {};
-    foreach my $option (('warning', 'critical')) {
-        foreach my $val (@{$self->{option_results}->{$option}}) {
-            if ($val !~ /^(.*?),(.*)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
-                $self->{output}->option_exit();
-            }
-            my ($section, $regexp, $value) = ('temperature', $1, $2);
-            my $position = 0;
-            if (defined($self->{numeric_threshold}->{$section})) {
-                $position = scalar(@{$self->{numeric_threshold}->{$section}});
-            }
-            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
-                $self->{output}->option_exit();
-            }
-            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
-            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, regexp => $regexp };
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{snmp} = snmp object
-    $self->{snmp} = $options{snmp};
-
-    my $snmp_request = [];
-    my @components = ('ca', 'psu', 'fan', 'vimm', 'temperature', 'gfc', 'lfc');
-    foreach (@components) {
-        if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::violin::snmp::mode::components::$_";
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.");
-            my $func = $mod_name->can('load');
-            $func->(request => $snmp_request); 
-        }
-    }
-    
-    if (scalar(@{$snmp_request}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $snmp_request);
-    
-    foreach (@components) {
-        if (/$self->{option_results}->{component}/) {
-            my $mod_name = "centreon::common::violin::snmp::mode::components::$_";
-            my $func = $mod_name->can('check');
-            $func->($self); 
-        }
-    }
-
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok [%s].", 
-                                                     $total_components,
-                                                     $display_by_component)
-                                );
-
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
-        }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-        return 1;
-    }
-    return 0;
-}
-
-sub absent_problem {
-    my ($self, %options) = @_;
-    
-    if (defined($self->{option_results}->{absent}) && 
-        $self->{option_results}->{absent} =~ /(^|\s|,)($options{section}(\s*,|$)|${options{section}}[^,]*#\Q$options{instance}\E#)/) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Component '%s' instance '%s' is not present", 
-                                                         $options{section}, $options{instance}));
-    }
-
-    $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
-    $self->{components}->{$options{section}}->{skip}++;
-    return 1;
-}
-
-sub get_severity_numeric {
-    my ($self, %options) = @_;
-    my $status = 'OK'; # default
-    my $thresholds = { warning => undef, critical => undef };
-    
-    
-    if (defined($self->{numeric_threshold}->{$options{section}})) {
-        my $exits = [];
-        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
-            if ($options{instance} =~ /$_->{regexp}/) {
-                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
-                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
-
-            }
-        }
-        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
-    }
-    
-    return ($status, $thresholds->{warning}, $thresholds->{critical});
-}
-
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
 
 sub convert_index {
@@ -306,15 +138,15 @@ Check components (Fans, Power Supplies, Temperatures, Chassis alarm, vimm, globa
 Which component to check (Default: '.*').
 Can be: 'psu', 'fan', 'ca', 'vimm', 'lfc', 'gfc', 'temperature'.
 
-=item B<--exclude>
+=item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --exclude=psu)
-Can also exclude specific instance: --exclude='psu#41239F00647-A#'
+Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
+Can also exclude specific instance: --filter=fan,41239F00647-A
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fan#41239F00647-fan02#
+Can be specific or global: --absent-problem=fan,41239F00647-fan02
 
 =item B<--no-component>
 
@@ -323,19 +155,19 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 =item B<--threshold-overload>
 
-Set to overload default threshold values (syntax: section,status,regexp)
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='gfc,CRITICAL,^(?!(Online)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: regexp,treshold)
-Example: --warning='41239F00647-vimm46,20' --warning='41239F00647-vimm5.*,30'
+Set warning threshold for temperatures (syntax: type,regexp,threshold)
+Example: --warning='temperature,41239F00647-vimm46,20' --warning='temperature,41239F00647-vimm5.*,30'
 
 =item B<--critical>
 
-Set critical threshold for temperatures (syntax: regexp,treshold)
-Example: --critical='41239F00647-vimm46,25' --warning='41239F00647-vimm5.*,35'
+Set critical threshold for temperatures (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,25' --warning='temperature,.*,35'
 
 =back
 

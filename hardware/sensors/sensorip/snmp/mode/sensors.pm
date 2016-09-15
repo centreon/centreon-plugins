@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -122,7 +122,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $snmp_request = [];
@@ -290,12 +289,12 @@ Example: --threshold-overload='temperature,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures and humidity (syntax: type,regexp,treshold)
+Set warning threshold for temperatures and humidity (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,30' --warning='humidity,.*,90'
 
 =item B<--critical>
 
-Set critical threshold for temperature and humidity (syntax: type,regexp,treshold)
+Set critical threshold for temperature and humidity (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,40'
 
 =back

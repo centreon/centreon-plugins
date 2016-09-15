@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,12 +28,11 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|slot)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan|psu\.power|psu\.fan)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|slot|poe)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan|poe|psu\.power|psu\.fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
-    #Example for threshold:
     $self->{thresholds} = {
         psu => [
             ['notPresent', 'OK'],
@@ -62,10 +61,22 @@ sub set_system {
             ['initializing', 'OK'],
             ['invalid', 'CRITICAL'],
         ],
+        poe => [
+            ['initializing', 'OK'],
+            ['operational', 'OK'],
+            ['downloadFail', 'CRITICAL'],
+            ['calibrationRequired', 'CRITICAL'],
+            ['invalidFirmware', 'CRITICAL'],
+            ['mismatchVersion', 'CRITICAL'],
+            ['updating', 'OK'],
+            ['invalidDevice', 'CRITICAL'],
+            ['notOperational', 'CRITICAL'],
+            ['other', 'CRITICAL'],
+        ],
     };
     
     $self->{components_path} = 'network::extreme::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'slot', 'temperature'];
+    $self->{components_module} = ['fan', 'psu', 'slot', 'temperature', 'poe'];
 }
 
 sub snmp_execute {
@@ -94,14 +105,14 @@ __END__
 
 =head1 MODE
 
-Check Hardware (Fans, Power Supplies, Slot, Temperature).
+Check Hardware (Fans, Power Supplies, Slot, Temperature, POEs).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'slot', 'temperature'.
+Can be: 'fan', 'psu', 'slot', 'temperature', 'poe'.
 
 =item B<--filter>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -82,12 +82,12 @@ sub check_options {
 }
 
 sub error {
-     my ($self) = shift;
+    my ($self) = shift;
      
-     if (@_) {
+    if (@_) {
         $self->{error} = $_[0];
-     }
-     return $self->{error};
+    }
+    return $self->{error};
 }
 
 sub read {

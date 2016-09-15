@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,9 +35,9 @@ my $mapping = {
 my $oid_nsSlotEntry = '.1.3.6.1.4.1.3224.21.5.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_nsSlotEntry };
+    push @{$self->{request}}, { oid => $oid_nsSlotEntry };
 }
 
 sub check {

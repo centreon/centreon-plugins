@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,9 +76,9 @@ my $mapping = {
 my $oid_jnxFruEntry = '.1.3.6.1.4.1.2636.3.1.15.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_jnxFruEntry, start => $mapping->{jnxFruName}->{oid}, end => $mapping->{jnxFruOfflineReason}->{oid} };
+    push @{$self->{request}}, { oid => $oid_jnxFruEntry, start => $mapping->{jnxFruName}->{oid}, end => $mapping->{jnxFruOfflineReason}->{oid} };
 }
 
 sub check {
@@ -86,14 +86,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking frus");
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fru'));
+    return if ($self->check_filter(section => 'fru'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_jnxFruEntry}})) {
         next if ($oid !~ /^$mapping->{jnxFruName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_jnxFruEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'fru', instance => $instance));
+        next if ($self->check_filter(section => 'fru', instance => $instance));
         next if ($result->{jnxFruState} =~ /empty/i && 
                  $self->absent_problem(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;

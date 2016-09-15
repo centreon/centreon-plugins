@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,9 +32,9 @@ my $mapping1 = {
 my $oid_cucsEquipmentChassisDn = '.1.3.6.1.4.1.9.9.719.1.15.7.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentChassisOperState}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsEquipmentChassisOperState}->{oid} },
         { oid => $oid_cucsEquipmentChassisDn };
 }
 
@@ -43,7 +43,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking chassis");
     $self->{components}->{chassis} = {name => 'chassis', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'chassis'));
+    return if ($self->check_filter(section => 'chassis'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentChassisDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -52,7 +52,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping1, results => $self->{results}->{$mapping1->{cucsEquipmentChassisOperState}->{oid}}, instance => $instance);
 
         next if ($self->absent_problem(section => 'chassis', instance => $chassis_dn));
-        next if ($self->check_exclude(section => 'chassis', instance => $chassis_dn));
+        next if ($self->check_filter(section => 'chassis', instance => $chassis_dn));
         
         $self->{components}->{chassis}->{total}++;
         

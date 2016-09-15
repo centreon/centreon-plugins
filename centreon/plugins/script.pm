@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,6 @@ package centreon::plugins::script;
 
 use strict;
 use warnings;
-use centreon::plugins::options;
 use centreon::plugins::output;
 use centreon::plugins::misc;
 use FindBin;
@@ -31,7 +30,8 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20151218;
+my $global_version = 20160902;
+my $alternative_fatpacker = 0;
 
 sub new {
     my $class = shift;
@@ -84,7 +84,13 @@ sub get_plugin {
     ######
     # Need to load global 'Output' and 'Options'
     ######
-    $self->{options} = centreon::plugins::options->new();
+    if ($alternative_fatpacker == 0) {
+        require centreon::plugins::options;
+        $self->{options} = centreon::plugins::options->new();
+    } else {
+        require centreon::plugins::alternative::FatPackerOptions;
+        $self->{options} = centreon::plugins::alternative::FatPackerOptions->new();
+    }
     $self->{output} = centreon::plugins::output->new(options => $self->{options});
     $self->{options}->set_output(output => $self->{output});
 
@@ -122,7 +128,17 @@ sub display_local_help {
     if ($self->{help}) {
         local *STDOUT;
         open STDOUT, '>', \$stdout;
-        pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+        
+        if ($alternative_fatpacker == 0) {
+            pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+        } else {
+            my $pp = __PACKAGE__ . ".pm";
+            $pp =~ s{::}{/}g;
+            my $content_class = $INC{$pp}->{$pp};
+            open my $str_fh, '<', \$content_class;
+            pod2usage(-exitval => "NOEXIT", -input => $str_fh);
+            close $str_fh;
+        }
     }
     
     $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
@@ -257,8 +273,9 @@ sub run {
 
     $self->check_relaunch();
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
-                                           error_msg => "Cannot load module --plugin.");
+    (undef, $self->{plugin}) = 
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
+                                               error_msg => "Cannot load module --plugin.");
     my $plugin = $self->{plugin}->new(options => $self->{options}, output => $self->{output});
     $plugin->init(help => $self->{help},
                   version => $self->{version});

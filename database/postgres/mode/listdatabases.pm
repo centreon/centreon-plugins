@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -87,7 +87,6 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{sql} = $options{sql};
 
     $self->manage_selection();

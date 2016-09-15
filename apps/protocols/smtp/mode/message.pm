@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -113,7 +113,7 @@ Check send a message to a SMTP Server.
 
 =item B<--hostname>
 
-IP Addr/FQDN of the ftp host
+IP Addr/FQDN of the smtp host
 
 =item B<--port>
 

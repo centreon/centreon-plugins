@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,6 +63,8 @@ sub check {
    
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
+    
+    $self->{perfdatas_queues} = {};
     while ($options{stdout} =~ /\[identity=(.*?)\]\[deliverytype=(.*?)\]\[status=(.*?)\]\[isvalid=(.*?)\]\[messagecount=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
         ($self->{data}->{identity}, $self->{data}->{deliverytype}, $self->{data}->{status}, $self->{data}->{isvalid}, $self->{data}->{messagecount}, $self->{data}->{error}) = 
@@ -94,10 +96,19 @@ sub check {
         }
         
         if ($self->{data}->{messagecount} =~ /^(\d+)/) {
-            $self->{output}->perfdata_add(label => 'queue_length_' . $self->{data}->{identity},
-                                          value => $1,
-                                          min => 0);
+            my $num = $1;
+            my $identity = $self->{data}->{identity};
+            
+            $identity = $1 if ($self->{data}->{identity} =~ /^(.*\\)[0-9]+$/);
+            $self->{perfdatas_queues}->{$identity} = 0 if (!defined($self->{perfdatas_queues}->{$identity})); 
+            $self->{perfdatas_queues}->{$identity} += $num;
         }
+    }
+    
+    foreach (keys %{$self->{perfdatas_queues}}) {
+        $self->{output}->perfdata_add(label => 'queue_length_' . $_,
+                                      value => $self->{perfdatas_queues}->{$_},
+                                      min => 0);
     }
     
     if ($checked == 0) {

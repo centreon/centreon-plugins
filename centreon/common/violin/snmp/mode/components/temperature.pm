@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,10 @@ my $oid_chassisSystemTempController = '.1.3.6.1.4.1.35897.1.2.2.3.17.1.21';
 my $oid_arrayVimmEntry_temp = '.1.3.6.1.4.1.35897.1.2.2.3.16.1.12';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_arrayVimmEntry_temp };
-    push @{$options{request}}, { oid => $oid_chassisSystemTempAmbient };
-    push @{$options{request}}, { oid => $oid_chassisSystemTempController };
+    push @{$self->{request}}, { oid => $oid_arrayVimmEntry_temp }, { oid => $oid_chassisSystemTempAmbient }, 
+        { oid => $oid_chassisSystemTempController };
 }
 
 sub temperature {
@@ -47,7 +46,7 @@ sub temperature {
     
     my $temperature = $options{value};
 
-    return if ($self->check_exclude(section => 'temperature', instance => $instance));
+    return if ($self->check_filter(section => 'temperature', instance => $instance));
         
     $self->{components}->{temperature}->{total}++;
     $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %s degree centigrade.",
@@ -68,7 +67,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     foreach my $oid (keys %{$self->{results}->{$oid_chassisSystemTempAmbient}}) {
         temperature($self, oid => $oid, oid_short => $oid_chassisSystemTempAmbient, value => $self->{results}->{$oid_chassisSystemTempAmbient}->{$oid},

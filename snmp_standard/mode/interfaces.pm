@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -668,6 +668,7 @@ sub new {
                                 "show-cache"              => { name => 'show_cache' },
                                 "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                 "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
+                                "force-counters32"        => { name => 'force_counters32' },
                                 });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { "add-traffic" => { name => 'add_traffic' } });
@@ -1053,7 +1054,7 @@ sub load_traffic {
     if ($self->{get_speed} == 1) {
         $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
     }
-    if (!$self->{snmp}->is_snmpv1()) {
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
         if ($self->{get_speed} == 1) {
             $self->{snmp}->load(oids => [$self->{oid_speed64}], instances => $self->{array_interface_selected});
@@ -1076,7 +1077,7 @@ sub load_cast {
     $self->{snmp}->load(oids => [$self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
                                  $self->{oid_ifOutUcastPkts}, $self->{oid_ifOutMulticastPkts}, $self->{oid_ifOutBroadcastPkts}],
                         instances => $self->{array_interface_selected});
-    if (!$self->{snmp}->is_snmpv1()) {
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_ifHCInUcastPkts}, $self->{oid_ifHCInMulticastPkts}, $self->{oid_ifHCInBroadcastPkts},
                                      $self->{oid_ifHCOutUcastPkts}, $self->{oid_ifHCOutMulticastPkts}, $self->{oid_ifHCOutBroadcastPkts}],
                             instances => $self->{array_interface_selected});
@@ -1155,7 +1156,7 @@ sub add_result_traffic {
     $self->{interface_selected}->{$options{instance}}->{mode_traffic} = 32;
     $self->{interface_selected}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
     $self->{interface_selected}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
-    if (!$self->{snmp}->is_snmpv1()) {
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
             $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
             $self->{interface_selected}->{$options{instance}}->{mode_traffic} = 64;
@@ -1204,7 +1205,7 @@ sub add_result_cast {
     $self->{interface_selected}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifOutUcastPkts} . '.' . $options{instance}};
     $self->{interface_selected}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}} : 0;
     $self->{interface_selected}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
-    if (!$self->{snmp}->is_snmpv1()) {
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
         if (defined($iucast) && $iucast =~ /[1-9]/) {
             $self->{interface_selected}->{$options{instance}}->{iucast} = $iucast;
@@ -1314,6 +1315,10 @@ Set interface speed for outgoing traffic (in Mb).
 =item B<--no-skipped-counters>
 
 Don't skip counters when no change.
+
+=item B<--force-counters32>
+
+Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 
