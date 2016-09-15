@@ -219,6 +219,10 @@ sub set_payload {
     if (defined($self->{option_results}->{zone}) && $self->{option_results}->{zone} ne '') {
         push @{$self->{payload_attachment}->{fields}}, { title => 'Zone', value => $self->{option_results}->{zone}, short => 'true' };
     }
+    
+    if (defined($self->{option_results}->{slack_color}) && $self->{option_results}->{slack_color} ne '') {
+        $self->{payload_attachment}->{color} = $self->{option_results}->{slack_color};
+    }
 
 }
 
