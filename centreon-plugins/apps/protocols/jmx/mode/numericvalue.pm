@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -227,7 +227,6 @@ sub find_values {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{connector} = $options{custom};
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
@@ -258,10 +257,6 @@ perl centreon_plugins.pl --plugin=apps::protocols::jmx::plugin --custommode=jolo
 
 =over 8
 
-=item B<--oid>
-
-OID value to check (numeric format only).
-
 =item B<--lookup-path>
 
 What to lookup (from internal Jmx4Perl). Use --lookup-jpath for complex matching. 
@@ -279,9 +274,9 @@ Threshold warning.
 
 Threshold critical.
 
-=item B<--oid-type>
+=item B<--type>
 
-Type of the OID (Default: 'gauge').
+Type (Default: 'gauge').
 Can be 'counter' also. 'counter' will use a retention file.
 
 =item B<--counter-per-seconds>

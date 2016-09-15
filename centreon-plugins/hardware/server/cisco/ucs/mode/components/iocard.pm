@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my $mapping2 = {
 my $oid_cucsEquipmentIOCardDn = '.1.3.6.1.4.1.9.9.719.1.15.30.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentIOCardPresence}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsEquipmentIOCardPresence}->{oid} },
         { oid => $mapping2->{cucsEquipmentIOCardOperState}->{oid} }, { oid => $oid_cucsEquipmentIOCardDn };
 }
 
@@ -46,7 +46,7 @@ sub check {
     # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking io cards");
     $self->{components}->{iocard} = {name => 'io cards', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'iocard'));
+    return if ($self->check_filter(section => 'iocard'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentIOCardDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -56,7 +56,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentIOCardOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'iocard', instance => $iocard_dn));
-        next if ($self->check_exclude(section => 'iocard', instance => $iocard_dn));
+        next if ($self->check_filter(section => 'iocard', instance => $iocard_dn));
 
         $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
                                                         $iocard_dn, $result2->{cucsEquipmentIOCardOperState},
@@ -74,7 +74,7 @@ sub check {
         
         $self->{components}->{iocard}->{total}++;
         
-        $exit = $self->get_severity(section => 'default.operability', label => 'iocard.operability', value => $result2->{cucsEquipmentIOCardOperState});
+        $exit = $self->get_severity(section => 'iocard.operability', label => 'default.operability', value => $result2->{cucsEquipmentIOCardOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("IO cards '%s' state is '%s'.",

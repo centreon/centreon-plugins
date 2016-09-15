@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,7 +61,7 @@ sub set_sanity {
         $centreon::plugins::alternative::Getopt::warn_message = 1;
     }
 
-    $self->{sanity} == 1;
+    $self->{sanity} = 1;
 }
 
 sub set_output {
@@ -79,9 +79,10 @@ sub display_help {
         {
             local *STDOUT;
             open STDOUT, '>', \$stdout;
-            pod2usage(-exitval => 'NOEXIT', -input => pod_where({-inc => 1}, $_->{package}),
+            my $where = pod_where({-inc => 1}, $_->{package});
+            pod2usage(-exitval => 'NOEXIT', -input => $where,
                       -verbose => 99, 
-                      -sections => $_->{sections});
+                      -sections => $_->{sections}) if (defined($where));
         }
         
         $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));

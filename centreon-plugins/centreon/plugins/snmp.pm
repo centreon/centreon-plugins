@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -679,7 +679,7 @@ sub check_options {
         
 
         if (!defined($options{option_results}->{snmp_security_name})) {
-            $self->{output}->add_option_msg(short_msg => "Missing paramater Security Name.");
+            $self->{output}->add_option_msg(short_msg => "Missing parameter Security Name.");
             $self->{output}->option_exit();
         }
         
@@ -761,8 +761,10 @@ sub map_instance {
     my ($self, %options) = @_;
     
     my $results = {};
+    my $instance = '';
+    $instance = '.' . $options{instance} if (defined($options{instance}));
     foreach my $name (keys %{$options{mapping}}) {
-        my $entry = $options{mapping}->{$name}->{oid} . '.' . $options{instance};
+        my $entry = $options{mapping}->{$name}->{oid} . $instance;
         if (defined($options{results}->{$entry})) {
             $results->{$name} = $options{results}->{$entry};
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,9 +37,9 @@ my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
 my $oid_enclContactState = '.1.3.6.1.4.1.789.1.21.1.2.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclContactState };
+    push @{$self->{request}}, { oid => $oid_enclContactState };
 }
 
 sub check {
@@ -47,13 +47,13 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking communications");
     $self->{components}->{communication} = {name => 'communications', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'communication'));
+    return if ($self->check_filter(section => 'communication'));
 
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
         my $com_state = $map_com_states{$self->{results}->{$oid_enclContactState}->{$oid_enclContactState . '.' . $i}};
 
-        next if ($self->check_exclude(section => 'communication', instance => $shelf_addr));
+        next if ($self->check_filter(section => 'communication', instance => $shelf_addr));
         
         $self->{components}->{communication}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Shelve '%s' communication state is '%s'", 

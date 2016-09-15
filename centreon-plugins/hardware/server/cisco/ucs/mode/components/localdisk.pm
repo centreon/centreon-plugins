@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my $mapping2 = {
 my $oid_cucsStorageLocalDiskDn = '.1.3.6.1.4.1.9.9.719.1.45.4.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsStorageLocalDiskPresence}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsStorageLocalDiskPresence}->{oid} },
         { oid => $mapping2->{cucsStorageLocalDiskOperability}->{oid} }, { oid => $oid_cucsStorageLocalDiskDn };
 }
 
@@ -45,7 +45,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking local disks");
     $self->{components}->{localdisk} = {name => 'local disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'localdisk'));
+    return if ($self->check_filter(section => 'localdisk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsStorageLocalDiskDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -55,7 +55,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsStorageLocalDiskOperability}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'localdisk', instance => $localdisk_dn));
-        next if ($self->check_exclude(section => 'localdisk', instance => $localdisk_dn));
+        next if ($self->check_filter(section => 'localdisk', instance => $localdisk_dn));
 
         $self->{output}->output_add(long_msg => sprintf("local disk '%s' state is '%s' [presence: %s].",
                                                         $localdisk_dn, $result2->{cucsStorageLocalDiskOperability},

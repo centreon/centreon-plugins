@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -131,6 +131,7 @@ sub run {
                                             name => $item);
 
         foreach my $sensor (@sensors) {
+            next if (!defined($details->{$sensor}) || $details->{$sensor} eq '');
             $self->{output}->output_add(long_msg => sprintf("Sensor '%s' state is '%s'",
                                                             $sensor, $details->{$sensor}));
                                                             

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,9 +28,9 @@ use warnings;
 my $oid_arrayFanEntry_speed = '.1.3.6.1.4.1.35897.1.2.2.3.18.1.3';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_arrayFanEntry_speed };
+    push @{$self->{request}}, { oid => $oid_arrayFanEntry_speed };
 }
 
 sub check {
@@ -38,7 +38,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid (keys %{$self->{results}->{$oid_arrayFanEntry_speed}}) {
         $oid =~ /^$oid_arrayFanEntry_speed\.(.*)$/;
@@ -46,7 +46,7 @@ sub check {
         my $instance = $array_name . '-' . $fan_name;
         my $fan_state = $self->{results}->{$oid_arrayFanEntry_speed}->{$oid};
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($fan_state =~ /Absent/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         

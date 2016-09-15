@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,7 +98,7 @@ sub check_hba {
         
         my $not_logged = 0;
         my $logged = 0;
-        while ($hba_infos =~ /(SP Name:.*?)\n\n/msig) {
+        while ($hba_infos =~ /(SP Name:.*?)(\n\n|\Z)/msig) {
             my $port_infos = $1;
             
             # Not in good section

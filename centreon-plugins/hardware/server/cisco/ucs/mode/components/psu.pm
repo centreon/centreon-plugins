@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my $mapping2 = {
 my $oid_cucsEquipmentPsuDn = '.1.3.6.1.4.1.9.9.719.1.15.56.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsEquipmentPsuPresence}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsEquipmentPsuPresence}->{oid} },
         { oid => $mapping2->{cucsEquipmentPsuOperState}->{oid} }, { oid => $oid_cucsEquipmentPsuDn };
 }
 
@@ -46,7 +46,7 @@ sub check {
     # In MIB 'CISCO-UNIFIED-COMPUTING-EQUIPMENT-MIB'
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsEquipmentPsuDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -56,7 +56,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsEquipmentPsuOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'psu', instance => $psu_dn));
-        next if ($self->check_exclude(section => 'psu', instance => $psu_dn));
+        next if ($self->check_filter(section => 'psu', instance => $psu_dn));
 
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
                                                         $psu_dn, $result2->{cucsEquipmentPsuOperState},

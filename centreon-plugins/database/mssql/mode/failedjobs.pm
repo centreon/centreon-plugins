@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,11 +66,11 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning_duration})) == 0) {
+    if (($self->{perfdata}->threshold_validate(label => 'warning-duration', value => $self->{option_results}->{warning_duration})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning duration threshold '" . $self->{option_results}->{warning_duration} . "'.");
        $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical_duration})) == 0) {
+    if (($self->{perfdata}->threshold_validate(label => 'critical-duration', value => $self->{option_results}->{critical_duration})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical duration threshold '" . $self->{option_results}->{critical_duration} . "'.");
        $self->{output}->option_exit();
     }
@@ -132,7 +132,7 @@ sub run {
             $count_failed++;
             push (@job_failed, $job_name);
         } else {
-            my $exit_code1 = $self->{perfdata}->threshold_check(value => $run_duration, threshold => [ { label => 'critical_duration', 'exit_litteral' => 'critical' }, { label => 'warning_duration', exit_litteral => 'warning' } ]);
+            my $exit_code1 = $self->{perfdata}->threshold_check(value => $run_duration, threshold => [ { label => 'critical-duration', exit_litteral => 'critical' }, { label => 'warning-duration', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit_code1, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit_code1,
                                             short_msg => sprintf("Job '%s' duration : %d minutes", $job_name, $run_duration));
@@ -141,7 +141,7 @@ sub run {
         $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %d minutes]", $job_name, $states{$run_status}, $run_date, $run_time, $run_duration));
     }
 
-    my $exit_code2 = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit_code2 = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     if(!defined($self->{option_results}->{skip}) && $count == 0) {
         $self->{output}->output_add(severity => 'Unknown',
                                     short_msg => "No job found.");

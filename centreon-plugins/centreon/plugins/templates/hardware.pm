@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,6 +39,7 @@ sub set_system {
     #$self->{cb_hook1} = 'callbackname'; # before the loads
     #$self->{cb_hook2} = 'callbackname'; # between loads and requests
     #$self->{cb_hook3} = 'callbackname'; # after requests
+    #$self->{cb_hook4} = 'callbackname'; # after output
     
     # Example for threshold:
     #$self->{thresholds} = {
@@ -198,7 +199,7 @@ sub check_options {
                     $self->{output}->option_exit();
                 }   
                 $self->call_object_callback(method_name => $self->{cb_threshold_numeric_check_section_option}, 
-                                            section => $section, option_value => $val);
+                                            section => $section, option_name => $option, option_value => $val);
 
                 my $position = 0;
                 if (defined($self->{numeric_threshold}->{$section})) {
@@ -215,12 +216,9 @@ sub check_options {
     }
 }
 
-sub run {
+sub load_components {
     my ($self, %options) = @_;
-
-    $self->{loaded} = 0;  
-    $self->call_object_callback(method_name => $self->{cb_hook1}, 
-                                %options);
+    
     foreach (@{$self->{components_module}}) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::$_";
@@ -233,15 +231,10 @@ sub run {
             }
         }
     }
-    
-    if ($self->{loaded} == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->call_object_callback(method_name => $self->{cb_hook2}, 
-                                %options);
-    
+}
+
+sub exec_components {
+    my ($self, %options) = @_;
     
     foreach (@{$self->{components_module}}) {
         if (/$self->{option_results}->{component}/) {
@@ -250,9 +243,23 @@ sub run {
             $func->($self); 
         }
     }
+}
+
+sub run {
+    my ($self, %options) = @_;
+
+    $self->{loaded} = 0;  
+    $self->call_object_callback(method_name => $self->{cb_hook1}, %options);
+
+    $self->load_components(%options);
+    if ($self->{loaded} == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
     
-    $self->call_object_callback(method_name => $self->{cb_hook3}, 
-                                %options);
+    $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
+    $self->exec_components(%options);
+    $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
     
     my $total_components = 0;
     my $display_by_component = '';
@@ -277,6 +284,8 @@ sub run {
                                     short_msg => 'No components are checked.');
     }
 
+    $self->call_object_callback(method_name => $self->{cb_hook4}, %options);
+    
     $self->{output}->display();
     $self->{output}->exit();
 }

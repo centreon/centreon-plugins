@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,9 +32,9 @@ my $mapping = {
 my $oid_hmTempTable = '.1.3.6.1.4.1.248.14.2.5';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_hmTempTable };
+    push @{$self->{request}}, { oid => $oid_hmTempTable };
 }
 
 sub check {
@@ -42,13 +42,13 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     return if (!defined($self->{results}->{$oid_hmTempTable}->{$mapping->{hmTemperature}->{oid} . '.0'}));
     my $instance = 0;
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_hmTempTable}, instance => $instance);
         
-    next if ($self->check_exclude(section => 'temperature', instance => $instance));
+    next if ($self->check_filter(section => 'temperature', instance => $instance));
     $self->{components}->{temperature}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("temperature is %dC [instance: %s].", 

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,9 +38,9 @@ my $mapping = {
 my $oid_chassisFansEntry = '.1.3.6.1.4.1.2.3.51.2.2.3.50.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_chassisFansEntry };
+    push @{$self->{request}}, { oid => $oid_chassisFansEntry };
 }
 
 sub check {
@@ -48,14 +48,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking chassis fan");
     $self->{components}->{chassisfan} = {name => 'chassis fan', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'chassisfan'));
+    return if ($self->check_filter(section => 'chassisfan'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_chassisFansEntry}})) {
         next if ($oid !~ /^$mapping->{chassisFanState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_chassisFansEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'chassisfan', instance => $instance));
+        next if ($self->check_filter(section => 'chassisfan', instance => $instance));
         $self->{components}->{chassisfan}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Chassis fan '%s' is %s rpm [status: %s, instance: %s]", 

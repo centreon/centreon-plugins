@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,9 +53,9 @@ my $oid_enclChannelShelfAddr = '.1.3.6.1.4.1.789.1.21.1.2.1.3';
 my $oid_enclTable = '.1.3.6.1.4.1.789.1.21.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclTable, begin => $mapping->{enclVoltSensorsPresent}->{oid}, end => $mapping->{enclVoltSensorsUnderVoltWarnThr}->{oid} };
+    push @{$self->{request}}, { oid => $oid_enclTable, begin => $mapping->{enclVoltSensorsPresent}->{oid}, end => $mapping->{enclVoltSensorsUnderVoltWarnThr}->{oid} };
 }
 
 sub check {
@@ -63,7 +63,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'voltage'));
+    return if ($self->check_filter(section => 'voltage'));
 
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_enclTable}, instance => $i);
@@ -78,7 +78,7 @@ sub check {
         my @values = defined($result->{enclVoltSensorsPresent}) ? split /,/, $result->{enclVoltSensorsPresent} : ();
         foreach my $num (@values) {
             $num = centreon::plugins::misc::trim($num);
-            next if ($num !~ /[0-9]/);
+            next if ($num !~ /[0-9]/ || !defined($current_volt[$num - 1]));
     
             my $wu_thr = (defined($warn_under_thr[$num - 1]) && $warn_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
             my $cu_thr = (defined($crit_under_thr[$num - 1]) && $crit_under_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
@@ -86,7 +86,7 @@ sub check {
             my $co_thr = (defined($crit_over_thr[$num - 1]) && $crit_over_thr[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
             my $current_value = ($current_volt[$num - 1] =~ /(^|\s)(-*[0-9]+)/) ? $2 : '';
             
-            next if ($self->check_exclude(section => 'voltage', instance => $shelf_addr . '.' . $num));
+            next if ($self->check_filter(section => 'voltage', instance => $shelf_addr . '.' . $num));
             $self->{components}->{voltage}->{total}++;
             
             my $status = 'ok';
