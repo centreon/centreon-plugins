@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options->{options} = options object
     if (!defined($options{options})) {
         print "Class Output: Need to specify 'options' argument to load.\n";
         exit 3;
@@ -40,6 +39,7 @@ sub new {
                                   "range-perfdata:s"        => { name => 'range_perfdata' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "change-perfdata:s@"      => { name => 'change_perfdata' },
+                                  "filter-uom:s"            => { name => 'filter_uom' },
                                   "verbose"                 => { name => 'verbose' },
                                   "debug"                   => { name => 'debug' },
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
@@ -282,6 +282,8 @@ sub output_json {
             
             my %values = ();
             foreach my $key (keys %$perf) {
+                $perf->{$key} = '' if (defined($self->{option_results}->{filter_uom}) && $key eq 'unit' &&
+                    $perf->{$key} !~ /$self->{option_results}->{filter_uom}/);
                 $values{$key} = $perf->{$key};
             }
             
@@ -372,6 +374,8 @@ sub output_xml {
             $child_perfdata = $self->{xml_output}->createElement("perfdata");
             $child_plugin_perfdata->addChild($child_perfdata);
             foreach my $key (keys %$perf) {
+                $perf->{$key} = '' if (defined($self->{option_results}->{filter_uom}) && $key eq 'unit' &&
+                    $perf->{$key} !~ /$self->{option_results}->{filter_uom}/);
                 my $child = $self->{xml_output}->createElement($key);
                 $child->appendText($perf->{$key});
                 $child_perfdata->addChild($child);
@@ -412,6 +416,8 @@ sub output_txt {
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+            $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
+                $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
             $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
             print " '" . $perf->{label} . "'=" . $perf->{value} . $perf->{unit} . ";" . $perf->{warning} . ";" . $perf->{critical} . ";" . $perf->{min} . ";" . $perf->{max};
         }
@@ -775,6 +781,10 @@ Syntax: regexp_matching,regexp_substitute
 
 Change perfdata range thresholds display: 
 1 = start value equals to '0' is removed, 2 = threshold range is not display.
+
+=item B<--filter-uom>
+
+Filter UOM that match the regexp.
 
 =item B<--opt-exit>
 

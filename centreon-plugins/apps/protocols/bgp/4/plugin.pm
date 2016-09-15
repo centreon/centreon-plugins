@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
@@ -44,7 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Arkoon firewall in SNMP.
-!!! Be careful: ifAlias and ifName are empty. Use --oid-filter and --oid-display on ifDesc !!!
+Check BGP protocol in SNMP.
 
 =cut

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my %map_systemhealth_state = (
 );
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_systemHealthStat };
+    push @{$self->{request}}, { oid => $oid_systemHealthStat };
 }
 
 sub check {
@@ -44,8 +44,11 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking system health");
     $self->{components}->{systemhealth} = {name => 'system-health', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'systemhealth'));
+    return if ($self->check_filter(section => 'systemhealth'));
 
+    return if (!defined($self->{results}->{$oid_systemHealthStat}->{$oid_systemHealthStat . '.0'}) ||
+               !defined($map_systemhealth_state{$self->{results}->{$oid_systemHealthStat}->{$oid_systemHealthStat . '.0'}}));
+    
     my $value = $map_systemhealth_state{$self->{results}->{$oid_systemHealthStat}->{$oid_systemHealthStat . '.0'}};
     $self->{components}->{systemhealth}->{total}++;
 

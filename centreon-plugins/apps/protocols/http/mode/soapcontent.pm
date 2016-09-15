@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -248,7 +248,7 @@ sub run {
     $self->{soap_response} = $self->{http}->request(method => 'POST', query_form_post => $self->{soap_request});
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
-    $self->{output}->output_add(long_msg => $self->{soap_response});
+    $self->{output}->output_add(long_msg => $self->{soap_response}, debug => 1);
     if (!defined($self->{option_results}->{lookup}) || scalar(@{$self->{option_results}->{lookup}}) == 0) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "SOAP request success");

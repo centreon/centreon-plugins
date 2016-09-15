@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,18 +48,18 @@ sub new {
     return $self;
 }
 
-sub check_treshold_overload {
+sub check_threshold_overload {
     my ($self, %options) = @_;
     
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /(.*?)=(.*)/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload option '" . $val . "'.");
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
             $self->{output}->option_exit();
         }
         my ($filter, $threshold) = ($1, $2);
         if ($self->{output}->is_litteral_status(status => $threshold) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong treshold-overload status '" . $val . "'.");
+            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
         $self->{overload_th}->{$filter} = $threshold;
@@ -69,6 +69,7 @@ sub check_treshold_overload {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    $self->check_threshold_overload();
 }
 
 sub get_severity {
@@ -85,7 +86,6 @@ sub get_severity {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_ibm3100StatusGlobalStatus = '.1.3.6.1.4.1.2.6.210.2.1.0';

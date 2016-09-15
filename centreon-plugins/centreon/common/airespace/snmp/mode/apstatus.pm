@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -140,7 +140,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     $instance_mode = $self;
     $self->change_macros();
@@ -149,7 +149,7 @@ sub check_options {
 sub skip_global {
     my ($self, %options) = @_;
     
-    scalar(keys %{$self->{ap}}) > 1 ? return(0) : return(1);
+    scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
 }
 
 sub prefix_ap_output {
@@ -208,7 +208,7 @@ sub manage_selection {
         my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{bsnAPName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{bsnAPName} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{bsnAPName} . "': no matching filter.", debug => 1);
             next;
         }
         
@@ -216,12 +216,11 @@ sub manage_selection {
         $self->{global}->{$result2->{bsnAPOperationStatus}}++;
         
         $self->{ap}->{$instance} = { display => $result->{bsnAPName}, 
-                                              opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
+                                     opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
     }
     
     if (scalar(keys %{$self->{ap}}) <= 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'No AP associated (can be: slave wireless controller or your filter)');
+        $self->{output}->output_add(long_msg => 'no AP associated (can be: slave wireless controller or your filter)');
     }
 }
 

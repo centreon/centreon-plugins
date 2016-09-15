@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,7 +52,7 @@ sub check_port {
     if ($self->{response} =~ /Information about each SPPORT:(.*)/msi) {
         my $port_infos = $1;
         
-        while ($port_infos =~ /(SP Name:.*?)\n\n/msig) {
+        while ($port_infos =~ /(SP Name:.*?)(\n\n|\Z)/msig) {
             my $port_infos = $1;
             
             # Not in good section

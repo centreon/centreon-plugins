@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,9 +44,9 @@ my $mapping = {
 my $oid_powerModuleHealthEntry = '.1.3.6.1.4.1.2.3.51.2.2.4.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_powerModuleHealthEntry, start => $mapping->{powerModuleExists}->{oid} };
+    push @{$self->{request}}, { oid => $oid_powerModuleHealthEntry, start => $mapping->{powerModuleExists}->{oid} };
 }
 
 sub check {
@@ -54,14 +54,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power modules");
     $self->{components}->{powermodule} = {name => 'power modules', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'powermodule'));
+    return if ($self->check_filter(section => 'powermodule'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerModuleHealthEntry}})) {
         next if ($oid !~ /^$mapping->{powerModuleState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_powerModuleHealthEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'powermodule', instance => $instance));
+        next if ($self->check_filter(section => 'powermodule', instance => $instance));
         next if ($result->{powerModuleExists} =~ /No/i && 
                  $self->absent_problem(section => 'powermodule', instance => $instance));
         $self->{components}->{powermodule}->{total}++;

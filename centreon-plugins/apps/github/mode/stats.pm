@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -79,8 +80,7 @@ sub run {
     };
 
     if ($@) {
-	use Data::Dumper;
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->output_add(long_msg => Data::Dumper::Dumper(), debug => 1);
         $self->{output}->option_exit();
     }
@@ -93,11 +93,14 @@ sub run {
                                 short_msg => sprintf("%d forks - %d watchers - %d stars", $forks, $watchers, $stars));
 
     $self->{output}->perfdata_add(label => 'forks',
-                                  value => $forks);
+                                  value => $forks, 
+                                  min => 0);
     $self->{output}->perfdata_add(label => 'watchers',
-                                  value => $watchers);
+                                  value => $watchers,
+                                  min => 0);
     $self->{output}->perfdata_add(label => 'stars',
-                                  value => $stars);
+                                  value => $stars,
+                                  min => 0);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -142,6 +145,8 @@ Specify username
 Specify password
 
 =item B<--timeout>
+
+Threshold for HTTP timeout (Default: 5)
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -112,9 +112,6 @@ sub run {
         my $label = $_;
         $label =~ s/ /-/g;
         foreach my $row (@$result) {
-        
-            next if (defined($already_checked->{$$row[0]}));
-            
             if (defined($self->{option_results}->{incremental_level})) {
                 # db incr with incremental level 0 = DB FULL
                 if (/db full/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0) { # it's a full. we get
@@ -123,11 +120,14 @@ sub run {
                     next if (/db incr/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0); # it's a full. we skip.
                     next if ($$row[0] !~ /$_/i);
                 }
-                
-                $already_checked->{$$row[0]} = 1;
+
             } else {
                 next if ($$row[0] !~ /$_/i);
             }
+
+            next if (defined($already_checked->{$$row[0]}));
+
+            $already_checked->{$$row[0]} = 1;
             
             $count_backups++;
             $executed = 1;

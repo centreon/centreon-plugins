@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my $mapping2 = {
 my $oid_cucsMemoryUnitDn = '.1.3.6.1.4.1.9.9.719.1.30.11.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping1->{cucsMemoryUnitPresence}->{oid} },
+    push @{$self->{request}}, { oid => $mapping1->{cucsMemoryUnitPresence}->{oid} },
         { oid => $mapping2->{cucsMemoryUnitOperState}->{oid} }, { oid => $oid_cucsMemoryUnitDn };
 }
 
@@ -45,7 +45,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking memories");
     $self->{components}->{memory} = {name => 'memories', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'memory'));
+    return if ($self->check_filter(section => 'memory'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cucsMemoryUnitDn}})) {
         $oid =~ /\.(\d+)$/;
@@ -56,7 +56,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{cucsMemoryUnitOperState}->{oid}}, instance => $instance);
         
         next if ($self->absent_problem(section => 'memory', instance => $memory_dn));
-        next if ($self->check_exclude(section => 'memory', instance => $memory_dn));
+        next if ($self->check_filter(section => 'memory', instance => $memory_dn));
 
         $self->{output}->output_add(long_msg => sprintf("memory '%s' state is '%s' [presence: %s].",
                                                         $memory_dn, $result2->{cucsMemoryUnitOperState},

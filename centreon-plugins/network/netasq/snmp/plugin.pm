@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,17 +28,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
+                         'connections'          => 'network::netasq::snmp::mode::connections',
                          'interfaces'           => 'snmp_standard::mode::interfaces',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
-                         'ha-status'            => 'network::netasq::snmp::mode::hastatus',
-                         'memory'               => 'snmp_standard::mode::memory',
+                         'ha-nodes'             => 'network::netasq::snmp::mode::hanodes',
+                         'memory'               => 'os::freebsd::snmp::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
                          'swap'                 => 'snmp_standard::mode::swap',
                          'vpn-status'           => 'network::netasq::snmp::mode::vpnstatus',

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,9 +45,9 @@ my $mapping = {
 my $oid_hpicfSensorEntry = '.1.3.6.1.4.1.11.2.14.11.1.2.6.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_hpicfSensorEntry };
+    push @{$self->{request}}, { oid => $oid_hpicfSensorEntry };
 }
 
 sub check {
@@ -56,7 +56,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sensor'));
+    return if ($self->check_filter(section => 'sensor'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_hpicfSensorEntry}})) {
         next if ($oid !~ /^$mapping->{hpicfSensorStatus}->{oid}\.(.*)$/);
@@ -64,7 +64,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_hpicfSensorEntry}, instance => $instance_mapping);
         my $instance = $result->{hpicfSensorObjectId} . '.' . $instance_mapping;
         
-        next if ($self->check_exclude(section => 'sensor', instance => $instance));
+        next if ($self->check_filter(section => 'sensor', instance => $instance));
         next if ($result->{hpicfSensorStatus} =~ /not present/i && 
                  $self->absent_problem(section => 'sensor', instance => $instance));
         $self->{components}->{sensor}->{total}++;

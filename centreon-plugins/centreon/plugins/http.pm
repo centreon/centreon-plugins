@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -153,10 +153,11 @@ sub set_proxy {
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
                                                error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
-        my $pac;
+        my ($pac, $pac_uri);
         eval {
             if ($options{request}->{proxypac} =~ /^(http|https):\/\//) {
-                $pac = HTTP::ProxyPAC->new(URI->new($options{request}->{proxypac}));
+                $pac_uri = URI->new($options{request}->{proxypac});
+                $pac = HTTP::ProxyPAC->new($pac_uri);
             } else {
                 $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
             }
@@ -167,7 +168,9 @@ sub set_proxy {
         }
         my $res = $pac->find_proxy($options{url});
         if (defined($res->direct) && $res->direct != 1) {
-            $self->{ua}->proxy(['http', 'https'], $res->proxy);
+            my $proxy_uri = URI->new($res->proxy);
+            $proxy_uri->userinfo($pac_uri->userinfo) if (defined($pac_uri->userinfo));
+            $self->{ua}->proxy(['http', 'https'], $proxy_uri->as_string);
         }
     }
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
@@ -202,7 +205,9 @@ sub request {
 
     my ($response, $content);
     my ($req, $url);
-    if (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
+    if (defined($request_options->{full_url})) {
+        $url = $request_options->{full_url};
+    } elsif (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
         $url = $request_options->{proto}. "://" . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
     } else {
         $url = $request_options->{proto}. "://" . $request_options->{hostname} . $request_options->{url_path};
@@ -301,7 +306,8 @@ sub request {
         $self->{output}->exit();
     }
 
-    $self->{headers} = $response->headers;
+    $self->{headers} = $response->headers();
+    $self->{response} = $response;
     return $response->content;
 }
 
@@ -309,6 +315,12 @@ sub get_header {
     my ($self, %options) = @_;
 
     return $self->{headers};
+}
+
+sub get_response {
+    my ($self, %options) = @_;
+
+    return $self->{response};
 }
 
 1;

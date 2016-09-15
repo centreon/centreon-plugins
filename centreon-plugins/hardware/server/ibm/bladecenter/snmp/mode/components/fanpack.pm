@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_fanPackEntry = '.1.3.6.1.4.1.2.3.51.2.2.6.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_fanPackEntry };
+    push @{$self->{request}}, { oid => $oid_fanPackEntry };
 }
 
 sub check {
@@ -53,7 +53,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fanpack");
     $self->{components}->{fanpack} = {name => 'fanpacks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fanpack'));
+    return if ($self->check_filter(section => 'fanpack'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanPackEntry}})) {
         next if ($oid !~ /^$mapping->{fanPackState}->{oid}\.(.*)$/);
@@ -64,7 +64,7 @@ sub check {
             $self->{output}->output_add(long_msg => "skipping fanpack '" . $instance . "' : not exits"); 
             next;
         }
-        next if ($self->check_exclude(section => 'fanpack', instance => $instance));
+        next if ($self->check_filter(section => 'fanpack', instance => $instance));
         $self->{components}->{fanpack}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Fanpack '%s' is %s rpm [status: %s, instance: %s]", 

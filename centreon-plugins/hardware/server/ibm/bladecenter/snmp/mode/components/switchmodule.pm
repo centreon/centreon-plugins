@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,9 +36,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{smHealthState}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{smHealthState}->{oid} };
 }
 
 sub check {
@@ -46,14 +46,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking switch module");
     $self->{components}->{switchmodule} = {name => 'switch modules', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'switchmodule'));
+    return if ($self->check_filter(section => 'switchmodule'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{smHealthState}->{oid}}})) {
         $oid =~ /^$mapping->{smHealthState}->{oid}\.(.*)/;
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{smHealthState}->{oid}}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'switchmodule', instance => $instance));
+        next if ($self->check_filter(section => 'switchmodule', instance => $instance));
         $self->{components}->{switchmodule}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Switch module '%s' status is %s [instance: %s]", 

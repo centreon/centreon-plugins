@@ -7,7 +7,16 @@ This document introduces the best practices in the development of "centreon-plug
 As all plugins are written in Perl, “there is more than one way to do it”.
 But to avoid reinventing the wheel, you should first take a look at the “example” directory, you will get an overview of how to build your own plugin and associated modes.
 
-The lastest version is available on following git repository: http://git.centreon.com/centreon-plugins.git
+There are 3 chapters:
+
+* :ref:`Quick Start <quick-start>`: Howto create file structure.
+* :ref:`Libraries Reference <libraries_reference>`: API description.
+* :ref:`Code Style Guidelines <code_style_guidelines>`: Follow it.
+* :ref:`Model Classes Usage <model_classes_usage>`: description of classes you should use for your plugin.
+
+The lastest version is available on following git repository: https://github.com/centreon/centreon-plugins.git
+
+.. _quick-start:
 
 ***********
 Quick Start
@@ -218,7 +227,7 @@ For example, Warning and Critical thresholds must be validate in **check_options
   if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
-    }
+  }
   if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
@@ -295,6 +304,8 @@ Once plugin and modes are developed, you can commit (commit messages in english)
   git commit -m "Add new plugin for XXXX refs #<ticked_id>"
   git push
 
+.. _libraries_reference:
+  
 *******************
 Libraries reference
 *******************
@@ -1436,7 +1447,6 @@ This is an example of how to use **fetchrow_hashref** method:
 
 Output displays Postgres databases.
 
-
 *****************
 Complete examples
 *****************
@@ -1468,40 +1478,25 @@ Then, edit **plugin.pm** and add the following lines:
 
 .. code-block:: perl
 
-  ################################################################################
-  # Copyright 2005-2015 MERETHIS
-  # Centreon is developped by : Julien Mathis and Romain Le Merlus under
-  # GPL Licence 2.0.
   #
-  # This program is free software; you can redistribute it and/or modify it under
-  # the terms of the GNU General Public License as published by the Free Software
-  # Foundation ; either version 2 of the License.
+  # Copyright 2016 Centreon (http://www.centreon.com/)
   #
-  # This program is distributed in the hope that it will be useful, but WITHOUT ANY
-  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  # PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  # Centreon is a full-fledged industry-strength solution that meets
+  # the needs in IT infrastructure and application monitoring for
+  # service performance.
   #
-  # You should have received a copy of the GNU General Public License along with
-  # this program; if not, see <http://www.gnu.org/licenses>.
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
   #
-  # Linking this program statically or dynamically with other modules is making a
-  # combined work based on this program. Thus, the terms and conditions of the GNU
-  # General Public License cover the whole combination.
+  #       http://www.apache.org/licenses/LICENSE-2.0
   #
-  # As a special exception, the copyright holders of this program give MERETHIS
-  # permission to link this program with independent modules to produce an executable,
-  # regardless of the license terms of these independent modules, and to copy and
-  # distribute the resulting executable under terms of MERETHIS choice, provided that
-  # MERETHIS also meet, for each linked independent module, the terms  and conditions
-  # of the license of that module. An independent module is a module which is not
-  # derived from this program. If you modify this program, you may extend this
-  # exception to your version of the program, but you are not obliged to do so. If you
-  # do not wish to do so, delete this exception statement from your version.
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
   #
-  # For more information : contact@centreon.com
-  # Authors : your name <your@mail>
-  #
-  ####################################################################################
 
   # Path to the plugin
   package apps::pfsense::snmp::plugin;
@@ -1573,40 +1568,25 @@ Edit **memorydroppedpackets.pm** and add the following lines:
 
 .. code-block:: perl
 
-  ################################################################################
-  # Copyright 2005-2015 MERETHIS
-  # Centreon is developped by : Julien Mathis and Romain Le Merlus under
-  # GPL Licence 2.0.
   #
-  # This program is free software; you can redistribute it and/or modify it under
-  # the terms of the GNU General Public License as published by the Free Software
-  # Foundation ; either version 2 of the License.
+  # Copyright 2016 Centreon (http://www.centreon.com/)
   #
-  # This program is distributed in the hope that it will be useful, but WITHOUT ANY
-  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-  # PARTICULAR PURPOSE. See the GNU General Public License for more details.
+  # Centreon is a full-fledged industry-strength solution that meets
+  # the needs in IT infrastructure and application monitoring for
+  # service performance.
   #
-  # You should have received a copy of the GNU General Public License along with
-  # this program; if not, see <http://www.gnu.org/licenses>.
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
   #
-  # Linking this program statically or dynamically with other modules is making a
-  # combined work based on this program. Thus, the terms and conditions of the GNU
-  # General Public License cover the whole combination.
+  #     http://www.apache.org/licenses/LICENSE-2.0
   #
-  # As a special exception, the copyright holders of this program give MERETHIS
-  # permission to link this program with independent modules to produce an executable,
-  # regardless of the license terms of these independent modules, and to copy and
-  # distribute the resulting executable under terms of MERETHIS choice, provided that
-  # MERETHIS also meet, for each linked independent module, the terms  and conditions
-  # of the license of that module. An independent module is a module which is not
-  # derived from this program. If you modify this program, you may extend this
-  # exception to your version of the program, but you are not obliged to do so. If you
-  # do not wish to do so, delete this exception statement from your version.
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
   #
-  # For more information : contact@centreon.com
-  # Authors : your name <your@mail>
-  #
-  ####################################################################################
 
   # Path to the plugin
   package apps::pfsense::snmp::mode::memorydroppedpackets;
@@ -1797,4 +1777,460 @@ Output may display:
   OK: Dropped packets due to memory limitations : 0.00 /s | dropped_packets_Per_Sec=0.00;0;;1;2
 
 
+.. _code_style_guidelines:
 
+*********************
+Code Style Guidelines
+*********************
+
+------------
+Introduction
+------------
+
+Perl code from Pull-request must conform to the following style guidelines. If you find any code which doesn't conform, please fix it.
+
+-----------
+Indentation
+-----------
+
+Space should be used to indent all code blocks. Tabs should never be used to indent code blocks. Mixing tabs and spaces results in misaligned code blocks for other developers who prefer different indentation settings.
+Please use 4 for indentation space width.
+
+.. code-block:: perl
+
+    if ($1 > 1) {
+    ....return 1;
+    } else {
+        if ($i == -1) {
+        ....return 0;
+        }
+        return -1
+    }
+
+--------
+Comments
+--------
+
+There should always be at least 1 space between the # character and the beginning of the comment.  This makes it a little easier to read multi-line comments:
+
+.. code-block:: perl
+
+    # Good comment
+    #Wrong comment
+
+---------------------------
+Subroutine & Variable Names
+---------------------------
+
+Whenever possible, use underscore to seperator words and don't use uppercase characters:
+
+.. code-block:: perl
+
+    sub get_logs {}
+    my $start_time;
+
+Keys of hash table should be used alphanumeric and underscore characters only (and no quote!):
+
+.. code-block:: perl
+
+    $dogs->{meapolitan_mastiff} = 10;
+
+---------------------------
+Curly Brackets, Parenthesis
+---------------------------
+
+There should be a space between every control/loop keyword and the opening parenthesis:
+
+.. code-block:: perl
+
+    if ($i == 1) {
+        ...
+    }
+    while ($i == 2) {
+        ...
+    }
+    
+------------------
+If/Else Statements
+------------------
+
+'else', 'elsif' should be on the same line after the previous closing curly brace:
+
+.. code-block:: perl
+
+    if ($i == 1) {
+        ...
+    } else {
+        ...
+    }
+
+You can use single line if conditional:
+
+.. code-block:: perl
+
+    next if ($i == 1);
+
+
+.. _model_classes_usage:
+
+*******************
+Model Classes Usage
+*******************
+
+------------
+Introduction
+------------
+
+With the experience of plugin development, we have created two classes:
+
+* centreon::plugins::templates::counter
+* centreon::plugins::templates::hardware
+
+It was developed to have a more consistent code and less redundant code. According to context, you should use one of two classes for modes. 
+Following classes can be used for whatever plugin type (SNMP, Custom, DBI,...).
+
+-------------
+Class counter
+-------------
+
+When to use it ?
+----------------
+
+If you have some counters (CPU Usage, Memory, Session...), you should use that class.
+If you have only one global counter to check, it's maybe not useful to use it (but only for these case).
+
+Class methods
+-------------
+
+List of methods:
+
+* **new**: class constructor. Overload if you need to add some specific options or to use a statefile.
+* **check_options**: overload if you need to check your specific options.
+* **manage_selection**: overload if *mandatory*. Method to get informations for the equipment.
+* **set_counters**: overload if **mandatory**. Method to configure counters.
+
+Examples
+--------
+
+Example 1
+^^^^^^^^^
+
+We want to develop the following SNMP plugin:
+
+* measure the current sessions and current SSL sessions usages.
+
+.. code-block:: perl
+
+  package my::module::name;
+  
+  use base qw(centreon::plugins::templates::counter);
+  
+  use strict;
+  use warnings;
+  
+  sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ' },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'sessions', set => {
+                key_values => [ { name => 'sessions' } ],
+                output_template => 'Current sessions : %s',
+                perfdatas => [
+                    { label => 'sessions', value => 'sessions_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-ssl', set => {
+                key_values => [ { name => 'sessions_ssl' } ],
+                output_template => 'Current ssl sessions : %s',
+                perfdatas => [
+                    { label => 'sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+  }
+  
+  sub manage_selection {
+    my ($self, %options) = @_;
+
+    # OIDs are fake. Only for the example.
+    my ($oid_sessions, $oid_sessions_ssl) = ('.1.2.3.4.0', '.1.2.3.5.0');
+    
+    my $result = $options{snmp}->get_leef(oids => [ $oid_sessions, $oid_sessions_ssl ],
+                                          nothing_quit => 1);
+    $self->{global} = { sessions => $result->{$oid_sessions},
+                        sessions_ssl => $result->{$oid_sessions_ssl}
+                      };
+  }
+
+
+Output may display:
+::
+
+  OK: Current sessions : 24 - Current ssl sessions : 150 | sessions=24;;;0; sessions_ssl=150;;;0;
+
+As you can see, we create two arrays of hash tables in **set_counters** method. We use arrays to order the output.
+
+* **maps_counters_type**: global configuration. Attributes list:
+
+  * *name*: the name is really important. It will be used in hash **map_counters** and also in **manage_selection** as you can see.
+  * *type*: 0 or 1. With 0 value, the output will be written in the short output. With the value 1, it depends if we have one or multiple instances.
+  * *message_multiple*: only useful with *type* 1 value. The message will be displayed in short ouput if we have multiple instances selected.
+  * *message_separator*: the string displayed between counters (Default: ', ').
+  * *cb_prefix_output*, *cb_suffix_output*: name of a method (in a string) to callback. Methods will return a string to be displayed before or after **all** counters.
+  * *cb_init*: name of a method (in a string) to callback. Method will return 0 or 1. With 1 value, counters are not checked.
+
+* **maps_counters**: complex structure to configure counters. Attributes list:
+
+  * *label*: name used for threshold options.
+  * *threshold*: if we set the value to 0. There is no threshold check options (can be used if you want to set and check option yourself).
+  * *set*: hash table:
+  
+    * *keys_values*: array of hashes. Set values used for the counter. Order is important (by default, the first value is used to check). 
+
+      * *name*: attribute name. Need to match with attributes in **manage_selection** method!
+      * *diff*: if we set the value to 1, we'll have the difference between two checks (need a statefile!).
+    
+    * *output_template*: string to display. '%s' will be replaced by the first value of *keys_values*.
+    * *output_use*: which value to be used in *output_template* (If not set, we use the first value of *keys_values*).
+    * *per_second*: if we set the value to 1, the *diff* values will be calculated per seconds.
+    * *output_change_bytes*: if we set the value to 1 or 2, we can use a second '%s' in *output_template* to display the unit. 1 = divide by 1024 (Bytes), 2 = divide by 1000 (bits).
+    * *perfdata*: array of hashes. To configure perfdatas
+    
+      * *label*: name displayed.
+      * *value*: value to used. It's the name from *keys_values* with a **suffix**: '_absolute' or '_per_second' (depends of other options).
+      * *template*: value format (could be for example: '%.3f').
+      * *unit*: unit displayed.
+      * *min*, *max*: min and max displayed. You can use a value from *keys_values*.
+      * *label_extra_instance*: if we set the value to 1, perhaps we'll have a suffix concat with *label*.
+      * *instance_use*: which value from *keys_values* to be used. To be used if *label_extra_instance* is 1.
+
+Example 2
+^^^^^^^^^
+
+We want to add the current number of sessions by virtual servers.
+
+.. code-block:: perl
+
+  package my::module::name;
+  
+  use base qw(centreon::plugins::templates::counter);
+  
+  use strict;
+  use warnings;
+  
+  sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual servers are ok' }
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total-sessions', set => {
+                key_values => [ { name => 'sessions' } ],
+                output_template => 'current sessions : %s',
+                perfdatas => [
+                    { label => 'total_sessions', value => 'sessions_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-sessions-ssl', set => {
+                key_values => [ { name => 'sessions_ssl' } ],
+                output_template => 'current ssl sessions : %s',
+                perfdatas => [
+                    { label => 'total_sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{vs} = [
+        { label => 'sessions', set => {
+                key_values => [ { name => 'sessions' }, { name => 'display' } ],
+                output_template => 'current sessions : %s',
+                perfdatas => [
+                    { label => 'sessions', value => 'sessions_absolute', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'sessions-ssl', set => {
+                key_values => [ { name => 'sessions_ssl' }, { name => 'display' } ],
+                output_template => 'current ssl sessions : %s',
+                perfdatas => [
+                    { label => 'sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+  }
+  
+  sub prefix_vs_output {
+    my ($self, %options) = @_;
+    
+    return "Virtual server '" . $options{instance_value}->{display} . "' ";
+  }
+  
+  sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Total ";
+  }
+  
+  sub manage_selection {
+    my ($self, %options) = @_;
+
+    # OIDs are fake. Only for the example.
+    my ($oid_sessions, $oid_sessions_ssl) = ('.1.2.3.4.0', '.1.2.3.5.0');
+    
+    my $result = $options{snmp}->get_leef(oids => [ $oid_sessions, $oid_sessions_ssl ],
+                                          nothing_quit => 1);
+    $self->{global} = { sessions => $result->{$oid_sessions},
+                        sessions_ssl => $result->{$oid_sessions_ssl}
+                      };
+    my $oid_table_vs = '.1.2.3.10';
+    my $mapping = {
+        vsName        => { oid => '.1.2.3.10.1' },
+        vsSessions    => { oid => '.1.2.3.10.2' },
+        vsSessionsSsl => { oid => '.1.2.3.10.3' },
+    };
+    
+    $self->{vs} = {};
+    $result = $options{snmp}->get_table(oid => $oid_table_vs,
+                                        nothing_quit => 1);
+    foreach my $oid (keys %{$result->{ $oid_table_vs }}) {
+        next if ($oid !~ /^$mapping->{vsName}->{oid}\.(.*)$/;
+        my $instance = $1;
+        my $data = $options{snmp}->map_instance(mapping => $mapping, results => $result->{$oid_table_vs}, instance => $instance);
+        
+        $self->{vs}->{$instance} = { display => $data->{vsName}, 
+                                     sessions => $data->{vsSessions}, sessions_ssl => $data->{vsSessionsSsl}};
+    }
+  }
+
+If we have at least 2 virtual servers:
+::
+
+  OK: Total current sessions : 24, current ssl sessions : 150 - All Virtual servers are ok | total_sessions=24;;;0; total_sessions_ssl=150;;;0; sessions_foo1=11;;;0; sessions_ssl_foo1=70;;;0; sessions_foo2=13;;;0; sessions_ssl_foo2=80;;;0;
+  Virtual server 'foo1' current sessions : 11, current ssl sessions : 70
+  Virtual server 'foo2' current sessions : 13, current ssl sessions : 80
+
+Example 3
+^^^^^^^^^
+
+The model can also be used to check strings (not only counters). So we want to check the status of a virtualserver.
+
+.. code-block:: perl
+
+  package my::module::name;
+  
+  use base qw(centreon::plugins::templates::counter);
+  
+  use strict;
+  use warnings;
+  
+  my $instance_mode;
+  
+  sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual server status are ok' }
+    ];    
+    $self->{maps_counters}->{vs} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+    ];
+  }
+  
+  sub custom_threshold_output {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    
+    if ($self->{result_values}->{status} =~ /problem/) {
+        $status = 'critical';
+    }
+    return $status;
+  }
+  
+  sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("status is '%s'", $self->{result_values}->{status});
+    return $msg;
+  }
+  
+  sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+  }
+  
+  sub prefix_vs_output {
+    my ($self, %options) = @_;
+    
+    return "Virtual server '" . $options{instance_value}->{display} . "' ";
+  }
+  
+  sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    # Sometimes, you'll need to have access of the current object in the callback
+    $instance_mode = $self;
+  }
+  
+  sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $oid_table_vs = '.1.2.3.10';
+    my $mapping = {
+        vsName        => { oid => '.1.2.3.10.1' },
+        vsStatus      => { oid => '.1.2.3.10.4' },
+    };
+    
+    $self->{vs} = {};
+    my $result = $options{snmp}->get_table(oid => $oid_table_vs,
+                                        nothing_quit => 1);
+    foreach my $oid (keys %{$result->{ $oid_table_vs }}) {
+        next if ($oid !~ /^$mapping->{vsName}->{oid}\.(.*)$/;
+        my $instance = $1;
+        my $data = $options{snmp}->map_instance(mapping => $mapping, results => $result->{$oid_table_vs}, instance => $instance);
+        
+        $self->{vs}->{$instance} = { display => $data->{vsName}, 
+                                     status => $data->{vsStatus} };
+    }
+  }
+
+
+The following example show 4 new attributes:
+
+* *closure_custom_calc*: should be used to have a simple name (without '_absolute' or '_per_second'). Or to do some more complex calculation.
+* *closure_custom_output*: should be used to have a more complex output (An example: want to display the total, free and used value at the same time).
+* *closure_custom_perfdata*: should be used to manage yourself the perfdata.
+* *closure_custom_threshold_check*: should be used to manage yourself the threshold check.
+
+
+--------------
+Class hardware
+--------------
+
+TODO

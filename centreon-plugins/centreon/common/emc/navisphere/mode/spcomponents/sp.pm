@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,35 +23,31 @@ package centreon::common::emc::navisphere::mode::spcomponents::sp;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking sp");
     $self->{components}->{sp} = {name => 'sp', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sp'));
+    return if ($self->check_filter(section => 'sp'));
     
     # SP A State:                 Present
     while ($self->{response} =~ /^SP\s+(\S+)\s+State:\s+(.*)$/mgi) {
         my $instance = $1;
         my $state = $2;
         
-        next if ($self->check_exclude(section => 'sp', instance => $instance));
+        next if ($self->check_filter(section => 'sp', instance => $instance));
         $self->{components}->{sp}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("sp '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("sp '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'sp', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("sp '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }

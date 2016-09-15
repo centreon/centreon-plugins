@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,10 +39,9 @@ my %map_vimm_present = (
 );
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_arrayVimmEntry_present };
-    push @{$options{request}}, { oid => $oid_arrayVimmEntry_failed };
+    push @{$self->{request}}, { oid => $oid_arrayVimmEntry_present }, { oid => $oid_arrayVimmEntry_failed };
 }
 
 sub check {
@@ -50,7 +49,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking vimms");
     $self->{components}->{vimm} = {name => 'vimms', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'vimm'));
+    return if ($self->check_filter(section => 'vimm'));
 
     foreach my $oid (keys %{$self->{results}->{$oid_arrayVimmEntry_present}}) {
         next if ($oid !~ /^$oid_arrayVimmEntry_present\.(.*)$/);
@@ -59,7 +58,7 @@ sub check {
         my ($dummy, $array_name, $vimm_name) = $self->convert_index(value => $1);
         my $instance = $array_name . '-' . $vimm_name;
 
-        next if ($self->check_exclude(section => 'vimm', instance => $instance));
+        next if ($self->check_filter(section => 'vimm', instance => $instance));
         next if ($map_vimm_present{$present} =~ /Absent/i && 
                  $self->absent_problem(section => 'vimm', instance => $instance));
         

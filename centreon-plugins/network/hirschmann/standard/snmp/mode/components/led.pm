@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,9 +34,9 @@ my %map_led_status = (
 my $oid_hmLEDGroup = '.1.3.6.1.4.1.248.14.1.1.35';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_hmLEDGroup };
+    push @{$self->{request}}, { oid => $oid_hmLEDGroup };
 }
 
 sub check_led {
@@ -49,7 +49,7 @@ sub check_led {
         $options{mapping}->{$name}->{oid} =~ /\.(\d+)$/;
         my $instance = $1;
 
-        next if ($self->check_exclude(section => 'led', instance => $instance));
+        next if ($self->check_filter(section => 'led', instance => $instance));
         $self->{components}->{led}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Led '%s' status is %s [instance: %s].",
@@ -70,7 +70,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking leds");
     $self->{components}->{led} = {name => 'leds', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'led'));
+    return if ($self->check_filter(section => 'led'));
 
     my $mapping;
     if (defined($self->{results}->{$oid_hmLEDGroup}->{$oid_hmLEDGroup . '.1.1.0'})) {

@@ -1,5 +1,5 @@
 #
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,10 +30,9 @@ my $oid_enclPowerSuppliesPresent = '.1.3.6.1.4.1.789.1.21.1.2.1.13';
 my $oid_enclPowerSuppliesFailed = '.1.3.6.1.4.1.789.1.21.1.2.1.15';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_enclPowerSuppliesPresent };
-    push @{$options{request}}, { oid => $oid_enclPowerSuppliesFailed };
+    push @{$self->{request}}, { oid => $oid_enclPowerSuppliesPresent }, { oid => $oid_enclPowerSuppliesFailed };
 }
 
 sub check {
@@ -41,7 +40,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     for (my $i = 1; $i <= $self->{number_shelf}; $i++) {
         my $shelf_addr = $self->{shelf_addr}->{$oid_enclChannelShelfAddr . '.' . $i};
@@ -52,7 +51,7 @@ sub check {
             $num = centreon::plugins::misc::trim($num);
             next if ($num !~ /[0-9]/);
             
-            next if ($self->check_exclude(section => 'psu', instance => $shelf_addr . '.' . $num));
+            next if ($self->check_filter(section => 'psu', instance => $shelf_addr . '.' . $num));
             $self->{components}->{psu}->{total}++;
 
             my $status = 'ok';
