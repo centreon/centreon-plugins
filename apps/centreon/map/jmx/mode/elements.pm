@@ -64,17 +64,17 @@ sub run {
 
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);  
 
-    my $elements = $result->{"com.centreon.studio.map:name=BusinessElements,type=repo"}->{LoadedModelCount};
+    my $elements = $result->{"com.centreon.studio.map:name=BusinessElement,type=repo"}->{LoadedModelCount};
     
     my $exit = $self->{perfdata}->threshold_check(value => $elements,
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
 
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Element loaded : %d",
-                                                      $result->{"com.centreon.studio.map:name=BusinessElements,type=repo"}->{LoadedModelCount}));
+                                                      $result->{"com.centreon.studio.map:name=BusinessElement,type=repo"}->{LoadedModelCount}));
 
     $self->{output}->perfdata_add(label => 'elements',
-                                  value => $result->{"com.centreon.studio.map:name=BusinessElements,type=repo"}->{LoadedModelCount},
+                                  value => $result->{"com.centreon.studio.map:name=BusinessElement,type=repo"}->{LoadedModelCount},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
