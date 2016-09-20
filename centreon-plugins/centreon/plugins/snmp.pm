@@ -596,7 +596,7 @@ sub set {
 }
 
 sub is_snmpv1 {
-    my $self = shift;
+    my ($self) = @_;
     
     if ($self->{snmp_params}->{Version} eq '1') {
         return 1;
@@ -605,15 +605,15 @@ sub is_snmpv1 {
 }
 
 sub clean_oid {
-    my $self = shift;
+    my ($self, $oid) = @_;
     
-    $_[0] =~ s/\.$//;
-    $_[0] =~ s/^(\d)/\.$1/;
-    return $_[0];
+    $oid =~ s/\.$//;
+    $oid =~ s/^(\d)/\.$1/;
+    return $oid;
 }
 
 sub check_oid_up {
-    my $self = shift;
+    my ($self) = @_;
     my ($current_oid, $end_oid) = @_;
     
     my @current_oid_splitted = split /\./, $current_oid;
