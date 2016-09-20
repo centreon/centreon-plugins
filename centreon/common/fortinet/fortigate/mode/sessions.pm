@@ -56,7 +56,7 @@ sub check_options {
     }
     
     ($self->{warn1}, $self->{warn10}, $self->{warn30}, $self->{warn60}) = split /,/, $self->{option_results}->{warning_avg};
-    ($self->{crit1}, $self->{crit10}, $self->{crit30}, $self->{warn60}) = split /,/, $self->{option_results}->{critical_avg};
+    ($self->{crit1}, $self->{crit10}, $self->{crit30}, $self->{crit60}) = split /,/, $self->{option_results}->{critical_avg};
     
     if (($self->{perfdata}->threshold_validate(label => 'warn1', value => $self->{warn1})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1} . "'.");
@@ -115,13 +115,13 @@ sub run {
                                   min => 0);
     
     my $exit1 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate1}, 
-                               threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'crit1', exit_litteral' => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate10}, 
-                               threshold => [ { label => 'crit10', 'exit_litteral' => 'critical' }, { label => 'warn10', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'crit10', exit_litteral => 'critical' }, { label => 'warn10', exit_litteral => 'warning' } ]);
     my $exit3 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate30}, 
-                               threshold => [ { label => 'crit30', 'exit_litteral' => 'critical' }, { label => 'warn30', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'crit30', exit_litteral => 'critical' }, { label => 'warn30', exit_litteral => 'warning' } ]);
     my $exit4 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate60}, 
-                               threshold => [ { label => 'crit60', 'exit_litteral' => 'critical' }, { label => 'warn60', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'crit60', exit_litteral => 'critical' }, { label => 'warn60', exit_litteral => 'warning' } ]);
     $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4 ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("Averate session setup rate: %s, %s, %s, %s (1min, 10min, 30min, 60min)", 
