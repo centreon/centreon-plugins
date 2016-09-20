@@ -115,7 +115,7 @@ sub run {
                                   min => 0);
     
     my $exit1 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate1}, 
-                               threshold => [ { label => 'crit1', exit_litteral' => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
+                               threshold => [ { label => 'crit1', exit_litteral => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
     my $exit2 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate10}, 
                                threshold => [ { label => 'crit10', exit_litteral => 'critical' }, { label => 'warn10', exit_litteral => 'warning' } ]);
     my $exit3 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate30}, 
