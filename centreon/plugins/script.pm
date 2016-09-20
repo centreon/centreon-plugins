@@ -34,7 +34,7 @@ my $global_version = 20160902;
 my $alternative_fatpacker = 0;
 
 sub new {
-    my $class = shift;
+    my ($class) = @_;
     my $self  = {};
     bless $self, $class;
 
@@ -50,7 +50,7 @@ sub new {
 }
 
 sub prepare_destroy {
-    my $self = shift;
+    my ($self) = @_;
 
     delete $handlers{DIE}->{$self};
 }
@@ -79,7 +79,7 @@ sub handle_DIE {
 }
 
 sub get_plugin {
-    my $self = shift;
+    my ($self) = @_;
     
     ######
     # Need to load global 'Output' and 'Options'
@@ -122,7 +122,7 @@ sub get_plugin {
 }
 
 sub display_local_help {
-    my $self = shift;
+    my ($self) = @_;
 
     my $stdout;
     if ($self->{help}) {
@@ -167,7 +167,7 @@ sub check_directory {
 }
 
 sub display_list_plugin {
-    my $self = shift;
+    my ($self) = @_;
     $self->{plugins_result} = {};
     
     # Search file 'plugin.pm'
@@ -247,7 +247,7 @@ sub check_relaunch {
 }
 
 sub run {
-    my $self = shift;
+    my ($self) = @_;
 
     $self->get_plugin();
 

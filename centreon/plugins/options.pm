@@ -28,7 +28,7 @@ use warnings;
 my $alternative = 1;
 
 sub new {
-    my $class = shift;
+    my ($class) = @_;
     my $self  = {};
     bless $self, $class;
 
