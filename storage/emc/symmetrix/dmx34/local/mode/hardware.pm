@@ -54,10 +54,14 @@ sub set_system {
             ['\.\./.*', 'OK'],
             ['.*', 'CRITICAL'],
         ],
+        fru => [
+            ['OK', 'OK'],
+            ['.*', 'CRITICAL'],
+        ],
     };
     
     $self->{components_path} = 'storage::emc::symmetrix::dmx34::local::mode::components';
-    $self->{components_module} = ['director', 'xcm', 'disk', 'memory', 'config', 'environment', 'test'];
+    $self->{components_module} = ['director', 'xcm', 'disk', 'memory', 'config', 'test', 'fru'];
 }
 
 sub check_options {
@@ -100,17 +104,19 @@ sub read_files {
         $self->{output}->add_option_msg(short_msg => "Please set option --file-health and --file-health-env.");
         $self->{output}->option_exit();
     }
-    $self->{content_file_health} = do {
-        local $/ = undef;
-        if (!open my $fh, "<", $self->{option_results}->{file_health}) {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{file_health} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
     
-    # We remove color syntax
-    $self->{content_file_health} =~ s/\x{1b}\[.*?m|\r//msg;
+    foreach (('file_health', 'file_health_env')) {
+        $self->{'content_' . $_} = do {
+            local $/ = undef;
+            if (!open my $fh, "<", $self->{option_results}->{$_}) {
+                $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+        };
+        # We remove color syntax
+        $self->{'content_' . $_} =~ s/\x{1b}\[.*?m|\r//msg;
+    }
     
     # *****************************************************************
     #*            Health Check Run From Scheduler        Version 2.0 *
@@ -247,7 +253,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'director', 'xcm', 'disk', 'memory', 'config', 'environment', 'test'
+Can be: 'director', 'xcm', 'disk', 'memory', 'config', 'fru', 'test'
 
 =item B<--filter>
 
