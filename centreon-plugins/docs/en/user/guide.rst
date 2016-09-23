@@ -579,12 +579,12 @@ The plugin works in the same way:
 Howto build a standalone Windows executable ?
 ---------------------------------------------
 
-This is only useful if you want to compile your own "centreon_plugins.exe". You won't need to install perl on your windows server.
+This is only useful if you want to compile your own ``centreon_plugins.exe``. You won't need to install Perl on your windows server.
 
 * Install on Windows Strawberry Perl 5.24.x (Download on http://strawberryperl.com/)
 * Trunk of centreon-plugins repository (Download on https://github.com/centreon/centreon-plugins/archive/master.zip)
 
-Once everything is installed, install CPAN Module "PAR::Packer" (replace <PERL_INSTALL_DIR>):
+Once everything is installed, install CPAN Module ``PAR::Packer`` (replace ``<PERL_INSTALL_DIR>``):
 ::
 
   cmd> <PERL_INSTALL_DIR>\perl\bin\cpan.bat
@@ -592,7 +592,7 @@ Once everything is installed, install CPAN Module "PAR::Packer" (replace <PERL_I
 
 It can take several minutes to install the CPAN Module.
 
-In the parent directory containing the directory "centreon-plugins", create a "build.bat" file (replace ``<PERL_INSTALL_DIR>``).
+In the parent directory containing the directory ``centreon-plugins``, create a ``build.bat`` file (replace ``<PERL_INSTALL_DIR>``).
 We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 functions as part of its core Socket module).
 
 ::
@@ -661,8 +661,8 @@ We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 
   
   pause
 
-Add plugins and modes you need in "centreon_plugins.exe" (the example add some plugins). 
-Eventually, execute "build.bat" file to create executable "centreon_plugins.exe".
+Add plugins and modes you need in ``centreon_plugins.exe`` (the example add some plugins). 
+Eventually, execute ``build.bat`` file to create executable ``centreon_plugins.exe``.
 
 If you want to change the executable version and ico file, add following code after ``PERL_INSTALL_DIR`` first line:
 ::
@@ -726,6 +726,11 @@ If you want to change the executable version and ico file, add following code af
   attrib -R %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
   copy /Y %PAR_PACKER_SRC%\myldr\Static.pm %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
 
+You can build a 32 bits binary from a Windows 64 bits:
+
+* Install Strawberry Perl 5.24.x 32 bits on Windows (Download on http://strawberryperl.com/)
+* Install cpan module ``PAR::Packer``
+* Add following line in the build script : PATH=%PERL_INSTALL_DIR%\c\bin;%PERL_INSTALL_DIR%\perl\bin;C:\Windows\System32
 
 ***************
 Troubleshooting
