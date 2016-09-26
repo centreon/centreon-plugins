@@ -32,13 +32,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '2376'},
-            "proto:s"               => { name => 'proto', default => 'https' },
-            "urlpath:s"             => { name => 'url_path', default => '/' },
+            "port:s"                => { name => 'port' },
             "name:s"                => { name => 'name' },
             "id:s"                  => { name => 'id' },
             "image:s"               => { name => 'image' },
@@ -88,32 +85,25 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (defined($self->{option_results}->{id})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{id}."/json";
-    } elsif (defined($self->{option_results}->{name})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{name}."/json";
-    }
-
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my ($jsoncontent,$jsoncontent2, $webcontent, $webcontent2);
+    my ($jsoncontent, $webcontent, $webcontent2);
 
-    $jsoncontent = $self->{http}->request();
-
-    my $json = JSON->new;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
+    my $urlpath;
+    if (defined($self->{option_results}->{id})) {
+        $urlpath = "/containers/".$self->{option_results}->{id}."/stats";
+    } elsif (defined($self->{option_results}->{name})) {
+        $urlpath = "/containers/".$self->{option_results}->{name}."/stats";
     }
+    my $port = $self->{option_results}->{port};
+    my $containerapi = $options{custom};
+
+    $webcontent = $containerapi->api_request(urlpath => $urlpath,
+                                            port => $port);
 
     my $container_id = $webcontent->{Image};
 
@@ -123,12 +113,12 @@ sub run {
     $self->{option_results}->{hostname} = $self->{option_results}->{registry_hostname};
     $self->{http}->set_options(%{$self->{option_results}});
 
-    $jsoncontent2 = $self->{http}->request();
+    $jsoncontent = $self->{http}->request();
 
     my $json2 = JSON->new;
 
     eval {
-        $webcontent2 = $json2->decode($jsoncontent2);
+        $webcontent2 = $json2->decode($jsoncontent);
     };
 
     if ($@) {
@@ -166,23 +156,11 @@ __END__
 
 Check Container's image viability with a registry
 
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of Docker's API
+=head2 DOCKER OPTIONS
 
 =item B<--port>
 
-Port used by Docker's API (Default: '2576')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'https')
-
-=item B<--urlpath>
-
-Set path to get Docker's container information (Default: '/')
+Port used by Docker
 
 =item B<--id>
 
@@ -191,6 +169,8 @@ Specify the container's id
 =item B<--name>
 
 Specify the container's name
+
+=head2 MODE OPTIONS
 
 =item B<--image>
 
