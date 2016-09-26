@@ -22,14 +22,14 @@ package cloud::docker::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.2';
+    $self->{version} = '0.3';
     %{$self->{modes}} = (
                         'blockio'           => 'cloud::docker::mode::blockio',
                         'containerstate'    => 'cloud::docker::mode::containerstate',
@@ -37,11 +37,22 @@ sub new {
                         'image'             => 'cloud::docker::mode::image',
                         'info'              => 'cloud::docker::mode::info',
                         'list-containers'   => 'cloud::docker::mode::listcontainers',
+                        'list-nodes'        => 'cloud::docker::mode::listnodes',
                         'memory'            => 'cloud::docker::mode::memory',
+                        'nodestate'         => 'cloud::docker::mode::nodestate',
                         'traffic'           => 'cloud::docker::mode::traffic',
                         );
+
+    $self->{custom_modes}{dockerapi} = 'cloud::docker::custom::dockerapi';
     return $self;
 }
+
+sub init {
+    my ( $self, %options ) = @_;
+
+    $self->SUPER::init(%options);
+}
+
 
 1;
 
@@ -50,6 +61,6 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Docker and containers through its HTTPS Remote API (https://docs.docker.com/reference/api/docker_remote_api/).
-Requirements: Docker 1.7.1+ and Docker API 1.19+
+Requirements: Docker 1.12.0+ and Docker API 1.24+
 
 =cut
