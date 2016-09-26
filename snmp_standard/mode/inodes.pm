@@ -20,26 +20,36 @@
 
 package snmp_standard::mode::inodes;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    disk => {
-        '000_usage'   => {
-            set => {
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All inode partitions are ok' }
+    ];
+    
+    $self->{maps_counters}->{disk} = [
+        { label => 'usage', set => {
                 key_values => [ { name => 'usage' }, { name => 'display' } ],
                 output_template => 'Used: %s %%', output_error_template => "%s",
                 perfdatas => [
                     { label => 'used', value => 'usage_absolute', template => '%d',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
-            },
+            }
         },
-    }
-};
+    ];
+}
+
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+    
+    return "Inode partition '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -58,95 +68,7 @@ sub new {
                                   "display-transform-dst:s" => { name => 'display_transform_dst' },
                                 });
 
-    foreach my $key (('disk')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('disk')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{disk_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All inode partitions are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{disk_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters->{disk}}) {
-            my $obj = $maps_counters->{disk}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{disk_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Inode partition '" . $self->{disk_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -158,22 +80,26 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $results = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{dskPath}->{oid} }, 
+    my $results = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping->{dskPath}->{oid} }, 
                                                               { oid => $mapping->{dskDevice}->{oid} }, 
                                                               { oid => $mapping->{dskPercentNode}->{oid} } ],
                                                     return_type => 1, nothing_quit => 1);
-    $self->{disk_selected} = {};
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$results})) {
+    $self->{disk} = {};
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$results})) {
         next if ($oid !~ /^$mapping->{dskPath}->{oid}\.(.*)/);
         my $instance = $1;
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         $result->{dskPath} = $self->get_display_value(value => $result->{dskPath});
         
         $self->{output}->output_add(long_msg => sprintf("disk path : '%s', device : '%s'", $result->{dskPath}, $result->{dskDevice}), debug => 1);
         
         if (!defined($result->{dskPercentNode})) {
             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : no inode usage value", $result->{dskPath}), debug => 1);
+            next;
+        }
+        if (defined($self->{disk}->{$result->{dskPath}})) {
+             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : duplicated entry", $result->{dskPath}), debug => 1);
             next;
         }
         if (defined($result->{dskDevice}) && defined($self->{option_results}->{filter_device}) && 
@@ -202,11 +128,12 @@ sub manage_selection {
             }
         }
         
-        $self->{disk_selected}->{$instance} = { display => $result->{dskPath}, 
-                                                usage => $result->{dskPercentNode} };
+        
+        $self->{disk}->{$result->{dskPath}} = { display => $result->{dskPath}, 
+                                                         usage => $result->{dskPercentNode} };
     }
     
-    if (scalar(keys %{$self->{disk_selected}}) <= 0) {
+    if (scalar(keys %{$self->{disk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
