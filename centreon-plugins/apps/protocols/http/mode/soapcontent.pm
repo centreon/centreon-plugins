@@ -70,9 +70,9 @@ sub new {
             "warning-time:s"          => { name => 'warning_time' },
             "critical-time:s"         => { name => 'critical_time' },
             "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-            "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) finded' },
-            "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) finded' },
-            "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) finded' },
+            "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
+            "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
+            "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
             "values-separator:s"      => { name => 'values_separator', default => ', ' },
             });
     $self->{count} = 0;
@@ -120,7 +120,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify data.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{http}->add_header(key => 'SOAPAction', value => $self->{option_results}->{service_soap});
 }
@@ -309,7 +309,7 @@ FORMAT OPTIONS:
 
 =item B<--format-ok>
 
-Output format (Default: '%{count} element(s) finded')
+Output format (Default: '%{count} element(s) found')
 Can used:
 '%{values}' = display all values (also text string)
 '%{values_ok}' = values from attributes and text node only (seperated by option values-separator)
@@ -317,11 +317,11 @@ Can used:
 
 =item B<--format-warning>
 
-Output warning format (Default: %{count} element(s) finded')
+Output warning format (Default: %{count} element(s) found')
 
 =item B<--format-critical>
 
-Output critical format (Default: %{count} element(s) finded')
+Output critical format (Default: %{count} element(s) found')
 
 =item B<--values-separator>
 
