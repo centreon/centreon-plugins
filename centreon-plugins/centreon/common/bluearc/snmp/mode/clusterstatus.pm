@@ -27,11 +27,11 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes are ok' }
     ];
-    
+
     $self->{maps_counters}->{node} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
@@ -47,14 +47,14 @@ sub set_counters {
 my $instance_mode;
 
 sub custom_threshold_output {
-    my ($self, %options) = @_; 
+    my ($self, %options) = @_;
     my $status = 'ok';
     my $message;
-    
+
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
@@ -75,14 +75,14 @@ sub custom_threshold_output {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = 'state : ' . $self->{result_values}->{state};
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -90,7 +90,7 @@ sub custom_status_calc {
 
 sub prefix_node_output {
     my ($self, %options) = @_;
-    
+
     return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -98,7 +98,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
@@ -114,14 +114,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $instance_mode = $self;
     $self->change_macros();
 }
 
 sub change_macros {
     my ($self, %options) = @_;
-    
+
     foreach (('warning_status', 'critical_status', 'unknown_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
@@ -129,7 +129,7 @@ sub change_macros {
     }
 }
 
-my %map_vnode_status = ( 
+my %map_vnode_status = (
     1 => 'unknown',
     2 => 'onLine',
     3 => 'offLine',
@@ -156,14 +156,14 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $result->{clusterVNodeName} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{node}->{$instance} = { display => $result->{clusterVNodeName}, 
+
+        $self->{node}->{$instance} = { display => $result->{clusterVNodeName},
                                        state => $result->{clusterVNodeStatus}};
     }
-    
+
     if (scalar(keys %{$self->{node}}) <= 0) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'No node(s) finded');
+                                    short_msg => 'No node(s) found');
     }
 }
 
