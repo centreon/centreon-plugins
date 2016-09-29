@@ -35,6 +35,7 @@ my $thresholds = {
     ],
     smartdisk => [
         ['GOOD', 'OK'],
+        ['NORMAL', 'WARNING'],
         ['--', 'OK'],
         ['.*', 'CRITICAL'],
     ],
