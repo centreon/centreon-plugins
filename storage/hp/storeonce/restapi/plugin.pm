@@ -47,3 +47,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Hp Storeonce through HTTP/REST API.
+
+=cut
