@@ -65,6 +65,8 @@ sub custom_status_calc {
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{exit_code} = $options{new_datas}->{$self->{instance} . '_exit_code'};
+    $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
+    
     return 0;
 }
 
@@ -105,6 +107,7 @@ sub custom_long_calc {
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
+    $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
     
     return -11 if ($self->{result_values}->{status} !~ /Running/i);
 
@@ -121,7 +124,7 @@ sub set_counters {
     
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'exit_code' } ],
+                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'exit_code' }, { name => 'family' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -129,7 +132,7 @@ sub set_counters {
             }
         },
         { label => 'long', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' } ],
+                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'family' } ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -267,6 +270,7 @@ sub manage_selection {
                 display => $entry->{name}, 
                 status => $mapping_job_status{$entry->{status}},
                 exit_code => $entry->{retcode},
+                family => defined($entry->{family}) ? $entry->{family} : '-',
                 elapsed => $elapsed_time
             };
         }
@@ -312,22 +316,22 @@ Can be: 'total-error', 'total-running', 'total-unplanned',
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{display}, %{status}, %{exit_code}
+Can used special variables like: %{display}, %{status}, %{exit_code}, %{family}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{exit_code} =~ /Error/i').
-Can used special variables like: %{display}, %{status}, %{exit_code}
+Can used special variables like: %{display}, %{status}, %{exit_code}, %{family}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs (Default: none)
-Can used special variables like: %{display}, %{status}, %{elapsed}
+Can used special variables like: %{display}, %{status}, %{elapsed}, %{family}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs (Default: none).
-Can used special variables like: %{display}, %{status}, %{elapsed}
+Can used special variables like: %{display}, %{status}, %{elapsed}, %{family}
 
 =back
 
