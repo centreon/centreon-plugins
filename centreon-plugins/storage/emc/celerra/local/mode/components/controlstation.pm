@@ -29,24 +29,26 @@ my %map_cs_status = (
     11 => 'Secondary Control Station',
 );
 
+sub load { }
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking control stations");
     $self->{components}->{controlstation} = {name => 'control stations', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'controlstation'));
+    return if ($self->check_filter(section => 'controlstation'));
 
     foreach my $line (split /\n/, $self->{stdout}) {
         next if ($line !~ /^\s*(\d+)\s+-\s+(\S+)/);
         my ($code, $instance) = ($1, $2);
         next if (!defined($map_cs_status{$code}));
         
-        return if ($self->check_exclude(section => 'controlstation', instance => $instance));
+        return if ($self->check_filter(section => 'controlstation', instance => $instance));
         
         $self->{components}->{controlstation}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Control station '%s' status is '%s'",
                                     $instance, $map_cs_status{$code}));
-        my $exit = $self->get_severity(section => 'controlstation', value => $map_cs_status{$code});
+        my $exit = $self->get_severity(section => 'controlstation', instance => $instance, value => $map_cs_status{$code});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Control station '%s' status is '%s'",
