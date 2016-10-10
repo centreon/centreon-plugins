@@ -155,7 +155,52 @@ sub manage_selection {
     }
 
     foreach my $database (@databases_selected) {
-        $self->{sql}->query(query => "use [$database]; exec sp_spaceused;");
+        $self->{sql}->query(query => "use [$database]; 
+        WITH DatabaseSizeInfos
+        AS (
+            SELECT
+            @\@servername as [Server Name],
+            DB_NAME() AS [Database Name]
+            , convert(decimal(12,2),round(a.size/128.000,2)) as [Allocated Size in MB]
+            , CONVERT(VARCHAR(50), convert(decimal(12,2),round(fileproperty(a.name,'SpaceUsed')/128.000,2)))  as [Space Used in MB]
+            , CONVERT(VARCHAR(50), convert(decimal(12,2),round((a.size-fileproperty(a.name,'SpaceUsed'))/128.000,2)))  as [Free Space in MB]
+            , CAST(100 * (CAST (((a.size/128.0 -CAST(FILEPROPERTY(a.name,'SpaceUsed' ) AS int)/128.0)/(a.size/128.0)) AS decimal(4,2))) AS decimal(4,2)) AS [Free Space Percent]
+            ,
+            CASE is_percent_growth
+                WHEN 1 THEN CONVERT(VARCHAR(5),growth)
+                ELSE CONVERT(VARCHAR(20),(growth/128))
+            END [Autogrow Value]
+            ,
+            CASE max_size
+                WHEN -1 THEN
+                    CASE growth
+                        WHEN 0 THEN convert(decimal(12,2),round(a.size/128.000,2)) -- if restricted MaxSize = CurrentAllocatedSpace
+                        ELSE  268435456 -- 2TB max size if Unlimited
+                    END
+                ELSE max_size/128
+            END [Max Size in MB]
+            ,
+            CASE max_size
+                WHEN -1 THEN
+                    CASE growth
+                        WHEN 0 THEN convert(decimal(12,2),round(a.size-fileproperty(a.name,'SpaceUsed')/128.000,2))
+                        ELSE 268435456 -- 2TB max size if Unlimited
+                    END
+                ELSE CAST([max_size]/128.0-(FILEPROPERTY(a.name,'SpaceUsed' )/128.0) AS DECIMAL(10,2))
+            END [Max Available Space in MB]
+            ,
+            CAST((CAST(FILEPROPERTY(a.name,'SpaceUsed' )/128.0 AS DECIMAL(10,2))/CAST([max_size]/128.0 AS DECIMAL(10,2)))*100 AS DECIMAL(10,2)) AS [Max Percent Used]
+            from sys.database_files a
+            WHERE type = 0 -- Only data files
+        )
+
+        SELECT  [Database Name],
+            CONVERT(VARCHAR(50), SUM([Allocated Size in MB])) + ' MB' [Allocated Size in MB],
+            CONVERT(VARCHAR(50), SUM([Max Available Space in MB])) + ' MB' [Max Available Space in MB],
+            CONVERT(VARCHAR(50), SUM([Max Size in MB])) + ' MB'  Max_Size_MB
+        from DatabaseSizeInfos
+        group by [Database Name]
+        ");
         my $result2 = $self->{sql}->fetchall_arrayref();
         foreach my $row (@$result2) {
             my $size_brut = $$row[1];
