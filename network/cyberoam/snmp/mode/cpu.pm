@@ -66,7 +66,7 @@ sub run {
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("CPU Usage : %.2f", $result->{$oid_cpuPercentUsage}));
     $self->{output}->perfdata_add(label => "cpu",
-                                  value => $result->{$oid_cpuPercentUsage},
+                                  value => sprintf("%.2f", $result->{$oid_cpuPercentUsage}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
