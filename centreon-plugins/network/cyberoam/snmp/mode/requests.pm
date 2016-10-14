@@ -114,11 +114,11 @@ sub manage_selection {
     $self->{cache_name} = "cyberoam_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
-    $self->{global} = { http_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.1.0'},
-                        ftp_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.2.0'},
-                        pop3_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.3.0'},
-                        imap_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.4.0'}, 
-                        smtp_hits => $result->{'.1.3.6.1.4.1.3417.2.11.3.1.1.5.0'} };
+    $self->{global} = { http_hits => $result->{$oid_httpHits},
+                        ftp_hits => $result->{$oid_ftpHits},
+                        pop3_hits => $result->{$oid_pop3Hits},
+                        imap_hits => $result->{$oid_imapHits}, 
+                        smtp_hits => $result->{$oid_smtpHits} };
 }
 
 1;

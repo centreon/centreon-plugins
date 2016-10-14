@@ -106,8 +106,7 @@ sub manage_selection {
     my $oid_diskPercentUsage = '.1.3.6.1.4.1.21067.2.1.2.3.2.0';
     my $result = $options{snmp}->get_leef(oids => [$oid_diskCapacity, $oid_diskPercentUsage],
                                           nothing_quit => 1);
-    my $memory_used = $result->{$oid_memoryPercentUsage} * $result->{$oid_memoryCapacity} * 1024 * 1024 / 100;
-    $self->{memory} = { used =>  $result->{$oid_diskPercentUsage} * $result->{$oid_diskCapacity} * 1024 * 1024 / 100;, 
+    $self->{storage} = { used => $result->{$oid_diskPercentUsage} * $result->{$oid_diskCapacity} * 1024 * 1024 / 100, 
         total => $result->{$oid_diskCapacity} * 1024 * 1024 };
 }
 
