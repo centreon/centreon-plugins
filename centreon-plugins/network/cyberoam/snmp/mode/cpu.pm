@@ -65,7 +65,7 @@ sub run {
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("CPU Usage : %.2f", $result->{$oid_cpuPercentUsage}));
-    $self->{output}->perfdata_add(label => "cpu",
+    $self->{output}->perfdata_add(label => "cpu", unit => '%',
                                   value => sprintf("%.2f", $result->{$oid_cpuPercentUsage}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
