@@ -1,3 +1,13 @@
+2016-10-14 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check StorageTek SLxxx
+ * Plugin added: to check HP Storeonce Rest API
+ * Plugin added: to check Gorgy ntpserver SNMP
+ * Plugin added: to check Nortel/Avaya SNMP
+ * Plugin added: to check Vtom Rest API
+ * Plugin added: to check Sybase
+ * Plugin added: to check Cyberoam SNMP (#517)
+ * Minor fixes and enhancement
+
 2016-09-02 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check HP-UX SNMP (#13)
  * Plugin added: to check Hitachi HNAS
