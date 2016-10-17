@@ -58,10 +58,9 @@ my $oid_cefcFRUPowerOperStatus = '.1.3.6.1.4.1.9.9.117.1.1.2.1.2'; # CISCO-ENTIT
 my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_ciscoEnvMonSupplyStatusEntry };
-    push @{$options{request}}, { oid => $oid_cefcFRUPowerOperStatus };
+    push @{$self->{request}}, { oid => $oid_ciscoEnvMonSupplyStatusEntry }, { oid => $oid_cefcFRUPowerOperStatus };
 }
 
 sub check_psu_envmon {
@@ -80,7 +79,7 @@ sub check_psu_envmon {
 
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonSupplyStatusEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($result->{ciscoEnvMonSupplyState} =~ /not present/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
@@ -111,7 +110,7 @@ sub check_psu_entity {
         my $psu_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcFRUPowerOperStatus}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is %s [instance: %s]",
@@ -129,7 +128,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     check_psu_envmon($self);
     check_psu_entity($self);
