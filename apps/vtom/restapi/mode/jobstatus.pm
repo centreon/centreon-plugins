@@ -55,6 +55,9 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'status : ' . $self->{result_values}->{status};
+    if ($self->{result_values}->{information} ne '') {
+        $msg .= ' [information: ' . $self->{result_values}->{information} . ']';
+    }
 
     return $msg;
 }
@@ -66,6 +69,7 @@ sub custom_status_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{exit_code} = $options{new_datas}->{$self->{instance} . '_exit_code'};
     $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
+    $self->{result_values}->{information} = $options{new_datas}->{$self->{instance} . '_information'};
     
     return 0;
 }
@@ -124,7 +128,7 @@ sub set_counters {
     
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'exit_code' }, { name => 'family' } ],
+                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -199,6 +203,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-name:s"           => { name => 'filter_name' },
+                                  "filter-family:s"         => { name => 'filter_family' },
                                   "warning-status:s"        => { name => 'warning_status' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /Error/i' },
                                   "warning-long:s"          => { name => 'warning_long' },
@@ -261,16 +266,24 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping  '" . $entry->{name} . "': no matching filter.", debug => 1);
                 next;
             }
+            my $family = defined($entry->{family}) ? $entry->{family} : '-';
+            if (defined($self->{option_results}->{filter_family}) && $self->{option_results}->{filter_family} ne '' &&
+                $family !~ /$self->{option_results}->{filter_family}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $family . "': no matching filter.", debug => 1);
+                next;
+            }
             
+            my $information = defined($entry->{information}) ? $entry->{information} : '';
+            $information =~ s/\|/-/msg;
             my $elapsed_time = $current_time - $entry->{timeBegin};
             
             $self->{global}->{total} += 1;
             $self->{global}->{lc($mapping_job_status{$entry->{status}})} += 1;
             $self->{job}->{$entry->{id}} = { 
                 display => $entry->{name}, 
-                status => $mapping_job_status{$entry->{status}},
+                status => $mapping_job_status{$entry->{status}}, information => $information,
                 exit_code => $entry->{retcode},
-                family => defined($entry->{family}) ? $entry->{family} : '-',
+                family => $family,
                 elapsed => $elapsed_time
             };
         }
@@ -296,6 +309,10 @@ Check job status.
 
 Filter name (can be a regexp).
 
+=item B<--filter-family>
+
+Filter family (can be a regexp).
+
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
@@ -316,12 +333,14 @@ Can be: 'total-error', 'total-running', 'total-unplanned',
 =item B<--warning-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{display}, %{status}, %{exit_code}, %{family}
+Can used special variables like: %{display}, %{status}, 
+%{exit_code}, %{family}, %{information}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{exit_code} =~ /Error/i').
-Can used special variables like: %{display}, %{status}, %{exit_code}, %{family}
+Can used special variables like: %{display}, %{status}, 
+%{exit_code}, %{family}, %{information}
 
 =item B<--warning-long>
 
