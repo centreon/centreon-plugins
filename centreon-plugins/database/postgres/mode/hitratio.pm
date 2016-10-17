@@ -105,8 +105,8 @@ WHERE d.oid=sd.datid
         my %prcts = ();
         my $total_read_requests = $new_datas->{$$row[2] . '_blks_hit'} - $old_blks_hit;
         my $total_read_disk = $new_datas->{$$row[2] . '_blks_read'} - $old_blks_read;
-        $prcts{hitratio_now} = ($total_read_requests == 0) ? 100 : ($total_read_requests - $total_read_disk) * 100 / $total_read_requests;
-        $prcts{hitratio} = ($new_datas->{$$row[2] . '_blks_hit'} == 0) ? 100 : ($new_datas->{$$row[2] . '_blks_hit'} - $new_datas->{$$row[2] . '_blks_read'}) * 100 / $new_datas->{$$row[2] . '_blks_hit'};
+        $prcts{hitratio_now} = (($total_read_requests + $total_read_disk) == 0) ? 100 : $total_read_requests * 100 / ($total_read_requests + $total_read_disk);
+        $prcts{hitratio} = (($new_datas->{$$row[2] . '_blks_hit'} + + $new_datas->{$$row[2] . '_blks_read'}) == 0) ? 100 : $new_datas->{$$row[2] . '_blks_hit'} * 100 / ($new_datas->{$$row[2] . '_blks_hit'} + $new_datas->{$$row[2] . '_blks_read'});
         
         my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(long_msg => sprintf("Database '%s' hitratio at %.2f%%", 
