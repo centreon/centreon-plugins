@@ -122,7 +122,7 @@ sub snmp_execute {
     $self->{snmp} = $options{snmp};
     
     push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => );
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
     $self->{output}->output_add(long_msg => sprintf("Environment type: %s", 
                                 defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
                                 $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'));
