@@ -133,6 +133,48 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+sub cache_environment {
+    my ($self, %options) = @_;
+    
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_vtom_env_' . $self->{hostname}  . '_' . $self->{port});
+    my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
+    my $environments = $options{statefile}->get(name => 'environments');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {
+        $environments = {};
+        my $datas = { last_timestamp => time(), environments => $environments };
+        my $result = $self->get(path => '/api/environment/list');
+        if (defined($result->{result}->{rows})) {
+            foreach (@{$result->{result}->{rows}}) {
+                $environments->{$_->{id}} = $_->{name};
+            }
+        }
+        $options{statefile}->write(data => $datas);
+    }
+    
+    return $environments;
+}
+
+sub cache_application {
+    my ($self, %options) = @_;
+    
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_vtom_app_' . $self->{hostname}  . '_' . $self->{port});
+    my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
+    my $applications = $options{statefile}->get(name => 'applications');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {
+        $applications = {};
+        my $datas = { last_timestamp => time(), applications => $applications };
+        my $result = $self->get(path => '/api/application/list');
+        if (defined($result->{result}->{rows})) {
+            foreach (@{$result->{result}->{rows}}) {
+                $applications->{$_->{id}} = { name => $_->{name}, envSId => $_->{envSId} };
+            }
+        }
+        $options{statefile}->write(data => $datas);
+    }
+    
+    return $applications;
+}
+
 sub get {
     my ($self, %options) = @_;
 
