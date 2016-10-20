@@ -210,6 +210,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-application:s"    => { name => 'filter_application' },
+                                  "filter-environment:s"    => { name => 'filter_environment' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "filter-family:s"         => { name => 'filter_family' },
                                   "warning-status:s"        => { name => 'warning_status' },
@@ -278,6 +279,9 @@ sub manage_selection {
     if (defined($self->{option_results}->{filter_application}) && $self->{option_results}->{filter_application} ne '') {
         $path = '/api/job/list?applicationName=' . $self->{option_results}->{filter_application};
     }
+     if (defined($self->{option_results}->{filter_environment}) && $self->{option_results}->{filter_environment} ne '') {
+        $path = '/api/job/list?environmentName=' . $self->{option_results}->{filter_environment};
+    }
     my $result = $options{custom}->get(path => $path);
     my $entries = defined($result->{result}) && ref($result->{result}) eq 'ARRAY' ? 
         $result->{result} : (defined($result->{result}->{rows}) ? 
@@ -335,6 +339,10 @@ __END__
 Check job status.
 
 =over 8
+
+=item B<--filter-environment>
+
+Filter environment name (cannot be a regexp).
 
 =item B<--filter-application>
 
