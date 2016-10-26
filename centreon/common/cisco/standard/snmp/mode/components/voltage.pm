@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_ciscoEnvMonVoltageStatusEntry = '.1.3.6.1.4.1.9.9.13.1.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_ciscoEnvMonVoltageStatusEntry };
+    push @{$self->{request}}, { oid => $oid_ciscoEnvMonVoltageStatusEntry };
 }
 
 sub check {
@@ -53,14 +53,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'voltage'));
+    return if ($self->check_filter(section => 'voltage'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_ciscoEnvMonVoltageStatusEntry}})) {
         next if ($oid !~ /^$mapping->{ciscoEnvMonVoltageState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonVoltageStatusEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'voltage', instance => $instance));
+        next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Voltage '%s' status is %s [instance: %s] [value: %s C]", 

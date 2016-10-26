@@ -114,9 +114,9 @@ sub trim {
 }
 
 sub parse_threshold {
-    my $self = shift;
+    my ($self, $perf) = @_;
 
-    my $perf = $self->trim($_[0]);
+    $perf = $self->trim($perf);
 
     my $arobase = 0;
     my $infinite_neg = 0;

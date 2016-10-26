@@ -160,7 +160,6 @@ sub check_table_cpu {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     # Cisco IOS Software releases later to 12.0(3)T and prior to 12.2(3.5)

@@ -102,7 +102,6 @@ sub cpu_ha {
     
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $table_oids = [ { oid => $oid_fgProcessorUsage }, { oid => $oid_fgSysCpuUsage } ];

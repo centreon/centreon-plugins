@@ -87,7 +87,6 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{sql} = $options{sql};
 
     $self->manage_selection();

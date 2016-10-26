@@ -99,7 +99,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     $self->{result} = $self->{snmp}->get_leef(oids => [$oid_haPeerState, $oid_haCurState], nothing_quit => 1);

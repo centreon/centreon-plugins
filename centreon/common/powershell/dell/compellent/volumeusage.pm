@@ -53,11 +53,17 @@ Function display_volume_information {
 ';
     }
     
-    $ps .= '
+    $ps .= '    
     foreach ($sc in $storageCenters) {
         $volumeList = Get-DellScVolume -ConnectionName $connName -StorageCenter $sc
         foreach ($vol in $volumeList) {
-            $volusage = Get-DellScVolumeStorageUsageAssociation -ConnectionName $connName -Instance $vol
+';
+    if (defined($options{filter_vol}) && $options{filter_vol} ne '') {
+        $ps .= 'if (-Not ($vol -match "' . $options{filter_vol} . '")) { continue }
+';
+	}
+    
+    $ps .= '$volusage = Get-DellScVolumeStorageUsageAssociation -ConnectionName $connName -Instance $vol
             $usage = Get-DellScVolumeStorageUsage -ConnectionName $connName -Instance $volusage
             
             write-host ("[sc={0}]" -f $sc.Name) -NoNewline
@@ -69,8 +75,14 @@ Function display_volume_information {
             write-host ("[totalDiskSpace={0}]"  -f $usage.TotalDiskSpace.GetByteSize()) -NoNewline
             write-host ("[replaySpace={0}]" -f $usage.replaySpace.GetByteSize())
         }
-
-        $diskList = Get-DellScDisk -ConnectionName $connName -StorageCenter $sc
+';
+ 
+    if (defined($options{filter_vol}) && $options{filter_vol} ne '') {
+        $ps .= 'continue
+';
+    }
+    
+    $ps .= '$diskList = Get-DellScDisk -ConnectionName $connName -StorageCenter $sc
         foreach ($disk in $diskList) {
             $diskusage = Get-DellScDiskStorageUsageAssociation -ConnectionName $connName -Instance $disk
             $usage = Get-DellScDiskStorageUsage -ConnectionName $connName -Instance $diskusage

@@ -1,3 +1,43 @@
+2016-10-14 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check StorageTek SLxxx
+ * Plugin added: to check HP Storeonce Rest API
+ * Plugin added: to check Gorgy ntpserver SNMP
+ * Plugin added: to check Nortel/Avaya SNMP
+ * Plugin added: to check Vtom Rest API
+ * Plugin added: to check Sybase
+ * Plugin added: to check Cyberoam SNMP (#517)
+ * Minor fixes and enhancement
+
+2016-09-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check HP-UX SNMP (#13)
+ * Plugin added: to check Hitachi HNAS
+ * Plugin added: to check Overland Neo Series
+ * Plugin added: to check Quantum Scalar
+ * Plugin added: to check HP Storeonce SSH
+ * Fix: [pdu emerson]{global-status} wrong status
+ 
+2016-08-03 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check IBM Storwize (#438)
+ * Plugin added: to check Sonus SBC
+ * Plugin added: to check Aerohive
+ * Plugin added: to check Digi routers
+ * Plugin added: to check telnet sessions
+ * Plugin added: to check china clever PDU
+ * Plugin added: to check Cisco Voice Gateway
+ * Some minor fix and enhancement
+
+2016-06-27 Quentin Garnier <qgarnier@centreon.com>
+ * Update FAQ: build a standalone perl script
+ * Plugin added: to check Lenovo S Series (#412)
+ * Plugin added: to check Digi AnywhereUSB
+ * Mode added: [netasq] 'ha-nodes'
+ * Mode removed: [netasq] 'ha-status'
+ * Fix: [dell n4000]{environment} wrong temperature (#397)
+ * Fix: [netapp]{cache-age} not working (#422)
+ * Fix: [cisco wlc]{ap-users} wrong total
+ * Fix: [tomcat]{memory} problem with java 8
+ * Fix: [netapp]{filesys} no values (#415)
+
 2016-05-24 Quentin Garnier <qgarnier@centreon.com>
  * Can use '/' instead '::' for plugin option (#380)
  * Mode added: [pacemaker] 'constraints'

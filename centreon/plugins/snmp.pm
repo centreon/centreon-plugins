@@ -596,7 +596,7 @@ sub set {
 }
 
 sub is_snmpv1 {
-    my $self = shift;
+    my ($self) = @_;
     
     if ($self->{snmp_params}->{Version} eq '1') {
         return 1;
@@ -605,15 +605,15 @@ sub is_snmpv1 {
 }
 
 sub clean_oid {
-    my $self = shift;
+    my ($self, $oid) = @_;
     
-    $_[0] =~ s/\.$//;
-    $_[0] =~ s/^(\d)/\.$1/;
-    return $_[0];
+    $oid =~ s/\.$//;
+    $oid =~ s/^(\d)/\.$1/;
+    return $oid;
 }
 
 sub check_oid_up {
-    my $self = shift;
+    my ($self) = @_;
     my ($current_oid, $end_oid) = @_;
     
     my @current_oid_splitted = split /\./, $current_oid;
@@ -679,7 +679,7 @@ sub check_options {
         
 
         if (!defined($options{option_results}->{snmp_security_name})) {
-            $self->{output}->add_option_msg(short_msg => "Missing paramater Security Name.");
+            $self->{output}->add_option_msg(short_msg => "Missing parameter Security Name.");
             $self->{output}->option_exit();
         }
         
@@ -761,8 +761,10 @@ sub map_instance {
     my ($self, %options) = @_;
     
     my $results = {};
+    my $instance = '';
+    $instance = '.' . $options{instance} if (defined($options{instance}));
     foreach my $name (keys %{$options{mapping}}) {
-        my $entry = $options{mapping}->{$name}->{oid} . '.' . $options{instance};
+        my $entry = $options{mapping}->{$name}->{oid} . $instance;
         if (defined($options{results}->{$entry})) {
             $results->{$name} = $options{results}->{$entry};
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {

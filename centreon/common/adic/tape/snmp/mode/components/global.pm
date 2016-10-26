@@ -32,16 +32,29 @@ my %map_status = (
     6 => 'unknown',
     7 => 'invalid',
 );
+my %map_agent_status = (
+    1 => 'other', 
+    2 => 'unknown', 
+    3 => 'ok',
+    4 => 'non-critical',
+    5 => 'critical', 
+    6 => 'non-recoverable',
+);
 
 # In MIB 'ADIC-TAPE-LIBRARY-MIB'
 my $mapping = {
-    libraryGlobalStatus => { oid => '.1.3.6.1.4.1.3764.1.10.10.1.8', map => \%map_status },
+    GlobalStatus => { oid => '.1.3.6.1.4.1.3764.1.10.10.1.8', map => \%map_status }, # libraryGlobalStatus
+};
+# In MIB 'ADIC-INTELLIGENT-STORAGE-MIB'
+my $mapping2 = {
+    GlobalStatus => { oid => '.1.3.6.1.4.1.3764.1.1.20.1', map => \%map_agent_status }, # agentGlobalStatus
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $mapping->{libraryGlobalStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{GlobalStatus}->{oid} }, 
+        { oid => $mapping2->{GlobalStatus}->{oid} };
 }
 
 sub check {
@@ -52,8 +65,11 @@ sub check {
     return if ($self->check_filter(section => 'global'));
 
     my $instance = '0';
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{libraryGlobalStatus}->{oid}}, instance => $instance);
-    if (!defined($result->{libraryGlobalStatus})) {
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{GlobalStatus}->{oid}}, instance => $instance);
+    if (!defined($result->{GlobalStatus})) {
+        $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{GlobalStatus}->{oid}}, instance => $instance);
+    }
+    if (!defined($result->{GlobalStatus})) {
         $self->{output}->output_add(long_msg => "skipping global status: no value."); 
         return ;
     }
@@ -62,13 +78,13 @@ sub check {
     $self->{components}->{global}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("library global status is %s [instance: %s].",
-                                                    $result->{libraryGlobalStatus}, $instance
+                                                    $result->{GlobalStatus}, $instance
                                 ));
-    my $exit = $self->get_severity(section => 'global', label => 'default', value => $result->{libraryGlobalStatus});
+    my $exit = $self->get_severity(section => 'global', label => 'default', value => $result->{GlobalStatus});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity =>  $exit,
                                     short_msg => sprintf("Library global status is %s",
-                                                         $result->{libraryGlobalStatus}));
+                                                         $result->{GlobalStatus}));
     }
 }
 

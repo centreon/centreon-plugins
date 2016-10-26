@@ -23,16 +23,14 @@ package centreon::common::emc::navisphere::mode::spcomponents::psu;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
     
     # Enclosure SPE Power A0 State: Present
     # Bus 0 Enclosure 0 Power A State: Present
@@ -42,19 +40,17 @@ sub check {
             $instance = "$1.$2.$3.$4";
         }
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Power Supply '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Power Supply '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'psu', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Power Supply '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }
