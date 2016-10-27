@@ -162,6 +162,18 @@ sub run {
     foreach (sort @{$self->{storage_id_selected}}) {
         my $name_storage = $self->get_display_value(id => $_);
 
+        if (!defined($result->{$oid_hrStorageAllocationUnits . "." . $_})) {
+            if ($multiple == 0) {
+                $self->{output}->add_option_msg(severity => 'UNKNOWN',
+                                                short_msg => sprintf("Skipping storage '%s': not found (need to reload the cache)", 
+                                                                     $name_storage));
+            } else {
+                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%s': not found (need to reload the cache)", 
+                                                                    $name_storage));
+            }
+            next;
+        }
+        
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
