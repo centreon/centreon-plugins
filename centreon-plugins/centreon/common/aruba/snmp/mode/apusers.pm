@@ -122,11 +122,11 @@ sub set_counters {
     
     $self->{maps_counters}->{ap} = [
         { label => 'total-ap', set => {
-                key_values => [ { name => 'users' }, { name => 'bssid' } ],
+                key_values => [ { name => 'users' }, { name => 'ap_id' } ],
                 output_template => 'users : %s',
                 perfdatas => [
                     { label => 'ap', value => 'users_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'ap_id_absolute' },
                 ],
             }
         },
@@ -142,7 +142,7 @@ sub prefix_essid_output {
 sub prefix_ap_output {
     my ($self, %options) = @_;
     
-    return "AP '" . $options{instance_value}->{bssid} . "' ";
+    return "AP '" . $options{instance_value}->{ap_id} . "' ";
 }
 
 sub new {
@@ -188,6 +188,7 @@ my $oid_wlsxUserEntry = '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1';
 my $oid_wlsxSwitchRole = '.1.3.6.1.4.1.14823.2.2.1.1.1.4';
 my $oid_apESSID = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.2';
 my $oid_apIpAddress = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.5';
+my $oid_wlanAPName = '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -204,6 +205,7 @@ sub manage_selection {
                                                                    { oid => $mapping2->{nUserApBSSID}->{oid} },
                                                                    { oid => $oid_apESSID },
                                                                    { oid => $oid_apIpAddress },
+                                                                   { oid => $oid_wlanAPName },
                                                                  ],
                                                          nothing_quit => 1);
     
@@ -238,7 +240,10 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_bssid}) && $self->{option_results}->{filter_bssid} ne '' &&
             $bssid !~ /$self->{option_results}->{filter_bssid}/);
     
-        $self->{ap}->{$bssid} = { users => 0, bssid => $bssid } if (!defined($self->{ap}->{$bssid}));
+        my $ap_id = $bssid;
+        $ap_id = $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} 
+            if (defined($self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid}) && $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} ne '');
+        $self->{ap}->{$bssid} = { users => 0, ap_id => $ap_id } if (!defined($self->{ap}->{$bssid}));
         $self->{ap}->{$bssid}->{users}++;
     
         $self->{essid}->{$map_ap{$bssid}->{essid}} = { users => 0, essid => $map_ap{$bssid}->{essid} } if (!defined($self->{essid}->{$map_ap{$bssid}->{essid}}));
