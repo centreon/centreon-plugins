@@ -29,8 +29,8 @@ use centreon::plugins::misc;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(hwstatus|temperature)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(hwstatus|temperature|memory)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|memory)$';
     
     $self->{cb_hook2} = 'cmd_execute';
     
@@ -42,7 +42,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'hardware::devices::safenet::hsm::protecttoolkit::mode::components';
-    $self->{components_module} = ['hwstatus', 'temperature'];
+    $self->{components_module} = ['hwstatus', 'temperature', 'memory'];
 }
 
 sub cmd_execute {
@@ -55,6 +55,15 @@ sub cmd_execute {
                                                          command_path => $self->{option_results}->{command_path},
                                                          command_options => $self->{option_results}->{command_options});
     $self->{stdout} =~ s/\r//msg;
+    my ($model, $firmware, $fm_status, $transport_mode, $security_mode) = ('unknown', 'unknown', 'unknown', 'unknown', 'unknown');
+    $model = $1 if ($self->{stdout} =~ /^Model\s+:\s+(.*?)\s*\n/msi);
+    $firmware = $1 if ($self->{stdout} =~ /^Firmware Version\s+:\s+(.*?)\s*\n/msi);
+    $fm_status = $1 if ($self->{stdout} =~ /^FM Status\s+:\s+(.*?)\s*\n/msi);
+    $transport_mode = $1 if ($self->{stdout} =~ /^Transport Mode\s+:\s+(.*?)\s*\n/msi);
+    $security_mode = $1 if ($self->{stdout} =~ /^Security Mode\s+:\s+(.*?)\s*\n/msi);
+    $self->{output}->output_add(long_msg => sprintf("model: %s, firmware version: %s", $model, $firmware));
+    $self->{output}->output_add(long_msg => sprintf("fm status: '%s', transport mode: '%s', security mode: '%s'", 
+                                                    $fm_status, $transport_mode, $security_mode));
 }
 
 sub display {
@@ -101,7 +110,7 @@ Check HSM hardware status.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'hwstatus', 'temperature'.
+Can be: 'hwstatus', 'temperature', 'memory'.
 
 =item B<--filter>
 
@@ -115,12 +124,12 @@ Example: --threshold-overload='hwstats,CRITICAL,^(?!(OK)$)'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature' (syntax: type,regexp,threshold)
+Set warning threshold for 'temperature', 'memory' (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,50'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature' (syntax: type,regexp,threshold)
+Set critical threshold for 'temperature', 'memory' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,60'
 
 =item B<--remote>
