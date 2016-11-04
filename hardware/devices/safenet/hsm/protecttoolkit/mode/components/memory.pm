@@ -31,21 +31,29 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking memory");
     return if ($self->check_filter(section => 'memory'));
     
-    return if ($self->{stdout} !~ /^Free Memory\s+:\s+(\d+)/msi);
-    my $free_memory = $1;
+    return if ($self->{stdout} !~ /^SM Size Free\/Total\s*:\s+(\d+)\/(\d+)/msi);
+    my ($free, $total) = ($1, $2);
+    my $used = $total - $free;
+    my $prct_used = $used * 100 / $total;
+    my $prct_free = 100 - $prct_used;
 
-    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free_memory);
-    $self->{output}->output_add(long_msg => sprintf("free memory is %s %s", 
-                                                    $free_value, $free_unit));
-    my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'memory', instance => '0', value => $free_memory);
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total);
+    my $message = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                                            $total_value . " " . $total_unit,
+                                            $used_value . " " . $used_unit, $prct_used,
+                                            $free_value . " " . $free_unit, $prct_free);
+    $self->{output}->output_add(long_msg => $message);
+    my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'memory', instance => '0', value => $prct_used);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Free memory is %s %s", $free_value, $free_unit));
+                                    short_msg => $message);
     }
-    $self->{output}->perfdata_add(label => "free_memory", unit => 'B',
-                                  value => $free_memory,
+    $self->{output}->perfdata_add(label => "used_memory", unit => 'B',
+                                  value => $used,
                                   warning => $warn,
-                                  critical => $crit, min => 0);
+                                  critical => $crit, min => 0, total => $total);
 }
 
 1;
