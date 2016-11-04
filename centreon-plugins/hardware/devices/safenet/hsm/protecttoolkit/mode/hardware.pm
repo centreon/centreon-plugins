@@ -91,7 +91,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'ctconf' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-v 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-v' },
                                 });
 
     return $self;
@@ -171,7 +171,7 @@ Command path (Default: '').
 
 =item B<--command-options>
 
-Command options (Default: '-v 2>&1').
+Command options (Default: '-v').
 
 =back
 
