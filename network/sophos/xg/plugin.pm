@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'cpu'                  => 'centreon::common::sophos::xg::mode::cpu',
+                         'memory'               => 'centreon::common::sophos::xg::mode::memory',
                          );
 
     return $self;

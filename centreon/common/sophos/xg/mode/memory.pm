@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::sophos::xg::mode::cpu;
+package centreon::common::sophos::xg::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -60,24 +60,24 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_cpuPercentUsage = '.1.3.6.1.4.1.21067.2.1.2.2.1';
+    my $oid_memoryPercentUsage = '.1.3.6.1.4.1.21067.2.1.2.4.2';
 
 
     my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_cpuPercentUsage },
+                                                            { oid => $oid_memoryPercentUsage },
                                                             ],
                                                    nothing_quit => 1);
 
 
-    my $cpuPercentUsage = $results->{$oid_cpuPercentUsage}->{$oid_cpuPercentUsage . '.0'}; 
+    my $memoryPercentUsage = $results->{$oid_memoryPercentUsage}->{$oid_memoryPercentUsage . '.0'}; 
 
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $cpuPercentUsage,
+    my $exit_code = $self->{perfdata}->threshold_check(value => $memoryPercentUsage,
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU usage is: %.2f%%", $cpuPercentUsage));
-    $self->{output}->perfdata_add(label => 'total_cpu', unit => '%',
-                                  value => sprintf("%.2f", $cpuPercentUsage),
+                                short_msg => sprintf("Memory usage is: %.2f%%", $memoryPercentUsage));
+    $self->{output}->perfdata_add(label => 'total_mem', unit => '%',
+                                  value => sprintf("%.2f", $memoryPercentUsage),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
@@ -94,7 +94,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (CYBEROAM-MIB).
+Check system memory usage (CYBEROAM-MIB).
 
 =over 8
 
