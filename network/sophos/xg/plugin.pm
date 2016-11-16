@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Sophos XG CPU in SNMP.
+Check Sophos XG in SNMP.
 
 =cut
