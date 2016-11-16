@@ -35,6 +35,9 @@ sub new {
                          'memory'               => 'centreon::common::sophos::xg::mode::memory',
                          'liveusers'            => 'centreon::common::sophos::xg::mode::liveusers',
                          'disk'                 => 'centreon::common::sophos::xg::mode::disk',
+                         'service_antivirus'    => 'centreon::common::sophos::xg::mode::service_antivirus',
+                         'service_antispam'     => 'centreon::common::sophos::xg::mode::service_antispam',
+                         'service_ips'          => 'centreon::common::sophos::xg::mode::service_ips',
                          );
 
     return $self;
