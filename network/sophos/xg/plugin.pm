@@ -33,6 +33,8 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'                  => 'centreon::common::sophos::xg::mode::cpu',
                          'memory'               => 'centreon::common::sophos::xg::mode::memory',
+                         'liveusers'            => 'centreon::common::sophos::xg::mode::liveusers',
+                         'disk'                 => 'centreon::common::sophos::xg::mode::disk',
                          );
 
     return $self;
