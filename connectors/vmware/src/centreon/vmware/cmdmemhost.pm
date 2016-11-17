@@ -89,11 +89,13 @@ sub run {
     if (scalar(@$result) > 1) {
         $multiple = 1;
     }
+    my $performances = [{'label' => 'mem.consumed.average', 'instances' => ['']},
+                        {'label' => 'mem.overhead.average', 'instances' => ['']}];
+    if (!defined($self->{no_memory_state})) {
+        push @{$performances}, {'label' => 'mem.state.latest', 'instances' => ['']};
+    }
     my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
-                        $result, 
-                        [{'label' => 'mem.consumed.average', 'instances' => ['']},
-                         {'label' => 'mem.overhead.average', 'instances' => ['']},
-                         {'label' => 'mem.state.latest', 'instances' => ['']}],
+                        $result, $performances,
                         $self->{connector}->{perfcounter_speriod},
                         sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
@@ -122,7 +124,10 @@ sub run {
         # in KB
         my $mem_used = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.consumed.average'}->{'key'} . ":"})) * 1024;
         my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"})) * 1024;
-        my $mem_state = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.state.latest'}->{'key'} . ":"})) * 1024;
+        my $mem_state;
+        if (!defined($self->{no_memory_state})) {
+            $mem_state = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.state.latest'}->{'key'} . ":"})) * 1024;
+        }
         my $mem_free = $memory_size - $mem_used;
         my $prct_used = $mem_used * 100 / $memory_size;
         my $prct_free = 100 - $prct_used;
@@ -145,13 +150,16 @@ sub run {
             $short_msg_append = ', ';
         }
         
-        $output = sprintf("Memory state : %s", $mapping_state{$mem_state});
-        my $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $mem_state, threshold => [ { label => 'critical_state', exit_litteral => 'critical' }, { label => 'warning_state', exit_litteral => 'warning' } ]);
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        if (!$self->{manager}->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
+        my $exit2 = 'OK';
+        if (!defined($self->{no_memory_state})) {
+            $output = sprintf("Memory state : %s", $mapping_state{$mem_state});
+            $exit2 = $self->{manager}->{perfdata}->threshold_check(value => $mem_state, threshold => [ { label => 'critical_state', exit_litteral => 'critical' }, { label => 'warning_state', exit_litteral => 'warning' } ]);
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            if (!$self->{manager}->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
+                $short_msg .= $short_msg_append . $output;
+                $short_msg_append = ', ';
+            }
         }
         
         my $prefix_msg = "'$entity_view->{name}'";
@@ -176,11 +184,13 @@ sub run {
         $self->{manager}->{output}->perfdata_add(label => 'overhead' . $extra_label, unit => 'B',
                                                  value => $mem_overhead,
                                                  min => 0);
-        $self->{manager}->{output}->perfdata_add(label => 'state' . $extra_label,
-                                                 value => $mem_state,
-                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_state'),
-                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_state'),
-                                                 min => 0, max => 3);
+        if (!defined($self->{no_memory_state})) {
+            $self->{manager}->{output}->perfdata_add(label => 'state' . $extra_label,
+                                                     value => $mem_state,
+                                                     warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning_state'),
+                                                     critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical_state'),
+                                                     min => 0, max => 3);
+        }
     }
 }
 
