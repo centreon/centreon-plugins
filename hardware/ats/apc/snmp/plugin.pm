@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::ats::apc::plugin;
+package hardware::ats::apc::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,9 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'entity'           => 'hardware::ats::apc::mode::entity',
-                         'source'           => 'hardware::ats::apc::mode::source',
-                         'psu'              => 'hardware::ats::apc::mode::psu',
-                         'input'            => 'hardware::ats::apc::mode::input',
+                         'device-status'    => 'hardware::ats::apc::snmp::mode::devicestatus',
+                         'input-lines'      => 'hardware::ats::apc::snmp::mode::inputlines',
+                         'output-lines'     => 'hardware::ats::apc::snmp::mode::outputlines',
                          );
 
     return $self;
@@ -46,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check APC ATS in SNMP (PowerNet-MIB).
+Check APC ATS in SNMP.
 
 =cut
