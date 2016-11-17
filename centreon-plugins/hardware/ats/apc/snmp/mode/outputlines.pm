@@ -145,7 +145,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /nearoverload/' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /lowload|overload/' },
+                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /^(lowload|overload)$/' },
                                 });
     
     return $self;
@@ -240,7 +240,7 @@ Can used special variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /lowload|overload/').
+Set critical threshold for status (Default: '%{status} =~ /^(lowload|overload)$/').
 Can used special variables like: %{status}, %{display}
 
 =back
