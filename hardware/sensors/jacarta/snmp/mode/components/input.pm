@@ -40,7 +40,7 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking digial inputs");
+    $self->{output}->output_add(long_msg => "Checking digital inputs");
     $self->{components}->{input} = {name => 'inputs', total => 0, skip => 0};
     return if ($self->check_filter(section => 'input'));
 
