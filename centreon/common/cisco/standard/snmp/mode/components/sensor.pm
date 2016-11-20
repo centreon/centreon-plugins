@@ -112,9 +112,9 @@ my $oid_entSensorThresholdEntry = '.1.3.6.1.4.1.9.9.91.1.2.1.1';
 my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_entSensorValueEntry }, { oid => $oid_entSensorThresholdEntry };
+    push @{$self->{request}}, { oid => $oid_entSensorValueEntry }, { oid => $oid_entSensorThresholdEntry };
 }
 
 sub get_default_warning_threshold {
@@ -178,7 +178,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sensor'));
+    return if ($self->check_filter(section => 'sensor'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entSensorValueEntry}})) {
         next if ($oid !~ /^$mapping->{entSensorStatus}->{oid}\.(.*)$/);
@@ -188,7 +188,7 @@ sub check {
         next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
         my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
-        next if ($self->check_exclude(section => 'sensor', instance => $instance));
+        next if ($self->check_filter(section => 'sensor', instance => $instance));
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 

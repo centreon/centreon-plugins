@@ -61,9 +61,9 @@ my $oid_cefcModuleOperStatus = '.1.3.6.1.4.1.9.9.117.1.2.1.1.2';
 my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cefcModuleOperStatus };
+    push @{$self->{request}}, { oid => $oid_cefcModuleOperStatus };
 }
 
 sub check {
@@ -71,7 +71,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking modules");
     $self->{components}->{module} = {name => 'modules', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'module'));
+    return if ($self->check_filter(section => 'module'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcModuleOperStatus}})) {
         $oid =~ /\.([0-9]+)$/;
@@ -79,7 +79,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcModuleOperStatus}, instance => $instance);
         my $module_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
-        next if ($self->check_exclude(section => 'module', instance => $instance));
+        next if ($self->check_filter(section => 'module', instance => $instance));
         
         $self->{components}->{module}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s]",

@@ -38,9 +38,9 @@ my $oid_cefcPhysicalStatus = '.1.3.6.1.4.1.9.9.117.1.5.1.1.1';
 my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cefcPhysicalStatus };
+    push @{$self->{request}}, { oid => $oid_cefcPhysicalStatus };
 }
 
 sub check {
@@ -48,7 +48,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking physicals");
     $self->{components}->{physical} = {name => 'physical', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'physical'));
+    return if ($self->check_filter(section => 'physical'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cefcPhysicalStatus}})) {
         $oid =~ /\.([0-9]+)$/;
@@ -61,7 +61,7 @@ sub check {
             next;
         }
         
-        next if ($self->check_exclude(section => 'physical', instance => $instance));
+        next if ($self->check_filter(section => 'physical', instance => $instance));
         
         $self->{components}->{physical}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Physical '%s' status is %s [instance: %s]",

@@ -46,24 +46,26 @@ my %map_dm_status = (
     25 => 'DM T2NET Error. Unable to get blade reason code due to management switch problems',
 );
 
+sub load { }
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking data movers");
     $self->{components}->{datamover} = {name => 'data movers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'datamover'));
+    return if ($self->check_filter(section => 'datamover'));
 
     foreach my $line (split /\n/, $self->{stdout}) {
         next if ($line !~ /^\s*(\d+)\s+-\s+(\S+)/);
         my ($code, $instance) = ($1, $2);
         next if (!defined($map_dm_status{$code}));
         
-        return if ($self->check_exclude(section => 'datamover', instance => $instance));
+        return if ($self->check_filter(section => 'datamover', instance => $instance));
         
         $self->{components}->{datamover}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Data mover '%s' status is '%s'",
                                     $instance, $map_dm_status{$code}));
-        my $exit = $self->get_severity(section => 'datamover', value => $map_dm_status{$code});
+        my $exit = $self->get_severity(section => 'datamover', instance => $instance, value => $map_dm_status{$code});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Data mover '%s' status is '%s'",

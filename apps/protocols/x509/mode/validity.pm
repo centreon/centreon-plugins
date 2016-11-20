@@ -26,7 +26,8 @@ use strict;
 use warnings;
 use IO::Socket::SSL;
 use Net::SSLeay;
-use Date::Manip;
+use Socket;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -79,7 +80,6 @@ sub run {
     my ($self, %options) = @_;
 
     # Global variables
-
     my $client = IO::Socket::SSL->new(
         PeerHost => $self->{option_results}->{hostname},
         PeerPort => $self->{option_results}->{port},
@@ -101,22 +101,25 @@ sub run {
         $self->{output}->display();
         $self->{output}->exit()
     }
+    
+    my $subject = Net::SSLeay::X509_NAME_get_text_by_NID(
+        Net::SSLeay::X509_get_subject_name($cert), 13); # NID_CommonName
+    $subject =~ s{\0$}{}; # work around Bug in Net::SSLeay <1.33
 
     #Expiration Date
     if ($self->{option_results}->{validity_mode} eq 'expiration') {
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Manip',
+                                              error_msg => "Cannot load module 'Date::Manip'.");
         (my $notafterdate = Net::SSLeay::P_ASN1_UTCTIME_put2string(Net::SSLeay::X509_get_notAfter($cert))) =~ s/ GMT//;
-        my $daysbefore = int((&UnixDate(&ParseDate($notafterdate),"%s") - time) / 86400);
+        my $daysbefore = int((Date::Manip::UnixDate(Date::Manip::ParseDate($notafterdate),"%s") - time) / 86400);
         my $exit = $self->{perfdata}->threshold_check(value => $daysbefore,
                                                       threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Certificate expiration days: %s - Validity Date: %s", $daysbefore, $notafterdate));
+                                    short_msg => sprintf("Certificate expiration for '%s' in days: %s - Validity Date: %s", $subject, $daysbefore, $notafterdate));
     #Subject Name
     } elsif ($self->{option_results}->{validity_mode} eq 'subject') {
         my @subject_matched = ();
 
-        my $subject = Net::SSLeay::X509_NAME_get_text_by_NID(
-		Net::SSLeay::X509_get_subject_name($cert), 13); # NID_CommonName
-		$subject =~s{\0$}{}; # work around Bug in Net::SSLeay <1.33
         if ($subject =~ /$self->{option_results}->{subjectname}/mi) {
             push @subject_matched, $subject;
         } else {
@@ -124,16 +127,17 @@ sub run {
         }
         
         my @subject_alt_names = Net::SSLeay::X509_get_subjectAltNames($cert);
-        for (my $i =  0; $i < $#subject_alt_names; $i++) {
-            next if ($i % 2 == 0);
-            if ($subject_alt_names[$i] =~ /$self->{option_results}->{subjectname}/mi) {
-                push @subject_matched, $subject_alt_names[$i];
+        for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
+            my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
+            if ($type == GEN_IPADD) {
+                $name = inet_ntoa($name);
+            }
+            if ($name =~ /$self->{option_results}->{subjectname}/mi) {
+                push @subject_matched, $name;
             } else {
-                $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject_alt_names[$i]), debug => 1);
+                $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $name), debug => 1);
             }
         }
-
-        
         
         if (@subject_matched == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
@@ -148,10 +152,10 @@ sub run {
         my $issuer_name = Net::SSLeay::X509_NAME_oneline(Net::SSLeay::X509_get_issuer_name($cert));
         if ($issuer_name =~ /$self->{option_results}->{issuername}/mi) {
             $self->{output}->output_add(severity => 'OK',
-                                        short_msg => sprintf("Issuer Name '%s' is present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
+                                        short_msg => sprintf("Issuer Name '%s' is present in Certificate '%s': %s", $self->{option_results}->{issuername}, $subject, $issuer_name));
         } else {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Issuer Name '%s' is not present in Certificate: %s", $self->{option_results}->{issuername}, $issuer_name));
+                                        short_msg => sprintf("Issuer Name '%s' is not present in Certificate '%s': %s", $self->{option_results}->{issuername}, $subject, $issuer_name));
         }
     }
 

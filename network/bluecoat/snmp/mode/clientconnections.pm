@@ -56,7 +56,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $result = $self->{snmp}->get_leef(oids => ['.1.3.6.1.4.1.3417.2.11.3.1.3.1.0', 

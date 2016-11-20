@@ -154,7 +154,6 @@ sub check_top {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid2check_filter = 'status';

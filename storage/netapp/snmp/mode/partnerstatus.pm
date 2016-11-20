@@ -99,7 +99,6 @@ my $mapping4 = {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_cfPartnerName = '.1.3.6.1.4.1.789.1.2.3.6';

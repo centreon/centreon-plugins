@@ -27,11 +27,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'gates'            => 'apps::centreon::map::jmx::mode::gates',
+                         'elements'         => 'apps::centreon::map::jmx::mode::elements',
                          'sessions'         => 'apps::centreon::map::jmx::mode::sessions',
                          'event-queue'      => 'apps::centreon::map::jmx::mode::eventqueue',
                          'event-statistics' => 'apps::centreon::map::jmx::mode::eventstatistics',

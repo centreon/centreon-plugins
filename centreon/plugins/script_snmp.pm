@@ -125,7 +125,7 @@ sub init {
 }
 
 sub run {
-    my $self = shift;
+    my ($self) = @_;
 
     if ($self->{output}->is_disco_format()) {
         $self->{mode}->disco_format();
@@ -154,13 +154,13 @@ sub is_mode {
 }
 
 sub version {
-    my $self = shift;    
+    my ($self) = @_;    
     $self->{output}->add_option_msg(short_msg => "Plugin Version: " . $self->{version});
     $self->{output}->option_exit(nolabel => 1);
 }
 
 sub list_mode {
-    my $self = shift;
+    my ($self) = @_;
     $self->{options}->display_help();
     
     $self->{output}->add_option_msg(long_msg => "Modes Available:");

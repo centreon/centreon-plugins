@@ -98,7 +98,7 @@ sub check_hba {
         
         my $not_logged = 0;
         my $logged = 0;
-        while ($hba_infos =~ /(SP Name:.*?)\n\n/msig) {
+        while ($hba_infos =~ /(SP Name:.*?)(\n\n|\Z)/msig) {
             my $port_infos = $1;
             
             # Not in good section

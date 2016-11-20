@@ -154,9 +154,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
         my $name = defined($result->{lgpPduEntryUsrLabel}) && $result->{lgpPduEntryUsrLabel} ne '' ? 
             $result->{lgpPduEntryUsrLabel} : $instance;
-        my $status = 'unknow';
+        my $status = 'unknown';
         foreach (keys %bitmap_status) {
-            if (($result->{lgpPduEntrySysStatus} & $_)) {
+            if ((int($result->{lgpPduEntrySysStatus}) & $_)) {
                 $status = $bitmap_status{$_};
                 last;
             }

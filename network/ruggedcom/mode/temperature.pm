@@ -56,7 +56,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_rcDeviceStsTemperature = '.1.3.6.1.4.1.15004.4.2.2.3.0'; # in Celsius

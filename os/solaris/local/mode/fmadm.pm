@@ -41,9 +41,9 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'luxadm' },
+                                  "command:s"         => { name => 'command', default => 'fmadm' },
                                   "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-e port 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => 'faulty -r 2>&1' },
                                   "warning:s"         => { name => 'warning', },
                                   "critical:s"        => { name => 'critical', },
                                 });

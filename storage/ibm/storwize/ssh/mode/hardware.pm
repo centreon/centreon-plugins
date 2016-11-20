@@ -145,7 +145,8 @@ Check components.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'array', 'drive'.
+Can be: 'array', 'drive', 'enclosure', 'enclosurebattery', 'enclosurecanister',
+'enclosurepsu', 'host', 'portfc', 'portsas', 'vdisk', 'node', 'quorum', 'mdisk', 'systemstats'.
 
 =item B<--filter>
 

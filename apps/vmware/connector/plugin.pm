@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
@@ -43,7 +42,8 @@ sub new {
                          'datastore-iops'       => 'apps::vmware::connector::mode::datastoreiops',
                          'datastore-snapshot'   => 'apps::vmware::connector::mode::datastoresnapshot',
                          'datastore-usage'      => 'apps::vmware::connector::mode::datastoreusage',
-                         'datastore-vm'         => 'apps::vmware::connector::mode::datastorevm', 
+                         'datastore-vm'         => 'apps::vmware::connector::mode::datastorevm',
+                         'device-vm'            => 'apps::vmware::connector::mode::devicevm', 
                          'getmap'               => 'apps::vmware::connector::mode::getmap',
                          'health-host'          => 'apps::vmware::connector::mode::healthhost',
                          'limit-vm'             => 'apps::vmware::connector::mode::limitvm',

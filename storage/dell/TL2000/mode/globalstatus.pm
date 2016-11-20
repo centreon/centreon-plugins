@@ -86,7 +86,6 @@ sub get_severity {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_TL2000StatusGlobalStatus = '.1.3.6.1.4.1.674.10893.2.102.2.1.0';

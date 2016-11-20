@@ -77,7 +77,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $oid_svSvcEntry = '.1.3.6.1.4.1.77.1.2.3.1';

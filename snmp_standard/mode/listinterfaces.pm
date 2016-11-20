@@ -126,7 +126,7 @@ sub check_options {
     foreach (@{$self->{option_results}->{add_extra_oid}}) {
         next if ($_ eq '');
         my ($name, $oid, $matching) = split /,/;
-        $matching = '%{instance}' if (!defined($matching));
+        $matching = '%{instance}$' if (!defined($matching));
         if (!defined($oid) || $oid !~ /^(\.\d+){1,}$/ || $name eq '') {
             $self->{output}->add_option_msg(short_msg => "Wrong syntax for add-extra-oid '" . $_ . "' option.");
             $self->{output}->option_exit();

@@ -573,7 +573,164 @@ Build the standalone Perl file:
 The plugin works in the same way:
 ::
 
-  # perl centreon_linux_snmp.pl --plugin os::linux::snmp::plugin --mode=processcount --snmp-community public --snmp-version 2c --hostname=127.0.0.1  --process-name='' --process-status='' --process-args=''
+  # perl centreon_linux_snmp.pl --plugin=os::linux::snmp::plugin --mode=processcount --snmp-community public --snmp-version 2c --hostname=127.0.0.1  --process-name='' --process-status='' --process-args=''
+
+---------------------------------------------
+Howto build a standalone Windows executable ?
+---------------------------------------------
+
+This is only useful if you want to compile your own ``centreon_plugins.exe``. You won't need to install Perl on your windows server.
+
+* Install on Windows Strawberry Perl 5.24.x (Download on http://strawberryperl.com/)
+* Trunk of centreon-plugins repository (Download on https://github.com/centreon/centreon-plugins/archive/master.zip)
+
+Once everything is installed, install CPAN Module ``PAR::Packer`` (replace ``<PERL_INSTALL_DIR>``):
+::
+
+  cmd> <PERL_INSTALL_DIR>\perl\bin\cpan.bat
+  cpan> install PAR::Packer
+
+It can take several minutes to install the CPAN Module.
+
+In the parent directory containing the directory ``centreon-plugins``, create a ``build.bat`` file (replace ``<PERL_INSTALL_DIR>``).
+We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 functions as part of its core Socket module).
+
+::
+
+  set PERL_INSTALL_DIR=<PERL_INSTALL_DIR>
+
+  chdir /d %~dp0
+  set PAR_VERBATIM=1
+  
+  cmd /C %PERL_INSTALL_DIR%\perl\site\bin\pp --lib=centreon-plugins\ -o centreon_plugins.exe centreon-plugins\centreon_plugins.pl ^
+  --unicode ^
+  -X IO::Socket::INET6 ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libxml2-2__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libiconv-2__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\liblzma-5__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\zlib1__.dll ^
+  -M Win32::Job ^
+  -M centreon::plugins::script ^
+  -M centreon::plugins::alternative::Getopt ^
+  -M apps::backup::netbackup::local::plugin ^
+  -M apps::backup::netbackup::local::mode::dedupstatus ^
+  -M apps::backup::netbackup::local::mode::drivecleaning ^
+  -M apps::backup::netbackup::local::mode::drivestatus ^
+  -M apps::backup::netbackup::local::mode::jobstatus ^
+  -M apps::backup::netbackup::local::mode::listpolicies ^
+  -M apps::backup::netbackup::local::mode::tapeusage ^
+  -M apps::activedirectory::local::plugin ^
+  -M apps::activedirectory::local::mode::dcdiag ^
+  -M apps::activedirectory::local::mode::netdom ^
+  -M apps::citrix::local::plugin ^
+  -M apps::citrix::local::mode::license ^
+  -M apps::citrix::local::mode::session ^
+  -M apps::citrix::local::mode::zone ^
+  -M apps::citrix::local::mode::folder ^
+  -M apps::iis::local::plugin ^
+  -M apps::iis::local::mode::listapplicationpools ^
+  -M apps::iis::local::mode::applicationpoolstate ^
+  -M apps::iis::local::mode::listsites ^
+  -M apps::iis::local::mode::webservicestatistics ^
+  -M apps::exchange::2010::local::plugin ^
+  -M apps::exchange::2010::local::mode::activesyncmailbox ^
+  -M apps::exchange::2010::local::mode::databases ^
+  -M apps::exchange::2010::local::mode::listdatabases ^
+  -M apps::exchange::2010::local::mode::imapmailbox ^
+  -M apps::exchange::2010::local::mode::mapimailbox ^
+  -M apps::exchange::2010::local::mode::outlookwebservices ^
+  -M apps::exchange::2010::local::mode::owamailbox ^
+  -M apps::exchange::2010::local::mode::queues ^
+  -M apps::exchange::2010::local::mode::replicationhealth ^
+  -M apps::exchange::2010::local::mode::services ^
+  -M centreon::common::powershell::exchange::2010::powershell ^
+  -M apps::cluster::mscs::local::plugin ^
+  -M apps::cluster::mscs::local::mode::listnodes ^
+  -M apps::cluster::mscs::local::mode::listresources ^
+  -M apps::cluster::mscs::local::mode::networkstatus ^
+  -M apps::cluster::mscs::local::mode::nodestatus ^
+  -M apps::cluster::mscs::local::mode::resourcestatus ^
+  -M apps::cluster::mscs::local::mode::resourcegroupstatus ^
+  -M os::windows::local::plugin ^
+  -M os::windows::local::mode::ntp ^
+  -M os::windows::local::mode::rdpsessions ^
+  -M storage::dell::compellent::local::plugin ^
+  -M storage::dell::compellent::local::mode::hbausage ^
+  -M storage::dell::compellent::local::mode::volumeusage ^
+  --verbose
+  
+  pause
+
+Add plugins and modes you need in ``centreon_plugins.exe`` (the example add some plugins). 
+Eventually, execute ``build.bat`` file to create executable ``centreon_plugins.exe``.
+
+If you want to change the executable version and ico file, add following code after ``PERL_INSTALL_DIR`` first line:
+::
+
+  set ICO_FILE=centreon.ico
+  set RC_FILE=centreon.rc
+  
+  chdir /d %~dp0
+  
+  for /f "tokens=4 delims= " %%i in ('type centreon-plugins\centreon\plugins\script.pm ^| findstr global_version ^| findstr my') do set "VERSION_PLUGIN=%%i"
+  set VERSION_PLUGIN=%VERSION_PLUGIN:~0,8%
+  
+  (
+  echo #define PP_MANIFEST_FILEFLAGS 0
+  echo #include ^<windows.h^>
+  echo.
+  echo CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "winres\\pp.manifest"
+  echo.
+  echo VS_VERSION_INFO VERSIONINFO
+  echo    FILEVERSION        0,0,0,0
+  echo    PRODUCTVERSION     0,0,0,0
+  echo    FILEFLAGSMASK      VS_FFI_FILEFLAGSMASK
+  echo    FILEFLAGS          PP_MANIFEST_FILEFLAGS
+  echo    FILEOS             VOS_NT_WINDOWS32
+  echo    FILETYPE           VFT_APP
+  echo    FILESUBTYPE        VFT2_UNKNOWN
+  echo BEGIN
+  echo    BLOCK "StringFileInfo"
+  echo    BEGIN
+  echo        BLOCK "000004B0"
+  echo        BEGIN
+  echo            VALUE "CompanyName", "Centreon\0"
+  echo            VALUE "FileDescription", " \0"
+  echo            VALUE "FileVersion", "1.0.0.0\0"
+  echo            VALUE "InternalName", " \0"
+  echo            VALUE "LegalCopyright", " \0"
+  echo            VALUE "LegalTrademarks", " \0"
+  echo            VALUE "OriginalFilename", " \0"
+  echo            VALUE "ProductName", "centreon-plugins\0"
+  echo            VALUE "ProductVersion", "%VERSION_PLUGIN%.0\0"
+  echo        END
+  echo    END
+  echo    BLOCK "VarFileInfo"
+  echo    BEGIN
+  echo        VALUE "Translation", 0x00, 0x04B0
+  echo    END
+  echo END
+  echo.
+  echo WINEXE ICON winres\\pp.ico
+  )> %RC_FILE%
+
+  for /f "delims=" %%i in ('dir /ad /B %PERL_INSTALL_DIR%\cpan\build\PAR-Packer-*') do set "PAR_PACKER_DIRNAME=%%i"
+  SET PAR_PACKER_SRC=%PERL_INSTALL_DIR%\cpan\build\%PAR_PACKER_DIRNAME%
+
+  copy /Y %ICO_FILE% %PAR_PACKER_SRC%\myldr\winres\pp.ico
+  copy /Y centreon.rc %PAR_PACKER_SRC%\myldr\winres\pp.rc
+  del %PAR_PACKER_SRC%\myldr\ppresource.coff
+  cd /D %PAR_PACKER_SRC%\myldr\ && perl Makefile.PL
+  cd /D %PAR_PACKER_SRC%\myldr\ && dmake boot.exe
+  cd /D %PAR_PACKER_SRC%\myldr\ && dmake Static.pm
+  attrib -R %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
+  copy /Y %PAR_PACKER_SRC%\myldr\Static.pm %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
+
+You can build a 32 bits binary from a Windows 64 bits:
+
+* Install Strawberry Perl 5.24.x 32 bits on Windows (Download on http://strawberryperl.com/)
+* Install cpan module ``PAR::Packer``
+* Add following line in the build script : PATH=%PERL_INSTALL_DIR%\c\bin;%PERL_INSTALL_DIR%\perl\bin;C:\Windows\System32
 
 ***************
 Troubleshooting

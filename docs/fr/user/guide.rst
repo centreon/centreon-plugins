@@ -574,7 +574,163 @@ La sonde fonctionne de la même façon:
 ::
 
   # perl centreon_linux_snmp.pl --plugin os::linux::snmp::plugin --mode=processcount --snmp-community public --snmp-version 2c --hostname=127.0.0.1  --process-name='' --process-status='' --process-args=''
+
+------------------------------------------
+Comment puis-je créer un binaire Windows ?
+------------------------------------------
+
+Cette procédure permet d'utiliser les sondes sans installer installer Perl sur le système Windows. 
+
+* Installer Strawberry Perl 5.24.x sur un Windows (Télécharger sur http://strawberryperl.com/)
+* Récupérer la dernière version des centreon-plugins (Télécharger https://github.com/centreon/centreon-plugins/archive/master.zip)
+
+Après les installations, installer le module ``PAR::Packer`` (remplacer ``<PERL_INSTALL_DIR>``):
+::
+
+  cmd> <PERL_INSTALL_DIR>\perl\bin\cpan.bat
+  cpan> install PAR::Packer
+
+L'installation peut prendre plusieurs minutes.
+
+Dans un dossier contenant le répertoire ``centreon-plugins``, créer un fichier ``build.bat`` (remplacer ``<PERL_INSTALL_DIR>``).
+Nous excluons le module ``IO::Socket::INET6`` (Perl 5.14 intègre la fonctionnalité IPv6 en natif).
+
+::
+
+  set PERL_INSTALL_DIR=<PERL_INSTALL_DIR>
+
+  chdir /d %~dp0
+  set PAR_VERBATIM=1
   
+  cmd /C %PERL_INSTALL_DIR%\perl\site\bin\pp --lib=centreon-plugins\ -o centreon_plugins.exe centreon-plugins\centreon_plugins.pl ^
+  --unicode ^
+  -X IO::Socket::INET6 ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libxml2-2__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libiconv-2__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\liblzma-5__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\zlib1__.dll ^
+  -M Win32::Job ^
+  -M centreon::plugins::script ^
+  -M centreon::plugins::alternative::Getopt ^
+  -M apps::backup::netbackup::local::plugin ^
+  -M apps::backup::netbackup::local::mode::dedupstatus ^
+  -M apps::backup::netbackup::local::mode::drivecleaning ^
+  -M apps::backup::netbackup::local::mode::drivestatus ^
+  -M apps::backup::netbackup::local::mode::jobstatus ^
+  -M apps::backup::netbackup::local::mode::listpolicies ^
+  -M apps::backup::netbackup::local::mode::tapeusage ^
+  -M apps::activedirectory::local::plugin ^
+  -M apps::activedirectory::local::mode::dcdiag ^
+  -M apps::activedirectory::local::mode::netdom ^
+  -M apps::citrix::local::plugin ^
+  -M apps::citrix::local::mode::license ^
+  -M apps::citrix::local::mode::session ^
+  -M apps::citrix::local::mode::zone ^
+  -M apps::citrix::local::mode::folder ^
+  -M apps::iis::local::plugin ^
+  -M apps::iis::local::mode::listapplicationpools ^
+  -M apps::iis::local::mode::applicationpoolstate ^
+  -M apps::iis::local::mode::listsites ^
+  -M apps::iis::local::mode::webservicestatistics ^
+  -M apps::exchange::2010::local::plugin ^
+  -M apps::exchange::2010::local::mode::activesyncmailbox ^
+  -M apps::exchange::2010::local::mode::databases ^
+  -M apps::exchange::2010::local::mode::listdatabases ^
+  -M apps::exchange::2010::local::mode::imapmailbox ^
+  -M apps::exchange::2010::local::mode::mapimailbox ^
+  -M apps::exchange::2010::local::mode::outlookwebservices ^
+  -M apps::exchange::2010::local::mode::owamailbox ^
+  -M apps::exchange::2010::local::mode::queues ^
+  -M apps::exchange::2010::local::mode::replicationhealth ^
+  -M apps::exchange::2010::local::mode::services ^
+  -M centreon::common::powershell::exchange::2010::powershell ^
+  -M apps::cluster::mscs::local::plugin ^
+  -M apps::cluster::mscs::local::mode::listnodes ^
+  -M apps::cluster::mscs::local::mode::listresources ^
+  -M apps::cluster::mscs::local::mode::networkstatus ^
+  -M apps::cluster::mscs::local::mode::nodestatus ^
+  -M apps::cluster::mscs::local::mode::resourcestatus ^
+  -M apps::cluster::mscs::local::mode::resourcegroupstatus ^
+  -M os::windows::local::plugin ^
+  -M os::windows::local::mode::ntp ^
+  -M os::windows::local::mode::rdpsessions ^
+  -M storage::dell::compellent::local::plugin ^
+  -M storage::dell::compellent::local::mode::hbausage ^
+  -M storage::dell::compellent::local::mode::volumeusage ^
+  --verbose
+  
+  pause
+
+Lancer le fichier "build.bat" pour créer le binaire "centreon_plugins.exe".
+
+Pour changer la version et l'icône du binaire, ajouter le code suivant après ``PERL_INSTALL_DIR`` (première ligne) :
+::
+
+  set ICO_FILE=centreon.ico
+  set RC_FILE=centreon.rc
+  
+  chdir /d %~dp0
+  
+  for /f "tokens=4 delims= " %%i in ('type centreon-plugins\centreon\plugins\script.pm ^| findstr global_version ^| findstr my') do set "VERSION_PLUGIN=%%i"
+  set VERSION_PLUGIN=%VERSION_PLUGIN:~0,8%
+  
+  (
+  echo #define PP_MANIFEST_FILEFLAGS 0
+  echo #include ^<windows.h^>
+  echo.
+  echo CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "winres\\pp.manifest"
+  echo.
+  echo VS_VERSION_INFO VERSIONINFO
+  echo    FILEVERSION        0,0,0,0
+  echo    PRODUCTVERSION     0,0,0,0
+  echo    FILEFLAGSMASK      VS_FFI_FILEFLAGSMASK
+  echo    FILEFLAGS          PP_MANIFEST_FILEFLAGS
+  echo    FILEOS             VOS_NT_WINDOWS32
+  echo    FILETYPE           VFT_APP
+  echo    FILESUBTYPE        VFT2_UNKNOWN
+  echo BEGIN
+  echo    BLOCK "StringFileInfo"
+  echo    BEGIN
+  echo        BLOCK "000004B0"
+  echo        BEGIN
+  echo            VALUE "CompanyName", "Centreon\0"
+  echo            VALUE "FileDescription", " \0"
+  echo            VALUE "FileVersion", "1.0.0.0\0"
+  echo            VALUE "InternalName", " \0"
+  echo            VALUE "LegalCopyright", " \0"
+  echo            VALUE "LegalTrademarks", " \0"
+  echo            VALUE "OriginalFilename", " \0"
+  echo            VALUE "ProductName", "centreon-plugins\0"
+  echo            VALUE "ProductVersion", "%VERSION_PLUGIN%.0\0"
+  echo        END
+  echo    END
+  echo    BLOCK "VarFileInfo"
+  echo    BEGIN
+  echo        VALUE "Translation", 0x00, 0x04B0
+  echo    END
+  echo END
+  echo.
+  echo WINEXE ICON winres\\pp.ico
+  )> %RC_FILE%
+
+  for /f "delims=" %%i in ('dir /ad /B %PERL_INSTALL_DIR%\cpan\build\PAR-Packer-*') do set "PAR_PACKER_DIRNAME=%%i"
+  SET PAR_PACKER_SRC=%PERL_INSTALL_DIR%\cpan\build\%PAR_PACKER_DIRNAME%
+
+  copy /Y %ICO_FILE% %PAR_PACKER_SRC%\myldr\winres\pp.ico
+  copy /Y centreon.rc %PAR_PACKER_SRC%\myldr\winres\pp.rc
+  del %PAR_PACKER_SRC%\myldr\ppresource.coff
+  cd /D %PAR_PACKER_SRC%\myldr\ && perl Makefile.PL
+  cd /D %PAR_PACKER_SRC%\myldr\ && dmake boot.exe
+  cd /D %PAR_PACKER_SRC%\myldr\ && dmake Static.pm
+  attrib -R %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
+  copy /Y %PAR_PACKER_SRC%\myldr\Static.pm %PERL_INSTALL_DIR%\perl\site\lib\PAR\StrippedPARL\Static.pm
+
+Il est possible de compiler un binaire 32 bits depuis une version 64 bits Windows :
+
+* Installer Strawberry Perl 5.24.x version 32 bits sur un Windows (Télécharger sur http://strawberryperl.com/)
+* Installer le module cpan "PAR::Packer"
+* Ajouter la ligne suivante au début du script : PATH=%PERL_INSTALL_DIR%\c\bin;%PERL_INSTALL_DIR%\perl\bin;C:\Windows\System32
+
 
 *********
 Dépannage

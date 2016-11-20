@@ -81,7 +81,11 @@ sub custom_utils_calc {
 
     my $diff_busy = $options{new_datas}->{$self->{instance} . '_busy_ticks'} - $options{old_datas}->{$self->{instance} . '_busy_ticks'};
     my $diff_idle = $options{new_datas}->{$self->{instance} . '_idle_ticks'} - $options{old_datas}->{$self->{instance} . '_idle_ticks'};
-    
+
+    if (($diff_busy + $diff_idle) == 0) {
+        $self->{error_msg} = "wait new values";
+        return -3;
+    }
     $self->{result_values}->{utils} = $diff_busy * 100 / ($diff_busy + $diff_idle);
     $self->{result_values}->{display} =  $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -147,7 +151,7 @@ sub set_counters {
                 output_template => 'Utils : %.2f %%', output_use => 'utils',
                 perfdatas => [
                     { label => 'utils', value => 'utils', template => '%.2f',
-                      min => 0, max => 100, unit => '%%', label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

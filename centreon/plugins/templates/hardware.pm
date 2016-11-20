@@ -245,21 +245,8 @@ sub exec_components {
     }
 }
 
-sub run {
+sub display {
     my ($self, %options) = @_;
-
-    $self->{loaded} = 0;  
-    $self->call_object_callback(method_name => $self->{cb_hook1}, %options);
-
-    $self->load_components(%options);
-    if ($self->{loaded} == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
-    $self->exec_components(%options);
-    $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
     
     my $total_components = 0;
     my $display_by_component = '';
@@ -283,6 +270,25 @@ sub run {
         $self->{output}->output_add(severity => $self->{no_components},
                                     short_msg => 'No components are checked.');
     }
+}
+
+sub run {
+    my ($self, %options) = @_;
+
+    $self->{loaded} = 0;  
+    $self->call_object_callback(method_name => $self->{cb_hook1}, %options);
+
+    $self->load_components(%options);
+    if ($self->{loaded} == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
+    $self->exec_components(%options);
+    $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
+    
+    $self->display();
 
     $self->call_object_callback(method_name => $self->{cb_hook4}, %options);
     

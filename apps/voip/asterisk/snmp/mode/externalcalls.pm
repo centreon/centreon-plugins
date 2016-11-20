@@ -82,7 +82,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my ($result, $value);
