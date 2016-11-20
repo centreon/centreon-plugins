@@ -29,7 +29,6 @@ sub new {
 
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (

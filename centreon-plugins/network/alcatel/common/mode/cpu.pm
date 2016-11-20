@@ -95,7 +95,6 @@ sub check_cpu {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_healthDeviceCpu1MinAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.14'; # it's '.0' but it's for walk multiple

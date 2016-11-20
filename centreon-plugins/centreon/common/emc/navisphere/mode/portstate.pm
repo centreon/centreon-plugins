@@ -52,7 +52,7 @@ sub check_port {
     if ($self->{response} =~ /Information about each SPPORT:(.*)/msi) {
         my $port_infos = $1;
         
-        while ($port_infos =~ /(SP Name:.*?)\n\n/msig) {
+        while ($port_infos =~ /(SP Name:.*?)(\n\n|\Z)/msig) {
             my $port_infos = $1;
             
             # Not in good section

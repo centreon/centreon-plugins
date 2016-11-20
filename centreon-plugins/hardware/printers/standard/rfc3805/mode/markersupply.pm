@@ -69,7 +69,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $oid_prtMarkerSuppliesColorantIndex = '.1.3.6.1.2.1.43.11.1.1.3';
@@ -104,8 +103,8 @@ sub run {
         my $current_value = $result2->{$oid_prtMarkerSuppliesLevel . '.' . $instance};
         my $max_value = $result2->{$oid_prtMarkerSuppliesMaxCapacity . '.' . $instance};
         
-        if (!defined($unit_managed{$unit})) {
-            $self->{output}->output_add(long_msg => "Skipping marker supply '$descr': unit not managed."); 
+        if (!defined($unit) || !defined($unit_managed{$unit})) {
+            $self->{output}->output_add(long_msg => "Skipping marker supply '$descr': no unit or not managed."); 
             next;
         }
         if ($current_value == -1) {

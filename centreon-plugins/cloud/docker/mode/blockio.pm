@@ -24,40 +24,29 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
         {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', default => '2376'},
-            "proto:s"           => { name => 'proto', default => 'https' },
-            "urlpath:s"         => { name => 'url_path', default => '/' },
+            "port:s"            => { name => 'port' },
             "name:s"            => { name => 'name' },
             "id:s"              => { name => 'id' },
             "warning-read:s"    => { name => 'warning-read' },
             "critical-read:s"   => { name => 'critical-read' },
             "warning-write:s"   => { name => 'warning-write' },
             "critical-write:s"  => { name => 'critical-write' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "ssl:s"             => { name => 'ssl', },
-            "cert-file:s"       => { name => 'cert_file' },
-            "key-file:s"        => { name => 'key_file' },
-            "cacert-file:s"     => { name => 'cacert_file' },
-            "timeout:s"         => { name => 'timeout' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -90,14 +79,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{option_results}->{get_param} = [];
-    push @{$self->{option_results}->{get_param}}, "stream=false";
-    if (defined($self->{option_results}->{id})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{id}."/stats";
-    } elsif (defined($self->{option_results}->{name})) {
-        $self->{option_results}->{url_path} = "/containers/".$self->{option_results}->{name}."/stats";
-    }
-
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_value}->check_options(%options);
 }
@@ -113,20 +94,17 @@ sub run {
         $self->{statefile_value}->read(statefile => 'docker_' . $self->{option_results}->{name}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
     }
 
-    my $jsoncontent = $self->{http}->request();
+	my $urlpath;
+	if (defined($self->{option_results}->{id})) {
+		$urlpath = "/containers/".$self->{option_results}->{id}."/stats";
+	} elsif (defined($self->{option_results}->{name})) {
+		$urlpath = "/containers/".$self->{option_results}->{name}."/stats";
+	}
+	my $port = $self->{option_results}->{port};
+	my $containerapi = $options{custom};
 
-    my $json = JSON->new;
-
-    my $webcontent;
-
-    eval {
-        $webcontent = $json->decode($jsoncontent);
-    };
-
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
+	my $webcontent = $containerapi->api_request(urlpath => $urlpath,
+	                                            port => $port);
 
     my $read_bytes = $webcontent->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
     my $write_bytes = $webcontent->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
@@ -204,23 +182,11 @@ __END__
 
 Check Container's Block I/O usage
 
-=over 8
-
-=item B<--hostname>
-
-IP Addr/FQDN of Docker's API
+=head2 DOCKER OPTIONS
 
 =item B<--port>
 
-Port used by Docker's API (Default: '2576')
-
-=item B<--proto>
-
-Specify https if needed (Default: 'https')
-
-=item B<--urlpath>
-
-Set path to get Docker's container information (Default: '/')
+Port used by Docker
 
 =item B<--id>
 
@@ -229,6 +195,8 @@ Specify one container's id
 =item B<--name>
 
 Specify one container's name
+
+=head2 MODE OPTIONS
 
 =item B<--warning-read>
 
@@ -245,38 +213,6 @@ Threshold warning in B/s for Write I/O.
 =item B<--critical-write>
 
 Threshold critical in B/s for Write I/O.
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
-
-=item B<--cert-file>
-
-Specify certificate to send to the webserver
-
-=item B<--key-file>
-
-Specify key to send to the webserver
-
-=item B<--cacert-file>
-
-Specify root certificate to send to the webserver
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
 
 =back
 

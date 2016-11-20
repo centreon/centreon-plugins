@@ -78,6 +78,8 @@ sub check {
         foreach my $num (split /,/, $result->{enclTempSensorsPresent}) {
             $num = centreon::plugins::misc::trim($num);
             next if ($num !~ /[0-9]/ || !defined($current_temp[$num - 1]));
+            
+            next if ($self->check_filter(section => 'temperature', instance => $shelf_addr . '.' . $num));
     
             $warn_under_thr[$num - 1] =~ /(-*[0-9]+)C/;
             my $wu_thr = $1;
@@ -90,7 +92,6 @@ sub check {
             $current_temp[$num - 1] =~ /(-*[0-9]+)C/;
             my $current_value = $1;
             
-            next if ($self->check_filter(section => 'temperature', instance => $shelf_addr . '.' . $num));
             $self->{components}->{temperature}->{total}++;
             
             my $status = 'ok';

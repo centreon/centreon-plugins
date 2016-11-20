@@ -69,7 +69,6 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Humdity '%s' status is '%s'", $result->{hhmsSensorArrayHumidityDescription}, $result->{hhmsSensorArrayHumidityStatus}));
-            next;
         }
              
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $instance, value => $result->{hhmsSensorArrayHumidityPercent});

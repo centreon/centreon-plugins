@@ -64,7 +64,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $oid_memTotalSwap = '.1.3.6.1.4.1.2021.4.3.0'; # KB

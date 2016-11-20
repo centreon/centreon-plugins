@@ -23,17 +23,14 @@ package centreon::common::emc::navisphere::mode::spcomponents::battery;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^(Not Ready|Testing|Unknown)$' => 'WARNING'],
-    ['^(?!(Present|Valid)$)' => 'CRITICAL'],
-);
+sub load { };
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking batteries");
     $self->{components}->{battery} = {name => 'battery', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'battery'));
+    return if ($self->check_filter(section => 'battery'));
     
     # SPS means = Standby Power Supply
     
@@ -44,19 +41,17 @@ sub check {
             $instance = "$1.$2.$3.$4";
         }
         
-        next if ($self->check_exclude(section => 'battery', instance => $instance));
+        next if ($self->check_filter(section => 'battery', instance => $instance));
         $self->{components}->{battery}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Battery '%s' state is %s.",
                                                         $instance, $state)
                                     );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("Battery '%s' state is %s",
-                                                        $instance, $state));
-                last;
-            }
+        my $exit = $self->get_severity(section => 'battery', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Battery '%s' state is %s",
+                                                             $instance, $state));
         }
     }
 }

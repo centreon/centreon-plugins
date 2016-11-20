@@ -35,6 +35,7 @@ my $thresholds = {
     ],
     smartdisk => [
         ['GOOD', 'OK'],
+        ['NORMAL', 'WARNING'],
         ['--', 'OK'],
         ['.*', 'CRITICAL'],
     ],
@@ -117,7 +118,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $snmp_request = [];

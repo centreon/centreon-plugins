@@ -27,31 +27,31 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'ssid', type => 1, cb_prefix_output => 'prefix_ssid_output', message_multiple => 'All users by SSID are ok' },
         { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All users by AP are ok' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'total', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total_absolute', template => '%s',
                       unit => 'users', min => 0 },
                 ],
             }
         },
     ];
-    
+
     $self->{maps_counters}->{ssid} = [
         { label => 'ssid', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'ssid', value => 'total_absolute', template => '%s', 
+                    { label => 'ssid', value => 'total_absolute', template => '%s',
                       unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -76,20 +76,20 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                 "filter-ssid:s" => { name => 'filter_ssid' },
                                 "filter-ap:s"   => { name => 'filter_ap' },
                                 });
-    
+
     return $self;
 }
 
 sub prefix_ssid_output {
     my ($self, %options) = @_;
-    
+
     return "SSID '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -114,11 +114,11 @@ sub manage_selection {
     $self->{global} = { total => 0};
     $self->{ssid} = {};
     $self->{ap} = {};
-    
+
     $self->{results} = $options{snmp}->get_multiple_table(oids => [{ oid => $oid_trpzApStatApStatusApName }, { oid => $mapping->{trpzClSessClientSessApSerialNum}->{oid} },
                                                                    { oid => $mapping1->{trpzClSessClientSessSsid}->{oid} }],
                                                           nothing_quit => 1);
-                                            
+
     foreach my $oid (keys %{$self->{results}->{ $mapping->{trpzClSessClientSessApSerialNum}->{oid} }}) {
         $oid =~ /^$mapping->{trpzClSessClientSessApSerialNum}->{oid}\.(.*)$/;
         my $instance = $1;
@@ -130,7 +130,7 @@ sub manage_selection {
             $ap_oid .= '.'.ord($char);
         }
         my $ap_name = $self->{results}->{$oid_trpzApStatApStatusApName}->{$oid_trpzApStatApStatusApName . '.' . $ap_oid};
-        if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' && 
+        if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' &&
             $ap_name !~ /$self->{option_results}->{filter_ap}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $ap_name . "': no matching filter.", debug => 1);
             next;
@@ -140,17 +140,17 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result1->{trpzClSessClientSessSsid} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{global}->{total}++;
         $self->{ap}->{$ap_name} = { total => 0, display => $ap_name } if (!defined($self->{ap}->{$ap_name}));
         $self->{ap}->{$ap_name}->{total}++;
         $self->{ssid}->{$result1->{trpzClSessClientSessSsid}} = { total => 0, display => $result1->{trpzClSessClientSessSsid} } if (!defined($self->{ssid}->{$result1->{trpzClSessClientSessSsid}}));
         $self->{ssid}->{$result1->{trpzClSessClientSessSsid}}->{total}++;
     }
-    
+
     if (scalar(keys %{$self->{ap}}) <= 0 && scalar(keys %{$self->{ssid}}) <= 0) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'No AP nor SSID finded, check your filter or maybe we are on a slave controller ? ');
+                                    short_msg => 'No AP nor SSID found, check your filter or maybe we are on a slave controller ? ');
     }
 }
 

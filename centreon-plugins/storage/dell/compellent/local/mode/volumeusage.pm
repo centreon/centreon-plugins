@@ -31,7 +31,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sc', type => 1, cb_prefix_output => 'prefix_sc_output', message_multiple => 'All storage centers are ok' },
+        { name => 'sc', type => 1, cb_prefix_output => 'prefix_sc_output', message_multiple => 'All storage centers are ok', cb_init => 'sc_init' },
         { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok' }
     ];
     $self->{maps_counters}->{sc} = [
@@ -87,6 +87,15 @@ sub prefix_volume_output {
     my ($self, %options) = @_;
     
     return "Volume '" . $options{instance_value}->{display} . "' ";
+}
+
+sub sc_init {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{ps_sc_volume}) && $self->{option_results}->{ps_sc_volume} ne '')  {
+        return 1;
+    }
+    return 0;
 }
 
 my $instance_mode;
@@ -182,6 +191,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "ps-sc-filter:s"      => { name => 'ps_sc_filter' },
+                                  "ps-sc-volume:s"      => { name => 'ps_sc_volume' },
                                   "units:s"             => { name => 'units', default => '%' },
                                   "free"                => { name => 'free' },
                                 });
@@ -309,6 +319,10 @@ Print powershell output.
 =item B<--ps-sc-filter>
 
 Filter Storage Center (only wilcard '*' can be used. In Powershell).
+
+=item B<--ps-sc-volume>
+
+Filter Volume Name to display.
 
 =item B<--units>
 

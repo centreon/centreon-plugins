@@ -94,7 +94,6 @@ my $mapping2 = {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     my $oid_nodeName = '.1.3.6.1.4.1.789.1.25.2.1.1';

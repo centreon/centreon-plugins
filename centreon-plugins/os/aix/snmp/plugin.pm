@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
@@ -39,6 +38,7 @@ sub new {
                          'processcount'     => 'snmp_standard::mode::processcount',
                          'storage'          => 'snmp_standard::mode::storage',
                          'swap'             => 'os::aix::snmp::mode::swap',
+                         'time'             => 'snmp_standard::mode::ntp',
                          );
 
     return $self;

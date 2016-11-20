@@ -43,10 +43,9 @@ my $oid_cefcFanTrayOperStatus = '.1.3.6.1.4.1.9.9.117.1.4.1.1.1'; # CISCO-ENTITY
 my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_ciscoEnvMonFanStatusEntry };
-    push @{$options{request}}, { oid => $oid_cefcFanTrayOperStatus };
+    push @{$self->{request}}, { oid => $oid_ciscoEnvMonFanStatusEntry }, { oid => $oid_cefcFanTrayOperStatus };
 }
 
 sub check_fan_envmon {
@@ -64,7 +63,7 @@ sub check_fan_envmon {
 
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonFanStatusEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($result->{ciscoEnvMonFanState} =~ /not present/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
@@ -95,7 +94,7 @@ sub check_fan_entity {
         my $fan_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcFanTrayOperStatus}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s [instance: %s]",
@@ -113,7 +112,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     check_fan_envmon($self);
     check_fan_entity($self);

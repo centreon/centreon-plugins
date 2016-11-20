@@ -92,8 +92,8 @@ Can be: 'temperature', 'humidity', 'switch', 'serial'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=fan,101
+Exclude some parts (comma seperated list) (Example: --filter=temperature --filter=humidity)
+Can also exclude specific instance: --filter=fan,1
 
 =item B<--no-component>
 
@@ -104,17 +104,17 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='psu,CRITICAL,^(?!(presentOK)$)'
+Example: --threshold-overload='temperature,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
 Set warning threshold for 'temperature', 'humidity' (syntax: type,regexp,threshold)
-Example: --warning='temperature,1,30'
+Example: --warning='temperature,.*,30'
 
 =item B<--critical>
 
 Set critical threshold for 'temperature', 'humidity' (syntax: type,regexp,threshold)
-Example: --warning='temperature,1,50'
+Example: --warning='temperature,.*,50'
 
 =back
 

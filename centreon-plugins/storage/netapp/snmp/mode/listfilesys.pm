@@ -108,7 +108,6 @@ sub get_additional_information {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
@@ -143,7 +142,6 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();

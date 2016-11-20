@@ -56,16 +56,15 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{snmp} = snmp object
     $self->{snmp} = $options{snmp};
     
     my $oid_iveTemperature = '.1.3.6.1.4.1.12532.42.0';
     
     my $result = $self->{snmp}->get_leef(oids => [$oid_iveTemperature], nothing_quit => 1);
     my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_iveTemperature}, 
-                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+                                threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Blade Temperautre is %.2f C", 
+                                short_msg => sprintf("Blade Temperature is %.2f C", 
                                     $result->{$oid_iveTemperature}));
     $self->{output}->perfdata_add(label => 'temperature', unit => 'C',
                                   value => sprintf("%.2f", $result->{$oid_iveTemperature}),
