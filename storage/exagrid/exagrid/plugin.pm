@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'alarm'            => 'centreon::common::exagrid::exagrid::mode::alarm',
                          'landing'          => 'centreon::common::exagrid::exagrid::mode::landing',
+                         'retention'        => 'centreon::common::exagrid::exagrid::mode::retention',
                          );
 
     return $self;

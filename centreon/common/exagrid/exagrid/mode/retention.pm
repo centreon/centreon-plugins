@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::exagrid::exagrid::mode::landing;
+package centreon::common::exagrid::exagrid::mode::retention;
 
 use base qw(centreon::plugins::mode);
 
@@ -63,7 +63,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
 
-    my $oid = '.1.3.6.1.4.1.14941.4.1';
+    my $oid = '.1.3.6.1.4.1.14941.4.2';
     
 
 
@@ -78,7 +78,7 @@ sub run {
     my $exit_code = $self->{perfdata}->threshold_check(value => $percent,
                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Landing usage is: %.2f%%", $percent));
+                                short_msg => sprintf("Retention usage is: %.2f%%", $percent));
     $self->{output}->perfdata_add(label => 'total_disk', unit => '%',
                                   value => sprintf("%.2f", $percent),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
