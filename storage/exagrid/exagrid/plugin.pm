@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'alarm'            => 'centreon::common::exagrid::exagrid::mode::alarm',
+                         'landing'          => 'centreon::common::exagrid::exagrid::mode::landing',
                          );
 
     return $self;
