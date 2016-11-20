@@ -70,7 +70,6 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' status is '%s'", $result->{hhmsSensorArrayTempDescription}, $result->{hhmsSensorArrayTempStatus}));
-            next;
         }
              
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{hhmsSensorArrayTempDegree});
