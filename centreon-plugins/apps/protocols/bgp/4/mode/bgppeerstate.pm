@@ -219,11 +219,11 @@ Filter based on AS number (regexp allowed)
 
 Filter based on IP of peers (regexp allowed)
 
-=item B<--warning-time>
+=item B<--warning-updates>
 
 Warning threshold on last update (seconds)
 
-=item B<--critical-time>
+=item B<--critical-updates>
 
 Critical threshold on last update (seconds)
 
