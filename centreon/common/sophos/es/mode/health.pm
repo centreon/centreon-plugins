@@ -122,12 +122,8 @@ sub run {
        }
     }
 
-#use Data::Dumper;
-#print Dumper($results);
-
-     my $exit_code = $self->{perfdata}->threshold_check(value => $value,
+    my $exit_code = $self->{perfdata}->threshold_check(value => $value,
                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
 
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => "");
@@ -155,14 +151,6 @@ __END__
 Check Sophos ES health
 
 =over 8
-
-=item B<--warning>
-
-Threshold warning in percent.
-
-=item B<--critical>
-
-Threshold critical in percent.
 
 
 =back
