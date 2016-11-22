@@ -229,11 +229,12 @@ Critical threshold on last update (seconds)
 
 =item B<--warning-status>
 
-Specify admin and peer state that trigger a warning
+Specify admin and peer state that trigger a warning. Can use %{adminstate} and %{peerstate}
+e.g --warning-status "%{adminstate} =~ /stop"
 
 =item B<--critical-status>
 
-Specify admin and peer state that trigger a critical
+Specify admin and peer state that trigger a critical. Can use %{adminstate} and %{peerstate}
 
 =back
 
