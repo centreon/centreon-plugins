@@ -80,7 +80,7 @@ sub set_counters {
         { name => 'peers', type => 1, cb_prefix_output => 'prefix_peers_output', message_multiple => 'All BGP peers are ok' },
     ];
     $self->{maps_counters}->{peers} = [
-        { label => 'states', set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'adminstate' }, { name => 'peerstate' }, { name => 'display' },
                                 { name => 'local' }, { name => 'remote' }, { name => 'as' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
