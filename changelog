@@ -1,3 +1,14 @@
+2016-11-21 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check Jacarta Sensor SNMP
+ * Plugin added: to check Safenet HSM
+ * Plugin added: to check HP ILO XML API
+ * Plugin added: to check EMC Isilon SNMP
+ * Plugin added: to check APC NetBotz SNMP
+ * Enhancement: [apc ats] major update
+ * Enhancement: [hwgste] update
+ * Fix: [sonus] namespace issue (#532)
+ * Fix: [snmp_standard]{storage} cache issue (#523)
+
 2016-10-14 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check StorageTek SLxxx
  * Plugin added: to check HP Storeonce Rest API
