@@ -33,8 +33,8 @@ sub new {
     %{$self->{modes}} = (
                          'message_rate'           => 'centreon::common::sophos::es::mode::message_rate',
                          'queue'                  => 'centreon::common::sophos::es::mode::queue',
-                         'health'                  => 'centreon::common::sophos::es::mode::health',
-                         'message'                  => 'centreon::common::sophos::es::mode::message',
+                         'health'                 => 'centreon::common::sophos::es::mode::health',
+                         'message'                => 'centreon::common::sophos::es::mode::message',
                          );
 
     return $self;
