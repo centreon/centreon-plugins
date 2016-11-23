@@ -69,7 +69,7 @@ sub set_counters {
                 output_template => 'Load : %.2f %%', output_error_template => "Load : %s",
                 perfdatas => [
                     { label => 'line_load', value => 'load_absolute', template => '%.2f',
-                      unit => '%', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
