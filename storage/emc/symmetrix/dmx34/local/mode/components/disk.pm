@@ -93,22 +93,23 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("all devices are ready"));
     }
     
-    return if ($content !~ /(\S+) hot spares are configured, (\S+) are invoked/msi);
-    my ($total, $used) = ($1, $2);
+    return if ($content !~ /(\S+) hot spares are configured,\s*(\S+)\s+are invoked,\s*(\S+)\s+are not ready/msi);
+    my ($total, $used, $not_ready) = ($1, $2, $3);
     $used = 0 if ($used =~ /none/i);
+    $not_ready = 0 if ($not_ready =~ /none/i);
 
-    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'disk', instance => '1', value => $total - $used);
+    my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'disk', instance => '1', value => $total - $used - $not_ready);
 
     $self->{output}->output_add(long_msg => sprintf("'%s' spare disk availables on '%s'", 
-                                                    $total - $used, $total));
+                                                    $total - $used - $not_ready, $total));
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("'%s' spare disk availables on '%s'", 
-                                                    $total - $used, $total));
+                                                    $total - $used - $not_ready, $total));
     }
     
     $self->{output}->perfdata_add(label => "disk_spare_available",
-                                  value => $total - $used,
+                                  value => $total - $used - $not_ready,
                                   warning => $warn,
                                   critical => $crit, min => 0, max => $total);
 }
