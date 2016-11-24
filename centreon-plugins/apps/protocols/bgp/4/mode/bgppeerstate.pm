@@ -118,7 +118,7 @@ sub new {
                                 "filter-peer:s"         => { name => 'filter_peer' },
                                 "filter-as:s"           => { name => 'filter_as' },
                                 "warning-status:s"      => { name => 'warning_status', default => '' },
-                                "critical-status:s"     => { name => 'critical_stauts', default => '' },
+                                "critical-status:s"     => { name => 'critical_status', default => '' },
                                 });
 
     return $self;
