@@ -165,6 +165,10 @@ e.g --warning-status '%{role} !~ /master/' will warn when failover occurs
 Trigger critical on %{role} or %{hastate} values
 (default: '%{hastate} !~ /(UP|working)/')
 
+=item B<--no-ha-status>
+
+Status to return when HA not running or not installed (default: 'UNKNOWN')
+
 =back
 
 =cut
