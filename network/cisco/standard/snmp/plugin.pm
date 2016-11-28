@@ -39,6 +39,7 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
                          'memory-flash'     => 'centreon::common::cisco::standard::snmp::mode::memoryflash',
+                         'qos-usage'        => 'centreon::common::cisco::standard::snmp::mode::qosusage',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
                          );

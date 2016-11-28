@@ -31,12 +31,13 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'ps', type => 1, cb_prefix_output => 'prefix_ps_output', message_multiple => 'All power sources are ok' },
+        { name => 'line', type => 1, cb_prefix_output => 'prefix_line_output', message_multiple => 'All power source lines are ok' },
     ];
 
     $self->{maps_counters}->{ps} = [
         { label => 'power', set => {
                 key_values => [ { name => 'PwrTotal' }, { name => 'display' } ],
-                output_template => 'total input power : %s W', output_error_template => "total input power : %s",
+                output_template => 'Total input power : %s W', output_error_template => "total input power : %s",
                 perfdatas => [
                     { label => 'power', value => 'PwrTotal_absolute', template => '%s',
                       unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -62,12 +63,38 @@ sub set_counters {
             }
         },
     ];
+    $self->{maps_counters}->{line} = [
+        { label => 'line-load', set => {
+                key_values => [ { name => 'load' }, { name => 'display' } ],
+                output_template => 'Load : %.2f %%', output_error_template => "Load : %s",
+                perfdatas => [
+                    { label => 'line_load', value => 'load_absolute', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'line-current', set => {
+                key_values => [ { name => 'current' }, { name => 'display' } ],
+                output_template => 'Current : %.2f A', output_error_template => "Current : %s",
+                perfdatas => [
+                    { label => 'line_current', value => 'current_absolute', template => '%.2f',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
 }
 
 sub prefix_ps_output {
     my ($self, %options) = @_;
     
     return "Power source '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_line_output {
+    my ($self, %options) = @_;
+    
+    return "Power source line '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -84,14 +111,22 @@ sub new {
     return $self;
 }
 
+my %map_phase = (1 => 'phase1', 2 => 'phase2', 3 => 'phase3');
+
 my $mapping = {
     lgpPduPsEntrySysAssignLabel     => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.20.1.15' },
     lgpPduPsEntryEnergyAccum        => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.20.1.50' }, # 0.1 Kilowatt-Hour
     lgpPduPsEntryPwrTotal           => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.20.1.65' }, # Watt
     lgpPduPsEntryEcNeutral          => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.20.1.70' }, # 0.1 Amp-AC-RMS
 };
+my $mapping2 = {
+    lgpPduPsLineEntryLine               => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.40.1.15', map => \%map_phase },
+    lgpPduPsLineEntryEcHundredths       => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.40.1.22' }, # 0.01 A
+    lgpPduPsLineEntryEcUsedBeforeAlarm  => { oid => '.1.3.6.1.4.1.476.1.42.3.8.30.40.1.39' }, # %
+};
 my $oid_lgpPduEntryUsrLabel = '.1.3.6.1.4.1.476.1.42.3.8.20.1.10';
 my $oid_lgpPduPsEntry = '.1.3.6.1.4.1.476.1.42.3.8.30.20.1';
+my $oid_lgpPduPsLineEntry = '.1.3.6.1.4.1.476.1.42.3.8.30.40.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -103,6 +138,7 @@ sub manage_selection {
     $self->{ps} = {};
     $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_lgpPduEntryUsrLabel },
                                                                     { oid => $oid_lgpPduPsEntry },
+                                                                    { oid => $oid_lgpPduPsLineEntry }
                                                                   ],
                                                           nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}->{$oid_lgpPduPsEntry}}) {
@@ -125,6 +161,20 @@ sub manage_selection {
                                                         EnergyAccum => $result->{lgpPduPsEntryEnergyAccum} * 0.1, 
                                                         PwrTotal => $result->{lgpPduPsEntryPwrTotal},
                                                         EcNeutral =>  $result->{lgpPduPsEntryEcNeutral} * 0.1};
+    }
+    
+    $self->{line} = {};
+    foreach my $oid (keys %{$self->{results}->{$oid_lgpPduPsLineEntry}}) {
+        next if ($oid !~ /^$mapping2->{lgpPduPsLineEntryEcUsedBeforeAlarm}->{oid}\.(\d+)\.(\d+)\.(\d+)/);
+        my ($pdu_index, $ps_index, $line_index) = ($1, $2, $3);
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_lgpPduPsLineEntry}, instance => $pdu_index . '.' . $ps_index . '.' . $line_index);
+        next if (!defined($self->{ps}->{$pdu_index . '.' . $ps_index}));
+        
+        $self->{line}->{$pdu_index . '.' . $ps_index . '.' . $line_index} = { 
+            display => $self->{ps}->{$pdu_index . '.' . $ps_index}->{display} . '/' . $result->{lgpPduPsLineEntryLine}, 
+            current => $result->{lgpPduPsLineEntryEcHundredths} * 0.01, 
+            load => $result->{lgpPduPsLineEntryEcUsedBeforeAlarm},
+        };
     }
     
     if (scalar(keys %{$self->{ps}}) <= 0) {
@@ -155,12 +205,14 @@ Example: --filter-counters='^(power|energy)$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'power', 'energy', 'current-neutral'.
+Can be: 'power', 'energy', 'current-neutral',
+'line-load', 'line-current'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'power', 'energy', 'current-neutral'.
+Can be: 'power', 'energy', 'current-neutral',
+'line-load', 'line-current'.
 
 =back
 
