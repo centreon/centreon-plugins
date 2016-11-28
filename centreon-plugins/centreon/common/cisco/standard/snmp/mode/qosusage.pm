@@ -104,7 +104,7 @@ sub set_counters {
     ];
 }
 
-sub custom_usage_perfdata {
+sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
     my $extra_label = '';
