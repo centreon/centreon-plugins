@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
 my $instance_mode;
@@ -37,11 +38,11 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($instance_mode->{option_results}->{critical_ap_status}) && $instance_mode->{option_results}->{critical_ap_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_ap_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_ap_status}) && $instance_mode->{option_results}->{warning_ap_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_ap_status}") {
             $status = 'warning';
         }
     };
@@ -54,10 +55,7 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    if ($self->{result_values}->{information} ne '') {
-        $msg .= ' [information: ' . $self->{result_values}->{information} . ']';
-    }
+    my $msg = 'status : ' . $self->{result_values}->{status} . '(admin: ' . $self->{result_values}->{admin_status} . ')';
 
     return $msg;
 }
@@ -67,13 +65,24 @@ sub custom_status_calc {
     
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{environment} = $options{new_datas}->{$self->{instance} . '_environment'};
-    $self->{result_values}->{application} = $options{new_datas}->{$self->{instance} . '_application'};
-    $self->{result_values}->{exit_code} = $options{new_datas}->{$self->{instance} . '_exit_code'};
-    $self->{result_values}->{family} = $options{new_datas}->{$self->{instance} . '_family'};
-    $self->{result_values}->{information} = $options{new_datas}->{$self->{instance} . '_information'};
+    $self->{result_values}->{controller} = $options{new_datas}->{$self->{instance} . '_controller'};
+    $self->{result_values}->{admin_status} = $options{new_datas}->{$self->{instance} . '_admin_status'};
     
     return 0;
+}
+
+sub custom_uptime_output {
+    my ($self, %options) = @_;
+    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime});
+
+    return $msg;
+}
+
+sub custom_lwappuptime_output {
+    my ($self, %options) = @_;
+    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{lwapp_uptime});
+
+    return $msg;
 }
 
 sub set_counters {
@@ -86,8 +95,7 @@ sub set_counters {
     
     $self->{maps_counters}->{ap} = [
         { label => 'ap-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
-                                { name => 'application' }, { name => 'exit_code' }, { name => 'family' }, { name => 'information' } ],
+                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'controller' }, { name => 'admin_status' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -95,11 +103,29 @@ sub set_counters {
             }
         },
         { label => 'ap-clients', set => {
-                key_values => [ { name => 'error' }, { name => 'total' } ],
-                output_template => 'Error : %s',
+                key_values => [ { name => 'client_count' }, { name => 'name' } ],
+                output_template => 'Clients : %s',
                 perfdatas => [
-                    { label => 'total_error', value => 'error_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'ap_clients', value => 'client_count_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'ap-uptime', set => {
+                key_values => [ { name => 'uptime' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_uptime_output'),
+                perfdatas => [
+                    { label => 'ap_uptime', value => 'uptime_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'ap-lwappuptime', set => {
+                key_values => [ { name => 'lwapp_uptime' }, { name => 'name' } ],
+                closure_custom_output => $self->can('custom_lwappuptime_output'),
+                perfdatas => [
+                    { label => 'ap_lwappuptime', value => 'lwapp_uptime_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -107,11 +133,11 @@ sub set_counters {
     
     $self->{maps_counters}->{ctrl} = [
         { label => 'ctrl-ap-count', set => {
-                key_values => [ { name => 'error' }, { name => 'total' } ],
-                output_template => 'Error : %s',
+                key_values => [ { name => 'ap_count' }, { name => 'name' } ],
+                output_template => 'Number of access points : %s',
                 perfdatas => [
-                    { label => 'total_error', value => 'error_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'ctrl_ap_count', value => 'ap_count_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -128,8 +154,8 @@ sub new {
                                 {
                                   "filter-controller:s"     => { name => 'filter_controller' },
                                   "filter-ap:s"             => { name => 'filter_ap' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /Error/i' },
+                                  "warning-ap-status:s"     => { name => 'warning_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i' },
+                                  "critical-ap-status:s"    => { name => 'critical_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i' },
                                   "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                 });
     $self->{statefile_cache_ap} = centreon::plugins::statefile->new(%options);
@@ -161,7 +187,7 @@ sub prefix_ap_output {
 sub change_macros {
     my ($self, %options) = @_;
     
-    foreach (('warning_status', 'critical_status')) {
+    foreach (('warning_ap_status', 'critical_ap_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
@@ -196,6 +222,9 @@ sub manage_selection {
             lwapp_uptime => $access_points->{$ap_name}->{lwappUpTime},
             uptime => $access_points->{$ap_name}->{upTime},
         };
+        $self->{ctrl}->{$access_points->{$ap_name}->{controllerName}} = { ap_count => 0 }
+            if (!defined($self->{ctrl}->{$access_points->{$ap_name}->{controllerName}}));
+        $self->{ctrl}->{$access_points->{$ap_name}->{controllerName}}->{ap_count}++;
     }
     
     if (scalar(keys %{$self->{ap}}) <= 0) {
@@ -239,17 +268,15 @@ Threshold critical.
 Can be: 'total-error', 'total-running', 'total-unplanned',
 'total-finished', 'total-coming'.
 
-=item B<--warning-status>
+=item B<--warning-ap-status>
 
-Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{status}, 
-%{exit_code}, %{family}, %{information}, %{environment}, %{application}
+Set warning threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i')
+Can used special variables like: %{name}, %{status}, %{controller}, %{admin_status}
 
-=item B<--critical-status>
+=item B<--critical-ap-status>
 
-Set critical threshold for status (Default: '%{exit_code} =~ /Error/i').
-Can used special variables like: %{name}, %{status}, 
-%{exit_code}, %{family}, %{information}, %{environment}, %{application}
+Set critical threshold for status (Default: '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i').
+Can used special variables like: %{name}, %{status}, %{controller}, %{admin_status}
 
 =item B<--reload-cache-time>
 
