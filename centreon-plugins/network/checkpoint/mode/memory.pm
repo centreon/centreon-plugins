@@ -20,65 +20,131 @@
 
 package network::checkpoint::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+
+    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                      $total_size_value . " " . $total_size_unit,
+                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
+                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
+        { name => 'swap', type => 0, cb_prefix_output => 'prefix_swap_output' },
+        { name => 'malloc', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'memory', set => {
+                key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used_absolute',
+                perfdatas => [
+                    { label => 'memory', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
+                      min => 0, max => 'total_absolute', unit => 'B' },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{swap} = [
+        { label => 'swap', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used_absolute',
+                perfdatas => [
+                    { label => 'swap', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
+                      min => 0, max => 'total_absolute', unit => 'B' },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{malloc} = [
+        { label => 'failed-malloc', set => {
+                key_values => [ { name => 'failed_mallocs', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Failed memory allocations %.2f/s',
+                perfdatas => [
+                    { label => 'failed_mallocs', value => 'failed_mallocs_per_second', template => '%.2f', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return "Memory ";
+}
+
+sub prefix_swap_output {
+    my ($self, %options) = @_;
+
+    return "Swap ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"   => { name => 'warning', },
-                                  "critical:s"  => { name => 'critical', },
                                 });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+    $self->{cache_name} = "checkpoint_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
+    #  CHECKPOINT-MIB
+    my $oid_memTotalVirtual64 = '.1.3.6.1.4.1.2620.1.6.7.4.1.0';
+    my $oid_memActiveVirtual64 = '.1.3.6.1.4.1.2620.1.6.7.4.2.0';
     my $oid_memTotalReal64 = '.1.3.6.1.4.1.2620.1.6.7.4.3.0';
     my $oid_memActiveReal64 = '.1.3.6.1.4.1.2620.1.6.7.4.4.0';
+    my $oid_memFreeReal64 = '.1.3.6.1.4.1.2620.1.6.7.4.5.0';
+    my $oid_fwKmemFailedAlloc = '.1.3.6.1.4.1.2620.1.1.26.2.15.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalReal64, $oid_memActiveReal64], nothing_quit => 1);
-    my ($memActiveReal64_value, $memActiveReal64_unit) = $self->{perfdata}->change_bytes(value => $result->{$oid_memActiveReal64});
+    my $results = $options{snmp}->get_leef(oids => [$oid_memTotalVirtual64, $oid_memActiveVirtual64, $oid_fwKmemFailedAlloc,
+                                                    $oid_memTotalReal64, $oid_memActiveReal64, $oid_memFreeReal64],
+                                           nothing_quit => 1);
 
-    my $memPrctUsage = $result->{$oid_memActiveReal64} / $result->{$oid_memTotalReal64} * 100;
+    my $free_bytes_swap = $results->{$oid_memTotalVirtual64} - $results->{$oid_memActiveVirtual64};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $memPrctUsage, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Usage: %.2f %s used (%.2f%%)", $memActiveReal64_value, $memActiveReal64_unit, $memPrctUsage));
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $result->{$oid_memActiveReal64},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $result->{$oid_memTotalReal64}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $result->{$oid_memTotalReal64}, cast_int => 1),
-                                  min => 0, max => $result->{$oid_memTotalReal64}
-                                 );
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{memory} = {prct_used => $results->{$oid_memActiveReal64} * 100 / $results->{$oid_memTotalReal64},
+                       used => $results->{$oid_memActiveReal64},
+                       free => $results->{$oid_memFreeReal64},
+                       total => $results->{$oid_memTotalReal64},
+                      };
+
+    $self->{swap} = {prct_used => $results->{$oid_memActiveVirtual64} * 100 / $results->{$oid_memTotalVirtual64},
+                     used => $results->{$oid_memActiveVirtual64},
+                     free => $free_bytes_swap,
+                     total => $results->{$oid_memTotalVirtual64},
+                    };
+
+    $self->{malloc} = {failed_mallocs => $results->{$oid_fwKmemFailedAlloc}};
+
 }
 
 1;
@@ -87,19 +153,25 @@ __END__
 
 =head1 MODE
 
-Check firewall real memory usage (chkpnt.mib).
+Check memory, swap usage and failed memory allocations per sec
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning in percent.
+Only display some counters (regexp can be used).
+Example: --filter-counters='^(failed-malloc)$'
 
-=item B<--critical>
+=item B<--warning-*>
 
-Threshold critical in percent.
+Threshold warning.
+Can be: 'memory', 'swap', 'failed-malloc'
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'memory', 'swap', 'failed-malloc'
 
 =back
 
 =cut
-    
