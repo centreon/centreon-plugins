@@ -261,14 +261,14 @@ Example: --filter-counters='^total-error$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-error', 'total-running', 'total-unplanned',
-'total-finished', 'total-coming'.
+Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
+'ctrl-ap-count'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-error', 'total-running', 'total-unplanned',
-'total-finished', 'total-coming'.
+Can be: 'ap-clients', 'ap-uptime', 'ap-lwappuptime',
+'ctrl-ap-count'.
 
 =item B<--warning-ap-status>
 
