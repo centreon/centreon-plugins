@@ -83,6 +83,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-counters:s" => { name => 'filter_counters' },
+                                "list-counters"     => { name => 'list_counters' },
                                 });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
@@ -98,8 +99,8 @@ sub new {
         foreach (@{$self->{maps_counters}->{$key}}) {
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                                                            'warning-' . $_->{label} . ':s'    => { name => 'warning-' . $_->{label} },
-                                                            'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
+                                                    'warning-' . $_->{label} . ':s'    => { name => 'warning-' . $_->{label} },
+                                                    'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
                                                });
             }
             $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
@@ -116,6 +117,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
+    if (defined($self->{option_results}->{list_counters})) {
+        my $list_counter = "Counter list:";
+        foreach my $key (keys %{$self->{maps_counters}}) {
+            foreach (@{$self->{maps_counters}->{$key}}) {
+                $list_counter .= " " . $_->{label};
+            }
+        }
+        $self->{output}->output_add(short_msg => $list_counter);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
+        $self->{output}->exit();
+    }
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             $_->{obj}->init(option_results => $self->{option_results});
