@@ -95,8 +95,8 @@ sub check_options {
     # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 80;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
+    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 443;
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'https';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/webacs/api/v1/data/';
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
@@ -142,19 +142,13 @@ sub cache_ap {
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $ap = $options{statefile}->get(name => 'ap');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {
-        $ap = {};
-        my $datas = { last_timestamp => time(), ap => $ap };
-        my $result = $self->get(function => 'AccessPoints', object => 'accessPointsDTO', key => 'name', 
+        $ap = $self->get(function => 'AccessPoints', object => 'accessPointsDTO', key => 'name', 
             fields => ['adminStatus', 'clientCount', 'controllerName', 'lwappUpTime', 'status', 'upTime']);
-        if (defined($result->{result}->{rows})) {
-            foreach (@{$result->{result}->{rows}}) {
-                $environments->{$_->{id}} = $_->{name};
-            }
-        }
+        my $datas = { last_timestamp => time(), ap => $ap };
         $options{statefile}->write(data => $datas);
     }
     
-    return $environments;
+    return $ap;
 }
 
 sub get {
@@ -164,7 +158,7 @@ sub get {
     my ($result, $first_result, $max_results) = ({}, 0, 1000);
 
     while (1) {
-        my $response = $self->{http}->request(url_path => $self->{option_results}->{url_path} . $options{function} .'.json?.full=true&.sort=' . $options{key} . '&.firstResult=' . $firstResult . '&.maxResults=' . $max_results,
+        my $response = $self->{http}->request(url_path => $self->{url_path} . $options{function} .'.json?.full=true&.sort=' . $options{key} . '&.firstResult=' . $first_result . '&.maxResults=' . $max_results,
                                               critical_status => '', warning_status => '');
         my $content;
         eval {
@@ -184,9 +178,9 @@ sub get {
         }
         
         foreach (@{$content->{queryResponse}->{entity}}) {
-            $result->{$_->{$options{key}} = {};
+            $result->{$_->{$options{object}}->{$options{key}}} = {};
             foreach my $field (@{$options{fields}}) {
-                $result->{$_->{$options{key}}->{$field} = $_->{$options{object}}>{$field} 
+                $result->{$_->{$options{object}}->{$options{key}}}->{$field} = $_->{$options{object}}->{$field} 
                     if (defined($_->{$options{object}}->{$field}));
             }
         }
@@ -219,11 +213,11 @@ Cisco Prime hostname.
 
 =item B<--port>
 
-Port used (Default: 80)
+Port used (Default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (Default: 'https')
 
 =item B<--url-path>
 
