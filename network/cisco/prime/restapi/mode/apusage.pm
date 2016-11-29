@@ -55,7 +55,7 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . '(admin: ' . $self->{result_values}->{admin_status} . ')';
+    my $msg = 'status : ' . $self->{result_values}->{status} . ' (admin: ' . $self->{result_values}->{admin_status} . ')';
 
     return $msg;
 }
@@ -73,14 +73,14 @@ sub custom_status_calc {
 
 sub custom_uptime_output {
     my ($self, %options) = @_;
-    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime});
+    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime_absolute});
 
     return $msg;
 }
 
 sub custom_lwappuptime_output {
     my ($self, %options) = @_;
-    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{lwapp_uptime});
+    my $msg = 'lwapp uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{lwapp_uptime_absolute});
 
     return $msg;
 }
@@ -107,7 +107,7 @@ sub set_counters {
                 output_template => 'Clients : %s',
                 perfdatas => [
                     { label => 'ap_clients', value => 'client_count_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
@@ -116,7 +116,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_uptime_output'),
                 perfdatas => [
                     { label => 'ap_uptime', value => 'uptime_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
@@ -125,7 +125,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_lwappuptime_output'),
                 perfdatas => [
                     { label => 'ap_lwappuptime', value => 'lwapp_uptime_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
@@ -137,7 +137,7 @@ sub set_counters {
                 output_template => 'Number of access points : %s',
                 perfdatas => [
                     { label => 'ctrl_ap_count', value => 'ap_count_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
@@ -175,7 +175,7 @@ sub check_options {
 sub prefix_controller_output {
     my ($self, %options) = @_;
     
-    return "Controller '" . $options{instance_value}->{controllerName} . "' ";
+    return "Controller '" . $options{instance_value}->{name} . "' ";
 }
 
 sub prefix_ap_output {
@@ -214,6 +214,8 @@ sub manage_selection {
             next;
         }
 
+        $access_points->{$ap_name}->{controllerName} = 'NotRegistered'
+            if (!defined($access_points->{$ap_name}->{controllerName}));
         $self->{ap}->{$ap_name} = { 
             name => $ap_name, controller => $access_points->{$ap_name}->{controllerName},
             status => $access_points->{$ap_name}->{status},
@@ -222,7 +224,7 @@ sub manage_selection {
             lwapp_uptime => $access_points->{$ap_name}->{lwappUpTime},
             uptime => $access_points->{$ap_name}->{upTime},
         };
-        $self->{ctrl}->{$access_points->{$ap_name}->{controllerName}} = { ap_count => 0 }
+        $self->{ctrl}->{$access_points->{$ap_name}->{controllerName}} = { name => $access_points->{$ap_name}->{controllerName}, ap_count => 0 }
             if (!defined($self->{ctrl}->{$access_points->{$ap_name}->{controllerName}}));
         $self->{ctrl}->{$access_points->{$ap_name}->{controllerName}}->{ap_count}++;
     }
