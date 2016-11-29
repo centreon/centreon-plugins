@@ -353,6 +353,12 @@ sub manage_selection {
             next;
         }
         
+        # Same hash key but only for disco context
+        if (defined($options{disco})) {
+            $self->{interface_classmap}->{$policy_index . '.' . $qos_object_index} = $name;
+            next;
+        }
+        
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cbQosCMStatsEntry}, instance => $policy_index . '.' . $qos_object_index);
         my $traffic_usage = (defined($result->{cbQosCMPostPolicyByte64}) && $result->{cbQosCMPostPolicyByte64} =~ /[1-9]/) ?
             $result->{cbQosCMPostPolicyByte64} : (($result->{cbQosCMPostPolicyByteOverflow} << 32) + $result->{cbQosCMPostPolicyByte});
@@ -380,9 +386,24 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_source}) ? md5_hex($self->{option_results}->{filter_source}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
-    if (scalar(keys %{$self->{interface_classmap}}) <= 0) {
+    if (scalar(keys %{$self->{interface_classmap}}) <= 0 && !defined($options{disco})) {
         $self->{output}->add_option_msg(short_msg => "Cannot found classmap.");
         $self->{output}->option_exit();
+    }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_disco_format(elements => ['name']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(disco => 1, %options);
+    foreach (keys %{$self->{interface_classmap}}) {
+        $self->{output}->add_disco_entry(name => $self->{interface_classmap}->{$_});
     }
 }
 
