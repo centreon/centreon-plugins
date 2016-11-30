@@ -156,7 +156,7 @@ sub new {
                                   "filter-ap:s"             => { name => 'filter_ap' },
                                   "warning-ap-status:s"     => { name => 'warning_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i' },
                                   "critical-ap-status:s"    => { name => 'critical_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 5 },
                                 });
     $self->{statefile_cache_ap} = centreon::plugins::statefile->new(%options);
    
@@ -282,7 +282,7 @@ Can used special variables like: %{name}, %{status}, %{controller}, %{admin_stat
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 180).
+Time in minutes before reloading cache file (default: 5).
 
 =back
 
