@@ -28,7 +28,7 @@ use warnings;
 my %states = (
     10000 => ['healthy', 'OK'],
     30000 => ['degraded', 'WARNING'],
-    31000 => ['admissionControl', 'WARNING'],
+    31000 => ['admissionControl', 'OK'],
     50000 => ['critical', 'CRITICAL']
 );
 
