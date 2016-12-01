@@ -71,10 +71,10 @@ sub set_counters {
             }
         },
         { label => 'total-associated', set => {
-                key_values => [ { name => 'total_aaapending' } ],
-                output_template => 'Total AaaPending Users : %s',
+                key_values => [ { name => 'total_associated' } ],
+                output_template => 'Total Associated Users : %s',
                 perfdatas => [
-                    { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
+                    { label => 'total_associated', value => 'total_associated_absolute', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
