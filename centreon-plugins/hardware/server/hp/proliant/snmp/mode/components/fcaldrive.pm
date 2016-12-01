@@ -69,10 +69,10 @@ my $oid_cpqFcaLogDrvEntry = '.1.3.6.1.4.1.232.16.2.3.1.1';
 my $oid_cpqFcaLogDrvCondition = '.1.3.6.1.4.1.232.16.2.3.1.1.11';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaLogDrvEntry, start => $mapping->{cpqFcaLogDrvFaultTol}->{oid}, end => $mapping->{cpqFcaLogDrvStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqFcaLogDrvCondition };
+    push @{$self->{request}}, { oid => $oid_cpqFcaLogDrvEntry, start => $mapping->{cpqFcaLogDrvFaultTol}->{oid}, end => $mapping->{cpqFcaLogDrvStatus}->{oid} },
+        { oid => $oid_cpqFcaLogDrvCondition };
 }
 
 sub check {
@@ -80,7 +80,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fca logical drives");
     $self->{components}->{fcaldrive} = {name => 'fca logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fcaldrive'));
+    return if ($self->check_filter(section => 'fcaldrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqFcaLogDrvCondition}})) {
         next if ($oid !~ /^$mapping2->{cpqFcaLogDrvCondition}->{oid}\.(.*)$/);
@@ -88,7 +88,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqFcaLogDrvEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqFcaLogDrvCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fcaldrive', instance => $instance));
+        next if ($self->check_filter(section => 'fcaldrive', instance => $instance));
         $self->{components}->{fcaldrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fca logical drive '%s' [fault tolerance: %s, condition: %s] status is %s.", 

@@ -60,11 +60,9 @@ my $oid_cpqDaAccelBattery = '.1.3.6.1.4.1.232.3.2.2.2.1.6';
 my $oid_cpqDaAccelCondition = '.1.3.6.1.4.1.232.3.2.2.2.1.9';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqDaAccelStatus };
-    push @{$options{request}}, { oid => $oid_cpqDaAccelBattery };
-    push @{$options{request}}, { oid => $oid_cpqDaAccelCondition };
+    push @{$self->{request}}, { oid => $oid_cpqDaAccelStatus }, { oid => $oid_cpqDaAccelBattery }, { oid => $oid_cpqDaAccelCondition };
 }
 
 sub check {
@@ -72,7 +70,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking da accelerator boards");
     $self->{components}->{daacc} = {name => 'da accelerator boards', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'daacc'));
+    return if ($self->check_filter(section => 'daacc'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqDaAccelCondition}})) {
         next if ($oid !~ /^$mapping3->{cpqDaAccelCondition}->{oid}\.(.*)$/);
@@ -81,13 +79,13 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqDaAccelBattery}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_cpqDaAccelCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'daacc', instance => $instance));
+        next if ($self->check_filter(section => 'daacc', instance => $instance));
         $self->{components}->{daacc}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("da controller accelerator '%s' [status: %s, battery status: %s] condition is %s.", 
                                     $instance, $result->{cpqDaAccelStatus}, $result2->{cpqDaAccelBattery},
                                     $result3->{cpqDaAccelCondition}));
-        my $exit = $self->get_severity(section => 'daacc', value => $result3->{cpqDaAccelCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'daacc', value => $result3->{cpqDaAccelCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("da controller accelerator '%s' is %s", 
