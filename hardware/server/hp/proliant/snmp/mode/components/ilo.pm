@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::hp::proliant::snmp::mode::components::cpu;
+package hardware::server::hp::proliant::snmp::mode::components::ilo;
 
 use strict;
 use warnings;
@@ -71,25 +71,25 @@ sub check {
     return if (!defined($self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}));
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}, instance => '0');
 
-    next if ($self->check_filter(section => 'ilo', instance => $instance));
+    next if ($self->check_filter(section => 'ilo', instance => '0'));
     $self->{components}->{ilo}->{total}++;
 
     my @message_error = ();
     if (defined($self->{results}->{$oid_cpqSm2CntlrSelfTestErrors}->{$oid_cpqSm2CntlrSelfTestErrors . '.0'})) {
-        foreach my $bit (keys %{$map_bitmask_status}) {
+        foreach my $bit (keys %map_bitmask_status) {
             if (int($self->{results}->{$oid_cpqSm2CntlrSelfTestErrors}->{$oid_cpqSm2CntlrSelfTestErrors . '.0'}) & (1 << ($bit))) {
                 push @message_error, $map_bitmask_status{$bit};
             }
         }
     }
     
-    $self->{output}->output_add(long_msg => sprintf("ilo status is %s.", 
-                                $instance, $result->{cpqSm2MibCondition}));
+    $self->{output}->output_add(long_msg => sprintf("ilo status is %s [message = %s].", 
+                                $result->{cpqSm2MibCondition}, join(', ', @message_error)));
     my $exit = $self->get_severity(label => 'default', section => 'ilo', value => $result->{cpqSm2MibCondition});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("ilo '%s' is %s", 
-                                        $instance, $result->{cpqSm2MibCondition}));
+                                    short_msg => sprintf("ilo is %s", 
+                                        $result->{cpqSm2MibCondition}));
     }
 }
 
