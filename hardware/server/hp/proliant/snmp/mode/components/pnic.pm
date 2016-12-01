@@ -71,10 +71,10 @@ my $oid_cpqNicIfPhysAdapterEntry = '.1.3.6.1.4.1.232.18.2.3.1.1';
 my $oid_cpqNicIfPhysAdapterRole = '.1.3.6.1.4.1.232.18.2.3.1.1.3';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqNicIfPhysAdapterEntry, start => $mapping2->{cpqNicIfPhysAdapterDuplexState}->{oid}, end => $mapping2->{cpqNicIfPhysAdapterStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqNicIfPhysAdapterRole };
+    push @{$self->{request}}, { oid => $oid_cpqNicIfPhysAdapterEntry, start => $mapping2->{cpqNicIfPhysAdapterDuplexState}->{oid}, end => $mapping2->{cpqNicIfPhysAdapterStatus}->{oid} },
+        { oid => $oid_cpqNicIfPhysAdapterRole };
 }
 
 sub check {
@@ -82,7 +82,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking physical nics");
     $self->{components}->{pnic} = {name => 'physical nics', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'pnic'));
+    return if ($self->check_filter(section => 'pnic'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqNicIfPhysAdapterEntry}})) {
         next if ($oid !~ /^$mapping2->{cpqNicIfPhysAdapterCondition}->{oid}\.(.*)$/);
@@ -90,14 +90,14 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqNicIfPhysAdapterRole}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqNicIfPhysAdapterEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'pnic', instance => $instance));
+        next if ($self->check_filter(section => 'pnic', instance => $instance));
         $self->{components}->{pnic}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("physical nic '%s' [duplex: %s, role: %s, state: %s, status: %s] condition is %s.", 
                                     $instance, $result2->{cpqNicIfPhysAdapterDuplexState}, $result->{cpqNicIfPhysAdapterRole},
                                     $result2->{cpqNicIfPhysAdapterState}, $result2->{cpqNicIfPhysAdapterStatus},
                                     $result2->{cpqNicIfPhysAdapterCondition}));
-        my $exit = $self->get_severity(section => 'pnic', value => $result2->{cpqNicIfPhysAdapterCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'pnic', value => $result2->{cpqNicIfPhysAdapterCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("physical nic '%s' is %s", 

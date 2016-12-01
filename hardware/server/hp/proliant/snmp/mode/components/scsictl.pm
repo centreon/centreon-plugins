@@ -49,10 +49,10 @@ my $oid_cpqScsiCntlrEntry = '.1.3.6.1.4.1.232.5.2.2.1.1';
 my $oid_cpqScsiCntlrCondition = '.1.3.6.1.4.1.232.5.2.2.1.1.12';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqScsiCntlrEntry, start => $mapping->{cpqScsiCntlrSlot}->{oid}, end => $mapping->{cpqScsiCntlrStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqScsiCntlrCondition };
+    push @{$self->{request}}, { oid => $oid_cpqScsiCntlrEntry, start => $mapping->{cpqScsiCntlrSlot}->{oid}, end => $mapping->{cpqScsiCntlrStatus}->{oid} },
+        { oid => $oid_cpqScsiCntlrCondition };
 }
 
 sub check {
@@ -60,7 +60,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking scsi controllers");
     $self->{components}->{scsictl} = {name => 'scsi controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'scsictl'));
+    return if ($self->check_filter(section => 'scsictl'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqScsiCntlrEntry}})) {
         next if ($oid !~ /^$mapping->{cpqScsiCntlrStatus}->{oid}\.(.*)$/);
@@ -68,13 +68,13 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqScsiCntlrEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqScsiCntlrCondition}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'scsictl', instance => $instance));
+        next if ($self->check_filter(section => 'scsictl', instance => $instance));
         $self->{components}->{scsictl}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("scsi controller '%s' [slot: %s, status: %s] condition is %s.", 
                                     $instance, $result->{cpqScsiCntlrSlot}, $result->{cpqScsiCntlrStatus},
                                     $result2->{cpqScsiCntlrCondition}));
-        my $exit = $self->get_severity(section => 'scsictl', value => $result2->{cpqScsiCntlrCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'scsictl', value => $result2->{cpqScsiCntlrCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("scsi controller '%s' is %s", 

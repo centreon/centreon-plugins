@@ -47,9 +47,9 @@ my $mapping = {
 my $oid_cpqIdeLogicalDriveEntry = '.1.3.6.1.4.1.232.14.2.6.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqIdeLogicalDriveEntry, start => $mapping->{cpqIdeLogicalDriveStatus}->{oid}, end => $mapping->{cpqIdeLogicalDriveCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqIdeLogicalDriveEntry, start => $mapping->{cpqIdeLogicalDriveStatus}->{oid}, end => $mapping->{cpqIdeLogicalDriveCondition}->{oid} };
 }
 
 sub check {
@@ -57,14 +57,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking ide logical drives");
     $self->{components}->{ideldrive} = {name => 'ide logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'ideldrive'));
+    return if ($self->check_filter(section => 'ideldrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqIdeLogicalDriveEntry}})) {
         next if ($oid !~ /^$mapping->{cpqIdeLogicalDriveCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqIdeLogicalDriveEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'ideldrive', instance => $instance));
+        next if ($self->check_filter(section => 'ideldrive', instance => $instance));
         $self->{components}->{ideldrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("ide logical drive '%s' is %s [condition: %s]", 

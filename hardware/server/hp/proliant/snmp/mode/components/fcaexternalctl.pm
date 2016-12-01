@@ -71,10 +71,10 @@ my $oid_cpqFcaCntlrEntry = '.1.3.6.1.4.1.232.16.2.2.1.1';
 my $oid_cpqFcaCntlrCurrentRole = '.1.3.6.1.4.1.232.16.2.2.1.1.10';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaCntlrEntry, start => $mapping->{cpqFcaCntlrModel}->{oid}, end => $mapping->{cpqFcaCntlrCondition}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqFcaCntlrCurrentRole };
+    push @{$self->{request}}, { oid => $oid_cpqFcaCntlrEntry, start => $mapping->{cpqFcaCntlrModel}->{oid}, end => $mapping->{cpqFcaCntlrCondition}->{oid} },
+        { oid => $oid_cpqFcaCntlrCurrentRole };
 }
 
 sub check {
@@ -82,7 +82,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fca external controller");
     $self->{components}->{fcaexternalctl} = {name => 'fca external controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fcaexternalctl'));
+    return if ($self->check_filter(section => 'fcaexternalctl'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqFcaCntlrEntry}})) {
         next if ($oid !~ /^$mapping->{cpqFcaCntlrCondition}->{oid}\.(.*)$/);
@@ -90,14 +90,14 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqFcaCntlrEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqFcaCntlrCurrentRole}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fcaexternalctl', instance => $instance));
+        next if ($self->check_filter(section => 'fcaexternalctl', instance => $instance));
         $self->{components}->{fcaexternalctl}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fca external controller '%s' [model: %s, status: %s, role: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqFcaCntlrModel}, $result->{cpqFcaCntlrStatus}, $result2->{cpqFcaCntlrCurrentRole},
                                     $result->{cpqFcaCntlrCondition}));
-        my $exit = $self->get_severity(section => 'fcaexternalctl', value => $result->{cpqFcaCntlrCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'fcaexternalctl', value => $result->{cpqFcaCntlrCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fca external controller '%s' is %s", 

@@ -58,10 +58,9 @@ my $oid_cpqScsiPhyDrvCondition = '.1.3.6.1.4.1.232.5.2.4.1.1.26';
 my $oid_cpqScsiPhyDrvStatus = '.1.3.6.1.4.1.232.5.2.4.1.1.9';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqScsiPhyDrvStatus };
-    push @{$options{request}}, { oid => $oid_cpqScsiPhyDrvCondition };
+    push @{$self->{request}}, { oid => $oid_cpqScsiPhyDrvStatus }, { oid => $oid_cpqScsiPhyDrvCondition };
 }
 
 sub check {
@@ -69,7 +68,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking scsi physical drives");
     $self->{components}->{scsipdrive} = {name => 'scsi physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'scsipdrive'));
+    return if ($self->check_filter(section => 'scsipdrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqScsiPhyDrvCondition}})) {
         next if ($oid !~ /^$mapping->{cpqScsiPhyDrvCondition}->{oid}\.(.*)$/);
@@ -77,14 +76,14 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqScsiPhyDrvStatus}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqScsiPhyDrvCondition}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'scsipdrive', instance => $instance));
+        next if ($self->check_filter(section => 'scsipdrive', instance => $instance));
         $self->{components}->{scsipdrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("scsi physical drive '%s' [status: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqScsiPhyDrvStatus},
                                     $result2->{cpqScsiPhyDrvCondition}));
-        my $exit = $self->get_severity(section => 'scsipdrive', value => $result2->{cpqScsiPhyDrvCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'scsipdrive', value => $result2->{cpqScsiPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("scsi physical drive '%s' is %s", 

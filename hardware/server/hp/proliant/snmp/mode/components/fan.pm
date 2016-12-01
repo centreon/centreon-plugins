@@ -78,9 +78,9 @@ my $mapping = {
 my $oid_cpqHeFltTolFanEntry = '.1.3.6.1.4.1.232.6.2.6.7.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqHeFltTolFanEntry, start => $mapping->{cpqHeFltTolFanLocale}->{oid}, end => $mapping->{cpqHeFltTolFanCurrentSpeed}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqHeFltTolFanEntry, start => $mapping->{cpqHeFltTolFanLocale}->{oid}, end => $mapping->{cpqHeFltTolFanCurrentSpeed}->{oid} };
 }
 
 sub check {
@@ -89,14 +89,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHeFltTolFanEntry}})) {
         next if ($oid !~ /^$mapping->{cpqHeFltTolFanCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHeFltTolFanEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($result->{cpqHeFltTolFanPresent} !~ /present/i && 
                  $self->absent_problem(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
@@ -106,7 +106,7 @@ sub check {
                                     $result->{cpqHeFltTolFanLocale},
                                     $result->{cpqHeFltTolFanRedundant}, $result->{cpqHeFltTolFanRedundantPartner}
                                     ));
-        my $exit = $self->get_severity(section => 'fan', value => $result->{cpqHeFltTolFanCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{cpqHeFltTolFanCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("fan '%s' status is %s",
