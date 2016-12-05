@@ -41,9 +41,9 @@ my $mapping = {
 my $oid_cpqSeCpuEntry = '.1.3.6.1.4.1.232.1.2.2.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSeCpuEntry, start => $mapping->{cpqSeCpuSlot}->{oid}, end => $mapping->{cpqSeCpuSocketNumber}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqSeCpuEntry, start => $mapping->{cpqSeCpuSlot}->{oid}, end => $mapping->{cpqSeCpuSocketNumber}->{oid} };
 }
 
 sub check {
@@ -51,14 +51,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking cpu");
     $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
+    return if ($self->check_filter(section => 'cpu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSeCpuEntry}})) {
         next if ($oid !~ /^$mapping->{cpqSeCpuStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSeCpuEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
+        next if ($self->check_filter(section => 'cpu', instance => $instance));
         $self->{components}->{cpu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("cpu '%s' [slot: %s, unit: %s, name: %s, socket: %s] status is %s.", 

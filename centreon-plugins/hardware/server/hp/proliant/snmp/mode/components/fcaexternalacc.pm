@@ -60,11 +60,9 @@ my $oid_cpqFcaAccelCondition = '.1.3.6.1.4.1.232.16.2.2.2.1.9';
 my $oid_cpqFcaAccelBatteryStatus = '.1.3.6.1.4.1.232.16.2.2.2.1.6';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaAccelStatus };
-    push @{$options{request}}, { oid => $oid_cpqFcaAccelCondition };
-    push @{$options{request}}, { oid => $oid_cpqFcaAccelBatteryStatus };
+    push @{$self->{request}}, { oid => $oid_cpqFcaAccelStatus }, { oid => $oid_cpqFcaAccelCondition }, { oid => $oid_cpqFcaAccelBatteryStatus };
 }
 
 sub check {
@@ -72,7 +70,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fca external accelerator boards");
     $self->{components}->{fcaexternalacc} = {name => 'fca external accelerator boards', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fcaexternalacc'));
+    return if ($self->check_filter(section => 'fcaexternalacc'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqFcaAccelCondition}})) {
         next if ($oid !~ /^$mapping->{cpqFcaAccelCondition}->{oid}\.(.*)$/);
@@ -81,14 +79,14 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqFcaAccelCondition}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_cpqFcaAccelBatteryStatus}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fcaexternalacc', instance => $instance));
+        next if ($self->check_filter(section => 'fcaexternalacc', instance => $instance));
         $self->{components}->{fcaexternalacc}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fca external accelerator boards '%s' [status: %s, battery status: %s] condition is %s.", 
                                     $instance, 
                                     $result->{cpqFcaAccelStatus}, $result3->{cpqFcaAccelBatteryStatus},
                                     $result2->{cpqFcaAccelCondition}));
-        my $exit = $self->get_severity(section => 'fcaexternalacc', value => $result2->{cpqFcaAccelCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'fcaexternalacc', value => $result2->{cpqFcaAccelCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fca external accelerator boards '%s' is %s", 

@@ -54,9 +54,9 @@ my $mapping = {
 my $oid_cpqSasPhyDrvEntry = '.1.3.6.1.4.1.232.5.5.2.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSasPhyDrvEntry, start => $mapping->{cpqSasPhyDrvStatus}->{oid}, end => $mapping->{cpqSasPhyDrvCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqSasPhyDrvEntry, start => $mapping->{cpqSasPhyDrvStatus}->{oid}, end => $mapping->{cpqSasPhyDrvCondition}->{oid} };
 }
 
 sub check {
@@ -64,21 +64,21 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking sas physical drives");
     $self->{components}->{saspdrive} = {name => 'sas physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'saspdrive'));
+    return if ($self->check_filter(section => 'saspdrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSasPhyDrvEntry}})) {
         next if ($oid !~ /^$mapping->{cpqSasPhyDrvCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSasPhyDrvEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'saspdrive', instance => $instance));
+        next if ($self->check_filter(section => 'saspdrive', instance => $instance));
         $self->{components}->{saspdrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("sas physical drive '%s' [status: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqSasPhyDrvStatus},
                                     $result->{cpqSasPhyDrvCondition}));
-        my $exit = $self->get_severity(section => 'saspdrive', value => $result->{cpqSasPhyDrvCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'saspdrive', value => $result->{cpqSasPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("sas physical drive '%s' is %s", 

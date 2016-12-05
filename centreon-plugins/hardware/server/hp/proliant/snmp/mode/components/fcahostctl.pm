@@ -90,9 +90,9 @@ my $mapping = {
 my $oid_cpqFcaHostCntlrEntry = '.1.3.6.1.4.1.232.16.2.7.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaHostCntlrEntry, start => $mapping->{cpqFcaHostCntlrSlot}->{oid}, end => $mapping->{cpqFcaHostCntlrCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqFcaHostCntlrEntry, start => $mapping->{cpqFcaHostCntlrSlot}->{oid}, end => $mapping->{cpqFcaHostCntlrCondition}->{oid} };
 }
 
 sub check {
@@ -100,20 +100,20 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fca host controller");
     $self->{components}->{fcahostctl} = {name => 'fca host controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fcahostctl'));
+    return if ($self->check_filter(section => 'fcahostctl'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqFcaHostCntlrEntry}})) {
         next if ($oid !~ /^$mapping->{cpqFcaHostCntlrCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqFcaHostCntlrEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fcahostctl', instance => $instance));
+        next if ($self->check_filter(section => 'fcahostctl', instance => $instance));
         $self->{components}->{fcahostctl}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fca host controller '%s' [slot: %s, model: %s, status: %s] condition is %s.", 
                                     $instance, $result->{cpqFcaHostCntlrSlot}, $result->{cpqFcaHostCntlrModel}, $result->{cpqFcaHostCntlrStatus},
                                     $result->{cpqFcaHostCntlrCondition}));
-        my $exit = $self->get_severity(section => 'fcahostctl', value => $result->{cpqFcaHostCntlrCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'fcahostctl', value => $result->{cpqFcaHostCntlrCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fca host controller '%s' is %s", 

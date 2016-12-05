@@ -156,7 +156,7 @@ sub new {
                                   "filter-ap:s"             => { name => 'filter_ap' },
                                   "warning-ap-status:s"     => { name => 'warning_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /minor|warning/i' },
                                   "critical-ap-status:s"    => { name => 'critical_ap_status', default => '%{admin_status} =~ /enable/i && %{status} =~ /major|critical/i' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 5 },
                                 });
     $self->{statefile_cache_ap} = centreon::plugins::statefile->new(%options);
    
@@ -202,7 +202,9 @@ sub manage_selection {
                                                            
     ($self->{ap}, $self->{ctrl}) = ({}, {});
     
-    foreach my $ap_name (keys %{$access_points}) {        
+    foreach my $ap_name (keys %{$access_points}) {
+        $access_points->{$ap_name}->{controllerName} = 'NotRegistered'
+            if (!defined($access_points->{$ap_name}->{controllerName}));
         if (defined($self->{option_results}->{filter_ap}) && $self->{option_results}->{filter_ap} ne '' &&
             $ap_name !~ /$self->{option_results}->{filter_ap}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $ap_name . "': no matching filter.", debug => 1);
@@ -214,8 +216,6 @@ sub manage_selection {
             next;
         }
 
-        $access_points->{$ap_name}->{controllerName} = 'NotRegistered'
-            if (!defined($access_points->{$ap_name}->{controllerName}));
         $self->{ap}->{$ap_name} = { 
             name => $ap_name, controller => $access_points->{$ap_name}->{controllerName},
             status => $access_points->{$ap_name}->{status},
@@ -282,7 +282,7 @@ Can used special variables like: %{name}, %{status}, %{controller}, %{admin_stat
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 180).
+Time in minutes before reloading cache file (default: 5).
 
 =back
 

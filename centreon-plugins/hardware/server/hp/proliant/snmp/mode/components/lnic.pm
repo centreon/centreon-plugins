@@ -56,11 +56,10 @@ my $oid_cpqNicIfLogMapDescription = '.1.3.6.1.4.1.232.18.2.2.1.1.3';
 my $oid_cpqNicIfLogMapAdapterCount = '.1.3.6.1.4.1.232.18.2.2.1.1.5';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapEntry, start => $mapping3->{cpqNicIfLogMapCondition}->{oid}, end => $mapping3->{cpqNicIfLogMapStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapDescription };
-    push @{$options{request}}, { oid => $oid_cpqNicIfLogMapAdapterCount };
+    push @{$self->{request}}, { oid => $oid_cpqNicIfLogMapEntry, start => $mapping3->{cpqNicIfLogMapCondition}->{oid}, end => $mapping3->{cpqNicIfLogMapStatus}->{oid} },
+        { oid => $oid_cpqNicIfLogMapDescription }, { oid => $oid_cpqNicIfLogMapAdapterCount };
 }
 
 sub check {
@@ -68,7 +67,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking logical nics");
     $self->{components}->{lnic} = {name => 'logical nics', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'lnic'));
+    return if ($self->check_filter(section => 'lnic'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqNicIfLogMapEntry}})) {
         next if ($oid !~ /^$mapping3->{cpqNicIfLogMapCondition}->{oid}\.(.*)$/);
@@ -77,7 +76,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqNicIfLogMapAdapterCount}, instance => $instance);
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$oid_cpqNicIfLogMapEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'lnic', instance => $instance));
+        next if ($self->check_filter(section => 'lnic', instance => $instance));
         $self->{components}->{lnic}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("logical nic '%s' [adapter count: %s, description: %s, status: %s] condition is %s.", 

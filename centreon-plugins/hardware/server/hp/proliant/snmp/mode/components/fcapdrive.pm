@@ -52,10 +52,9 @@ my $oid_cpqFcaPhyDrvCondition = '.1.3.6.1.4.1.232.16.2.5.1.1.31';
 my $oid_cpqFcaPhyDrvStatus = '.1.3.6.1.4.1.232.16.2.5.1.1.6';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqFcaPhyDrvCondition };
-    push @{$options{request}}, { oid => $oid_cpqFcaPhyDrvStatus };
+    push @{$self->{request}}, { oid => $oid_cpqFcaPhyDrvCondition }, { oid => $oid_cpqFcaPhyDrvStatus };
 }
 
 sub check {
@@ -63,7 +62,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fca physical drives");
     $self->{components}->{fcapdrive} = {name => 'fca physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fcapdrive'));
+    return if ($self->check_filter(section => 'fcapdrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqFcaPhyDrvCondition}})) {
         next if ($oid !~ /^$mapping2->{cpqFcaPhyDrvCondition}->{oid}\.(.*)$/);
@@ -71,14 +70,14 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqFcaPhyDrvStatus}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqFcaPhyDrvCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fcapdrive', instance => $instance));
+        next if ($self->check_filter(section => 'fcapdrive', instance => $instance));
         $self->{components}->{fcapdrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fca physical drive '%s' [status: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqFcaPhyDrvStatus},
                                     $result2->{cpqFcaPhyDrvCondition}));
-        my $exit = $self->get_severity(section => 'fcapdrive', value => $result2->{cpqFcaPhyDrvCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'fcapdrive', value => $result2->{cpqFcaPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => short_msg => sprintf("fca physical drive '%s' is %s", 

@@ -52,9 +52,9 @@ my $mapping = {
 my $oid_cpqHePowerConverterEntry = '.1.3.6.1.4.1.232.6.2.13.3.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqHePowerConverterEntry, start => $mapping->{cpqHePwrConvPresent}->{oid}, end => $mapping->{cpqHePwrConvCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqHePowerConverterEntry, start => $mapping->{cpqHePwrConvPresent}->{oid}, end => $mapping->{cpqHePwrConvCondition}->{oid} };
 }
 
 sub check {
@@ -62,14 +62,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power converters");
     $self->{components}->{pc} = {name => 'power converters', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'pc'));
+    return if ($self->check_filter(section => 'pc'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHePowerConverterEntry}})) {
         next if ($oid !~ /^$mapping->{cpqHePwrConvPresent}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHePowerConverterEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'pc', instance => $instance));
+        next if ($self->check_filter(section => 'pc', instance => $instance));
         next if ($result->{cpqHePwrConvPresent} !~ /present/i && 
                  $self->absent_problem(section => 'pc', instance => $instance));
         
@@ -79,7 +79,7 @@ sub check {
                                     $instance, $result->{cpqHePwrConvCondition},
                                     $result->{cpqHePwrConvRedundant}, $result->{cpqHePwrConvRedundantGroupId}
                                     ));
-        my $exit = $self->get_severity(section => 'pc', value => $result->{cpqHePwrConvCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'pc', value => $result->{cpqHePwrConvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("powerconverter '%s' status is %s",

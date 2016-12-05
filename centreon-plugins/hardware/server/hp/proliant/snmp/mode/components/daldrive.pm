@@ -69,10 +69,10 @@ my $oid_cpqDaLogDrvEntry = '.1.3.6.1.4.1.232.3.2.3.1.1';
 my $oid_cpqDaLogDrvCondition = '.1.3.6.1.4.1.232.3.2.3.1.1.11';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqDaLogDrvEntry, start => $mapping->{cpqDaLogDrvFaultTol}->{oid}, end => $mapping->{cpqDaLogDrvStatus}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqDaLogDrvCondition };
+    push @{$self->{request}}, { oid => $oid_cpqDaLogDrvEntry, start => $mapping->{cpqDaLogDrvFaultTol}->{oid}, end => $mapping->{cpqDaLogDrvStatus}->{oid} },
+        { oid => $oid_cpqDaLogDrvCondition };
 }
 
 sub check {
@@ -80,7 +80,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking da logical drives");
     $self->{components}->{daldrive} = {name => 'da logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'daldrive'));
+    return if ($self->check_filter(section => 'daldrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqDaLogDrvCondition}})) {
         next if ($oid !~ /^$mapping2->{cpqDaLogDrvCondition}->{oid}\.(.*)$/);
@@ -88,7 +88,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqDaLogDrvEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqDaLogDrvCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'daldrive', instance => $instance));
+        next if ($self->check_filter(section => 'daldrive', instance => $instance));
         $self->{components}->{daldrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("da logical drive '%s' [fault tolerance: %s, condition: %s] status is %s.", 
