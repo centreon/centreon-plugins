@@ -78,10 +78,10 @@ my $oid_cpqHeFltTolPowerSupplyEntry = '.1.3.6.1.4.1.232.6.2.9.3.1';
 my $oid_cpqHeFltTolPowerSupplyRedundantPartner = '.1.3.6.1.4.1.232.6.2.9.3.1.17';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqHeFltTolPowerSupplyEntry, start => $mapping->{cpqHeFltTolPowerSupplyPresent}->{oid}, end => $mapping->{cpqHeFltTolPowerSupplyRedundant}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqHeFltTolPowerSupplyRedundantPartner };
+    push @{$self->{request}}, { oid => $oid_cpqHeFltTolPowerSupplyEntry, start => $mapping->{cpqHeFltTolPowerSupplyPresent}->{oid}, end => $mapping->{cpqHeFltTolPowerSupplyRedundant}->{oid} },
+        { oid => $oid_cpqHeFltTolPowerSupplyRedundantPartner };
 }
 
 sub check {
@@ -89,7 +89,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqHeFltTolPowerSupplyEntry}})) {
         next if ($oid !~ /^$mapping->{cpqHeFltTolPowerSupplyPresent}->{oid}\.(.*)$/);
@@ -97,7 +97,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqHeFltTolPowerSupplyEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqHeFltTolPowerSupplyRedundantPartner}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($result->{cpqHeFltTolPowerSupplyPresent} !~ /present/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
@@ -108,7 +108,7 @@ sub check {
                                     defined($result2->{cpqHeFltTolPowerSupplyRedundantPartner}) ? $result2->{cpqHeFltTolPowerSupplyRedundantPartner} : 'unknown',
                                     $result->{cpqHeFltTolPowerSupplyStatus}
                                     ));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{cpqHeFltTolPowerSupplyCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{cpqHeFltTolPowerSupplyCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("powersupply '%s' status is %s",

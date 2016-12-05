@@ -46,9 +46,9 @@ my $mapping = {
 my $oid_cpqIdeAtaDiskEntry = '.1.3.6.1.4.1.232.14.2.4.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqIdeAtaDiskEntry, start => $mapping->{cpqIdeAtaDiskStatus}->{oid}, end => $mapping->{cpqIdeAtaDiskCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqIdeAtaDiskEntry, start => $mapping->{cpqIdeAtaDiskStatus}->{oid}, end => $mapping->{cpqIdeAtaDiskCondition}->{oid} };
 }
 
 sub check {
@@ -56,21 +56,21 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking ide physical drives");
     $self->{components}->{idepdrive} = {name => 'ide physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'idepdrive'));
+    return if ($self->check_filter(section => 'idepdrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqIdeAtaDiskEntry}})) {
         next if ($oid !~ /^$mapping->{cpqIdeAtaDiskCondition}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqIdeAtaDiskEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'idepdrive', instance => $instance));
+        next if ($self->check_filter(section => 'idepdrive', instance => $instance));
         $self->{components}->{idepdrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("ide physical drive '%s' [status: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqIdeAtaDiskStatus},
                                     $result->{cpqIdeAtaDiskCondition}));
-        my $exit = $self->get_severity(section => 'idepdrive', value => $result->{cpqIdeAtaDiskCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'idepdrive', value => $result->{cpqIdeAtaDiskCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("ide physical drive '%s' is %s", 

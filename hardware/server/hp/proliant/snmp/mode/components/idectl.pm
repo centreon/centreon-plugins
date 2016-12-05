@@ -47,9 +47,9 @@ my $mapping = {
 my $oid_cpqIdeControllerEntry = '.1.3.6.1.4.1.232.14.2.3.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqIdeControllerEntry, start => $mapping->{cpqIdeControllerModel}->{oid}, end => $mapping->{cpqIdeControllerCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqIdeControllerEntry, start => $mapping->{cpqIdeControllerModel}->{oid}, end => $mapping->{cpqIdeControllerCondition}->{oid} };
 }
 
 sub check {
@@ -57,7 +57,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking ide controllers");
     $self->{components}->{idectl} = {name => 'ide controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'idectl'));
+    return if ($self->check_filter(section => 'idectl'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqIdeControllerEntry}})) {
         next if ($oid !~ /^$mapping->{cpqIdeControllerCondition}->{oid}\.(.*)$/);
@@ -65,13 +65,13 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqIdeControllerEntry}, instance => $instance);
         $result->{cpqIdeControllerModel} = centreon::plugins::misc::trim($result->{cpqIdeControllerModel});
 
-        next if ($self->check_exclude(section => 'idectl', instance => $instance));
+        next if ($self->check_filter(section => 'idectl', instance => $instance));
         $self->{components}->{idectl}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("ide controller '%s' [slot: %s, model: %s, status: %s] condition is %s.", 
                                     $instance, $result->{cpqIdeControllerSlot}, $result->{cpqIdeControllerModel}, $result->{cpqIdeControllerStatus},
                                     $result->{cpqIdeControllerCondition}));
-        my $exit = $self->get_severity(section => 'idectl', value => $result->{cpqIdeControllerCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'idectl', value => $result->{cpqIdeControllerCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("ide controller '%s' is %s", 

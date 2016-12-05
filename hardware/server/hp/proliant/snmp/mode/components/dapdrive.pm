@@ -49,10 +49,9 @@ my $oid_cpqDaPhyDrvCondition = '.1.3.6.1.4.1.232.3.2.5.1.1.37';
 my $oid_cpqDaPhyDrvStatus = '.1.3.6.1.4.1.232.3.2.5.1.1.6';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqDaPhyDrvStatus };
-    push @{$options{request}}, { oid => $oid_cpqDaPhyDrvCondition };
+    push @{$self->{request}}, { oid => $oid_cpqDaPhyDrvStatus }, { oid => $oid_cpqDaPhyDrvCondition };
 }
 
 sub check {
@@ -60,7 +59,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking da physical drives");
     $self->{components}->{dapdrive} = {name => 'da physical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'dapdrive'));
+    return if ($self->check_filter(section => 'dapdrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqDaPhyDrvCondition}})) {
         next if ($oid !~ /^$mapping2->{cpqDaPhyDrvCondition}->{oid}\.(.*)$/);
@@ -68,14 +67,14 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqDaPhyDrvStatus}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqDaPhyDrvCondition}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'dapdrive', instance => $instance));
+        next if ($self->check_filter(section => 'dapdrive', instance => $instance));
         $self->{components}->{dapdrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("da physical drive '%s' [status: %s] condition is %s.", 
                                     $instance,
                                     $result->{cpqDaPhyDrvStatus},
                                     $result2->{cpqDaPhyDrvCondition}));
-        my $exit = $self->get_severity(section => 'dapdrive', value => $result2->{cpqDaPhyDrvCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'dapdrive', value => $result2->{cpqDaPhyDrvCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("da physical drive '%s' is %s", 

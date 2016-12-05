@@ -138,7 +138,7 @@ sub settings {
 sub cache_ap {
     my ($self, %options) = @_;
     
-    my $has_cache_file = $options{statefile}->read(statefile => 'cache_cisco_prime_' . $self->{hostname}  . '_' . $self->{port});
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_cisco_prime_accesspoint_' . $self->{hostname}  . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $ap = $options{statefile}->get(name => 'ap');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time}) * 60))) {

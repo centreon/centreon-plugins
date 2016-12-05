@@ -57,10 +57,9 @@ my $oid_cpqScsiLogDrvCondition = '.1.3.6.1.4.1.232.5.2.3.1.1.8';
 my $oid_cpqScsiLogDrvStatus = '.1.3.6.1.4.1.232.5.2.3.1.1.5';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqScsiLogDrvStatus };
-    push @{$options{request}}, { oid => $oid_cpqScsiLogDrvCondition };
+    push @{$self->{request}}, { oid => $oid_cpqScsiLogDrvStatus }, { oid => $oid_cpqScsiLogDrvCondition };
 }
 
 sub check {
@@ -68,7 +67,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking scsi logical drives");
     $self->{components}->{scsildrive} = {name => 'scsi logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'scsildrive'));
+    return if ($self->check_filter(section => 'scsildrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqScsiLogDrvCondition}})) {
         next if ($oid !~ /^$mapping2->{cpqScsiLogDrvCondition}->{oid}\.(.*)$/);
@@ -76,7 +75,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqScsiLogDrvStatus}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqScsiLogDrvCondition}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'scsildrive', instance => $instance));
+        next if ($self->check_filter(section => 'scsildrive', instance => $instance));
         $self->{components}->{scsildrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("scsi logical drive '%s' status is %s [condition: %s].", 

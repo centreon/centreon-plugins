@@ -47,9 +47,9 @@ my $mapping = {
 my $oid_cpqSasLogDrvEntry = '.1.3.6.1.4.1.232.5.5.3.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqSasLogDrvEntry, start => $mapping->{cpqSasLogDrvStatus}->{oid}, end => $mapping->{cpqSasLogDrvCondition}->{oid} };
+    push @{$self->{request}}, { oid => $oid_cpqSasLogDrvEntry, start => $mapping->{cpqSasLogDrvStatus}->{oid}, end => $mapping->{cpqSasLogDrvCondition}->{oid} };
 }
 
 sub check {
@@ -57,14 +57,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking sas logical drives");
     $self->{components}->{sasldrive} = {name => 'sas logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sasldrive'));
+    return if ($self->check_filter(section => 'sasldrive'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqSasLogDrvEntry}})) {
         next if ($oid !~ /^$mapping->{cpqSasLogDrvStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqSasLogDrvEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'sasldrive', instance => $instance));
+        next if ($self->check_filter(section => 'sasldrive', instance => $instance));
         $self->{components}->{sasldrive}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("sas logical drive '%s' status is %s [condition: %s].", 

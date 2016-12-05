@@ -86,10 +86,10 @@ my $oid_cpqDaCntlrEntry = '.1.3.6.1.4.1.232.3.2.2.1.1';
 my $oid_cpqDaCntlrModel = '.1.3.6.1.4.1.232.3.2.2.1.1.2';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_cpqDaCntlrEntry, start => $mapping2->{cpqDaCntlrSlot}->{oid}, end => $mapping2->{cpqDaCntlrCondition}->{oid} };
-    push @{$options{request}}, { oid => $oid_cpqDaCntlrModel };
+    push @{$self->{request}}, { oid => $oid_cpqDaCntlrEntry, start => $mapping2->{cpqDaCntlrSlot}->{oid}, end => $mapping2->{cpqDaCntlrCondition}->{oid} },
+        { oid => $oid_cpqDaCntlrModel };
 }
 
 sub check {
@@ -97,7 +97,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking da controller");
     $self->{components}->{dactl} = {name => 'da controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'dactl'));
+    return if ($self->check_filter(section => 'dactl'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cpqDaCntlrEntry}})) {
         next if ($oid !~ /^$mapping2->{cpqDaCntlrCondition}->{oid}\.(.*)$/);
@@ -105,13 +105,13 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cpqDaCntlrModel}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cpqDaCntlrEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'dactl', instance => $instance));
+        next if ($self->check_filter(section => 'dactl', instance => $instance));
         $self->{components}->{dactl}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("da controller '%s' [slot: %s, model: %s] status is %s.", 
                                     $instance, $result2->{cpqDaCntlrSlot}, $result->{cpqDaCntlrModel},
                                     $result2->{cpqDaCntlrCondition}));
-        my $exit = $self->get_severity(section => 'dactl', value => $result2->{cpqDaCntlrCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'dactl', value => $result2->{cpqDaCntlrCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("da controller '%s' is %s", 
