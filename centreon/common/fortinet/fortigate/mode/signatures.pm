@@ -124,7 +124,7 @@ __END__
 
 =head1 MODE
 
-Check av, ips usage and failed av allocations per sec
+Check last update/refresh of av and ips signatures
 
 =over 8
 
