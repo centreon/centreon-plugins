@@ -68,7 +68,7 @@ sub check {
     $self->{components}->{ilo} = {name => 'ilo', total => 0, skip => 0};
     return if ($self->check_filter(section => 'ilo'));
 
-    return if (!defined($self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}));
+    return if (scalar(keys %{$self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}}) == 0);
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{cpqSm2MibCondition}->{oid}}, instance => '0');
 
     next if ($self->check_filter(section => 'ilo', instance => '0'));
