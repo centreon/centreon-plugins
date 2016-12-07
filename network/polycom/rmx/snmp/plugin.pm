@@ -35,7 +35,7 @@ sub new {
                          'hardware'                 => 'network::polycom::rmx::snmp::mode::hardware',
                          'load'                     => 'snmp_standard::mode::loadaverage',
                          'memory'                   => 'snmp_standard::mode::memory',
-                         'videoconferencing-usage'  => 'network::polycom::rmx::snmp::mode::visioconferenceusage',
+                         'videoconferencing-usage'  => 'network::polycom::rmx::snmp::mode::videoconferencingceusage',
                          );
 
     return $self;
