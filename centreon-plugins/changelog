@@ -5,6 +5,7 @@
  * Plugin added: to check Cisco Prime Wireless SNMP
  * Mode added: [fortigate] 'signatures'
  * Mode added: [cisco standard] 'qos-usage'
+ * Mode added: [cisco standard] 'ipsec-tunnel'
  * Enhancement: [checkpoint] major update
  * Enhancement: [protocol bgp] major update
 
