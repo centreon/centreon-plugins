@@ -33,7 +33,8 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
                          'failover'         => 'network::cisco::asa::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
                          'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
