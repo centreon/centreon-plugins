@@ -51,6 +51,7 @@ sub new {
     $self->{threshold_crit} = undef;
 
     $self->{per_second} = 0;
+    $self->{manual_keys} = 0;
     $self->{last_timestamp} = undef;
 
     $self->{result_values} = {};
@@ -235,6 +236,16 @@ sub execute {
             $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
             if (defined($self->{statefile})) {
                 $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
+            }
+        }
+    }
+    
+    # Very manual
+    if ($self->{manual_keys} == 1) {
+        foreach my $name (keys %{$options{values}}) {
+            $options{new_datas}->{$self->{instance} . '_' . $name} = $options{values}->{$name};
+            if (defined($self->{statefile})) {
+                $old_datas->{$self->{instance} . '_' . $name} = $self->{statefile}->get(name => $self->{instance} . '_' . $name);
             }
         }
     }
