@@ -1,3 +1,13 @@
+2016-12-xx Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: to check Cisco Meraki Cloud Ctrl SNMP
+ * Plugin added: to check Polycom RMX SNMP
+ * Plugin added: to check Exagrid SNMP
+ * Plugin added: to check Cisco Prime Wireless SNMP
+ * Mode added: [fortigate] 'signatures'
+ * Mode added: [cisco standard] 'qos-usage'
+ * Enhancement: [checkpoint] major update
+ * Enhancement: [protocol bgp] major update
+
 2016-11-21 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check Jacarta Sensor SNMP
  * Plugin added: to check Safenet HSM
