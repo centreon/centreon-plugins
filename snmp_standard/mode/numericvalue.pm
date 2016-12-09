@@ -36,79 +36,128 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "oid:s"                   => { name => 'oid' },
-                                  "oid-type:s"              => { name => 'oid_type', default => 'gauge' },
+                                  "oid-type:s"              => { name => 'oid_type' },
                                   "counter-per-seconds"     => { name => 'counter_per_seconds' },
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
-                                  "format:s"                => { name => 'format', default => 'current value is %s' },
+                                  "format:s"                => { name => 'format' },
                                   "format-scale"            => { name => 'format_scale' },
-                                  "format-scale-unit:s"     => { name => 'format_scale_unit', default => 'other'},
-                                  "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
-                                  "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
-                                  "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
-                                  "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
+                                  "format-scale-type:s"     => { name => 'format_scale_type' },
+                                  "perfdata-unit:s"         => { name => 'perfdata_unit' },
+                                  "perfdata-name:s"         => { name => 'perfdata_name' },
+                                  "perfdata-min:s"          => { name => 'perfdata_min' },
+                                  "perfdata-max:s"          => { name => 'perfdata_max' },
+                                  "config-json:s"           => { name => 'config_json' },
                                 });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->{use_statefile} = 0;
     return $self;
+}
+
+sub add_data {
+    my ($self, %options) = @_;
+    
+    my $entry = {};    
+    return if (!defined($options{data}->{oid}) || $options{data}->{oid} eq '');
+    $entry->{oid} = $options{data}->{oid};
+    $entry->{oid} = '.' . $entry->{oid} if ($options{data}->{oid} !~ /^\./);
+
+    $entry->{oid_type} = defined($options{data}->{oid_type}) && $options{data}->{oid_type} ne '' ? $options{data}->{oid_type} : 'gauge';    
+    if ($entry->{oid_type} !~ /^gauge|counter$/i) {
+        $self->{output}->add_option_msg(short_msg => "Wrong oid-type argument '" . $entry->{oid_type} . "' ('gauge' or 'counter').");
+        $self->{output}->option_exit();
+    }
+    
+    $entry->{format_scale_type} = defined($options{data}->{format_scale_type}) && $options{data}->{format_scale_type} ne '' ? $options{data}->{format_scale_type} : 'other';  
+    if ($entry->{format_scale_type} !~ /^other|network$/i) {
+        $self->{output}->add_option_msg(short_msg => "Wrong format-scale-type argument '" . $entry->{format_scale_type} . "' ('other' or 'network').");
+        $self->{output}->option_exit();
+    }
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning-' . $options{num}, value => $options{data}->{warning})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $options{data}->{warning} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-' . $options{num}, value => $options{data}->{critical})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $options{data}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], ['format_scale'],
+             ['perfdata_unit', ''], ['perfdata_name', 'value'],
+             ['perfdata_min', ''], ['perfdata_max', '']) {
+        if (defined($options{data}->{$_->[0]})) {
+            $entry->{$_->[0]} = $options{data}->{$_->[0]};
+        } elsif (defined($_->[1])) {
+            $entry->{$_->[0]} = $_->[1];
+        }
+    }
+    
+    push @{$self->{entries}}, $entry;
+    push @{$self->{request_oids}}, $entry->{oid};
+    
+    if (defined($options{data}->{oid_type}) && $options{data}->{oid_type} =~ /^counter$/i)  {
+        $self->{use_statefile} = 1;
+    }
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{oid}) || $self->{option_results}->{oid} eq '') {
-       $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
-       $self->{output}->option_exit(); 
+    ($self->{entries}, $self->{oids}) = ([], []);
+    if (defined($self->{option_results}->{config_json}) && $self->{option_results}->{config_json} ne '') {
+        centreon::plugins::misc::mymodule_load(module => 'JSON',
+                                               error_msg => "Cannot load module 'JSON'.");
+        my $json = JSON->new;
+        my $content;
+        eval {
+            $content = $json->decode($self->{option_results}->{config_json});
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->option_exit();
+        }
+        
+        my $i = 0;
+        foreach (@$content) {
+            $self->add_data(data => $_, num => $i);
+            $i++;
+        }
+    } else {
+        $self->add_data(data => $self->{option_results}, num => 0);
     }
-    $self->{option_results}->{oid} = '.' . $self->{option_results}->{oid} if ($self->{option_results}->{oid} !~ /^\./);
     
-    if ($self->{option_results}->{oid_type} !~ /^gauge|counter$/i) {
-       $self->{output}->add_option_msg(short_msg => "Wrong --oid-type argument '" . $self->{option_results}->{oid_type} . "' ('gauge' or 'counter').");
-       $self->{output}->option_exit();
-    }
-    if ($self->{option_results}->{format_scale_unit} !~ /^other|network$/i) {
-       $self->{output}->add_option_msg(short_msg => "Wrong --format-scale-unit argument '" . $self->{option_results}->{format_scale_unit} . "' ('other' or 'network').");
-       $self->{output}->option_exit();
+    if (scalar(@{$self->{entries}}) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify an OID.");
+        $self->{output}->option_exit(); 
     }
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    
-    if ($self->{option_results}->{oid_type} =~ /^counter$/i)  {
+    if ($self->{use_statefile} == 1) {
         $self->{statefile_cache}->check_options(%options);
     }
 }
 
-sub run {
+sub check_data {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-
-    my $result = $self->{snmp}->get_leef(oids => [$self->{option_results}->{oid}], nothing_quit => 1);
-    my $value = $result->{$self->{option_results}->{oid}};
     
-    if ($self->{option_results}->{oid_type} =~ /^counter$/i)  {
-        my $datas = {};
-
-        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($self->{option_results}->{oid}));
+    if (!defined($self->{results}->{$options{entry}->{oid}})) {
+        $self->{output}->output_add(severity => "UNKNOWN",
+                                    short_msg => "Cannot find oid:" . $options{entry}->{oid});
+        return ;
+    }
+    my $value = $self->{results}->{$options{entry}->{oid}};
+    if ($options{entry}->{oid_type} =~ /^counter$/i)  {
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
-        my $old_value = $self->{statefile_cache}->get(name => 'value');
+        my $old_value = $self->{statefile_cache}->get(name => 'value-' . $options{num});
         
-        $datas->{timestamp} = time();
-        $datas->{value} = $value;
-        $self->{statefile_cache}->write(data => $datas);
+        $self->{cache_datas}->{timestamp} = time();
+        $self->{cache_datas}->{'value-' . $options{num}} = $value;
+        
         if (!defined($old_timestamp)) {
             $self->{output}->output_add(severity => 'OK',
                                         short_msg => "Buffer creation...");
-            $self->{output}->display();
-            $self->{output}->exit();
+            return ;
         }
         
         # Reboot or counter goes back
@@ -116,33 +165,53 @@ sub run {
             $old_value = 0;
         }
         $value = $value - $old_value;
-        if (defined($self->{option_results}->{counter_per_seconds})) {
-            my $delta_time = $datas->{timestamp} - $old_timestamp;
+        if (defined($options{entry}->{counter_per_seconds})) {
+            my $delta_time = $self->{cache_datas}->{timestamp} - $old_timestamp;
             $delta_time = 1 if ($delta_time == 0); # at least 1 sec
             $value = $value / $delta_time;
         }
     }
     
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if (defined($self->{option_results}->{format_scale})) {
+                                                  threshold => [ { label => 'critical-' . $options{num}, exit_litteral => 'critical' }, { label => 'warning-' . $options{num}, exit_litteral => 'warning' } ]);
+    if (defined($options{entry}->{format_scale})) {
         my ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value);
-        if ($self->{option_results}->{format_scale} =~ /^network$/i) {
+        if ($options{entry}->{format_scale_type} =~ /^network$/i) {
             ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
         }
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf($self->{option_results}->{format}, $value_mod . $value_unit));
+                                    short_msg => sprintf($options{entry}->{format}, $value_mod . $value_unit));
     } else {
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf($self->{option_results}->{format}, $value));
+                                    short_msg => sprintf($options{entry}->{format}, $value));
     }
 
-    $self->{output}->perfdata_add(label => $self->{option_results}->{perfdata_name}, unit => $self->{option_results}->{perfdata_unit},
+    $self->{output}->perfdata_add(label => $options{entry}->{perfdata_name}, unit => $options{entry}->{perfdata_unit},
                                   value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => $self->{option_results}->{perfdata_min}, max => $self->{option_results}->{perfdata_max});
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $options{num}),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $options{num}),
+                                  min => $options{entry}->{perfdata_min}, max => $options{entry}->{perfdata_max});
+}
 
+sub run {
+    my ($self, %options) = @_;
+    
+    if ($self->{use_statefile} == 1) {
+        $self->{cache_datas} = {};
+        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
+    }
+
+    $self->{results} = $options{snmp}->get_leef(oids => $self->{request_oids}, nothing_quit => 1);
+    my $num = 0;
+    foreach (@{$self->{entries}}) {
+        $self->check_data(entry => $_, num => $num);
+        $num++;
+    }
+    
+    if ($self->{use_statefile} == 1) {
+        $self->{statefile_cache}->write(data => $self->{cache_datas});
+    }
+        
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -180,7 +249,7 @@ Can be 'counter' also. 'counter' will use a retention file.
 
 =item B<--counter-per-seconds>
 
-Convert counter value on a value per seconds (only with type 'counter'.
+Convert counter value on a value per seconds (only with type 'counter').
 
 =item B<--format>
 
@@ -211,6 +280,14 @@ Minimum value to add in perfdata output (Default: '')
 =item B<--perfdata-max>
 
 Maximum value to add in perfdata output (Default: '')
+
+=item B<--config-json>
+
+JSON format to configure the mode. Can check multiple OID.
+Example: --config-json='[
+{ "oid": ".1.3.6.1.2.1.1.3.0", "perfdata_name": "oid1", "format": "current oid1 value is %s"}, 
+{ "oid": ".1.3.6.1.2.1.1.3.2", "perfdata_name": "oid2", "format": "current oid2 value is %s"}
+]'
 
 =back
 
