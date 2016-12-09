@@ -55,7 +55,8 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanSpeedSensorEntry}, instance => $instance);
     
         next if ($self->check_filter(section => 'fan', instance => $instance));
-        next if ($result->{fanSpeedSensorName} !~ /^[0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
+        # can be SysFAN(J4)
+        next if ($result->{fanSpeedSensorName} !~ /^[\(\)0-9a-zA-Z ]+$/); # sometimes there is some wrong values in hex 
 
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Fan '%s' sensor out of range status is '%s'",
