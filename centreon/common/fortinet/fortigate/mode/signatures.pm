@@ -113,7 +113,7 @@ sub manage_selection {
                     value => $av_diff };
 
     $self->{ips} = { human => centreon::plugins::misc::change_seconds(value => $ips_diff, start => 'h'),
-                     value => $av_diff };
+                     value => $ips_diff };
 
 
 }
