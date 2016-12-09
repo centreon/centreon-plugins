@@ -137,18 +137,26 @@ sub custom_traffic_calc {
 
     my $total_bytes = 0;
     foreach (keys %{$options{new_datas}}) {
-        if (/$self->{instance}_cipSecTun$options{extra_options}->{label_ref}Octets_(\d+)/) {
+        if (/$self->{instance}_cipSecTunHc$options{extra_options}->{label_ref}Octets_(\d+)/) {
+            my $new_bytes = $options{new_datas}->{$_};
+            next if (!defined($options{old_datas}->{$_}));
+            my $old_bytes = $options{old_datas}->{$_};
+            
+            $total_bytes += $new_bytes - $old_bytes;
+            $total_bytes += $new_bytes if ($total_bytes <= 0);
+        } elsif (/$self->{instance}_cipSecTun$options{extra_options}->{label_ref}Octets_(\d+)/) {
             my $new_bytes = $options{new_datas}->{$_};
             my $new_wraps = $options{new_datas}->{$self->{instance} . '_cipSecTun' . $options{extra_options}->{label_ref} . 'OctWraps_' . $1};
             next if (!defined($options{old_datas}->{$_}));
             my ($old_bytes, $old_wraps) = ($options{old_datas}->{$_}, $options{old_datas}->{$self->{instance} . '_cipSecTun' . $options{extra_options}->{label_ref} . 'OctWraps_' . $1});
             
             $total_bytes += $new_bytes - $old_bytes + (($new_wraps - $old_wraps) * (2**32));
+            $total_bytes += $new_bytes if ($total_bytes <= 0);
         }
     }
     
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{traffic_per_seconds} = $total_bytes / $options{delta_time};    
+    $self->{result_values}->{traffic_per_seconds} = ($total_bytes * 8) / $options{delta_time};    
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     
     return 0;
@@ -237,9 +245,11 @@ my $mapping = {
 };
 my $mapping2 = {
     cipSecTunInOctets       => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.26' },
-    cipSecTunInOctWraps     => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.28' },
+    cipSecTunHcInOctets     => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.27' },
+    cipSecTunInOctWraps     => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.28' }, # seems buggy
     cipSecTunInDropPkts     => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.33' },
     cipSecTunOutOctets      => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.39' },
+    cipSecTunHcOutOctets    => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.40' }, # seems buggy
     cipSecTunOutOctWraps    => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.41' },
     cipSecTunOutDropPkts    => { oid => '.1.3.6.1.4.1.9.9.171.1.3.2.1.46' },
 };
@@ -305,8 +315,14 @@ sub manage_selection {
             
             $self->{tunnel}->{$name} = { display => $name, sa => 0 } 
                 if (!defined($self->{tunnel}->{$name}));
+            if (defined($result2->{cipSecTunHcInOctets}) && defined($result2->{cipSecTunHcOutOctets})) {
+                delete $result2->{cipSecTunInOctets};
+                delete $result2->{cipSecTunInOctWraps};
+                delete $result2->{cipSecTunOutOctets};
+                delete $result2->{cipSecTunOutOctWraps};
+            }
             foreach my $oid_name (keys %{$mapping2}) {
-                $self->{tunnel}->{$name}->{$oid_name . '_' . $cip_tun_index} = $result2->{$oid_name};
+                $self->{tunnel}->{$name}->{$oid_name . '_' . $cip_tun_index} = $result2->{$oid_name} if (defined($result2->{$oid_name}));
             }
             $self->{tunnel}->{$name}->{cikeTunActiveTime} = $result->{cikeTunActiveTime};
             $self->{tunnel}->{$name}->{sa}++;
