@@ -3,6 +3,7 @@
  * Plugin added: to check Polycom RMX SNMP
  * Plugin added: to check Exagrid SNMP
  * Plugin added: to check Cisco Prime Wireless SNMP
+ * Mode added: [snmp_standard] 'numeric-value'
  * Mode added: [fortigate] 'signatures'
  * Mode added: [cisco standard] 'qos-usage'
  * Mode added: [cisco standard] 'ipsec-tunnel'
