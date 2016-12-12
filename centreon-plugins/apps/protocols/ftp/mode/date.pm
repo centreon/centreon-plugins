@@ -51,6 +51,7 @@ sub new {
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout', default => '30' },
+         "timezone:s"   => { name => 'timezone' },
          });
     return $self;
 }
@@ -73,7 +74,12 @@ sub check_options {
     }
     $self->{ssl_or_not} = 'nossl';
     if (defined($self->{option_results}->{use_ssl})) {
-         $self->{ssl_or_not} = 'ssl';
+        $self->{ssl_or_not} = 'ssl';
+    }
+    
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        centreon::plugins::misc::mymodule_load(module => 'DateTime',
+                                               error_msg => "Cannot load module 'DateTime'.");
     }
 }
 
@@ -101,6 +107,7 @@ sub run {
         foreach my $file (@files) {
             my $time_result;
             
+            $file = $dir . '/' . $file if ($file !~ /^$dir/); # some ftp only give filename (not the complete path)
             if (!($time_result = apps::protocols::ftp::lib::ftp::execute($self, command => $map_commands{mdtm}->{$self->{ssl_or_not}}->{name}, command_args => [$file]))) {
                 # Sometime we can't have mtime for a directory
                 next;
@@ -130,11 +137,16 @@ sub run {
         my $diff_time = $current_time - $file_times{$name};
 
         my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($file_times{$name}))));
+                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $display_date = scalar(localtime($file_times{$name}));
+        if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+            $display_date = DateTime->from_epoch(epoch => $file_times{$name}, time_zone => $self->{option_results}->{timezone})->datetime()
+        }
+        
+        $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($file_times{$name}))));
+                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));
         }
         $self->{output}->perfdata_add(label => $name, unit => 's',
                                       value => $diff_time,
@@ -202,6 +214,11 @@ Check files in the directory (no recursive) (Multiple option)
 =item B<--file>
 
 Check file (Multiple option)
+
+=item B<--timezone>
+
+Set the timezone of display date.
+Can use format: 'Europe/London' or '+0100'.
 
 =back
 
