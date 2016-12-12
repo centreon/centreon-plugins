@@ -1,4 +1,4 @@
-2016-12-xx Quentin Garnier <qgarnier@centreon.com>
+2016-12-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check Cisco Meraki Cloud Ctrl SNMP
  * Plugin added: to check Polycom RMX SNMP
  * Plugin added: to check Exagrid SNMP
