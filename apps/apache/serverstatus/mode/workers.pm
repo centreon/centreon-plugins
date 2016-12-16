@@ -42,6 +42,7 @@ sub new {
             "username:s"    => { name => 'username' },
             "password:s"    => { name => 'password' },
             "proxyurl:s"    => { name => 'proxyurl' },
+            "header:s@"     => { name => 'header' },
             "warning:s"     => { name => 'warning' },
             "critical:s"    => { name => 'critical' },
             "timeout:s"     => { name => 'timeout' },
@@ -146,6 +147,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--header>
+
+Set HTTP headers (Multiple option)
 
 =item B<--warning>
 
