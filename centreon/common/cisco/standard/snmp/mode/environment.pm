@@ -123,8 +123,8 @@ sub snmp_execute {
     
     push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    foreach my $k (keys(%{$self->{results}->{$oid_entPhysicalDescr}})) {
-        $self->{results}->{$oid_entPhysicalDescr}->{$k} =~ s/^\s+|\s+$|[\n\r]+//g;
+    while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
+        $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
     }
     $self->{output}->output_add(long_msg => sprintf("Environment type: %s", 
                                 defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
