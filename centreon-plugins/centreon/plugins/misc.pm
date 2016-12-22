@@ -314,8 +314,8 @@ sub trim {
     
     # Sometimes there is a null character
     $value =~ s/\x00$//;
-    $value =~ s/^[ \t]+//;
-    $value =~ s/[ \t]+$//;
+    $value =~ s/^[ \t\n]+//;
+    $value =~ s/[ \t\n]+$//;
     return $value;
 }
 
