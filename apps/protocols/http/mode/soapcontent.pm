@@ -159,10 +159,30 @@ sub display_output {
     }
 }
 
+sub check_encoding {
+    my ($self, %options) = @_;
+    
+    my $charset;
+    my $headers = $self->{http}->get_header();
+    my $content_type = $headers->header('Content-Type');
+    if (defined($content_type) && $content_type =~ /charset\s*=\s*(\S+)/i) {
+        $charset = $1;
+    }
+    
+    if ($self->{soap_response} =~ /<\?xml(.*?)\?>/ms) {
+        if ($1 !~ /encoding=/ && defined($charset)) {
+            $self->{soap_response} =~ s/<\?xml(.*?)\?>/<\?xml$1 encoding="$charset"\?>/ms
+        }
+    } elsif (defined($charset)) {
+        $self->{soap_response} = '<?xml version="1.0" encoding="' . $charset . '" ?>' . "\n" . $self->{soap_response};
+    }
+}
+
 sub lookup {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
 
+    $self->check_encoding();
     eval {
         $xpath = XML::XPath->new(xml => $self->{soap_response});
     };
