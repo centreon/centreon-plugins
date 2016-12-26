@@ -214,7 +214,7 @@ sub display_list_plugin {
         
         foreach my $key (@$integrated_plugins) {
             # Need to load it to get the description
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $key, 
                                                    error_msg => "Cannot load module --plugin.");
                                                
             my $name = $key;
