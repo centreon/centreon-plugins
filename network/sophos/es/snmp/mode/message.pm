@@ -97,7 +97,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                "filter-type:s" => { name => 'filter_type' },
                                 });
     
     return $self;
@@ -124,6 +125,7 @@ sub manage_selection {
     my $results = $options{snmp}->get_table(oid => $oid_sophosStatisticsEmail, nothing_quit => 1);
 
     $self->{cache_name} = "sophos_es_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     $self->{global} = { total_in => 0, total_out => 0 };
@@ -135,6 +137,11 @@ sub manage_selection {
         my $instance = $1;
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $result->{counterType} !~ /$self->{option_results}->{filter_type}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{counterType} . "': no matching filter.", debug => 1);
+            next;
+        }
         
         $self->{sea_msg}->{lc($result->{counterType})} = { display => lc($result->{counterType}), 
             in => $result->{counterInbound}, out => $result->{counterOutbound}
@@ -154,6 +161,10 @@ __END__
 Check message statistics.
 
 =over 8
+
+=item B<--filter-type>
+
+Filter message type (can be a regexp).
 
 =item B<--filter-counters>
 
