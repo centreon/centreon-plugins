@@ -36,6 +36,7 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::cyberoam::snmp::mode::memory',
                          'requests'         => 'network::cyberoam::snmp::mode::requests',
+                         'services'         => 'network::cyberoam::snmp::mode::services',
                          'storage'          => 'network::cyberoam::snmp::mode::storage',
                          );
 
