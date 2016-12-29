@@ -92,7 +92,7 @@ sub run {
 
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("SMS left: %d used",$smsLeft));
+                                short_msg => sprintf("SMS left: %d",$smsLeft));
 
     $self->{output}->perfdata_add(label => "left", unit => 'sms',
                                   value => $smsLeft,
