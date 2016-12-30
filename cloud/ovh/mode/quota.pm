@@ -105,14 +105,14 @@ sub run {
        $size = $size * 1024;
     }
 
-    my $usedPercent = $used*100/$size;
+    my $usedPercent = sprintf("%d", $used*100/$size);
 
     my $exit = $self->{perfdata}->threshold_check(value => $usedPercent,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
 
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Used : %0.2f percent (Used: %0.2f %s , Size %0.2f %s)", $usedPercent , $used, $usedUnit, $size, $sizeUnit));
+                                short_msg => sprintf("Used %d %s (Used: %0.2f %s , Size %0.2f %s)", $usedPercent, "%" , $used, $usedUnit, $size, $sizeUnit));
 
     $self->{output}->perfdata_add(label => "Used", unit => "%",
                                   value => $usedPercent,
