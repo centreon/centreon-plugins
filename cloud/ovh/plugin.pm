@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'sms'       => 'cloud::ovh::mode::sms',
+                         'quota'     => 'cloud::ovh::mode::quota',
                          );
 
     return $self;
