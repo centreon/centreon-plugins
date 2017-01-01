@@ -83,7 +83,7 @@ sub set_system {
         'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'];
 
     $self->{regexp_threshold_overload_check_section_option} = 
-        '^(' . join('|', @{$self->{components_module}}). ')$';
+        '^(?:' . join('|', @{$self->{components_module}}). ')\.(?:status|state)$';
 }
 
 sub snmp_execute {
