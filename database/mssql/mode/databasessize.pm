@@ -203,9 +203,9 @@ sub manage_selection {
         ");
         my $result2 = $self->{sql}->fetchall_arrayref();
         foreach my $row (@$result2) {
-            my $size_brut = $$row[1];
+            my $size_brut = $$row[3]; # Max Size in MB
             my $size = convert_bytes($size_brut);
-            my $free_brut = $$row[2];
+            my $free_brut = $$row[2]; # Max Available Space in MB
             my $free = convert_bytes($free_brut);
             my $used = $size - $free;
             my $percent_used = ($used / $size) * 100;
