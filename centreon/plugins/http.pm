@@ -300,6 +300,7 @@ sub request {
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(long_msg => $response->content, debug => 1);
         $self->{output}->output_add(severity => $status,
                                     short_msg => $response->status_line);
         $self->{output}->display();
