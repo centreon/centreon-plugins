@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'metaservice'  => 'apps::centreon::local::mode::metaservice',
-                         'retention-broker' => 'apps::centreon::local::mode::retentionbroker',
+                         'downtime-trap'        => 'apps::centreon::local::mode::downtimetrap',
+                         'metaservice'          => 'apps::centreon::local::mode::metaservice',
+                         'retention-broker'     => 'apps::centreon::local::mode::retentionbroker',
                          );
 
     return $self;
