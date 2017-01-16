@@ -61,6 +61,7 @@ sub new {
                                  "duration:s"           => { name => 'duration', default => 300 },
                                  "wait:s"               => { name => 'wait' },
                                  "snmptrap-command:s"   => { name => 'snmptrap_command', default => 'snmptrap' },
+                                 "display-options"      => { name => 'display_options' },
                                 });
     return $self;
 }
@@ -131,6 +132,13 @@ sub send_trap_cmd {
     $options .= ' ' . $self->{snmp_args}->{author}->{oid} . '.' . $self->{snmp_args}->{author}->{instance} . ' ' . $self->{snmp_args}->{author}->{type_cmd} . ' "' . $self->{snmp_args}->{author}->{val} . '"';
     $options .= ' ' . $self->{snmp_args}->{comment}->{oid} . '.' . $self->{snmp_args}->{comment}->{instance} . ' ' . $self->{snmp_args}->{comment}->{type_cmd} . ' "' . $self->{snmp_args}->{comment}->{val} . '"';
     $options .= ' ' . $self->{snmp_args}->{duration}->{oid} . '.' . $self->{snmp_args}->{duration}->{instance} . ' ' . $self->{snmp_args}->{duration}->{type_cmd} . ' "' . $self->{snmp_args}->{duration}->{val} . '"';
+    
+    if (defined($self->{option_results}->{display_options})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $options);
+        $self->{output}->display(force_ignore_perfdata => 1, nolabel => 1);
+        $self->{output}->exit();
+    }
     $self->{option_results}->{timeout} = 10;
     centreon::plugins::misc::execute(output => $self->{output},
                                      options => $self->{option_results},
@@ -141,7 +149,7 @@ sub send_trap_cmd {
 sub run {
     my ($self, %options) = @_;
     
-    if ($use_module_snmp == 1) {
+    if ($use_module_snmp == 1 && !defined($self->{option_results}->{display_options})) {
         $self->send_trap_module();
     }  else {
         $self->send_trap_cmd();
@@ -219,6 +227,10 @@ Time in seconds to wait
 
 snmptrap command used (Default: 'snmptrap').
 Use if the SNMP perl module is not installed.
+
+=item B<--display-options>
+
+Only display snmptrap command options.
 
 =back
 
