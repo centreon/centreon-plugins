@@ -147,8 +147,8 @@ sub send_trap_netsnmp {
     }
     
     my $args = [];
-    push @$args, ('1.3.6.1.2.1.1.3.0', Net::SNMP::TIMETICKS, time());
-    push @$args, ('1.3.6.1.6.3.1.1.4.1.0', Net::SNMP::OBJECT_IDENTIFIER, $self->{option_results}->{oid_trap});
+    push @$args, ('1.3.6.1.2.1.1.3.0', eval "Net::SNMP::TIMETICKS", time());
+    push @$args, ('1.3.6.1.6.3.1.1.4.1.0', eval "Net::SNMP::OBJECT_IDENTIFIER", $self->{option_results}->{oid_trap});
     foreach (('hostname', 'start', 'end', 'author', 'comment', 'duration')) {
         my $type = $self->{snmp_args}->{$_}->{type};
         $type = 'OCTET_STRING' if ($type eq 'OCTETSTR');
