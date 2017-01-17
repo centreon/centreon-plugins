@@ -23,6 +23,7 @@ package apps::centreon::local::mode::downtimetrap;
 use base qw(centreon::plugins::mode);
 
 my $use_module_snmp;
+my $use_module_netsnmp;
 
 BEGIN {
     eval {
@@ -31,6 +32,14 @@ BEGIN {
     };
     if ($@) {
         $use_module_snmp = 0;
+        eval {
+            require Net::SNMP;
+        };
+        if ($@) {
+            $use_module_netsnmp = 0;
+        } else {
+            $use_module_netsnmp = 1;
+        }
     } else {
         $use_module_snmp = 1;
     }
@@ -100,7 +109,7 @@ sub snmp_build_args {
     }
 }
 
-sub send_trap_module {
+sub send_trap_snmp {
     my ($self, %options) = @_;
     
     $SNMP::auto_init_mib = 0;
@@ -119,6 +128,37 @@ sub send_trap_module {
     $trapsess->trap(oid => $self->{option_results}->{oid_trap},
                     uptime => time(),
                     $varlist);
+}
+
+sub send_trap_netsnmp {
+    my ($self, %options) = @_;
+    
+    $self->snmp_build_args();
+
+    my ($snmp_session, $error) = Net::SNMP->session(-hostname   => $self->{option_results}->{centreon_server},
+                                                    -community  => "public",
+                                                    -port       => 162,
+                                                    -version    => "snmpv2c",
+                                                    -translate   => [-all => 0]);
+    if (!defined($snmp_session)) {
+        $self->{output}->add_option_msg(short_msg => "SNMP Session : $error");
+        $self->{output}->option_exit();
+    }
+    
+    my $args = [];
+    push @$args, ('1.3.6.1.2.1.1.3.0', Net::SNMP::TIMETICKS, time());
+    push @$args, ('1.3.6.1.6.3.1.1.4.1.0', Net::SNMP::OBJECT_IDENTIFIER, $self->{option_results}->{oid_trap});
+    foreach (('hostname', 'start', 'end', 'author', 'comment', 'duration')) {
+        my $type = $self->{snmp_args}->{$_}->{type};
+        $type = 'OCTET_STRING' if ($type eq 'OCTETSTR');
+        my $result;
+        my $ltmp = "\$result = Net::SNMP::$type;";
+        eval $ltmp;
+        push @$args, ($self->{snmp_args}->{$_}->{oid} . '.' . $self->{snmp_args}->{$_}->{instance}, $result, $self->{snmp_args}->{$_}->{val});
+    }    
+    
+    $snmp_session->snmpv2_trap(-varbindlist => $args);
+    $snmp_session->close();
 }
 
 sub send_trap_cmd {
@@ -150,8 +190,10 @@ sub run {
     my ($self, %options) = @_;
     
     if ($use_module_snmp == 1 && !defined($self->{option_results}->{display_options})) {
-        $self->send_trap_module();
-    }  else {
+        $self->send_trap_snmp();
+    } elsif ($use_module_netsnmp == 1 && !defined($self->{option_results}->{display_options})) {
+        $self->send_trap_netsnmp();
+    } else {
         $self->send_trap_cmd();
     }
     
