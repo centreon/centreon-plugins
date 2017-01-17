@@ -34,6 +34,7 @@ BEGIN {
         $use_module_snmp = 0;
         eval {
             require Net::SNMP;
+            Net::SNMP->import();
         };
         if ($@) {
             $use_module_netsnmp = 0;
