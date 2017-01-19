@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::ibm::TS3200::mode::globalstatus;
+package storage::ibm::ts3200::snmp::mode::globalstatus;
 
 use base qw(centreon::plugins::mode);
 
