@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::ibm::TS3100::plugin;
+package storage::ibm::ts3200::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'global-status' => 'storage::ibm::TS3100::mode::globalstatus',
+                         'global-status' => 'storage::ibm::ts3200::snmp::mode::globalstatus',
                          );
 
     return $self;
@@ -43,7 +43,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check IBM TS3100 in SNMP.
+Check IBM TS3200 in SNMP.
 Cannot get possible values of some OIDs:
 libraryState, driveState, driveClean.
 
