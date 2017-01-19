@@ -44,7 +44,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check IBM TS3500 in SNMP.
-Cannot get possible values of some OIDs:
-libraryState, driveState, driveClean.
 
 =cut
