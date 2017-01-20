@@ -41,7 +41,7 @@ sub check_psu {
     my ($self, %options) = @_;
      
     return if ($self->check_filter(section => 'psu', instance => $options{instance}));
-    $self->{components}->{psu}->{total} += 2;
+    $self->{components}->{psu}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("psu '%s' status is '%s' [instance: %s, chassis: %s].",
                                     $options{instance}, $options{status},
