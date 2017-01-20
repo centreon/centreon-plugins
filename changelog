@@ -1,3 +1,12 @@
+2017-01-20 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: SAP Hana DB
+ * Plugin added: Efficient IP
+ * Plugin added: IBM TS3500
+ * Plugin added: Sophos Email Security appliance
+ * Mode added: [hmc] 'led-status'
+ * Add a special mode to send SNMP trap
+ * Break: path changed for IBM TS3100 and TS3200
+
 2016-12-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check Cisco Meraki Cloud Ctrl SNMP
  * Plugin added: to check Polycom RMX SNMP
