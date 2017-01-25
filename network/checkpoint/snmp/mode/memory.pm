@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::memory;
+package network::checkpoint::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 

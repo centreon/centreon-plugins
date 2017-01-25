@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::hardware;
+package network::checkpoint::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -55,7 +55,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::checkpoint::mode::components';
+    $self->{components_path} = 'network::checkpoint::snmp::mode::components';
     $self->{components_module} = ['voltage', 'fan', 'temperature', 'psu'];
 }
 

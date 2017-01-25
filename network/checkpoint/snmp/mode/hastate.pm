@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::hastate;
+package network::checkpoint::snmp::mode::hastate;
 
 use base qw(centreon::plugins::templates::counter);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::components::voltage;
+package network::checkpoint::snmp::mode::components::voltage;
 
 use strict;
 use warnings;

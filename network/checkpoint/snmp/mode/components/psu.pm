@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::components::psu;
+package network::checkpoint::snmp::mode::components::psu;
 
 use strict;
 use warnings;

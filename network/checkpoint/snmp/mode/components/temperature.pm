@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::components::temperature;
+package network::checkpoint::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

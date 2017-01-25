@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::plugin;
+package network::checkpoint::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,12 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-                        'cpu'           => 'network::checkpoint::mode::cpu',
-                        'memory'        => 'network::checkpoint::mode::memory',
-                        'connections'   => 'network::checkpoint::mode::connections',
-                        'hardware'      => 'network::checkpoint::mode::hardware',
-                        'hastate'       => 'network::checkpoint::mode::hastate',
+                        'connections'   => 'network::checkpoint::snmp::mode::connections',
+                        'cpu'           => 'network::checkpoint::snmp::mode::cpu',
+                        'hardware'      => 'network::checkpoint::snmp::mode::hardware',
+                        'hastate'       => 'network::checkpoint::snmp::mode::hastate',
+                        'memory'        => 'network::checkpoint::snmp::mode::memory',
+                        'vpn-status'    => 'network::checkpoint::snmp::mode::vpnstatus',
                         );
 
     return $self;
