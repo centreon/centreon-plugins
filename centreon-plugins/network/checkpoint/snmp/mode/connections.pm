@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::connections;
+package network::checkpoint::snmp::mode::connections;
 
 use base qw(centreon::plugins::mode);
 

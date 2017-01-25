@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::checkpoint::mode::components::fan;
+package network::checkpoint::snmp::mode::components::fan;
 
 use strict;
 use warnings;
