@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::hp::lefthand::plugin;
+package storage::hp::lefthand::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'storage::hp::lefthand::mode::hardware',
+                         'hardware'     => 'storage::hp::lefthand::snmp::mode::hardware',
                          );
 
     return $self;
