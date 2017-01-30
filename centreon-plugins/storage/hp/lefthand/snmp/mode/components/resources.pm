@@ -18,31 +18,20 @@
 # limitations under the License.
 #
 
-package storage::hp::lefthand::plugin;
+package storage::hp::lefthand::snmp::mode::components::resources;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Exporter;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+our $map_status;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'hardware' => 'storage::hp::lefthand::mode::hardware',
-                         );
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw($map_status);
 
-    return $self;
-}
+$map_status = {
+    1 => 'pass',
+    2 => 'fail',
+};
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check HP LeftHand storage in SNMP.
-
-=cut
