@@ -50,7 +50,7 @@ sub set_system {
             ['starting', 'OK'],
             ['stopping', 'OK'],
             ['stopped', 'OK'],
-            ['inService', 'OK'],
+            ['inService', 'CRITICAL'],
             ['noContact', 'WARNING'],
             ['lostCommunication', 'WARNING'],
             ['aborted', 'OK'],
