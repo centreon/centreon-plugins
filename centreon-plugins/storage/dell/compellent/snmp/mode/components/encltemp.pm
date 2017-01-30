@@ -55,7 +55,7 @@ sub check {
         
         $self->{output}->output_add(long_msg => sprintf("enclosure temperature '%s' status is '%s' [instance = %s] [value = %s]",
                                     $result->{scEnclTempLocation}, $result->{scEnclTempStatus}, $instance, 
-                                    defined($result->{scEnclTempCurrentC}) ? $result->{scEnclTempCurrentC} : '-');
+                                    defined($result->{scEnclTempCurrentC}) ? $result->{scEnclTempCurrentC} : '-'));
         
         my $exit = $self->get_severity(label => 'default', section => 'encltemp', value => $result->{scEnclTempStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
