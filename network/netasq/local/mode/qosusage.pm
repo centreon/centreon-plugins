@@ -160,7 +160,7 @@ sub new {
                                   "sudo"              => { name => 'sudo' },
                                   "command:s"         => { name => 'command', default => 'tail' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-1 /log/l_monitor 2>&1' },
+                                  "command-options:s" => { name => 'command_options', default => '-1 /log/l_monitor' },
                                 });
     
     return $self;
@@ -278,7 +278,7 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-1 /log/l_monitor 2>&1').
+Command options (Default: '-1 /log/l_monitor').
 
 =item B<--speed-in>
 
