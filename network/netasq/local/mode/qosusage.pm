@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my $instance_mode;
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -34,39 +36,107 @@ sub set_counters {
     
     $self->{maps_counters}->{qos} = [
         { label => 'in', set => {
-                key_values => [ { name => 'in_prct' }, { name => 'in' }, { name => 'total_in' }, { name => 'display' } ],
+                key_values => [ { name => 'in' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_qos_output'),
-                threshold_use => 'in_prct_absolute',
+                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_qos_threshold'),
+            }
+        },
+        { label => 'in-peak', set => {
+                key_values => [ { name => 'in_peak' }, { name => 'display' } ],
+                output_template => 'In Peak : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_absolute', template => '%s', unit => 'b/s',
-                      min => 0, max => 'total_in_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_peak', value => 'in_peak_absolute', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'out', set => {
-                key_values => [ { name => 'out_prct' }, { name => 'out' }, { name => 'total_out' }, { name => 'display' } ],
+                key_values => [ { name => 'out' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_qos_output'),
-                threshold_use => 'out_prct_absolute',
+                closure_custom_perfdata => $self->can('custom_qos_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_qos_threshold'),
+            }
+        },
+        { label => 'out-peak', set => {
+                key_values => [ { name => 'out_peak' }, { name => 'display' } ],
+                output_template => 'Out Peak : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_absolute', template => '%s', unit => 'b/s',
-                      min => 0, max => 'total_out_absolute', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_peak', value => 'out_peak_absolute', template => '%.2f',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
     ];
 }
 
+sub custom_qos_perfdata {
+    my ($self, %options) = @_;
+    
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+    
+    my ($warning, $critical);
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    }
+    
+    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
+                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
+                                  warning => $warning,
+                                  critical => $critical,
+                                  min => 0, max => $self->{result_values}->{speed});
+}
+
+sub custom_qos_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
 sub custom_qos_output {
     my ($self, %options) = @_;
     
-    my $label = defined($self->{result_values}->{in_absolute}) ? 'in' : 'out';
-    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{$label . '_absolute'}, network => 1);
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{'total_' . $label . '_absolute'}, network => 1);
-    my $msg = sprintf("Traffic %s : %s/s (%.2f %%) on %s/s",
-                      ucfirst($label), $traffic_value . $traffic_unit,
-                      $self->{result_values}->{$label . '_prct_absolute'},
-                      $total_value . $total_unit);
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
+    my ($total_value, $total_unit);
+    if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
+        ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
+    }
+   
+    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
+                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+                      defined($total_value) ? $total_value . $total_unit : '-');
     return $msg;
+}
+
+sub custom_qos_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{traffic} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
+    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    }
+    return 0;
 }
 
 sub new {
@@ -79,6 +149,9 @@ sub new {
                                 { 
                                   "filter-name:s"       => { name => 'filter_name' },
                                   "filter-vlan:s"       => { name => 'filter_vlan' },
+                                  "speed-in:s"          => { name => 'speed_in' },
+                                  "speed-out:s"         => { name => 'speed_out' },
+                                  "units-traffic:s"     => { name => 'units_traffic', default => '%' },
                                   "hostname:s"          => { name => 'hostname' },
                                   "ssh-option:s@"       => { name => 'ssh_option' },
                                   "ssh-path:s"          => { name => 'ssh_path' },
@@ -104,6 +177,8 @@ sub check_options {
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
+    
+    $instance_mode = $self;
 }
 
 sub prefix_qos_output {
@@ -137,17 +212,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $vlan . "': no matching filter.", debug => 1);
             next;
         }
-        $in_max = undef if ($in_max == 0);
-        $out_max = undef if ($out_max == 0);
-        if (!defined($in_max) && !defined($out_max)) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no max values.", debug => 1);
-            next;
-        }
         
         $self->{qos}->{$name} = { 
             display => $name, 
-            in => $in, in_prct => defined($in_max) ? $in * 100 / $in_max : undef, total_in => $in_max,
-            out => $out, out_prct => defined($out_max) ? $out * 100 / $out_max : undef, total_out => $out_max };
+            in => $in, in_peak => $in_max,
+            out => $out, out_peak => $out_max };
     }
     
     if (scalar(keys %{$self->{qos}}) <= 0) {
@@ -211,16 +280,28 @@ Command path (Default: none).
 
 Command options (Default: '-1 /log/l_monitor 2>&1').
 
+=item B<--speed-in>
+
+Set interface speed for incoming traffic (in Mb).
+
+=item B<--speed-out>
+
+Set interface speed for outgoing traffic (in Mb).
+
+=item B<--units-traffic>
+
+Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'in' (%), 'out' (%).
+Can be: 'in', 'in-peak', 'out', 'out-peak'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Threshold warning.
-Can be: 'in' (%), 'out' (%).
+Can be: 'in', 'in-peak', 'out', 'out-peak'.
 
 =back
 
