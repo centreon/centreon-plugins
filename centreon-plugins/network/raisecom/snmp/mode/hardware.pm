@@ -46,7 +46,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::raisecom::mode::components';
+    $self->{components_path} = 'network::raisecom::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature'];
 }
 
