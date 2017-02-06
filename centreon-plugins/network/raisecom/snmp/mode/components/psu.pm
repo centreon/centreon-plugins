@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::mode::components::psu;
+package network::raisecom::snmp::mode::components::psu;
 
 use strict;
 use warnings;
