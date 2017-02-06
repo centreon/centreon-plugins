@@ -47,7 +47,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'network::raisecom::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'temperature'];
+    $self->{components_module} = ['temperature']; #['fan', 'psu', 'temperature'];
 }
 
 sub snmp_execute {
@@ -76,14 +76,14 @@ __END__
 
 =head1 MODE
 
-Check hardware (fans, temperatures, power supplies).
+Check hardware (temperatures).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'temperature'.
+Can be: 'temperature'.
 
 =item B<--filter>
 
