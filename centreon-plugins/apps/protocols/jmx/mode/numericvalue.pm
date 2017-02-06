@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,7 +47,7 @@ sub new {
                                   "critical:s@"             => { name => 'critical' },
                                   "format:s@"               => { name => 'format' },
                                   "format-scale:s@"         => { name => 'format_scale' },
-                                  "format-scale-unit:s@"    => { name => 'format_scale_unit' },
+                                  "format-scale-type:s@"    => { name => 'format_scale_type' },
                                   "perfdata-unit:s@"        => { name => 'perfdata_unit' },
                                   "perfdata-name:s@"        => { name => 'perfdata_name' },
                                   "perfdata-min:s@"         => { name => 'perfdata_min' },
@@ -110,7 +110,7 @@ sub set_attributes {
     $self->{attributes}->{critical} = (defined($self->{option_results}->{critical}) && scalar(@{$self->{option_results}->{critical}}) > 0) ? shift(@{$self->{option_results}->{critical}}) : undef;
     $self->{attributes}->{format} = (defined($self->{option_results}->{format}) && scalar(@{$self->{option_results}->{format}}) > 0) ? shift(@{$self->{option_results}->{format}}) : 'current value' . $options{number} . ' is %s';
     $self->{attributes}->{format_scale} = (defined($self->{option_results}->{format_scale}) && scalar(@{$self->{option_results}->{format_scale}}) > 0) ? shift(@{$self->{option_results}->{format_scale}}) : undef;
-    $self->{attributes}->{format_scale_unit} = (defined($self->{option_results}->{format_scale_unit}) && scalar(@{$self->{option_results}->{format_scale_unit}}) > 0) ? shift(@{$self->{option_results}->{format_scale_unit}}) : 'other';
+    $self->{attributes}->{format_scale_type} = (defined($self->{option_results}->{format_scale_type}) && scalar(@{$self->{option_results}->{format_scale_type}}) > 0) ? shift(@{$self->{option_results}->{format_scale_type}}) : 'other';
     $self->{attributes}->{perfdata_unit} = (defined($self->{option_results}->{perfdata_unit}) && scalar(@{$self->{option_results}->{perfdata_unit}}) > 0) ? shift(@{$self->{option_results}->{perfdata_unit}}) : '';
     $self->{attributes}->{perfdata_name} = (defined($self->{option_results}->{perfdata_name}) && scalar(@{$self->{option_results}->{perfdata_name}}) > 0) ? shift(@{$self->{option_results}->{perfdata_name}}) : 'value' . $options{number};
     $self->{attributes}->{perfdata_min} = (defined($self->{option_results}->{perfdata_min}) && scalar(@{$self->{option_results}->{perfdata_min}}) > 0) ? shift(@{$self->{option_results}->{perfdata_min}}) : '';
@@ -120,8 +120,8 @@ sub set_attributes {
         $self->{output}->add_option_msg(short_msg => "Wrong --type argument '" . $self->{attributes}->{type} . "' ('gauge' or 'counter').");
         $self->{output}->option_exit();
     }
-    if ($self->{attributes}->{format_scale_unit} !~ /^other|network$/i) {
-        $self->{output}->add_option_msg(short_msg => "Wrong --format-scale-unit argument '" . $self->{attributes}->{format_scale_unit} . "' ('other' or 'network').");
+    if ($self->{attributes}->{format_scale_type} !~ /^other|network$/i) {
+        $self->{output}->add_option_msg(short_msg => "Wrong --format-scale-unit argument '" . $self->{attributes}->{format_scale_type} . "' ('other' or 'network').");
         $self->{output}->option_exit();
     }
     
@@ -172,7 +172,7 @@ sub check_value {
                                   threshold => [ { label => 'critical-' . $options{number}, exit_litteral => 'critical' }, { label => 'warning-' . $options{number}, exit_litteral => 'warning' } ]);
     if (defined($self->{attributes}->{format_scale})) {
         my ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value);
-        if ($self->{attributes}->{format_scale} =~ /^network$/i) {
+        if ($self->{attributes}->{format_scale_type} =~ /^network$/i) {
             ($value_mod, $value_unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
         }
         $self->{output}->output_add(severity => $exit,
@@ -253,7 +253,7 @@ __END__
 
 Check an JMX numeric value.
 Example:
-perl centreon_plugins.pl --plugin=apps::protocols::jmx::plugin --custommode=jolokia --url=http://127.0.0.1/jolokia --mode=numeric-value --mbean-pattern='java.lang:type=Memory' --attribute='HeapMemoryUsage' --lookup-path='used' --format-scale --format-unit='B' --format='HeapMemory Usage used: %s' --perfdata-name='used'
+perl centreon_plugins.pl --plugin=apps::protocols::jmx::plugin --custommode=jolokia --url=http://127.0.0.1/jolokia --mode=numeric-value --mbean-pattern='java.lang:type=Memory' --attribute='HeapMemoryUsage' --lookup-path='used' --format-scale --format='HeapMemory Usage used: %s' --perfdata-unit='B' --perfdata-name='used'
 
 =over 8
 

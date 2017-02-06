@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,14 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
     $self->{maps_counters}->{global} = [
+        { label => 'live-users', set => {
+                key_values => [ { name => 'live_users' } ],
+                output_template => 'live users = %s',
+                perfdatas => [
+                    { label => 'live_users', value => 'live_users_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
         { label => 'http-hits', set => {
                 key_values => [ { name => 'http_hits', diff => 1 } ],
                 output_template => 'http hits = %s',
@@ -40,7 +48,7 @@ sub set_counters {
                     { label => 'http_hits', value => 'http_hits_absolute', template => '%s', min => 0 },
                 ],
             }
-        },        
+        },
         { label => 'ftp-hits', set => {
                 key_values => [ { name => 'ftp_hits', diff => 1 } ],
                 output_template => 'ftp hits = %s',
@@ -103,18 +111,20 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
+    my $oid_liveUsers = '.1.3.6.1.4.1.21067.2.1.2.6.0';
     my $oid_httpHits = '.1.3.6.1.4.1.21067.2.1.2.7.0';
     my $oid_ftpHits = '.1.3.6.1.4.1.21067.2.1.2.8.0';
     my $oid_pop3Hits = '.1.3.6.1.4.1.21067.2.1.2.9.1.0';
     my $oid_imapHits = '.1.3.6.1.4.1.21067.2.1.2.9.2.0';
     my $oid_smtpHits = '.1.3.6.1.4.1.21067.2.1.2.9.3.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_httpHits, $oid_ftpHits, $oid_pop3Hits,
+    my $result = $options{snmp}->get_leef(oids => [$oid_liveUsers, $oid_httpHits, $oid_ftpHits, $oid_pop3Hits,
                                                    $oid_imapHits, $oid_smtpHits], nothing_quit => 1);
 
     $self->{cache_name} = "cyberoam_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
-    $self->{global} = { http_hits => $result->{$oid_httpHits},
+    $self->{global} = { live_users => $result->{$oid_liveUsers},
+                        http_hits => $result->{$oid_httpHits},
                         ftp_hits => $result->{$oid_ftpHits},
                         pop3_hits => $result->{$oid_pop3Hits},
                         imap_hits => $result->{$oid_imapHits}, 
@@ -139,12 +149,12 @@ Example: --filter-counters='http-hits'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
+Can be: live-users, http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
+Can be: live-users, http-hits, ftp-hits, pop3-hits, imap-hits, smtp-hits.
 
 =back
 

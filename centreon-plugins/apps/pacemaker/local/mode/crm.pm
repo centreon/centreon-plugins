@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -102,11 +102,13 @@ sub parse_output {
             # Check Resources pos
             if (defined($self->{resources_check}->{$1}) && $self->{resources_check}->{$1} ne $2) {
                 $self->{output}->output_add(severity => $self->{threshold}, 
-                                            short_msg => "Resource '$1' is on node '$2'");
+                                            short_msg => "Resource '$1' is started on node '$2'");
             }
-        } elsif ($line =~ /\s*([0-9a-zA-Z_\-]+)\s+\(\S+\)\:\s+Stopped/) {
+            $self->{output}->output_add(long_msg => "Resource '$1' is started on node '$2'");
+        } elsif ($line =~ /\s*([0-9a-zA-Z_\-]+)\s+\(\S+\)\:\s+Stopped/ || $line =~ /\s*([0-9a-zA-Z_\-]+)\s+\(\S+\)\:\s+\(\S+\)\s+Stopped/) {
             $self->{output}->output_add(severity => $self->{threshold}, 
-                                        short_msg => "Resource '$1' Stopped");
+                                        short_msg => "Resource '$1' is stopped",
+                                        long_msg => "Resource '$1' is stopped");
         } elsif ($line =~ m/\s*stopped\:\s*\[\s*(.*)\s*\]/i) {
             # Check Master/Slave stopped
             my @stopped = ();

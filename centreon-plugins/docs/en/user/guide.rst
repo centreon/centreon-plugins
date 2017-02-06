@@ -555,6 +555,7 @@ Clone ``centreon-plugins``:
 Copy the common files for all plugins:
 ::
 
+  # find . -name "*.pm" -exec sed -i ' /__END__/d' \{\} \;
   # cp -R --parent centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ ../plugin/lib/
   # cp centreon_plugins.pl ../plugin
   # sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../plugin/lib/centreon/plugins/script.pm

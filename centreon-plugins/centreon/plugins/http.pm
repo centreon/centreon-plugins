@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -300,6 +300,7 @@ sub request {
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(long_msg => $response->content, debug => 1);
         $self->{output}->output_add(severity => $status,
                                     short_msg => $response->status_line);
         $self->{output}->display();
