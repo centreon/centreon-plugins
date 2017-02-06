@@ -179,7 +179,7 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{sysTmmStatTmmId} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{Name} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{sysTmmStatTmmId} . "': no matching filter name.", debug => 1);
             next;
         }
         
