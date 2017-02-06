@@ -103,7 +103,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    # 
+    # RAISECOM-SYSTEM-MIB
     my $oid_raisecomCPUUtilization1sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.1';
     my $oid_raisecomCPUUtilization5sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.2';
     my $oid_raisecomCPUUtilization1min = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.3';
