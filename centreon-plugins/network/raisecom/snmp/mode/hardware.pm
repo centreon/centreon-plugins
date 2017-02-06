@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::raisecom::mode::hardware;
+package network::raisecom::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
