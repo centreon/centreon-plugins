@@ -43,8 +43,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
-        { name => 'flash', type => 0, cb_prefix_output => 'prefix_flash_output' }
+        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' }
     ];
     
     $self->{maps_counters}->{memory} = [
@@ -59,30 +58,12 @@ sub set_counters {
             }
         },
     ];
-    $self->{maps_counters}->{flash} = [
-        { label => 'flash', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
-                perfdatas => [
-                    { label => 'flash', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
-                ],
-            }
-        },
-    ];   
 }
 
 sub prefix_memory_output {
     my ($self, %options) = @_;
     
     return "Memory ";
-}
-
-sub prefix_flash_output {
-    my ($self, %options) = @_;
-
-    return "Flash ";
 }
 
 sub new {
@@ -103,43 +84,23 @@ sub manage_selection {
     
     my ($total_bytes, $used_bytes, $free_bytes);
    
-    #  TRAPEZE-NETWORKS-SYSTEM-MIB
-    my $oid_trpzSysFlashMemoryUsedBytes = '.1.3.6.1.4.1.14525.4.8.1.1.3.0';
-    my $oid_trpzSysFlashMemoryTotalBytes = '.1.3.6.1.4.1.14525.4.8.1.1.4.0';
-    my $oid_trpzSysCpuMemoryInstantUsage = '.1.3.6.1.4.1.14525.4.8.1.1.12.1.0';
-    my $oid_trpzSysCpuMemoryUsedBytes = '.1.3.6.1.4.1.14525.4.8.1.1.1.0';
-    my $oid_trpzSysCpuMemoryTotalBytes = '.1.3.6.1.4.1.14525.4.8.1.1.2.0';
-    my $oid_trpzSysCpuMemorySize = '.1.3.6.1.4.1.14525.4.8.1.1.6.0';
+    #  RAISECOM-SYSTEM-MIB
+    my $oid_raisecomAvailableMemory = '.1.3.6.1.4.1.8886.1.1.3.2.0';
+    my $oid_raisecomTotalMemory = '.1.3.6.1.4.1.8886.1.1.3.1.0';
 
-    my $results = $options{snmp}->get_leef(oids => [$oid_trpzSysFlashMemoryUsedBytes, $oid_trpzSysFlashMemoryTotalBytes, $oid_trpzSysCpuMemoryUsedBytes,
-                                                    $oid_trpzSysCpuMemoryInstantUsage, $oid_trpzSysCpuMemorySize, $oid_trpzSysCpuMemoryTotalBytes ],
+    my $results = $options{snmp}->get_leef(oids => [$oid_raisecomAvailableMemory, $oid_raisecomTotalMemory ],
                                            nothing_quit => 1);
      
-    if (defined($results->{$oid_trpzSysCpuMemorySize}) || $results->{$oid_trpzSysCpuMemorySize} != 0) {
-        $total_bytes = $results->{$oid_trpzSysCpuMemorySize} * 1024;
-        $used_bytes = $results->{$oid_trpzSysCpuMemoryInstantUsage} * 1024;
-        $free_bytes = $total_bytes - $used_bytes;
-    } else {
-        $total_bytes = $results->{$oid_trpzSysCpuMemoryTotalBytes};
-        $used_bytes = $results->{$oid_trpzSysCpuMemoryUsedBytes};
-        $free_bytes = $total_bytes - $used_bytes;
-    }
-
-    my $free_bytes_flash = $results->{$oid_trpzSysFlashMemoryTotalBytes} - $results->{$oid_trpzSysFlashMemoryUsedBytes};
-
+    $total_bytes = $results->{$oid_raisecomTotalMemory};
+    $free_bytes = $results->{$oid_raisecomAvailableMemory};
+    $used_bytes = $total_bytes - $free_bytes;
+    
     $self->{memory} = {display => 'memory',
              prct_used => $used_bytes * 100 / $total_bytes,
              used => $used_bytes,
              free => $free_bytes,
              total => $total_bytes,
-             };
-    
-    $self->{flash} = {display => 'flash',
-            prct_used => $results->{$oid_trpzSysFlashMemoryUsedBytes} * 100 / $results->{$oid_trpzSysFlashMemoryTotalBytes},
-            used => $results->{$oid_trpzSysFlashMemoryUsedBytes},
-            free => $free_bytes_flash,
-            total => $results->{$oid_trpzSysFlashMemoryTotalBytes},
-           };         
+             };     
 }
 
 1;
@@ -160,12 +121,12 @@ Example: --filter-counters='^(memory)$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'memory', 'flash'
+Can be: 'memory'
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'memory', 'flash'
+Can be: 'memory'
 
 =back
 
