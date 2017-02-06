@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,14 +55,16 @@ sub check {
         
         $self->{output}->output_add(long_msg => sprintf("enclosure temperature '%s' status is '%s' [instance = %s] [value = %s]",
                                     $result->{scEnclTempLocation}, $result->{scEnclTempStatus}, $instance, 
-                                    $result->{scEnclTempCurrentC}));
+                                    defined($result->{scEnclTempCurrentC}) ? $result->{scEnclTempCurrentC} : '-'));
         
         my $exit = $self->get_severity(label => 'default', section => 'encltemp', value => $result->{scEnclTempStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Enclosure temperature '%s' status is '%s'", $result->{scEnclTempLocation}, $result->{scEnclTempStatus}));
         }
-             
+        
+        next if (!defined($result->{scEnclTempCurrentC}));
+
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'encltemp', instance => $instance, value => $result->{scEnclTempCurrentC});
         
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {

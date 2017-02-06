@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,10 +43,10 @@ my $mapping2 = {
 my $oid_HdEntry = '.1.3.6.1.4.1.24681.1.2.11.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_HdEntry, start => $mapping->{HdDescr}->{oid}, end => $mapping->{HdStatus}->{oid} };
-    push @{$options{request}}, { oid => $mapping2->{HdSmartInfo}->{oid} };
+    push @{$self->{request}}, { oid => $oid_HdEntry, start => $mapping->{HdDescr}->{oid}, end => $mapping->{HdStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping2->{HdSmartInfo}->{oid} };
 }
 
 sub check {
@@ -54,7 +54,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking disks");
     $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    return if ($self->check_filter(section => 'disk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_HdEntry}})) {
         next if ($oid !~ /^$mapping->{HdDescr}->{oid}\.(\d+)$/);
@@ -63,7 +63,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_HdEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{HdSmartInfo}->{oid} }, instance => $instance);
 
-        next if ($self->check_exclude(section => 'disk', instance => $instance));
+        next if ($self->check_filter(section => 'disk', instance => $instance));
         next if ($result->{HdStatus} eq 'noDisk' && 
                  $self->absent_problem(section => 'disk', instance => $instance));
         
