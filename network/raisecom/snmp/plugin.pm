@@ -33,6 +33,9 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'        => 'network::raisecom::snmp::mode::cpu',
                          'memory'     => 'network::raisecom::snmp::mode::memory',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'hardware'   => 'network::raisecom::snmp::mode::hardware',
                          );
 
     return $self;
