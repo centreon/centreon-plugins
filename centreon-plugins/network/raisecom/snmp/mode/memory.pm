@@ -20,51 +20,10 @@
 
 package network::raisecom::snmp::mode::memory;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-    
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
-    
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
-    return $msg;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' }
-    ];
-    
-    $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
-                key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
-                closure_custom_output => $self->can('custom_usage_output'),
-                threshold_use => 'prct_used_absolute',
-                perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
-                      min => 0, max => 'total_absolute', unit => 'B' },
-                ],
-            }
-        },
-    ];
-}
-
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-    
-    return "Memory ";
-}
 
 sub new {
     my ($class, %options) = @_;
@@ -74,33 +33,64 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
+                                  "warning:s"               => { name => 'warning' },
+                                  "critical:s"              => { name => 'critical' },
                                 });
-    
     return $self;
 }
 
-sub manage_selection {
+sub check_options {
     my ($self, %options) = @_;
-    
-    my ($total_bytes, $used_bytes, $free_bytes);
-   
-    #  RAISECOM-SYSTEM-MIB
+    $self->SUPER::init(%options);
+
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
+}
+
+sub run {
+    my ($self, %options) = @_;
+    $self->{snmp} = $options{snmp};
+
     my $oid_raisecomAvailableMemory = '.1.3.6.1.4.1.8886.1.1.3.2.0';
     my $oid_raisecomTotalMemory = '.1.3.6.1.4.1.8886.1.1.3.1.0';
-
-    my $results = $options{snmp}->get_leef(oids => [$oid_raisecomAvailableMemory, $oid_raisecomTotalMemory ],
-                                           nothing_quit => 1);
-     
-    $total_bytes = $results->{$oid_raisecomTotalMemory};
-    $free_bytes = $results->{$oid_raisecomAvailableMemory};
-    $used_bytes = $total_bytes - $free_bytes;
     
-    $self->{memory} = {display => 'memory',
-             prct_used => $used_bytes * 100 / $total_bytes,
-             used => $used_bytes,
-             free => $free_bytes,
-             total => $total_bytes,
-             };     
+    my $oids = [$oid_raisecomAvailableMemory, $oid_raisecomTotalMemory];
+  
+    my $result = $self->{snmp}->get_leef(oids => $oids, 
+                                         nothing_quit => 1);
+    
+    my $free_size = $result->{$oid_raisecomAvailableMemory} * 1024;
+    my $total_size = $result->{$oid_raisecomAvailableMemory} * 1024;
+    my $used_size = $total_size - $free_size;
+    
+    my $prct_used = $used_size * 100 / $total_size;
+    my $prct_free = 100 - $prct_used;
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
+    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used_size);
+    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free_size);
+    
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf("Memory Total: %s, Used: %s (%.2f%%), Free: %s (%.2f%%)",
+                                            $total_value . " " . $total_unit,
+                                            $used_value . " " . $used_unit, $prct_used,
+                                            $free_value . " " . $free_unit, $prct_free));
+    
+    $self->{output}->perfdata_add(label => "used", unit => 'B',
+                                  value => $used_size,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+                                  min => 0, max => $total_size);
+                                 
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -109,17 +99,17 @@ __END__
 
 =head1 MODE
 
-Check memory usage 
+Check memory usage.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning.
+Threshold warning in percent.
 
 =item B<--critical>
 
-Threshold critical.
+Threshold critical in percent.
 
 =back
 
