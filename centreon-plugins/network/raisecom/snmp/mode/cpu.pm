@@ -42,6 +42,15 @@ sub set_counters {
                 ],
             }
         },
+        { label => '5s', set => {
+                key_values => [ { name => 'raisecomCPUUtilization5sec' } ],
+                output_template => '5 secondes : %.2f %%',
+                perfdatas => [
+                    { label => 'cpu_5s', value => 'raisecomCPUUtilization5sec_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
         { label => '1m', set => {
                 key_values => [ { name => 'raisecomCPUUtilization1min' } ],
                 output_template => '1 minute : %.2f %%',
@@ -56,6 +65,15 @@ sub set_counters {
                 output_template => '10 minutes : %.2f %%',
                 perfdatas => [
                     { label => 'cpu_10m', value => 'raisecomCPUUtilization10min_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => '2h', set => {
+                key_values => [ { name => 'raisecomCPUUtilization2h' } ],
+                output_template => '2 hours : %.2f %%',
+                perfdatas => [
+                    { label => 'cpu_2h', value => 'raisecomCPUUtilization2h_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -87,16 +105,21 @@ sub manage_selection {
     
     # 
     my $oid_raisecomCPUUtilization1sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.1';
+    my $oid_raisecomCPUUtilization5sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.2';
     my $oid_raisecomCPUUtilization1min = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.3';
     my $oid_raisecomCPUUtilization10min = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.4';
+    my $oid_raisecomCPUUtilization2h = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.5';
    
-    my $results = $options{snmp}->get_leef(oids => [$oid_raisecomCPUUtilization1sec, $oid_raisecomCPUUtilization1min, 
-                                                    $oid_raisecomCPUUtilization10min ],
+    my $results = $options{snmp}->get_leef(oids => [$oid_raisecomCPUUtilization1sec, $oid_raisecomCPUUtilization5sec,
+                                                    $oid_raisecomCPUUtilization1min, , $oid_raisecomCPUUtilization10min,
+                                                    $oid_raisecomCPUUtilization2h ],
                                            nothing_quit => 1);
        
     $self->{cpu} = { raisecomCPUUtilization1sec => $results->{$oid_raisecomCPUUtilization1sec},
+                     raisecomCPUUtilization5sec => $results->{$oid_raisecomCPUUtilization5sec},
                      raisecomCPUUtilization1min => $results->{$oid_raisecomCPUUtilization1min},
                      raisecomCPUUtilization10min => $results->{$oid_raisecomCPUUtilization10min},
+                     raisecomCPUUtilization2h => $results->{$oid_raisecomCPUUtilization2h},
                      };
 }
 
@@ -118,12 +141,12 @@ Example: --filter-counters='^(1s|1m)$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: '1s', '1m', '10m'
+Can be: '1s', '5s', '1m', '10m', '2h'
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: '1s', '1m', '10m'
+Can be: '1s', '5s', '1m', '10m', '2h'
 
 =back
 
