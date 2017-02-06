@@ -65,8 +65,8 @@ sub run {
     my $result = $self->{snmp}->get_leef(oids => $oids, 
                                          nothing_quit => 1);
     
-    my $free_size = $result->{$oid_raisecomAvailableMemory} * 1024;
-    my $total_size = $result->{$oid_raisecomTotalMemory} * 1024;
+    my $free_size = $result->{$oid_raisecomAvailableMemory};
+    my $total_size = $result->{$oid_raisecomTotalMemory};
     my $used_size = $total_size - $free_size;
     
     my $prct_used = $used_size * 100 / $total_size;
