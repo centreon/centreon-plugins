@@ -296,6 +296,20 @@ e.g: aggregate multiple metrics (min,max,avg,sum) or custom operation
 
 Specify the full path to a json config file
 
+=item B<--filter-counters>
+
+Filter some counter (can be 'unique' or 'global')
+
+=item B<--warning-*>
+
+Warning threshold (can be 'unique' or 'global')
+BE CAREFUL, will override config file definition
+
+=item B<--critical-*>
+
+Critical threshold (can be 'unique' or 'global')
+BE CAREFUL, will override config file definition
+
 =back
 
 =cut
