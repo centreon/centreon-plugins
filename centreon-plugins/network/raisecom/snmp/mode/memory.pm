@@ -52,7 +52,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'prct_used_absolute',
                 perfdatas => [
-                    { label => 'memory', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
+                    { label => 'used', value => 'used_absolute', template => '%.2f', threshold_total => 'total_absolute', cast_int => 1,
                       min => 0, max => 'total_absolute', unit => 'B' },
                 ],
             }
