@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::components::fan;
+package network::raisecom::snmp::mode::components::fan;
 
 use strict;
 use warnings;
