@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::plugin;
+package network::f5::bigip::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,15 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'connections'          => 'network::f5::bigip::mode::connections',
-                         'failover'             => 'network::f5::bigip::mode::failover',
-                         'hardware'             => 'network::f5::bigip::mode::hardware',
-                         'list-nodes'           => 'network::f5::bigip::mode::listnodes',
-                         'list-pools'           => 'network::f5::bigip::mode::listpools',
-                         'list-virtualservers'  => 'network::f5::bigip::mode::listvirtualservers',
-                         'node-status'          => 'network::f5::bigip::mode::nodestatus',
-                         'pool-status'          => 'network::f5::bigip::mode::poolstatus',
-                         'virtualserver-status' => 'network::f5::bigip::mode::virtualserverstatus',
+                         'connections'          => 'network::f5::bigip::snmp::mode::connections',
+                         'failover'             => 'network::f5::bigip::snmp::mode::failover',
+                         'hardware'             => 'network::f5::bigip::snmp::mode::hardware',
+                         'list-nodes'           => 'network::f5::bigip::snmp::mode::listnodes',
+                         'list-pools'           => 'network::f5::bigip::snmp::mode::listpools',
+                         'list-virtualservers'  => 'network::f5::bigip::snmp::mode::listvirtualservers',
+                         'node-status'          => 'network::f5::bigip::snmp::mode::nodestatus',
+                         'pool-status'          => 'network::f5::bigip::snmp::mode::poolstatus',
+                         'tmm-usage'            => 'network::f5::bigip::snmp::mode::tmmusage',
+                         'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus',
                          );
 
     return $self;

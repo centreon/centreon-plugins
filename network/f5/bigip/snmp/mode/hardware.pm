@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::hardware;
+package network::f5::bigip::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -46,7 +46,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::f5::bigip::mode::components';
+    $self->{components_path} = 'network::f5::bigip::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature'];
 }
 

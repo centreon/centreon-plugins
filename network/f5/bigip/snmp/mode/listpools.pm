@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::listpools;
+package network::f5::bigip::snmp::mode::listpools;
 
 use base qw(centreon::plugins::mode);
 

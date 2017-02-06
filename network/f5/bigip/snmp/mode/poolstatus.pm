@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::poolstatus;
+package network::f5::bigip::snmp::mode::poolstatus;
 
 use base qw(centreon::plugins::templates::counter);
 

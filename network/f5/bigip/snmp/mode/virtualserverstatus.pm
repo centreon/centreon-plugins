@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::nodestatus;
+package network::f5::bigip::snmp::mode::virtualserverstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 
 my $thresholds = {
-    node => [
+    vs => [
         ['none', 'CRITICAL'],
         ['green', 'OK'],
         ['yellow', 'WARNING'],
@@ -40,7 +40,7 @@ my $instance_mode;
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'node', value => $self->{result_values}->{AvailState});
+    return $instance_mode->get_severity(section => 'vs', value => $self->{result_values}->{AvailState});
 }
 
 sub custom_status_calc {
@@ -54,9 +54,9 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All Nodes are ok' },
+        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual Servers are ok' },
     ];
-    $self->{maps_counters}->{node} = [
+    $self->{maps_counters}->{vs} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'AvailState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -69,10 +69,10 @@ sub set_counters {
     ];
 }
 
-sub prefix_node_output {
+sub prefix_vs_output {
     my ($self, %options) = @_;
     
-    return "Node '" . $options{instance_value}->{Name} . "' ";
+    return "Virtual Server '" . $options{instance_value}->{Name} . "' ";
 }
 
 sub new {
@@ -134,7 +134,7 @@ sub get_severity {
     return $status;
 }
 
-my %map_node_status = (
+my %map_vs_status = (
     0 => 'none',
     1 => 'green',
     2 => 'yellow',
@@ -142,7 +142,7 @@ my %map_node_status = (
     4 => 'blue', # unknown
     5 => 'gray',
 );
-my %map_node_enabled = (
+my %map_vs_enabled = (
     0 => 'none',
     1 => 'enabled',
     2 => 'disabled',
@@ -152,42 +152,43 @@ my %map_node_enabled = (
 # New OIDS
 my $mapping = {
     new => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => \%map_node_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => \%map_node_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.6' },
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => \%map_vs_enabled },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5' },
     },
     old => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.13', map => \%map_node_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.14', map => \%map_node_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.16' },
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => \%map_vs_enabled },
+        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.25' },
     },
 };
-my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1'; # new
-my $oid_ltmNodeAddrEntry = '.1.3.6.1.4.1.3375.2.2.4.1.2.1'; # old
+my $oid_ltmVsStatusEntry = '.1.3.6.1.4.1.3375.2.2.10.13.2.1'; # new
+my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmNodeAddrEntry, start => $mapping->{old}->{AvailState}->{oid} },
-                                                            { oid => $oid_ltmNodeAddrStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
+                                                            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid} },
+                                                            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
                                                          ],
                                                          , nothing_quit => 1);
     
-    my ($branch, $map) = ($oid_ltmNodeAddrStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmNodeAddrStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmNodeAddrStatusEntry}}) == 0)  {
-        ($branch, $map) = ($oid_ltmNodeAddrEntry, 'old');
+    my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
+    if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
+        ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
     }
     
-    $self->{node} = {};
+    $self->{vs} = {};
     foreach my $oid (keys %{$self->{results}->{$branch}}) {
         next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
-        $result->{Name} = $instance;
-        # prefix by '1.4'
-        $result->{Name} =~ s/^1\.4\.//;
+        $result->{Name} = '';
+        foreach (split /\./, $instance) {
+            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+        }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
@@ -199,10 +200,10 @@ sub manage_selection {
         }
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
-        $self->{node}->{$instance} = { %$result };
+        $self->{vs}->{$instance} = { %$result };
     }
     
-    if (scalar(keys %{$self->{node}}) <= 0) {
+    if (scalar(keys %{$self->{vs}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
@@ -214,7 +215,7 @@ __END__
 
 =head1 MODE
 
-Check Nodes status.
+Check Virtual Servers status.
 
 =over 8
 
@@ -226,7 +227,7 @@ Filter by name (regexp can be used).
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='node,CRITICAL,^(?!(green)$)'
+Example: --threshold-overload='vs,CRITICAL,^(?!(green)$)'
 
 =back
 

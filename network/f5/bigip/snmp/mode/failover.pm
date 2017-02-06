@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::failover;
+package network::f5::bigip::snmp::mode::failover;
 
 use base qw(centreon::plugins::mode);
 
