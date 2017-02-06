@@ -30,13 +30,13 @@ my %map_status = (
 );
 
 my $mapping = {
-    sysChassisPowerSupplyStatus => { oid => '.1.3.6.1.4.1.3375.2.1.3.2.2.2.1.2', map => \%map_status },
+    raisecomAlarmPowerStatus => { oid => '.1.3.6.1.4.1.8886.1.1.4.5.3.6', map => \%map_status },
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $mapping->{sysChassisPowerSupplyStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{raisecomAlarmPowerStatus}->{oid} };
 }
 
 sub check {
@@ -46,25 +46,25 @@ sub check {
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{sysChassisPowerSupplyStatus}->{oid}}})) {
-        $oid =~ /^$mapping->{sysChassisPowerSupplyStatus}->{oid}\.(.*)$/;
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{raisecomAlarmPowerStatus}->{oid}}})) {
+        $oid =~ /^$mapping->{raisecomAlarmPowerStatus}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{sysChassisPowerSupplyStatus}->{oid}}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{raisecomAlarmPowerStatus}->{oid}}, instance => $instance);
     
-        next if ($result->{sysChassisPowerSupplyStatus} =~ /notPresent/i && 
+        next if ($result->{raisecomAlarmPowerStatus} =~ /notPresent/i && 
                  $self->absent_problem(section => 'psu', instance => $instance));
         next if ($self->check_filter(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance: %s].", 
-                                    $instance, $result->{sysChassisPowerSupplyStatus}, $instance
+                                    $instance, $result->{raisecomAlarmPowerStatus}, $instance
                                     ));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{sysChassisPowerSupplyStatus});
+        my $exit = $self->get_severity(section => 'psu', value => $result->{raisecomAlarmPowerStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power supply '%s' status is '%s'", 
-                                            $instance, $result->{sysChassisPowerSupplyStatus}));
+                                            $instance, $result->{raisecomAlarmPowerStatus}));
         }
     }
 }
