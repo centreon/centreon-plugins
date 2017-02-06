@@ -155,8 +155,8 @@ my $mapping = {
     sysTmmStatClientCurConns    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.12' },
     sysTmmStatServerTotConns    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.18' },
     sysTmmStatServerCurConns    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.19' },
-    sysTmmStatMemoryTotal       => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.31' }, # KB
-    sysTmmStatMemoryUsed        => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.32' }, # KB
+    sysTmmStatMemoryTotal       => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.31' }, # B
+    sysTmmStatMemoryUsed        => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.32' }, # B
 };
 my $oid_sysTmmStatEntry = '.1.3.6.1.4.1.3375.2.1.8.2.3.1';
 
@@ -182,9 +182,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $result->{sysTmmStatTmmId} . "': no matching filter name.", debug => 1);
             next;
         }
-        
-        $result->{sysTmmStatMemoryTotal} *= 1024;
-        $result->{sysTmmStatMemoryUsed} *= 1024;
+
         $self->{tmm}->{$result->{sysTmmStatTmmId}} = { 
             display => $result->{sysTmmStatTmmId},
             %$result
