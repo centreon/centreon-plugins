@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::connections;
+package network::f5::bigip::snmp::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
