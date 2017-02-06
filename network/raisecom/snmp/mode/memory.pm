@@ -113,20 +113,13 @@ Check memory usage
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='^(memory)$'
-
-=item B<--warning-*>
+=item B<--warning>
 
 Threshold warning.
-Can be: 'memory'
 
-=item B<--critical-*>
+=item B<--critical>
 
 Threshold critical.
-Can be: 'memory'
 
 =back
 
