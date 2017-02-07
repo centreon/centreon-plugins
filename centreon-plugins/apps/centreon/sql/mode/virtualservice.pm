@@ -68,25 +68,15 @@ sub custom_metric_calc {
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{type} eq 'unique') {
-        $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                      value => $self->{result_values}->{value},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
-                                      unit => $self->{result_values}->{perfdata_unit},
-                                      min => $self->{result_values}->{min},
-                                      max => $self->{result_values}->{max},
-                                    );
-    } else {
-        $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                      value => $self->{result_values}->{value},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-global'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-global'),
-                                      unit => $self->{result_values}->{perfdata_unit},
-                                      min => $self->{result_values}->{min},
-                                      max => $self->{result_values}->{max},
-                                    );
-    }
+    $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
+                                  value => $self->{result_values}->{value},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global'),
+                                  unit => $self->{result_values}->{perfdata_unit},
+                                  min => $self->{result_values}->{min},
+                                  max => $self->{result_values}->{max},
+                                 );
+
 }
 
 sub custom_metric_threshold {
@@ -193,10 +183,17 @@ sub manage_selection {
     $self->{metrics} = {};
     $self->{vmetrics} = {};
 
-    #$config_data = $self->parse_json_config(config => $self->{option_results}->{config_file});
+    if (exists($config_data->{virtualcurve})) {
+        push @{$self->{maps_counters_type}}, {
+            name => 'global', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_global},
+        };
+    }
 
     # Selection is prefered can't mix selection and sql matching
     if (exists($config_data->{selection})) {
+        push @{$self->{maps_counters_type}}, {
+            name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
+        };
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
             $query .= "FROM centreon_storage.index_data, centreon_storage.metrics WHERE index_data.id = metrics.index_id ";
@@ -216,6 +213,9 @@ sub manage_selection {
             }
         }
     } elsif (exists($config_data->{filters})) {
+        push @{$self->{maps_counters_type}}, {
+            name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
+        };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
         $query .= "FROM centreon_storage.index_data, centreon_storage.metrics WHERE index_data.id = metrics.index_id ";
         $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "'" if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
@@ -299,6 +299,8 @@ Specify the full path to a json config file
 =item B<--filter-counters>
 
 Filter some counter (can be 'unique' or 'global')
+Useless, if you use selection/filter but not 
+global/virtual curves
 
 =item B<--warning-*>
 
