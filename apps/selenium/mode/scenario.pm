@@ -27,7 +27,7 @@ use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use XML::XPath;
 use XML::XPath::XMLParser;
-use WWW::Selenium;
+use Selenium::Remote::Driver;
 
 my %handlers = (ALRM => {} );
 
@@ -36,7 +36,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '2.0';
     $options{options}->add_options(arguments =>
          {
          "selenium-hostname:s"  => { name => 'selenium_hostname', default => 'localhost' },
@@ -108,11 +108,11 @@ sub run {
 
     my $listActionNode = $xp->find('/html/body/table/tbody/tr');
 
-    my $sel = WWW::Selenium->new(
-        host => $self->{option_results}->{selenium_hostname},
-        port => $self->{option_results}->{selenium_port},
-        browser => $self->{option_results}->{browser},
-        browser_url => $baseurl
+    my $sel = Selenium::Remote::Driver->new(
+        'remote_server_addr' => $self->{option_results}->{selenium_hostname},
+        'port' => $self->{option_results}->{selenium_port},
+        'browser_name' => $self->{option_results}->{browser},
+        'base_url' => $baseurl
     );
 
     $sel->start;
