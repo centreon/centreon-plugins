@@ -43,7 +43,7 @@ Try {
     Foreach ($vm in $vms) {
         $i = 0
         Foreach ($service in $services) {
-            if ($services.VMName -eq $vm.VMName) {
+            if ($service.VMName -eq $vm.VMName) {
                 if ($i -eq 0) {
                     Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
                 }
