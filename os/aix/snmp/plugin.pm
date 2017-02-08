@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,6 +38,7 @@ sub new {
                          'processcount'     => 'snmp_standard::mode::processcount',
                          'storage'          => 'snmp_standard::mode::storage',
                          'swap'             => 'os::aix::snmp::mode::swap',
+                         'time'             => 'snmp_standard::mode::ntp',
                          );
 
     return $self;

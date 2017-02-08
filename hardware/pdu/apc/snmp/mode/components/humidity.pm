@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,7 +86,7 @@ sub check {
         }
         
         if (defined($result->{rPDU2SensorTempHumidityStatusRelativeHumidity}) && $result->{rPDU2SensorTempHumidityStatusRelativeHumidity} =~ /[0-9]/) {
-            my $value = $result->{rPDU2SensorTempHumidityStatusRelativeHumidity} / 10;
+            my $value = $result->{rPDU2SensorTempHumidityStatusRelativeHumidity};
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $result->{rPDU2SensorTempHumidityStatusNumber}, value => $value);
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,

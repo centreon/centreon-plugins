@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,6 +39,7 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
                          'memory-flash'     => 'centreon::common::cisco::standard::snmp::mode::memoryflash',
+                         'qos-usage'        => 'centreon::common::cisco::standard::snmp::mode::qosusage',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
                          );

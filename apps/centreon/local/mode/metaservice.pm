@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -75,7 +75,7 @@ sub select_by_regexp {
     
     my $count = 0;
     my $stmt = $self->execute_query($self->{centreon_db_centstorage},
-                                    "SELECT metrics.metric_id, metrics.metric_name, metrics.current_value FROM index_data, metrics WHERE index_data.service_description LIKE " . $self->{centreon_db_centstorage}->quote($options{regexp_str}) . " AND index.id = metrics.index_id");
+                                    "SELECT metrics.metric_id, metrics.metric_name, metrics.current_value FROM index_data, metrics WHERE index_data.service_description LIKE " . $self->{centreon_db_centstorage}->quote($options{regexp_str}) . " AND index_data.id = metrics.index_id");
     while ((my $row = $stmt->fetchrow_hashref())) {
         if ($options{metric_select} eq $row->{metric_name}) {
             $self->{metric_selected}->{$row->{metric_id}} = $row->{current_value};

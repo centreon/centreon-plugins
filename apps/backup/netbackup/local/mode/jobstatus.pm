@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -296,7 +296,7 @@ my %job_state = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "netbackup_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{sudo} : 'me') . '_' .
+    $self->{cache_name} = "netbackup_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},

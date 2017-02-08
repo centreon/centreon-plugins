@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -314,8 +314,8 @@ sub trim {
     
     # Sometimes there is a null character
     $value =~ s/\x00$//;
-    $value =~ s/^[ \t]+//;
-    $value =~ s/[ \t]+$//;
+    $value =~ s/^[ \t\n]+//;
+    $value =~ s/[ \t\n]+$//;
     return $value;
 }
 

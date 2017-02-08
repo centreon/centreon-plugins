@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,6 +42,7 @@ sub new {
                                   "critical:s"              => { name => 'critical' },
                                   "warning-state:s"         => { name => 'warning_state' },
                                   "critical-state:s"        => { name => 'critical_state' },
+                                  "no-memory-state"         => { name => 'no_memory_state' },
                                 });
     return $self;
 }
@@ -119,6 +120,10 @@ Threshold warning. For state != 'high': --warning-state=0
 =item B<--critical-state>
 
 Threshold critical. For state != 'high': --warning-state=0
+
+=item B<--no-memory-state>
+
+Don't check memory state.
 
 =back
 

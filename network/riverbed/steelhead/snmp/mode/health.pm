@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use warnings;
 my %states = (
     10000 => ['healthy', 'OK'],
     30000 => ['degraded', 'WARNING'],
-    31000 => ['admissionControl', 'WARNING'],
+    31000 => ['admissionControl', 'OK'],
     50000 => ['critical', 'CRITICAL']
 );
 

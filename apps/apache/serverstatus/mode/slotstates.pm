@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -204,6 +204,7 @@ sub new {
                                 "username:s"    => { name => 'username' },
                                 "password:s"    => { name => 'password' },
                                 "proxyurl:s"    => { name => 'proxyurl' },
+                                "header:s@"     => { name => 'header' },
                                 "timeout:s"     => { name => 'timeout' },
                                 "units:s"       => { name => 'units', default => '%' },
                                 });
@@ -355,6 +356,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--header>
+
+Set HTTP headers (Multiple option)
 
 =item B<--units>
 
