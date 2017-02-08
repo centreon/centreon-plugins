@@ -27,32 +27,26 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|psu)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
-    
+
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|voltage)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan|voltage)$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
-            ['bad', 'CRITICAL'],
-            ['good', 'OK'],
-            ['notPresent', 'OK'],
-        ],
-        psu => [
-            ['bad', 'CRITICAL'],
-            ['good', 'OK'],
-            ['notPresent', 'OK'],
+            ['abnormal', 'CRITICAL'],
+            ['normal', 'OK'],
         ],
     };
-    
+
     $self->{components_path} = 'network::raisecom::snmp::mode::components';
-    $self->{components_module} = ['temperature']; #['fan', 'psu', 'temperature'];
+    $self->{components_module} = ['fan', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -61,7 +55,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
@@ -76,7 +70,7 @@ __END__
 
 =head1 MODE
 
-Check hardware (temperatures).
+Check hardware (temperatures, fans, voltages).
 
 =over 8
 
@@ -114,4 +108,3 @@ Example: --critical='temperature,.*,40'
 =back
 
 =cut
- 
