@@ -33,6 +33,7 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+$ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
