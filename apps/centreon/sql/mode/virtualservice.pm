@@ -129,6 +129,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "config-file:s"       => { name => 'config_file' },
+                                  "json-data:s"		=> { name => 'json_data' },				
                                 });
     return $self;
 }
@@ -138,16 +139,30 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $instance_mode = $self;
-    if (!defined($self->{option_results}->{config_file}) || $self->{option_results}->{config_file} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please define --config-file option");
+
+    if (!defined($self->{option_results}->{config_file}) && !defined($self->{option_results}->{json_data}) {
+        $self->{output}->add_option_msg(short_msg => "Please define --config-file or --json-data option");
         $self->{output}->option_exit();
     }
-    if (! -f $self->{option_results}->{config_file}) {
-        $self->{output}->add_option_msg(short_msg => "Can't find plugin configuration file (--config-file should be a full path to an existing file)");
+    if (-f $self->{option_results}->{config_file} && $self->{option_results}->{config_file} eq '') {
+    	$config_data = $self->parse_json_config(config => $self->{option_results}->{config_file});
+    } elsif (defined($self->{option_results}->{json_data}) && $self->{option_results}->{json_data} eq '') {
+	$config_data = $self->parse_json_config(config => $self->{option_results}->{json_data};
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Can't find plugin configuration file / Cannot read from --json-data option");
+	$self->{output}->option_exit();
+    }
+
+    if (!exists($config_data->{selection}) && !exists($config_data->{filters})) {
+        $self->{output}->add_option_msg(short_msg => "Config_error: there is neither filters nor selection section in your JSON configuration !");
         $self->{output}->option_exit();
     }
 
-    $config_data = $self->parse_json_config(config => $self->{option_results}->{config_file});
+    if (!exists($config_data->{formatting})) {
+        $self->{output}->add_option_msg(short_msg => "Config_error: formatting section is mandatory in yout JSON condiguration !");
+        $self->{output}->option_exit();
+    }
+
 }
 
 sub parse_json_config {
@@ -278,6 +293,12 @@ sub manage_selection {
                                      max => $self->{metrics}->{$metric}{max} } if ($self->{metrics}->{$metric}->{display} == 1);
     }
 
+    if (scalar(keys %{$self->{metric}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No metrics returned - are your selection/filters correct ?");
+        $self->{output}->option_exit();
+    }
+
+
 }
 
 1;
@@ -293,6 +314,10 @@ e.g: aggregate multiple metrics (min,max,avg,sum) or custom operation
 =over 8
 
 =item B<--config-file>
+
+Specify the full path to a json config file
+
+=item B<--json-data>
 
 Specify the full path to a json config file
 
