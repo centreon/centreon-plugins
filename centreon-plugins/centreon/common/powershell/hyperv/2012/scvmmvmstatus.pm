@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::nodeintegrationservice;
+package centreon::common::powershell::hyperv::2012::scvmmvmstatus;
 
 use strict;
 use warnings;
@@ -37,13 +37,17 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
+    Import-Module -Name "virtualmachinemanager" 
 
-    $vms = Get-VM
+    $username = "' . $options{scvmm_username} . '"
+    $password = ConvertTo-SecureString "' . $options{scvmm_password} . '" -AsPlainText -Force
+    $UserCredential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username,$password
+
+    $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
+    $vms = Get-SCVirtualMachine -VMMServer $connection
+
     Foreach ($vm in $vms) {
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "]"
-        Foreach ($service in $VM.VMIntegrationService) {
-            Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
-        }
+        Write-Host "[name=" $vm.Name "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
     }
 } Catch {
     Write-Host $Error[0].Exception
