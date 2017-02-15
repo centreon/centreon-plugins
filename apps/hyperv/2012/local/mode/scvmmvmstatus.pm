@@ -18,42 +18,79 @@
 # limitations under the License.
 #
 
-package apps::hyperv::2012::local::mode::scvmmsnapshot;
+package apps::hyperv::2012::local::mode::scvmmvmstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::hyperv::2012::scvmmsnapshot;
+use centreon::common::powershell::hyperv::2012::scvmmvmstatus;
+
+my $instance_mode;
+
+sub custom_status_threshold {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
+    
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = 'status : ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{hostgroup} = $options{new_datas}->{$self->{instance} . '_hostgroup'};
+    return 0;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
     ];
     $self->{maps_counters}->{vm} = [
-        { label => 'snapshot', set => {
-                key_values => [ { name => 'snapshot' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_vm_output'),
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'vm' }, { name => 'hostgroup' }, { name => 'status' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
     ];
 }
 
-sub custom_vm_output {
-    my ($self, %options) = @_;
-    my $msg = 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute});
-
-    return $msg;
-}
-
 sub prefix_vm_output {
     my ($self, %options) = @_;
     
-    return "VM '" . $options{instance_value}->{display} . "' ";
+    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub new {
@@ -76,14 +113,15 @@ sub new {
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
                                   "filter-hostgroup:s"  => { name => 'filter_hostgroup' },
-                                  "filter-status:s"     => { name => 'filter_status', default => 'running' },
+                                  "warning-status:s"    => { name => 'warning_status', default => '' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' },
                                 });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    $self->SUPER::check_options(%options);  
     
     foreach my $label (('scvmm_hostname', 'scvmm_username', 'scvmm_password', 'scvmm_port')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
@@ -93,16 +131,29 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }
+    $instance_mode = $self;
+    $self->change_macros();
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::hyperv::2012::scvmmsnapshot::get_powershell(scvmm_hostname => $self->{option_results}->{scvmm_hostname},
-                                                                            scvmm_username => $self->{option_results}->{scvmm_username},
-                                                                            scvmm_password => $self->{option_results}->{scvmm_password},
-                                                                            scvmm_port => $self->{option_results}->{scvmm_port},
-                                                                            no_ps => $self->{option_results}->{no_ps});
+    my $ps = centreon::common::powershell::hyperv::2012::scvmmvmstatus::get_powershell(
+        scvmm_hostname => $self->{option_results}->{scvmm_hostname},
+        scvmm_username => $self->{option_results}->{scvmm_username},
+        scvmm_password => $self->{option_results}->{scvmm_password},
+        scvmm_port => $self->{option_results}->{scvmm_port},
+        no_ps => $self->{option_results}->{no_ps});
     
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
@@ -118,18 +169,12 @@ sub manage_selection {
     }
     
     #[name= test-server ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
-    #[checkpointAddedTime= 1475502741.957 ]
-    #[checkpointAddedTime= 1475502963.21 ]
+    #[name= test-server2 ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server2 ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $cloud, $hg, $content) = ($1, $2, $3, $4, $5);
-        my $chkpt = -1;
-        while ($content =~ /\[checkpointAddedTime=s*(.*?)\s*\]/msig) {
-            $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
-        }
-        next if ($chkpt == -1);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
+        my ($name, $status, $cloud, $hg) = ($1, $2, $3, $4);
 
         $hg =~ s/\\/\//g;
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
@@ -142,13 +187,8 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $hg . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $status !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $status . "': no matching filter.", debug => 1);
-            next;
-        }
         
-        $self->{vm}->{$id} = { display => $name, snapshot => time() - $chkpt };
+        $self->{vm}->{$id} = { display => $name, vm => $name, status => $status, hostgroup => $hg };
         $id++;
     }
 }
@@ -159,7 +199,7 @@ __END__
 
 =head1 MODE
 
-Check virtual machine snapshots on SCVMM.
+Check virtual machine status on SCVMM.
 
 =over 8
 
@@ -204,10 +244,6 @@ Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 
 Print powershell output.
 
-=item B<--filter-status>
-
-Filter virtual machine status (can be a regexp) (Default: 'running').
-
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
@@ -216,15 +252,15 @@ Filter virtual machines (can be a regexp).
 
 Filter hostgroup (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-status>
 
-Threshold warning.
-Can be: 'snapshot' (in seconds).
+Set warning threshold for status (Default: '').
+Can used special variables like: %{vm}, %{status}, %{hostgroup}
 
-=item B<--critical-*>
+=item B<--critical-status>
 
-Threshold critical.
-Can be: 'snapshot' (in seconds).
+Set critical threshold for status (Default: '%{status} !~ /Running|Stopped/i').
+Can used special variables like: %{vm}, %{status}, %{hostgroup}
 
 =back
 

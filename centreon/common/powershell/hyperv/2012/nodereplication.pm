@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::nodeintegrationservice;
+package centreon::common::powershell::hyperv::2012::nodereplication;
 
 use strict;
 use warnings;
@@ -37,13 +37,10 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
+    $vms = Get-VMReplication
 
-    $vms = Get-VM
     Foreach ($vm in $vms) {
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "]"
-        Foreach ($service in $VM.VMIntegrationService) {
-            Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
-        }
+        Write-Host "[name=" $vm.Name "][state=" $vm.State "][health=" $vm.Health "]"
     }
 } Catch {
     Write-Host $Error[0].Exception
