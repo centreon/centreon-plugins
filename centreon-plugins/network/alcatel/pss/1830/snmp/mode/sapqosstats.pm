@@ -168,15 +168,11 @@ sub get_display_name {
     return $display_name;
 }
 
-my $mapping = {
-    tnSapBaseStatsIngressForwardedOctets    => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.4' },
-    tnSapBaseStatsEgressForwardedOctets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.6' },
-    tnSapBaseStatsIngressDroppedPackets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.9' },
-};
-
 my $oid_tnSapDescription = '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.5';
 my $oid_tnSvcName = '.1.3.6.1.4.1.7483.6.1.2.4.2.2.1.28';
-my $oid_tnSapBaseStatsExtnEntry = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1';
+my $oid_tnSapBaseStatsIngressForwardedOctets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.4';
+my $oid_tnSapBaseStatsEgressForwardedOctets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.6';
+my $oid_tnSapBaseStatsIngressDroppedPackets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.9';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -190,19 +186,21 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_tnSapDescription }, 
             { oid => $oid_tnSvcName },
-            { oid => $oid_tnSapBaseStatsExtnEntry },
+            { oid => $oid_tnSapBaseStatsIngressForwardedOctets },
+            { oid => $oid_tnSapBaseStatsEgressForwardedOctets },
+            { oid => $oid_tnSapBaseStatsIngressDroppedPackets },
         ],
         nothing_quit => 1);
     
     foreach my $oid (keys %{$snmp_result->{$oid_tnSapDescription}}) {
         next if ($oid !~ /^$oid_tnSapDescription\.(.*?)\.(.*?)\.(.*?)\.(.*?)$/);
         my ($SysSwitchId, $SvcId, $SapPortId, $SapEncapValue) = ($1, $2, $3, $4);
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_tnSapBaseStatsExtnEntry}, instance => $SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue);
-        $result->{SapDescription} = $snmp_result->{$oid_tnSapDescription}->{$oid};
-        $result->{SvcName} = defined($snmp_result->{$oid_tnSvcName}->{$oid_tnSvcName . '.' . $SysSwitchId . '.' . $SvcId}) ?
+        my $instance = $SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue;
+        my $SapDescription = $snmp_result->{$oid_tnSapDescription}->{$oid};
+        my $SvcName = defined($snmp_result->{$oid_tnSvcName}->{$oid_tnSvcName . '.' . $SysSwitchId . '.' . $SvcId}) ?
            $snmp_result->{$oid_tnSvcName}->{$oid_tnSvcName . '.' . $SysSwitchId . '.' . $SvcId} : '';
         
-        my $name = $self->get_display_name(%$result, SysSwitchId => $SysSwitchId, SvcId => $SvcId, SapPortId => $SapPortId, SapEncapValue => $SapEncapValue);
+        my $name = $self->get_display_name(SapDescription => $SapDescription, SvcName => $SvcName, SysSwitchId => $SysSwitchId, SvcId => $SvcId, SapPortId => $SapPortId, SapEncapValue => $SapEncapValue);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
@@ -211,9 +209,9 @@ sub manage_selection {
         
         $self->{sap}->{$SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue} = { 
             display => $name, 
-            in => $result->{tnSapBaseStatsIngressForwardedOctets}, 
-            out => $result->{tnSapBaseStatsEgressForwardedOctets},
-            in_dropped_packets => $result->{tnSapBaseStatsIngressDroppedPackets} };
+            in => $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets}->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $instance}, 
+            out => $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets}->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $instance},
+            in_dropped_packets => $snmp_result->{$oid_tnSapBaseStatsIngressDroppedPackets}->{$oid_tnSapBaseStatsIngressDroppedPackets . '.' . $instance} };
     }
     
     if (scalar(keys %{$self->{sap}}) <= 0) {
