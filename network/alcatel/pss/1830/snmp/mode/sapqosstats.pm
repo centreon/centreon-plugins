@@ -214,10 +214,10 @@ sub manage_selection {
     
     $options{snmp}->load(oids => [$oid_tnSapBaseStatsIngressForwardedOctets, $oid_tnSapBaseStatsEgressForwardedOctets, $oid_tnSapBaseStatsIngressDroppedPackets], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+\.\d+)$');
-    my $snmp_result = $self->{snmp}->get_leef(nothing_quit => 1);
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach (keys %{$self->{sap}}) {
-        $self->{sap}->{$_}->{in} = $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $_};
-        $self->{sap}->{$_}->{out} = $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $_};
+        $self->{sap}->{$_}->{in} = $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $_} * 8;
+        $self->{sap}->{$_}->{out} = $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $_} * 8;
         $self->{sap}->{$_}->{in_dropped_packets} = $snmp_result->{$oid_tnSapBaseStatsIngressDroppedPackets . '.' . $_};
     }
 
@@ -226,7 +226,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "alcatel_pss_1830" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = "alcatel_pss_1830_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
