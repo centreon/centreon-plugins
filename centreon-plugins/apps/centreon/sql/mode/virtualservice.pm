@@ -35,18 +35,33 @@ sub custom_metric_output {
     my $msg;
     my $message;
 
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
-    };
+    if (defined($config_data->{filters}) && defined($config_data->{filters}->{formatting})) {
+        eval {
+            local $SIG{__WARN__} = sub { $message = $_[0]; };
+            local $SIG{__DIE__} = sub { $message = $_[0]; };
+            $msg = sprintf("$config_data->{filters}->{formatting}->{printf_msg}", eval "$config_data->{filters}->{formatting}->{printf_var}");
+        };
+    } elsif (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting})) {
+        eval {
+            local $SIG{__WARN__} = sub { $message = $_[0]; };
+            local $SIG{__DIE__} = sub { $message = $_[0]; };
+            $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
+        };
+    } else {
+        eval {
+            local $SIG{__WARN__} = sub { $message = $_[0]; };
+            local $SIG{__DIE__} = sub { $message = $_[0]; };
+            $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
+        };
+    }
 
     if (defined($message)) {
         $self->{output}->output_add(long_msg => 'printf expression problem: ' . $message);
         $self->{output}->option_exit();
     }
+
     return $msg;
+
 }
 
 sub custom_metric_calc {
