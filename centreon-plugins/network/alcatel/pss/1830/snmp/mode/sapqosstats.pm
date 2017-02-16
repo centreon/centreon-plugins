@@ -38,6 +38,7 @@ sub set_counters {
     $self->{maps_counters}->{sap} = [
         { label => 'in-traffic', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
                 closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_qos_output'),
                 closure_custom_perfdata => $self->can('custom_qos_perfdata'),
@@ -46,6 +47,7 @@ sub set_counters {
         },
         { label => 'out-traffic', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
                 closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_qos_output'),
                 closure_custom_perfdata => $self->can('custom_qos_perfdata'),
@@ -182,13 +184,11 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    # SNMP Get is slow for Dropped, Ingress, Egress. So we are doing in 2 times.
     $self->{sap} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_tnSapDescription }, 
             { oid => $oid_tnSvcName },
-            { oid => $oid_tnSapBaseStatsIngressForwardedOctets },
-            { oid => $oid_tnSapBaseStatsEgressForwardedOctets },
-            { oid => $oid_tnSapBaseStatsIngressDroppedPackets },
         ],
         nothing_quit => 1);
     
@@ -209,11 +209,18 @@ sub manage_selection {
         
         $self->{sap}->{$SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue} = { 
             display => $name, 
-            in => $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets}->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $instance}, 
-            out => $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets}->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $instance},
-            in_dropped_packets => $snmp_result->{$oid_tnSapBaseStatsIngressDroppedPackets}->{$oid_tnSapBaseStatsIngressDroppedPackets . '.' . $instance} };
+        };
     }
     
+    $options{snmp}->load(oids => [$oid_tnSapBaseStatsIngressForwardedOctets, $oid_tnSapBaseStatsEgressForwardedOctets, $oid_tnSapBaseStatsIngressDroppedPackets], 
+        instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+\.\d+)$');
+    my $snmp_result = $self->{snmp}->get_leef(nothing_quit => 1);
+    foreach (keys %{$self->{sap}}) {
+        $self->{sap}->{$_}->{in} = $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $_};
+        $self->{sap}->{$_}->{out} = $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $_};
+        $self->{sap}->{$_}->{in_dropped_packets} = $snmp_result->{$oid_tnSapBaseStatsIngressDroppedPackets . '.' . $_};
+    }
+
     if (scalar(keys %{$self->{sap}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No SAP found.");
         $self->{output}->option_exit();
