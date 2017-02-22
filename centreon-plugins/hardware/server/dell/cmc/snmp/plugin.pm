@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Dell Chassis Management Controller (CMC) in SNMP (Dell m1000e).
+Check Dell Chassis Management Controller (CMC) in SNMP (Dell m1000e, VRTX, FX2).
 
 =cut
