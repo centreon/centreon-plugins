@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::brocade::plugin;
+package network::brocade::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::brocade::mode::cpu',
-                         'hardware'         => 'network::brocade::mode::hardware',
+                         'cpu'              => 'network::brocade::snmp::mode::cpu',
+                         'hardware'         => 'network::brocade::snmp::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::brocade::mode::memory',
+                         'memory'           => 'network::brocade::snmp::mode::memory',
                          );
 
     return $self;
