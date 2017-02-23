@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Clamav Antivirus through local commands (the plugin can use SSH).
+Check ClamAV Antivirus through local commands (the plugin can use SSH).
 
 =cut
