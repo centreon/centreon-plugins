@@ -42,8 +42,14 @@ sub check {
     $self->{components}->{ad} = {name => 'ad', total => 0, skip => 0};
     return if ($self->check_filter(section => 'ad'));
 
+    my $result = {};
     my $instance = '0';
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fluidFSActiveDirectoryStatus}, instance => $instance);
+    if (defined($self->{results}->{$oid_fluidFSActiveDirectoryStatus}->{$mapping->{fluidFSActiveDirectoryStatusConfigured}->{oid}})) {
+        $result->{fluidFSActiveDirectoryStatusConfigured} = $self->{results}->{$oid_fluidFSActiveDirectoryStatus}->{$mapping->{fluidFSActiveDirectoryStatusConfigured}->{oid}};
+        $result->{fluidFSActiveDirectoryStatusStatus} = $self->{results}->{$oid_fluidFSActiveDirectoryStatus}->{$mapping->{fluidFSActiveDirectoryStatusStatus}->{oid}};        
+    } else {
+        $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fluidFSActiveDirectoryStatus}, instance => $instance);
+    }
     if (!defined($result->{fluidFSActiveDirectoryStatusConfigured}) || $result->{fluidFSActiveDirectoryStatusConfigured} !~ /Yes/i) {
         $self->{output}->output_add(long_msg => "skipping: active directory not configured."); 
         return ;
