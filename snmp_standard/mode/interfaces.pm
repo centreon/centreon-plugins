@@ -74,6 +74,7 @@ sub custom_status_calc {
     
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
 
@@ -472,7 +473,7 @@ sub set_counters {
 sub set_key_values_status {
     my ($self, %options) = @_;
 
-    return [ { name => 'opstatus' }, { name => 'admstatus' } ];
+    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ];
 }
 
 sub set_key_values_in_traffic {
