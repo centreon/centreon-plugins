@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::aix::local::mode::liststorages;
+package os::aix::local::mode::swap;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,22 +41,33 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'df' },
+                                  "command:s"         => { name => 'command', default => 'lsps' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-P -k 2>&1' },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                  "filter-mount:s"    => { name => 'filter_mount', },
+                                  "command-options:s" => { name => 'command_options', default => '-s' },
+                                  "warning:s"         => { name => 'warning' },
+                                  "critical:s"        => { name => 'critical' },
+
                                 });
-    $self->{result} = {};
+#    $self->{result} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
 }
 
-sub manage_selection {
+
+sub run {
+	
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -68,54 +79,37 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
+    my ($pgSize, $prct_used);
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
-        my ($fs, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6);
-        
-        if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
-            $fs !~ /$self->{option_results}->{filter_fs}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter fs");
-            next;
+        next if ($line !~ /(\d+)MB\s+(\d+)\.*/);
+            ($pgSize, $prct_used) = ($1, $2);
         }
-        if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
-            $mount !~ /$self->{option_results}->{filter_mount}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter mount");
-            next;
-        }
-        
-        $self->{result}->{$mount} = {fs => $fs};
-    }
-}
 
-sub run {
-    my ($self, %options) = @_;
-	
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . ']');
-    }
+    my $swapSize = $pgSize * 1024 * 1024;
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storages:');
-    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    my $swapUsed = $swapSize * $prct_used / 100;
+    my $swapFree = $swapSize - $swapUsed;
+    my $prct_free = 100 - $prct_used;
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+    my ($swapSize_value, $swapSize_unit) = $self->{perfdata}->change_bytes(value => $swapSize);
+    my ($swapUsed_value, $swapUsed_unit) = $self->{perfdata}->change_bytes(value => $swapUsed);
+    my ($swapFree_value, $swapFree_unit) = $self->{perfdata}->change_bytes(value => $swapFree);
+
+
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf 'Swap Total: %s, Used: %s (%.2f%%), Free: %s (%.2f%%)',
+                                             $swapSize_value . " " . $swapSize_unit,
+                                             $swapUsed_value . " " . $swapUsed_unit, $prct_used,
+                                             $swapFree_value . " " . $swapFree_unit, $prct_free);
+
+    $self->{output}->perfdata_add(label => 'used', unit => 'B',
+                                  value => sprintf('%d',$swapUsed),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => $swapSize);
+    $self->{output}->display();
     $self->{output}->exit();
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name', 'fs']);
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         fs => $self->{result}->{$name}->{fs},
-                                         );
-    }
 }
 
 1;
@@ -124,7 +118,7 @@ __END__
 
 =head1 MODE
 
-List storages.
+Check swap memory
 
 =over 8
 
@@ -158,7 +152,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'df').
+Command to get information (Default: 'lsps').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -167,15 +161,15 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-P -k 2>&1').
+Command options (Default: '-s').
 
-=item B<--filter-fs>
+=item B<--wanring>
 
-Filter filesystem (regexp can be used).
+Threshold warning in percent.
 
-=item B<--filter-mount>
+=item B<--critical>
 
-Filter mount point (regexp can be used).
+Threshold critical in percent.
 
 =back
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::aix::local::mode::liststorages;
+package os::aix::local::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,22 +41,33 @@ sub new {
                                   "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'df' },
+                                  "command:s"         => { name => 'command', default => 'iostat' },
                                   "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-P -k 2>&1' },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                  "filter-mount:s"    => { name => 'filter_mount', },
+                                  "command-options:s" => { name => 'command_options', default => '-t' },
+                                  "warning:s"         => { name => 'warning' },
+                                  "critical:s"        => { name => 'critical' },
+
                                 });
-    $self->{result} = {};
+#    $self->{result} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->option_exit();
+    }
 }
 
-sub manage_selection {
+
+sub run {
+	
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -68,54 +79,24 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
+    my $idle;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
-        my ($fs, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6);
-        
-        if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
-            $fs !~ /$self->{option_results}->{filter_fs}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter fs");
-            next;
+        next if ($line !~ /(\S+)\s+\S+\s+\S+\s+\S+$/);
+            $idle = $1;
         }
-        if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
-            $mount !~ /$self->{option_results}->{filter_mount}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter mount");
-            next;
-        }
-        
-        $self->{result}->{$mount} = {fs => $fs};
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-	
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . ']');
-    }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storages:');
-    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    my $used = 100 - $idle;
+    my $exit = $self->{perfdata}->threshold_check(value => $used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
+    $self->{output}->output_add(severity => $exit,
+                                short_msg => sprintf 'CPU average usage is : %.2f%%',$used);
+    $self->{output}->perfdata_add(label => 'cpu_avg', unit => '%',
+                                  value => sprintf("%.2f", $used),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => 100);
+    $self->{output}->display();
     $self->{output}->exit();
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['name', 'fs']);
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         fs => $self->{result}->{$name}->{fs},
-                                         );
-    }
 }
 
 1;
@@ -124,7 +105,7 @@ __END__
 
 =head1 MODE
 
-List storages.
+Check cpu usage.
 
 =over 8
 
@@ -158,7 +139,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'df').
+Command to get information (Default: 'iostat').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -167,15 +148,15 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-P -k 2>&1').
+Command options (Default: '-t').
 
-=item B<--filter-fs>
+=item B<--warning>
 
-Filter filesystem (regexp can be used).
+Threshold warning in percent.
 
-=item B<--filter-mount>
+=item B<--critical>
 
-Filter mount point (regexp can be used).
+Threshold critical in percent.
 
 =back
 
