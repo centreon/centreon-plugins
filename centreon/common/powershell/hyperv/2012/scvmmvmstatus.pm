@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::nodesnapshot;
+package centreon::common::powershell::hyperv::2012::scvmmvmstatus;
 
 use strict;
 use warnings;
@@ -37,20 +37,17 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
-    $vms = Get-VM
-    $snapshots = Get-VMSnapshot -VMName *
+    Import-Module -Name "virtualmachinemanager" 
+
+    $username = "' . $options{scvmm_username} . '"
+    $password = ConvertTo-SecureString "' . $options{scvmm_password} . '" -AsPlainText -Force
+    $UserCredential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username,$password
+
+    $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
+    $vms = Get-SCVirtualMachine -VMMServer $connection
 
     Foreach ($vm in $vms) {
-        $i=0
-        Foreach ($snap in $snapshots) {
-            if ($snap.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
-                }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime -UFormat ' . "'%s'" . ') "]"
-                $i=1
-            }
-        }
+        Write-Host "[name=" $vm.Name "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

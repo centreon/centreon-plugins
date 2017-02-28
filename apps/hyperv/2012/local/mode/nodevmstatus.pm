@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::hyperv::2012::local::mode::scvmmintegrationservice;
+package apps::hyperv::2012::local::mode::nodevmstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::hyperv::2012::scvmmintegrationservice;
+use centreon::common::powershell::hyperv::2012::nodevmstatus;
 
 my $instance_mode;
 
@@ -56,7 +56,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'VMAddition : ' . $self->{result_values}->{vmaddition};
+    my $msg = 'status : ' . $self->{result_values}->{status} . " (state: " . $self->{result_values}->{state} . ", is clustered: " . $self->{result_values}->{is_clustered} . ")";
     return $msg;
 }
 
@@ -64,8 +64,9 @@ sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{vmaddition} = $options{new_datas}->{$self->{instance} . '_vmaddition'};
+    $self->{result_values}->{is_clustered} = $options{new_datas}->{$self->{instance} . '_is_clustered'};
     return 0;
 }
 
@@ -73,11 +74,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All integration services are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
     ];
     $self->{maps_counters}->{vm} = [
-        { label => 'snapshot', set => {
-                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vmaddition' } ],
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'vm' }, { name => 'state' }, { name => 'status' }, { name => 'is_clustered' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -101,38 +102,22 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "scvmm-hostname:s"    => { name => 'scvmm_hostname' },
-                                  "scvmm-username:s"    => { name => 'scvmm_username' },
-                                  "scvmm-password:s"    => { name => 'scvmm_password' },
-                                  "scvmm-port:s"        => { name => 'scvmm_port', default => 8100 },
                                   "timeout:s"           => { name => 'timeout', default => 50 },
                                   "command:s"           => { name => 'command', default => 'powershell.exe' },
                                   "command-path:s"      => { name => 'command_path' },
                                   "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-vm:s"             => { name => 'filter_vm' },
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "filter-hostgroup:s"      => { name => 'filter_hostgroup' },
-                                  "filter-status:s"         => { name => 'filter_status' },
+                                  "filter-vm:s"         => { name => 'filter_vm' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{vmaddition} =~ /not detected/i' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Operating normally/i' },
                                 });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    foreach my $label (('scvmm_hostname', 'scvmm_username', 'scvmm_password', 'scvmm_port')) {
-        if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label_opt . " option.");
-            $self->{output}->option_exit();
-        }
-    }    
+    $self->SUPER::check_options(%options);  
     
     $instance_mode = $self;
     $self->change_macros();
@@ -151,12 +136,7 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::hyperv::2012::scvmmintegrationservice::get_powershell(
-        scvmm_hostname => $self->{option_results}->{scvmm_hostname},
-        scvmm_username => $self->{option_results}->{scvmm_username},
-        scvmm_password => $self->{option_results}->{scvmm_password},
-        scvmm_port => $self->{option_results}->{scvmm_port},
-        no_ps => $self->{option_results}->{no_ps});
+    my $ps = centreon::common::powershell::hyperv::2012::nodevmstatus::get_powershell(no_ps => $self->{option_results}->{no_ps});
     
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
@@ -171,26 +151,22 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test1 ][description= Test Descr -  - pp -  - aa ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\test1 ]][VMAddition= 6.3.9600.16384 ]
-    #[name= test2 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test2 ]][VMAddition= Not Detected ]
-    #[name= test3 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test3 ]][VMAddition= Not Detected ]
-    #[name= test4 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test4 ]][VMAddition= Not Detected ]
+    #[name= XXXX1 ][state= Running ][status= Operating normally ][IsClustered= True ]
+    #[name= XXXX2 ][state= Running ][status= Operating normally ][IsClustered= False ]
+    #[name= XXXX3 ][state= Running ][status= Operating normally ][IsClustered= False ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\]\[VMAddition=\s*(.*?)\s*\]/msig) {
-        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5, vmaddition => $6);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[IsClustered=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
+        my ($name, $state, $status, $is_clustered) = ($1, $2, $3, $4);
 
-        $values{hostgroup} =~ s/\\/\//g;
-        foreach (('name', 'description', 'status', 'hostgroup')) {
-            if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
-                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
-                next;
-            }
+        if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
+            $name !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            next;
         }
         
-        $self->{vm}->{$id} = { %values };
+        $self->{vm}->{$id} = { display => $name, vm => $name, status => $status, state => $state, is_clustered => $is_clustered };
         $id++;
     }
 }
@@ -201,25 +177,9 @@ __END__
 
 =head1 MODE
 
-Check virtual machine integration services on SCVMM.
+Check virtual machine status on hyper-v node.
 
 =over 8
-
-=item B<--scvmm-hostname>
-
-SCVMM hostname (Required).
-
-=item B<--scvmm-username>
-
-SCVMM username (Required).
-
-=item B<--scvmm-password>
-
-SCVMM password (Required).
-
-=item B<--scvmm-port>
-
-SCVMM port (Default: 8100).
 
 =item B<--timeout>
 
@@ -246,31 +206,19 @@ Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 
 Print powershell output.
 
-=item B<--filter-status>
-
-Filter virtual machine status (can be a regexp).
-
-=item B<--filter-description>
-
-Filter by description (can be a regexp).
-
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
 
-=item B<--filter-hostgroup>
-
-Filter hostgroup (can be a regexp).
-
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{vm}, %{vmaddition}, %{status}
+Can used special variables like: %{vm}, %{state}, %{status}, %{is_clustered}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{vmaddition} =~ /not detected/i').
-Can used special variables like: %{vm}, %{vmaddition}, %{status}
+Set critical threshold for status (Default: '%{status} !~ /Operating normally/i').
+Can used special variables like: %{vm}, %{state}, %{status}, %{is_clustered}
 
 =back
 

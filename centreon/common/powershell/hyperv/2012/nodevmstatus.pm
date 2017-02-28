@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::nodesnapshot;
+package centreon::common::powershell::hyperv::2012::nodevmstatus;
 
 use strict;
 use warnings;
@@ -38,19 +38,9 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
     $vms = Get-VM
-    $snapshots = Get-VMSnapshot -VMName *
 
     Foreach ($vm in $vms) {
-        $i=0
-        Foreach ($snap in $snapshots) {
-            if ($snap.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
-                }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime -UFormat ' . "'%s'" . ') "]"
-                $i=1
-            }
-        }
+        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $vm.IsClustered "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

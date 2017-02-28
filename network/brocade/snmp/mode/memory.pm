@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::brocade::mode::cpu;
+package network::brocade::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -59,20 +59,24 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_swFwFabricWatchLicense = '.1.3.6.1.4.1.1588.2.1.1.1.10.1.0';
-    my $oid_swCpuUsage = '.1.3.6.1.4.1.1588.2.1.1.1.26.1.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_swFwFabricWatchLicense, $oid_swCpuUsage], nothing_quit => 1);
+    my $oid_swMemUsage = '.1.3.6.1.4.1.1588.2.1.1.1.26.6.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_swFwFabricWatchLicense, $oid_swMemUsage], nothing_quit => 1);
     
-    if ($result->{$oid_swFwFabricWatchLicense} == 2) {
-        $self->{output}->add_option_msg(short_msg => "Need Fabric Watch License to get information.");
+    if (!defined($result->{$oid_swMemUsage})) {
+        if ($result->{$oid_swFwFabricWatchLicense} == 2) {
+            $self->{output}->add_option_msg(short_msg => "Need Fabric Watch License to get information.");
+            $self->{output}->option_exit();
+        }
+        $self->{output}->add_option_msg(short_msg => "Cannot get information.");
         $self->{output}->option_exit();
     }
     
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_swCpuUsage}, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_swMemUsage}, 
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage: %.2f%%", $result->{$oid_swCpuUsage}));
-    $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $result->{$oid_swCpuUsage},
+                                short_msg => sprintf("Memory Usage: %.2f%% used", $result->{$oid_swMemUsage}));
+    $self->{output}->perfdata_add(label => "used", unit => '%',
+                                  value => $result->{$oid_swMemUsage},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
@@ -87,7 +91,7 @@ __END__
 
 =head1 MODE
 
-Check system cpu usage (SW.mib).
+Check system memory usage (SW.mib).
 
 =over 8
 

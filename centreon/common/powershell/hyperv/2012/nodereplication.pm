@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::hyperv::2012::nodesnapshot;
+package centreon::common::powershell::hyperv::2012::nodereplication;
 
 use strict;
 use warnings;
@@ -37,20 +37,10 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
-    $vms = Get-VM
-    $snapshots = Get-VMSnapshot -VMName *
+    $vms = Get-VMReplication
 
     Foreach ($vm in $vms) {
-        $i=0
-        Foreach ($snap in $snapshots) {
-            if ($snap.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
-                }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime -UFormat ' . "'%s'" . ') "]"
-                $i=1
-            }
-        }
+        Write-Host "[name=" $vm.Name "][state=" $vm.State "][health=" $vm.Health "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

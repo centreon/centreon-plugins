@@ -18,24 +18,20 @@
 # limitations under the License.
 #
 
-package network::brocade::plugin;
+package apps::antivirus::clamav::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::brocade::mode::cpu',
-                         'hardware'         => 'network::brocade::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::brocade::mode::memory',
+                         'update-status'    => 'apps::antivirus::clamav::local::mode::updatestatus',
                          );
 
     return $self;
@@ -47,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Brocade hardware in SNMP.
+Check ClamAV Antivirus through local commands (the plugin can use SSH).
 
 =cut

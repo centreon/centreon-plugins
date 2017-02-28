@@ -1,3 +1,13 @@
+2017-02-16 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Hyper-v 2012
+ * Plugin added: Avocent ACS 6000 SNMP
+ * Plugin added: Alcatel PSS 1830
+ * Mode added:: [hp lefthand] 'volume-usage'
+ * Mode added:: [checkpoint] 'vpn-status'
+ * Mode added:: [f-5 bigip] 'tmm-usage'
+ * Break: path change for F-5 BigIp
+ * Break: path change for Checkpoint
+
 2017-01-20 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: SAP Hana DB
  * Plugin added: Efficient IP

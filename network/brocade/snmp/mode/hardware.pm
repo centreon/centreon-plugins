@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::brocade::mode::hardware;
+package network::brocade::snmp::mode::hardware;
 
 use base qw(centreon::plugins::mode);
 

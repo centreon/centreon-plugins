@@ -33,6 +33,8 @@ sub check {
     return if ($self->check_filter(section => 'cpu'));
     return if (!defined($self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{PROCESSORS}->{PROCESSOR}));
 
+    # STATUS can be missing
+    # 
     #<PROCESSORS>
     #      <PROCESSOR>
     #           <LABEL VALUE = "Proc 1"/>
@@ -46,6 +48,7 @@ sub check {
     #           <INTERNAL_L3_CACHE VALUE = "25600 KB"/>
     #      </PROCESSOR>
     foreach my $result (@{$self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{PROCESSORS}->{PROCESSOR}}) {
+        next if (!defined($result->{STATUS}));
         my $instance = $result->{LABEL}->{VALUE};
         
         next if ($self->check_filter(section => 'cpu', instance => $instance));

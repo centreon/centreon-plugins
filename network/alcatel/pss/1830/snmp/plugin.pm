@@ -18,27 +18,22 @@
 # limitations under the License.
 #
 
-package apps::hyperv::2012::local::plugin;
+package network::alcatel::pss::1830::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'scvmm-integration-service'    => 'apps::hyperv::2012::local::mode::scvmmintegrationservice',
-                         'scvmm-snapshot'               => 'apps::hyperv::2012::local::mode::scvmmsnapshot',
-                         'scvmm-vm-status'              => 'apps::hyperv::2012::local::mode::scvmmvmstatus',
-                         'node-integration-service'     => 'apps::hyperv::2012::local::mode::nodeintegrationservice',
-                         'node-replication'             => 'apps::hyperv::2012::local::mode::nodereplication',
-                         'node-snapshot'                => 'apps::hyperv::2012::local::mode::nodesnapshot',
-                         'node-vm-status'               => 'apps::hyperv::2012::local::mode::nodevmstatus',
-                         );
+        'sap-qos-stats' => 'network::alcatel::pss::1830::snmp::mode::sapqosstats',
+        'list-sap'      => 'network::alcatel::pss::1830::snmp::mode::listsap',
+    );
 
     return $self;
 }
@@ -49,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Windows Hyper-V locally.
+Check Alcatel 1830 Photonic Service Switch (PSS) in SNMP.
 
 =cut
