@@ -47,12 +47,14 @@ sub custom_metric_output {
             local $SIG{__DIE__} = sub { $message = $_[0]; };
             $msg = sprintf("$config_data->{filters}->{formatting}->{printf_msg}", eval "$config_data->{filters}->{formatting}->{printf_var}");
         };
-    } else {
+    } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
             $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
         };
+    } else {
+            $msg = sprintf($config_data->{formatting}->{printf_msg}, $self->{result_values}->{instance}, $self->{result_values}->{value});
     }
 
     if (defined($message)) {
@@ -172,8 +174,11 @@ sub check_options {
     }
 
     if (!exists($config_data->{formatting})) {
-        $self->{output}->add_option_msg(short_msg => "Config_error: formatting section is mandatory in yout JSON condiguration !");
-        $self->{output}->option_exit();
+        $config_data->{formatting}->{printf_msg} = "Metric '%s' value is %d";
+        $config_data->{formatting}->{printf_metric_value} = "%d";
+        $config_data->{formatting}->{custom_message_global} = "Global metrics are OK";
+        $config_data->{formatting}->{custom_message_metric} = "All metrics are OK";
+        $config_data->{formatting}->{cannonical_separator} = "#";
     }
 
 }
