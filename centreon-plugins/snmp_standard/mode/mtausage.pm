@@ -282,14 +282,18 @@ Filter MTA group name (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-received-messages', 'total-received-volume',
-'total-stored-messages', 'total-stored-volume', 'total-transmitted-messages', 'total-transmitted-volume'.
+Can be: 'total-received-messages', 'total-received-volume', 'total-stored-messages', 'total-stored-volume', 
+'total-transmitted-messages', 'total-transmitted-volume',
+'received-messages', 'received-volume', 'stored-messages', 'stored-volume', 'transmitted-messages', 
+'transmitted-volume', 'rejected-messages'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-received-messages', 'total-received-volume',
-'total-stored-messages', 'total-stored-volume', 'total-transmitted-messages', 'total-transmitted-volume'.
+Can be: 'total-received-messages', 'total-received-volume', 'total-stored-messages', 'total-stored-volume', 
+'total-transmitted-messages', 'total-transmitted-volume',
+'received-messages', 'received-volume', 'stored-messages', 'stored-volume', 'transmitted-messages', 
+'transmitted-volume', 'rejected-messages'.
 
 =back
 
