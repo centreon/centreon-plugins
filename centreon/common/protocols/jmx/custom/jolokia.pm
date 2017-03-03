@@ -125,20 +125,17 @@ sub check_options {
         $self->{connect_params}->{password} = $self->{password};
     }
     if (defined($self->{proxy_url}) && $self->{proxy_url} ne '') {
-        $self->{connect_params}->{username}->{proxy} = { http => undef, https => undef };
-        if ($self->{proxy_url} =~ /^(.*?):/) {
-            $self->{connect_params}->{username}->{proxy}->{$1} = $self->{proxy_url};
-            if (defined($self->{proxy_username}) && $self->{proxy_username} ne '') {
-                $self->{connect_params}->{proxy_user} = $self->{proxy_username};
-                $self->{connect_params}->{proxy_password} = $self->{proxy_password};
-            }
+        $self->{connect_params}->{proxy} = { url => $self->{proxy_url} };
+        if (defined($self->{proxy_username}) && $self->{proxy_username} ne '') {
+            $self->{connect_params}->{proxy}->{'proxy-user'} = $self->{proxy_username};
+            $self->{connect_params}->{proxy}->{'proxy-password'} = $self->{proxy_password};
         }
     }
     if (defined($self->{target_url}) && $self->{target_url} ne '') {
-        $self->{connect_params}->{username}->{target} = { url => $self->{target_url}, user => undef, password => undef };
+        $self->{connect_params}->{target} = { url => $self->{target_url}, user => undef, password => undef };
         if (defined($self->{target_username}) && $self->{target_username} ne '') {
-            $self->{connect_params}->{username}->{target}->{user} = $self->{target_username};
-            $self->{connect_params}->{username}->{target}->{password} = $self->{target_password};
+            $self->{connect_params}->{target}->{user} = $self->{target_username};
+            $self->{connect_params}->{target}->{password} = $self->{target_password};
         }
     }
     
@@ -332,7 +329,7 @@ Credentials to use for the HTTP request
 
 =item B<--proxy-url>
 
-Optional proxy to use.
+Optional HTTP proxy to use.
 
 =item B<--proxy-username>
 
@@ -344,7 +341,7 @@ Credentials to use for the proxy
 
 =item B<--target-url>
 
-Target to use (if you use jolokia agent as a proxy)
+Target to use (if you use jolokia agent as a proxy in --url option).
 
 =item B<--target-username>
 
