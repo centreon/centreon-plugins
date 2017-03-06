@@ -304,12 +304,8 @@ sub manage_selection {
            $self->{vmetrics}->{$vcurve}{min} = (defined($config_data->{virtualcurve}{$vcurve}->{min})) ? $config_data->{virtualcurve}{$vcurve}->{min} : '';
            $self->{vmetrics}->{$vcurve}{max} = (defined($config_data->{virtualcurve}{$vcurve}->{max})) ? $config_data->{virtualcurve}{$vcurve}->{max} : '';
 
-           if (!defined($self->{option_results}->{warning_global}) && (defined($config_data->{virtualcurve}->{$vcurve}->{warning}))) {
-               $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{warning});
-           }
-           if (!defined($self->{option_results}->{critical_global}) && (defined($config_data->{virtualcurve}->{$vcurve}->{critical}))) {
-               $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{critical});
-           }
+           $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{warning}) if (defined($config_data->{virtualcurve}->{$vcurve}->{warning}));
+	   $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{critical}) if (defined($config_data->{virtualcurve}->{$vcurve}->{critical}));
 
            $self->{global}->{$vcurve} = {display => $vcurve,
                                          type => 'global',
