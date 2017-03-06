@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use List::Util qw (min max sum);
 use JSON;
-
 my $instance_mode;
 my $config_data;
 
@@ -35,28 +34,41 @@ sub custom_metric_output {
     my $msg;
     my $message;
 
-    if (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting})) {
-        eval {
-            local $SIG{__WARN__} = sub { $message = $_[0]; };
-            local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
-        };
-    } elsif (defined($config_data->{filters}) && defined($config_data->{filters}->{formatting})) {
-        eval {
-            local $SIG{__WARN__} = sub { $message = $_[0]; };
-            local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$config_data->{filters}->{formatting}->{printf_msg}", eval "$config_data->{filters}->{formatting}->{printf_var}");
-        };
-    } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
-        eval {
-            local $SIG{__WARN__} = sub { $message = $_[0]; };
-            local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
-        };
-    } else {
-            $msg = sprintf($config_data->{formatting}->{printf_msg}, $self->{result_values}->{instance}, $self->{result_values}->{value});
+    if ($self->{result_values}->{type} eq 'unique') {
+        if (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting})) {
+            eval {
+                local $SIG{__WARN__} = sub { $message = $_[0]; };
+                local $SIG{__DIE__} = sub { $message = $_[0]; };
+                $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
+            };
+        } elsif (exists($config_data->{filters}->{formatting}->{printf_var}) && exists($config_data->{filters}->{formatting}->{printf_msg})) {
+            eval {
+                local $SIG{__WARN__} = sub { $message = $_[0]; };
+                local $SIG{__DIE__} = sub { $message = $_[0]; };
+                $msg = sprintf("$config_data->{filters}->{formatting}->{printf_msg}", eval "$config_data->{filters}->{formatting}->{printf_var}");
+            };
+        } else {
+            $msg = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
+        }
     }
 
+    if ($self->{result_values}->{type} eq 'global') {
+        if (defined($config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting})) {
+            eval {
+                local $SIG{__WARN__} = sub { $message = $_[0]; };
+                local $SIG{__DIE__} = sub { $message = $_[0]; };
+                $msg = sprintf("$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
+            };
+        } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
+            eval {
+                local $SIG{__WARN__} = sub { $message = $_[0]; };
+                local $SIG{__DIE__} = sub { $message = $_[0]; };
+                $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
+            };
+        } else {
+            $msg = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
+        }
+    }
     if (defined($message)) {
         $self->{output}->output_add(long_msg => 'printf expression problem: ' . $message);
         $self->{output}->option_exit();
@@ -100,9 +112,7 @@ sub custom_metric_threshold {
     my ($self, %options) = @_;
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{value};
-
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-'.$self->{label} , exit_litteral => 'critical' }, { label => 'warning-'.$self->{label}, exit_litteral => 'warning' } ]);
-
     return $exit;
 }
 
@@ -173,13 +183,11 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!exists($config_data->{formatting})) {
-        $config_data->{formatting}->{printf_msg} = "Metric '%s' value is %d";
-        $config_data->{formatting}->{printf_metric_value} = "%d";
-        $config_data->{formatting}->{custom_message_global} = "Global metrics are OK";
-        $config_data->{formatting}->{custom_message_metric} = "All metrics are OK";
-        $config_data->{formatting}->{cannonical_separator} = "#";
-    }
+    $config_data->{formatting}->{printf_msg} = "Metric '%s' value is %d" if (!exists($config_data->{formatting}->{printf_msg}));
+    $config_data->{formatting}->{printf_metric_value} = "%d" if (!exists($config_data->{formatting}->{printf_metric_value}));
+    $config_data->{formatting}->{custom_message_global} = "Global metrics are OK" if (!exists($config_data->{formatting}->{custom_message_global}));
+    $config_data->{formatting}->{custom_message_metric} = "All metrics are OK" if (!exists($config_data->{formatting}->{custom_message_metric}));
+    $config_data->{formatting}->{cannonical_separator} = "#" if (!exists($config_data->{formatting}->{cannonical_separator}));
 
 }
 
@@ -291,24 +299,20 @@ sub manage_selection {
            $self->{vmetrics}->{$vcurve}{min} = (defined($config_data->{virtualcurve}{$vcurve}->{min})) ? $config_data->{virtualcurve}{$vcurve}->{min} : '';
            $self->{vmetrics}->{$vcurve}{max} = (defined($config_data->{virtualcurve}{$vcurve}->{max})) ? $config_data->{virtualcurve}{$vcurve}->{max} : '';
 
-           $self->{option_results}->{'warning-global'} = (defined($self->{option_results}->{'warning-global'})) ? $self->{option_results}->{'warning-global'} : $config_data->{virtualcurve}{$vcurve}->{warning};
-           $self->{option_results}->{'critical-global'} = (defined($self->{option_results}->{'critical-global'})) ? $self->{option_results}->{'critical-global'} : $config_data->{virtualcurve}{$vcurve}->{critical};
-
            $self->{global}->{$vcurve} = {display => $vcurve,
                                          type => 'global',
                                          unit => $self->{vmetrics}->{$vcurve}->{unit},
-                                         value => $self->{vmetrics}->{$vcurve}{aggregated_value},
-                                         min => $self->{vmetrics}->{$vcurve}{min},
-                                         max => $self->{vmetrics}->{$vcurve}{max} };
-
+                                         value => $self->{vmetrics}->{$vcurve}->{aggregated_value},
+                                         min => $self->{vmetrics}->{$vcurve}->{min},
+                                         max => $self->{vmetrics}->{$vcurve}->{max} };
        }
 
        $self->{metric}->{$metric} = {display => $self->{metrics}->{$metric}->{display_name},
                                      type => 'unique',
                                      unit => $self->{metrics}->{$metric}->{unit},
                                      value => $self->{metrics}->{$metric}->{current},
-                                     min => $self->{metrics}->{$metric}{min},
-                                     max => $self->{metrics}->{$metric}{max} } if ($self->{metrics}->{$metric}->{display} == 1);
+                                     min => $self->{metrics}->{$metric}->{min},
+                                     max => $self->{metrics}->{$metric}->{max} } if ($self->{metrics}->{$metric}->{display} == 1);
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
@@ -316,10 +320,9 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-
 }
 
-1;
+1
 
 __END__
 
