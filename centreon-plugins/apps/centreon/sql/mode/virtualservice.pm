@@ -38,7 +38,8 @@ sub custom_metric_output {
             eval {
                 local $SIG{__WARN__} = sub { $message = $_[0]; };
                 local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
+                $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
+                                eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
             };
         } elsif (exists($config_data->{filters}->{formatting}->{printf_var}) && exists($config_data->{filters}->{formatting}->{printf_msg})) {
             eval {
@@ -56,7 +57,8 @@ sub custom_metric_output {
             eval {
                 local $SIG{__WARN__} = sub { $message = $_[0]; };
                 local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}", eval "$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
+                $msg = sprintf("$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
+                                eval "$config_data->{virtualcurve}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
             };
         } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
             eval {
@@ -82,14 +84,21 @@ sub custom_metric_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_value'};
+    $self->{result_values}->{unit} = $options{new_datas}->{$self->{instance} . '_unit'};
     $self->{result_values}->{instance} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
+    $self->{result_values}->{perfdata_value} = $options{new_datas}->{$self->{instance} . '_value'};
     $self->{result_values}->{perfdata_unit} = $options{new_datas}->{$self->{instance} . '_unit'};
     $self->{result_values}->{min} = $options{new_datas}->{$self->{instance} . '_min'};
     $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max'};
 
-    if (defined($config_data->{formatting}->{change_bytes})) {
-        ($self->{result_values}->{output_value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
+    my $change_bytes_global = ($config_data->{formatting}->{change_bytes} eq 'true');
+    my $change_bytes_metric_filter = (defined($config_data->{filters}->{formatting}->{change_bytes}) && $config_data->{filters}->{formatting}->{change_bytes} eq 'true');
+    my $change_bytes_metric_selection = (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})
+                                         && $config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes} eq 'true');
+
+    if ($change_bytes_global && ($change_bytes_metric_filter || $change_bytes_metric_selection)) {
+        ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
     }
     return 0;
 }
@@ -98,9 +107,9 @@ sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(label => $self->{result_values}->{instance},
-                                  value => $self->{result_values}->{value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global'),
+                                  value => $self->{result_values}->{perfdata_value},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance}),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance}),
                                   unit => $self->{result_values}->{perfdata_unit},
                                   min => $self->{result_values}->{min},
                                   max => $self->{result_values}->{max},
@@ -110,16 +119,13 @@ sub custom_metric_perfdata {
 
 sub custom_metric_threshold {
     my ($self, %options) = @_;
-    my ($exit, $threshold_value);
 
-    $threshold_value = $self->{result_values}->{value};
-    my $exit_conf = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-'.$self->{label}.'-'.$self->{result_values}->{instance} , exit_litteral => 'critical' },
-                                                                                                 { label => 'warning-'.$self->{label}.'-'.$self->{result_values}->{instance}, exit_litteral => 'warning' } ]);
+    my $label_warn = ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance};
+    my $label_crit = ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance};
 
-    my $exit_opts = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-'.$self->{label} , exit_litteral => 'critical' },
-                                                                                                 { label => 'warning-'.$self->{label}, exit_litteral => 'warning' } ]);
-
-    $exit = $self->{output}->get_most_critical(status => [ $exit_conf, $exit_opts ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{perfdata_value},
+                                                  threshold => [ { label => $label_crit, exit_litteral => 'critical' },
+                                                                 { label => $label_warn, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -193,6 +199,7 @@ sub check_options {
     $config_data->{formatting}->{custom_message_global} = "Global metrics are OK" if (!exists($config_data->{formatting}->{custom_message_global}));
     $config_data->{formatting}->{custom_message_metric} = "All metrics are OK" if (!exists($config_data->{formatting}->{custom_message_metric}));
     $config_data->{formatting}->{cannonical_separator} = "#" if (!exists($config_data->{formatting}->{cannonical_separator}));
+    $config_data->{formatting}->{change_bytes} = 'false' if (!exists($config_data->{formatting}->{change_bytes}));
 
 }
 
@@ -252,7 +259,7 @@ sub manage_selection {
                 $self->{metrics}->{$metric_key}{name} = $row->{metric_name};
                 $self->{metrics}->{$metric_key}{display_name} = $id;
                 $self->{metrics}->{$metric_key}{current} = $row->{current_value};
-                $self->{metrics}->{$metric_key}{unit} = $row->{unit_name};
+                $self->{metrics}->{$metric_key}{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
                 $self->{metrics}->{$metric_key}{min} = defined($row->{min}) ? $row->{min} : '';
                 $self->{metrics}->{$metric_key}{max} = defined($row->{max}) ? $row->{max} : '';
                 $self->{metrics}->{$metric_key}{display} = (defined($config_data->{selection}{$id}->{display}) && $config_data->{selection}{$id}->{display} eq 'true') ? 1 : 0;
@@ -273,7 +280,7 @@ sub manage_selection {
             $self->{metrics}->{$metric_key}{display_name} = $metric_key;
             $self->{metrics}->{$metric_key}{name} = $row->{metric_name};
             $self->{metrics}->{$metric_key}{current} = $row->{current_value};
-            $self->{metrics}->{$metric_key}{unit} = $row->{unit_name};
+            $self->{metrics}->{$metric_key}{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
             $self->{metrics}->{$metric_key}{min} = defined($row->{min}) ? $row->{min} : '';
             $self->{metrics}->{$metric_key}{max} = defined($row->{max}) ? $row->{max} : '';
             $self->{metrics}->{$metric_key}{display} = (defined($config_data->{filters}->{display})) ? 1 : 0;
@@ -304,8 +311,14 @@ sub manage_selection {
            $self->{vmetrics}->{$vcurve}{min} = (defined($config_data->{virtualcurve}{$vcurve}->{min})) ? $config_data->{virtualcurve}{$vcurve}->{min} : '';
            $self->{vmetrics}->{$vcurve}{max} = (defined($config_data->{virtualcurve}{$vcurve}->{max})) ? $config_data->{virtualcurve}{$vcurve}->{max} : '';
 
-           $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{warning}) if (defined($config_data->{virtualcurve}->{$vcurve}->{warning}));
-	   $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve, value => $config_data->{virtualcurve}->{$vcurve}->{critical}) if (defined($config_data->{virtualcurve}->{$vcurve}->{critical}));
+           if (defined($self->{option_results}->{'warning-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{warning})) {
+               $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve,
+                                                     value => (defined($self->{option_results}->{'warning-global'})) ? $self->{option_results}->{'warning-global'} : $config_data->{virtualcurve}->{$vcurve}->{warning});
+           }
+           if (defined($self->{option_results}->{'critical-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{critical})) {
+               $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve,
+                                                     value => (defined($self->{option_results}->{'critical-global'})) ? $self->{option_results}->{'critical-global'} : $config_data->{virtualcurve}->{$vcurve}->{critical});
+           }
 
            $self->{global}->{$vcurve} = {display => $vcurve,
                                          type => 'global',
@@ -348,23 +361,23 @@ Specify the full path to a json config file
 
 =item B<--json-data>
 
-Specify the full path to a json config file
+Get JSON on the fly
 
 =item B<--filter-counters>
 
-Filter some counter (can be 'unique' or 'global')
+Filter some counter (can be 'metric' or 'global')
 Useless, if you use selection/filter but not
 global/virtual curves
 
 =item B<--warning-*>
 
-Warning threshold (can be 'unique' or 'global')
-(if also defined in config file, most critical is prefered)
+Warning threshold (can be 'metric' or 'global')
+(Override config_file if set)
 
 =item B<--critical-*>
 
-Critical threshold (can be 'unique' or 'global')
-(if also defined in config file, most critical is prefered)
+Critical threshold (can be 'metric' or 'global')
+(Override config_file if set)
 
 =back
 
