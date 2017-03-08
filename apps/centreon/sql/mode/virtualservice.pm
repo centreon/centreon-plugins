@@ -34,14 +34,14 @@ sub custom_metric_output {
     my $message;
 
     if ($self->{result_values}->{type} eq 'unique') {
-        if (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting})) {
+        if (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}) && defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg})) {
             eval {
                 local $SIG{__WARN__} = sub { $message = $_[0]; };
                 local $SIG{__DIE__} = sub { $message = $_[0]; };
                 $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
                                 eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
             };
-        } elsif (exists($config_data->{filters}->{formatting}->{printf_var}) && exists($config_data->{filters}->{formatting}->{printf_msg})) {
+        } elsif (defined($config_data->{filters}->{formatting}->{printf_var}) && defined($config_data->{filters}->{formatting}->{printf_msg})) {
             eval {
                 local $SIG{__WARN__} = sub { $message = $_[0]; };
                 local $SIG{__DIE__} = sub { $message = $_[0]; };
@@ -361,22 +361,22 @@ Specify the full path to a json config file
 
 =item B<--json-data>
 
-Get JSON on the fly
+Specify the full path to a json config file
 
 =item B<--filter-counters>
 
-Filter some counter (can be 'metric' or 'global')
+Filter some counter (can be 'unique' or 'global')
 Useless, if you use selection/filter but not
 global/virtual curves
 
 =item B<--warning-*>
 
-Warning threshold (can be 'metric' or 'global')
+Warning threshold (can be 'unique' or 'global')
 (Override config_file if set)
 
 =item B<--critical-*>
 
-Critical threshold (can be 'metric' or 'global')
+Critical threshold (can be 'unique' or 'global')
 (Override config_file if set)
 
 =back
