@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificates_output', message_multiple => 'All certificates are ok' }
     ];
     
-    $self->{maps_counters}->{volume} = [
+    $self->{maps_counters}->{certificates} = [
         { label => 'days', set => {
                 key_values => [ { name => 'days' }, { name => 'display' } ],
                 output_template => '%d days remaining before expiration',

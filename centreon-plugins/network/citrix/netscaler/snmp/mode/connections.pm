@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'global', type => 0, message_separator => ' - ' }
     ];
     
-    $self->{maps_counters}->{volume} = [
+    $self->{maps_counters}->{global} = [
         { label => 'active', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active Server TCP connections : %s',

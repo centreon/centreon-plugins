@@ -49,7 +49,7 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_nsSysHealthEntry}})) {
         next if ($oid !~ /^$mapping->{sysHealthCounterName}->{oid}\.(.*)$/);
         my $instance = $1;
-        next if ($self->{results}->{$oid_nsSysHealthEntry}->{$oid} !~ /PowerSupply(.)FailureStatus/i);
+        next if ($self->{results}->{$oid_nsSysHealthEntry}->{$oid} !~ /PowerSupply(.)(?:Status|FailureStatus)/i);
         my $power_num = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_nsSysHealthEntry}, instance => $instance);
         
