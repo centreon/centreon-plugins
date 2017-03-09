@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{volume} = [
-        { label => 'health', set => {
+        { label => 'days', set => {
                 key_values => [ { name => 'days' }, { name => 'display' } ],
                 output_template => '%d days remaining before expiration',
                 closure_custom_perfdata => sub { return 0; },
