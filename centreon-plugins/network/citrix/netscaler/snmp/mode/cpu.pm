@@ -18,8 +18,8 @@
 # limitations under the License.
 #
 
-package network::citrix::netscaler::common::mode::memory;
-
+package network::citrix::netscaler::snmp::mode::cpu;
+    
 use base qw(centreon::plugins::mode);
 
 use strict;
@@ -58,32 +58,27 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_resMemUsage = '.1.3.6.1.4.1.5951.4.1.1.41.2.0';
-    my $oid_memSizeMB = '.1.3.6.1.4.1.5951.4.1.1.41.4.0'; # in MB
-    my $result = $self->{snmp}->get_leef(oids => [$oid_resMemUsage, $oid_memSizeMB], nothing_quit => 1);
+    my $oid_nsCPUEntry = '.1.3.6.1.4.1.5951.4.1.1.41.6';
+    my $oid_nsCPUname = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.1';
+    my $oid_nsCPUusage = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.2';
+    my $result = $self->{snmp}->get_table(oid => $oid_nsCPUEntry, nothing_quit => 1);
     
-    my $total_size = $result->{$oid_memSizeMB} * 1024 * 1024;
-    my $used = $result->{$oid_resMemUsage} * $total_size / 100;
-    my $free = $total_size - $used;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_resMemUsage},
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
-    my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $free);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                        $total_value . " " . $total_unit,
-                                        $used_value . " " . $used_unit, $result->{$oid_resMemUsage},
-                                        $free_value . " " . $free_unit, (100 - $result->{$oid_resMemUsage})));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => int($used),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
+        next if ($oid !~ /^$oid_nsCPUname\.(.*)$/);
+        my $name = $result->{$oid};
+        my $value = $result->{$oid_nsCPUusage . '.' . $1};
+        
+        my $exit = $self->{perfdata}->threshold_check(value => $value,
+                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("CPU '%s' Usage: %.2f%%", $name, $value));
+        $self->{output}->perfdata_add(label => "cpu_" . $name, unit => '%',
+                                      value => $value,
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                      min => 0, max => 100);
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -95,7 +90,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (NS-MIB-smiv2).
+Check cpu usage (NS-MIB-smiv2).
 
 =over 8
 

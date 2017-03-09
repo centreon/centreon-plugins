@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::citrix::netscaler::mpx8000::plugin;
+package network::citrix::netscaler::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,19 +29,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.5';
+    $self->{version} = '0.6';
     %{$self->{modes}} = (
-            'certificates-expire'   => 'network::citrix::netscaler::common::mode::certificatesexpire',
-            'cpu'                   => 'network::citrix::netscaler::common::mode::cpu',
-            'storage'               => 'network::citrix::netscaler::common::mode::storage',
-            'health'                => 'network::citrix::netscaler::common::mode::health',
-            'ha-state'              => 'network::citrix::netscaler::common::mode::hastate',
+            'certificates-expire'   => 'network::citrix::netscaler::snmp::mode::certificatesexpire',
+            'cpu'                   => 'network::citrix::netscaler::snmp::mode::cpu',
+            'storage'               => 'network::citrix::netscaler::snmp::mode::storage',
+            'health'                => 'network::citrix::netscaler::snmp::mode::health',
+            'ha-state'              => 'network::citrix::netscaler::snmp::mode::hastate',
             'interfaces'            => 'snmp_standard::mode::interfaces',
             'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
-            'list-vservers'         => 'network::citrix::netscaler::common::mode::listvservers',
-            'vserver-status'        => 'network::citrix::netscaler::common::mode::vserverstatus',
-            'memory'                => 'network::citrix::netscaler::common::mode::memory',
-            'connections'           => 'network::citrix::netscaler::common::mode::connections',
+            'list-vservers'         => 'network::citrix::netscaler::snmp::mode::listvservers',
+            'vserver-status'        => 'network::citrix::netscaler::snmp::mode::vserverstatus',
+            'memory'                => 'network::citrix::netscaler::snmp::mode::memory',
+            'connections'           => 'network::citrix::netscaler::snmp::mode::connections',
     );
 
     return $self;
@@ -53,6 +53,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Citrix NetScaler MPX 8000 Series in SNMP.
+Check Citrix NetScaler Series in SNMP.
 
 =cut

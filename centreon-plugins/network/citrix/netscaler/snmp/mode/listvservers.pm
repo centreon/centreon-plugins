@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::citrix::netscaler::common::mode::listvservers;
+package network::citrix::netscaler::snmp::mode::listvservers;
 
 use base qw(centreon::plugins::mode);
 
