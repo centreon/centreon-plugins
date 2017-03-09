@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::citrix::netscaler::common::mode::hastate;
+package network::citrix::netscaler::snmp::mode::hastate;
 
 use base qw(centreon::plugins::mode);
 
