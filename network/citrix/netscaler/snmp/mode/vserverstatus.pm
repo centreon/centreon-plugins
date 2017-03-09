@@ -34,7 +34,7 @@ sub set_counters {
         { name => 'vservers', type => 1, cb_prefix_output => 'prefix_vservers_output', message_multiple => 'All Virtual Servers are ok' }
     ];
     
-    $self->{maps_counters}->{volume} = [
+    $self->{maps_counters}->{vservers} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -200,10 +200,10 @@ sub manage_selection {
             next;
         }
         
-        $self->{vservers}->{$options{instance}} = {
-            display => $options{result}->{vsvrName},
-            health  => $options{result}->{vsvrHealth},
-            state   => $options{result}->{vsvrState},
+        $self->{vservers}->{$instance} = {
+            display => $result->{vsvrName},
+            health  => $result->{vsvrHealth},
+            state   => $result->{vsvrState},
         };
     }
     
