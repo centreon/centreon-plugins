@@ -121,8 +121,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "name:s"                  => { name => 'name' },
-                                  "regexp"                  => { name => 'use_regexp' },
+                                  "filter-name:s"           => { name => 'filter_name' },
                                   "filter-type:s"           => { name => 'filter_type' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
@@ -147,16 +146,6 @@ sub check_options {
         $overload_th->{$section} = [] if (!defined($overload_th->{$section}));
         push @{$overload_th->{$section}}, {filter => $filter, status => $status};
     }
-}
-
-sub add_result {
-    my ($self, %options) = @_;
-    
-    $self->{vservers}->{$options{instance}} = {
-        display => $options{result}->{vsvrName},
-        health  => $options{result}->{vsvrHealth},
-        state   => $options{result}->{vsvrState},
-    };
 }
 
 my %map_vs_type = (
@@ -205,16 +194,17 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrName} . "'.", debug => 1);
             next;
         }
-        if (!defined($self->{option_results}->{name})) {
-            $self->add_result(instance => $instance, result => $result);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{vsvrName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrName} . "'.", debug => 1);
             next;
         }
-        if (!defined($self->{option_results}->{use_regexp}) && $result->{vsvrName} eq $self->{option_results}->{name}) {
-            $self->add_result(instance => $instance, result => $result);
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $result->{vsvrName} =~ /$self->{option_results}->{name}/) {
-            $self->add_result(instance => $instance, result => $result);
-        }
+        
+        $self->{vservers}->{$options{instance}} = {
+            display => $options{result}->{vsvrName},
+            health  => $options{result}->{vsvrHealth},
+            state   => $options{result}->{vsvrState},
+        };
     }
     
     if (scalar(keys %{$self->{vservers}}) <= 0) {
@@ -241,13 +231,9 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the virtual server name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter virtual server name (with option --name).
+Filter by virtual server name (can be a regexp).
 
 =item B<--filter-type>
 
