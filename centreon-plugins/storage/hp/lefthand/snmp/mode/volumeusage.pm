@@ -131,7 +131,6 @@ sub custom_usage_calc {
     return 0;
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -369,7 +368,6 @@ Units of thresholds (Default: '%') ('%', 'B').
 =item B<--free>
 
 Thresholds are on free space left.
-
 
 =back
 
