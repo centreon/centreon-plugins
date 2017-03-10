@@ -92,12 +92,18 @@ sub custom_metric_calc {
     $self->{result_values}->{min} = $options{new_datas}->{$self->{instance} . '_min'};
     $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max'};
 
-    my $change_bytes_global = ($config_data->{formatting}->{change_bytes} eq 'true');
-    my $change_bytes_metric_filter = (defined($config_data->{filters}->{formatting}->{change_bytes}) && $config_data->{filters}->{formatting}->{change_bytes} eq 'true');
-    my $change_bytes_metric_selection = (defined($config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})
-                                         && $config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes} eq 'true');
+    my $elem = $self->{result_values}->{type} eq 'unique' ? 'selection' : 'virtualcurve';
+    my ($change_bytes_metric_selection, $change_bytes_metric_filter);
+    if (defined($config_data->{filters}->{formatting}->{change_bytes})) {
+        $change_bytes_metric_filter = $config_data->{filters}->{formatting}->{change_bytes};
+    }
+    if (defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})) { 
+        $change_bytes_metric_selection = $config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes};
+    }
 
-    if ($change_bytes_global && ($change_bytes_metric_filter || $change_bytes_metric_selection)) {
+    if ((defined($change_bytes_metric_selection) && $change_bytes_metric_selection) || 
+        (defined($change_bytes_metric_filter) && $change_bytes_metric_filter) ||
+        ($config_data->{formatting}->{change_bytes} && !defined($change_bytes_metric_selection) && !defined($change_bytes_metric_filter))) {
         ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
     }
     return 0;
@@ -138,10 +144,10 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'global', set => {
                 key_values => [ { name => 'value' }, { name => 'display' }, { name => 'type' }, { name => 'unit' }, { name => 'min' }, { name => 'max' }  ],
-                closure_custom_calc => \&custom_metric_calc,
-                closure_custom_output => \&custom_metric_output,
-                closure_custom_perfdata => \&custom_metric_perfdata,
-                closure_custom_threshold_check => \&custom_metric_threshold,
+                closure_custom_calc => $self->can('custom_metric_calc'),
+                closure_custom_output => $self->can('custom_metric_output'),
+                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
             }
         }
     ];
@@ -149,10 +155,10 @@ sub set_counters {
     $self->{maps_counters}->{metric} = [
         { label => 'metric', set => {
                 key_values => [ { name => 'value' }, { name => 'display' }, { name => 'type' }, { name => 'unit' }, { name => 'min' }, { name => 'max' } ],
-                closure_custom_calc => \&custom_metric_calc,
-                closure_custom_output => \&custom_metric_output,
-                closure_custom_perfdata => \&custom_metric_perfdata,
-                closure_custom_threshold_check => \&custom_metric_threshold,
+                closure_custom_calc => $self->can('custom_metric_calc'),
+                closure_custom_output => $self->can('custom_metric_output'),
+                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
             }
         }
     ];
@@ -199,8 +205,7 @@ sub check_options {
     $config_data->{formatting}->{custom_message_global} = "Global metrics are OK" if (!exists($config_data->{formatting}->{custom_message_global}));
     $config_data->{formatting}->{custom_message_metric} = "All metrics are OK" if (!exists($config_data->{formatting}->{custom_message_metric}));
     $config_data->{formatting}->{cannonical_separator} = "#" if (!exists($config_data->{formatting}->{cannonical_separator}));
-    $config_data->{formatting}->{change_bytes} = 'false' if (!exists($config_data->{formatting}->{change_bytes}));
-
+    $config_data->{formatting}->{change_bytes} = 0 if (!exists($config_data->{formatting}->{change_bytes}));
 }
 
 sub parse_json_config {
@@ -250,19 +255,19 @@ sub manage_selection {
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
             $query .= "FROM centreon_storage.index_data, centreon_storage.metrics WHERE index_data.id = metrics.index_id ";
-            $query .= "AND index_data.service_description = '" . $config_data->{selection}{$id}->{service_name} . "'";
-            $query .= "AND index_data.host_name = '" . $config_data->{selection}{$id}->{host_name} . "'" ;
-            $query .= "AND metrics.metric_name = '" . $config_data->{selection}{$id}->{metric_name} . "'";
+            $query .= "AND index_data.service_description = '" . $config_data->{selection}->{$id}->{service_name} . "'";
+            $query .= "AND index_data.host_name = '" . $config_data->{selection}->{$id}->{host_name} . "'" ;
+            $query .= "AND metrics.metric_name = '" . $config_data->{selection}->{$id}->{metric_name} . "'";
             $self->{sql}->query(query => $query);
             while ((my $row = $self->{sql}->fetchrow_hashref())) {
                 my $metric_key = $id;
-                $self->{metrics}->{$metric_key}{name} = $row->{metric_name};
-                $self->{metrics}->{$metric_key}{display_name} = $id;
-                $self->{metrics}->{$metric_key}{current} = $row->{current_value};
-                $self->{metrics}->{$metric_key}{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
-                $self->{metrics}->{$metric_key}{min} = defined($row->{min}) ? $row->{min} : '';
-                $self->{metrics}->{$metric_key}{max} = defined($row->{max}) ? $row->{max} : '';
-                $self->{metrics}->{$metric_key}{display} = (defined($config_data->{selection}{$id}->{display}) && $config_data->{selection}{$id}->{display} eq 'true') ? 1 : 0;
+                $self->{metrics}->{$metric_key} = { name => $row->{metric_name} };
+                $self->{metrics}->{$metric_key}->{display_name} = $id;
+                $self->{metrics}->{$metric_key}->{current} = $row->{current_value};
+                $self->{metrics}->{$metric_key}->{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
+                $self->{metrics}->{$metric_key}->{min} = defined($row->{min}) ? $row->{min} : '';
+                $self->{metrics}->{$metric_key}->{max} = defined($row->{max}) ? $row->{max} : '';
+                $self->{metrics}->{$metric_key}->{display} = (defined($config_data->{selection}->{$id}->{display}) && $config_data->{selection}->{$id}->{display}) ? 1 : 0;
             }
         }
     } elsif (exists($config_data->{filters})) {
@@ -277,70 +282,70 @@ sub manage_selection {
         $self->{sql}->query(query => $query);
         while ((my $row = $self->{sql}->fetchrow_hashref())) {
             my $metric_key = $row->{host_name}.$config_data->{formatting}->{cannonical_separator}.$row->{service_description}.$config_data->{formatting}->{cannonical_separator}.$row->{metric_name};
-            $self->{metrics}->{$metric_key}{display_name} = $metric_key;
-            $self->{metrics}->{$metric_key}{name} = $row->{metric_name};
-            $self->{metrics}->{$metric_key}{current} = $row->{current_value};
-            $self->{metrics}->{$metric_key}{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
-            $self->{metrics}->{$metric_key}{min} = defined($row->{min}) ? $row->{min} : '';
-            $self->{metrics}->{$metric_key}{max} = defined($row->{max}) ? $row->{max} : '';
-            $self->{metrics}->{$metric_key}{display} = (defined($config_data->{filters}->{display})) ? 1 : 0;
+            $self->{metrics}->{$metric_key} = { display_name => $metric_key};
+            $self->{metrics}->{$metric_key}->{name} = $row->{metric_name};
+            $self->{metrics}->{$metric_key}->{current} = $row->{current_value};
+            $self->{metrics}->{$metric_key}->{unit} = defined($row->{unit_name}) ? $row->{unit_name} : '';
+            $self->{metrics}->{$metric_key}->{min} = defined($row->{min}) ? $row->{min} : '';
+            $self->{metrics}->{$metric_key}->{max} = defined($row->{max}) ? $row->{max} : '';
+            $self->{metrics}->{$metric_key}->{display} = (defined($config_data->{filters}->{display}) && $config_data->{filters}->{display}) ? 1 : 0;
         }
     }
 
     foreach my $metric (keys %{$self->{metrics}}) {
-       foreach my $vcurve (keys %{$config_data->{virtualcurve}}) {
-           if (defined($config_data->{virtualcurve}{$vcurve}->{pattern}) && $config_data->{virtualcurve}{$vcurve}->{pattern} ne '') {
-               push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current}) if $self->{metrics}->{$metric}->{name} =~ /$config_data->{virtualcurve}{$vcurve}->{pattern}/;
-           } else {
-               push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current});
-           }
+        foreach my $vcurve (keys %{$config_data->{virtualcurve}}) {
+            $self->{vmetrics}->{$vcurve}->{values} = [] if (!defined($self->{vmetrics}->{$vcurve}->{values}));
+            if (defined($config_data->{virtualcurve}->{$vcurve}->{pattern}) && $config_data->{virtualcurve}->{$vcurve}->{pattern} ne '') {
+                push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current}) if $self->{metrics}->{$metric}->{name} =~ /$config_data->{virtualcurve}{$vcurve}->{pattern}/;
+            } else {
+                push (@{$self->{vmetrics}->{$vcurve}->{values}}, $self->{metrics}->{$metric}->{current});
+            }
 
-           next if (!defined(@{$self->{vmetrics}->{$vcurve}{values}}));
+            next if (scalar(@{$self->{vmetrics}->{$vcurve}->{values}}) == 0);
 
-           $self->{vmetrics}->{$vcurve}{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}{values}})/scalar(@{$self->{vmetrics}->{$vcurve}{values}})) if ($config_data->{virtualcurve}{$vcurve}->{aggregation} eq 'avg');
-           $self->{vmetrics}->{$vcurve}{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}{values}})) if ($config_data->{virtualcurve}{$vcurve}->{aggregation} eq 'sum');
-           $self->{vmetrics}->{$vcurve}{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    min(@{$self->{vmetrics}->{$vcurve}{values}})) if ($config_data->{virtualcurve}{$vcurve}->{aggregation} eq 'min');
-           $self->{vmetrics}->{$vcurve}{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    max(@{$self->{vmetrics}->{$vcurve}{values}})) if ($config_data->{virtualcurve}{$vcurve}->{aggregation} eq 'max');
-           $self->{vmetrics}->{$vcurve}{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}{aggregated_value} $config_data->{virtualcurve}->{$vcurve}{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}{custom}));
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
+                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})/scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
+                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
+                                                                    min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
+                                                                    max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}->{custom}));
 
-           $self->{vmetrics}->{$vcurve}{unit} = (defined($config_data->{virtualcurve}{$vcurve}->{unit})) ? $config_data->{virtualcurve}{$vcurve}->{unit} : '';
-           $self->{vmetrics}->{$vcurve}{min} = (defined($config_data->{virtualcurve}{$vcurve}->{min})) ? $config_data->{virtualcurve}{$vcurve}->{min} : '';
-           $self->{vmetrics}->{$vcurve}{max} = (defined($config_data->{virtualcurve}{$vcurve}->{max})) ? $config_data->{virtualcurve}{$vcurve}->{max} : '';
+            $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';
+            $self->{vmetrics}->{$vcurve}->{min} = (defined($config_data->{virtualcurve}->{$vcurve}->{min})) ? $config_data->{virtualcurve}->{$vcurve}->{min} : '';
+            $self->{vmetrics}->{$vcurve}->{max} = (defined($config_data->{virtualcurve}->{$vcurve}->{max})) ? $config_data->{virtualcurve}->{$vcurve}->{max} : '';
 
-           if (defined($self->{option_results}->{'warning-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{warning})) {
+            if (defined($self->{option_results}->{'warning-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{warning})) {
                $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve,
                                                      value => (defined($self->{option_results}->{'warning-global'})) ? $self->{option_results}->{'warning-global'} : $config_data->{virtualcurve}->{$vcurve}->{warning});
-           }
-           if (defined($self->{option_results}->{'critical-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{critical})) {
+            }
+            if (defined($self->{option_results}->{'critical-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{critical})) {
                $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve,
                                                      value => (defined($self->{option_results}->{'critical-global'})) ? $self->{option_results}->{'critical-global'} : $config_data->{virtualcurve}->{$vcurve}->{critical});
-           }
+            }
 
-           $self->{global}->{$vcurve} = {display => $vcurve,
-                                         type => 'global',
-                                         unit => $self->{vmetrics}->{$vcurve}->{unit},
-                                         value => $self->{vmetrics}->{$vcurve}->{aggregated_value},
-                                         min => $self->{vmetrics}->{$vcurve}->{min},
-                                         max => $self->{vmetrics}->{$vcurve}->{max} };
+            $self->{global}->{$vcurve} = {display => $vcurve,
+                                          type => 'global',
+                                          unit => $self->{vmetrics}->{$vcurve}->{unit},
+                                          value => $self->{vmetrics}->{$vcurve}->{aggregated_value},
+                                          min => $self->{vmetrics}->{$vcurve}->{min},
+                                          max => $self->{vmetrics}->{$vcurve}->{max} };
        }
 
-       $self->{metric}->{$metric} = {display => $self->{metrics}->{$metric}->{display_name},
-                                     type => 'unique',
-                                     unit => $self->{metrics}->{$metric}->{unit},
-                                     value => $self->{metrics}->{$metric}->{current},
-                                     min => $self->{metrics}->{$metric}->{min},
-                                     max => $self->{metrics}->{$metric}->{max} } if ($self->{metrics}->{$metric}->{display} == 1);
+        $self->{metric}->{$metric} = {display => $self->{metrics}->{$metric}->{display_name},
+                                      type => 'unique',
+                                      unit => $self->{metrics}->{$metric}->{unit},
+                                      value => $self->{metrics}->{$metric}->{current},
+                                      min => $self->{metrics}->{$metric}->{min},
+                                      max => $self->{metrics}->{$metric}->{max} } if ($self->{metrics}->{$metric}->{display} == 1);
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No metrics returned - are your selection/filters correct ?");
         $self->{output}->option_exit();
     }
-
 }
 
 1
