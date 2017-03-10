@@ -1,3 +1,14 @@
+2017-03-10 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Dell FluidFS SNMP
+ * Plugin added: Clamav
+ * Plugin added: Sendmail SNMP
+ * Plugin added: Centreon DSM
+ * Plugin added: Audiocodes SNMP
+ * Mode added: [snmp_standard] 'vrrp-status'
+ * Mode added: [centreon] 'virtualservice'
+ * Break: path change for Netscaler SNMP
+ * Fix: perl connector issue
+
 2017-02-16 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Hyper-v 2012
  * Plugin added: Avocent ACS 6000 SNMP
