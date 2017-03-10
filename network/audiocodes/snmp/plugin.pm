@@ -36,6 +36,7 @@ sub new {
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::audiocodes::snmp::mode::memory',
+                         'trunk-status'     => 'network::audiocodes::snmp::mode::trunkstatus',
                          );
 
     return $self;
