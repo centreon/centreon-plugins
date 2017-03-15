@@ -191,6 +191,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{sunAkShareName} . "': no matching filter.", debug => 1);
             next;
         }
+        if (defined($self->{option_results}->{filter_project}) && $self->{option_results}->{filter_project} ne '' &&
+            $result->{sunAkShareProject} !~ /$self->{option_results}->{filter_project}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{sunAkShareName} . "': no matching filter.", debug => 1);
+            next;
+        }
         
         $self->{project}->{$result->{sunAkShareProject}} = { total => 0, used => 0, display => $result->{sunAkShareProject} }
             if (!defined($self->{project}->{$result->{sunAkShareProject}}));
