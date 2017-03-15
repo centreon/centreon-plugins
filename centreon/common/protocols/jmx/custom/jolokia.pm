@@ -165,6 +165,16 @@ sub _add_request {
     return $request;
 }
 
+sub check_error {
+    my ($self, %options) = @_;
+    
+    # 500-599 an error. 400 is an attribute not present
+    if ($options{response}->status() >= 500 || $options{response}->status() == 401 || $options{response}->status() == 408) {
+        $self->{output}->add_option_msg(short_msg => "protocol issue: " . $options{response}->error_text());
+        $self->{output}->option_exit();
+    }
+}
+
 sub get_attributes {
     my ($self, %options) = @_;
     my $nothing_quit = defined($options{nothing_quit}) && $options{nothing_quit} == 1 ? 1 : 0;
@@ -199,11 +209,7 @@ sub get_attributes {
         for (my $j = 0; defined($options{request}->[$i]->{attributes}) && 
                         defined($responses[$pos]) && $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
             if ($responses[$pos]->is_error()) {
-                # 500-599 an error. 400 is an attribute not present
-                if ($responses[$pos]->status() >= 500 || $responses[$pos]->status() == 401 || $responses[$pos]->status() == 408) {
-                    $self->{output}->add_option_msg(short_msg => "protocol issue: " . $responses[$pos]->error_text());
-                    $self->{output}->option_exit();
-                }
+                $self->check_error(response => $responses[$pos]);
                 next;
             }
             
@@ -222,10 +228,14 @@ sub get_attributes {
         }
 
         if (!defined($options{request}->[$i]->{attributes}) || scalar(@{$options{request}->[$i]->{attributes}}) == 0) {
-            my $mbean = $responses[$pos]->{request}->{mbean};
-            $response->{$mbean} = {} if (!defined($response->{$mbean}));
-            foreach (keys %{$responses[$pos]->{value}}) {
-                $response->{$mbean}->{$_} = $responses[$pos]->{value}->{$_};
+            if ($responses[$pos]->is_error()) {
+                $self->check_error(response => $responses[$pos]);
+            } else {
+                my $mbean = $responses[$pos]->{request}->{mbean};
+                $response->{$mbean} = {} if (!defined($response->{$mbean}));
+                foreach (keys %{$responses[$pos]->{value}}) {
+                    $response->{$mbean}->{$_} = $responses[$pos]->{value}->{$_};
+                }
             }
             $pos++;
         }
