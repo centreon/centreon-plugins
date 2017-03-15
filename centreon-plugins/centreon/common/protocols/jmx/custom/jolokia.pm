@@ -197,10 +197,10 @@ sub get_attributes {
     my @responses = $self->{jmx4perl}->request(@requests);
     for (my $i = 0, my $pos = 0; defined($options{request}) && $i < scalar(@{$options{request}}); $i++) {
         for (my $j = 0; defined($options{request}->[$i]->{attributes}) && 
-                          $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
+                        defined($responses[$pos]) && $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
             if ($responses[$pos]->is_error()) {
                 # 500-599 an error. 400 is an attribute not present
-                if ($responses[$pos]->status() >= 500 || $responses[$pos]->status() == 401) {
+                if ($responses[$pos]->status() >= 500 || $responses[$pos]->status() == 401 || $responses[$pos]->status() == 408) {
                     $self->{output}->add_option_msg(short_msg => "protocol issue: " . $responses[$pos]->error_text());
                     $self->{output}->option_exit();
                 }
