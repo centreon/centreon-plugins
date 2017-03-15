@@ -65,7 +65,7 @@ sub manage_selection {
         
         my $status = defined($mapping_running{$snmp_result->{$oid_rp . '.' . $instance . '.' . $oid_running_suffix}}) ? 
                               $mapping_running{$snmp_result->{$oid_rp . '.' . $instance . '.' . $oid_running_suffix}} : 'unknown';
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $status !~ /$self->{option_results}->{filter_status}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching filter.", debug => 1);
             next;
