@@ -266,13 +266,13 @@ sub prefix_ibgw_output {
 sub skip_empty_ib {
     my ($self, %options) = @_;
 
-    scalar(keys %{$self->{ib}}) > 1 ? return(0) : return(1);
+    scalar(keys %{$self->{ib}}) > 0 ? return(0) : return(1);
 }
 
 sub skip_empty_ibgw {
     my ($self, %options) = @_;
 
-    scalar(keys %{$self->{ibgw}}) > 1 ? return(0) : return(1);
+    scalar(keys %{$self->{ibgw}}) > 0 ? return(0) : return(1);
 }
 
 my %map_link_state = (1 => 'down', 2 => 'init', 3 => 'armed', 4 => 'active', 5 => 'other');
