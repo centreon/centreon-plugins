@@ -32,8 +32,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'ib', type => 1, cb_prefix_output => 'prefix_ib_output', message_multiple => 'All infiniband interfaces are ok', skipped_code => { -10 => 1 } },
-        { name => 'ibgw', type => 1, cb_prefix_output => 'prefix_ibgw_output', message_multiple => 'All gateway infiniband interfaces are ok', skipped_code => { -10 => 1 } },
+        { name => 'ib', type => 1, cb_prefix_output => 'prefix_ib_output', message_multiple => 'All infiniband interfaces are ok', cb_init => 'skip_empty_ib', skipped_code => { -10 => 1 } },
+        { name => 'ibgw', type => 1, cb_prefix_output => 'prefix_ibgw_output', message_multiple => 'All gateway infiniband interfaces are ok', cb_init => 'skip_empty_ibgw', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{ib} = [
@@ -222,7 +222,7 @@ sub new {
                                   "filter-ib-name:s"        => { name => 'filter_ib_name' },
                                   "filter-ibgw-name:s"      => { name => 'filter_ibgw_name' },
                                   "warning-ib-status:s"     => { name => 'warning_ib_status', default => '' },
-                                  "critical-ib-status:s"    => { name => 'critical_ib_status', default => '%{status} !~ /up/i' },
+                                  "critical-ib-status:s"    => { name => 'critical_ib_status', default => '%{status} !~ /active/i' },
                                   "warning-ibgw-status:s"   => { name => 'warning_ibgw_status', default => '' },
                                   "critical-ibgw-status:s"  => { name => 'critical_ibgw_status', default => '%{status} !~ /up/i' },
                                   "speed-in:s"              => { name => 'speed_in' },
@@ -261,6 +261,18 @@ sub prefix_ibgw_output {
     my ($self, %options) = @_;
     
     return "Infiniband gateway '" . $options{instance_value}->{display} . "' ";
+}
+
+sub skip_empty_ib {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{ib}}) > 1 ? return(0) : return(1);
+}
+
+sub skip_empty_ibgw {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{ibgw}}) > 1 ? return(0) : return(1);
 }
 
 my %map_link_state = (1 => 'down', 2 => 'init', 3 => 'armed', 4 => 'active', 5 => 'other');
@@ -314,6 +326,7 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{ $oid_ibSmaPortInfoEntry }, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{ $oid_ibPmaExtPortCntrsEntry }, instance => $instance);
+        $result2->{ibPmaExtPortConnector} =~ s/\x00//g;
         if (defined($self->{option_results}->{filter_ib_name}) && $self->{option_results}->{filter_ib_name} ne '' &&
             $result2->{ibPmaExtPortConnector} !~ /$self->{option_results}->{filter_ib_name}/) {
             $self->{output}->output_add(long_msg => "Skipping '" . $result2->{ibPmaExtPortConnector} . "': no matching filter.", debug => 1);
@@ -334,7 +347,8 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result->{ $oid_gwPortStateEntry }, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping4, results => $snmp_result->{ $oid_gwEthPortCntrsEntry }, instance => $instance);
-        if (defined($self->{option_results}->{filter_ib_name}) && $self->{option_results}->{filter_ib_name} ne '' &&
+        $result->{gwPortLongName} =~ s/\x00//g;
+        if (defined($self->{option_results}->{filter_ibgw_name}) && $self->{option_results}->{filter_ibgw_name} ne '' &&
             $result->{gwPortLongName} !~ /$self->{option_results}->{filter_ibgw_name}/) {
             $self->{output}->output_add(long_msg => "Skipping '" . $result->{gwPortLongName} . "': no matching filter.", debug => 1);
             next;
@@ -346,6 +360,11 @@ sub manage_selection {
             in => $result2->{gwEthRxBytes} * 8, out => $result2->{gwEthTxBytes} * 8,
             speed_in => 10000,
             speed_out => 10000};
+    }
+    
+    if (scalar(keys %{$self->{ibgw}}) <= 0 && scalar(keys %{$self->{ib}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No interfaces found.");
+        $self->{output}->option_exit();
     }
     
     $self->{cache_name} = "oracle_infiniband_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
