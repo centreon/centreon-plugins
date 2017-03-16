@@ -71,6 +71,7 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{ $mapping->{ibSmaPortLinkState}->{oid} }, instance => $instance);
         
+        $snmp_result->{ $oid_ibPmaExtPortConnector }->{$oid} =~ s/\x00//g;
         if (defined($self->{option_results}->{filter_ib_name}) && $self->{option_results}->{filter_ib_name} ne '' &&
             $snmp_result->{ $oid_ibPmaExtPortConnector }->{$oid} !~ /$self->{option_results}->{filter_ib_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $snmp_result->{ $oid_ibPmaExtPortConnector }->{$oid} . "': no matching filter.", debug => 1);
@@ -86,6 +87,7 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{ $oid_gwPortStateEntry }, instance => $instance);
         
+        $result->{gwPortLongName} =~ s/\x00//g;
         if (defined($self->{option_results}->{filter_ibgw_name}) && $self->{option_results}->{filter_ibgw_name} ne '' &&
             $result->{gwPortLongName} !~ /$self->{option_results}->{filter_ibgw_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{gwPortLongName} . "': no matching filter.", debug => 1);
