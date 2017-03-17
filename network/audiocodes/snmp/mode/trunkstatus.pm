@@ -54,7 +54,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'alarm status : ' . $self->{result_values}->{alarm} . ' [state: ' . $self->{result_values}->{state} . ']');
+    my $msg = 'alarm status : ' . $self->{result_values}->{alarm} . ' [state: ' . $self->{result_values}->{state} . ']';
     return $msg;
 }
 
@@ -145,6 +145,7 @@ sub manage_selection {
     $self->{trunk} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
             { oid => $mapping->{acTrunkName}->{oid} },
+            { oid => $mapping->{acTrunkDeactivate}->{oid} },
             { oid => $oid_acTrunkStatusEntry },
         ], nothing_quit => 1, return_type => 1);
 
