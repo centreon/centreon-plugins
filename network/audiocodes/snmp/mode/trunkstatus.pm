@@ -54,7 +54,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'alarm status : ' . $self->{result_values}->{alarm};
+    my $msg = 'alarm status : ' . $self->{result_values}->{alarm} . ' [state: ' . $self->{result_values}->{state} . ']');
     return $msg;
 }
 
@@ -64,6 +64,7 @@ sub custom_status_calc {
     $self->{result_values}->{alarm} = $options{new_datas}->{$self->{instance} . '_alarm'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{dchannel} = $options{new_datas}->{$self->{instance} . '_dchannel'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     return 0;
 }
 
@@ -76,7 +77,7 @@ sub set_counters {
     
     $self->{maps_counters}->{trunk} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'display' }, { name => 'dchannel' }, { name => 'alarm' } ],
+                key_values => [ { name => 'display' }, { name => 'dchannel' }, { name => 'alarm' }, { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -95,7 +96,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{alarm} !~ /greenActive/i' },
+                                  "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i' },
                                 });
     
     return $self;
@@ -128,10 +129,12 @@ sub change_macros {
 my %map_alarm = (0 => 'greyDisabled', 1 => 'greenActive', 2 => 'redLosLof', 
 3 => 'blueAis', 4 => 'yellowRai', 5 => 'orangeDChannel', 6 => 'purpleLowerLayerDown', 7 => 'darkOrangeNFASAlarm');
 my %map_dchannel = (0 => 'dChannelEstablished', 1 => 'dChannelNotEstablished', 10 => 'dChannelNotApplicable');
+my %map_deactivate = (0 => 'notAvailable', 1 => 'deActivated', 2 => 'activated');
 
 my $mapping = {
     acTrunkStatusDChannel   => { oid => '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1.6', map => \%map_dchannel },
     acTrunkStatusAlarm      => { oid => '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1.7', map => \%map_alarm },
+    acTrunkDeactivate       => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.11', map => \%map_deactivate },
     acTrunkName             => { oid => '.1.3.6.1.4.1.5003.9.10.9.1.1.1.1.1.13' },
 };
 my $oid_acTrunkStatusEntry = '.1.3.6.1.4.1.5003.9.10.9.2.1.1.1';
@@ -153,6 +156,7 @@ sub manage_selection {
         $self->{trunk}->{$instance} = { 
             display => defined($result->{acTrunkName}) && $result->{acTrunkName} ne '' ? $result->{acTrunkName} : $instance, 
             alarm => $result->{acTrunkStatusAlarm},
+            state => $result->{acTrunkDeactivate},
             dchannel => $result->{acTrunkStatusDChannel} };
     }
     
@@ -175,12 +179,12 @@ Check vpn status.
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{display}, %{alarm}, %{dchannel}
+Can used special variables like: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{alarm} !~ /greenActive/i').
-Can used special variables like: %{display}, %{alarm}, %{dchannel}
+Set critical threshold for status (Default: '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i').
+Can used special variables like: %{display}, %{alarm}, %{dchannel}, %{state}
 
 =back
 
