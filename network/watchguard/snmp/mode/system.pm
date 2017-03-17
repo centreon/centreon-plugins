@@ -66,12 +66,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
