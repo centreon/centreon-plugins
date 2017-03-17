@@ -139,8 +139,9 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "kemp_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $self->{cache_name} = "watchguard_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{wgPolicyName}) ? md5_hex($self->{option_results}->{wgPolicyName}) : md5_hex('all'));
 }
 
 1;
