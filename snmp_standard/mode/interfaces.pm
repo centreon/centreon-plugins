@@ -113,7 +113,7 @@ sub custom_traffic_perfdata {
     }
     if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
-        $self->{result_values}->{speed} /= 8;
+        $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
     }
     
     my ($warning, $critical);
