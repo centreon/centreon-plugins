@@ -182,9 +182,11 @@ Check memory usage
 =over 8
 
 =item B<--units>
+
 Units of thresholds (Default: '%') ('%', 'absolute').
 
 =item B<--free>
+
 Thresholds are on free tape left.
 
 =item B<--warning-*>
