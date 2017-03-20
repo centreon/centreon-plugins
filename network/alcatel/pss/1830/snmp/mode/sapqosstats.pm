@@ -64,10 +64,11 @@ sub set_counters {
         },
         { label => 'in-drop-packets', set => {
                 key_values => [ { name => 'in_dropped_packets', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_qos_drop_calc'),
                 output_template => 'In Dropped Packets : %s',
                 perfdatas => [
-                    { label => 'in_drop_packets', value => 'in_dropped_packets_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'in_drop_packets', value => 'in_dropped_packets', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -94,7 +95,7 @@ sub custom_status_threshold {
         }
 
         $instance_mode->{last_status} = 0;
-        if ($self->{result_values}->{status} ne 'up') {
+        if ($self->{result_values}->{admin} eq 'up') {
             $instance_mode->{last_status} = 1;
         }
     };
@@ -176,6 +177,7 @@ sub custom_qos_output {
 sub custom_qos_calc {
     my ($self, %options) = @_;
     
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{traffic} = ($options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}}) / $options{delta_time};
@@ -183,6 +185,15 @@ sub custom_qos_calc {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
         $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
+    return 0;
+}
+
+sub custom_qos_drop_calc {
+    my ($self, %options) = @_;
+    
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{in_dropped_packets} = $options{new_datas}->{$self->{instance} . '_in_dropped_packets'} - $options{old_datas}->{$self->{instance} . '_in_dropped_packets'};
     return 0;
 }
 
@@ -250,7 +261,7 @@ my $mapping = {
     tnSapBaseStatsIngressForwardedOctets    => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.4' },
     tnSapBaseStatsEgressForwardedOctets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.6' },
     tnSapBaseStatsIngressDroppedPackets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.9' },
-);
+};
 
 my $oid_tnSapDescription = '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.5';
 my $oid_tnSvcName = '.1.3.6.1.4.1.7483.6.1.2.4.2.2.1.28';
@@ -290,8 +301,8 @@ sub manage_selection {
         $self->{sap}->{$instance} = { display => $name };
     }
     
-    $options{snmp}->load(oids => [$oid_tnSapBaseStatsIngressForwardedOctets, 
-        $oid_tnSapBaseStatsEgressForwardedOctets, $oid_tnSapBaseStatsIngressDroppedPackets,
+    $options{snmp}->load(oids => [$mapping->{oid_tnSapBaseStatsIngressForwardedOctets}->{oid}, 
+        $mapping->{tnSapBaseStatsEgressForwardedOctets}->{oid}, $mapping->{tnSapBaseStatsIngressDroppedPackets}->{oid},
         $mapping->{tnSapAdminStatus}->{oid}, $mapping->{tnSapOperStatus}->{oid}], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+\.\d+)$');
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
