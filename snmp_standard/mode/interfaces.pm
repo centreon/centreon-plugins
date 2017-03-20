@@ -113,7 +113,7 @@ sub custom_traffic_perfdata {
     }
     if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
-        $self->{result_values}->{speed} /= 8;
+        $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
     }
     
     my ($warning, $critical);
@@ -458,7 +458,7 @@ sub set_counters {
         $self->{maps_counters}->{int}->{'065_out-mcast'} = { filter => 'add_cast',
             set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
+                closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'omcast', total_ref1 => 'oucast', total_ref2 => 'obcast' },
                 output_template => 'Out Mcast : %.2f %%', output_error_template => 'Out Mcast : %s',
                 output_use => 'omcast_prct',  threshold_use => 'omcast_prct',
                 perfdatas => [
