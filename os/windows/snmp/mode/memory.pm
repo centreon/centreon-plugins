@@ -20,50 +20,128 @@
 
 package os::windows::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+my $instance_mode;
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my $label = 'used';
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($instance_mode->{option_results}->{free})) {
+        $label = 'free';
+        $value_perf = $self->{result_values}->{free};
+    }
+
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => $label,
+                                  value => $value_perf, unit => 'B',
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Total: %s%s Used: %s%s (%.2f%%) Free: %s%s (%.2f%%)",
+                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}), $self->{result_values}->{prct_used},
+                   $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}), $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'memory', set => {
+                key_values => [ { name => 'used' }, { name => 'total' }  ],
+                closure_custom_calc => \&custom_usage_calc,
+                closure_custom_output => \&custom_usage_output,
+                closure_custom_perfdata => \&custom_usage_perfdata,
+                closure_custom_threshold_check => \&custom_usage_threshold,
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return "RAM ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
+                                {
+                                  "units:s"           => { name => 'units', default => '%' },
+                                  "free"              => { name => 'free' },
                                 });
 
-    $self->{physical_memory_id} = undef;
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }    
+    $instance_mode = $self;
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+
+    my ($total_bytes, $used_bytes, $free_bytes);
 
     my $oid_hrStorageDescr = '.1.3.6.1.2.1.25.2.3.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_hrStorageDescr);
-    
+
+    my $result = $options{snmp}->get_table(oid => $oid_hrStorageDescr);
+
     foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);
         my $oid = $1;
@@ -71,44 +149,26 @@ sub run {
             $self->{physical_memory_id} = $oid;
         }
     }
-    
+
     if (!defined($self->{physical_memory_id})) {
         $self->{output}->add_option_msg(short_msg => "Cannot find physical memory informations.");
         $self->{output}->option_exit();
     }
-    
+
     my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
 
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
+    $options{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
                         instances => [$self->{physical_memory_id}]);
-    $result = $self->{snmp}->get_leef();
+    $result = $options{snmp}->get_leef();
 
-    my $physical_used = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
-    my $total_size = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
-    
-    my $prct_used = $physical_used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $used_bytes = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
+    $total_bytes = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
+    $free_bytes = $total_bytes - $used_bytes;
 
-    my ($physical_used_value, $physical_used_unit) = $self->{perfdata}->change_bytes(value => $physical_used);
-    my ($physical_free_value, $physical_free_unit) = $self->{perfdata}->change_bytes(value => $total_size - $physical_used);
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("RAM Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                            $total_value . " " . $total_unit,
-                                            $physical_used_value . " " . $physical_used_unit, $prct_used,
-                                            $physical_free_value . " " . $physical_free_unit, 100 - $prct_used));
+    $self->{memory} = { used => $used_bytes, total => $total_bytes };
 
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $physical_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -117,17 +177,25 @@ __END__
 
 =head1 MODE
 
-Check Windows physical memory.
+Check memory usage
 
 =over 8
 
-=item B<--warning>
+=item B<--units>
+Units of thresholds (Default: '%') ('%', 'absolute').
 
-Threshold warning in percent.
+=item B<--free>
+Thresholds are on free tape left.
 
-=item B<--critical>
+=item B<--warning-*>
 
-Threshold critical in percent.
+Threshold warning.
+Can be: 'memory'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'memory'.
 
 =back
 
