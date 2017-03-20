@@ -67,7 +67,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_qos_drop_calc'),
                 output_template => 'In Dropped Packets : %s',
                 perfdatas => [
-                    { label => 'in_drop_packets', value => 'in_dropped_packets', template => '%s',
+                    { label => 'in_drop_packets', value => 'in_dropped_packets_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -193,7 +193,7 @@ sub custom_qos_drop_calc {
     
     return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{in_dropped_packets} = $options{new_datas}->{$self->{instance} . '_in_dropped_packets'} - $options{old_datas}->{$self->{instance} . '_in_dropped_packets'};
+    $self->{result_values}->{in_dropped_packets_absolute} = $options{new_datas}->{$self->{instance} . '_in_dropped_packets'} - $options{old_datas}->{$self->{instance} . '_in_dropped_packets'};
     return 0;
 }
 
@@ -301,7 +301,7 @@ sub manage_selection {
         $self->{sap}->{$instance} = { display => $name };
     }
     
-    $options{snmp}->load(oids => [$mapping->{oid_tnSapBaseStatsIngressForwardedOctets}->{oid}, 
+    $options{snmp}->load(oids => [$mapping->{tnSapBaseStatsIngressForwardedOctets}->{oid}, 
         $mapping->{tnSapBaseStatsEgressForwardedOctets}->{oid}, $mapping->{tnSapBaseStatsIngressDroppedPackets}->{oid},
         $mapping->{tnSapAdminStatus}->{oid}, $mapping->{tnSapOperStatus}->{oid}], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+\.\d+)$');
