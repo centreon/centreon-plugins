@@ -239,22 +239,21 @@ sub get_display_name {
 }
 
 my %map_admin = (1 => 'up', 2 => 'down');
-my %map_oper = (1 => 'up', 2= > 'down', 3 => 'ingressQosMismatch',
+my %map_oper = (1 => 'up', 2 => 'down', 3 => 'ingressQosMismatch',
     4 => 'egressQosMismatch', 5 => 'portMtuTooSmall', 6 => 'svcAdminDown',
     7 => 'iesIfAdminDown'
 );
 
 my $mapping = {
-    tnSapDescription    => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.5' },
     tnSapAdminStatus    => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.6', map => \%map_admin },
     tnSapOperStatus     => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.7', map => \%map_oper },
-};
+    tnSapBaseStatsIngressForwardedOctets    => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.4' },
+    tnSapBaseStatsEgressForwardedOctets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.6' },
+    tnSapBaseStatsIngressDroppedPackets     => { oid => '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.9' },
+);
 
-my $oid_tnSapBaseInfoEntry = '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1';
+my $oid_tnSapDescription = '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.5';
 my $oid_tnSvcName = '.1.3.6.1.4.1.7483.6.1.2.4.2.2.1.28';
-my $oid_tnSapBaseStatsIngressForwardedOctets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.4';
-my $oid_tnSapBaseStatsEgressForwardedOctets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.6';
-my $oid_tnSapBaseStatsIngressDroppedPackets = '.1.3.6.1.4.1.7483.7.2.2.2.8.1.1.1.9';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -267,39 +266,42 @@ sub manage_selection {
     # SNMP Get is slow for Dropped, Ingress, Egress. So we are doing in 2 times.
     $self->{sap} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
-            { oid => $oid_tnSapBaseInfoEntry, begin => $mapping->{tnSapDescription}->{oid}, end => $mapping->{tnSapOperStatus}->{oid} }, 
+            { oid => $oid_tnSapDescription }, 
             { oid => $oid_tnSvcName },
         ],
         nothing_quit => 1);
     
-    foreach my $oid (keys %{$snmp_result->{$oid_tnSapBaseInfoEntry}}) {
-        next if ($oid !~ /^$mapping->{tnSapDescription}->{oid}\.(.*?)\.(.*?)\.(.*?)\.(.*?)$/);
+    foreach my $oid (keys %{$snmp_result->{$oid_tnSapDescription}}) {
+        next if ($oid !~ /^$oid_tnSapDescription\.(.*?)\.(.*?)\.(.*?)\.(.*?)$/);
         my ($SysSwitchId, $SvcId, $SapPortId, $SapEncapValue) = ($1, $2, $3, $4);
         my $instance = $SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue;
         
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_tnSapBaseInfoEntry}, instance => $instance);
+        my $SapDescription = $snmp_result->{$oid_tnSapDescription}->{$oid};
         my $SvcName = defined($snmp_result->{$oid_tnSvcName}->{$oid_tnSvcName . '.' . $SysSwitchId . '.' . $SvcId}) ?
            $snmp_result->{$oid_tnSvcName}->{$oid_tnSvcName . '.' . $SysSwitchId . '.' . $SvcId} : '';
         
-        my $name = $self->get_display_name(SapDescription => $result->{tnSapDescription}, SvcName => $SvcName, SysSwitchId => $SysSwitchId, SvcId => $SvcId, SapPortId => $SapPortId, SapEncapValue => $SapEncapValue);
+        my $name = $self->get_display_name(SapDescription => $SapDescription, SvcName => $SvcName, SysSwitchId => $SysSwitchId, SvcId => $SvcId, SapPortId => $SapPortId, SapEncapValue => $SapEncapValue);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
         
-        $self->{sap}->{$SysSwitchId . '.' . $SvcId . '.' . $SapPortId . '.' . $SapEncapValue} = { 
-            display => $name, status => $result->{tnSapOperStatus}, admin => $result->{tnSapAdminStatus}
-        };
+        $self->{sap}->{$instance} = { display => $name };
     }
     
-    $options{snmp}->load(oids => [$oid_tnSapBaseStatsIngressForwardedOctets, $oid_tnSapBaseStatsEgressForwardedOctets, $oid_tnSapBaseStatsIngressDroppedPackets], 
+    $options{snmp}->load(oids => [$oid_tnSapBaseStatsIngressForwardedOctets, 
+        $oid_tnSapBaseStatsEgressForwardedOctets, $oid_tnSapBaseStatsIngressDroppedPackets,
+        $mapping->{tnSapAdminStatus}->{oid}, $mapping->{tnSapOperStatus}->{oid}], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+\.\d+)$');
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach (keys %{$self->{sap}}) {
-        $self->{sap}->{$_}->{in} = $snmp_result->{$oid_tnSapBaseStatsIngressForwardedOctets . '.' . $_} * 8;
-        $self->{sap}->{$_}->{out} = $snmp_result->{$oid_tnSapBaseStatsEgressForwardedOctets . '.' . $_} * 8;
-        $self->{sap}->{$_}->{in_dropped_packets} = $snmp_result->{$oid_tnSapBaseStatsIngressDroppedPackets . '.' . $_};
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
+        $self->{sap}->{$_}->{in} = $result->{tnSapBaseStatsIngressForwardedOctets} * 8;
+        $self->{sap}->{$_}->{out} = $result->{tnSapBaseStatsEgressForwardedOctets} * 8;
+        $self->{sap}->{$_}->{in_dropped_packets} = $result->{tnSapBaseStatsIngressDroppedPackets};
+        $self->{sap}->{$_}->{status} = $result->{tnSapAdminStatus};
+        $self->{sap}->{$_}->{admin} = $result->{tnSapOperStatus};
     }
 
     if (scalar(keys %{$self->{sap}}) <= 0) {
