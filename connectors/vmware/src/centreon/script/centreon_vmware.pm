@@ -74,6 +74,7 @@ my @load_modules = (
     'centreon::vmware::cmdgetmap',
     'centreon::vmware::cmdhealthhost',
     'centreon::vmware::cmdlimitvm',
+    'centreon::vmware::cmdlistclusters',
     'centreon::vmware::cmdlistdatacenters',
     'centreon::vmware::cmdlistdatastores',
     'centreon::vmware::cmdlistnichost',
