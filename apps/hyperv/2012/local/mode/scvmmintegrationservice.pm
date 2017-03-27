@@ -182,15 +182,17 @@ sub manage_selection {
         my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5, vmaddition => $6);
 
         $values{hostgroup} =~ s/\\/\//g;
+        my $filtered = 0;
         foreach (('name', 'description', 'status', 'hostgroup')) {
             if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
                 $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
                 $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
-                next;
+                $filtered = 1;
+                last;
             }
         }
         
-        $self->{vm}->{$id} = { %values };
+        $self->{vm}->{$id} = { %values } if ($filtered == 0);
         $id++;
     }
 }
