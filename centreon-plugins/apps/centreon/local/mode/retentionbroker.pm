@@ -76,7 +76,7 @@ sub run {
     my ($self, %options) = @_;
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'centreon-broker failover files and tempory are ok');
+                                short_msg => 'centreon-broker failover/temporary files are ok');
     
     my $total_size = 0;
     foreach my $config (@{$self->{option_results}->{broker_config}}) {
