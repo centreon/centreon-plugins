@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::radware::alteon::common::mode::cpu;
+package network::radware::alteon::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 

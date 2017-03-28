@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::radware::alteon::common::mode::memory;
+package network::radware::alteon::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -69,7 +69,7 @@ sub run {
     my $prct_used = $memory_used * 100 / $total_size;
     my $prct_free = 100 - $prct_used;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
