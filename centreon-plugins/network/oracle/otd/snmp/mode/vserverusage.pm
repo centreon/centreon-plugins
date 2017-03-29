@@ -127,6 +127,8 @@ sub manage_selection {
             next;
         }
         
+        $result->{vsInOctets} *= 8;
+        $result->{vsOutOctets} *= 8;
         $self->{vs}->{$instance} = {
             display => $result->{vsId},
             %$result
