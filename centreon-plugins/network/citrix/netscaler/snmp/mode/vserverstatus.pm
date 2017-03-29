@@ -55,7 +55,7 @@ sub set_counters {
         },
         { label => 'in-traffic', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
@@ -65,20 +65,10 @@ sub set_counters {
         },
         { label => 'out-traffic', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', value => 'out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-        { label => 'in-traffic', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
-                output_template => 'Traffic In: %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -218,10 +208,10 @@ my %map_vs_status = (
 
 my $mapping = {
     vsvrName                    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.1' },
+    vsvrState                   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
     vsvrEntityType              => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type },   
 };
 my $mapping2 = {
-    vsvrState                   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
     vsvrTotalRequestBytesLow    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.13' },
     vsvrTotalRequestBytesHigh   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.14' },
     vsvrTotalResponseBytesLow   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.17' },
@@ -238,6 +228,7 @@ sub manage_selection {
  
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $mapping->{vsvrName}->{oid} },
+                                                            { oid => $mapping->{vsvrState}->{oid} },
                                                             { oid => $mapping->{vsvrEntityType}->{oid} },
                                                          ], return_type => 1, nothing_quit => 1);
     $self->{vservers} = {};
@@ -257,11 +248,10 @@ sub manage_selection {
             next;
         }
         
-        $self->{vservers}->{$instance} = { display => $result->{vsvrName} };
+        $self->{vservers}->{$instance} = { display => $result->{vsvrName}, state => $result->{vsvrState} };
     }
     
-    $options{snmp}->load(oids => [$mapping2->{vsvrState}->{oid}, 
-        $mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
+    $options{snmp}->load(oids => [$mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
         $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
         $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
         $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
@@ -277,7 +267,6 @@ sub manage_selection {
         $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} :
             (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow})) * 8;
         $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
-        $self->{vservers}->{$_}->{state} = $result->{vsvrState};
         $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
         $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
     }
