@@ -20,40 +20,45 @@
 
 package network::radware::alteon::snmp::mode::hardware;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::hardware);
 
-use strict;
-use warnings;
-
-my %states_temp_cpu = (
-    1 => ['normal', 'OK'], 
-    2 => ['warning', 'WARNING'],
-    3 => ['critical', 'CRITICAL'],     
-);
-my %states_temp = (
-    1 => ['ok', 'OK'], 
-    2 => ['exceed', 'WARNING'], 
-);
-my %states_psu = (
-    1 => ['single power supply ok', 'WARNING'], 
-    2 => ['first powerSupply failed', 'CRITICAL'],
-    3 => ['second power supply failed', 'CRITICAL'],
-    4 => ['double power supply ok', 'OK'],
-    5 => ['unknown power supply failed', 'UNKNOWN'],
-);
-my %states_fan = (
-    1 => ['ok', 'OK'], 
-    2 => ['fail', 'CRITICAL'],
-);
-my $oid_hwTemperatureStatus = '.1.3.6.1.4.1.1872.2.5.1.3.1.3.0';
-my $oid_hwFanStatus = '.1.3.6.1.4.1.1872.2.5.1.3.1.4.0';
-my $oid_hwTemperatureThresholdStatusCPU1Get = '.1.3.6.1.4.1.1872.2.5.1.3.1.28.3.0';
-my $oid_hwTemperatureThresholdStatusCPU2Get = '.1.3.6.1.4.1.1872.2.5.1.3.1.28.4.0';
-my $oid_hwPowerSupplyStatus = '.1.3.6.1.4.1.1872.2.5.1.3.1.29.2.0';
+sub set_system {
+    my ($self, %options) = @_;
+    
+    $self->{regexp_threshold_overload_check_section_option} = '^(cpu|temperature|psu|fan)$';
+    
+    $self->{cb_hook2} = 'snmp_execute';
+    
+    $self->{thresholds} = {
+        cpu => [
+            ['normal', 'OK'],
+            ['warning', 'WARNING'],
+            ['critical', 'CRITICAL'],
+        ],
+        psu => [
+            ['singlePowerSupplyOk', 'OK'],
+            ['firstPowerSupplyFailed', 'CRITICAL'],
+            ['secondPowerSupplyFailed', 'CRITICAL'],
+            ['doublePowerSupplyOk', 'OK'],
+            ['unknownPowerSupplyFailed', 'UNKNOWN'],
+        ],
+        temperature => [
+            ['ok', 'OK'],
+            ['exceed', 'WARNING'],
+        ],
+        fan => [
+            ['ok', 'OK'],
+            ['fail', 'CRITICAL'],
+        ],
+    };
+    
+    $self->{components_path} = 'network::radware::alteon::snmp::mode::components';
+    $self->{components_module} = ['cpu', 'temperature', 'psu', 'fan'];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1, no_load_components => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -64,116 +69,212 @@ sub new {
     return $self;
 }
 
-sub check_options {
+sub snmp_execute {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
+    
     $self->{snmp} = $options{snmp};
-
-    $self->{components_fans} = 0;
-    $self->{components_psus} = 0;
-    $self->{components_temperatures} = 0;
-    
-    $self->{global_result} = $self->{snmp}->get_leef(oids => [$oid_hwTemperatureStatus, $oid_hwFanStatus, 
-                                                     $oid_hwTemperatureThresholdStatusCPU1Get, $oid_hwTemperatureThresholdStatusCPU2Get,
-                                                     $oid_hwPowerSupplyStatus],
-                                                     nothing_quit => 1);
-    
-    $self->check_fans();
-    $self->check_psus();
-    $self->check_temperatures();
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %d components [%d fans, %d power supplies, %d temperatures] are ok", 
-                                ($self->{components_fans} + $self->{components_psus} + $self->{components_temperatures}), 
-                                $self->{components_fans}, $self->{components_psus}, $self->{components_temperatures}));
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{results} = $self->{snmp}->get_leef(oids => $self->{request});
 }
 
-sub check_fans {
+1;
+
+=head1 MODE
+
+Check hardware (ALTEON-CHEETAH-SWITCH-MIB).
+
+=over 8
+
+=item B<--component>
+
+Which component to check (Default: '.*').
+Can be: 'cpu', 'temperature', 'psu', 'fan'.
+
+=item B<--filter>
+
+Exclude some parts (comma seperated list)
+Can also exclude specific instance: --filter=cpu,1
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='psu,OK,unknownPowerSupplyFailed'
+
+=back
+
+=cut
+
+package network::radware::alteon::snmp::mode::components::cpu;
+
+use strict;
+use warnings;
+
+my %map_cpu_status = (1 => 'normal', 2 => 'warning', 3 => 'critical');
+
+my $mapping_cpu = {
+    hwTemperatureThresholdStatusCPU1Get    => { oid => '.1.3.6.1.4.1.1872.2.5.1.3.1.28.3', map => \%map_cpu_status },
+    hwTemperatureThresholdStatusCPU2Get    => { oid => '.1.3.6.1.4.1.1872.2.5.1.3.1.28.4', map => \%map_cpu_status },
+};
+
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, $mapping_cpu->{hwTemperatureThresholdStatusCPU1Get}->{oid} . '.0', $mapping_cpu->{hwTemperatureThresholdStatusCPU2Get}->{oid} . '.0';
+}
+
+sub check_cpu {
+    my ($self, %options) = @_;
+    
+    return if (!defined($options{status}));
+    return if ($self->check_filter(section => 'cpu', instance => $options{instance}));
+    
+    $self->{components}->{cpu}->{total}++;
+    $self->{output}->output_add(long_msg => sprintf("cpu '%s' status is '%s' [instance = %s]",
+                                                    $options{instance}, $options{status}, $options{instance}));
+    my $exit = $self->get_severity(section => 'cpu', value => $options{status});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Cpu '%s' status is '%s'", $options{instance}, $options{status}));
+    }
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking cpu");
+    $self->{components}->{cpu} = {name => 'cpu', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'cpu'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping_cpu, results => $self->{results}, instance => '0');
+
+    check_cpu($self, status => $result->{hwTemperatureThresholdStatusCPU1Get}, instance => 1);
+    check_cpu($self, status => $result->{hwTemperatureThresholdStatusCPU2Get}, instance => 2);
+}
+
+1;
+
+package network::radware::alteon::snmp::mode::components::fan;
+
+use strict;
+use warnings;
+
+my %map_fan_status = (1 => 'ok', 2 => 'fail');
+
+my $mapping_fan = {
+    hwFanStatus    => { oid => '.1.3.6.1.4.1.1872.2.5.1.3.1.4', map => \%map_fan_status },
+};
+
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, $mapping_fan->{hwFanStatus}->{oid} . '.0';
+}
+
+sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if (!defined($self->{global_result}->{$oid_hwFanStatus}));
-    
-    $self->{components_fans}++;
-    my $fan_state = $self->{global_result}->{$oid_hwFanStatus};
-  
-    $self->{output}->output_add(long_msg => sprintf("Fan status is %s.", ${$states_fan{$fan_state}}[0]));
-    if (${$states_fan{$fan_state}}[1] ne 'OK') {
-        $self->{output}->output_add(severity =>  ${$states_fan{$fan_state}}[1],
-                                    short_msg => sprintf("Fan status is %s.", ${$states_fan{$fan_state}}[0]));
-    }
-}
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'fan'));
 
-sub check_psus {
-    my ($self) = @_;
+    my $result = $self->{snmp}->map_instance(mapping => $mapping_fan, results => $self->{results}, instance => '0');
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    return if (!defined($self->{global_result}->{$oid_hwPowerSupplyStatus}));
-    
-    $self->{components_psus}++;
-    my $psu_state = $self->{global_result}->{$oid_hwPowerSupplyStatus};
-  
-    $self->{output}->output_add(long_msg => sprintf("Power supplies status is %s.", ${$states_psu{$psu_state}}[0]));
-    if (${$states_psu{$psu_state}}[1] ne 'OK') {
-        $self->{output}->output_add(severity =>  ${$states_psu{$psu_state}}[1],
-                                    short_msg => sprintf("Power supplies status is %s.", ${$states_psu{$psu_state}}[0]));
-    }
-}
-
-sub check_temperatures {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking temperatures global");
-    return if (!defined($self->{global_result}->{$oid_hwTemperatureStatus}));
-    
-    $self->{components_temperatures}++;
-    my $temp_state = $self->{global_result}->{$oid_hwTemperatureStatus};
-  
-    $self->{output}->output_add(long_msg => sprintf("Global temperature sensor status is %s.", ${$states_temp{$temp_state}}[0]));
-    if (${$states_temp{$temp_state}}[1] ne 'OK') {
-        $self->{output}->output_add(severity =>  ${$states_temp{$temp_state}}[1],
-                                    short_msg => sprintf("Global temperature sensor  status is %s.", ${$states_temp{$temp_state}}[0]));
-    }
-    
-    $self->{output}->output_add(long_msg => "Checking temperatures cpus");
-    return if (!defined($self->{global_result}->{$oid_hwTemperatureThresholdStatusCPU1Get}) && 
-               !defined($self->{global_result}->{$oid_hwTemperatureThresholdStatusCPU2Get}));
-    
-    $self->{components_temperatures} += 2;
-    my $temp_cpu1_state = $self->{global_result}->{$oid_hwTemperatureThresholdStatusCPU1Get};
-    my $temp_cpu2_state = $self->{global_result}->{$oid_hwTemperatureThresholdStatusCPU2Get};
-  
-    $self->{output}->output_add(long_msg => sprintf("Temperature cpu 1 status is %s.", ${$states_temp_cpu{$temp_cpu1_state}}[0]));
-    if (${$states_temp_cpu{$temp_cpu1_state}}[1] ne 'OK') {
-        $self->{output}->output_add(severity =>  ${$states_temp_cpu{$temp_cpu1_state}}[1],
-                                    short_msg => sprintf("Temperature cpu 1 status is %s.", ${$states_temp_cpu{$temp_cpu1_state}}[0]));
-    }
-    
-    $self->{output}->output_add(long_msg => sprintf("Temperature cpu 2 status is %s.", ${$states_temp_cpu{$temp_cpu2_state}}[0]));
-    if (${$states_temp_cpu{$temp_cpu2_state}}[1] ne 'OK') {
-        $self->{output}->output_add(severity =>  ${$states_temp_cpu{$temp_cpu2_state}}[1],
-                                    short_msg => sprintf("Temperature cpu 2 status is %s.", ${$states_temp_cpu{$temp_cpu2_state}}[0]));
+    return if (!defined($result->{hwFanStatus}));
+    $self->{components}->{fan}->{total}++;
+    $self->{output}->output_add(long_msg => sprintf("fan status is '%s' [instance = %s]",
+                                                    $result->{hwFanStatus}, '0'));
+    my $exit = $self->get_severity(section => 'fan', value => $result->{hwFanStatus});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Fan status is '%s'", $result->{hwFanStatus}));
     }
 }
 
 1;
 
-__END__
+package network::radware::alteon::snmp::mode::components::temperature;
 
-=head1 MODE
+use strict;
+use warnings;
 
-Check Hardware (ALTEON-CHEETAH-SWITCH-MIB) (Fans, Power Supplies, Temperatures).
+my %map_temp_status = (1 => 'ok', 2 => 'exceed');
 
-=over 8
+my $mapping_temp = {
+    hwTemperatureStatus    => { oid => '.1.3.6.1.4.1.1872.2.5.1.3.1.3', map => \%map_temp_status },
+};
 
-=back
+sub load {
+    my ($self) = @_;
 
-=cut
+    push @{$self->{request}}, $mapping_temp->{hwTemperatureStatus}->{oid} . '.0';
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking temperature");
+    $self->{components}->{temperature} = {name => 'temperature', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'temperature'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping_temp, results => $self->{results}, instance => '0');
+
+    return if (!defined($result->{hwTemperatureStatus}));
+    $self->{components}->{temperature}->{total}++;
+    $self->{output}->output_add(long_msg => sprintf("temperature status is '%s' [instance = %s]",
+                                                    $result->{hwTemperatureStatus}, '0'));
+    my $exit = $self->get_severity(section => 'temperature', value => $result->{hwTemperatureStatus});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Temperature status is '%s'", $result->{hwTemperatureStatus}));
+    }
+}
+
+1;
+
+package network::radware::alteon::snmp::mode::components::psu;
+
+use strict;
+use warnings;
+
+my %map_psu_status = (1 => 'singlePowerSupplyOk',
+    2 => 'firstPowerSupplyFailed', 3 => 'secondPowerSupplyFailed', 4 => 'doublePowerSupplyOk',
+    5 => 'unknownPowerSupplyFailed'
+);
+
+my $mapping_psu = {
+    hwPowerSupplyStatus    => { oid => '.1.3.6.1.4.1.1872.2.5.1.3.1.29.2', map => \%map_psu_status },
+};
+
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}}, $mapping_psu->{hwPowerSupplyStatus}->{oid} . '.0';
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking psus");
+    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'psu'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping_psu, results => $self->{results}, instance => '0');
+
+    return if (!defined($result->{hwPowerSupplyStatus}));
+    $self->{components}->{psu}->{total}++;
+    $self->{output}->output_add(long_msg => sprintf("power supply status is '%s' [instance = %s]",
+                                                    $result->{hwPowerSupplyStatus}, '0'));
+    my $exit = $self->get_severity(section => 'psu', value => $result->{hwPowerSupplyStatus});
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Power supply status is '%s'", $result->{hwPowerSupplyStatus}));
+    }
+}
+
+1;
     
