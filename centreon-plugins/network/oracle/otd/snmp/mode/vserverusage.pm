@@ -36,7 +36,7 @@ sub set_counters {
     $self->{maps_counters}->{vs} = [
         { label => 'in', set => {
                 key_values => [ { name => 'vsInOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', value => 'vsInOctets_per_second', template => '%.2f',
@@ -46,7 +46,7 @@ sub set_counters {
         },
         { label => 'out', set => {
                 key_values => [ { name => 'vsOutOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', value => 'vsOutOctets_per_second', template => '%.2f',
