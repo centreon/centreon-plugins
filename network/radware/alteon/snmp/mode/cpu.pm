@@ -20,10 +20,54 @@
 
 package network::radware::alteon::snmp::mode::cpu;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_cpu_output' }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => '1s', set => {
+                key_values => [ { name => '1s' } ],
+                output_template => '%.2f%% (1sec)',
+                perfdatas => [
+                    { label => 'cpu_1s', value => '1s_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => '4s', set => {
+                key_values => [ { name => '4s' } ],
+                output_template => '%.2f%% (4sec)',
+                perfdatas => [
+                    { label => 'cpu_4s', value => '4s_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => '64s', set => {
+                key_values => [ { name => '64s' } ],
+                output_template => '%.2f%% (64sec)',
+                perfdatas => [
+                    { label => 'cpu_64s', value => '64s_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+    
+    return "MP CPU Usage: ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,90 +77,23 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning', default => '' },
-                                  "critical:s"              => { name => 'critical', default => '' },
                                 });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    ($self->{warn1s}, $self->{warn4s}, $self->{warn64s}) = split /,/, $self->{option_results}->{warning};
-    ($self->{crit1s}, $self->{crit4s}, $self->{crit64s}) = split /,/, $self->{option_results}->{critical};
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warn1s', value => $self->{warn1s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (1sec) threshold '" . $self->{warn1s} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn4s', value => $self->{warn4s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (4sec) threshold '" . $self->{warn4s} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn64s', value => $self->{warn64s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (64sec) threshold '" . $self->{warn64s} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit1s', value => $self->{crit1s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (1sec) threshold '" . $self->{crit1s} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit4s', value => $self->{crit4s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (4sec) threshold '" . $self->{crit4s} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit64s', value => $self->{crit64s})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (64sec) threshold '" . $self->{crit64s} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_mpCpuStatsUtil1Second = '.1.3.6.1.4.1.1872.2.5.1.2.2.1.0';
     my $oid_mpCpuStatsUtil4Seconds = '.1.3.6.1.4.1.1872.2.5.1.2.2.2.0';
     my $oid_mpCpuStatsUtil64Seconds = '.1.3.6.1.4.1.1872.2.5.1.2.2.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_mpCpuStatsUtil1Second, $oid_mpCpuStatsUtil4Seconds,
-                                                  $oid_mpCpuStatsUtil64Seconds], nothing_quit => 1);
-    
-    my $cpu1sec = $result->{$oid_mpCpuStatsUtil1Second};
-    my $cpu4sec = $result->{$oid_mpCpuStatsUtil4Seconds};
-    my $cpu64sec = $result->{$oid_mpCpuStatsUtil64Seconds};
-    
-    my $exit1 = $self->{perfdata}->threshold_check(value => $cpu1sec, 
-                           threshold => [ { label => 'crit1s', 'exit_litteral' => 'critical' }, { label => 'warn1s', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $cpu4sec, 
-                           threshold => [ { label => 'crit4s', 'exit_litteral' => 'critical' }, { label => 'warn4s', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $cpu64sec, 
-                           threshold => [ { label => 'crit64s', 'exit_litteral' => 'critical' }, { label => 'warn64s', exit_litteral => 'warning' } ]);
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("MP CPU Usage: %.2f%% (1sec), %.2f%% (4sec), %.2f%% (64sec)",
-                                      $cpu1sec, $cpu4sec, $cpu64sec));
-    
-    $self->{output}->perfdata_add(label => "cpu_1s", unit => '%',
-                                  value => $cpu1sec,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1s'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1s'),
-                                  min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_4s", unit => '%',
-                                  value => $cpu4sec,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn4s'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit4s'),
-                                  min => 0, max => 100);
-    $self->{output}->perfdata_add(label => "cpu_64s", unit => '%',
-                                  value => $cpu64sec,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn64s'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit64s'),
-                                  min => 0, max => 100);
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $snmp_result = $options{snmp}->get_leef(oids => [
+        $oid_mpCpuStatsUtil1Second, $oid_mpCpuStatsUtil4Seconds,
+        $oid_mpCpuStatsUtil64Seconds], nothing_quit => 1);
+
+    $self->{global} = { '1s' => $snmp_result->{$oid_mpCpuStatsUtil1Second}, '4s' => $snmp_result->{$oid_mpCpuStatsUtil4Seconds},
+        '64s' => $snmp_result->{$oid_mpCpuStatsUtil64Seconds} };
 }
 
 1;
@@ -129,13 +106,20 @@ Check MP cpu usage (ALTEON-CHEETAH-SWITCH-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning in percent (1s,4s,64s).
+Only display some counters (regexp can be used).
+Example: --filter-counters='^(64s)$'
 
-=item B<--critical>
+=item B<--warning-*>
 
-Threshold critical in percent (1s,4s,64s).
+Threshold warning.
+Can be: '1s', '4s', '64s'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: '1s', '4s', '64s'.
 
 =back
 
