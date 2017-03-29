@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 my $instance_mode;
 
@@ -49,6 +50,54 @@ sub set_counters {
                 perfdatas => [
                     { value => 'health_absolute', label => 'health', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'in-traffic', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'Traffic In: %s %s/s',
+                perfdatas => [
+                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'out-traffic', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'Traffic Out: %s %s/s',
+                perfdatas => [
+                    { label => 'traffic_out', value => 'out_per_second', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'in-traffic', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'Traffic In: %s %s/s',
+                perfdatas => [
+                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'clients', set => {
+                key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
+                output_template => 'Total Client Connections : %s',
+                perfdatas => [
+                    { label => 'clients', value => 'clients_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'servers', set => {
+                key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
+                output_template => 'Total Server Connections : %s',
+                perfdatas => [
+                    { label => 'servers', value => 'servers_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -115,7 +164,7 @@ sub custom_status_calc {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -168,10 +217,20 @@ my %map_vs_status = (
 );
 
 my $mapping = {
-    vsvrName        => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.1' },
-    vsvrState       => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
-    vsvrHealth      => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.62' },
-    vsvrEntityType  => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type },
+    vsvrName                    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.1' },
+    vsvrEntityType              => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type },   
+};
+my $mapping2 = {
+    vsvrState                   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
+    vsvrTotalRequestBytesLow    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.13' },
+    vsvrTotalRequestBytesHigh   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.14' },
+    vsvrTotalResponseBytesLow   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.17' },
+    vsvrTotalResponseBytesHigh  => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.18' },
+    vsvrTotalRequestBytes       => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.31' },
+    vsvrTotalResponseBytes      => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.33' },
+    vsvrTotalClients            => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.56' },
+    vsvrHealth                  => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.62' },
+    vsvrTotalServers            => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.65' },
 };
 
 sub manage_selection {
@@ -179,8 +238,6 @@ sub manage_selection {
  
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $mapping->{vsvrName}->{oid} },
-                                                            { oid => $mapping->{vsvrState}->{oid} },
-                                                            { oid => $mapping->{vsvrHealth}->{oid} },
                                                             { oid => $mapping->{vsvrEntityType}->{oid} },
                                                          ], return_type => 1, nothing_quit => 1);
     $self->{vservers} = {};
@@ -200,17 +257,40 @@ sub manage_selection {
             next;
         }
         
-        $self->{vservers}->{$instance} = {
-            display => $result->{vsvrName},
-            health  => $result->{vsvrHealth},
-            state   => $result->{vsvrState},
-        };
+        $self->{vservers}->{$instance} = { display => $result->{vsvrName} };
+    }
+    
+    $options{snmp}->load(oids => [$mapping2->{vsvrState}->{oid}, 
+        $mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
+        $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
+        $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
+        $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
+        ], 
+        instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{vservers}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
+        
+        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} :
+            (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow})) * 8;
+        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} :
+            (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow})) * 8;
+        $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
+        $self->{vservers}->{$_}->{state} = $result->{vsvrState};
+        $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
+        $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
     }
     
     if (scalar(keys %{$self->{vservers}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual server found.");
         $self->{output}->option_exit();
-    }    
+    }
+    
+    $self->{cache_name} = "citrix_netscaler_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all'));
 }
 
 1;
@@ -223,13 +303,17 @@ Check vservers status and health.
 
 =over 8
 
-=item B<--warning-health>
+=item B<--warning-*>
 
-Threshold warning in percent.
+Threshold warning.
+Can be: 'in-traffic', 'out-traffic', 'health' (%),
+'clients', 'servers'.
 
-=item B<--critical-health>
+=item B<--critical-*>
 
-Threshold critical in percent.
+Threshold critical.
+Can be: 'in-traffic', 'out-traffic', 'health' (%),
+'clients', 'servers'.
 
 =item B<--filter-name>
 
