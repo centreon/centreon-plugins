@@ -1,3 +1,13 @@
+2017-03-29 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Watchguard SNMP
+ * Plugin added: Intelligence Interactive SNMP
+ * Plugin added: Oracle Infiniband SNMP
+ * Plugin added: Beeware SNMP
+ * Plugin added: Oracle ZFS Storage ZS SNMP
+ * Plugin added: Safenet Keysecure SNMP
+ * Plugin added: Oracle OTD SNMP
+ * Break: path change for Alteon SNMP
+
 2017-03-10 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Dell FluidFS SNMP
  * Plugin added: Clamav
