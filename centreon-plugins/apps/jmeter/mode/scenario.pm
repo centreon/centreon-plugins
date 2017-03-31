@@ -114,14 +114,20 @@ sub run {
 
         my $elapsed_time = $httpSampleNode->getAttribute('t');
         my $timestamp = $httpSampleNode->getAttribute('ts');
+        my $success = $httpSampleNode->getAttribute('s');
         my $label = $httpSampleNode->getAttribute('lb');
         my $response_code = $httpSampleNode->getAttribute('rc');
         my $response_message = $httpSampleNode->getAttribute('rm');
 
         $self->{output}->output_add(long_msg => "* Sample: " . $label);
+        $self->{output}->output_add(long_msg => "  - Success: " . $success);
         $self->{output}->output_add(long_msg => "  - Elapsed Time: " . $elapsed_time / 1000 . "s");
         $self->{output}->output_add(long_msg => "  - Response Code: " . $response_code);
         $self->{output}->output_add(long_msg => "  - Response Message: " . $response_message);
+
+        if ($success ne 'true') {
+            $temp_exit = 'CRITICAL';
+        }
 
         my $listAssertionResultNode = $xp->findnodes('./assertionResult', $httpSampleNode);
 
@@ -132,7 +138,7 @@ sub run {
 
             $self->{output}->output_add(long_msg => "  - Assertion: " . $name);
 
-            if (($failure eq 'true') || ($error eq 'true')){
+            if (($failure eq 'true') || ($error eq 'true')) {
                 my $failure_message = $xp->findvalue('./failureMessage', $assertionResultNode);
                 $self->{output}->output_add(long_msg => "    + Failure Message: " . $failure_message);
 
