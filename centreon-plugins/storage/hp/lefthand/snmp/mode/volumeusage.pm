@@ -189,7 +189,6 @@ sub set_counters {
         },
         { label => 'read-latency', set => {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyRead', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 output_template => 'Read Latency : %.2f ms', output_error_template => "Read Latency : %s",
                 perfdatas => [
                     { label => 'read_latency', value => 'clusVolumeStatsIoLatencyRead_absolute', template => '%.2f',
@@ -199,7 +198,6 @@ sub set_counters {
         },
         { label => 'write-latency', set => {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyWrite', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 output_template => 'Write Latency : %.2f ms', output_error_template => "Write Latency : %s",
                 perfdatas => [
                     { label => 'write_latency', value => 'clusVolumeStatsIoLatencyWrite_absolute', template => '%.2f',
