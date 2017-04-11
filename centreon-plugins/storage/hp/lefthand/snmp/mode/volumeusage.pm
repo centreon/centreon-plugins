@@ -131,7 +131,6 @@ sub custom_usage_calc {
     return 0;
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -173,7 +172,7 @@ sub set_counters {
                 per_second => 1,
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'clusVolumeStatsIOsRead_per_second',  template => '%.2f',
+                    { label => 'read_iops', value => 'clusVolumeStatsIOsRead_per_second', template => '%.2f',
                       unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -190,20 +189,18 @@ sub set_counters {
         },
         { label => 'read-latency', set => {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyRead', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                output_template => 'Read Latency : %s ms', output_error_template => "Read Latency : %s",
+                output_template => 'Read Latency : %.2f ms', output_error_template => "Read Latency : %s",
                 perfdatas => [
-                    { label => 'read_latency', value => 'clusVolumeStatsIoLatencyRead_absolute',  template => '%s',
+                    { label => 'read_latency', value => 'clusVolumeStatsIoLatencyRead_absolute', template => '%.2f',
                       unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'write-latency', set => {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyWrite', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                output_template => 'Write Latency : %s ms', output_error_template => "Write Latency : %s",
+                output_template => 'Write Latency : %.2f ms', output_error_template => "Write Latency : %s",
                 perfdatas => [
-                    { label => 'write_latency', value => 'clusVolumeStatsIoLatencyWrite_absolute', template => '%s',
+                    { label => 'write_latency', value => 'clusVolumeStatsIoLatencyWrite_absolute', template => '%.2f',
                       unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -369,7 +366,6 @@ Units of thresholds (Default: '%') ('%', 'B').
 =item B<--free>
 
 Thresholds are on free space left.
-
 
 =back
 

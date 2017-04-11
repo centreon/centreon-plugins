@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::components::temperature;
+package network::f5::bigip::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

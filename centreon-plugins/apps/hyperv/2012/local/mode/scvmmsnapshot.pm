@@ -92,7 +92,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label_opt . " option.");
             $self->{output}->option_exit();
         }
-    }    
+    }
 }
 
 sub manage_selection {
@@ -131,6 +131,7 @@ sub manage_selection {
         }
         next if ($chkpt == -1);
 
+        $hg =~ s/\\/\//g;
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);

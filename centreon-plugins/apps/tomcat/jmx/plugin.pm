@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
-                          'memory'           => 'centreon::common::jvm::mode::memory',
-                          'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
-                          'load-average'     => 'centreon::common::jvm::mode::loadaverage',
-                          'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
+                          'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
+                          'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
+                          'gc-usage'         => 'centreon::common::jvm::mode::gcusage',
+                          'load-average'     => 'centreon::common::jvm::mode::loadaverage',
+                          'memory'           => 'centreon::common::jvm::mode::memory',
+                          'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
                           'threads'          => 'centreon::common::jvm::mode::threads',
                          );
 
