@@ -1,3 +1,34 @@
+2017-03-29 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Watchguard SNMP
+ * Plugin added: Intelligence Interactive SNMP
+ * Plugin added: Oracle Infiniband SNMP
+ * Plugin added: Beeware SNMP
+ * Plugin added: Oracle ZFS Storage ZS SNMP
+ * Plugin added: Safenet Keysecure SNMP
+ * Plugin added: Oracle OTD SNMP
+ * Break: path change for Alteon SNMP
+
+2017-03-10 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Dell FluidFS SNMP
+ * Plugin added: Clamav
+ * Plugin added: Sendmail SNMP
+ * Plugin added: Centreon DSM
+ * Plugin added: Audiocodes SNMP
+ * Mode added: [snmp_standard] 'vrrp-status'
+ * Mode added: [centreon] 'virtualservice'
+ * Break: path change for Netscaler SNMP
+ * Fix: perl connector issue
+
+2017-02-16 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Hyper-v 2012
+ * Plugin added: Avocent ACS 6000 SNMP
+ * Plugin added: Alcatel PSS 1830
+ * Mode added:: [hp lefthand] 'volume-usage'
+ * Mode added:: [checkpoint] 'vpn-status'
+ * Mode added:: [f-5 bigip] 'tmm-usage'
+ * Break: path change for F-5 BigIp
+ * Break: path change for Checkpoint
+
 2017-01-20 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: SAP Hana DB
  * Plugin added: Efficient IP

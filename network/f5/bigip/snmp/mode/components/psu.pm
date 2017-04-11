@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::f5::bigip::mode::components::psu;
+package network::f5::bigip::snmp::mode::components::psu;
 
 use strict;
 use warnings;

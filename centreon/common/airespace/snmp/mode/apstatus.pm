@@ -199,7 +199,8 @@ sub manage_selection {
                                                                    { oid => $mapping3->{bsnAPAdminStatus}->{oid} },
                                                                  ],
                                                          nothing_quit => 1);
-    $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
+    $self->{output}->output_add(long_msg => "Model: " . 
+        (defined($self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'}) ? $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'));
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnAPName}->{oid} }}) {
         $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
         my $instance = $1;

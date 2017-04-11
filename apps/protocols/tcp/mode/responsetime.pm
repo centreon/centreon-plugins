@@ -90,15 +90,15 @@ sub run {
     if (!defined($connection)) {
         if (!defined($!) || ($! eq '')) {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => "Connection failed : SSL error");
+                                        short_msg => sprintf("Connection failed on port %s : SSL error", $self->{option_results}->{port}));
         } else {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Connection failed : %s", $!));
+                                        short_msg => sprintf("Connection failed on port %s : %s", $self->{option_results}->{port}, $!));
         }
     } else {
-        my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time %.3fs", $timeelapsed));
+                                    short_msg => sprintf("Response time on port %s is %.3fs", $self->{option_results}->{port}, $timeelapsed));
         $self->{output}->perfdata_add(label => 'time',
                                       value => sprintf('%.3f', $timeelapsed),
                                       unit => 's',
