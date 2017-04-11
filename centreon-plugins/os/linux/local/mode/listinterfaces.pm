@@ -69,6 +69,7 @@ sub manage_selection {
                                                   command_options => $self->{option_results}->{command_options});
     while ($stdout =~ /^(\S+)(.*?)(\n\n|\n$)/msg) {
         my ($interface_name, $values) = ($1, $2);
+        $interface_name =~ s/:$//;
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING/ms);
         $states .= 'U' if ($values =~ /UP/ms);

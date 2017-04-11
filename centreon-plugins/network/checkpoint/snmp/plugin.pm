@@ -31,12 +31,15 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-                        'connections'   => 'network::checkpoint::snmp::mode::connections',
-                        'cpu'           => 'network::checkpoint::snmp::mode::cpu',
-                        'hardware'      => 'network::checkpoint::snmp::mode::hardware',
-                        'hastate'       => 'network::checkpoint::snmp::mode::hastate',
-                        'memory'        => 'network::checkpoint::snmp::mode::memory',
-                        'vpn-status'    => 'network::checkpoint::snmp::mode::vpnstatus',
+                        'connections'       => 'network::checkpoint::snmp::mode::connections',
+                        'cpu'               => 'network::checkpoint::snmp::mode::cpu',
+                        'hardware'          => 'network::checkpoint::snmp::mode::hardware',
+                        'hastate'           => 'network::checkpoint::snmp::mode::hastate',
+                        'interfaces'        => 'snmp_standard::mode::interfaces',
+                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+                        'memory'            => 'network::checkpoint::snmp::mode::memory',
+                        'vpn-status'        => 'network::checkpoint::snmp::mode::vpnstatus',
+                        'vrrp-status'       => 'snmp_standard::mode::vrrp',
                         );
 
     return $self;

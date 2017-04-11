@@ -47,6 +47,7 @@ sub new {
                          'getmap'               => 'apps::vmware::connector::mode::getmap',
                          'health-host'          => 'apps::vmware::connector::mode::healthhost',
                          'limit-vm'             => 'apps::vmware::connector::mode::limitvm',
+                         'list-clusters'        => 'apps::vmware::connector::mode::listclusters',
                          'list-datacenters'     => 'apps::vmware::connector::mode::listdatacenters',
                          'list-datastores'      => 'apps::vmware::connector::mode::listdatastores',
                          'list-nichost'         => 'apps::vmware::connector::mode::listnichost',

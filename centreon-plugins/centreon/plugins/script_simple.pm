@@ -140,7 +140,7 @@ sub is_mode {
     
     # $options->{mode} = mode
     if (!defined($self->{modes}{$options{mode}})) {
-        $self->{output}->add_option_msg(short_msg => "mode '" . $options{mode} . "' doesn't exist (use --list option to show available modes).");
+        $self->{output}->add_option_msg(short_msg => "mode '" . $options{mode} . "' doesn't exist (use --list-mode option to show available modes).");
         $self->{output}->option_exit();
     }
 }

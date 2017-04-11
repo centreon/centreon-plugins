@@ -33,12 +33,15 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+$ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
     $vms = Get-VM
-    $snapshots = Get-VMSnapshot -VMName *
-
+    if ($vms.Length -gt 0) {
+        $snapshots = Get-VMSnapshot -VMName *
+    }
+    
     Foreach ($vm in $vms) {
         $i=0
         Foreach ($snap in $snapshots) {
