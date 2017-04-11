@@ -38,11 +38,13 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        my $label = $self->{label};
+        $label =~ s/-/_/g;
+        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
+            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
+                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         }
     };
@@ -53,14 +55,14 @@ sub custom_status_threshold {
     return $status;
 }
 
-sub custom_status_output {
+sub custom_service_status_output {
     my ($self, %options) = @_;
     my $msg = 'status : ' . $self->{result_values}->{primary_status} . '/' . $self->{result_values}->{secondary_status};
 
     return $msg;
 }
 
-sub custom_status_calc {
+sub custom_service_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{primary_status} = $options{new_datas}->{$self->{instance} . '_primary_status'};
@@ -70,20 +72,48 @@ sub custom_status_calc {
     return 0;
 }
 
+sub custom_global_status_output {
+    my ($self, %options) = @_;
+    my $msg = 'state/version : ' . $self->{result_values}->{integration_service_state} . '/' . $self->{result_values}->{integration_service_version};
+
+    return $msg;
+}
+
+sub custom_global_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{integration_service_state} = $options{new_datas}->{$self->{instance} . '_integration_service_state'};
+    $self->{result_values}->{integration_service_version} = $options{new_datas}->{$self->{instance} . '_integration_service_version'};
+    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'vm', type => 2, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', message_multiple => 'All integration services are ok',
-          group => [ { name => 'service', cb_prefix_output => 'prefix_service_output' } ] 
+          group => [ { name => 'global', cb_prefix_output => 'prefix_global_output' }, { name => 'service', cb_prefix_output => 'prefix_service_output' } ] 
         }
     ];
     
+    $self->{maps_counters}->{global} = [
+        { label => 'global-status', threshold => 0, set => {
+                key_values => [ { name => 'integration_service_state' }, { name => 'integration_service_version' }, { name => 'state' }, { name => 'vm' } ],
+                closure_custom_calc => $self->can('custom_global_status_calc'),
+                closure_custom_output => $self->can('custom_global_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+    ];
+    
     $self->{maps_counters}->{service} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'primary_status' }, { name => 'secondary_status' }, { name => 'vm' }, { name => 'service' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
+        { label => 'service-status', threshold => 0, set => {
+                key_values => [ { name => 'primary_status' }, { name => 'secondary_status' }, { name => 'enabled' }, { name => 'vm' }, { name => 'service' } ],
+                closure_custom_calc => $self->can('custom_service_status_calc'),
+                closure_custom_output => $self->can('custom_service_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
@@ -94,7 +124,7 @@ sub set_counters {
 sub vm_long_output {
     my ($self, %options) = @_;
     
-    return "checking policy '" . $options{instance_value}->{display} . "'";
+    return "checking virtual machine '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_vm_output {
@@ -107,6 +137,12 @@ sub prefix_service_output {
     my ($self, %options) = @_;
     
     return "integration service '" . $options{instance_value}->{service} . "' ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "global virtual machine '" . $options{instance_value}->{vm} . "' integration service ";
 }
 
 sub new {
@@ -125,8 +161,10 @@ sub new {
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
                                   "filter-status:s"     => { name => 'filter_status', default => 'running' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{primary_status} !~ /Ok/i' },
+                                  "warning-global-status:s"     => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
+                                  "critical-global-status:s"    => { name => 'critical_global_status', default => '' },
+                                  "warning-service-status:s"    => { name => 'warning_service_status', default => '' },
+                                  "critical-service-status:s"   => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' },
                                 });
     return $self;
 }
@@ -142,7 +180,7 @@ sub check_options {
 sub change_macros {
     my ($self, %options) = @_;
     
-    foreach (('warning_status', 'critical_status')) {
+    foreach (('warning_service_status', 'critical_service_status', 'warning_global_status', 'critical_global_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
@@ -167,29 +205,23 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test1 ][state= Running ]
-    #[service= Time Synchronization ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Heartbeat ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Key-Value Pair Exchange ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Shutdown ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= VSS ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Guest Service Interface ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[service= Time Synchronization ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[service= Heartbeat ][primaryOperationalStatus= Ok ][secondaryOperationalStatus= Ok ]
-    #[service= Key-Value Pair Exchange ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[service= Shutdown ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[service= VSS ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[service= Guest Service Interface ][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[name= test2 ][state= Running ]
-    #[service= Time Synchronization ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Heartbeat ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Key-Value Pair Exchange ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Shutdown ][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[name= test1 ][state= Running ][IntegrationServicesState= Update required ][IntegrationServicesVersion= 3.1 ]
+    #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Shutdown ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= VSS ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Guest Service Interface ][enabled= False][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
+    #[name= test2 ][state= Running ][IntegrationServicesState=  ][IntegrationServicesVersion= ]
+    #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+    #[service= Shutdown ][enabled= False][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $content) = ($1, $2, $3);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[IntegrationServicesState=\s*(.*?)\s*\]\[IntegrationServicesVersion=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
+        my ($name, $status, $integration_service_state, $integration_service_version, $content) = ($1, $2, $3, $4, $5);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
@@ -202,10 +234,13 @@ sub manage_selection {
             next;
         }
         
-        $self->{vm}->{$id} = { display => $name, service => {} };
+        $self->{vm}->{$id} = { display => $name, vm => $name, service => {} };
+        $self->{vm}->{$id}->{global} = { 
+            $name => { vm => $name, integration_service_state => $integration_service_state, integration_service_version => $integration_service_version, state => $status } 
+        };
         my $id2 = 1;
-        while ($content =~ /^\[service=\s*(.*?)\s*\]\[primaryOperationalStatus=\s*(.*?)\s*\]\[secondaryOperationalStatus=\s*(.*?)\s*\]/msig) {
-            $self->{vm}->{$id}->{service}->{$id2} = { vm => $name, service => $1, primary_status => $2, secondary_status => $3 };
+        while ($content =~ /^\[service=\s*(.*?)\s*\]\[enabled=\s*(.*?)\s*\]\[primaryOperationalStatus=\s*(.*?)\s*\]\[secondaryOperationalStatus=\s*(.*?)\s*\]/msig) {
+            $self->{vm}->{$id}->{service}->{$id2} = { vm => $name, service => $1, enabled => $2, primary_status => $3, secondary_status => $4 };
             $id2++;
         }
         
@@ -256,15 +291,27 @@ Filter virtual machine status (can be a regexp) (Default: 'running').
 
 Filter virtual machines (can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-global-status>
+
+Set warning threshold for status (Default: '%{integration_service_state} =~ /Update required/i').
+Can used special variables like: %{vm}, %{integration_service_state}, 
+%{integration_service_version}, %{state}
+
+=item B<--critical-global-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{vm}, %{integration_service_state}, 
+%{integration_service_version}, %{state}
+
+=item B<--warning-service-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}
+Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
-=item B<--critical-status>
+=item B<--critical-service-status>
 
 Set critical threshold for status (Default: '%{primary_status} !~ /Ok/i').
-Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}
+Can used special variables like: %{vm}, %{service}, %{primary_status}, %{secondary_status}, %{enabled}
 
 =back
 

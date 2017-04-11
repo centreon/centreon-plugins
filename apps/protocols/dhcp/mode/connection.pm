@@ -206,8 +206,7 @@ sub result {
 
     $self->check_results();    
     $self->{output}->perfdata_add(label => "time", unit => 'ms',
-                                  value => sprintf('%.3f', $self->{timeelapsed}));
-
+                                  value => sprintf('%.3f', $self->{timeelapsed})) if (defined($self->{timeelapsed}));
 }
 
 sub run {

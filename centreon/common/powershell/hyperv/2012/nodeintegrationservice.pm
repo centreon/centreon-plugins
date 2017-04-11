@@ -33,23 +33,16 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+$ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
 
     $vms = Get-VM
-    $services = Get-VMIntegrationService -VMName *
-
     Foreach ($vm in $vms) {
-        $i = 0
-        Foreach ($service in $services) {
-            if ($services.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
-                }
-                Write-Host "[service=" $service.Name "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
-                $i=1
-            }
+        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "]"
+        Foreach ($service in $VM.VMIntegrationService) {
+            Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
         }
     }
 } Catch {

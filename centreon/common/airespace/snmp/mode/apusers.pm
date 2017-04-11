@@ -219,7 +219,8 @@ sub manage_selection {
                                                                    { oid => $oid_bsnAPIfLoadNumOfClients },
                                                                  ],
                                                          nothing_quit => 1);
-    $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
+    $self->{output}->output_add(long_msg => "Model: " . 
+        (defined($self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'}) ? $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'));
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnMobileStationStatus}->{oid} }}) {
         $oid =~ /^$mapping->{bsnMobileStationStatus}->{oid}\.(.*)$/;
         my $instance = $1;

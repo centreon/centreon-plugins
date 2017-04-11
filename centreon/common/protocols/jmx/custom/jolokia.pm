@@ -125,20 +125,17 @@ sub check_options {
         $self->{connect_params}->{password} = $self->{password};
     }
     if (defined($self->{proxy_url}) && $self->{proxy_url} ne '') {
-        $self->{connect_params}->{username}->{proxy} = { http => undef, https => undef };
-        if ($self->{proxy_url} =~ /^(.*?):/) {
-            $self->{connect_params}->{username}->{proxy}->{$1} = $self->{proxy_url};
-            if (defined($self->{proxy_username}) && $self->{proxy_username} ne '') {
-                $self->{connect_params}->{proxy_user} = $self->{proxy_username};
-                $self->{connect_params}->{proxy_password} = $self->{proxy_password};
-            }
+        $self->{connect_params}->{proxy} = { url => $self->{proxy_url} };
+        if (defined($self->{proxy_username}) && $self->{proxy_username} ne '') {
+            $self->{connect_params}->{proxy}->{'proxy-user'} = $self->{proxy_username};
+            $self->{connect_params}->{proxy}->{'proxy-password'} = $self->{proxy_password};
         }
     }
     if (defined($self->{target_url}) && $self->{target_url} ne '') {
-        $self->{connect_params}->{username}->{target} = { url => $self->{target_url}, user => undef, password => undef };
+        $self->{connect_params}->{target} = { url => $self->{target_url}, user => undef, password => undef };
         if (defined($self->{target_username}) && $self->{target_username} ne '') {
-            $self->{connect_params}->{username}->{target}->{user} = $self->{target_username};
-            $self->{connect_params}->{username}->{target}->{password} = $self->{target_password};
+            $self->{connect_params}->{target}->{user} = $self->{target_username};
+            $self->{connect_params}->{target}->{password} = $self->{target_password};
         }
     }
     
@@ -166,6 +163,16 @@ sub _add_request {
     }
     
     return $request;
+}
+
+sub check_error {
+    my ($self, %options) = @_;
+    
+    # 500-599 an error. 400 is an attribute not present
+    if ($options{response}->status() >= 500 || $options{response}->status() == 401 || $options{response}->status() == 408) {
+        $self->{output}->add_option_msg(short_msg => "protocol issue: " . $options{response}->error_text());
+        $self->{output}->option_exit();
+    }
 }
 
 sub get_attributes {
@@ -200,13 +207,9 @@ sub get_attributes {
     my @responses = $self->{jmx4perl}->request(@requests);
     for (my $i = 0, my $pos = 0; defined($options{request}) && $i < scalar(@{$options{request}}); $i++) {
         for (my $j = 0; defined($options{request}->[$i]->{attributes}) && 
-                          $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
+                        defined($responses[$pos]) && $j < scalar(@{$options{request}->[$i]->{attributes}}); $j++, $pos++) {
             if ($responses[$pos]->is_error()) {
-                # 500-599 an error. 400 is an attribute not present
-                if ($responses[$pos]->status() >= 500 || $responses[$pos]->status() == 401) {
-                    $self->{output}->add_option_msg(short_msg => "protocol issue: " . $responses[$pos]->error_text());
-                    $self->{output}->option_exit();
-                }
+                $self->check_error(response => $responses[$pos]);
                 next;
             }
             
@@ -225,10 +228,14 @@ sub get_attributes {
         }
 
         if (!defined($options{request}->[$i]->{attributes}) || scalar(@{$options{request}->[$i]->{attributes}}) == 0) {
-            my $mbean = $responses[$pos]->{request}->{mbean};
-            $response->{$mbean} = {} if (!defined($response->{$mbean}));
-            foreach (keys %{$responses[$pos]->{value}}) {
-                $response->{$mbean}->{$_} = $responses[$pos]->{value}->{$_};
+            if ($responses[$pos]->is_error()) {
+                $self->check_error(response => $responses[$pos]);
+            } else {
+                my $mbean = $responses[$pos]->{request}->{mbean};
+                $response->{$mbean} = {} if (!defined($response->{$mbean}));
+                foreach (keys %{$responses[$pos]->{value}}) {
+                    $response->{$mbean}->{$_} = $responses[$pos]->{value}->{$_};
+                }
             }
             $pos++;
         }
@@ -332,7 +339,7 @@ Credentials to use for the HTTP request
 
 =item B<--proxy-url>
 
-Optional proxy to use.
+Optional HTTP proxy to use.
 
 =item B<--proxy-username>
 
@@ -344,7 +351,7 @@ Credentials to use for the proxy
 
 =item B<--target-url>
 
-Target to use (if you use jolokia agent as a proxy)
+Target to use (if you use jolokia agent as a proxy in --url option).
 
 =item B<--target-username>
 

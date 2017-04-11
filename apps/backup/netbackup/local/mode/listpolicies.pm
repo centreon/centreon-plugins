@@ -110,7 +110,7 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     foreach my $policy_name (@lines) {
         my $command2 = $self->{option_results}->{command2};
-        $command2 =~ s/%{policy_name}/$policy_name/g;
+        $command2 =~ s/%\{policy_name\}/$policy_name/g;
         my ($stdout2) = centreon::plugins::misc::execute(output => $self->{output},
                                                          options => $self->{option_results},
                                                          sudo => $self->{option_results}->{sudo},

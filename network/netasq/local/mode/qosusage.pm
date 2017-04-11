@@ -36,7 +36,7 @@ sub set_counters {
     
     $self->{maps_counters}->{qos} = [
         { label => 'in', set => {
-                key_values => [ { name => 'in' }, { name => 'display' } ],
+                key_values => [ { name => 'in' }, { name => 'display' }, { name => 'speed_in' } ],
                 closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_qos_output'),
                 closure_custom_perfdata => $self->can('custom_qos_perfdata'),
@@ -54,7 +54,7 @@ sub set_counters {
             }
         },
         { label => 'out', set => {
-                key_values => [ { name => 'out' }, { name => 'display' } ],
+                key_values => [ { name => 'out' }, { name => 'display' }, { name => 'speed_out' } ],
                 closure_custom_calc => $self->can('custom_qos_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_qos_output'),
                 closure_custom_perfdata => $self->can('custom_qos_perfdata'),
@@ -132,7 +132,10 @@ sub custom_qos_calc {
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{traffic} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
-    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+    if ($options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} > 0) {
+        $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / $self->{result_values}->{speed};
+    } elsif (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
         $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
@@ -157,10 +160,11 @@ sub new {
                                   "ssh-path:s"          => { name => 'ssh_path' },
                                   "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
                                   "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tail' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-1 /log/l_monitor' },
+                                  "sudo"                => { name => 'sudo' },
+                                  "command:s"           => { name => 'command', default => 'tail' },
+                                  "command-path:s"      => { name => 'command_path' },
+                                  "command-options:s"   => { name => 'command_options', default => '-1 /log/l_monitor' },
+                                  "config-speed-file:s" => { name => 'config_speed_file' },
                                 });
     
     return $self;
@@ -187,6 +191,36 @@ sub prefix_qos_output {
     return "QoS '" . $options{instance_value}->{display} . "' ";
 }
 
+sub load_speed_config {
+    my ($self, %options) = @_;
+    
+    $self->{config_speeds} = {};
+    return if (!defined($self->{option_results}->{config_speed_file}) || $self->{option_results}->{config_speed_file} eq '');
+    $self->{content} = do {
+        local $/ = undef;
+        if (open my $fh, "<", $self->{option_results}->{config_speed_file}) {
+            <$fh>;
+        }
+    };
+    return if (!defined($self->{content}));
+    #[TEST]
+    #Type=CBQ
+    #Min=0
+    #Max=5000
+    #Min_Rev=0
+    #Max_Rev=5000
+    #QLength=0
+    #PrioritizeAck=1
+    #PrioritizeLowDelay=1
+    #Color=000000
+    #Comment=
+    #
+    # Units: Kb
+    while ($self->{content} =~ /\[(.*?)\].*?Max=(.*?)\n.*?Max_Rev=(.*?)\n/msg) {
+        $self->{config_speeds}->{$1} = { speed_in => $3 / 1000, speed_out => $2 / 1000 }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     
@@ -198,6 +232,7 @@ sub manage_selection {
                                                    command_path => $self->{option_results}->{command_path},
                                                    command_options => $self->{option_results}->{command_options});
     
+    $self->load_speed_config();    
     $self->{qos} = {};
     
     while ($content =~ /(\S+?)=([^,]+?),(\d+),(\d+),(\d+),(\d+)(?:\s|\Z)/msg) {
@@ -216,7 +251,9 @@ sub manage_selection {
         $self->{qos}->{$name} = { 
             display => $name, 
             in => $in, in_peak => $in_max,
-            out => $out, out_peak => $out_max };
+            out => $out, out_peak => $out_max,
+            speed_in => defined($self->{config_speeds}->{$name}->{speed_in}) ? $self->{config_speeds}->{$name}->{speed_in} : 0,
+            speed_out => defined($self->{config_speeds}->{$name}->{speed_out}) ? $self->{config_speeds}->{$name}->{speed_out} : 0};
     }
     
     if (scalar(keys %{$self->{qos}}) <= 0) {
@@ -287,6 +324,10 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
+
+=item B<--config-speed-file>
+
+File with speed configurations.
 
 =item B<--units-traffic>
 

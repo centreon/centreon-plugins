@@ -30,7 +30,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20170120;
+my $global_version = 20170329;
 my $alternative_fatpacker = 0;
 
 sub new {
@@ -102,6 +102,7 @@ sub get_plugin {
                                                 'version'           => { name => 'version' },
                                                 'runas:s'           => { name => 'runas' },
                                                 'environment:s%'    => { name => 'environment' },
+                                                'convert-args:s'    => { name => 'convert_args' },
                                                 } );
 
     $self->{options}->parse_options();
@@ -113,12 +114,24 @@ sub get_plugin {
     $self->{runas} = $self->{options}->get_option(argument => 'runas' );
     $self->{environment} = $self->{options}->get_option(argument => 'environment' );
     $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg' );
+    $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args' );
 
     $self->{output}->mode(name => $self->{mode});
     $self->{output}->plugin(name => $self->{plugin});
     $self->{output}->check_options(option_results => $self->{options}->get_options());
 
     $self->{options}->clean();
+}
+
+sub convert_args {
+    my ($self) = @_;
+    
+    if ($self->{convert_args} =~ /^(.+?),(.*)/) {
+        my ($search, $replace) = ($1, $2);
+        for (my $i = 0; $i < $#ARGV; $i++) {
+            $ARGV[$i] =~ s/$search/$replace/g;
+        }
+    }
 }
 
 sub display_local_help {
@@ -325,12 +338,11 @@ sub run {
         $self->display_list_plugin();
         $self->{output}->option_exit();
     }
-    if (!defined($self->{plugin}) || $self->{plugin} eq '') {
-        $self->check_plugin_option();
-    }
+    $self->check_plugin_option() if (!defined($self->{plugin}) || $self->{plugin} eq '');
     if (defined($self->{ignore_warn_msg})) {
         $SIG{__WARN__} = sub {};
     }
+    $self->convert_args() if (defined($self->{convert_args}));
 
     $self->check_relaunch();
     
@@ -386,6 +398,11 @@ Run the script as a different user (prefer to use directly the good user).
 =item B<--environment>
 
 Set environment variables for the script (prefer to set it before running it for better performance).
+
+=item B<--convert-args>
+
+Change strings of arguments. Useful to use '!' in nrpe protocol.
+Example: --convert-args='##,!'
 
 =back
 

@@ -157,8 +157,8 @@ sub manage_selection {
         select db_name(d.dbid) as db_name,
 ceiling(sum(case when u.segmap != 4 then u.size/1.*@@maxpagesize end )) as data_size,
 ceiling(sum(case when u.segmap != 4 then size - curunreservedpgs(u.dbid, u.lstart, u.unreservedpgs) end)/1.*@@maxpagesize) as data_used,
-ceiling(sum(case when u.segmap = 4 then u.size/1.*@@maxpagesize end)) as log_size,
-ceiling(sum(case when u.segmap = 4 then u.size/1.*@@maxpagesize end) - lct_admin("logsegment_freepages",d.dbid)/1.*@@maxpagesize) as log_used
+ceiling(sum(case when u.segmap in (4, 7) then u.size/1.*@@maxpagesize end)) as log_size,
+ceiling(sum(case when u.segmap in (4, 7) then u.size/1.*@@maxpagesize end) - lct_admin("logsegment_freepages",d.dbid)/1.*@@maxpagesize) as log_used
 from master..sysdatabases d, master..sysusages u
 where u.dbid = d.dbid  and d.status not in (256,4096)
 group by d.dbid
