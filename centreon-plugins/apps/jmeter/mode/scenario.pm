@@ -150,17 +150,19 @@ sub run {
             $stepOk++;
         } else {
             if (!defined($first_failed_label)) {
-                $first_failed_label = $label;
+                $first_failed_label = $label . " (" . $response_code . " " . $response_message . ")";
             }
 
             $exit1 = $self->{output}->get_most_critical(status => [ $exit1, $temp_exit ]);
         }
 
-        if ($timing0 == 0) {
+        if ($timestamp > 0) {
+            if ($timing0 == 0) {
                 $timing0 = $timestamp;
-        }
+            }
 
-        $timing1 = $timestamp + $elapsed_time;
+            $timing1 = $timestamp + $elapsed_time;
+        }
     }
 
     my $timeelapsed = ($timing1 - $timing0) / 1000;
