@@ -199,6 +199,11 @@ sub manage_selection {
                                         seconds => $mapped_value->{bgpPeerInUpdateElpasedTime}, as => $mapped_value->{bgpPeerRemoteAs},
                                         display => $instance };
     }
+
+    if (scalar(keys %{$self->{peers}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No peers detected, check your filter ? ');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
