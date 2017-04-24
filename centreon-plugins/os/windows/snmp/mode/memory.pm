@@ -187,7 +187,7 @@ Units of thresholds (Default: '%') ('%', 'absolute').
 
 =item B<--free>
 
-Thresholds are on free tape left.
+Thresholds are on free space left.
 
 =item B<--warning-*>
 
