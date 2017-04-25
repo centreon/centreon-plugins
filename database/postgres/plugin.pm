@@ -42,6 +42,7 @@ sub new {
                          'vacuum'           => 'database::postgres::mode::vacuum',
                          'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          'statistics'       => 'database::postgres::mode::statistics',
+                         'sql'              => 'database::postgres::mode::sql',
                          'tablespace'       => 'database::postgres::mode::tablespace',
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
