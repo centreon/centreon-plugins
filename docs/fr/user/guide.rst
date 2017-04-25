@@ -51,7 +51,7 @@ Pour superviser les systèmes SNMP, vous devez installer les paquets suivants :
 Vous pouvez installer d'autres paquets pour utiliser plus de plugins :
 ::
 
-  # yum install perl-XML-LibXML perl-JSON perl-libwww-perl perl-XML-XPath perl-Net-Telnet perl-Net-DNS perl-DBI perl-DBD-MySQL perl-DBD-Pg
+  # yum install perl-XML-LibXML perl-JSON perl-libwww-perl perl-XML-XPath perl-Net-Telnet perl-Net-DNS perl-DBI perl-DBD-MySQL perl-DBD-Pg perl-Date-Manip
 
 Pour utiliser la fonctionnalité 'memcached', vous devez installer le module CPAN suivant (paquet disponible dans 'rpmforge'): http://search.cpan.org/~wolfsage/Memcached-libmemcached-1.001702/libmemcached.pm
 
