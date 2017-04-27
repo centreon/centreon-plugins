@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -36,14 +35,16 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "port:s"                  => { name => 'port', default => 443 },
-                                  "proto:s"                 => { name => 'proto', default => 'https' },
-                                  "username:s"              => { name => 'username' },
-                                  "password:s"              => { name => 'password' },
-                                  "phonenumber:s"           => { name => 'phonenumber' },
-                                  "message:s"               => { name => 'message' },
-                                  "sender:s"                => { name => 'sender', default => 'API_HIGHSMS' },
+                                  "hostname:s"      => { name => 'hostname' },
+                                  "port:s"          => { name => 'port', default => 443 },
+                                  "proto:s"         => { name => 'proto', default => 'https' },
+                                  "proxyurl:s"      => { name => 'proxyurl' },
+                                  "proxypac:s"      => { name => 'proxypac' },
+                                  "username:s"      => { name => 'username' },
+                                  "password:s"      => { name => 'password' },
+                                  "phonenumber:s"   => { name => 'phonenumber' },
+                                  "message:s"       => { name => 'message' },
+                                  "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
                                 });
 
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -56,7 +57,6 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::init(%options);
-
     if ((!defined($self->{option_results}->{username}) && !defined($self->{option_results}->{password}))) {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= option");
         $self->{output}->option_exit();
@@ -78,7 +78,6 @@ sub check_options {
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
-
 }
 
 sub run {
@@ -94,13 +93,13 @@ sub run {
                   sender="$self->{option_results}->{sender}"
                   >
                   <message>
-                  <text>$self->{option_results}->{message}</text>
+                  <text><![CDATA[$self->{option_results}->{message}]]></text>
                   <to>$self->{option_results}->{phonenumber}</to>
                   </message>
                   </push>
 END_MESSAGE
 
-    my $api_path='/api';
+    my $api_path = '/api';
     my $url = $self->{option_results}->{proto} . '://' . $self->{option_results}->{hostname} . $api_path;
     
     my $response = $self->{http}->request(full_url => $url, method => 'POST', query_form_post => $xml_arg);
@@ -108,9 +107,7 @@ END_MESSAGE
     $self->{output}->output_add(short_msg => 'push_id : ' . $response);
     $self->{output}->display(force_ignore_perfdata => 1);
     $self->{output}->exit();
-
- }
-
+}
 
 1;
 
@@ -133,6 +130,14 @@ Port used by HighSMS API. (Default: 443)
 =item B<--proto>
 
 Specify http or https protocol. (Default: https)
+
+=item B<--proxyurl>
+
+Proxy URL
+
+=item B<--proxypac>
+
+Proxy pac file (can be an url or local file)
 
 =item B<--username>
 
