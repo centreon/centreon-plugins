@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'alert'            => 'notification::highsms::mode::alert',
+                         'alert'    => 'notification::highsms::mode::alert',
                          );
 
     return $self;
