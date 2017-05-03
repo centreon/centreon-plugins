@@ -93,17 +93,14 @@ sub custom_metric_calc {
     $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max'};
 
     my $elem = $self->{result_values}->{type} eq 'unique' ? 'selection' : 'virtualcurve';
-    my ($change_bytes_metric_selection, $change_bytes_metric_filter);
-    if (defined($config_data->{filters}->{formatting}->{change_bytes})) {
-        $change_bytes_metric_filter = $config_data->{filters}->{formatting}->{change_bytes};
-    }
-    if (defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})) { 
+    my ($change_bytes_metric_selection);
+    if (defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}) &&
+        defined($config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes})) { 
         $change_bytes_metric_selection = $config_data->{$elem}->{$self->{result_values}->{instance}}->{formatting}->{change_bytes};
     }
 
     if ((defined($change_bytes_metric_selection) && $change_bytes_metric_selection) || 
-        (defined($change_bytes_metric_filter) && $change_bytes_metric_filter) ||
-        ($config_data->{formatting}->{change_bytes} && !defined($change_bytes_metric_selection) && !defined($change_bytes_metric_filter))) {
+        ($config_data->{formatting}->{change_bytes} && !defined($change_bytes_metric_selection))) {
         ($self->{result_values}->{value}, $self->{result_values}->{unit}) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
     }
     return 0;
@@ -248,9 +245,9 @@ sub manage_selection {
             name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         foreach my $id (keys %{$config_data->{selection}}) {
-            next if (!defined($config_data->{selection}->{id}->{address}));
-            my $results = $options{custom}->read_objects(address => $config_data->{selection}->{id}->{address},
-                unit => $config_data->{selection}->{id}->{unit}, quantity => $config_data->{selection}->{id}->{quantity});
+            next if (!defined($config_data->{selection}->{$id}->{address}));
+            my $results = $options{custom}->read_objects(address => $config_data->{selection}->{$id}->{address},
+                unit => $config_data->{selection}->{$id}->{unit}, quantity => $config_data->{selection}->{$id}->{quantity});
             my $i = 0;
             my $extra_num = 0;
             if (scalar(@$results) > 1) {
@@ -259,13 +256,13 @@ sub manage_selection {
             foreach (@{$results}) {
                 my $metric_key = $id;
                 $metric_key .= '.' . $i if ($extra_num == 1);
-                $self->{metrics}->{$metric_key} = { name => $_->{metric_key} };
+                $self->{metrics}->{$metric_key} = { name => $metric_key };
                 $self->{metrics}->{$metric_key}->{display_name} = $metric_key;
-                $self->{metrics}->{$metric_key}->{current} = $_->{current_value};
-                $self->{metrics}->{$metric_key}->{unit} = defined($_->{unit_name}) ? $_->{unit_name} : '';
-                $self->{metrics}->{$metric_key}->{min} = defined($_->{min}) ? $_->{min} : '';
-                $self->{metrics}->{$metric_key}->{max} = defined($_->{max}) ? $_->{max} : '';
-                $self->{metrics}->{$metric_key}->{display} = (defined($_->{display}) && $_->{display}) ? 1 : 0;
+                $self->{metrics}->{$metric_key}->{current} = $_;
+                $self->{metrics}->{$metric_key}->{unit} = defined($config_data->{selection}->{$id}->{unit_name}) ? $config_data->{selection}->{$id}->{unit_name} : '';
+                $self->{metrics}->{$metric_key}->{min} = defined($config_data->{selection}->{$id}->{min}) ? $config_data->{selection}->{$id}->{min} : '';
+                $self->{metrics}->{$metric_key}->{max} = defined($config_data->{selection}->{$id}->{max}) ? $config_data->{selection}->{$id}->{max} : '';
+                $self->{metrics}->{$metric_key}->{display} = (defined($config_data->{selection}->{$id}->{display}) && $config_data->{selection}->{$id}->{display}) ? 1 : 0;
                 $i++;
                 
                 $self->{metric}->{$metric_key} = {
