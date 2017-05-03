@@ -127,11 +127,11 @@ sub connect {
     if ($self->{modbus_type} == 1) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Device::Modbus::TCP::Client',
                                                error_msg => "Cannot load module 'Device::Modbus::TCP::Client'.");
-        $self->{modbus_client} = new evice::Modbus::TCP::Client->new(%{$self->{modbus_params}->{tcp}});
+        $self->{modbus_client} = Device::Modbus::TCP::Client->new(%{$self->{modbus_params}->{tcp}});
     } else {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Device::Modbus::RTU::Client',
                                                error_msg => "Cannot load module 'Device::Modbus::RTU::Client'.");
-        $self->{modbus_client} = new evice::Modbus::RTU::Client->new(%{$self->{modbus_params}->{rtu}});
+        $self->{modbus_client} = Device::Modbus::RTU::Client->new(%{$self->{modbus_params}->{rtu}});
     }
 }
 
