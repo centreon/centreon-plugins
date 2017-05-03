@@ -252,10 +252,15 @@ sub manage_selection {
             my $results = $options{custom}->read_objects(address => $config_data->{selection}->{id}->{address},
                 unit => $config_data->{selection}->{id}->{unit}, quantity => $config_data->{selection}->{id}->{quantity});
             my $i = 0;
+            my $extra_num = 0;
+            if (scalar(@$results) > 1) {
+                $extra_num = 1;
+            }
             foreach (@{$results}) {
-                my $metric_key = $id . '.' . $i;
-                $self->{metrics}->{$metric_key} = { name => $_->{metric_name} };
-                $self->{metrics}->{$metric_key}->{display_name} = $id;
+                my $metric_key = $id;
+                $metric_key .= '.' . $i if ($extra_num == 1);
+                $self->{metrics}->{$metric_key} = { name => $_->{metric_key} };
+                $self->{metrics}->{$metric_key}->{display_name} = $metric_key;
                 $self->{metrics}->{$metric_key}->{current} = $_->{current_value};
                 $self->{metrics}->{$metric_key}->{unit} = defined($_->{unit_name}) ? $_->{unit_name} : '';
                 $self->{metrics}->{$metric_key}->{min} = defined($_->{min}) ? $_->{min} : '';
@@ -263,7 +268,8 @@ sub manage_selection {
                 $self->{metrics}->{$metric_key}->{display} = (defined($_->{display}) && $_->{display}) ? 1 : 0;
                 $i++;
                 
-                $self->{metric}->{$metric_key} = {display => $self->{metrics}->{$metric_key}->{display_name},
+                $self->{metric}->{$metric_key} = {
+                    display => $self->{metrics}->{$metric_key}->{display_name},
                     type => 'unique',
                     unit => $self->{metrics}->{$metric_key}->{unit},
                     value => $self->{metrics}->{$metric_key}->{current},
