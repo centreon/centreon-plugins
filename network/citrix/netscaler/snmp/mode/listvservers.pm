@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_vsvrName = '.1.3.6.1.4.1.5951.4.1.3.1.1.1';
+my $oid_vsvrFullName = '.1.3.6.1.4.1.5951.4.1.3.1.1.59';
 my $oid_vsvrEntityType = '.1.3.6.1.4.1.5951.4.1.3.1.1.64';
 
 my %map_vs_type = (
@@ -62,11 +62,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_vsvrName}, { oid => $oid_vsvrEntityType } ], nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_vsvrName}})) {
-        next if ($oid !~ /^$oid_vsvrName\.(.*)$/);
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_vsvrFullName}, { oid => $oid_vsvrEntityType } ], nothing_quit => 1);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_vsvrFullName}})) {
+        next if ($oid !~ /^$oid_vsvrFullName\.(.*)$/);
         my $instance = $1;
-        my $name = $self->{results}->{$oid_vsvrName}->{$oid};
+        my $name = $self->{results}->{$oid_vsvrFullName}->{$oid};
         my $type = $self->{results}->{$oid_vsvrEntityType}->{$oid_vsvrEntityType . '.' . $instance};
         
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
@@ -98,7 +98,7 @@ sub run {
 
     $self->manage_selection();
     foreach my $instance (sort @{$self->{vs_id_selected}}) { 
-        my $name = $self->{results}->{$oid_vsvrName}->{$oid_vsvrName . '.' . $instance};
+        my $name = $self->{results}->{$oid_vsvrFullName}->{$oid_vsvrFullName . '.' . $instance};
         my $type = $self->{results}->{$oid_vsvrEntityType}->{$oid_vsvrEntityType . '.' . $instance};
 
         $self->{output}->output_add(long_msg => "'" . $name . "' [type = '" . $map_vs_type{$type} . "']");
@@ -122,7 +122,7 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $instance (sort @{$self->{vs_id_selected}}) {        
-        my $name = $self->{results}->{$oid_vsvrName}->{$oid_vsvrName . '.' . $instance};
+        my $name = $self->{results}->{$oid_vsvrFullName}->{$oid_vsvrFullName . '.' . $instance};
         my $type = $self->{results}->{$oid_vsvrEntityType}->{$oid_vsvrEntityType . '.' . $instance};
         
         $self->{output}->add_disco_entry(name => $name, type => $map_vs_type{$type});
