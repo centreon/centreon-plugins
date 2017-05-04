@@ -34,7 +34,7 @@ sub set_system {
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
-		sensor => [
+        sensor => [
             ['unknown', 'UNKNOWN'],
             ['faulty', 'CRITICAL'],
             ['below-min', 'WARNING'],
@@ -134,9 +134,9 @@ my %map_type = (1 => 'temperature', 2 => 'fan', 3 => 'power-supply');
 my %map_unit = (temperature => 'C', fan => 'rpm'); # No voltage value available
 
 my $mapping = {
-    swSensorType	=> { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.2', map => \%map_type },
+    swSensorType    => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.2', map => \%map_type },
     swSensorStatus  => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.3', map => \%map_status },
-    swSensorValue	=> { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.4' },
+    swSensorValue   => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.4' },
     swSensorInfo    => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.5' },    
 };
 my $oid_swSensorEntry = '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1';
@@ -163,7 +163,7 @@ sub check {
         next if ($result->{swSensorStatus} =~ /absent/i && 
                  $self->absent_problem(section => 'sensor', instance => $instance));
 
-		$result->{swSensorInfo} = centreon::plugins::misc::trim($result->{swSensorInfo});
+        $result->{swSensorInfo} = centreon::plugins::misc::trim($result->{swSensorInfo});
         $self->{components}->{sensor}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("%s sensor '%s' status is '%s' [instance = %s]",
                                                         $result->{swSensorType}, $result->{swSensorInfo}, $result->{swSensorStatus}, $instance));
@@ -178,7 +178,7 @@ sub check {
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("%s sensor '%s' is %s %s", $result->{swSensorType}, $result->{swSensorInfo}, $result->{swSensorValue},
-																 $map_unit{$result->{swSensorType}}));
+                                                                 $map_unit{$result->{swSensorType}}));
             }
             $self->{output}->perfdata_add(label => $result->{swSensorInfo}, unit => $map_unit{$result->{swSensorType}}, 
                                           value => $result->{swSensorValue},
@@ -199,8 +199,8 @@ use warnings;
 my %map_oper_status = (1 => 'online', 2 => 'offline', 3 => 'testing', 4 => 'faulty');
 
 my $mapping_global = {
-    swFirmwareVersion	=> { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.6' },
-    swOperStatus		=> { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.7', map => \%map_oper_status },
+    swFirmwareVersion   => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.6' },
+    swOperStatus        => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.7', map => \%map_oper_status },
 };
 my $oid_swSystem = '.1.3.6.1.4.1.1588.2.1.1.1.1';
 
@@ -218,7 +218,7 @@ sub check {
     return if ($self->check_filter(section => 'global'));
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping_global, results => $self->{results}->{$oid_swSystem}, instance => '0');
-	return if (!defined($result->{swOperStatus}));
+    return if (!defined($result->{swOperStatus}));
 
     $self->{components}->{global}->{total}++;
 
