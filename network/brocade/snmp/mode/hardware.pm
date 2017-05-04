@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(global|sensor)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(switch|sensor)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -42,7 +42,7 @@ sub set_system {
             ['above-max', 'CRITICAL'],
             ['absent', 'OK'],
         ],
-        global => [
+        switch => [
             ['online', 'OK'],
             ['offline', 'WARNING'],
             ['testing', 'WARNING'],
@@ -52,7 +52,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'network::brocade::snmp::mode::components';
-    $self->{components_module} = ['global', 'sensor'];
+    $self->{components_module} = ['switch', 'sensor'];
 }
 
 sub new {
@@ -86,7 +86,7 @@ Check brocade operational status and hardware sensors (SW.mib).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'global', 'sensor'.
+Can be: 'switch', 'sensor'.
 
 =item B<--filter>
 
@@ -191,7 +191,7 @@ sub check {
 
 1;
 
-package network::brocade::snmp::mode::components::global;
+package network::brocade::snmp::mode::components::switch;
 
 use strict;
 use warnings;
@@ -213,19 +213,19 @@ sub load {
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking global");
-    $self->{components}->{global} = {name => 'global', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'global'));
+    $self->{output}->output_add(long_msg => "Checking switch");
+    $self->{components}->{switch} = {name => 'switch', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'switch'));
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping_global, results => $self->{results}->{$oid_swSystem}, instance => '0');
     return if (!defined($result->{swOperStatus}));
 
-    $self->{components}->{global}->{total}++;
+    $self->{components}->{switch}->{total}++;
 
     $self->{output}->output_add(long_msg => sprintf("switch operational status is '%s' [firmware: %s].",
                                                     $result->{swOperStatus}, $result->{swFirmwareVersion}
                                 ));
-    my $exit = $self->get_severity(section => 'global', value => $result->{swOperStatus});
+    my $exit = $self->get_severity(section => 'switch', value => $result->{swOperStatus});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity =>  $exit,
                                     short_msg => sprintf("switch operational status is '%s'",
