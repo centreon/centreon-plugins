@@ -55,6 +55,16 @@ Try {
                 $i=1
             }
         }
+        if ($vm.status -imatch "Backing") {
+            $VMDisks = Get-VMHardDiskDrive -VMName $vm.VMName
+            Foreach ($VMDisk in $VMDisks) {
+                if ($VMDisk.Path -imatch ".avhdx" -or $VMDisk.VhdType -imatch "Differencing") {
+                    $vhd = Get-VHD $VMDisk.Path
+                    $parent = Get-Item $vhd.ParentPath
+                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime -UFormat ' . "'%s'" . ') "]"
+                }
+            }
+        }
     }
 } Catch {
     Write-Host $Error[0].Exception
