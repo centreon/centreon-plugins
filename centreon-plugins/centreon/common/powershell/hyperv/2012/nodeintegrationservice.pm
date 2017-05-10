@@ -40,7 +40,9 @@ Try {
 
     $vms = Get-VM
     Foreach ($vm in $vms) {
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "]"
+        $note = $vm.Notes -replace "\r",""
+        $note = $note -replace "\n"," - "
+        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "][note=" $note "]"
         Foreach ($service in $VM.VMIntegrationService) {
             Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
         }
