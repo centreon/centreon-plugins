@@ -129,7 +129,7 @@ sub convert_args {
     if ($self->{convert_args} =~ /^(.+?),(.*)/) {
         my ($search, $replace) = ($1, $2);
         for (my $i = 0; $i < $#ARGV; $i++) {
-            $ARGV[$i] =~ s/$search/$replace/g;
+            eval "\$ARGV[\$i] =~ s/$search/$replace/g";
         }
     }
 }
@@ -402,7 +402,7 @@ Set environment variables for the script (prefer to set it before running it for
 =item B<--convert-args>
 
 Change strings of arguments. Useful to use '!' in nrpe protocol.
-Example: --convert-args='##,!'
+Example: --convert-args='##,\x21'
 
 =back
 
