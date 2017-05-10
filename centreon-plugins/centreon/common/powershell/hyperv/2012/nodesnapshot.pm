@@ -58,10 +58,14 @@ Try {
         if ($vm.status -imatch "Backing") {
             $VMDisks = Get-VMHardDiskDrive -VMName $vm.VMName
             Foreach ($VMDisk in $VMDisks) {
-                if ($VMDisk.Path -imatch ".avhdx" -or $VMDisk.VhdType -imatch "Differencing") {
-                    $vhd = Get-VHD $VMDisk.Path
-                    $parent = Get-Item $vhd.ParentPath
+                $VHD = Get-VHD $VMDisk.Path
+                if ($VHD.Path -imatch ".avhdx" -or $VHD.VhdType -imatch "Differencing") {
+                    $parent = Get-Item $VHD.ParentPath
+                    if ($i -eq 0) {
+                        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
+                    }
                     Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime -UFormat ' . "'%s'" . ') "]"
+                    $i=1
                 }
             }
         }
