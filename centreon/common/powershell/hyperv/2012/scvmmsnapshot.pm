@@ -49,9 +49,11 @@ Try {
     Foreach ($vm in $vms) {
         $i = 0
         $checkpoints = Get-SCVMCheckpoint -VMMServer $connection -Vm $vm
+        $desc = $vm.description -replace "\r",""
+        $desc = $desc -replace "\n"," - "
         foreach ($checkpoint in $checkpoints) {
             if ($i -eq 0) {
-                Write-Host "[name=" $vm.Name "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
+                Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
             }
             Write-Host "[checkpointAddedTime=" (get-date -date $checkpoint.AddedTime -UFormat ' . "'%s'" . ') "]"
             $i = 1

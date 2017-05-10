@@ -75,6 +75,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
+                                  "filter-description:s"=> { name => 'filter_description' },
                                   "filter-hostgroup:s"  => { name => 'filter_hostgroup' },
                                   "filter-status:s"     => { name => 'filter_status', default => 'running' },
                                 });
@@ -117,38 +118,34 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test-server ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
+    #[name= test-server ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
     #[checkpointAddedTime= 1475502741.957 ]
     #[checkpointAddedTime= 1475502963.21 ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $cloud, $hg, $content) = ($1, $2, $3, $4, $5);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
+        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5);
+        my $content = $6;
+
         my $chkpt = -1;
         while ($content =~ /\[checkpointAddedTime=s*(.*?)\s*\]/msig) {
             $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
         }
         next if ($chkpt == -1);
 
-        $hg =~ s/\\/\//g;
-        if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_hostgroup}) && $self->{option_results}->{filter_hostgroup} ne '' &&
-            $hg !~ /$self->{option_results}->{filter_hostgroup}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $hg . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $status !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $status . "': no matching filter.", debug => 1);
-            next;
+        my $filtered = 0;
+        $values{hostgroup} =~ s/\\/\//g;
+        foreach (('vm', 'description', 'status', 'hostgroup')) {
+            if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
+                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
+                $filtered = 1;
+                last;
+            }
         }
         
-        $self->{vm}->{$id} = { display => $name, snapshot => time() - $chkpt };
+        $self->{vm}->{$id} = { display => $values{vm}, snapshot => time() - $chkpt }  if ($filtered == 0);
         $id++;
     }
 }
@@ -211,6 +208,10 @@ Filter virtual machine status (can be a regexp) (Default: 'running').
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
+
+=item B<--filter-description>
+
+Filter by description (can be a regexp).
 
 =item B<--filter-hostgroup>
 

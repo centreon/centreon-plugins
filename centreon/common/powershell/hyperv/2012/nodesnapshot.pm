@@ -44,10 +44,12 @@ Try {
     
     Foreach ($vm in $vms) {
         $i=0
+        $note = $vm.Notes -replace "\r",""
+        $note = $note -replace "\n"," - "
         Foreach ($snap in $snapshots) {
             if ($snap.VMName -eq $vm.VMName) {
                 if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
+                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
                 }
                 Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime -UFormat ' . "'%s'" . ') "]"
                 $i=1

@@ -40,7 +40,9 @@ Try {
     $vms = Get-VM
 
     Foreach ($vm in $vms) {
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $vm.IsClustered "]"
+        $note = $vm.Notes -replace "\r",""
+        $note = $note -replace "\n"," - "
+        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $vm.IsClustered "][note=" $note "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

@@ -71,6 +71,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
+                                  "filter-note:s"       => { name => 'filter_note' },
                                   "filter-status:s"     => { name => 'filter_status', default => 'running' },
                                 });
     return $self;
@@ -94,14 +95,14 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= ISC1-SV04404 ][state= Running ]
+    #[name= ISC1-SV04404 ][state= Running ][note= ]
     #[checkpointCreationTime= 1475502921.28734 ]
     #[checkpointCreationTime= 1475503073.81975 ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $content) = ($1, $2, $3);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
+        my ($name, $status, $note, $content) = ($1, $2, $3, $4);
         my $chkpt = -1;
         while ($content =~ /\[checkpointCreationTime=s*(.*?)\s*\]/msig) {
             $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
@@ -111,6 +112,11 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            next;
+        }
+         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
+            $note !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
@@ -166,6 +172,10 @@ Filter virtual machine status (can be a regexp) (Default: 'running').
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
+
+=item B<--filter-note>
+
+Filter by VM notes (can be a regexp).
 
 =item B<--warning-*>
 
