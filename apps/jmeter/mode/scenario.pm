@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use File::Temp qw(tempfile);
 use XML::XPath;
 use XML::XPath::XMLParser;
 
@@ -78,11 +77,12 @@ sub run {
     my $filename = $self->{option_results}->{directory} . '/' . $self->{option_results}->{scenario} . '.jmx';
     my $command_options .= '-t ' . $filename;
 
-    my ($handle, $log_filename) = tempfile('jmeter_XXXXXXXXXX', UNLINK => 1, DIR => File::Spec->tmpdir(), SUFFIX => '.jtl');
-    close($handle);
-    $command_options .= ' -l ' . $log_filename;
+    # Temporary write result on stderr
+    $command_options .= ' -l /dev/stderr';
 
+    # Write logs to trash
     $command_options .= ' -j /dev/null';
+
     $command_options .= ' -n';
     $command_options .= ' -J jmeter.save.saveservice.output_format=xml';
 
@@ -90,15 +90,18 @@ sub run {
         $command_options .= ' ' . $self->{option_results}->{command_extra_options};
     }
 
-    centreon::plugins::misc::execute(output => $self->{output},
-                                     options => $self->{option_results},
-                                     sudo => $self->{option_results}->{sudo},
-                                     command => $self->{option_results}->{command},
-                                     command_path => $self->{option_results}->{command_path},
-                                     command_options => $command_options);
+    # Redirect result on stdout and default stdout to trash
+    $command_options .= ' 2>&1 >/dev/null';
+
+    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
+                                                  options => $self->{option_results},
+                                                  sudo => $self->{option_results}->{sudo},
+                                                  command => $self->{option_results}->{command},
+                                                  command_path => $self->{option_results}->{command_path},
+                                                  command_options => $command_options);
 
     my $p = XML::Parser->new(NoLWP => 1);
-    my $xp = XML::XPath->new(parser => $p, filename => $log_filename);
+    my $xp = XML::XPath->new(parser => $p, xml => $stdout);
 
     my $listHttpSampleNode = $xp->findnodes('/testResults/httpSample');
 
