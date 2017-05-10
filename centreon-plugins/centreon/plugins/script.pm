@@ -78,6 +78,10 @@ sub handle_DIE {
     $self->{output}->die_exit();
 }
 
+sub get_global_version {
+    return $global_version;
+}
+
 sub get_plugin {
     my ($self) = @_;
     
