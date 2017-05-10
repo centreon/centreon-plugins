@@ -191,6 +191,11 @@ sub manage_selection {
         $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} };
         $id++;
     }
+    
+    if (scalar(keys %{$self->{vm}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
