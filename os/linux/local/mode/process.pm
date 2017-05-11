@@ -31,7 +31,7 @@ my %state_map = (
     X => 'dead',
     W => 'paging',
     T => 'stopped',
-    S => 'InterrupibleSleep',
+    S => 'InterruptibleSleep',
     R => 'running',
     D => 'UninterrupibleSleep'
 );
