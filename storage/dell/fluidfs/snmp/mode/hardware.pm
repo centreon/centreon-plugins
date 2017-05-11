@@ -34,7 +34,7 @@ sub set_system {
     
     $self->{thresholds} = {
         ad => [
-            ['Yes', 'OK'],
+            ['Yes|Optimal', 'OK'],
             ['.*', 'CRITICAL'],
         ],
         extservers => [
