@@ -111,7 +111,15 @@ sub run {
         $dsName = $ds_names{$tmp_name};
 
         $self->{manager}->{output}->output_add(long_msg => "Checking datastore '$dsName':");
-        my ($snapshots, $msg) = centreon::vmware::common::search_in_datastore($self->{connector}, $browse_ds, '[' . $dsName . ']', [VmSnapshotFileQuery->new()], 1);
+        my ($snapshots, $msg) = centreon::vmware::common::search_in_datastore(
+            connector => $self->{connector}, 
+            browse_ds => $browse_ds, 
+            ds_name => '[' . $dsName . ']',
+            matchPattern => [ "*.vmsn", "*.vmsd", "*-000*.vmdk", "*-000*delta.vmdk" ],
+            searchCaseInsensitive => 1,
+            query => [ FileQuery->new()], 
+            return => 1
+        );
         if (!defined($snapshots)) {
             $msg =~ s/\n/ /g;
             if ($msg =~ /NoPermissionFault/i) {

@@ -187,8 +187,7 @@ sub get_view {
 }
 
 sub search_in_datastore {
-    my $obj_vmware = shift;
-    my ($ds_browse, $ds_name, $query, $return) = @_;
+    my (%options) = @_;
     my $result;
     
     my $files = FileQueryFlags->new(fileSize => 1,
@@ -196,15 +195,19 @@ sub search_in_datastore {
                                     modification => 1,
                                     fileOwner => 1
                                     );
-    my $hostdb_search_spec = HostDatastoreBrowserSearchSpec->new(details => $files,
-                                                                 query => $query);
+    my $hostdb_search_spec = HostDatastoreBrowserSearchSpec->new(
+        details => $files,
+        searchCaseInsensitive => $options{searchCaseInsensitive},
+        matchPattern => $options{matchPattern},
+        query => $options{query}
+    );
     eval {
-        $result = $ds_browse->SearchDatastoreSubFolders(datastorePath=> $ds_name,
-                                        searchSpec=>$hostdb_search_spec);
+        $result = $options{browse_ds}->SearchDatastoreSubFolders(datastorePath => $options{ds_name},
+                                        searchSpec => $hostdb_search_spec);
     };
     if ($@) {
-        return (undef, $@) if (defined($return) && $return == 1);
-        vmware_error($obj_vmware, $@);
+        return (undef, $@) if (defined($options{return}) && $options{return} == 1);
+        vmware_error($options{connector}, $@);
         return undef;
     }
     return $result;
