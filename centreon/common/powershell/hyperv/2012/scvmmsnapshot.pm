@@ -55,7 +55,7 @@ Try {
             if ($i -eq 0) {
                 Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
             }
-            Write-Host "[checkpointAddedTime=" (get-date -date $checkpoint.AddedTime -UFormat ' . "'%s'" . ') "]"
+            Write-Host "[checkpointAddedTime=" (get-date -date $checkpoint.AddedTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
             $i = 1
         }
     }
