@@ -156,8 +156,8 @@ sub run {
         $self->display_verbose(label => 'vmtools not running:', vms => \%not_running);
     }
     if (scalar(keys %not_installed) > 0 &&
-        !$self->{manager}->{output}->is_status(value => $self->{tools_notupd2date_status}, compare => 'ok', litteral => 1)) {
-        $self->{manager}->{output}->output_add(severity => $self->{tools_notupd2date_status},
+        !$self->{manager}->{output}->is_status(value => $self->{tools_notinstalled_status}, compare => 'ok', litteral => 1)) {
+        $self->{manager}->{output}->output_add(severity => $self->{tools_notinstalled_status},
                                                short_msg => sprintf('%d VM with VMTools not installed', scalar(keys %not_installed)));
         $self->display_verbose(label => 'vmtools not installed:', vms => \%not_installed);
     }
