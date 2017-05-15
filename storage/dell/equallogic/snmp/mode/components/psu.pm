@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_eqlMemberHealthDetailsPowerSupplyEntry = '.1.3.6.1.4.1.12740.2.1.8.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlMemberHealthDetailsPowerSupplyEntry };
+    push @{$self->{request}}, { oid => $oid_eqlMemberHealthDetailsPowerSupplyEntry };
 }
 
 sub check {
@@ -53,7 +53,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberHealthDetailsPowerSupplyEntry}})) {
         next if ($oid !~ /^$mapping->{eqlMemberHealthDetailsPowerSupplyCurrentState}->{oid}\.(\d+\.\d+)\.(.*)$/);
@@ -61,12 +61,12 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberHealthDetailsPowerSupplyEntry}, instance => $member_instance . '.' . $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $member_instance . '.' . $instance));
         $self->{components}->{psu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s/%s' status is %s [instance: %s] [fan status: %s].",
                                     $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState},
-                                    $instance, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}
+                                    $member_instance . '.' . $instance, $result->{eqlMemberHealthDetailsPowerSupplyFanStatus}
                                     ));
         my $exit = $self->get_severity(section => 'psu', value => $result->{eqlMemberHealthDetailsPowerSupplyCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -75,7 +75,7 @@ sub check {
                                                              $member_name, $result->{eqlMemberHealthDetailsPowerSupplyName}, $result->{eqlMemberHealthDetailsPowerSupplyCurrentState}));
         }
 
-        next if ($self->check_exclude(section => 'psu.fan', instance => $instance));
+        next if ($self->check_filter(section => 'psu.fan', instance => $member_instance . '.' . $instance));
         $exit = $self->get_severity(section => 'psu.fan', value => $result->{eqlMemberHealthDetailsPowerSupplyFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
