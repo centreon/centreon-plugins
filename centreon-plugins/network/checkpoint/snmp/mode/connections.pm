@@ -35,6 +35,7 @@ sub new {
                                 {
                                   "warning:s"   => { name => 'warning' },
                                   "critical:s"  => { name => 'critical' },
+                                  "units:s"     => { name => 'units', default => 'absolute' },
                                 });
 
     return $self;
@@ -45,12 +46,17 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    if ($self->{option_results}->{units} !~ /^(absolute|%)$/i) {
+        $self->{output}->add_option_msg(short_msg => "Wrong units option: absolute or %");
+        $self->{output}->option_exit();
     }
 }
 
@@ -59,16 +65,30 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_fwNumCom = '.1.3.6.1.4.1.2620.1.1.25.3.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_fwNumCom], nothing_quit => 1);
+    my $oid_fwConnTableLimit = '.1.3.6.1.4.1.2620.1.1.25.10.0';
+    my $result = $self->{snmp}->get_leef(oids => [$oid_fwNumCom, $oid_fwConnTableLimit], nothing_quit => 1);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_fwNumCom}, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $value = $result->{$oid_fwNumCom};
+    my $extra = '';
+    my %total_options = ();
+    if (defined($result->{$oid_fwConnTableLimit}) && $result->{$oid_fwConnTableLimit} > 0) {
+        my $prct_used = sprintf("%.2f", $result->{$oid_fwNumCom} * 100 / $result->{$oid_fwConnTableLimit});
+        $extra = " (" . $prct_used . '% used on ' . $result->{$oid_fwConnTableLimit} . ")";
+        if ($self->{option_results}->{units} eq '%') {
+            $value = $prct_used;
+            %total_options = ( total => $result->{$oid_fwConnTableLimit}, cast_int => 1);
+        }
+    }
+
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $value, 
+                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Connections: %d", $result->{$oid_fwNumCom}));
+                                short_msg => sprintf("Connections: %d%s", $result->{$oid_fwNumCom}, $extra));
     $self->{output}->perfdata_add(label => "connections", unit => 'con',
                                   value => $result->{$oid_fwNumCom},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
                                   min => 0
                                  );
     
@@ -93,6 +113,10 @@ Number of connections trigerring a warning state
 =item B<--critical>
 
 Number of connections trigerring a criticalstate
+
+=item B<--units>
+
+Units of thresholds (Default: 'absolute') ('%', 'absolute').
 
 =back
 
