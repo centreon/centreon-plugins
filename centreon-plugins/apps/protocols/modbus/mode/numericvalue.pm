@@ -247,7 +247,8 @@ sub manage_selection {
         foreach my $id (keys %{$config_data->{selection}}) {
             next if (!defined($config_data->{selection}->{$id}->{address}));
             my $results = $options{custom}->read_objects(address => $config_data->{selection}->{$id}->{address},
-                unit => $config_data->{selection}->{$id}->{unit}, quantity => $config_data->{selection}->{$id}->{quantity});
+                unit => $config_data->{selection}->{$id}->{unit}, quantity => $config_data->{selection}->{$id}->{quantity},
+                type => $config_data->{selection}->{$id}->{type});
             my $i = 0;
             my $extra_num = 0;
             if (scalar(@$results) > 1) {
