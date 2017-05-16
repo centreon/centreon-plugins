@@ -67,7 +67,7 @@ sub check {
         
         my ($value, $unit);
         ($value, $unit) = ($1, $2) if ($results->{$sensor_id}->{value} =~ /\s*([0-9\.,]+)\s*(\S*)\s*/);
-        if (defined($sensor_type{$results->{$sensor_id}->{'sensor-type'}})) {
+        if (defined($results->{$sensor_id}->{'sensor-type'}) && defined($sensor_type{$results->{$sensor_id}->{'sensor-type'}})) {
             $unit = $sensor_type{$results->{$sensor_id}->{'sensor-type'}}->{unit};
         }
         
