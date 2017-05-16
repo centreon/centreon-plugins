@@ -886,9 +886,9 @@ Voici un exemple pour le formulaire d'authentification de ``demo.centreon.com`` 
   $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
   OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
 
----------------
-Modbus Protocol
----------------
+----------------
+Protocole Modbus
+----------------
 
 Contrôler 3 registres holding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
