@@ -893,7 +893,7 @@ Protocole Modbus
 Contrôler 3 registres holding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Le contenu du fichier ``modbus.json`` peut être spécifié directement dans l'option ``--config`` (exemple: ``--config='{ "selection": { "metric1":{...``).
+Le contenu du fichier ``modbus.json`` peut être spécifié directement dans l'option ``--config`` (exemple: ``--config='{ "selection": { "metric1":{...'``).
 L'attribut ``type`` peut avoir les valeurs suivantes :
 
 * holding (défaut)
