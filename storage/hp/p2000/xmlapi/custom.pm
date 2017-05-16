@@ -178,7 +178,8 @@ sub DESTROY {
     
     if ($self->{logon} == 1) {
         $self->{http}->request(url_path => $self->{url_path} . 'exit',
-                               header => ['dataType: api', 'sessionKey: ' . $self->{session_id}]);
+                               header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                          'dataType: api', 'sessionKey: '. $self->{session_id}]);
     }
 }
 
@@ -189,7 +190,8 @@ sub get_infos {
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
     my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                         header => ['dataType: api', 'sessionKey: '. $self->{session_id}]);
+                                         header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                                    'dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
