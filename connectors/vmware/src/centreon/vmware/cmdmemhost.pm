@@ -126,7 +126,7 @@ sub run {
         my $mem_overhead = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.overhead.average'}->{'key'} . ":"})) * 1024;
         my $mem_state;
         if (!defined($self->{no_memory_state})) {
-            $mem_state = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.state.latest'}->{'key'} . ":"})) * 1024;
+            $mem_state = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'mem.state.latest'}->{'key'} . ":"}));
         }
         my $mem_free = $memory_size - $mem_used;
         my $prct_used = $mem_used * 100 / $memory_size;
