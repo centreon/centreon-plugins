@@ -892,7 +892,7 @@ Modbus Protocol
 Check 3 holding registers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The content of the ``modbus.json`` file can be set directly in ``--config`` option (eg. : ``--config='{ "selection": { "metric1":{...``).
+The content of the ``modbus.json`` file can be set directly in ``--config`` option (eg. : ``--config='{ "selection": { "metric1":{...'``).
 The ``type`` attribute can have following values:
 
 * holding (default)
