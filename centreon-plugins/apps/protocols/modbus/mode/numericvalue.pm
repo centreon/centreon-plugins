@@ -41,11 +41,11 @@ sub custom_metric_output {
                 $msg = sprintf("$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_msg}",
                                 eval "$config_data->{selection}->{$self->{result_values}->{instance}}->{formatting}->{printf_var}");
             };
-        } elsif (defined($config_data->{filters}->{formatting}->{printf_var}) && defined($config_data->{filters}->{formatting}->{printf_msg})) {
+        } elsif (defined($config_data->{formatting}->{printf_var}) && defined($config_data->{formatting}->{printf_msg})) {
             eval {
                 local $SIG{__WARN__} = sub { $message = $_[0]; };
                 local $SIG{__DIE__} = sub { $message = $_[0]; };
-                $msg = sprintf("$config_data->{filters}->{formatting}->{printf_msg}", eval "$config_data->{filters}->{formatting}->{printf_var}");
+                $msg = sprintf("$config_data->{formatting}->{printf_msg}", eval "$config_data->{formatting}->{printf_var}");
             };
         } else {
             $msg = sprintf("Metric '%s' value is '%s'", $self->{result_values}->{instance}, $self->{result_values}->{value});
@@ -135,8 +135,7 @@ sub custom_metric_threshold {
 sub set_counters {
     my ($self, %options) = @_;
 
-    $self->{maps_counters_type} = [
-    ];
+    $self->{maps_counters_type} = [];
 
     $self->{maps_counters}->{global} = [
         { label => 'global', set => {
@@ -241,9 +240,7 @@ sub manage_selection {
     }
 
     if (defined($config_data->{selection})) {
-        push @{$self->{maps_counters_type}}, {
-            name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
-        };
+        my $pushed = 0;
         foreach my $id (keys %{$config_data->{selection}}) {
             next if (!defined($config_data->{selection}->{$id}->{address}));
             my $results = $options{custom}->read_objects(address => $config_data->{selection}->{$id}->{address},
@@ -266,13 +263,20 @@ sub manage_selection {
                 $self->{metrics}->{$metric_key}->{display} = (defined($config_data->{selection}->{$id}->{display}) && $config_data->{selection}->{$id}->{display}) ? 1 : 0;
                 $i++;
                 
-                $self->{metric}->{$metric_key} = {
-                    display => $self->{metrics}->{$metric_key}->{display_name},
-                    type => 'unique',
-                    unit => $self->{metrics}->{$metric_key}->{unit},
-                    value => $self->{metrics}->{$metric_key}->{current},
-                    min => $self->{metrics}->{$metric_key}->{min},
-                    max => $self->{metrics}->{$metric_key}->{max} } if ($self->{metrics}->{$metric_key}->{display} == 1);
+                
+                if ($self->{metrics}->{$metric_key}->{display} == 1) {
+                    $self->{metric}->{$metric_key} = {
+                        display => $self->{metrics}->{$metric_key}->{display_name},
+                        type => 'unique',
+                        unit => $self->{metrics}->{$metric_key}->{unit},
+                        value => $self->{metrics}->{$metric_key}->{current},
+                        min => $self->{metrics}->{$metric_key}->{min},
+                        max => $self->{metrics}->{$metric_key}->{max} };
+                    push @{$self->{maps_counters_type}}, {
+                        name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
+                    } if ($pushed == 0);
+                    $pushed = 1;
+                }
             }
         }
     }
