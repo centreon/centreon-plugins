@@ -31,10 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'           => 'network::alcatel::isam::snmp::mode::cpu',
-        'hardware'      => 'network::alcatel::isam::snmp::mode::hardware',
-        'memory'        => 'network::alcatel::isam::snmp::mode::memory',
-        'vlan-traffic'  => 'network::alcatel::isam::snmp::mode::vlantraffic',
+        'cpu'               => 'network::alcatel::isam::snmp::mode::cpu',
+        'hardware'          => 'network::alcatel::isam::snmp::mode::hardware',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::alcatel::isam::snmp::mode::memory',
+        'vlan-traffic'      => 'network::alcatel::isam::snmp::mode::vlantraffic',
     );
 
     return $self;
