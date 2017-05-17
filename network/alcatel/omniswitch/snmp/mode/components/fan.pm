@@ -97,14 +97,14 @@ sub check {
         $self->{components}->{fan}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("fan '%s/%s' [instance: %s] status is %s",
-                                                        $name, $descr, $loc_index, 
+                                                        $name, $descr, $phys_index . '.' . $loc_index, 
                                                         $fan_status{$status})
                                     );
         my $exit = $self->get_severity(label => 'fan', section => 'fan.status', value => $fan_status{$status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s/%s/%s' status is %s",
-                                                        $name, $descr, $loc_index, 
+                                                        $name, $descr, $phys_index . '.' . $loc_index, 
                                                         $fan_status{$status}));
         }
     }
