@@ -85,8 +85,8 @@ Can be: 'cardtemperature', 'sfp'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
-Can also exclude specific instance: --filter=fan,101
+Exclude some parts (comma seperated list) (Example: --filter=cardtemperature)
+Can also exclude specific instance: --filter=cardtemperature,1080.1
 
 =item B<--no-component>
 
@@ -101,13 +101,13 @@ Example: --threshold-overload='psu,CRITICAL,^(?!(presentOK)$)'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
-Example: --warning='psu.fan,1.1,5000'
+Set warning threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
+Example: --warning='sfp.temperature,1.1,30'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature', 'fan', 'psu.fan', 'psu' (syntax: type,regexp,threshold)
-Example: --critical='psu,.*,200'
+Set critical threshold for 'sfp.temperature', 'cardtemperature' (syntax: type,regexp,threshold)
+Example: --warning='sfp.temperature,1.1,40'
 
 =back
 
