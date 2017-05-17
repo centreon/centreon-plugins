@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::common::mode::cpu;
+package network::alcatel::omniswitch::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
