@@ -18,32 +18,20 @@
 # limitations under the License.
 #
 
-package network::alcatel::isam::snmp::plugin;
+package network::alcatel::isam::snmp::mode::components::resources;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Exporter;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+our $mapping_slot;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'hardware'      => 'network::alcatel::isam::snmp::mode::hardware',
-        'vlan-traffic'  => 'network::alcatel::isam::snmp::mode::vlantraffic',
-    );
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw($mapping_slot);
 
-    return $self;
-}
+$mapping_slot = {
+    eqptSlotActualType              => { oid => '.1.3.6.1.4.1.637.61.1.23.3.1.3' },
+    eqptBoardInventorySerialNumber  => { oid => '.1.3.6.1.4.1.637.61.1.23.3.1.19' },
+};
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Alcatel DSL ISAM Family (also ASAM) in SNMP.
-
-=cut
