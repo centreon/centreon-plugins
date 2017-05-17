@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'cpu'           => 'network::alcatel::isam::snmp::mode::cpu',
         'hardware'      => 'network::alcatel::isam::snmp::mode::hardware',
+        'memory'        => 'network::alcatel::isam::snmp::mode::memory',
         'vlan-traffic'  => 'network::alcatel::isam::snmp::mode::vlantraffic',
     );
 

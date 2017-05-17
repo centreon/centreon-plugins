@@ -64,9 +64,6 @@ sub new {
     return $self;
 }
 
-my $oid_ = '';
-    my $oid_ = '';
-
 my $mapping = {
     cpuLoadAverage                  => { oid => '.1.3.6.1.4.1.637.61.1.9.29.1.1.4' },
     eqptSlotActualType              => { oid => '.1.3.6.1.4.1.637.61.1.23.3.1.3' },
