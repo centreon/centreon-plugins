@@ -39,7 +39,9 @@ my $oid_sfpDiagEntry = '.1.3.6.1.4.1.637.61.1.56.5.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_sfpDiagEntry, start => $mapping->{sfpDiagLOS}->{oid}, end => $mapping->{sfpDiagTemperature}->{oid}, };
+    foreach (keys %$mapping) {
+        push @{$self->{request}}, { oid => $mapping->{$_}->{oid} };
+    }
 }
 
 sub check {
@@ -49,6 +51,11 @@ sub check {
     $self->{components}->{sfp} = {name => 'sfp', total => 0, skip => 0};
     return if ($self->check_filter(section => 'sfp'));
 
+    my $results = {};
+    foreach (keys %$mapping) {
+        $results = { %$results, %{$self->{results}->{$mapping->{$_}->{oid}}} };
+    }
+    
     my ($exit, $warn, $crit, $checked);
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sfpDiagEntry}})) {
         next if ($oid !~ /^$mapping->{sfpDiagLOS}->{oid}\.(.*?)\.(.*?)$/);
@@ -56,7 +63,7 @@ sub check {
         
         my $result = $self->{snmp}->map_instance(mapping => $mapping_slot, results => 
             { %{$self->{results}->{$mapping_slot->{eqptSlotActualType}->{oid}}}, %{$self->{results}->{$mapping_slot->{eqptBoardInventorySerialNumber}->{oid}}} }, instance => $slot_id);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sfpDiagEntry}, instance => $slot_id . '.' . $sfp_faceplate_num);
+        my $result2 = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $slot_id . '.' . $sfp_faceplate_num);
         
         next if ($self->check_filter(section => 'sfp', instance => $slot_id . '.' . $sfp_faceplate_num));
 
