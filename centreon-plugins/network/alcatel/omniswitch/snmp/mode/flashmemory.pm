@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::common::mode::flashmemory;
+package network::alcatel::omniswitch::snmp::mode::flashmemory;
 
 use base qw(centreon::plugins::mode);
 

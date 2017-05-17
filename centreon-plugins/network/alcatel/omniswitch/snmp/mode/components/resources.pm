@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::common::mode::components::resources;
+package network::alcatel::omniswitch::snmp::mode::components::resources;
 
 use strict;
 use warnings;
@@ -28,9 +28,10 @@ our %physical_class;
 our %phys_oper_status;
 our %phys_admin_status;
 our %oids;
+our $mapping;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids);
+our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $mapping);
 
 %physical_class = (
     1 => 'other',
@@ -85,5 +86,13 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids);
     
     alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.11.1.2',
 );
+
+$mapping = {
+    entPhysicalDescr        => { oid => $oids{entPhysicalDescr} },
+    entPhysicalName         => { oid => $oids{entPhysicalName} },
+    chasEntPhysAdminStatus  => { oid => $oids{chasEntPhysAdminStatus}, map => \%phys_admin_status, default => 'unknown' },
+    chasEntPhysOperStatus   => { oid => $oids{chasEntPhysOperStatus}, map => \%phys_oper_status, default => 'unknown' },
+    chasEntPhysPower        => { oid => $oids{chasEntPhysPower}, default => -1 },
+};
 
 1;

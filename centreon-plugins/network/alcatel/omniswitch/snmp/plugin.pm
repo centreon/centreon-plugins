@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::alcatel::omniswitch::6850::plugin;
+package network::alcatel::omniswitch::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,14 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.5';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::alcatel::common::mode::cpu',
-                        'hardware'          => 'network::alcatel::common::mode::hardware',
+                        'cpu'               => 'network::alcatel::omniswitch::snmp::mode::cpu',
+                        'hardware'          => 'network::alcatel::omniswitch::snmp::mode::hardware',
                         'interfaces'        => 'snmp_standard::mode::interfaces', 
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'flash-memory'      => 'network::alcatel::common::mode::flashmemory',
-                        'memory'            => 'network::alcatel::common::mode::memory',
+                        'flash-memory'      => 'network::alcatel::omniswitch::snmp::mode::flashmemory',
+                        'memory'            => 'network::alcatel::omniswitch::snmp::mode::memory',
                         'spanning-tree'     => 'snmp_standard::mode::spanningtree',
                         );
 
@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Alcatel Omniswitch 6850 in SNMP.
+Check Alcatel Omniswitch in SNMP.
 
 =cut
