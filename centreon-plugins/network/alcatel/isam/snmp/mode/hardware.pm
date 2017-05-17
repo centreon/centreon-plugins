@@ -28,22 +28,21 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(cardtemperature)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(cardtemperature)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(cardtemperature|sfp)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(cardtemperature|sfp\.(temperature|voltage|current|txpower|rxpower))$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
-        psu => [
-            ['notPresent', 'OK'],
-            ['presentOK', 'OK'],
-            ['presentPowerOff', 'WARNING'],
-            ['presentNotOK', 'CRITICAL'],
+        sfp => [
+            ['noLos', 'OK'],
+            ['notAvailable', 'OK'],
+            ['los', 'WARNING'],
         ],
     };
     
     $self->{components_path} = 'network::alcatel::isam::snmp::mode::components';
-    $self->{components_module} = ['cardtemperature'];
+    $self->{components_module} = ['cardtemperature', 'sfp'];
 }
 
 sub snmp_execute {
@@ -82,7 +81,7 @@ Check Hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'cardtemperature'.
+Can be: 'cardtemperature', 'sfp'.
 
 =item B<--filter>
 
