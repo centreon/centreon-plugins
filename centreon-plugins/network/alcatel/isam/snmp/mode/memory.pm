@@ -175,7 +175,7 @@ sub manage_selection {
     
     $snmp_result = $options{snmp}->get_leef(oids => [$oid_asamSwmTotalSpaceOnFileDisk, $oid_asamSwmFreeSpaceOnFileDisk]);
     if (defined($snmp_result->{$oid_asamSwmFreeSpaceOnFileDisk})) {
-        my $name = 'sd_card';
+        my $name = 'SD Card';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
