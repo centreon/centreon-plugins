@@ -57,8 +57,8 @@ sub check {
     }
     
     my ($exit, $warn, $crit, $checked);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sfpDiagEntry}})) {
-        next if ($oid !~ /^$mapping->{sfpDiagLOS}->{oid}\.(.*?)\.(.*?)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{sfpDiagLOS}->{oid}}})) {
+        $oid =~ /^$mapping->{sfpDiagLOS}->{oid}\.(.*?)\.(.*?)$/;
         my ($slot_id, $sfp_faceplate_num) = ($1, $2);
         
         my $result = $self->{snmp}->map_instance(mapping => $mapping_slot, results => 
@@ -77,7 +77,7 @@ sub check {
                                         short_msg => sprintf("sfp '%s' signal status is '%s'", $name, $result2->{sfpDiagLOS}));
         }
         
-        if ($result2->{sfpDiagSupplyVoltage} !~ /(\S+)\s+VDC/i) {
+        if ($result2->{sfpDiagSupplyVoltage} =~ /(\S+)\s+VDC/i) {
             my $value = $1;
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sfp.voltage', instance => $slot_id . '.' . $sfp_faceplate_num, value => $value);            
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -92,7 +92,7 @@ sub check {
                                       );
         }
         
-        if ($result2->{sfpDiagTemperature} !~ /(\S+)\s+degrees Celsius/i) {
+        if ($result2->{sfpDiagTemperature} =~ /(\S+)\s+degrees Celsius/i) {
             my $value = $1;
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sfp.temperature', instance => $slot_id . '.' . $sfp_faceplate_num, value => $value);            
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -107,7 +107,7 @@ sub check {
                                       );
         }
         
-        if ($result2->{sfpDiagTxPower} !~ /(\S+)\s+dBm/i) {
+        if ($result2->{sfpDiagTxPower} =~ /(\S+)\s+dBm/i) {
             my $value = $1;
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sfp.txpower', instance => $slot_id . '.' . $sfp_faceplate_num, value => $value);            
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -122,7 +122,7 @@ sub check {
                                       );
         }
         
-        if ($result2->{sfpDiagRxPower} !~ /(\S+)\s+dBm/i) {
+        if ($result2->{sfpDiagRxPower} =~ /(\S+)\s+dBm/i) {
             my $value = $1;
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sfp.rxpower', instance => $slot_id . '.' . $sfp_faceplate_num, value => $value);            
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -137,7 +137,7 @@ sub check {
                                       );
         }
         
-        if ($result2->{sfpDiagTxBiasCurrent} !~ /(\S+)\s+mA/i) {
+        if ($result2->{sfpDiagTxBiasCurrent} =~ /(\S+)\s+mA/i) {
             my $value = $1;
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sfp.current', instance => $slot_id . '.' . $sfp_faceplate_num, value => $value);            
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
