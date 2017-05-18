@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'crm'          => 'apps::pacemaker::local::mode::crm',
                          'constraints'  => 'apps::pacemaker::local::mode::constraints',
+                         'clustat'      => 'apps::pacemaker::local::mode::clustat',
                          );
 
     return $self;
