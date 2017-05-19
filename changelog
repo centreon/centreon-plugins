@@ -5,7 +5,7 @@
  * Plugin added: Protocol Modbus
  * Plugin added: Notification HighSMS
  * Plugin added: Jmeter Scenario
- * Plugin added: ApearTV SNMP
+ * Plugin added: AppearTV SNMP
  * Plugin added: QSan NAS SNMP
  * Mode added: [linux] systemd services
  * Break: path change for Alcatel Omniswitch
