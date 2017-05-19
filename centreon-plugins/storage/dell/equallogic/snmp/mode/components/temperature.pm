@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_eqlMemberHealthDetailsTemperatureEntry = '.1.3.6.1.4.1.12740.2.1.6.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlMemberHealthDetailsTemperatureEntry };
+    push @{$self->{request}}, { oid => $oid_eqlMemberHealthDetailsTemperatureEntry };
 }
 
 sub check {
@@ -53,7 +53,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberHealthDetailsTemperatureEntry}})) {
         next if ($oid !~ /^$mapping->{eqlMemberHealthDetailsTemperatureCurrentState}->{oid}\.(\d+\.\d+)\.(.*)$/);
@@ -61,12 +61,12 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberHealthDetailsTemperatureEntry}, instance => $member_instance . '.' . $instance);
 
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $member_instance . '.' . $instance));
         $self->{components}->{temperature}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Temperature '%s/%s' status is %s [instance: %s].",
                                     $member_name, $result->{eqlMemberHealthDetailsTemperatureName}, $result->{eqlMemberHealthDetailsTemperatureCurrentState},
-                                    $instance
+                                    $member_instance . '.' . $instance
                                     ));
         my $exit = $self->get_severity(section => 'temperature', value => $result->{eqlMemberHealthDetailsTemperatureCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

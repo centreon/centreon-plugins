@@ -30,6 +30,8 @@ use centreon::plugins::misc;
 my %unit_managed = (
     3 => 1,     # tenThousandthsOfInches(3), -- .0001
     4 => 1,     # micrometers(4),
+    7 => 1,     # impressions(7),
+    8 => 1,     # sheets(8),
     12 => 1,    # thousandthsOfOunces(12),
     13 => 1,    # tenthsOfGrams(13),
     14 => 1,    # hundrethsOfFluidOunces(14),
@@ -128,7 +130,7 @@ sub run {
             $prct_value = $current_value * 100 / $max_value;
         }
         
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
+        my $exit = $self->{perfdata}->threshold_check(value => $prct_value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);        
         $self->{output}->output_add(long_msg => sprintf("Marker supply '%s': %.2f %% [instance: '%s']", $descr, $prct_value, $hrDeviceIndex . '.' . $prtMarkerSuppliesIndex));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -136,8 +138,9 @@ sub run {
         }
         
         my $label = $descr;
-        if ($result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance} != 0) {
-            $label = $result2->{$oid_prtMarkerColorantValue . '.' . $hrDeviceIndex . '.' . $result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance}};
+        if ($result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance} != 0 &&
+            defined($result2->{$oid_prtMarkerColorantValue . '.' . $hrDeviceIndex . '.' . $result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance}})) {
+            $label .= '#' . $result2->{$oid_prtMarkerColorantValue . '.' . $hrDeviceIndex . '.' . $result->{$oid_prtMarkerSuppliesColorantIndex . '.' . $instance}};
             if (defined($perf_label->{$label})) {
                 $label .= '#' . $hrDeviceIndex . '#' . $prtMarkerSuppliesIndex;
             }

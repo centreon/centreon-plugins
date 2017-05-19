@@ -183,7 +183,7 @@ sub manage_selection {
 
         $values{hostgroup} =~ s/\\/\//g;
         my $filtered = 0;
-        foreach (('name', 'description', 'status', 'hostgroup')) {
+        foreach (('vm', 'description', 'status', 'hostgroup')) {
             if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
                 $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
                 $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);

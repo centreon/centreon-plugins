@@ -178,7 +178,8 @@ sub DESTROY {
     
     if ($self->{logon} == 1) {
         $self->{http}->request(url_path => $self->{url_path} . 'exit',
-                               header => ['dataType: api', 'sessionKey: ' . $self->{session_id}]);
+                               header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                          'dataType: api', 'sessionKey: '. $self->{session_id}]);
     }
 }
 
@@ -189,7 +190,8 @@ sub get_infos {
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
     my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                         header => ['dataType: api', 'sessionKey: '. $self->{session_id}]);
+                                         header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                                    'dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
@@ -198,6 +200,27 @@ sub get_infos {
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot parse 'cmd' response: $@");
         $self->{output}->option_exit();
+    }
+    
+    # Check if there is an error
+    #<OBJECT basetype="status" name="status" oid="1">
+        #<PROPERTY name="response-type" type="enumeration" size="12" draw="false" sort="nosort" display-name="Response Type">Error</PROPERTY>
+        #<PROPERTY name="response-type-numeric" type="enumeration" size="12" draw="false" sort="nosort" display-name="Response">1</PROPERTY>
+        #<PROPERTY name="response" type="string" size="180" draw="true" sort="nosort" display-name="Response">The command is ambiguous. Please check the help for this command.</PROPERTY>
+        #<PROPERTY name="return-code" type="int32" size="5" draw="false" sort="nosort" display-name="Return Code">-10028</PROPERTY>
+        #<PROPERTY name="component-id" type="string" size="80" draw="false" sort="nosort" display-name="Component ID"></PROPERTY>
+    #</OBJECT>
+    if (my $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='return-code']")) {
+        my @nodes = $nodestatus->get_nodelist();
+        my $node = shift @nodes;
+        my $return_code = $node->string_value;
+        if ($return_code != 0) {
+            $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='response']");
+            @nodes = $nodestatus->get_nodelist();
+            $node = shift @nodes;   
+            $self->{output}->add_option_msg(short_msg => $node->string_value);
+            $self->{output}->option_exit();
+        }
     }
     
     my $results = {};

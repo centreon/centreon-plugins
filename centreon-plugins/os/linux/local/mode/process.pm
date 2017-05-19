@@ -31,7 +31,7 @@ my %state_map = (
     X => 'dead',
     W => 'paging',
     T => 'stopped',
-    S => 'InterrupibleSleep',
+    S => 'InterruptibleSleep',
     R => 'running',
     D => 'UninterrupibleSleep'
 );
@@ -61,6 +61,7 @@ sub new {
                                   "filter-command:s"    => { name => 'filter_command' },
                                   "filter-arg:s"        => { name => 'filter_arg' },
                                   "filter-state:s"      => { name => 'filter_state' },
+				  "filter-ppid:s"	=> { name => 'filter_ppid' },
                                 });
     $self->{result} = {};
     return $self;
@@ -154,7 +155,9 @@ sub run {
                  $self->{result}->{$pid}->{args} !~ /$self->{option_results}->{filter_arg}/);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
                  $state_map{$self->{result}->{$pid}->{state}} !~ /$self->{option_results}->{filter_state}/i);
-
+	next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
+                 $self->{result}->{$pid}->{ppid} !~ /$self->{option_results}->{filter_ppid}/);
+		 
         $self->{output}->output_add(long_msg => 'Process: [command => ' . $self->{result}->{$pid}->{cmd} . 
                                                           '] [arg => ' . $self->{result}->{$pid}->{args} .
                                                           '] [state => ' . $state_map{$self->{result}->{$pid}->{state}} . ']');
@@ -252,6 +255,10 @@ Filter process commands (regexp can be used).
 =item B<--filter-arg>
 
 Filter process arguments (regexp can be used).
+
+=item B<--filter-ppid>
+
+Filter process ppid (regexp can be used).
 
 =item B<--filter-state>
 

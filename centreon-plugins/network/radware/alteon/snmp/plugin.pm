@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'      => 'network::radware::alteon::snmp::mode::cpu',
-                         'hardware' => 'network::radware::alteon::snmp::mode::hardware',
-                         'memory'   => 'network::radware::alteon::snmp::mode::memory',
+                         'cpu'              => 'network::radware::alteon::snmp::mode::cpu',
+                         'hardware'         => 'network::radware::alteon::snmp::mode::hardware',
+                         'list-vservers'    => 'network::radware::alteon::snmp::mode::listvservers',
+                         'memory'           => 'network::radware::alteon::snmp::mode::memory',
+                         'vserver-status'   => 'network::radware::alteon::snmp::mode::vserverstatus',
                          );
 
     return $self;

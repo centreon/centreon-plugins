@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|voltage|fan|psu)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|voltage|fan|psu|raiddisk)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -52,11 +52,22 @@ sub set_system {
             ['up', 'OK'],
             ['down', 'CRITICAL'],
             ['.*', 'UNKNOWN'],
+        ],        
+        raiddisk => [
+            ['online', 'OK'],
+            ['missing', 'OK'],
+            ['not_compatible', 'CRITICAL'],
+            ['failed', 'CRITICAL'],
+            ['initializing', 'OK'],
+            ['offline_requested', 'OK'],
+            ['failed_requested', 'OK'],
+            ['other_offline', 'WARNING'],
+            ['.*', 'UNKNOWN'],
         ],
     };
     
     $self->{components_path} = 'network::checkpoint::snmp::mode::components';
-    $self->{components_module} = ['voltage', 'fan', 'temperature', 'psu'];
+    $self->{components_module} = ['voltage', 'fan', 'temperature', 'psu', 'raiddisk'];
 }
 
 sub snmp_execute {
@@ -92,7 +103,7 @@ Check hardware (fans, power supplies, temperatures, voltages).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'psu', 'fan', 'temperature', 'voltage'.
+Can be: 'psu', 'fan', 'temperature', 'voltage', 'raiddisk'.
 
 =item B<--filter>
 

@@ -37,9 +37,9 @@ my $mapping = {
 my $oid_eqlMemberHealthStatus = '.1.3.6.1.4.1.12740.2.1.5.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlMemberHealthStatus };
+    push @{$self->{request}}, { oid => $oid_eqlMemberHealthStatus };
 }
 
 sub check {
@@ -47,7 +47,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking health");
     $self->{components}->{health} = {name => 'health', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'health'));
+    return if ($self->check_filter(section => 'health'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberHealthStatus}})) {
         next if ($oid !~ /^$mapping->{eqlMemberHealthStatus}->{oid}\.(\d+\.\d+)$/);
@@ -55,12 +55,12 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberHealthStatus}, instance => $member_instance);
 
-        next if ($self->check_exclude(section => 'health', instance => $member_instance));
+        next if ($self->check_filter(section => 'health', instance => $member_instance));
         $self->{components}->{health}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Health '%s' status is %s [instance: %s].",
                                     $member_name, $result->{eqlMemberHealthStatus},
-                                    $member_name
+                                    $member_instance
                                     ));
         my $exit = $self->get_severity(section => 'health', value => $result->{eqlMemberHealthStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

@@ -109,6 +109,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
+                                  "filter-note:s"       => { name => 'filter_note' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Operating normally/i' },
                                 });
@@ -151,23 +152,33 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= XXXX1 ][state= Running ][status= Operating normally ][IsClustered= True ]
-    #[name= XXXX2 ][state= Running ][status= Operating normally ][IsClustered= False ]
-    #[name= XXXX3 ][state= Running ][status= Operating normally ][IsClustered= False ]
+    #[name= XXXX1 ][state= Running ][status= Operating normally ][IsClustered= True ][note= ]
+    #[name= XXXX2 ][state= Running ][status= Operating normally ][IsClustered= False ][note= ]
+    #[name= XXXX3 ][state= Running ][status= Operating normally ][IsClustered= False ][note= ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[IsClustered=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
-        my ($name, $state, $status, $is_clustered) = ($1, $2, $3, $4);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[IsClustered=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
+        my ($name, $state, $status, $is_clustered, $note) = ($1, $2, $3, $4, $5);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
+            $note !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
+            next;
+        }
         
         $self->{vm}->{$id} = { display => $name, vm => $name, status => $status, state => $state, is_clustered => $is_clustered };
         $id++;
+    }
+    
+    if (scalar(keys %{$self->{vm}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -209,6 +220,10 @@ Print powershell output.
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
+
+=item B<--filter-note>
+
+Filter by VM notes (can be a regexp).
 
 =item B<--warning-status>
 
