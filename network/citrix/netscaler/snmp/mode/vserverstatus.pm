@@ -207,8 +207,8 @@ my %map_vs_status = (
 );
 
 my $mapping = {
-    vsvrName                    => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.1' },
     vsvrState                   => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.5', map => \%map_vs_status },
+    vsvrFullName                => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.59' },
     vsvrEntityType              => { oid => '.1.3.6.1.4.1.5951.4.1.3.1.1.64', map => \%map_vs_type },   
 };
 my $mapping2 = {
@@ -227,28 +227,28 @@ sub manage_selection {
     my ($self, %options) = @_;
  
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $mapping->{vsvrName}->{oid} },
+                                                            { oid => $mapping->{vsvrFullName}->{oid} },
                                                             { oid => $mapping->{vsvrState}->{oid} },
                                                             { oid => $mapping->{vsvrEntityType}->{oid} },
                                                          ], return_type => 1, nothing_quit => 1);
     $self->{vservers} = {};
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{vsvrName}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{vsvrFullName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $result->{vsvrEntityType} !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrName} . "'.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrFullName} . "'.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{vsvrName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrName} . "'.", debug => 1);
+            $result->{vsvrFullName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrFullName} . "'.", debug => 1);
             next;
         }
         
-        $self->{vservers}->{$instance} = { display => $result->{vsvrName}, state => $result->{vsvrState} };
+        $self->{vservers}->{$instance} = { display => $result->{vsvrFullName}, state => $result->{vsvrState} };
     }
     
     $options{snmp}->load(oids => [$mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
@@ -262,9 +262,9 @@ sub manage_selection {
     foreach (keys %{$self->{vservers}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
         
-        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} :
+        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} * 8 :
             (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow})) * 8;
-        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} :
+        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
             (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow})) * 8;
         $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
         $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};

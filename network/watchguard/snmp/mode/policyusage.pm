@@ -141,7 +141,7 @@ sub manage_selection {
     
     $self->{cache_name} = "watchguard_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{wgPolicyName}) ? md5_hex($self->{option_results}->{wgPolicyName}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;

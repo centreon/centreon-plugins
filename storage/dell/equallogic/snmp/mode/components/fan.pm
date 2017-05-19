@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_eqlMemberHealthDetailsFanEntry = '.1.3.6.1.4.1.12740.2.1.7.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlMemberHealthDetailsFanEntry };
+    push @{$self->{request}}, { oid => $oid_eqlMemberHealthDetailsFanEntry };
 }
 
 sub check {
@@ -53,7 +53,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberHealthDetailsFanEntry}})) {
         next if ($oid !~ /^$mapping->{eqlMemberHealthDetailsFanCurrentState}->{oid}\.(\d+\.\d+)\.(.*)$/);
@@ -61,12 +61,12 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberHealthDetailsFanEntry}, instance => $member_instance . '.' . $instance);
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $member_instance . '.' . $instance));
         $self->{components}->{fan}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Fan '%s/%s' status is %s [instance: %s].",
                                     $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanCurrentState},
-                                    $instance
+                                    $member_instance . '.' . $instance
                                     ));
         my $exit = $self->get_severity(section => 'fan', value => $result->{eqlMemberHealthDetailsFanCurrentState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

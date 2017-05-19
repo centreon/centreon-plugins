@@ -884,3 +884,176 @@ An example for authentification form of ``demo.centreon.com``:
 
   $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
   OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
+
+---------------
+Modbus Protocol
+---------------
+
+Check 3 holding registers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The content of the ``modbus.json`` file can be set directly in ``--config`` option (eg. : ``--config='{ "selection": { "metric1":{...'``).
+The ``type`` attribute can have following values:
+
+* holding (default)
+* coils
+* discrete
+* input
+
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    Metric 'metric1' value is '0'
+    Metric 'metric2' value is '41291'
+    Metric 'metric3' value is '42655'
+
+How to change the formatting output ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is a command section to change formatting output globally and also to override for each metrics:
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true,
+                "formatting": {
+                    "printf_msg": "Override '%s' value is %.2f",
+                    "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+                }
+            }
+        },
+        "formatting": {
+            "printf_msg": "My metric '%s' value is %.2f",
+            "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    My Metric 'metric1' value is 0.00
+    My Metric 'metric2' value is 41291.00
+    Override 'metric3' value is 42655.00
+
+How to average 4 registers ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We create following average values: ``[x1 + x2 / 2 = y]`` ``[x3 + x4 / 2 = z]``.
+With the pattern, you can select the metrics. In our case, we get 4 values in one selection. 
+Selected metric names are: ``metrics.0``, ``metrics.1``, ``metrics.2``, ``metrics.3`` (order is preserved).
+
+The ``aggregation`` attribute can have following values:
+
+* avg: returns the average of all the elements.
+* sum: returns the numerical sum of all the elements.
+* min: returns the entry in elements with the lowest numerical value.
+* max: returns the entry in elements with the highest numerical value.
+
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg1":{
+                "pattern": "metrics\\.[01]$",
+                "aggregation": "avg",
+                "unit": "con"
+            },
+            "avg2":{
+                "pattern": "metrics\\.[23]$",
+                "aggregation": "avg",
+                "unit": "con"
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Global metrics are OK | 'avg1'=42192con;;;; 'avg2'=40574con;;;;
+    Metric 'avg1' value is '42192'
+    Metric 'avg2' value is '40574'
+
+Apply a custom calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is a ``custom`` attribute to applied some change on the value:
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg":{
+                "aggregation": "avg",
+                "custom": " / 10",
+                "unit": "con"
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Metric 'avg' value is '3072.3' | 'avg'=3072.3con;;;;
+    Metric 'avg' value is '3072.3'

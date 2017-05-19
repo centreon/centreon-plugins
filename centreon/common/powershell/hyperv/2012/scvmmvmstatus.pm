@@ -47,7 +47,9 @@ Try {
     $vms = Get-SCVirtualMachine -VMMServer $connection
 
     Foreach ($vm in $vms) {
-        Write-Host "[name=" $vm.Name "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
+        $desc = $vm.description -replace "\r",""
+        $desc = $desc -replace "\n"," - "
+        Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

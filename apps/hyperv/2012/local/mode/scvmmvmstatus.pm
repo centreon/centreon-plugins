@@ -112,6 +112,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
+                                  "filter-description:s"=> { name => 'filter_description' },
                                   "filter-hostgroup:s"  => { name => 'filter_hostgroup' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' },
@@ -168,28 +169,32 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test-server ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
-    #[name= test-server2 ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server2 ]
+    #[name= test-server ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
+    #[name= test-server2 ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server2 ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
-        my ($name, $status, $cloud, $hg) = ($1, $2, $3, $4);
-
-        $hg =~ s/\\/\//g;
-        if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_hostgroup}) && $self->{option_results}->{filter_hostgroup} ne '' &&
-            $hg !~ /$self->{option_results}->{filter_hostgroup}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $hg . "': no matching filter.", debug => 1);
-            next;
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
+        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5);
+        
+        my $filtered = 0;
+        $values{hostgroup} =~ s/\\/\//g;
+        foreach (('vm', 'description', 'hostgroup')) {
+            if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
+                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
+                $filtered = 1;
+                last;
+            }
         }
         
-        $self->{vm}->{$id} = { display => $name, vm => $name, status => $status, hostgroup => $hg };
+        $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} };
         $id++;
+    }
+    
+    if (scalar(keys %{$self->{vm}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -251,6 +256,10 @@ Filter virtual machines (can be a regexp).
 =item B<--filter-hostgroup>
 
 Filter hostgroup (can be a regexp).
+
+=item B<--filter-description>
+
+Filter by description (can be a regexp).
 
 =item B<--warning-status>
 

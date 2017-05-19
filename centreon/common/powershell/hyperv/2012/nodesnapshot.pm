@@ -44,13 +44,29 @@ Try {
     
     Foreach ($vm in $vms) {
         $i=0
+        $note = $vm.Notes -replace "\r",""
+        $note = $note -replace "\n"," - "
         Foreach ($snap in $snapshots) {
             if ($snap.VMName -eq $vm.VMName) {
                 if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "]"
+                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
                 }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime -UFormat ' . "'%s'" . ') "]"
+                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
                 $i=1
+            }
+        }
+        if ($vm.status -imatch "Backing") {
+            $VMDisks = Get-VMHardDiskDrive -VMName $vm.VMName
+            Foreach ($VMDisk in $VMDisks) {
+                $VHD = Get-VHD $VMDisk.Path
+                if ($VHD.Path -imatch ".avhdx" -or $VHD.VhdType -imatch "Differencing") {
+                    $parent = Get-Item $VHD.ParentPath
+                    if ($i -eq 0) {
+                        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
+                    }
+                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
+                    $i=1
+                }
             }
         }
     }

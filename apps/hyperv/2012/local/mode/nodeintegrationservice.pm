@@ -160,6 +160,7 @@ sub new {
                                   "no-ps"               => { name => 'no_ps' },
                                   "ps-exec-only"        => { name => 'ps_exec_only' },
                                   "filter-vm:s"         => { name => 'filter_vm' },
+                                  "filter-note:s"       => { name => 'filter_note' },
                                   "filter-status:s"     => { name => 'filter_status', default => 'running' },
                                   "warning-global-status:s"     => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
                                   "critical-global-status:s"    => { name => 'critical_global_status', default => '' },
@@ -205,14 +206,14 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test1 ][state= Running ][IntegrationServicesState= Update required ][IntegrationServicesVersion= 3.1 ]
+    #[name= test1 ][state= Running ][IntegrationServicesState= Update required ][IntegrationServicesVersion= 3.1 ][note= ]
     #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Shutdown ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= VSS ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Guest Service Interface ][enabled= False][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[name= test2 ][state= Running ][IntegrationServicesState=  ][IntegrationServicesVersion= ]
+    #[name= test2 ][state= Running ][IntegrationServicesState=  ][IntegrationServicesVersion= ][note= ]
     #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
     #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
@@ -220,8 +221,8 @@ sub manage_selection {
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[IntegrationServicesState=\s*(.*?)\s*\]\[IntegrationServicesVersion=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $integration_service_state, $integration_service_version, $content) = ($1, $2, $3, $4, $5);
+    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[IntegrationServicesState=\s*(.*?)\s*\]\[IntegrationServicesVersion=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
+        my ($name, $status, $integration_service_state, $integration_service_version, $note, $content) = ($1, $2, $3, $4, $5, $6);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
@@ -231,6 +232,11 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $status !~ /$self->{option_results}->{filter_status}/i) {
             $self->{output}->output_add(long_msg => "skipping  '" . $status . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
+            $note !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
             next;
         }
         
@@ -283,13 +289,17 @@ Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 
 Print powershell output.
 
-=item B<--filter-status>
-
-Filter virtual machine status (can be a regexp) (Default: 'running').
-
 =item B<--filter-vm>
 
 Filter virtual machines (can be a regexp).
+
+=item B<--filter-note>
+
+Filter by VM notes (can be a regexp).
+
+=item B<--filter-status>
+
+Filter virtual machine status (can be a regexp) (Default: 'running').
 
 =item B<--warning-global-status>
 

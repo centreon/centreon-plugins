@@ -43,9 +43,9 @@ my $mapping = {
 my $oid_eqlDiskStatus = '.1.3.6.1.4.1.12740.3.1.1.1.8';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlDiskStatus };
+    push @{$self->{request}}, { oid => $oid_eqlDiskStatus };
 }
 
 sub check {
@@ -53,7 +53,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking disks");
     $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    return if ($self->check_filter(section => 'disk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlDiskStatus}})) {
         next if ($oid !~ /^$mapping->{eqlDiskStatus}->{oid}\.(\d+\.\d+)\.(.*)$/);
@@ -61,11 +61,11 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlDiskStatus}, instance => $member_instance . '.' . $instance);
 
-        next if ($self->check_exclude(section => 'disk', instance => $instance));
+        next if ($self->check_filter(section => 'disk', instance => $member_instance . '.' . $instance));
         $self->{components}->{disk}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Disk '%s/%s' status is %s [instance: %s].",
-                                    $member_name, $instance, $result->{eqlDiskStatus}, $instance
+                                    $member_name, $instance, $result->{eqlDiskStatus}, $member_instance . '.' . $instance
                                     ));
         my $exit = $self->get_severity(section => 'disk', value => $result->{eqlDiskStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

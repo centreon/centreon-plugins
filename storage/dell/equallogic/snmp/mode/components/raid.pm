@@ -41,9 +41,9 @@ my $mapping = {
 my $oid_eqlMemberRAIDEntry = '.1.3.6.1.4.1.12740.2.1.13.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_eqlMemberRAIDEntry };
+    push @{$self->{request}}, { oid => $oid_eqlMemberRAIDEntry };
 }
 
 sub check {
@@ -51,7 +51,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking raids");
     $self->{components}->{raid} = {name => 'raids', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'raid'));
+    return if ($self->check_filter(section => 'raid'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_eqlMemberRAIDEntry}})) {
         next if ($oid !~ /^$mapping->{eqlMemberRaidStatus}->{oid}\.(\d+\.\d+)$/);
@@ -59,11 +59,11 @@ sub check {
         my $member_name = $self->get_member_name(instance => $member_instance);
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberRAIDEntry}, instance => $member_instance);
 
-        next if ($self->check_exclude(section => 'raid', instance => $member_instance));
+        next if ($self->check_filter(section => 'raid', instance => $member_instance));
         $self->{components}->{raid}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Raid '%s' status is %s [instance: %s].",
-                                    $member_name, $result->{eqlMemberRaidStatus}, $member_name
+                                    $member_name, $result->{eqlMemberRaidStatus}, $member_instance
                                     ));
         my $exit = $self->get_severity(section => 'raid', value => $result->{eqlMemberRaidStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
