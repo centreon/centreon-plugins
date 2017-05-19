@@ -129,7 +129,7 @@ Check PBX Role.
 
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='state,CRITICAL,^(?!(main)$)'
+Example: --threshold-overload='role,CRITICAL,^(?!(main)$)'
 
 =back
 
