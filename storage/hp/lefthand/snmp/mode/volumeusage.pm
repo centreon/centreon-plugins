@@ -37,11 +37,11 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($instance_mode->{option_results}->{critical_replication_status}) && $instance_mode->{option_results}->{critical_replication_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_replication_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_replication_status}) && $instance_mode->{option_results}->{warning_replication_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_replication_status}") {
             $status = 'warning';
         }
     };
