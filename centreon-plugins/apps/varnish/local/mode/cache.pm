@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,38 +20,55 @@
 
 package apps::varnish::local::mode::cache;
 
-use base qw(centreon::plugins::mode);
-use centreon::plugins::misc;
-use centreon::plugins::statefile;
+use base qw(centreon::plugins::templates::counter);
+use strict;
+use warnings;
 use Digest::MD5 qw(md5_hex);
+use JSON;
 
-my $maps_counters = {
-    cache_hit   => { thresholds => {
-                                warning_hit  =>  { label => 'warning-hit', exit_value => 'warning' },
-                                critical_hit =>  { label => 'critical-hit', exit_value => 'critical' },
-                              },
-                output_msg => 'Cache Hits: %.2f',
-                factor => 1, unit => '',
-               },
-    cache_hitpass => { thresholds => {
-                                warning_hitpass  =>  { label => 'warning-hitpass', exit_value => 'warning' },
-                                critical_hitpass =>  { label => 'critical-hitpass', exit_value => 'critical' },
-                                },
-                 output_msg => 'Cache Hits for pass: %.2f',
-                 factor => 1, unit => '',
-                },
-    cache_miss => { thresholds => {
-                                warning_miss    =>  { label => 'warning-miss', exit_value => 'warning' },
-                                critical_miss   =>  { label => 'critical-miss', exit_value => 'critical' },
-                                },
-                 output_msg => 'Cache misses: %.2f',
-                 factor => 1, unit => '',
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cache', type => 0, skipped_code => { -10 => 1 } },
+    ];
+    $self->{maps_counters}->{cache} = [
+        { label => 'hit', set => {
+                key_values => [ { name => 'cache_hit', diff => 1 } ],
+                output_template => 'Cache hit: %.2f/s', output_error_template => "Cache hit: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'cache_hit', value => 'cache_hit_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'hitpass', set => {
+                key_values => [ { name => 'cache_hitpass', diff => 1 } ],
+                output_template => 'Cache hitpass : %.2f/s', output_error_template => "Cache hitpass : %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'cache_hitpass', value => 'cache_hitpass_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'miss', set => {
+                key_values => [ { name => 'cache_miss', diff => 1 } ],
+                output_template => 'Cache miss : %.2f/s', output_error_template => "Cache miss : %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'cache_miss', value => 'cache_miss_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+    ],
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -66,45 +83,13 @@ sub new {
         "sudo"               => { name => 'sudo' },
         "command:s"          => { name => 'command', default => 'varnishstat' },
         "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
-        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 -j 2>&1' },
     });
 
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $options{options}->add_options(arguments => {
-                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
-            });
-        };
-    };
-
-    $self->{instances_done} = {};
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 };
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            };
-        };
-    };
-    $self->{statefile_value}->check_options(%options);
-};
-
-#my $stdout = '
-#cache_hit                69941         0.00 Cache hits
-#cache_hitpass               10         0.00 Cache hits for pass
-#cache_miss               16746         0.00 Cache misses
-#';
-
-sub getdata {
+sub manage_selection {
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -112,86 +97,23 @@ sub getdata {
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options} . $self->{option_results}->{command_options2});
-    #print $stdout;
+                                                  command_options => $self->{option_results}->{command_options});
 
-    foreach (split(/\n/, $stdout)) {
-        #client_conn            7390867         1.00 Client connections
-        # - Symbolic entry name
-        # - Value
-        # - Per-second average over process lifetime, or a period if the value can not be averaged
-        # - Descriptive text
+#   "MAIN.cache_hit": {"type": "MAIN", "value": 18437, "flag": "a", "description": "Cache hits"},
+#   "MAIN.cache_hitpass": {"type": "MAIN", "value": 3488, "flag": "a", "description": "Cache hits for pass"},
+#   "MAIN.cache_miss": {"type": "MAIN", "value": 5782, "flag": "a", "description": "Cache misses"},
+    my $json_data = decode_json($stdout);
 
-        if  (/^(.\S*)\s*([0-9]*)\s*([0-9.]*)\s(.*)$/i) {
-            #print "FOUND: " . $1 . "=" . $2 . "\n";
-            $self->{result}->{$1} = $2;
-        };
-    };
-};
+    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-sub run {
-    my ($self, %options) = @_;
-
-    $self->getdata();
-
-    $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $self->{result}->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-
-    
-    foreach (keys %{$maps_counters}) {
-        #print $_ . "\n";
-        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
-        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
-        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
-    };
-
-    # Write Cache if not there
-    $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
+    foreach my $counter (keys %{$json_data}) {
+        next if ($counter !~ /cache/);
+        my $value = $json_data->{$counter}->{value};
+        $counter =~ s/^([A-Z])+\.//;
+        $self->{cache}->{$counter} = $value;
     }
-
-    my @exits;
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
-        }
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    
-
-    my $extra_label = '';
-    $extra_label = '_' . $instance_output if ($num > 1);
-
-    my $str_output = "";
-    my $str_append = '';
-    foreach (keys %{$maps_counters}) {
-        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
-        $str_append = ', ';
-        my ($warning, $critical);
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
-            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
-        }
-        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
-                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
-                                        warning => $warning,
-                                        critical => $critical);
-    }
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => $str_output);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 };
 
 
@@ -227,7 +149,7 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
-Parameter for Binary File (Default: ' -1 ')
+Parameter for Binary File (Default: ' -1 -j 2>&1')
 
 =item B<--warning-*>
 
