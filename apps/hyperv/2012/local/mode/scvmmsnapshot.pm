@@ -129,7 +129,7 @@ sub manage_selection {
         my $content = $6;
 
         my $chkpt = -1;
-        while ($content =~ /\[checkpointAddedTime=s*(.*?)\s*\]/msig) {
+        while ($content =~ /\[checkpointAddedTime=\s*(.*?)\s*\]/msig) {
             $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
         }
         next if ($chkpt == -1);

@@ -49,7 +49,17 @@ Try {
     Foreach ($vm in $vms) {
         $desc = $vm.description -replace "\r",""
         $desc = $desc -replace "\n"," - "
-        Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]][VMAddition=" $vm.VMAddition "]"
+        Write-Host ("[VM={0}]" -f $vm.Name) -NoNewline
+        Write-Host ("[Description={0}]" -f $desc) -NoNewline
+        Write-Host ("[Status={0}]" -f $vm.Status) -NoNewline
+        Write-Host ("[Cloud={0}]" -f $vm.Cloud) -NoNewline
+        Write-Host ("[HostGroup={0}]" -f $vm.HostGroupPath) -NoNewline
+        Write-Host ("[VMAddition={0}]" -f $vm.VMAddition) -NoNewline
+        Write-Host ("[OperatingSystemShutdownEnabled={0}]" -f $vm.OperatingSystemShutdownEnabled) -NoNewline
+        Write-Host ("[TimeSynchronizationEnabled={0}]" -f $vm.TimeSynchronizationEnabled) -NoNewline
+        Write-Host ("[DataExchangeEnabled={0}]" -f $vm.DataExchangeEnabled) -NoNewline
+        Write-Host ("[HeartbeatEnabled={0}]" -f $vm.HeartbeatEnabled) -NoNewline
+        Write-Host ("[BackupEnabled={0}]" -f $vm.BackupEnabled)        
     }
 } Catch {
     Write-Host $Error[0].Exception
