@@ -129,11 +129,11 @@ sub get_default_warning_threshold {
         
         my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
         if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
-            $high_th = $value - 0.01;
+            $high_th = $value - (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
         } elsif ($result->{entSensorThresholdRelation} eq 'greaterThan') {
             $high_th = $value;
         } elsif ($result->{entSensorThresholdRelation} eq 'lessOrEqual') {
-            $low_th = $value + 0.01;
+            $low_th = $value + (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
         } elsif ($result->{entSensorThresholdRelation} eq 'lessThan') {
             $low_th = $value;
         }
@@ -157,11 +157,11 @@ sub get_default_critical_threshold {
         
         my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
         if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
-            $high_th = $value - 0.01;
+            $high_th = $value - (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
         } elsif ($result->{entSensorThresholdRelation} eq 'greaterThan') {
             $high_th = $value;
         } elsif ($result->{entSensorThresholdRelation} eq 'lessOrEqual') {
-            $low_th = $value + 0.01;
+            $low_th = $value + (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
         } elsif ($result->{entSensorThresholdRelation} eq 'lessThan') {
             $low_th = $value;
         }
