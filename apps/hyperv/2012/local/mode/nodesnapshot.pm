@@ -113,7 +113,7 @@ sub manage_selection {
     #[checkpointCreationTime= 1475503073.81975 ][type= backing]
     $self->{vm} = {};
     
-    my $id = 1;
+    my ($id, $time) = (1, time());
     while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
         my %chkpt = (backing => -1, snapshot => -1);
@@ -139,8 +139,8 @@ sub manage_selection {
         }
         
         $self->{vm}->{$id} = { display => $name, 
-            snapshot => $chkpt{snapshot} > 0 ? $time() - $chkpt{snapshot} : undef, 
-            backing => $chkpt{backing} > 0 ? $time() - $chkpt{backing} : undef };
+            snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef, 
+            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef };
         $id++;
     }
 }
