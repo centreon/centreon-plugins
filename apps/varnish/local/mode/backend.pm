@@ -165,7 +165,8 @@ sub manage_selection {
     my $json_data = decode_json($stdout);
 
     $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
-        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all'));
+        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     foreach my $counter (keys %{$json_data}) {
         next if ($counter !~ /backend/);
