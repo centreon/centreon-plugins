@@ -441,7 +441,7 @@ sub display {
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
     if (defined($self->{option_results}->{output_file})) {
-        if (!open (STDOUT, '>>', $self->{option_results}->{output_file})) {
+        if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
             $self->output_add(severity => 'UNKNOWN',
                               short_msg => "cannot open file  '" . $self->{option_results}->{output_file} . "': $!");
         }
