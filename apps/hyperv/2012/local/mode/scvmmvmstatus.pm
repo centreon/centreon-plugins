@@ -188,7 +188,8 @@ sub manage_selection {
             }
         }
         
-        $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} };
+        $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} }
+            if ($filtered == 0);
         $id++;
     }
     
