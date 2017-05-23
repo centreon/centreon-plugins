@@ -35,40 +35,22 @@ my %map_node_state = (
     2 => 'clean'
 );
 
-sub custom_node_state_threshold {
+sub custom_state_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
     my $message;
+
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        if (defined($instance_mode->{option_results}->{critical_node}) && $instance_mode->{option_results}->{critical_node} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_node}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_node}) && $instance_mode->{option_results}->{warning_node} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_node}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
 
-    return $status;
-}
-
-sub custom_group_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        if (defined($instance_mode->{option_results}->{critical_group}) && $instance_mode->{option_results}->{critical_group} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_group}") {
+        my $label = $self->{label};
+        $label =~ s/-/_/g;
+        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
+            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_group}) && $instance_mode->{option_results}->{warning_group} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_group}") {
+        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
+                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         }
     };
@@ -103,21 +85,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'nodes', threshold => 0, set => {
+        { label => 'node', threshold => 0, set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => $self->can('custom_node_state_threshold'),
+                closure_custom_threshold_check => $self->can('custom_state_threshold'),
                 closure_custom_perfdata => sub { return 0; },
             }
         },
     ];
     $self->{maps_counters}->{groups} = [
-        { label => 'groups', threshold => 0, set => {
+        { label => 'group', threshold => 0, set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => $self->can('custom_group_state_threshold'),
+                closure_custom_threshold_check => $self->can('custom_state_threshold'),
                 closure_custom_perfdata => sub { return 0; },
             }
         },
