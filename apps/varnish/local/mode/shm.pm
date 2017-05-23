@@ -129,7 +129,7 @@ sub manage_selection {
 
     $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
         (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     foreach my $counter (keys %{$json_data}) {
         next if ($counter !~ /shm/);
