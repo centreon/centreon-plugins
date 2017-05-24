@@ -104,7 +104,7 @@ sub set_counters {
             }
         },
         { label => 'count-calls', set => {
-                key_values => [ { name => 'acPMTrunkUtilizationTotal' }, { name => 'display' } ],
+                key_values => [ { name => 'acPMTrunkUtilizationTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Count calls : %s',
                 perfdatas => [
                     { label => 'count_calls', value => 'acPMTrunkUtilizationTotal_absolute', template => '%d',
