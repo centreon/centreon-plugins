@@ -47,7 +47,9 @@ sub new {
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
             "proxypac:s"            => { name => 'proxypac' },
-            "expected-string:s"     => { name => 'expected_string' },
+            "expected-string:s"     => { name => 'expected_string_ok' },
+            "expected-string-warning:s"     => { name => 'expected_string_warning' },
+            "expected-string-critical:s"     => { name => 'expected_string_critical' },
             "timeout:s"             => { name => 'timeout' },
             "no-follow"             => { name => 'no_follow', },
             "ssl:s"                 => { name => 'ssl', },
@@ -76,7 +78,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{expected_string})) {
+    if (!defined($self->{option_results}->{expected_string_ok})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
         $self->{output}->option_exit();
     }
@@ -108,12 +110,18 @@ sub run {
     
     $self->{output}->output_add(long_msg => $webcontent);
 
-    if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
+    if ($webcontent =~ /$self->{option_results}->{expected_string_ok}/mi) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
+                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string_ok}));
+    } elsif (($webcontent =~ /$self->{option_results}->{expected_string_warning}/mi) && (defined($self->{option_results}->{expected_string_warning}))) {
+        $self->{output}->output_add(severity => 'WARNING',
+                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string_warning}));
+    } elsif (($webcontent =~ /$self->{option_results}->{expected_string_critical}/mi) && (defined($self->{option_results}->{expected_string_critical}))) { 
+        $self->{output}->output_add(severity => 'CRITICAL',
+                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string_critical}));
     } else {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
+                                    short_msg => sprintf(" OK string: '%s', WARNING string: '%s' and CRITICAL string: '%s' are not present in content.", $self->{option_results}->{expected_string_ok}, $self->{option_results}->{expected_string_warning}, $self->{option_results}->{expected_string_critical}));
     }
     
     # Time check
@@ -287,6 +295,14 @@ Threshold critical for content size
 =item B<--expected-string>
 
 Specify String to check on the Webpage
+
+=item B<--expected-string-warning>
+
+Specify a warning string to check on the webpage
+
+=item B<--expected-string-critical>
+
+Specify a critical string to check on the webpage  
 
 =back
 
