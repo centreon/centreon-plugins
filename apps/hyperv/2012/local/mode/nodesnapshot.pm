@@ -118,7 +118,7 @@ sub manage_selection {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
         my %chkpt = (backing => -1, snapshot => -1);
         while ($content =~ /\[checkpointCreationTime=\s*(.*?)\s*\]\[type=\s*(.*?)\s*\]/msig) {
-            $chkpt{$2} = $1 if ($chkpt{$2} > $1);
+            $chkpt{$2} = $1 if ($chkpt{$2} == -1 || $chkpt{$2} > $1);
         }
         next if ($chkpt{backing} == -1 && $chkpt{snapshot} == -1);
 
