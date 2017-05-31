@@ -23,7 +23,7 @@ use strict;
 use Data::Dumper;
 use VMware::VIRuntime;
 use VMware::VILib;
-use ZMQ::LibZMQ3;
+use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use centreon::plugins::options;
 use centreon::plugins::output;

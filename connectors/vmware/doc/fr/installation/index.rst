@@ -21,7 +21,7 @@ perl-centreon-base       2.5.0
 centreon-plugins-base    1.10
 ZeroMQ                   3.x
 Perl Date::Parse         1.x
-Perl ZMQ::LibZMQ3        1.19
+Perl ZMQ::LibZMQ4        0.01
 Perl ZMQ::Constants      1.04
 ====================== =====================
 
@@ -95,13 +95,13 @@ Ajouter la ligne suivante dans le fichier  « /etc/apt/sources.list »:
 Installer la dépendance « zeromq »:
 ::
 
-  # aptitude install libzmq3-dev gcc
-  # wget https://cpan.metacpan.org/authors/id/D/DM/DMAKI/ZMQ-LibZMQ3-1.19.tar.gz
-  # tar zxf ZMQ-LibZMQ3-1.19.tar.gz && cd ZMQ-LibZMQ3-1.19
+  # aptitude install libzmq4-dev gcc
+  # wget https://github.com/lestrrat/p5-ZMQ/archive/master.zip
+  # unzip master.zip
+  # cd p5-ZMQ-master/ZMQ-LibZMQ4/
   # perl Makefile.PL
   # make && make install
-  # wget https://cpan.metacpan.org/authors/id/D/DM/DMAKI/ZMQ-Constants-1.04.tar.gz
-  # tar zxf ZMQ-Constants-1.04.tar.gz && cd ZMQ-Constants-1.04
+  # cd p5-ZMQ-master/ZMQ-Constants/
   # perl Makefile.PL
   # make && make install
 

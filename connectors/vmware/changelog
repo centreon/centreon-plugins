@@ -1,3 +1,6 @@
+2017-05-31 Quentin Garnier <qgarnier@centreon.com> - 2.4.0
+ * Enhance: Use ZMQ4 library
+
 2017-05-16 Quentin Garnier <qgarnier@centreon.com> - 2.3.2
  * Fix: miscalcultion in datastores-snapshot (issue #39)
  * Fix: problem with --tools-notinstalled-status option (issue #38)

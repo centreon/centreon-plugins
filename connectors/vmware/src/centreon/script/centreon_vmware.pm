@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use VMware::VIRuntime;
 use VMware::VILib;
-use ZMQ::LibZMQ3;
+use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use File::Basename;
 use Digest::MD5 qw(md5_hex);
@@ -54,7 +54,7 @@ BEGIN {
 use base qw(centreon::script);
 use vars qw(%centreon_vmware_config);
 
-my $VERSION = "2.3.2";
+my $VERSION = "2.4.0";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (

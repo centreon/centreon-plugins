@@ -22,7 +22,7 @@ use strict;
 use VMware::VIRuntime;
 use VMware::VILib;
 use JSON;
-use ZMQ::LibZMQ3;
+use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use File::Basename;
 use POSIX ":sys_wait_h";
