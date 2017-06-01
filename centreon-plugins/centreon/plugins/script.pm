@@ -132,7 +132,7 @@ sub convert_args {
     
     if ($self->{convert_args} =~ /^(.+?),(.*)/) {
         my ($search, $replace) = ($1, $2);
-        for (my $i = 0; $i < $#ARGV; $i++) {
+        for (my $i = 0; $i <= $#ARGV; $i++) {
             eval "\$ARGV[\$i] =~ s/$search/$replace/g";
         }
     }
