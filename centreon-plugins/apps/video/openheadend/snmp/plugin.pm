@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::mseries::plugin;
+package apps::video::openheadend::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,13 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'             => 'network::juniper::common::junos::mode::hardware',
-                         'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-                         'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'        => 'snmp_standard::mode::liststorages',
-                         'storage'              => 'snmp_standard::mode::storage',
+                         'node-usage'       => 'apps::video::openheadend::snmp::mode::nodeusage',
+                         'operation-status' => 'apps::video::openheadend::snmp::mode::operationstatus',
                          );
 
     return $self;
@@ -49,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper M Series (M and MX) in SNMP.
+Check OpenHeadend in SNMP.
 
 =cut
