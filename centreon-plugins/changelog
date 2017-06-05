@@ -1,3 +1,14 @@
+2017-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: OpenHeadend SNMP
+ * Plugin added: Zixi Rest API
+ * Plugin added: Various Evertz SNMP
+ * Plugin added: Qsan Nas SNMP
+ * Plugin added: Citrix SDX SNMP
+ * Plugin added: IBM TS2900 SNMP
+ * Plugin added: Fortinet Fortimanager SNMP
+ * Mode added: [pacemaker] clustat
+ * Break: path change for Alcatel Omniswitch SNMP
+
 2017-05-19 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Alteon SNMP
  * Plugin added: Nutanix SNMP
