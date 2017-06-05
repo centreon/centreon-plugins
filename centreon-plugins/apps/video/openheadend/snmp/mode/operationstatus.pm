@@ -210,16 +210,6 @@ Can used special variables like: %{status}, %{dep_status}, %{display}
 Set critical threshold for status (Default: '%{dep_status} =~ /false/i').
 Can used special variables like: %{status}, %{dep_status}, %{display}
 
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'bitrate'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'bitrate'.
-
 =back
 
 =cut
