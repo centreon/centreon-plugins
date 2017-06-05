@@ -35,6 +35,7 @@ sub set_system {
     
     $self->{thresholds} = {
         disk => [
+            ['reserved', 'OK'],
             ['good', 'OK'],
             ['.*', 'CRITICAL'],
         ],
