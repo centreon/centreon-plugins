@@ -88,11 +88,11 @@ sub set_counters {
                 ],
             }
         },        
-        { label => 'avg-qos-rafctor', set => {
+        { label => 'avg-qos-rfactor', set => {
                 key_values => [ { name => 'apSigRealmStatsAverageQoSRFactor' }, { name => 'display' } ],
                 output_template => 'Average QoS RFactor : %s',
                 perfdatas => [
-                    { label => 'avg_qos_factor', value => 'apSigRealmStatsAverageQoSRFactor_absolute', template => '%s',
+                    { label => 'avg_qos_rfactor', value => 'apSigRealmStatsAverageQoSRFactor_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -198,14 +198,14 @@ Check realm usage.
 Threshold warning.
 Can be: 'current-in-sessions', 'current-in-sessions-rate', 'total-in-sessions',
 'current-out-sessions', 'current-out-sessions-rate', 'total-out-session',
-'avg-qos-rafctor', 'total-rfactor'.
+'avg-qos-rfactor', 'total-rfactor'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'current-in-sessions', 'current-in-sessions-rate', 'total-in-sessions',
 'current-out-sessions', 'current-out-sessions-rate', 'total-out-session',
-'avg-qos-rafctor', 'total-rfactor'.
+'avg-qos-rfactor', 'total-rfactor'.
 
 =item B<--filter-name>
 
