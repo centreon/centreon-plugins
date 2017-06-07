@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,52 +20,135 @@
 
 package apps::varnish::local::mode::sessions;
 
-use base qw(centreon::plugins::mode);
-use centreon::plugins::misc;
-use centreon::plugins::statefile;
+use base qw(centreon::plugins::templates::counter);
+use strict;
+use warnings;
 use Digest::MD5 qw(md5_hex);
+use JSON;
 
-my $maps_counters = {
-    sess_closed   => { thresholds => {
-                                warning_closed  =>  { label => 'warning-closed', exit_value => 'warning' },
-                                critical_closed =>  { label => 'critical-closed', exit_value => 'critical' },
-                              },
-                output_msg => 'Session Closed: %.2f',
-                factor => 1, unit => '',
-               },
-    sess_pipeline => { thresholds => {
-                                warning_pipeline  =>  { label => 'warning-pipeline', exit_value => 'warning' },
-                                critical_pipeline =>  { label => 'critical-pipeline', exit_value => 'critical' },
-                                },
-                 output_msg => 'Session Pipeline: %.2f',
-                 factor => 1, unit => '',
-                },
-    sess_readahead => { thresholds => {
-                                warning_readahead    =>  { label => 'warning-readahead', exit_value => 'warning' },
-                                critical_readahead   =>  { label => 'critical-readahead', exit_value => 'critical' },
-                                },
-                 output_msg => 'Session Read Ahead: %.2f',
-                 factor => 1, unit => '',
-               },
-    sess_linger => { thresholds => {
-                                warning_linger    =>  { label => 'warning-linger', exit_value => 'warning' },
-                                critical_linger   =>  { label => 'critical-linger', exit_value => 'critical' },
-                                },
-                 output_msg => 'Session Linger: %.2f',
-                 factor => 1, unit => '',
-               },
-    sess_herd => { thresholds => {
-                                warning_herd    =>  { label => 'warning-herd', exit_value => 'warning' },
-                                critical_herd   =>  { label => 'critical-herd', exit_value => 'critical' },
-                                },
-                 output_msg => 'Session herd: %.2f',
-                 factor => 1, unit => '',
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'sessions', type => 0, skipped_code => { -10 => 1 } },
+    ];
+    $self->{maps_counters}->{sessions} = [
+        { label => 'accepted', set => {
+                key_values => [ { name => 'sess_conn', diff => 1 } ],
+                output_template => 'Session accepted: %.2f/s', output_error_template => "Session accepted: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_conn', value => 'sess_conn_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'dropped', set => {
+                key_values => [ { name => 'sess_drop', diff => 1 } ],
+                output_template => 'Session dropped: %.2f/s', output_error_template => "Session dropped: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_drop', value => 'sess_drop_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'failed', set => {
+                key_values => [ { name => 'sess_fail', diff => 1 } ],
+                output_template => 'Session fail: %.2f/s', output_error_template => "Session fail: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_fail', value => 'sess_fail_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'pipeoverflow', set => {
+                key_values => [ { name => 'sess_pipe_overflow', diff => 1 } ],
+                output_template => 'Sessions pipe overflow: %.2f/s', output_error_template => "Sessions pipe overflow: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_pipe_overflow', value => 'sess_pipe_overflow_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'queued', set => {
+                key_values => [ { name => 'sess_queued' , diff => 1 } ],
+                output_template => 'Session queued: %.2f/s', output_error_template => "Session queued: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_queued', value => 'sess_queued_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'dropped', set => {
+                key_values => [ { name => 'sess_dropped' , diff => 1 } ],
+                output_template => 'Session dropped: %.2f/s', output_error_template => "Session dropped: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_dropped', value => 'sess_dropped_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'readahead', set => {
+                key_values => [ { name => 'sess_readahead' , diff => 1 } ],
+                output_template => 'Session readahead: %.2f/s', output_error_template => "Session readahead: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_readahead', value => 'sess_readahead_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'closed', set => {
+                key_values => [ { name => 'sess_closed' , diff => 1 } ],
+                output_template => 'Session closed: %.2f/s', output_error_template => "Session closed: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_closed', value => 'sess_closed_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'herd', set => {
+                key_values => [ { name => 'sess_herd' , diff => 1 } ],
+                output_template => 'Session herd: %.2f/s', output_error_template => "Session herd: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_herd', value => 'sess_herd_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'linger', set => {
+                key_values => [ { name => 'sess_linger' , diff => 1 } ],
+                output_template => 'Session linger: %.2f/s', output_error_template => "Session linger: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_linger', value => 'sess_linger_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'pipeline', set => {
+                key_values => [ { name => 'sess_pipeline' , diff => 1 } ],
+                output_template => 'Session pipeline: %.2f/s', output_error_template => "Session pipeline: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'sess_pipeline', value => 'sess_pipeline_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+    ],
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -80,39 +163,13 @@ sub new {
         "sudo"               => { name => 'sudo' },
         "command:s"          => { name => 'command', default => 'varnishstat' },
         "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
-        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 -j 2>&1' },
     });
 
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $options{options}->add_options(arguments => {
-                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
-            });
-        };
-    };
-
-    $self->{instances_done} = {};
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 };
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            };
-        };
-    };
-    $self->{statefile_value}->check_options(%options);
-};
-
-sub getdata {
+sub manage_selection {
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -120,86 +177,31 @@ sub getdata {
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options} . $self->{option_results}->{command_options2});
-    #print $stdout;
+                                                  command_options => $self->{option_results}->{command_options});
 
-    foreach (split(/\n/, $stdout)) {
-        #client_conn            7390867         1.00 Client connections
-        # - Symbolic entry name
-        # - Value
-        # - Per-second average over process lifetime, or a period if the value can not be averaged
-        # - Descriptive text
+#   "MAIN.sess_conn": {"type": "MAIN", "value": 13598, "flag": "c", "description": "Sessions accepted"},
+#   "MAIN.sess_drop": {"type": "MAIN", "value": 0, "flag": "c", "description": "Sessions dropped"},
+#   "MAIN.sess_fail": {"type": "MAIN", "value": 0, "flag": "c", "description": "Session accept failures"},
+#   "MAIN.sess_pipe_overflow": {"type": "MAIN", "value": 0, "flag": "c", "description": "Session pipe overflow"},
+#   "MAIN.sess_queued": {"type": "MAIN", "value": 0, "flag": "c", "description": "Sessions queued for thread"},
+#   "MAIN.sess_dropped": {"type": "MAIN", "value": 0, "flag": "c", "description": "Sessions dropped for thread"},
+#   "MAIN.sess_closed": {"type": "MAIN", "value": 13211, "flag": "a", "description": "Session Closed"},
+#   "MAIN.sess_pipeline": {"type": "MAIN", "value": 0, "flag": "a", "description": "Session Pipeline"},
+#   "MAIN.sess_readahead": {"type": "MAIN", "value": 0, "flag": "a", "description": "Session Read Ahead"},
+#   "MAIN.sess_herd": {"type": "MAIN", "value": 26, "flag": "a", "description": "Session herd"},
 
-        if  (/^(.\S*)\s*([0-9]*)\s*([0-9.]*)\s(.*)$/i) {
-            #print "FOUND: " . $1 . "=" . $2 . "\n";
-            $self->{result}->{$1} = $2;
-        };
-    };
-};
+    my $json_data = decode_json($stdout);
 
-sub run {
-    my ($self, %options) = @_;
+    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    $self->getdata();
-
-    $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $self->{result}->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-
-    
-    foreach (keys %{$maps_counters}) {
-        #print $_ . "\n";
-        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
-        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
-        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
-    };
-
-    # Write Cache if not there
-    $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
+    foreach my $counter (keys %{$json_data}) {
+        next if ($counter !~ /^([A-Z])+\.sess_.*/);
+        my $value = $json_data->{$counter}->{value};
+        $counter =~ s/^([A-Z])+\.//;
+        $self->{sessions}->{$counter} = $value;
     }
-
-    my @exits;
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
-        }
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    
-
-    my $extra_label = '';
-    $extra_label = '_' . $instance_output if ($num > 1);
-
-    my $str_output = "";
-    my $str_append = '';
-    foreach (keys %{$maps_counters}) {
-        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
-        $str_append = ', ';
-        my ($warning, $critical);
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
-            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
-        }
-        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
-                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
-                                        warning => $warning,
-                                        critical => $critical);
-    }
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => $str_output);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 };
 
 
@@ -235,25 +237,15 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
-Parameter for Binary File (Default: ' -1 ')
+Parameter for Binary File (Default: ' -1 -j 2>&1')
 
 =item B<--warning-*>
-
-Warning Threshold for: 
-closed    => Session Closed,
-pipeline  => Session Pipeline,
-readahead => Session Read Ahead,
-linger    => Session Linger,
-herd      => Session herd
+Warning Threshold per second.
+Can be (accepted,closed,queued,failed,pipeline,readahead,linger,herd,dropped,pipeoverflow)
 
 =item B<--critical-*>
-
-Critical Threshold for: 
-closed    => Session Closed,
-pipeline  => Session Pipeline,
-readahead => Session Read Ahead,
-linger    => Session Linger,
-herd      => Session herd
+Critical Threshold per second for:
+Can be (accepted,closed,queued,failed,pipeline,readahead,linger,herd,dropped,pipeoverflow)
 
 =back
 
