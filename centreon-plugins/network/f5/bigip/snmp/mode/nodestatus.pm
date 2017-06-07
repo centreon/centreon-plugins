@@ -180,14 +180,14 @@ my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7'; # new
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_ltmNodeAddrName },
                                                             { oid => $oid_ltmNodeAddrStatusName },
                                                          ],
                                                          , nothing_quit => 1);
     
     my ($branch_name, $map) = ($oid_ltmNodeAddrStatusName, 'new');
-    if (!defined($self->{results}->{$oid_ltmNodeAddrStatusName}) || scalar(keys %{$self->{results}->{$oid_ltmNodeAddrStatusName}}) == 0)  {
+    if (!defined($snmp_result->{$oid_ltmNodeAddrStatusName}) || scalar(keys %{$snmp_result->{$oid_ltmNodeAddrStatusName}}) == 0)  {
         ($branch_name, $map) = ($oid_ltmNodeAddrName, 'old');
     }
     
