@@ -25,7 +25,8 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_ltmNodeAddrStatusAvailState = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3';
+my $oid_ltmNodeAddrName = '.1.3.6.1.4.1.3375.2.2.4.1.2.1.17'; # old
+my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7'; # new
 
 sub new {
     my ($class, %options) = @_;
@@ -35,11 +36,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
+                                  "filter-name:s"   => { name => 'filter_name' },
                                 });
-    $self->{node_id_selected} = [];
-
     return $self;
 }
 
@@ -51,30 +49,22 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmNodeAddrStatusAvailState, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /^$oid_ltmNodeAddrStatusAvailState\.(.*)$/);
-        my $instance = $1;
-        
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{node_id_selected}}, $instance; 
+    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_ltmNodeAddrName }, { oid => $oid_ltmNodeAddrStatusName } ], nothing_quit => 1);
+    
+    my ($branch_name) = ($oid_ltmNodeAddrStatusName);
+    if (!defined($snmp_result->{$oid_ltmNodeAddrStatusName}) || scalar(keys %{$snmp_result->{$oid_ltmNodeAddrStatusName}}) == 0)  {
+        ($branch_name) = ($oid_ltmNodeAddrName);
+    }
+    
+    $self->{node} = {};
+    foreach my $oid (keys %{$snmp_result->{$branch_name}}) {        
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $snmp_result->{$branch_name}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping service class '" . $snmp_result->{$branch_name}->{$oid} . "'.", debug => 1);
             next;
         }
         
-        my $name = $instance;
-        # prefix by '1.4'
-        $name =~ s/^1\.4\.//;
-        if (!defined($self->{option_results}->{use_regexp}) && $name eq $self->{option_results}->{name}) {
-            push @{$self->{node_id_selected}}, $instance;
-            next;
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $name =~ /$self->{option_results}->{name}/) {
-            push @{$self->{node_id_selected}}, $instance;
-            next;
-        }
-        
-        $self->{output}->output_add(long_msg => "Skipping node '" . $name . "': no matching filter name", debug => 1);
+        $self->{node}->{$snmp_result->{$branch_name}->{$oid}} = { name => $snmp_result->{$branch_name}->{$oid} };
     }
 }
 
@@ -83,11 +73,7 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    foreach my $instance (sort @{$self->{node_id_selected}}) {
-        my $name = $instance;
-        # prefix by '1.4'
-        $name =~ s/^1\.4\.//;
-
+    foreach my $name (sort keys %{$self->{node}}) {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
@@ -107,12 +93,8 @@ sub disco_show {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection(disco => 1);
-    foreach my $instance (sort @{$self->{node_id_selected}}) {        
-        my $name = $instance;
-        # prefix by '1.4'
-        $name =~ s/^1\.4\.//;
-        
+    $self->manage_selection();
+    foreach my $name (sort keys %{$self->{node}}) {        
         $self->{output}->add_disco_entry(name => $name);
     }
 }
@@ -123,19 +105,14 @@ __END__
 
 =head1 MODE
 
-List F-5 Nodes.
+List nodes.
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the node name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter node name (with option --name).
+Filter by node name.
 
 =back
 
 =cut
-    
