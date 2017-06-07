@@ -66,7 +66,7 @@ sub run {
     my $now2 = Time::HiRes::time();    
  
     if ($exit == -1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => $msg_error);
     } else {
 		my $milliseconds = $now2 - $now;
