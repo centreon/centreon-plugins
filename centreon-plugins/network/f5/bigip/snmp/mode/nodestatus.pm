@@ -211,7 +211,7 @@ sub manage_selection {
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
     foreach (keys %{$self->{node}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result, instance => $_);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
         
         if ($result->{EnabledState} !~ /enabled/) {
