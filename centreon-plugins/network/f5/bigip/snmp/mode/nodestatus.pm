@@ -66,6 +66,15 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_threshold_output'),
             }
         },
+        { label => 'current-server-connections', set => {
+                key_values => [ { name => 'ltmNodeAddrStatServerCurConns' }, { name => 'Name' } ],
+                output_template => 'Current Server Connections : %s', output_error_template => "Current Server Connections : %s",
+                perfdatas => [
+                    { label => 'current_server_connections', value => 'ltmNodeAddrStatServerCurConns_absolute',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'Name_absolute' },
+                ],
+            }
+        },
     ];
 }
 
@@ -162,6 +171,9 @@ my $mapping = {
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.16' },
     },
 };
+my $mapping2 = {
+    ltmNodeAddrStatServerCurConns => { oid => '.1.3.6.1.4.1.3375.2.2.4.2.3.1.9' },
+};
 my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1'; # new
 my $oid_ltmNodeAddrEntry = '.1.3.6.1.4.1.3375.2.2.4.1.2.1'; # old
 
@@ -171,6 +183,7 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_ltmNodeAddrEntry, start => $mapping->{old}->{AvailState}->{oid} },
                                                             { oid => $oid_ltmNodeAddrStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
+                                                            { oid => $mapping2->{ltmNodeAddrStatServerCurConns}->{oid} },
                                                          ],
                                                          , nothing_quit => 1);
     
@@ -184,6 +197,7 @@ sub manage_selection {
         next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{ltmNodeAddrStatServerCurConns}->{oid}}, instance => $instance);
         
         $result->{Name} = $instance;
         # prefix by '1.4'
@@ -199,7 +213,7 @@ sub manage_selection {
         }
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
-        $self->{node}->{$instance} = { %$result };
+        $self->{node}->{$instance} = { %$result, %$result2 };
     }
     
     if (scalar(keys %{$self->{node}}) <= 0) {
@@ -227,6 +241,16 @@ Filter by name (regexp can be used).
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='node,CRITICAL,^(?!(green)$)'
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'current-server-connections'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'current-server-connections'.
 
 =back
 
