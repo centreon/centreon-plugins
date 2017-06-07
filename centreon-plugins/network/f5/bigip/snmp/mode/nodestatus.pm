@@ -161,9 +161,9 @@ my %map_node_enabled = (
 # New OIDS
 my $mapping = {
     new => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => \%map_node_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => \%map_node_enabled },
-        StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.6' },
+        AvailState      => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => \%map_node_status },
+        EnabledState    => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => \%map_node_enabled },
+        StatusReason    => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.6' },
     },
     old => {
         AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.4.1.2.1.13', map => \%map_node_status },
@@ -174,46 +174,56 @@ my $mapping = {
 my $mapping2 = {
     ltmNodeAddrStatServerCurConns => { oid => '.1.3.6.1.4.1.3375.2.2.4.2.3.1.9' },
 };
-my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1'; # new
-my $oid_ltmNodeAddrEntry = '.1.3.6.1.4.1.3375.2.2.4.1.2.1'; # old
+my $oid_ltmNodeAddrName = '.1.3.6.1.4.1.3375.2.2.4.1.2.1.17'; # old
+my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7'; # new
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmNodeAddrEntry, start => $mapping->{old}->{AvailState}->{oid} },
-                                                            { oid => $oid_ltmNodeAddrStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
-                                                            { oid => $mapping2->{ltmNodeAddrStatServerCurConns}->{oid} },
+                                                            { oid => $oid_ltmNodeAddrName },
+                                                            { oid => $oid_ltmNodeAddrStatusName },
                                                          ],
                                                          , nothing_quit => 1);
     
-    my ($branch, $map) = ($oid_ltmNodeAddrStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmNodeAddrStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmNodeAddrStatusEntry}}) == 0)  {
-        ($branch, $map) = ($oid_ltmNodeAddrEntry, 'old');
+    my ($branch_name, $map) = ($oid_ltmNodeAddrStatusName, 'new');
+    if (!defined($self->{results}->{$oid_ltmNodeAddrStatusName}) || scalar(keys %{$self->{results}->{$oid_ltmNodeAddrStatusName}}) == 0)  {
+        ($branch_name, $map) = ($oid_ltmNodeAddrName, 'old');
     }
     
     $self->{node} = {};
-    foreach my $oid (keys %{$self->{results}->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{$branch_name}}) {
+        $oid =~ /^$branch_name\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
-        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{ltmNodeAddrStatServerCurConns}->{oid}}, instance => $instance);
-        
-        $result->{Name} = $instance;
-        # prefix by '1.4'
-        $result->{Name} =~ s/^1\.4\.//;
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
+            $snmp_result->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping node '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
-        if ($result->{EnabledState} !~ /enabled/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': state is '$result->{EnabledState}'.");
-            next;
-        }
-        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
-        $self->{node}->{$instance} = { %$result, %$result2 };
+        $self->{node}->{$instance} = { Name => $snmp_result->{$branch_name}->{$oid} };
+    }
+    
+    $options{snmp}->load(oids => [$mapping->{$map}->{AvailState}->{oid}, $mapping->{$map}->{EnabledState}->{oid},
+        $mapping->{$map}->{StatusReason}->{oid}, $mapping2->{ltmNodeAddrStatServerCurConns}->{oid}
+        ], 
+        instances => [keys %{$self->{node}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{node}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+        
+        if ($result->{EnabledState} !~ /enabled/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $self->{node}->{$_}->{Name} . "': state is '$result->{EnabledState}'.", debug => 1);
+            delete $self->{node}->{$_};
+            next;
+        }
+        $self->{node}->{$_}->{ltmNodeAddrStatServerCurConns} = $result2->{ltmNodeAddrStatServerCurConns};
+        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
+        foreach my $name (keys %{$mapping->{$map}}) {
+            $self->{node}->{$_}->{$name} = $result->{$name};
+        }
     }
     
     if (scalar(keys %{$self->{node}}) <= 0) {
