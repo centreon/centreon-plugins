@@ -227,7 +227,7 @@ sub manage_selection {
         }
         $self->{pool}->{$_}->{ltmPoolStatServerCurConns} = $result2->{ltmPoolStatServerCurConns};
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
-        foreach my $name (keys %{$mapping->{$map}}) {
+        foreach my $name (keys %$result) {
             $self->{pool}->{$_}->{$name} = $result->{$name};
         }
     }
