@@ -75,7 +75,7 @@ sub check {
             next;
         }
 
-        $exit = $self->get_severity(label => 'oper', section => 'fan.oper', value => $result->{chasEntPhysAdminStatus});
+        $exit = $self->get_severity(label => 'oper', section => 'fan.oper', value => $result->{chasEntPhysOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s/%s/%s' operational status is %s",
