@@ -47,6 +47,7 @@ sub new {
                          'packet-errors'    => 'os::linux::local::mode::packeterrors',
                          'paging'           => 'os::linux::local::mode::paging',
                          'process'          => 'os::linux::local::mode::process',
+                         'quota'            => 'os::linux::local::mode::quota',
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
                          'systemd-sc-status'    => 'os::linux::local::mode::systemdscstatus',
