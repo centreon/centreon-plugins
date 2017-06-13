@@ -38,7 +38,7 @@ sub check {
     
     # <object>
     #    <objecttype>storagecell</objecttype>
-    #    <objectname>Backup_Wintel</objectname>
+    #    <objectname>XXXXX</objectname>
     #    <operationalstate>attention</operationalstate>
     foreach my $object (@{$self->{xml_result}->{object}}) {
         next if ($object->{objecttype} ne 'storagecell');
