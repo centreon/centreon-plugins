@@ -1,5 +1,6 @@
 2017-06-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: HP Eva CLI
+ * Plugin added: Acme Packet SNMP
  * Plugin added: A10 AX SNMP
  * Plugin added: OpenHeadend SNMP
  * Plugin added: Zixi Rest API
