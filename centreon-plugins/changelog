@@ -1,4 +1,6 @@
-2017-XX-XX Quentin Garnier <qgarnier@centreon.com>
+2017-06-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: HP Eva CLI
+ * Plugin added: A10 AX SNMP
  * Plugin added: OpenHeadend SNMP
  * Plugin added: Zixi Rest API
  * Plugin added: Various Evertz SNMP
