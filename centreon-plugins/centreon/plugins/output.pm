@@ -45,6 +45,7 @@ sub new {
                                   "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
                                   "output-xml"              => { name => 'output_xml' },
                                   "output-json"             => { name => 'output_json' },
+                                  "output-file:s"           => { name => 'output_file' },
                                   "disco-format"            => { name => 'disco_format' },
                                   "disco-show"              => { name => 'disco_show' },
                                 });
@@ -439,6 +440,12 @@ sub display {
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
+    if (defined($self->{option_results}->{output_file})) {
+        if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
+            $self->output_add(severity => 'UNKNOWN',
+                              short_msg => "cannot open file  '" . $self->{option_results}->{output_file} . "': $!");
+        }
+    }
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
         if ($self->{is_output_xml}) {
@@ -797,6 +804,10 @@ Display output in XML Format.
 =item B<--output-json>
 
 Display output in JSON Format.
+
+=item B<--output-file>
+
+Write output in file (can be used with json and xml options)
 
 =item B<--disco-format>
 

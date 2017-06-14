@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,80 +20,115 @@
 
 package apps::varnish::local::mode::backend;
 
-use base qw(centreon::plugins::mode);
-use centreon::plugins::misc;
-use centreon::plugins::statefile;
+use base qw(centreon::plugins::templates::counter);
+use strict;
+use warnings;
 use Digest::MD5 qw(md5_hex);
+use JSON;
 
-my $maps_counters = {
-    backend_conn   => { thresholds => {
-                                warning_conn  =>  { label => 'warning-conn', exit_value => 'warning' },
-                                critical_conn =>  { label => 'critical-conn', exit_value => 'critical' },
-                              },
-                output_msg => 'Backend conn. success: %.2f',
-                factor => 1, unit => '',
-               },
-    backend_unhealthy => { thresholds => {
-                                warning_unhealthy  =>  { label => 'warning-unhealthy', exit_value => 'warning' },
-                                critical_unhealthy =>  { label => 'critical-unhealthy', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. not attempted: %.2f',
-                 factor => 1, unit => '',
-                },
-    backend_busy => { thresholds => {
-                                warning_busy    =>  { label => 'warning-busy', exit_value => 'warning' },
-                                critical_busy   =>  { label => 'critical-busy', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. too many: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_fail => { thresholds => {
-                                warning_fail    =>  { label => 'warning-fail', exit_value => 'warning' },
-                                critical_fail   =>  { label => 'critical-fail', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. failures: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_reuse => { thresholds => {
-                                warning_reuse    =>  { label => 'warning-reuse', exit_value => 'warning' },
-                                critical_reuse   =>  { label => 'critical-reuse', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. reuses: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_toolate => { thresholds => {
-                                warning_toolate    =>  { label => 'warning-toolate', exit_value => 'warning' },
-                                critical_toolate   =>  { label => 'critical-toolate', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. was closed: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_recycle => { thresholds => {
-                                warning_recycle    =>  { label => 'warning-recycle', exit_value => 'warning' },
-                                critical_recycle   =>  { label => 'critical-recycle', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. recycles: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_retry => { thresholds => {
-                                warning_retry    =>  { label => 'warning-retry', exit_value => 'warning' },
-                                critical_retry   =>  { label => 'critical-retry', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend conn. retry: %.2f',
-                 factor => 1, unit => '',
-               },
-    backend_req => { thresholds => {
-                                warning_req    =>  { label => 'warning-req', exit_value => 'warning' },
-                                critical_req   =>  { label => 'critical-req', exit_value => 'critical' },
-                                },
-                 output_msg => 'Backend requests made: %.2f',
-                 factor => 1, unit => '',
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'backend', type => 0, skipped_code => { -10 => 1 } },
+    ];
+    $self->{maps_counters}->{backend} = [
+        { label => 'conn', set => {
+                key_values => [ { name => 'backend_conn', diff => 1 } ],
+                output_template => 'Backend con: %.2f/s', output_error_template => "Backend con: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_conn', value => 'backend_conn_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'unhealthy', set => {
+                key_values => [ { name => 'backend_unhealthy', diff => 1 } ],
+                output_template => 'Backend unhealthy: %.2f/s', output_error_template => "Backend unhealthy: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_unhealthy', value => 'backend_unhealthy_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'busy', set => {
+                key_values => [ { name => 'backend_busy', diff => 1 } ],
+                output_template => 'Backend busy: %.2f/s', output_error_template => "Backend busy: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_miss', value => 'backend_miss_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'fail', set => {
+                key_values => [ { name => 'backend_fail', diff => 1 } ],
+                output_template => 'Backend fail: %.2f/s', output_error_template => "Backend fail: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_fail', value => 'backend_fail_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'reuse', set => {
+                key_values => [ { name => 'backend_reuse', diff => 1 } ],
+                output_template => 'Backend reuse: %.2f/s', output_error_template => "Backend reuse: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_reuse', value => 'backend_reuse_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'recycle', set => {
+                key_values => [ { name => 'backend_recycle', diff => 1 } ],
+                output_template => 'Backend recycle: %.2f/s', output_error_template => "Backend recycle: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_recycle', value => 'backend_recycle_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'retry', set => {
+                key_values => [ { name => 'backend_retry', diff => 1 } ],
+                output_template => 'Backend retry: %.2f/s', output_error_template => "Backend retry: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_retry', value => 'backend_retry_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'recycle', set => {
+                key_values => [ { name => 'backend_recycle', diff => 1 } ],
+                output_template => 'Backend recycle: %.2f/s', output_error_template => "Backend recycle: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_recycle', value => 'backend_recycle_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'request', set => {
+                key_values => [ { name => 'backend_req', diff => 1 } ],
+                output_template => 'Backend requests: %.2f/s', output_error_template => "Backend requests: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'backend_req', value => 'backend_req_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+    ],
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -108,39 +143,13 @@ sub new {
         "sudo"               => { name => 'sudo' },
         "command:s"          => { name => 'command', default => 'varnishstat' },
         "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
-        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 -j 2>&1' },
     });
 
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $options{options}->add_options(arguments => {
-                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
-            });
-        };
-    };
-
-    $self->{instances_done} = {};
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 };
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            };
-        };
-    };
-    $self->{statefile_value}->check_options(%options);
-};
-
-sub getdata {
+sub manage_selection {
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -148,86 +157,23 @@ sub getdata {
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options} . $self->{option_results}->{command_options2});
-    #print $stdout;
+                                                  command_options => $self->{option_results}->{command_options});
 
-    foreach (split(/\n/, $stdout)) {
-        #client_conn            7390867         1.00 Client connections
-        # - Symbolic entry name
-        # - Value
-        # - Per-second average over process lifetime, or a period if the value can not be averaged
-        # - Descriptive text
+#   "MAIN.backend_hit": {"type": "MAIN", "value": 18437, "flag": "a", "description": "Cache hits"},
+#   "MAIN.backend_hitpass": {"type": "MAIN", "value": 3488, "flag": "a", "description": "Cache hits for pass"},
+#   "MAIN.backend_miss": {"type": "MAIN", "value": 5782, "flag": "a", "description": "Cache misses"},
+    my $json_data = decode_json($stdout);
 
-        if  (/^(.\S*)\s*([0-9]*)\s*([0-9.]*)\s(.*)$/i) {
-            #print "FOUND: " . $1 . "=" . $2 . "\n";
-            $self->{result}->{$1} = $2;
-        };
-    };
-};
+    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-sub run {
-    my ($self, %options) = @_;
-
-    $self->getdata();
-
-    $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $self->{result}->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-
-    
-    foreach (keys %{$maps_counters}) {
-        #print $_ . "\n";
-        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
-        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
-        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
-    };
-
-    # Write Cache if not there
-    $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
+    foreach my $counter (keys %{$json_data}) {
+        next if ($counter !~ /backend/);
+        my $value = $json_data->{$counter}->{value};
+        $counter =~ s/^([A-Z])+\.//;
+        $self->{backend}->{$counter} = $value;
     }
-
-    my @exits;
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
-        }
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    
-
-    my $extra_label = '';
-    $extra_label = '_' . $instance_output if ($num > 1);
-
-    my $str_output = "";
-    my $str_append = '';
-    foreach (keys %{$maps_counters}) {
-        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
-        $str_append = ', ';
-        my ($warning, $critical);
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
-            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
-        }
-        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
-                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
-                                        warning => $warning,
-                                        critical => $critical);
-    }
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => $str_output);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 };
 
 
@@ -267,7 +213,7 @@ Parameter for Binary File (Default: ' -1 ')
 
 =item B<--warning-*>
 
-Warning Threshold for: 
+Warning Threshold for:
 conn      => Backend conn. success,
 unhealthy => Backend conn. not attempted,
 busy      => Backend conn. too many,
@@ -276,11 +222,11 @@ reuse     => Backend conn. reuses,
 toolate   => Backend conn. was closed,
 recycle   => Backend conn. recycles,
 retry     => Backend conn. retry,
-req       => Backend requests made
+request   => Backend requests made
 
 =item B<--critical-*>
 
-Critical Threshold for: 
+Critical Threshold for:
 conn      => Backend conn. success,
 unhealthy => Backend conn. not attempted,
 busy      => Backend conn. too many,
@@ -289,7 +235,7 @@ reuse     => Backend conn. reuses,
 toolate   => Backend conn. was closed,
 recycle   => Backend conn. recycles,
 retry     => Backend conn. retry,
-req       => Backend requests made
+request   => Backend requests made
 
 =back
 

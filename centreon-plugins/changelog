@@ -1,3 +1,29 @@
+2017-06-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: HP Eva CLI
+ * Plugin added: Acme Packet SNMP
+ * Plugin added: A10 AX SNMP
+ * Plugin added: OpenHeadend SNMP
+ * Plugin added: Zixi Rest API
+ * Plugin added: Various Evertz SNMP
+ * Plugin added: Qsan Nas SNMP
+ * Plugin added: Citrix SDX SNMP
+ * Plugin added: IBM TS2900 SNMP
+ * Plugin added: Fortinet Fortimanager SNMP
+ * Mode added: [pacemaker] clustat
+ * Break: path change for Alcatel Omniswitch SNMP
+
+2017-05-19 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Alteon SNMP
+ * Plugin added: Nutanix SNMP
+ * Plugin added: Citrix Cloudbridge SNMP 
+ * Plugin added: Protocol Modbus
+ * Plugin added: Notification HighSMS
+ * Plugin added: Jmeter Scenario
+ * Plugin added: AppearTV SNMP
+ * Plugin added: QSan NAS SNMP
+ * Mode added: [linux] systemd services
+ * Break: path change for Alcatel Omniswitch
+ 
 2017-03-29 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Watchguard SNMP
  * Plugin added: Intelligence Interactive SNMP

@@ -49,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper M Series in SNMP.
+Check Juniper M Series (M and MX) in SNMP.
 
 =cut

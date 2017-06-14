@@ -31,13 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'scvmm-integration-service'    => 'apps::hyperv::2012::local::mode::scvmmintegrationservice',
-                         'scvmm-snapshot'               => 'apps::hyperv::2012::local::mode::scvmmsnapshot',
-                         'scvmm-vm-status'              => 'apps::hyperv::2012::local::mode::scvmmvmstatus',
+                         'list-node-vms'                => 'apps::hyperv::2012::local::mode::listnodevms',
                          'node-integration-service'     => 'apps::hyperv::2012::local::mode::nodeintegrationservice',
                          'node-replication'             => 'apps::hyperv::2012::local::mode::nodereplication',
                          'node-snapshot'                => 'apps::hyperv::2012::local::mode::nodesnapshot',
                          'node-vm-status'               => 'apps::hyperv::2012::local::mode::nodevmstatus',
+                         'scvmm-integration-service'    => 'apps::hyperv::2012::local::mode::scvmmintegrationservice',
+                         'scvmm-snapshot'               => 'apps::hyperv::2012::local::mode::scvmmsnapshot',
+                         'scvmm-vm-status'              => 'apps::hyperv::2012::local::mode::scvmmvmstatus',
                          );
 
     return $self;

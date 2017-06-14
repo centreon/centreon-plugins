@@ -73,6 +73,7 @@ sub new {
     
     # Dont load MIB
     $SNMP::auto_init_mib = 0;
+    $ENV{MIBS} = '';
     # For snmpv v1 - get request retries when you have "NoSuchName"
     $self->{RetryNoSuch} = 1;
     # Dont try to translate OID (we keep value)
