@@ -1057,3 +1057,95 @@ The command result:
     $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
     OK: Metric 'avg' value is '3072.3' | 'avg'=3072.3con;;;;
     Metric 'avg' value is '3072.3'
+    
+--------------------
+Multi-service plugin
+--------------------
+
+This mode allow you to concatenate several result of host and/or service check into one check. Can be used to make some aggregation into logical group or gather information from one Centreon to display in another without checking resources twice.
+
+Design of configuration file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+    {
+        "mode":"sqlmatching",
+        "selection":{
+            "ESX":{
+                "host_name_filter":"%clus-esx-n%",
+                "service_name_filter":"Esx-Status"
+            },
+            "XIVO":{
+                "host_name_filter":"%xivo%",
+                "service_name_filter":"Ping"
+            }
+        },
+        "counters":{
+            "totalservices":true,
+            "totalhosts":true,
+            "groups":true
+        },
+        "formatting":{
+            "groups_global_msg":"Nothing special on groups",
+            "host_service_separator":"/",
+            "display_details":true
+        }
+    }
+
+* mode (mandatory) : can be 'sqlmatching' or 'exactmatch'. Linked to the layout of "selection" bloc
+* selection (mandatory) : if we use sqlmatching, we define filters like above, if we use exact match, need to pass a key/value pair corresponding to host/service (example below with two "groups" esx-status/load) 
+
+::
+
+    "selection":{
+        "esx-status":{
+            "esx-n1":"Esx-Status",
+            "esx-n2":"Esx-Status",
+            "esx-n3":"Esx-Status"
+        },
+        "esx-load":{
+            "esx-n1":"Esx-Memory",
+            "esx-n2":"Esx-Memory",
+            "esx-n3":"Esx-Memory",
+            "esx-n1":"Esx-Cpu",
+            "esx-n2":"Esx-Cpu",
+            "esx-n3":"Esx-Cpu"
+        }
+    },
+
+* counters (optionnal) : Contains three keys to choose which counters we should use and consider (totalservices, totalhosts, groups)
+* formatting (optionnal) : Contains three keys, 'groups_global_msg' to define a global OK status message, 'host_service_separator' to define separator used between host and service name in output, 'display_details' to config if plugin should display details of host/service name in the verbose output.
+
+Command line, output, threshold ...
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sample command :
+
+::
+
+/usr/lib/nagios/plugins/centreon_plugins.pl --plugin database::mysql::plugin --dyn-mode apps::centreon::sql::mode::multiservices --host localhost --username centreon --password c3ntreon --config-file '/root/global-services.json' --verbose
+
+Sample output : 
+
+::
+
+    OK: Hosts state summary [up:4][down:2][unreachable:0] - Services state summary [ok:4][warning:0][critical:2][unknown:0] - Nothing special on groups |
+
+Perfdatas :
+
+::
+
+'total_host_up'=4;;;0; 'total_host_down'=2;;;0; 'total_host_unreachable'=0;;;0; 'total_host_ok'=4;;;0; 'total_host_warning'=0;;;0; 'total_host_critical'=2;;;0; 'total_host_unknown'=0;;;0; 'host_up_ESX'=4;;;0; 'host_down_ESX'=0;;;0; 'host_unreachable_ESX'=0;;;0; 'service_ok_ESX'=4;;;0; 'service_warning_ESX'=0;;;0; 'service_critical_ESX'=0;;;0; 'service_unknown_ESX'=0;;;0; 'host_up_XIVO'=0;;;0; 'host_down_XIVO'=2;;;0; 'host_unreachable_XIVO'=0;;;0; 'service_ok_XIVO'=0;;;0; 'service_warning_XIVO'=0;;;0; 'service_critical_XIVO'=2;;;0; 'service_unknown_XIVO'=0;;;0;
+
+Verbose mode (with display details set as true) :
+
+::
+
+    Group 'ESX': HOSTS: [up: 4 (clus-esx-n1.com - clus-esx-n2.com - clus-esx-n3.com - clus-esx-n4.com)][down: 0][unreachable: 0] -      SERVICES: [ok: 4 (clus-esx-n1.com/Esx-Status - clus-esx-n2.com/Esx-Status - clus-esx-n3.com/Esx-Status - clus-esx-n4.com/Esx-Status)][warning: 0][critical: 0][unknown: 0]
+    Group 'XIVO': HOSTS: [up: 0][down: 2 (srvi-xivo-n1 - srvi-xivo-n2)][unreachable: 0] - SERVICES: [ok: 0][warning: 0][critical: 2 (srvi-xivo-n1/Ping - srvi-xivo-n2/Ping)][unknown: 0]
+
+Concerning the threshold, you can use some example below :
+
+::
+
+--critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'
