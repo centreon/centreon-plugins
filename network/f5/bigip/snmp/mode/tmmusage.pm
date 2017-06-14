@@ -90,6 +90,24 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
+        { label => 'cpu-1m', set => {
+                key_values => [ { name => 'sysTmmStatTmUsageRatio1m' }, { name => 'display' } ],
+                output_template => 'CPU Usage 1min : %s %%', output_error_template => "CPU Usage 1min : %s",
+                perfdatas => [
+                    { label => 'cpu_1m', value => 'sysTmmStatTmUsageRatio1m_absolute',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'cpu-5m', set => {
+                key_values => [ { name => 'sysTmmStatTmUsageRatio5m' }, { name => 'display' } ],
+                output_template => 'CPU Usage 5min : %s %%', output_error_template => "CPU Usage 5min : %s",
+                perfdatas => [
+                    { label => 'cpu_5m', value => 'sysTmmStatTmUsageRatio5m_absolute',  template => '%s',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
         { label => 'current-client-connections', set => {
                 key_values => [ { name => 'sysTmmStatClientCurConns' }, { name => 'display' } ],
                 output_template => 'Current Client Connections : %s', output_error_template => "Current Client Connections : %s",
@@ -157,6 +175,8 @@ my $mapping = {
     sysTmmStatServerCurConns    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.19' },
     sysTmmStatMemoryTotal       => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.31' }, # B
     sysTmmStatMemoryUsed        => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.32' }, # B
+    sysTmmStatTmUsageRatio1m    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.38' },
+    sysTmmStatTmUsageRatio5m    => { oid => '.1.3.6.1.4.1.3375.2.1.8.2.3.1.39' },
 };
 my $oid_sysTmmStatEntry = '.1.3.6.1.4.1.3375.2.1.8.2.3.1';
 
@@ -221,13 +241,13 @@ Filter by TMM name (regexp can be used).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
+Can be: 'cpu1m', 'cpu5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
 'total-server-connections', 'current-server-connections'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
+Can be: 'cpu1m', 'cpu5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
 'total-server-connections', 'current-server-connections'.
 
 =back

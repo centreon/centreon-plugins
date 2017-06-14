@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,52 +20,75 @@
 
 package apps::varnish::local::mode::shm;
 
-use base qw(centreon::plugins::mode);
-use centreon::plugins::misc;
-use centreon::plugins::statefile;
+use base qw(centreon::plugins::templates::counter);
+use strict;
+use warnings;
 use Digest::MD5 qw(md5_hex);
+use JSON;
 
-my $maps_counters = {
-    shm_records   => { thresholds => {
-                                warning_records  =>  { label => 'warning-records', exit_value => 'warning' },
-                                critical_records =>  { label => 'critical-records', exit_value => 'critical' },
-                              },
-                output_msg => 'SHM records: %.2f',
-                factor => 1, unit => '',
-               },
-    shm_writes => { thresholds => {
-                                warning_writes  =>  { label => 'warning-writes', exit_value => 'warning' },
-                                critical_writes =>  { label => 'critical-writes', exit_value => 'critical' },
-                                },
-                 output_msg => 'SHM writes: %.2f',
-                 factor => 1, unit => '',
-                },
-    shm_flushes => { thresholds => {
-                                warning_flushes    =>  { label => 'warning-flushes', exit_value => 'warning' },
-                                critical_flushes   =>  { label => 'critical-flushes', exit_value => 'critical' },
-                                },
-                 output_msg => 'SHM flushes due to overflow: %.2f',
-                 factor => 1, unit => '',
-               },
-    shm_cont => { thresholds => {
-                                warning_cont    =>  { label => 'warning-cont', exit_value => 'warning' },
-                                critical_cont   =>  { label => 'critical-cont', exit_value => 'critical' },
-                                },
-                 output_msg => 'SHM MTX contention: %.2f',
-                 factor => 1, unit => '',
-               },
-    shm_cycles => { thresholds => {
-                                warning_cycles    =>  { label => 'warning-cycles', exit_value => 'warning' },
-                                critical_cycles   =>  { label => 'critical-cycles', exit_value => 'critical' },
-                                },
-                 output_msg => 'SHM cycles through buffer: %.2f',
-                 factor => 1, unit => '',
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'shm', type => 0, skipped_code => { -10 => 1 } },
+    ];
+    $self->{maps_counters}->{shm} = [
+        { label => 'records', set => {
+                key_values => [ { name => 'shm_records', diff => 1 } ],
+                output_template => 'SHM Records: %.2f/s', output_error_template => "SHM Records: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'shm_records', value => 'shm_records_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'writes', set => {
+                key_values => [ { name => 'shm_writes', diff => 1 } ],
+                output_template => 'SHM Writes: %.2f/s', output_error_template => "SHM Writes: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'shm_writes', value => 'shm_writes_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'flushes', set => {
+                key_values => [ { name => 'shm_flushes', diff => 1 } ],
+                output_template => 'SHM Flushes: %.2f/s', output_error_template => "SHM Flushes: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'shm_flushes', value => 'shm_flushes_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'cont', set => {
+                key_values => [ { name => 'shm_cont', diff => 1 } ],
+                output_template => 'SHM Contention: %.2f/s', output_error_template => "SHM Contention: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'shm_cont', value => 'shm_cont_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'cycles', set => {
+                key_values => [ { name => 'shm_cycles', diff => 1 } ],
+                output_template => 'SHM Cycles: %.2f/s', output_error_template => "SHM Cycles: %s",
+                per_second => 1,
+                perfdatas => [
+                    { label => 'shm_cycles', value => 'shm_cycles_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+    ],
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -80,39 +103,13 @@ sub new {
         "sudo"               => { name => 'sudo' },
         "command:s"          => { name => 'command', default => 'varnishstat' },
         "command-path:s"     => { name => 'command_path', default => '/usr/bin' },
-        "command-options:s"  => { name => 'command_options', default => ' -1 ' },
-        "command-options2:s" => { name => 'command_options2', default => ' 2>&1' },
+        "command-options:s"  => { name => 'command_options', default => ' -1 -j 2>&1' },
     });
 
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $options{options}->add_options(arguments => {
-                $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
-            });
-        };
-    };
-
-    $self->{instances_done} = {};
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 };
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            };
-        };
-    };
-    $self->{statefile_value}->check_options(%options);
-};
-
-sub getdata {
+sub manage_selection {
     my ($self, %options) = @_;
 
     my $stdout = centreon::plugins::misc::execute(output => $self->{output},
@@ -120,88 +117,27 @@ sub getdata {
                                                   sudo => $self->{option_results}->{sudo},
                                                   command => $self->{option_results}->{command},
                                                   command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options} . $self->{option_results}->{command_options2});
-    #print $stdout;
+                                                  command_options => $self->{option_results}->{command_options});
 
-    foreach (split(/\n/, $stdout)) {
-        #client_conn            7390867         1.00 Client connections
-        # - Symbolic entry name
-        # - Value
-        # - Per-second average over process lifetime, or a period if the value can not be averaged
-        # - Descriptive text
+#   "MAIN.shm_records": {"type": "MAIN", "value": 6992776, "flag": "a", "description": "SHM records"},
+#   "MAIN.shm_writes": {"type": "MAIN", "value": 3947244, "flag": "a", "description": "SHM writes"},
+#   "MAIN.shm_flushes": {"type": "MAIN", "value": 12354, "flag": "a", "description": "SHM flushes due to overflow"},
+#   "MAIN.shm_cont": {"type": "MAIN", "value": 564, "flag": "a", "description": "SHM MTX contention"},
+#   "MAIN.shm_cycles": {"type": "MAIN", "value": 3, "flag": "a", "description": "SHM cycles through buffer"},
 
-        if  (/^(.\S*)\s*([0-9]*)\s*([0-9.]*)\s(.*)$/i) {
-            #print "FOUND: " . $1 . "=" . $2 . "\n";
-            $self->{result}->{$1} = $2;
-        };
-    };
+    my $json_data = decode_json($stdout);
+
+    $self->{cache_name} = "cache_varnish_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{hostname}) ? md5_hex($self->{option_results}->{hostname}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
+    foreach my $counter (keys %{$json_data}) {
+        next if ($counter !~ /shm/);
+        my $value = $json_data->{$counter}->{value};
+        $counter =~ s/^([A-Z])+\.//;
+        $self->{shm}->{$counter} = $value;
+    }
 };
-
-sub run {
-    my ($self, %options) = @_;
-
-    $self->getdata();
-
-    $self->{statefile_value}->read(statefile => 'cache_apps_varnish' . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $self->{result}->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    # Calculate
-    my $delta_time = $self->{result}->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-
-    
-    foreach (keys %{$maps_counters}) {
-        #print $_ . "\n";
-        $self->{old_cache}->{$_} = $self->{statefile_value}->get(name => '$_');     # Get Data from Cache
-        $self->{old_cache}->{$_} = 0 if ( $self->{old_cache}->{$_} > $self->{result}->{$_} );
-        $self->{outputdata}->{$_} = ($self->{result}->{$_} - $self->{old_cache}->{$_}) / $delta_time;
-    };
-
-    # Write Cache if not there
-    $self->{statefile_value}->write(data => $self->{result}); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-
-    my @exits;
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            push @exits, $self->{perfdata}->threshold_check(value => $self->{outputdata}->{$_}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
-        }
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    
-
-    my $extra_label = '';
-    $extra_label = '_' . $instance_output if ($num > 1);
-
-    my $str_output = "";
-    my $str_append = '';
-    foreach (keys %{$maps_counters}) {
-        $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor});
-        $str_append = ', ';
-        my ($warning, $critical);
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
-            $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
-        }
-        $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
-                                        value => sprintf("%.2f", $self->{outputdata}->{$_} * $maps_counters->{$_}->{factor}),
-                                        warning => $warning,
-                                        critical => $critical);
-    }
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => $str_output);
-
-    $self->{output}->display();
-    $self->{output}->exit();
-};
-
 
 1;
 
@@ -235,11 +171,11 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 =item B<--command-options>
 
-Parameter for Binary File (Default: ' -1 ')
+Parameter for Binary File (Default: ' -1 -j 2>&1')
 
 =item B<--warning-*>
 
-Warning Threshold for: 
+Warning Threshold for:
 records => SHM records,
 writes  => SHM writes,
 flushes => SHM flushes due to overflow,
@@ -248,7 +184,7 @@ cycles  => SHM cycles through buffer
 
 =item B<--critical-*>
 
-Critical Threshold for: 
+Critical Threshold for:
 records => SHM records,
 writes  => SHM writes,
 flushes => SHM flushes due to overflow,

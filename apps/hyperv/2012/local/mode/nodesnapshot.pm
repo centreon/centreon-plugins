@@ -31,21 +31,34 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok', skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
                 key_values => [ { name => 'snapshot' }, { name => 'display' }],
-                closure_custom_output => $self->can('custom_vm_output'),
+                closure_custom_output => $self->can('custom_snapshot_output'),
+                closure_custom_perfdata => sub { return 0; },
+            }
+        },
+        { label => 'backing', set => {
+                key_values => [ { name => 'backing' }, { name => 'display' }],
+                closure_custom_output => $self->can('custom_backing_output'),
                 closure_custom_perfdata => sub { return 0; },
             }
         },
     ];
 }
 
-sub custom_vm_output {
+sub custom_snapshot_output {
     my ($self, %options) = @_;
     my $msg = 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute});
+
+    return $msg;
+}
+
+sub custom_backing_output {
+    my ($self, %options) = @_;
+    my $msg = 'backing started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute});
 
     return $msg;
 }
@@ -96,18 +109,18 @@ sub manage_selection {
     }
     
     #[name= ISC1-SV04404 ][state= Running ][note= ]
-    #[checkpointCreationTime= 1475502921.28734 ]
-    #[checkpointCreationTime= 1475503073.81975 ]
+    #[checkpointCreationTime= 1475502921.28734 ][type= snapshot]
+    #[checkpointCreationTime= 1475503073.81975 ][type= backing]
     $self->{vm} = {};
     
-    my $id = 1;
+    my ($id, $time) = (1, time());
     while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
-        my $chkpt = -1;
-        while ($content =~ /\[checkpointCreationTime=s*(.*?)\s*\]/msig) {
-            $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
+        my %chkpt = (backing => -1, snapshot => -1);
+        while ($content =~ /\[checkpointCreationTime=\s*(.*?)\s*\]\[type=\s*(.*?)\s*\]/msig) {
+            $chkpt{$2} = $1 if ($chkpt{$2} == -1 || $chkpt{$2} > $1);
         }
-        next if ($chkpt == -1);
+        next if ($chkpt{backing} == -1 && $chkpt{snapshot} == -1);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
@@ -125,7 +138,9 @@ sub manage_selection {
             next;
         }
         
-        $self->{vm}->{$id} = { display => $name, snapshot => time() - $chkpt };
+        $self->{vm}->{$id} = { display => $name, 
+            snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef, 
+            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef };
         $id++;
     }
 }
@@ -180,12 +195,12 @@ Filter by VM notes (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'snapshot' (in seconds).
+Can be: 'snapshot' (in seconds), 'backing' (in seconds).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'snapshot' (in seconds).
+Can be: 'snapshot' (in seconds), 'backing' (in seconds).
 
 =back
 

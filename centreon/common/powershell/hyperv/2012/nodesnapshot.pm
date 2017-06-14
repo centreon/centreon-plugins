@@ -51,7 +51,7 @@ Try {
                 if ($i -eq 0) {
                     Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
                 }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
+                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= snapshot]"
                 $i=1
             }
         }
@@ -64,7 +64,7 @@ Try {
                     if ($i -eq 0) {
                         Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
                     }
-                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "]"
+                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= backing]"
                     $i=1
                 }
             }

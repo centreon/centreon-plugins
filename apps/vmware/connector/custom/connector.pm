@@ -23,7 +23,7 @@ package apps::vmware::connector::custom::connector;
 use strict;
 use warnings;
 use JSON;
-use ZMQ::LibZMQ3;
+use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use UUID;
 

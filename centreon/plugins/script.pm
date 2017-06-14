@@ -30,7 +30,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20170329;
+my $global_version = 20170613;
 my $alternative_fatpacker = 0;
 
 sub new {
@@ -132,7 +132,7 @@ sub convert_args {
     
     if ($self->{convert_args} =~ /^(.+?),(.*)/) {
         my ($search, $replace) = ($1, $2);
-        for (my $i = 0; $i < $#ARGV; $i++) {
+        for (my $i = 0; $i <= $#ARGV; $i++) {
             eval "\$ARGV[\$i] =~ s/$search/$replace/g";
         }
     }

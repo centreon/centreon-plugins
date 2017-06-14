@@ -330,6 +330,12 @@ sub run_group {
                                         short_msg => "$total_problems problem(s) detected");
         }
     }
+    
+    if (defined($options{config}->{display_counter_problem})) {
+        $self->{output}->perfdata_add(label => $options{config}->{display_counter_problem}->{label}, unit => $options{config}->{display_counter_problem}->{unit},
+                                      value => $total_problems,
+                                      min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max});
+    }
 }
 
 sub run {

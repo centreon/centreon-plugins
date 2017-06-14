@@ -75,7 +75,7 @@ sub check {
             next;
         }
 
-        $exit = $self->get_severity(label => 'oper', section => 'fan.oper', value => $result->{chasEntPhysAdminStatus});
+        $exit = $self->get_severity(label => 'oper', section => 'fan.oper', value => $result->{chasEntPhysOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("fan '%s/%s/%s' operational status is %s",
@@ -89,9 +89,9 @@ sub check {
         my ($phys_index, $loc_index) = ($1, $2);
         my $status = $self->{results}->{$oids{alaChasEntPhysFanStatus}}->{$key};
         my $descr = defined($self->{results}->{entity}->{$oids{entPhysicalDescr} . '.' . $phys_index}) ? 
-                        $self->{results}->{$oids{entPhysicalDescr}}->{$oids{entPhysicalDescr} . '.' . $phys_index} : 'unknown';
+                        $self->{results}->{entity}->{$oids{entPhysicalDescr} . '.' . $phys_index} : 'unknown';
         my $name  = defined($self->{results}->{entity}->{$oids{entPhysicalName} . '.' . $phys_index}) ? 
-                        $self->{results}->{$oids{entPhysicalName}}->{$oids{entPhysicalName} . '.' . $phys_index} : 'unknown';
+                        $self->{results}->{entity}->{$oids{entPhysicalName} . '.' . $phys_index} : 'unknown';
         
         next if ($self->check_filter(section => 'fan', instance => $phys_index . '.' . $loc_index));
         $self->{components}->{fan}->{total}++;

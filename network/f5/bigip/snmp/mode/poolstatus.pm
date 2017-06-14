@@ -66,6 +66,15 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_threshold_output'),
             }
         },
+        { label => 'current-server-connections', set => {
+                key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'Name' } ],
+                output_template => 'Current Server Connections : %s', output_error_template => "Current Server Connections : %s",
+                perfdatas => [
+                    { label => 'current_server_connections', value => 'ltmPoolStatServerCurConns_absolute',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'Name_absolute' },
+                ],
+            }
+        },
     ];
 }
 
@@ -162,45 +171,65 @@ my $mapping = {
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.5.1.2.1.21' },
     },
 };
-my $oid_ltmPoolStatusEntry = '.1.3.6.1.4.1.3375.2.2.5.5.2.1'; # new
-my $oid_ltmPoolEntry = '.1.3.6.1.4.1.3375.2.2.5.1.2.1'; # old
+my $mapping2 = {
+    ltmPoolStatServerCurConns => { oid => '.1.3.6.1.4.1.3375.2.2.5.2.3.1.8' },
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmPoolEntry, start => $mapping->{old}->{AvailState}->{oid} },
-                                                            { oid => $oid_ltmPoolStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+                                                            { oid => $mapping->{new}->{AvailState}->{oid} },
+                                                            { oid => $mapping->{old}->{AvailState}->{oid} },
                                                          ],
                                                          , nothing_quit => 1);
     
-    my ($branch, $map) = ($oid_ltmPoolStatusEntry, 'new');
-    if (!defined($self->{results}->{$oid_ltmPoolStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmPoolStatusEntry}}) == 0)  {
-        ($branch, $map) = ($oid_ltmPoolEntry, 'old');
+    my ($branch_name, $map) = ($mapping->{new}->{AvailState}->{oid}, 'new');
+    if (!defined($snmp_result->{$mapping->{new}->{AvailState}->{oid}}) || scalar(keys %{$snmp_result->{$mapping->{new}->{AvailState}->{oid}}}) == 0)  {
+        ($branch_name, $map) = ($mapping->{old}->{AvailState}->{oid}, 'old');
     }
     
     $self->{pool} = {};
-    foreach my $oid (keys %{$self->{results}->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{$branch_name}}) {
+        $oid =~ /^$branch_name\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
         
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $instance);
         $result->{Name} = '';
         foreach (split /\./, $instance) {
             $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
         }
+        
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
+            $self->{output}->output_add(long_msg => "skipping pool '" . $result->{Name} . "'.", debug => 1);
             next;
         }
-        if ($result->{EnabledState} !~ /enabled/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': state is '$result->{EnabledState}'.");
-            next;
-        }
-        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
-        $self->{pool}->{$instance} = { %$result };
+        $self->{pool}->{$instance} = { Name => $result->{Name}, AvailState => $result->{AvailState} };
+    }
+    
+    $options{snmp}->load(oids => [$mapping->{$map}->{EnabledState}->{oid},
+        $mapping->{$map}->{StatusReason}->{oid}, $mapping2->{ltmPoolStatServerCurConns}->{oid}
+        ], 
+        instances => [keys %{$self->{pool}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{pool}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result, instance => $_);
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+        
+        delete $result->{AvailState};
+        if ($result->{EnabledState} !~ /enabled/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $self->{pool}->{$_}->{Name} . "': state is '$result->{EnabledState}'.", debug => 1);
+            delete $self->{pool}->{$_};
+            next;
+        }
+        $self->{pool}->{$_}->{ltmPoolStatServerCurConns} = $result2->{ltmPoolStatServerCurConns};
+        $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
+        foreach my $name (keys %$result) {
+            $self->{pool}->{$_}->{$name} = $result->{$name};
+        }
     }
     
     if (scalar(keys %{$self->{pool}}) <= 0) {
@@ -228,6 +257,16 @@ Filter by name (regexp can be used).
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='pool,CRITICAL,^(?!(green)$)'
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'current-server-connections'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'current-server-connections'.
 
 =back
 

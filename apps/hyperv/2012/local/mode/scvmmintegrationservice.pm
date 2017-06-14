@@ -66,6 +66,11 @@ sub custom_status_calc {
     $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{vmaddition} = $options{new_datas}->{$self->{instance} . '_vmaddition'};
+    $self->{result_values}->{operatingsystemshutdownenabled} = $options{new_datas}->{$self->{instance} . '_operatingsystemshutdownenabled'};
+    $self->{result_values}->{timesynchronizationenabled} = $options{new_datas}->{$self->{instance} . '_timesynchronizationenabled'};
+    $self->{result_values}->{dataexchangeenabled} = $options{new_datas}->{$self->{instance} . '_dataexchangeenabled'};
+    $self->{result_values}->{heartbeatenabled} = $options{new_datas}->{$self->{instance} . '_heartbeatenabled'};
+    $self->{result_values}->{backupenabled} = $options{new_datas}->{$self->{instance} . '_backupenabled'};
     return 0;
 }
 
@@ -77,7 +82,9 @@ sub set_counters {
     ];
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
-                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vmaddition' } ],
+                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vmaddition' }, 
+                    { name => 'operatingsystemshutdownenabled' }, { name => 'timesynchronizationenabled' }, 
+                    { name => 'dataexchangeenabled' }, { name => 'heartbeatenabled' }, { name => 'backupenabled' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -171,16 +178,20 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[name= test1 ][description= Test Descr -  - pp -  - aa ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\test1 ]][VMAddition= 6.3.9600.16384 ]
-    #[name= test2 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test2 ]][VMAddition= Not Detected ]
-    #[name= test3 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test3 ]][VMAddition= Not Detected ]
-    #[name= test4 ][description=  ][status= HostNotResponding ][cloud=  ][hostgrouppath= All Hosts\CORP\test4 ]][VMAddition= Not Detected ]
+    #[VM= test1 ][Description= Test Descr -  - pp -  - aa ][Status= Running ][Cloud=  ][HostGroup= All Hosts\CORP\test1 ][VMAddition= 6.3.9600.16384 ]
+    #[VM= test2 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test2 ][VMAddition= Not Detected ]
+    #[VM= test3 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test3 ][VMAddition= Not Detected ]
+    #[VM= test4 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test4 ][VMAddition= Not Detected ]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\]\[VMAddition=\s*(.*?)\s*\]/msig) {
-        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5, vmaddition => $6);
-
+    my @lines = split /\n/, $stdout;
+    foreach my $line (@lines) {
+        my %values;
+        while ($line =~ /\[(.*?)=\s*(.*?)\s*\]/g) {
+            $values{lc($1)} = $2;
+        }
+        
         $values{hostgroup} =~ s/\\/\//g;
         my $filtered = 0;
         foreach (('vm', 'description', 'status', 'hostgroup')) {
