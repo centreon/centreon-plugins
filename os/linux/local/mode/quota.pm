@@ -31,11 +31,12 @@ my $instance_mode;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
+    my ($extra_label, $unit) = ('', '');
+    $unit = 'B' if ($self->{result_values}->{label_ref} eq 'data');
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label_ref} . '_used' . $extra_label, unit => 'B',
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label_ref} . '_used' . $extra_label, unit => $unit,
                                   value => $self->{result_values}->{used},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{warn_label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{crit_label}, total => $self->{result_values}->{total}, cast_int => 1),
