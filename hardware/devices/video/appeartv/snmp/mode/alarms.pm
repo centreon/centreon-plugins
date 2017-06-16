@@ -150,8 +150,6 @@ my $mapping = {
     msgSeverity             => { oid => '.1.3.6.1.4.1.23916.3.1.4.1.13', map => \%map_severity },
 };
 
-my $oid_clusVolumeEntry = '.1.3.6.1.4.1.9804.3.1.1.2.12.97.1';
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -222,4 +220,3 @@ Only check new alarms.
 =back
 
 =cut
-    
