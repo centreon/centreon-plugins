@@ -110,10 +110,11 @@ sub new {
                                   "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning/i' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /error/i' },
                                   "memory"              => { name => 'memory' },
+                                  "timezone:s"          => { name => 'timezone' },
                                 });
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
-                                           error_msg => "Cannot load module 'Date::Parse'.");
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
+                                           error_msg => "Cannot load module 'DateTime'.");
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -127,6 +128,8 @@ sub check_options {
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
+    
+    $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 }
 
 sub change_macros {
@@ -167,20 +170,17 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        $result->{eventLogDate} =~ /(\d+)\/(\d+)\/(\d+)/;
-        my $date_format = $3 . '-' . $1 . '-' . $2 . ' ' . $result->{eventLogTime};
-        my $create_time = Date::Parse::str2time($date_format);
-        if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't Parse date '" . $date_format . "'");
-            next;
-        }
+        my $date = $result->{eventLogDate} . ' ' . $result->{eventLogTime};
+        $result->{eventLogDate} =~ /(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/;
         
-        next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
+        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6,
+                               time_zone => $self->{option_results}->{timezone});
         
-        my $diff_time = $current_time - $create_time;
+        next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
         
-        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time, generation_time => $date_format };
+        my $diff_time = $current_time - $dt->epoch;
+        
+        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time, generation_time => centreon::plugins::misc::change_seconds(value => $dt->epoch) };
         $i++;
     }
     
@@ -208,6 +208,10 @@ Can used special variables like: %{severity}, %{text}, %{since}
 
 Set critical threshold for status (Default: '%{severity} =~ /error/i').
 Can used special variables like: %{severity}, %{text}, %{since}
+
+=item B<--timezone>
+
+Timezone of time options. Default is 'GMT'.
 
 =item B<--memory>
 
