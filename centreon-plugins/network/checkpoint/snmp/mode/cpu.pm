@@ -69,7 +69,7 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $totalCpuUsed, 
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage: %d (System: %d User: %d Idle: %d)", $totalCpuUsed, $result->{$oid_procUsrTime}, $result->{$oid_procSysTime},  $result->{$oid_procIdleTime} ));
+                                short_msg => sprintf("CPU Usage: %d (System: %d User: %d Idle: %d)", $totalCpuUsed, $result->{$oid_procSysTime}, $result->{$oid_procUsrTime},  $result->{$oid_procIdleTime} ));
     $self->{output}->perfdata_add(label => "cpu", unit => '%',
                                   value => $totalCpuUsed,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
