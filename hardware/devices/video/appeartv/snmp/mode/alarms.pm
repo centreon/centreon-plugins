@@ -77,7 +77,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, cb_long_output => 'alarms_long_output', message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
           group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
         }
     ];
@@ -92,12 +92,6 @@ sub set_counters {
             }
         },
     ];
-}
-
-sub policy_long_output {
-    my ($self, %options) = @_;
-    
-    return "checking alarms";
 }
 
 sub new {
