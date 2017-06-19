@@ -157,7 +157,7 @@ sub manage_selection {
         $self->{statefile_cache}->read(statefile => "cache_imm_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
-    
+
     my ($i, $current_time) = (1, time());
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{eventLogSeverity}->{oid}\.(.*)$/);
@@ -165,16 +165,16 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         my $date = $result->{eventLogDate} . ' ' . $result->{eventLogTime};
-        $result->{eventLogDate} =~ /(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/;
-        
+        $date =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)/;
+
         my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6,
                                time_zone => $self->{option_results}->{timezone});
-        
+
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
-        
+
         my $diff_time = $current_time - $dt->epoch;
-        
-        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time, generation_time => centreon::plugins::misc::change_seconds(value => $dt->epoch) };
+
+        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time, generation_time => centreon::plugins::misc::change_seconds(value => $diff_time) };
         $i++;
     }
     
