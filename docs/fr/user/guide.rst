@@ -1058,3 +1058,95 @@ Le résultat de la commande :
     $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
     OK: Metric 'avg' value is '3072.3' | 'avg'=3072.3con;;;;
     Metric 'avg' value is '3072.3'
+
+--------------------
+Multi-service plugin
+--------------------
+
+Ce mode permet de compiler/aggréger le résultat de plusieurs checks dans un seul. Il peut aussi être utilisé pour réaliser des aggregation dans des groupes logiques, il a été pensé pour récupérer au travers de réseaux bas débit des résultats de contrôle sur des Centreon distants, mais il peut aussi permettre d'éviter de checker deux fois les ressources dans deux Centreon différents.
+
+Format du fichier de configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+    {
+        "mode":"sqlmatching",
+        "selection":{
+            "ESX":{
+                "host_name_filter":"%clus-esx-n%",
+                "service_name_filter":"Esx-Status"
+            },
+            "XIVO":{
+                "host_name_filter":"%xivo%",
+                "service_name_filter":"Ping"
+            }
+        },
+        "counters":{
+            "totalservices":true,
+            "totalhosts":true,
+            "groups":true
+        },
+        "formatting":{
+            "groups_global_msg":"Nothing special on groups",
+            "host_service_separator":"/",
+            "display_details":true
+        }
+    }
+
+* mode (obligatoire) : valeurs possibles: 'sqlmatching' or 'exactmatch'. Liés au format du bloc "selection" ;
+* selection (obligatoire) : Lorsque le mode 'sqlmatching' est choisis, on va alors définir les filtres comme ci-dessus (host/service_name_filter). Au contraire, si l'on utilise le mode "exactmatch", alors on passe des clés valeurs correspondant à la correspondant host/service. (Exemple avec deux aggregation logqies "groups" esx-status/load ci-dessous) 
+
+::
+
+    "selection":{
+        "esx-status":{
+            "esx-n1":"Esx-Status",
+            "esx-n2":"Esx-Status",
+            "esx-n3":"Esx-Status"
+        },
+        "esx-load":{
+            "esx-n1":"Esx-Memory",
+            "esx-n2":"Esx-Memory",
+            "esx-n3":"Esx-Memory",
+            "esx-n1":"Esx-Cpu",
+            "esx-n2":"Esx-Cpu",
+            "esx-n3":"Esx-Cpu"
+        }
+    },
+
+* counters (optionnel) : Contiens trois booléens, à configurer en 'true' ou 'false' selon les compteurs que l'on veut utiliser et considérer (totalservices, totalhosts, groups).
+* formatting (optionnel) : Contiens trois clés/valeurs, 'groups_global_msg' pour définir un statut global lorsque tout va bien, 'host_service_separator' pour choisir le séparateur entre le nom de l'hôte et celui du service dans les éléments de l'output, 'display_details' afin de définir si le plugin doit détailler les hôtes et/ou services en erreur dans l'output étendu (mode verbose)
+
+Ligne de commande, output, seuils
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Exemple de commande :
+
+::
+
+/usr/lib/nagios/plugins/centreon_plugins.pl --plugin database::mysql::plugin --dyn-mode apps::centreon::sql::mode::multiservices --host localhost --username centreon --password c3ntreon --config-file '/root/global-services.json' --verbose
+
+Example de sortie : 
+
+::
+
+    OK: Hosts state summary [up:4][down:2][unreachable:0] - Services state summary [ok:4][warning:0][critical:2][unknown:0] - Nothing special on groups |
+
+Données de performance :
+
+::
+
+'total_host_up'=4;;;0; 'total_host_down'=2;;;0; 'total_host_unreachable'=0;;;0; 'total_host_ok'=4;;;0; 'total_host_warning'=0;;;0; 'total_host_critical'=2;;;0; 'total_host_unknown'=0;;;0; 'host_up_ESX'=4;;;0; 'host_down_ESX'=0;;;0; 'host_unreachable_ESX'=0;;;0; 'service_ok_ESX'=4;;;0; 'service_warning_ESX'=0;;;0; 'service_critical_ESX'=0;;;0; 'service_unknown_ESX'=0;;;0; 'host_up_XIVO'=0;;;0; 'host_down_XIVO'=2;;;0; 'host_unreachable_XIVO'=0;;;0; 'service_ok_XIVO'=0;;;0; 'service_warning_XIVO'=0;;;0; 'service_critical_XIVO'=2;;;0; 'service_unknown_XIVO'=0;;;0;
+
+Mode verbeux (avec l'affichage détaillé d'activé) :
+
+::
+
+    Group 'ESX': HOSTS: [up: 4 (clus-esx-n1.com - clus-esx-n2.com - clus-esx-n3.com - clus-esx-n4.com)][down: 0][unreachable: 0] -      SERVICES: [ok: 4 (clus-esx-n1.com/Esx-Status - clus-esx-n2.com/Esx-Status - clus-esx-n3.com/Esx-Status - clus-esx-n4.com/Esx-Status)][warning: 0][critical: 0][unknown: 0]
+    Group 'XIVO': HOSTS: [up: 0][down: 2 (srvi-xivo-n1 - srvi-xivo-n2)][unreachable: 0] - SERVICES: [ok: 0][warning: 0][critical: 2 (srvi-xivo-n1/Ping - srvi-xivo-n2/Ping)][unknown: 0]
+
+Voici la manière de définir les seuils (total_statut pour les warning/critical-total et définition de l'instance et du décompte du nombre de statut pour les seuils par "groupes logiques") :
+
+::
+
+--critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'
