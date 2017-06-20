@@ -165,7 +165,7 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         my $date = $result->{eventLogDate} . ' ' . $result->{eventLogTime};
-        $date =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)\/(\d+)\/(\d+)/;
+        $date =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
 
         my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6,
                                time_zone => $self->{option_results}->{timezone});
