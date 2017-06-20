@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,14 +27,14 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|psu|sysdrive)$';
+
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|psu|sysdrive|battery)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
-        psu => [            
+        psu => [
             ['ok', 'OK'],
             ['failed', 'CRITICAL'],
             ['notFitted', 'WARNING'],
@@ -45,7 +45,7 @@ sub set_system {
             ['warning', 'WARNING'],
             ['severe', 'CRITICAL'],
             ['unknown', 'UNKNOWN'],
-        ],        
+        ],
         temperature => [
             ['ok', 'OK'],
             ['tempWarning', 'WARNING'],
@@ -65,15 +65,28 @@ sub set_system {
             ['formatting', 'OK'],
             ['unknown', 'UNKNOWN'],
         ],
+        battery => [
+            ['ok', 'OK'],
+            ['fault', 'CRITICAL'],
+            ['notFitted', 'WARNING'],
+            ['initializing', 'OK'],
+            ['normalCharging', 'OK'],
+            ['discharged', 'CRITICAL'],
+            ['cellTesting', 'OK'],
+            ['notResponding', 'CRITICAL'],
+            ['low', 'WARNING'],
+            ['veryLow', 'CRITICAL'],
+            ['ignore', 'UNKNOWN'],
+        ],
     };
-    
+
     $self->{components_path} = 'centreon::common::bluearc::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'fan', 'psu', 'sysdrive'];
+    $self->{components_module} = ['temperature', 'fan', 'psu', 'sysdrive', 'battery' ];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -82,12 +95,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                 });
-    
+
     return $self;
 }
 
@@ -104,7 +117,7 @@ Check Hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'temperature', 'fan', 'psu', 'sysdrive'.
+Can be: 'temperature', 'fan', 'psu', 'sysdrive', 'battery'.
 
 =item B<--filter>
 
