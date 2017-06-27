@@ -71,7 +71,7 @@ sub check {
         $self->{components}->{sfp}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("sfp '%s' signal status is '%s' [instance = %s]",
                                                         $name, $result2->{sfpDiagLOS}, $slot_id . '.' . $sfp_faceplate_num));
-        $exit = $self->get_severity(section => 'sfp', value => $result2->{sfpDiagLOS});
+        $exit = $self->get_severity(section => 'sfp', instance => $slot_id . '.' . $sfp_faceplate_num, value => $result2->{sfpDiagLOS});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("sfp '%s' signal status is '%s'", $name, $result2->{sfpDiagLOS}));
