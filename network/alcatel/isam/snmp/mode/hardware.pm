@@ -97,7 +97,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='psu,CRITICAL,^(?!(presentOK)$)'
+Example: --threshold-overload='sfp,OK,^los$'
 
 =item B<--warning>
 
