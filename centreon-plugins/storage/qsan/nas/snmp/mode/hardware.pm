@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+use storage::qsan::nas::snmp::mode::components::resources qw($mapping);
 
 sub set_system {
     my ($self, %options) = @_;
@@ -45,6 +46,7 @@ sub set_system {
         ],
     };
     
+    $self->{monitor_loaded} = 0;
     $self->{components_path} = 'storage::qsan::nas::snmp::mode::components';
     $self->{components_module} = ['disk', 'voltage', 'temperature', 'psu', 'fan'];
 }
@@ -53,9 +55,11 @@ sub snmp_execute {
     my ($self, %options) = @_;
     
     $self->{snmp} = $options{snmp};
-    my $oid_monitorEntry = '.1.3.6.1.4.1.22274.2.3.2.1';
-    push @{$self->{request}}, { oid => $oid_monitorEntry };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    if ($self->{monitor_loaded} == 1) {
+        $self->{results_monitor} = { %{$self->{results}->{$mapping->{ems_type}->{oid}}}, %{$self->{results}->{$mapping->{ems_item}->{oid}}},
+            %{$self->{results}->{$mapping->{ems_value}->{oid}}}, %{$self->{results}->{$mapping->{ems_status}->{oid}}} };
+    }
 }
 
 sub new {
