@@ -125,11 +125,11 @@ Minutes to lookback (From you to UTC) default: 65
 
 =item B<--warning-*>
 
-Set warning threshold for number of poor calls. Can be : 'total', 'user'
+Set warning threshold for number of poor calls. Can be : 'global', 'user'
 
 =item B<--critical-*>
 
-Set critical threshold for number of poor calls. Can be : 'total', 'user'
+Set critical threshold for number of poor calls. Can be : 'global', 'user'
 
 =back
 
