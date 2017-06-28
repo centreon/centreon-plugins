@@ -46,6 +46,7 @@ sub new {
          "subjectname:s"     => { name => 'subjectname', default => '' },
          "issuername:s"      => { name => 'issuername', default => '' },
          "timeout:s"         => { name => 'timeout', default => 5 },
+         'ssl-opt:s%'        => { name => 'ssl_opt' },
          });
     return $self;
 }
@@ -74,6 +75,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option (issuer, subject or expiration)");
         $self->{output}->option_exit();
     }
+    
+    $self->{ssl_opts} = '';
+    if (defined($self->{option_results}->{ssl_opt})) {
+        foreach (keys %{$self->{option_results}->{ssl_opt}}) {
+            $self->{ssl_opts} .= "$_ => " . $self->{option_results}->{ssl_opt}->{$_} . ", ";
+        }
+    }
 }
 
 sub run {
@@ -83,6 +91,7 @@ sub run {
     my $client = IO::Socket::SSL->new(
         PeerHost => $self->{option_results}->{hostname},
         PeerPort => $self->{option_results}->{port},
+        eval $self->{ssl_opts},
         $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
     );
     if (!defined($client)) {
@@ -205,6 +214,10 @@ Subject Name pattern (support alternative subject name)
 =item B<--issuername>
 
 Issuer Name pattern
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_verify_mode=SSL_VERIFY_NONE").
 
 =back
 
