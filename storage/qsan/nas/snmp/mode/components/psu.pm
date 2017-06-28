@@ -22,16 +22,16 @@ package storage::qsan::nas::snmp::mode::components::psu;
 
 use strict;
 use warnings;
+use storage::qsan::nas::snmp::mode::components::resources qw($mapping);
 
-my $mapping = {
-    ems_type    => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.2' },
-    ems_item    => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.3' },
-    ems_value   => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.4' },
-    ems_status  => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.5' },
-};
-my $oid_monitorEntry = '.1.3.6.1.4.1.22274.2.3.2.1';
-
-sub load {}
+sub load {
+    my ($self) = @_;
+    
+    if ($self->{monitor_loaded} == 0) {
+        storage::qsan::nas::snmp::mode::components::resources::load_monitor(request => $self->{request});
+        $self->{monitor_loaded} = 1;
+    }
+}
 
 sub check {
     my ($self) = @_;
@@ -41,12 +41,12 @@ sub check {
     return if ($self->check_filter(section => 'psu'));
 
     my ($exit, $warn, $crit, $checked);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_monitorEntry}})) {
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results_monitor}})) {
         next if ($oid !~ /^$mapping->{ems_type}->{oid}\.(.*)$/);
         my $instance = $1;
-        next if ($self->{results}->{$oid_monitorEntry}->{$oid} !~ /Power Supply/i);
+        next if ($self->{results_monitor}->{$oid} !~ /Power Supply/i);
 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_monitorEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results_monitor}, instance => $instance);
         
         next if ($self->check_filter(section => 'psu', instance => $instance));
         
