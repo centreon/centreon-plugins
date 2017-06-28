@@ -104,6 +104,17 @@ sub set_counters {
             }
         },
     ];
+    $self->{maps_counters}->{app_invite} = [
+        { label => 'app-invite', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'App Invite : %d',
+                perfdatas => [
+                    { label => 'app_invite', value => 'value_absolute', template => '%d', 
+                      unit => 'sessions', min => 0, label_extra_instance => 0 },
+                ],
+            }
+        },
+    ];
 
 }
 
