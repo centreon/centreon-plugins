@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::docker::plugin;
+package cloud::docker::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,19 +31,11 @@ sub new {
 
     $self->{version} = '0.3';
     %{$self->{modes}} = (
-                        'blockio'           => 'cloud::docker::mode::blockio',
-                        'containerstate'    => 'cloud::docker::mode::containerstate',
-                        'cpu'               => 'cloud::docker::mode::cpu',
-                        'image'             => 'cloud::docker::mode::image',
-                        'info'              => 'cloud::docker::mode::info',
-                        'list-containers'   => 'cloud::docker::mode::listcontainers',
-                        'list-nodes'        => 'cloud::docker::mode::listnodes',
-                        'memory'            => 'cloud::docker::mode::memory',
-                        'nodestate'         => 'cloud::docker::mode::nodestate',
-                        'traffic'           => 'cloud::docker::mode::traffic',
+                        'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
+                        'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
                         );
 
-    $self->{custom_modes}{dockerapi} = 'cloud::docker::custom::dockerapi';
+    $self->{custom_modes}{api} = 'cloud::docker::restapi::custom::api';
     return $self;
 }
 
