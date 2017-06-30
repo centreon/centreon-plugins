@@ -125,11 +125,13 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "container-id:s"              => { name => 'container_id' },
                                   "filter-name:s"               => { name => 'filter_name' },
                                   "warning-container-status:s"  => { name => 'warning_container_status' },
                                   "critical-container-status:s" => { name => 'critical_container_status', default => '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i' },
                                 });
    
+    $self->{statefile_cache_containers} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -139,6 +141,7 @@ sub check_options {
 
     $instance_mode = $self;
     $self->change_macros();
+    $self->{statefile_cache_containers}->check_options(%options);
 }
 
 sub prefix_containers_output {
@@ -161,7 +164,7 @@ sub manage_selection {
     my ($self, %options) = @_;
                                                            
     $self->{containers} = {};
-    my $result = $options{custom}->api_get_containers();
+    my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, statefile => $self->{statefile_cache_containers});
     use Data::Dumper;
     print Data::Dumper::Dumper($result);
     exit(1);
@@ -203,9 +206,13 @@ Check container usage.
 
 =over 8
 
+=item B<--container-id>
+
+Exact container ID.
+
 =item B<--filter-name>
 
-Filter name (can be a regexp).
+Filter by container name (can be a regexp).
 
 =item B<--filter-counters>
 
@@ -231,6 +238,8 @@ Can used special variables like: %{id}, %{name}, %{status}.
 
 Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i').
 Can used special variables like: %{id}, %{name}, %{status}.
+
+
 
 =back
 
