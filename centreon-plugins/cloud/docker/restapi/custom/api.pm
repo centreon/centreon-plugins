@@ -59,9 +59,10 @@ sub new {
                         "cacert-file:s" => { name => 'cacert_file' },
                         "cert-pwd:s"    => { name => 'cert_pwd' },
                         "cert-pkcs12"   => { name => 'cert_pkcs12' },
-                        "api-display"       => { name => 'api_display' },
-                        "api-write-file:s"  => { name => 'api_write_file' },
-                        "api-read-file:s"   => { name => 'api_read_file' },
+                        "api-display"           => { name => 'api_display' },
+                        "api-write-file:s"      => { name => 'api_write_file' },
+                        "api-read-file:s"       => { name => 'api_read_file' },
+                        "reload-cache-time:s"   => { name => 'reload_cache_time', default => 300 },
 				    });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -112,7 +113,7 @@ sub check_options {
     foreach my $node_name (@{$self->{hostname}}) {
         if ($node_name ne '') {
             $self->{http}->{$node_name} = centreon::plugins::http->new(output => $self->{output});
-            $self->{options_results}->{hostname} = $node_name;
+            $self->{option_results}->{hostname} = $node_name;
             $self->{http}->{$node_name}->set_options(%{$self->{option_results}});
         }
     }
@@ -170,20 +171,46 @@ sub api_read_file {
     return $content;
 }
 
+sub cache_containers {
+    my ($self, %options) = @_;
+
+    my $has_cache_file = $options{statefile}->read(statefile => 'cache_docker_containers_' . join(':', @{$self->{hostname}}) . '_' . $self->{option_results}->{port});
+    my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
+    my $containers = $options{statefile}->get(name => 'containers');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
+        $containers = {};
+        my $datas = { last_timestamp => time(), containers => $containers };
+        
+        foreach my $node_name (keys %{$self->{http}}) {
+            my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
+            foreach my $container (@$list_containers) {
+                $containers->{$container->{Id}} = {
+                    State => $container->{State},
+                    NodeName => $node_name,
+                    Name => join(':', @{$container->{Names}}),
+                };
+            }
+        }
+        $options{statefile}->write(data => $containers);
+    }
+
+    return $containers;
+}
+
 sub internal_api_list_containers {
     my ($self, %options) = @_;
     
     my $response = $self->{http}->{$options{node_name}}->request(
         url_path => '/containers/json?all=true',
-        critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => '');
     my $containers;
     eval {
         $containers = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
         $containers = [];
-        $self->output_add(severity => 'UNKNOWN',
-                         short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@");
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@");
     }
     
     return $containers;
@@ -194,7 +221,7 @@ sub internal_api_get_container_stats {
     
     my $response = $self->{http}->{$options{node_name}}->request(
         url_path => '/containers/' . $options{container_id} . '/stats?stream=false',
-        critical_status => '', warning_status => '');
+        unknown_status => '', critical_status => '', warning_status => '');
     my $container_stats;
     eval {
         $container_stats = JSON::XS->new->utf8->decode($response);
@@ -214,20 +241,17 @@ sub api_get_containers {
     if (defined($self->{option_results}->{api_read_file}) && $self->{option_results}->{api_read_file} ne '') {
         return $self->api_read_file();
     }
-    
-    my $content_total = {};
-    foreach my $node_name (keys %{$self->{http}}) {
-        my $containers = $self->internal_api_list_containers(node_name => $node_name);
-        foreach my $container (@$containers) {
-            $content_total->{$container->{Id}} = {
-                State => $container->{State},
-                NodeName => $node_name,
-                Name => join(':', @{$container->{Names}}),
-            };
-            $content_total->{$container->{Id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $node_name, container_id => $container->{Id});
+
+    my $content_total = $self->cache_containers(statefile => $options{statefile});
+    if (defined($options{container_id}) && $options{container_id} ne '' && defined($content_total->{$options{container_id}})) {
+         $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+    } else {
+        foreach my $container_id (keys %{$content_total}) {
+            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
         }
     }
     
+    $self->api_display();
     return $content_total;
 }
 
@@ -318,6 +342,10 @@ Print json api in a file (to be used with --api-display).
 =item B<--api-read-file>
 
 Read API from file.
+
+=item B<--reload-cache-time>
+
+Time in seconds before reloading list containers cache (default: 300)
 
 =back
 
