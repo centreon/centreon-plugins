@@ -35,6 +35,7 @@ sub new {
                          'cpu-detailed'     => 'os::linux::local::mode::cpudetailed',
                          'cmd-return'       => 'os::linux::local::mode::cmdreturn',
                          'connections'      => 'os::linux::local::mode::connections',
+                         'directlvm-usage'  => 'os::linux::local::mode::directlvmusage',
                          'diskio'           => 'os::linux::local::mode::diskio',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
