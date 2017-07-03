@@ -326,7 +326,7 @@ Don't try to find ILO version.
 =item B<--ssl-opt>
 
 Set SSL Options (--ssl-opt="SSL_version=SSLv3").
-Default: --ssl-opt="SSL_version=SSL_VERIFY_NONE"
+Default: --ssl-opt="SSL_verify_mode=SSL_VERIFY_NONE"
 
 =back
 

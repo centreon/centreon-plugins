@@ -18,25 +18,23 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::plugin;
+package apps::backup::quadstor::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::cisco::ironport::snmp::mode::cpu',
-                         'hardware'         => 'network::cisco::ironport::snmp::mode::hardware',
-                         'keys-expire'      => 'network::cisco::ironport::snmp::mode::keysexpire',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::cisco::ironport::snmp::mode::memory',
+                         'list-vtl'         => 'apps::backup::quadstor::local::mode::listvtl',
+                         'vtl-disk-usage'   => 'apps::backup::quadstor::local::mode::vtldiskusage',
+                         'vtl-job-status'   => 'apps::backup::quadstor::local::mode::vtljobstatus',
+                         'vtl-tape-usage'   => 'apps::backup::quadstor::local::mode::vtltapeusage',
                          );
 
     return $self;
@@ -48,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco Ironport in SNMP.
+Check Quadstor through local commands (the plugin can use SSH).
 
 =cut

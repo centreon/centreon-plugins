@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::plugin;
+package network::cisco::asa::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::cisco::ironport::snmp::mode::cpu',
-                         'hardware'         => 'network::cisco::ironport::snmp::mode::hardware',
-                         'keys-expire'      => 'network::cisco::ironport::snmp::mode::keysexpire',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
+                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
+                         'failover'         => 'network::cisco::asa::snmp::mode::failover',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::cisco::ironport::snmp::mode::memory',
+                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
+                         'sensors'          => 'snmp_standard::mode::entity',
+                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
                          );
 
     return $self;
@@ -48,6 +50,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco Ironport in SNMP.
+Check Cisco ASA in SNMP.
+!!! Be careful: Cisco ASA had an internal SNMP buffer of 512B. Use --subsetleef=20 (or lower) option !!!
 
 =cut

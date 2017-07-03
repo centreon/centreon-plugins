@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::asa::mode::failover;
+package network::cisco::asa::snmp::mode::failover;
 
 use base qw(centreon::plugins::templates::counter);
 

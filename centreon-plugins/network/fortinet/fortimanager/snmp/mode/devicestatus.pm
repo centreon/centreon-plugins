@@ -45,7 +45,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'device-connection-status', threshold => 0, set => {
+        { label => 'device-con-status', threshold => 0, set => {
                 key_values => [ { name => 'fmDeviceEntConnectState' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'), 
                 closure_custom_calc_extra_options => { output_label => 'Connection Status', name_status => 'fmDeviceEntConnectState' },

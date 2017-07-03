@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::asa::plugin;
+package hardware::server::supermicro::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,13 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'failover'         => 'network::cisco::asa::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
+                         'hardware' => 'hardware::server::supermicro::snmp::mode::hardware',
                          );
 
     return $self;
@@ -49,7 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco ASA in SNMP.
-!!! Be careful: Cisco ASA had an internal SNMP buffer of 512B. Use --subsetleef=20 (or lower) option !!!
+Check Supermicro servers in SNMP (need SuperDoctor Agent).
 
 =cut
