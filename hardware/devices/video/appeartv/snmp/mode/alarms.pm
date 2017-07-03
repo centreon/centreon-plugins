@@ -77,7 +77,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, cb_long_output => 'alarms_long_output', message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
           group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
         }
     ];
@@ -92,12 +92,6 @@ sub set_counters {
             }
         },
     ];
-}
-
-sub policy_long_output {
-    my ($self, %options) = @_;
-    
-    return "checking alarms";
 }
 
 sub new {
@@ -149,8 +143,6 @@ my $mapping = {
     msgGenerationTime       => { oid => '.1.3.6.1.4.1.23916.3.1.4.1.6' }, # 2016-12-16 14:49:18
     msgSeverity             => { oid => '.1.3.6.1.4.1.23916.3.1.4.1.13', map => \%map_severity },
 };
-
-my $oid_clusVolumeEntry = '.1.3.6.1.4.1.9804.3.1.1.2.12.97.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -222,4 +214,3 @@ Only check new alarms.
 =back
 
 =cut
-    

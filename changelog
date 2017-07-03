@@ -1,3 +1,7 @@
+2017-07-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Supermicro SNMP
+ * Plugin added: QuadStor VTL Local
+
 2017-06-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: HP Eva CLI
  * Plugin added: Acme Packet SNMP

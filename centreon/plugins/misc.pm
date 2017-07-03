@@ -320,14 +320,14 @@ sub trim {
 }
 
 sub powershell_encoded {
-	my ($value) = $_[0];
+    my ($value) = $_[0];
 
-	require Encode;
-	require MIME::Base64;
-	my $bytes = Encode::encode("utf16LE", $value);
-	my $script = MIME::Base64::encode_base64($bytes, "\n");
-	$script =~ s/\n//g;
-	return $script;
+    require Encode;
+    require MIME::Base64;
+    my $bytes = Encode::encode("utf16LE", $value);
+    my $script = MIME::Base64::encode_base64($bytes, "\n");
+    $script =~ s/\n//g;
+    return $script;
 }
 
 sub powershell_escape {
@@ -387,6 +387,19 @@ sub change_seconds {
     }
 
     return $str;
+}
+
+sub convert_bytes {
+    my (%options) = @_;
+    my %expo = (k => 1, m => 2, g => 3, t => 4);
+    my $value = $options{value};
+    my $base = defined($options{network}) ? 1000 : 1020;
+    
+    if ($options{unit} =~ /([kmgt])b/i) {
+        $value = $value * ($base ** $expo{lc($1)});
+    }
+
+    return $value;
 }
 
 1;

@@ -18,33 +18,30 @@
 # limitations under the License.
 #
 
-package cloud::ovh::restapi::plugin;
+package storage::qsan::nas::snmp::mode::components::resources;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
+use Exporter;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+our $mapping;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-                         'quota-usage'  => 'cloud::ovh::restapi::mode::quotausage',
-                         'sms'          => 'cloud::ovh::restapi::mode::sms',
-                         );
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw($mapping);
 
-    $self->{custom_modes}{api} = 'cloud::ovh::restapi::custom::api';
-    return $self;
+$mapping = {
+    ems_type    => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.2' },
+    ems_item    => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.3' },
+    ems_value   => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.4' },
+    ems_status  => { oid => '.1.3.6.1.4.1.22274.2.3.2.1.5' },
+};
+
+sub load_monitor {
+    my (%options) = @_;
+    
+    push @{$options{request}}, { oid => $mapping->{ems_type}->{oid} },
+        { oid => $mapping->{ems_item}->{oid} }, { oid => $mapping->{ems_value}->{oid} },
+        { oid => $mapping->{ems_status}->{oid} };
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check OVH through HTTP/REST API.
-
-=cut

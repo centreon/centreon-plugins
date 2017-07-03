@@ -20,20 +20,78 @@
 
 package hardware::server::ibm::mgmt_cards::imm::snmp::mode::eventlog;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
-my %severity_map = (
-    0 => 'error',
-    1 => 'warning',
-    2 => 'information',
-    3 => 'other',
-);
+my $instance_mode;
+
+sub custom_status_threshold {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
+    
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("alarm [severity: %s] [text: %s] %s", $self->{result_values}->{severity},
+        $self->{result_values}->{text}, $self->{result_values}->{generation_time});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{text} = $options{new_datas}->{$self->{instance} . '_eventLogString'};
+    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_eventLogSeverity'};
+    $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
+    $self->{result_values}->{generation_time} = $options{new_datas}->{$self->{instance} . '_generation_time'};
+    return 0;
+}
+
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
+          group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
+        }
+    ];
+    
+    $self->{maps_counters}->{alarm} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'eventLogSeverity' }, { name => 'eventLogString' }, { name => 'since' }, { name => 'generation_time' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -42,136 +100,117 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-severity:s"   => { name => 'filter_severity', default => 'error' },
-                                  "filter-message:s"    => { name => 'filter_message' },
+                                {
+                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning/i' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /error/i' },
                                   "memory"              => { name => 'memory' },
-                                  "warning"             => { name => 'warning' },
+                                  "timezone:s"          => { name => 'timezone' },
                                 });
+    
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
+                                           error_msg => "Cannot load module 'DateTime'.");
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
+    $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
+    $self->change_macros();
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
+    
+    $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 }
 
-
-sub run {
+sub change_macros {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-    my $datas = {};
-    my $last_time;
-    my $exit = defined($self->{option_results}->{warning}) ? 'WARNING' : 'CRITICAL';
-    my ($num_eventlog_checked, $num_errors) = (0, 0);
     
-    if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => "cache_imm_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No new problems detected.");
-        $last_time = $self->{statefile_cache}->get(name => 'last_time');
-    } else {
-        $self->{output}->output_add(severity => 'OK', 
-                                    short_msg => "No problems detected.");
-    }
-    
-    #### Get OIDS
-    ## Not need to check from an index point (not so much values. and can clear)
-    
-    my $oid_eventLogEntry = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1';
-    my $oid_eventLogString = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.2';
-    my $oid_eventLogSeverity = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.3';
-    my $oid_eventLogDate = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.4'; # Month/Day/YEAR
-    my $oid_eventLogTime = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.5'; # Hour::Min::Sec
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_eventLogEntry);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_eventLogString\.(\d+)$/);
-        my $instance = $1;
-
-        my $message = centreon::plugins::misc::trim($result->{$oid_eventLogString . '.' . $instance});
-        my $severity = $result->{$oid_eventLogSeverity . '.' . $instance};
-        my $date = $result->{$oid_eventLogDate . '.' . $instance};
-        my $time = $result->{$oid_eventLogTime . '.' . $instance};
-        
-        my $date_compare = '';
-        $date =~ /(\d+)\/(\d+)\/(\d+)/;
-        $date_compare = $3 . $1 . $2;
-        $time =~ /(\d+):(\d+):(\d+)/;
-        $date_compare .= $1 . $2 . $3;
-        
-        if (defined($self->{option_results}->{memory})) {
-            $datas->{last_time} = $date_compare;
-            next if (defined($last_time) && $datas->{last_time} <= $last_time);
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
-        
-        $num_eventlog_checked++;
-        
-        next if (defined($self->{option_results}->{filter_severity}) && $self->{option_results}->{filter_severity} ne '' && $severity_map{$severity} !~ /$self->{option_results}->{filter_severity}/);
-        next if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' && $message !~ /$self->{option_results}->{filter_message}/);
-        
-        $num_errors++;
-        $self->{output}->output_add(long_msg => sprintf("%s : %s", 
-                                                         $date . ' ' . $time,
-                                                         $message
-                                                         )
-                                    );
-        
-        
     }
-    
-    $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
-    if ($num_errors != 0) {
-        # Message problem
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("%d problem detected (use verbose for more details)", $num_errors)
-                                    );
-    }
-    
-    if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->write(data => $datas);
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
+my %map_severity = (0 => 'error', 1 => 'warning', 2 => 'information', 3 => 'other');
+
+my $mapping = {
+    eventLogString          => { oid => '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.2' },
+    eventLogSeverity        => { oid => '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.3', map => \%map_severity },
+    eventLogDate            => { oid => '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.4' }, # Month/Day/YEAR
+    eventLogTime            => { oid => '.1.3.6.1.4.1.2.3.51.3.2.1.1.1.5' },
+};
+my $oid_eventLogEntry = '.1.3.6.1.4.1.2.3.51.3.2.1.1.1';
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{alarms}->{global} = { alarm => {} };
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_eventLogEntry, nothing_quit => 1);
+    
+    my $last_time;
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->read(statefile => "cache_imm_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
+        $last_time = $self->{statefile_cache}->get(name => 'last_time');
+    }
+
+    my ($i, $current_time) = (1, time());
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{eventLogSeverity}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        
+        my $date = $result->{eventLogDate} . ' ' . $result->{eventLogTime};
+        $date =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
+
+        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6,
+                               time_zone => $self->{option_results}->{timezone});
+
+        next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
+
+        my $diff_time = $current_time - $dt->epoch;
+
+        $self->{alarms}->{global}->{alarm}->{$i} = { %$result, since => $diff_time, generation_time => centreon::plugins::misc::change_seconds(value => $diff_time) };
+        $i++;
+    }
+    
+    if (defined($self->{option_results}->{memory})) {
+        $self->{statefile_cache}->write(data => { last_time => $current_time });
+    }
+}
+        
 1;
 
 __END__
 
 =head1 MODE
 
-Check eventlogs.
+Check alarms.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-status>
 
-Use warning return instead 'critical'.
+Set warning threshold for status (Default: '%{severity} =~ /warning/i')
+Can used special variables like: %{severity}, %{text}, %{since}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{severity} =~ /error/i').
+Can used special variables like: %{severity}, %{text}, %{since}
+
+=item B<--timezone>
+
+Timezone of time options. Default is 'GMT'.
 
 =item B<--memory>
 
-Only check new eventlogs.
-
-=item B<--filter-severity>
-
-Filter on severity. (Default: error)
-Can be: error, warning, information, other. 
-
-=item B<--filter-message>
-
-Filter on event message. (Default: none)
+Only check new alarms.
 
 =back
 
 =cut
-    
