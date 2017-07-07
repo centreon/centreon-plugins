@@ -103,7 +103,7 @@ sub run {
     my $p = XML::Parser->new(NoLWP => 1);
     my $xp = XML::XPath->new(parser => $p, xml => $stdout);
 
-    my $listHttpSampleNode = $xp->findnodes('/testResults/httpSample');
+    my $listHttpSampleNode = $xp->findnodes('/testResults/httpSample|/testResults/sample');
 
     my $timing0 = 0;
     my $timing1 = 0;
