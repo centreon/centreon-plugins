@@ -89,7 +89,7 @@ sub custom_hitratio_calc {
 
     my $delta_waits = $options{new_datas}->{$self->{instance} . '_waits'} - $options{old_datas}->{$self->{instance} . '_waits'};
     my $delta_gets = $options{new_datas}->{$self->{instance} . '_gets'} - $options{old_datas}->{$self->{instance} . '_gets'};
-    $self->{result_values}->{hit_ratio} = 100 - 100 * $self->{delta_waits} / $self->{delta_gets};
+    $self->{result_values}->{hit_ratio} = $delta_gets == 0 ? 100 : (100 - 100 * $delta_waits / $delta_gets);
     
     return 0;
 }
@@ -99,7 +99,7 @@ sub custom_contention_calc {
 
     my $delta_waits = $options{new_datas}->{$self->{instance} . '_complete'} - $options{old_datas}->{$self->{instance} . '_complete'};
     my $delta_undo = $options{new_datas}->{$self->{instance} . '_undo' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_undo' . $options{extra_options}->{label_ref}};
-    $self->{result_values}->{$options{extra_options}->{label_ref} . '_prct'} = 100 * $delta_undo / $delta_waits;
+    $self->{result_values}->{$options{extra_options}->{label_ref} . '_prct'} = $delta_waits == 0 ? 0 : (100 * $delta_undo / $delta_waits);
     
     return 0;
 }
@@ -132,8 +132,8 @@ sub manage_selection {
     };
     
     $self->{sql}->query(query => $query);
-    my $result = $self->{sql}->fetchrow_array();
-    $self->{segment} = { waits => $result->[0], gets => $result->[1], extends => $result->[2], wraps => $result->[3] };
+    my @result = $self->{sql}->fetchrow_array();
+    $self->{segment} = { waits => $result[0], gets => $result[1], extends => $result[2], wraps => $result[3] };
 
     $query = q{
         SELECT ( 
@@ -152,12 +152,13 @@ sub manage_selection {
         ) complete
         FROM DUAL
     };
-    $result = $self->{sql}->fetchrow_array();
-    $self->{segment}->{undoheader} = $result->[0];
-    $self->{segment}->{undoblock} = $result->[1];
-    $self->{segment}->{complete} = $result->[2];
+    $self->{sql}->query(query => $query);
+    @result = $self->{sql}->fetchrow_array();
+    $self->{segment}->{undoheader} = $result[0];
+    $self->{segment}->{undoblock} = $result[1];
+    $self->{segment}->{complete} = $result[2];
     
-    $self->{cache_name} = "oracle_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
+    $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $self->{sql}->get_unique_id4save() . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
