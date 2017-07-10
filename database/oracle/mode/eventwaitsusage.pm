@@ -46,8 +46,9 @@ sub set_counters {
         },
         { label => 'total-waits-time', set => {
                 key_values => [ { name => 'time_waited_micro', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                output_template => 'Total Waits Time :  %.2f %%', output_use => 'prct_wait', threshold_use => 'prct_wait',
+                output_template => 'Total Waits Time : %.2f %%', output_use => 'prct_wait', threshold_use => 'prct_wait',
                 perfdatas => [
                     { label => 'total_waits_time', value => 'prct_wait', template => '%.2f', min => 0, max => 100, unit => '%',
                       label_extra_instance => 1, instance_use => 'display' },
@@ -131,7 +132,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "oracle_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
+    $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $self->{sql}->get_unique_id4save() . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
