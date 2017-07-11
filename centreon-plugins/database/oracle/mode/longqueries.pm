@@ -152,12 +152,12 @@ sub manage_selection {
     $self->{alarms}->{global} = { alarm => {} };
     
     my $query = q{
-        SELECT status, (sql_exec_start - date '1970-01-01')*24*60*60) as sql_exec_start, elapsed_time
+        SELECT status, ((sql_exec_start - date '1970-01-01')*24*60*60) as sql_exec_start, elapsed_time
                 FROM v$sql_monitor
     };
     if ($self->{sql}->is_version_minimum(version => '12')) {
         $query = q{
-            SELECT status, (sql_exec_start - date '1970-01-01')*24*60*60) as sql_exec_start, elapsed_time, username, sql_text
+            SELECT status, ((sql_exec_start - date '1970-01-01')*24*60*60) as sql_exec_start, elapsed_time, username, sql_text
                 FROM v$sql_monitor
         };
     }
