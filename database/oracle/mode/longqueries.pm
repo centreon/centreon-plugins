@@ -102,8 +102,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /error/i' },
+                                  "warning-status:s"    => { name => 'warning_status', default => '' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '' },
                                   "memory"              => { name => 'memory' },
                                   "timezone:s"          => { name => 'timezone' },
                                 });
