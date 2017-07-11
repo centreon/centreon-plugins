@@ -170,8 +170,8 @@ sub manage_selection {
     }
 
     my ($i, $current_time) = (1, time());
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        my @values = localtime($row->{sql_exec_start});
+    while ((my @row = $self->{sql}->fetchrow_array())) {
+        my @values = localtime($row[1]);
         my $dt = DateTime->new(
             year       => $values[5] + 1900,
             month      => $values[4] + 1,
@@ -181,17 +181,16 @@ sub manage_selection {
             second     => $values[0],
             time_zone  => 'UTC',
         );
-
+ 
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
-        $row->{sql_text} =~ s/(\n|\|)/-/ms if (defined($row->{sql_text}));
-
-        my $since = $row->{elapsed_time} / 1000000;
-        $self->{alarms}->{global}->{alarm}->{$i} = { 
-            sql_text => $row->{sql_text},
-            status => $row->{status},
-            sql_text => defined($row->{sql_text}) ? $row->{sql_text} : '-',
-            username => defined($row->{username}) ? $row->{username} : '-',
-            since => $since, 
+        $row[4] =~ s/(\n|\|)/-/ms if (defined($row[4]));
+ 
+        my $since = $row[2] / 1000000;
+        $self->{alarms}->{global}->{alarm}->{$i} = {
+            status => $row[0],
+            sql_text => defined($row[4]) ? $row[4] : '-',
+            username => defined($row[5]) ? $row[5] : '-',
+            since => $since,
             generation_time => centreon::plugins::misc::change_seconds(value => $since) };
         $i++;
     }
@@ -200,7 +199,7 @@ sub manage_selection {
         $self->{statefile_cache}->write(data => { last_time => $current_time });
     }
 }
-        
+
 1;
 
 __END__
