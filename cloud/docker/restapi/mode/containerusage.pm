@@ -130,6 +130,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -11 => 1 } },
+        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } },
     ];
     
     $self->{maps_counters}->{containers} = [
@@ -180,6 +181,9 @@ sub set_counters {
                 ],
             }
         },
+    ];
+    
+    $self->{maps_counters}->{containers_traffic} = [
         { label => 'traffic-in', set => {
                 key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
@@ -231,6 +235,12 @@ sub check_options {
     $self->{statefile_cache_containers}->check_options(%options);
 }
 
+sub prefix_containers_traffic_output {
+    my ($self, %options) = @_;
+    
+    return "Container '" . $options{instance_value}->{display} . "' ";
+}
+
 sub prefix_containers_output {
     my ($self, %options) = @_;
     
@@ -251,9 +261,11 @@ sub manage_selection {
     my ($self, %options) = @_;
                                                            
     $self->{containers} = {};
+    $self->{containers_traffic} = {};
     my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, statefile => $self->{statefile_cache_containers});
 
-    foreach my $container_id (keys %{$result}) {        
+    foreach my $container_id (keys %{$result}) {
+        next if (!defined($result->{$container_id}->{Stats})); 
         my $name = $result->{$container_id}->{Name};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
@@ -263,20 +275,28 @@ sub manage_selection {
         
         my $read_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
         my $write_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
-        $self->{containers}->{$container_id} = { 
+        $self->{containers}->{$container_id} = {
             display => defined($self->{option_results}->{use_name}) ? $name : $container_id,
             name => $name,
             state => $result->{$container_id}->{State},
             read_io => $read_io,
             write_io => $write_io,
-            traffic_in => $result->{$container_id}->{Stats}->{network}->{rx_bytes},
-            traffic_out => $result->{$container_id}->{Stats}->{network}->{tx_bytes},
             cpu_total_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage},
             cpu_system_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage},
             cpu_number => scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}),
             memory_usage => $result->{$container_id}->{Stats}->{memory_stats}->{usage},
             memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit},
         };
+        
+        foreach my $interface (keys %{$result->{$container_id}->{Stats}->{networks}}) {
+            my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
+            $name .= '.' . $interface;
+            $self->{containers_traffic}->{$name} = {
+                display => $name,
+                traffic_in => $result->{$container_id}->{Stats}->{networks}->{$interface}->{rx_bytes},
+                traffic_out => $result->{$container_id}->{Stats}->{networks}->{$interface}->{tx_bytes},
+            };
+        }
     }
     
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -284,9 +304,11 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "docker_" . $self->{mode} . '_' . $options{custom}->{hostname} . '_' . $options{custom}->{port} . '_' .
+    my $hostnames = $options{custom}->get_hostnames();
+    $self->{cache_name} = "docker_" . $self->{mode} . '_' . join('_', @$hostnames) . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{container_id}) ? md5_hex($self->{option_results}->{container_id}) : md5_hex('all'));
 }
 
 1;

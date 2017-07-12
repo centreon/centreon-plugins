@@ -171,6 +171,18 @@ sub api_read_file {
     return $content;
 }
 
+sub get_hostnames {
+    my ($self, %options) = @_;
+    
+    return $self->{hostname};
+}
+
+sub get_port {
+    my ($self, %options) = @_;
+    
+    return $self->{option_results}->{port};
+}
+
 sub cache_containers {
     my ($self, %options) = @_;
 
@@ -195,6 +207,25 @@ sub cache_containers {
     }
 
     return $containers;
+}
+
+sub internal_api_list_nodes {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->{$options{node_name}}->request(
+        url_path => '/nodes',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $nodes;
+    eval {
+        $nodes = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $nodes = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+    }
+    
+    return $nodes;
 }
 
 sub internal_api_list_containers {
@@ -251,6 +282,21 @@ sub api_list_containers {
     }
     
     return $containers;
+}
+
+sub api_list_nodes {
+    my ($self, %options) = @_;
+    
+    my $nodes = {};
+    foreach my $node_name (keys %{$self->{http}}) {
+        $nodes->{$node_name} = [];
+        my $list_nodes = $self->internal_api_list_nodes(node_name => $node_name);
+        foreach my $node (@$list_nodes) {
+            push @{$nodes->{$node_name}}, { Status => $node->{Status}->{State}, ManagerStatus => $node->{ManagerStatus}->{Reachability}, Addr => $node->{Status}->{Addr} };
+        }
+    }
+    
+    return $nodes;
 }
 
 sub api_get_containers {
