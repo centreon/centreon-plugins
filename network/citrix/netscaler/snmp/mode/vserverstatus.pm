@@ -262,9 +262,9 @@ sub manage_selection {
     foreach (keys %{$self->{vservers}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
         
-        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} * 8 :
+        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalResponseBytes}) ? $result->{vsvrTotalResponseBytes} * 8 :
             (($result->{vsvrTotalResponseBytesHigh} << 32) + $result->{vsvrTotalResponseBytesLow})) * 8;
-        $self->{vservers}->{$_}->{out} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
+        $self->{vservers}->{$_}->{in} = (defined($result->{vsvrTotalRequestBytes}) ? $result->{vsvrTotalRequestBytes} * 8 :
             (($result->{vsvrTotalRequestBytesHigh} << 32) + $result->{vsvrTotalRequestBytesLow})) * 8;
         $self->{vservers}->{$_}->{health} = $result->{vsvrHealth};
         $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
