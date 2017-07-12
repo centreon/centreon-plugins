@@ -96,7 +96,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "warning-node-status:s"  => { name => 'warning_node_status', default => '' },
-                                  "critical-node-status:s" => { name => 'critical_node_status', default => '%{status} !~ /ready/ || %{manager_status} !~ /reachable/' },
+                                  "critical-node-status:s" => { name => 'critical_node_status', default => '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/' },
                                 });
    
     return $self;
@@ -138,7 +138,7 @@ sub manage_selection {
             $self->{nodes}->{$name} = {
                 display => $name ,
                 status => $entry->{Status},
-                manager_status => $entry->{ManagerStatus},
+                manager_status => defined($entry->{ManagerStatus}) ? $entry->{ManagerStatus} : '-',
             };
         }
     }
@@ -166,7 +166,7 @@ Can used special variables like: %{display}, %{status}, %{manager_status}.
 
 =item B<--critical-node-status>
 
-Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable/').
+Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
 Can used special variables like: %{display}, %{status}, %{manager_status}.
 
 =back
