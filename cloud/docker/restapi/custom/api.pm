@@ -235,6 +235,24 @@ sub internal_api_get_container_stats {
     return $container_stats;
 }
 
+sub api_list_containers {
+    my ($self, %options) = @_;
+    
+    my $containers = {};
+    foreach my $node_name (keys %{$self->{http}}) {
+        my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
+        foreach my $container (@$list_containers) {
+            $containers->{$container->{Id}} = {
+                State => $container->{State},
+                NodeName => $node_name,
+                Name => join(':', @{$container->{Names}}),
+            };
+        }
+    }
+    
+    return $containers;
+}
+
 sub api_get_containers {
     my ($self, %options) = @_;
 

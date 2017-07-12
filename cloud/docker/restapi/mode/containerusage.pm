@@ -37,11 +37,11 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($instance_mode->{option_results}->{critical_container_status}) && $instance_mode->{option_results}->{critical_container_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_container_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_container_status}) && $instance_mode->{option_results}->{warning_container_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_container_status}") {
             $status = 'warning';
         }
     };
@@ -54,7 +54,7 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . ' [error: ' . $self->{result_values}->{error} . ']';
+    my $msg = 'state : ' . $self->{result_values}->{state};
 
     return $msg;
 }
@@ -62,10 +62,66 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    $self->{result_values}->{error} = $options{new_datas}->{$self->{instance} . '_error'};
     
+    return 0;
+}
+
+sub custom_cpu_calc {
+    my ($self, %options) = @_;
+
+    my $delta_cpu_total = $options{new_datas}->{$self->{instance} . '_cpu_total_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_total_usage'};
+    my $delta_cpu_system = $options{new_datas}->{$self->{instance} . '_cpu_system_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_system_usage'};
+    $self->{result_values}->{prct_cpu} = (($delta_cpu_total / $delta_cpu_system) * $options{new_datas}->{$self->{instance} . '_cpu_number'}) * 100;
+
+    return 0;
+}
+
+sub custom_memory_perfdata {
+    my ($self, %options) = @_;
+
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+    $self->{output}->perfdata_add(label => 'memory_used' . $extra_label, unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_memory_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_memory_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+
+    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                      $total_size_value . " " . $total_size_unit,
+                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_memory_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memory_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_memory_usage'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;
 }
 
@@ -76,41 +132,71 @@ sub set_counters {
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -11 => 1 } },
     ];
     
-    $self->{maps_counters}->{output_stream} = [
+    $self->{maps_counters}->{containers} = [
          { label => 'container-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'name' }, { name => 'error' } ],
+                key_values => [ { name => 'state' }, { name => 'name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
+        { label => 'cpu', set => {
+                key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_system_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
+                output_template => 'CPU Usage : %.2f %%',
+                closure_custom_calc => $self->can('custom_cpu_calc'),
+                output_use => 'prct_cpu', threshold_use => 'prct_cpu',
+                perfdatas => [
+                    { label => 'cpu', value => 'prct_cpu', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'memory', set => {
+                key_values => [ { name => 'memory_usage' }, { name => 'memory_total' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_memory_calc'),
+                closure_custom_output => $self->can('custom_memory_output'),
+                closure_custom_perfdata => $self->can('custom_memory_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_memory_threshold'),
+            }
+        },
+        { label => 'read-iops', set => {
+                key_values => [ { name => 'read_io', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
+                perfdatas => [
+                    { label => 'read_iops', value => 'read_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'write-iops', set => {
+                key_values => [ { name => 'write_io', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
+                perfdatas => [
+                    { label => 'write_iops', value => 'write_iops_per_second', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
-            }
-        },
-        { label => 'dropped-in', set => {
-                key_values => [ { name => 'dropped_in', diff => 1 }, { name => 'name' } ],
-                output_template => 'Packets Dropped In : %s',
-                perfdatas => [
-                    { label => 'dropped_in', value => 'dropped_in_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -127,8 +213,9 @@ sub new {
                                 {
                                   "container-id:s"              => { name => 'container_id' },
                                   "filter-name:s"               => { name => 'filter_name' },
-                                  "warning-container-status:s"  => { name => 'warning_container_status' },
-                                  "critical-container-status:s" => { name => 'critical_container_status', default => '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i' },
+                                  "use-name"                    => { name => 'use_name' },
+                                  "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
+                                  "critical-container-status:s" => { name => 'critical_container_status', default => '' },
                                 });
    
     $self->{statefile_cache_containers} = centreon::plugins::statefile->new(%options);
@@ -165,24 +252,30 @@ sub manage_selection {
                                                            
     $self->{containers} = {};
     my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, statefile => $self->{statefile_cache_containers});
-    use Data::Dumper;
-    print Data::Dumper::Dumper($result);
-    exit(1);
 
-    foreach my $entry (@{$result->{outputs}}) {
-        my $name = $entry->{name} . '/' . $entry->{requested_stream_id};
+    foreach my $container_id (keys %{$result}) {        
+        my $name = $result->{$container_id}->{Name};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
         
-        $self->{output_stream}->{$entry->{id}} = { 
-            display => $name,
-            status => $entry->{status},
-            traffic_in => $entry->{stats}->{net_recv}->{bytes} * 8,
-            traffic_out => $entry->{stats}->{net_send}->{bytes} * 8,
-            dropped_in => $entry->{stats}->{net_recv}->{dropped},
+        my $read_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[0]->{value};
+        my $write_io = $result->{$container_id}->{Stats}->{blkio_stats}->{io_service_bytes_recursive}->[1]->{value};
+        $self->{containers}->{$container_id} = { 
+            display => defined($self->{option_results}->{use_name}) ? $name : $container_id,
+            name => $name,
+            state => $result->{$container_id}->{State},
+            read_io => $read_io,
+            write_io => $write_io,
+            traffic_in => $result->{$container_id}->{Stats}->{network}->{rx_bytes},
+            traffic_out => $result->{$container_id}->{Stats}->{network}->{tx_bytes},
+            cpu_total_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage},
+            cpu_system_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage},
+            cpu_number => scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}),
+            memory_usage => $result->{$container_id}->{Stats}->{memory_stats}->{usage},
+            memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit},
         };
     }
     
@@ -210,6 +303,10 @@ Check container usage.
 
 Exact container ID.
 
+=item B<--use-name>
+
+Use docker name for perfdata and display.
+
 =item B<--filter-name>
 
 Filter by container name (can be a regexp).
@@ -222,24 +319,24 @@ Example: --filter-counters='^container-status$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
+Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out', 
+'cpu' (%), 'memory' (%).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'traffic-in', 'traffic-out', 'dropped-in'.
+Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
+'cpu' (%), 'memory' (%).
 
 =item B<--warning-container-status>
 
 Set warning threshold for status (Default: -)
-Can used special variables like: %{id}, %{name}, %{status}.
+Can used special variables like: %{name}, %{state}.
 
 =item B<--critical-container-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Connecting|Connected/i').
-Can used special variables like: %{id}, %{name}, %{status}.
-
-
+Set critical threshold for status (Default: -).
+Can used special variables like: %{name}, %{state}.
 
 =back
 
