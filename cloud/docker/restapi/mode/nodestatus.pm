@@ -72,7 +72,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes are ok', skipped_code => { -11 => 1 } },
     ];
     
     $self->{maps_counters}->{nodes} = [
