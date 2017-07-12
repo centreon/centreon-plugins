@@ -166,7 +166,7 @@ sub set_counters {
                 per_second => 1,
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_per_second', template => '%.2f',
+                    { label => 'read_iops', value => 'read_io_per_second', template => '%.2f',
                       unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -176,7 +176,7 @@ sub set_counters {
                 per_second => 1,
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_per_second', template => '%.2f',
+                    { label => 'write_iops', value => 'write_io_per_second', template => '%.2f',
                       unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -293,8 +293,8 @@ sub manage_selection {
             $name .= '.' . $interface;
             $self->{containers_traffic}->{$name} = {
                 display => $name,
-                traffic_in => $result->{$container_id}->{Stats}->{networks}->{$interface}->{rx_bytes},
-                traffic_out => $result->{$container_id}->{Stats}->{networks}->{$interface}->{tx_bytes},
+                traffic_in => $result->{$container_id}->{Stats}->{networks}->{$interface}->{rx_bytes} * 8,
+                traffic_out => $result->{$container_id}->{Stats}->{networks}->{$interface}->{tx_bytes} * 8,
             };
         }
     }
