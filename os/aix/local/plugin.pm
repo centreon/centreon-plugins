@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2015 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,13 +28,19 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
+    # $options->{options} = options object
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'errpt'            => 'os::aix::local::mode::errpt',
                          'list-storages'    => 'os::aix::local::mode::liststorages',
                          'storage'          => 'os::aix::local::mode::storage',
-                         'lvsync'         => 'os::aix::local::mode::lvsync',
+                         'lvsync'           => 'os::aix::local::mode::lvsync',
+                         'cpu'              => 'os::aix::local::mode::cpu',
+                         'memory'           => 'os::aix::local::mode::memory',
+                         'swap'             => 'os::aix::local::mode::swap',
+                         'load'             => 'os::aix::local::mode::loadaverage',
+                         'process'          => 'os::aix::local::mode::process',
                          );
 
     return $self;
