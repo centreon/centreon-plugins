@@ -25,41 +25,47 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON;
+
+use constant OK        => 0;
+use constant WARNING   => 1;
+use constant CRITICAL  => 2;
+use constant UNKNOWN   => 3;
+use constant SEND_PAGE => '/source/send_sms.php';
 
 # use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                       {
-                                           "username:s"      => { name => 'username', default => 'centreon' },
-                                           "password:s"      => { name => 'password' },
-                                           "from:s"          => { name => 'from', default => 'Centreon' },
-                                           "proto:s"         => { name => 'proto', default => 'http' },
-                                           "phonenumber:s"   => { name => 'phonenumber' },
-                                           "hostname:s"      => { name => 'hostname' },
-                                           "testo:s"         => { name => 'testo' },
-                                           "timeout:s"       => { name => 'timeout', default => 10 },
-                                       });
-    
+    $options{options}->add_options(
+        arguments => {
+            "username:s"    => { name => 'username', default => 'centreon' },
+            "password:s"    => { name => 'password' },
+            "from:s"        => { name => 'from',     default => 'centreon' },
+            "proto:s"       => { name => 'proto',    default => 'http' },
+            "phonenumber:s" => { name => 'phonenumber' },
+            "hostname:s"    => { name => 'hostname' },
+            "testo:s"       => { name => 'testo' },
+            "timeout:s"     => { name => 'timeout',  default => 10 },
+        }
+    );
+
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
 
     return $self;
 }
-
 
 sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::init(%options);
 
-    if ((!defined($self->{option_results}->{username}) && !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= option");
+    if (!defined($self->{option_results}->{password})) {
+        $self->{output}
+            ->add_option_msg(short_msg => "You need to set --username= and --password= option");
         $self->{output}->option_exit();
     }
 
@@ -78,31 +84,55 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{http}->set_options(%{$self->{option_results}});
+    $self->{http}->set_options(%{ $self->{option_results} });
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
-    $self->{http}->add_header(key => 'Accept', value => 'text/xml');
+    my ($ua, $html_page, $response, $status_code);
 
-    my $api_path = '/source/send_sms.php';
-    my $url = $self->{option_results}->{proto} . '://' . $self->{option_results}->{hostname} . $api_path;
+    my $url
+        = $self->{option_results}->{proto} . '://'
+        . $self->{option_results}->{hostname}
+        . SEND_PAGE;
 
-    my $arg = [
-        "username" => $self->{option_results}->{username},
-        "pwd" => $self->{option_results}->{password},
-        "from" => $self->{option_results}->{from},
-        "nphone" => $self->{option_results}->{phonenum},
-        "testo" => $self->{option_results}->{testo},
-        "nc" => $url,
-    ];
+    $ua = LWP::UserAgent->new;
+    $ua->timeout($self->{option_results}->{timeout});
 
-    my $response = $self->{http}->request(full_url => $url, method => 'POST', query_form_post => $arg);
-    
-    $self->{output}->display(force_ignore_perfdata => 1);
-    $self->{output}->exit();
+    $response = $ua->post(
+        $url,
+        [   "username" => $self->{option_results}->{username},
+            "pwd"      => $self->{option_results}->{password},
+            "from"     => $self->{option_results}->{from},
+            "nphone"   => $self->{option_results}->{phonenumber},
+            "testo"    => $self->{option_results}->{testo},
+            "nc"       => $url,
+        ]
+    );
+
+    if (!$response->is_success) {
+        print("ERROR: " . $response->status_line . "\n");
+        $status_code = UNKNOWN;
+    }
+
+    $html_page = $response->content;
+    if ($html_page =~ /p class="(\w+)"/g) {
+        if ($1 eq "confneg") {
+            print("ERROR: Unable to send SMS\n");
+            $status_code = UNKNOWN;
+        }
+        else {
+            $status_code = OK;
+        }
+    }
+    else {
+        print("ERROR: Unknown page output\n");
+        $status_code = UNKNOWN;
+    }
+
+    return $status_code;
+
 }
 
 1;
@@ -113,7 +143,7 @@ __END__
 
 Send SMS with Foxbox API.
 
-=over 6
+=over 8
 
 =item B<--hostname>
 
@@ -121,19 +151,19 @@ url of the Foxbox Server.
 
 =item B<--username>
 
-Specify username for API authentification.
+Specify username for API authentification (Default: centreon).
 
 =item B<--password>
 
-Specify password for API authentification.
+Specify password for API authentification (Required).
 
 =item B<--phonenumber>
 
-Specify phone number.
+Specify phone number (Required).
 
 =item B<--testo>
 
-Specify the testo to send.
+Specify the testo to send (Required).
 
 =item B<--from>
 
