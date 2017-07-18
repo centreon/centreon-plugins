@@ -26,10 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 
-use constant OK        => 0;
-use constant WARNING   => 1;
-use constant CRITICAL  => 2;
-use constant UNKNOWN   => 3;
 use constant SEND_PAGE => '/source/send_sms.php';
 
 # use Data::Dumper;
@@ -45,7 +41,6 @@ sub new {
             "username:s"    => { name => 'username', default => 'centreon' },
             "password:s"    => { name => 'password' },
             "from:s"        => { name => 'from',     default => 'centreon' },
-            "proto:s"       => { name => 'proto',    default => 'http' },
             "phonenumber:s" => { name => 'phonenumber' },
             "hostname:s"    => { name => 'hostname' },
             "testo:s"       => { name => 'testo' },
@@ -90,12 +85,9 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my ($ua, $html_page, $response, $status_code);
+    my ($ua, $html_page, $response, $status_code, $litteral_code);
 
-    my $url
-        = $self->{option_results}->{proto} . '://'
-        . $self->{option_results}->{hostname}
-        . SEND_PAGE;
+    my $url = 'http' . '://' . $self->{option_results}->{hostname} . SEND_PAGE;
 
     $ua = LWP::UserAgent->new;
     $ua->timeout($self->{option_results}->{timeout});
@@ -111,28 +103,29 @@ sub run {
         ]
     );
 
-    if (!$response->is_success) {
-        print("ERROR: " . $response->status_line . "\n");
-        $status_code = UNKNOWN;
-    }
-
-    $html_page = $response->content;
-    if ($html_page =~ /p class="(\w+)"/g) {
-        if ($1 eq "confneg") {
-            print("ERROR: Unable to send SMS\n");
-            $status_code = UNKNOWN;
-        }
-        else {
-            $status_code = OK;
-        }
+    if ($response->{_rc} != 200) {
+        print("ERROR: " . $response->{_msg} . "\n");
+        $status_code = $self->{output}->{errors}->{UNKNOWN};
     }
     else {
-        print("ERROR: Unknown page output\n");
-        $status_code = UNKNOWN;
+        $html_page = $response->{_content};
+        if ($html_page =~ /p class="(\w+)"/g) {
+            if ($1 eq "confneg") {
+                print("ERROR: Unable to send SMS\n");
+                $status_code = $self->{output}->{errors}->{UNKNOWN};
+            }
+            else {
+                $status_code = $self->{output}->{errors}->{OK};
+            }
+        }
+        else {
+            print("ERROR: Unknown page output\n");
+            $status_code = $self->{output}->{errors}->{UNKNOWN};
+        }
     }
 
-    return $status_code;
-
+    $litteral_code = $self->{output}->{errors_num}->{$status_code};
+    $self->{output}->exit(exit_litteral => $litteral_code);
 }
 
 1;
