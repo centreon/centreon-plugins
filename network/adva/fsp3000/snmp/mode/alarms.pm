@@ -56,7 +56,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("alarm [severity: %s] [type: %s] %s", $self->{result_values}->{severity},
+    my $msg = sprintf("alarm %s [severity: %s] [type: %s] %s", $self->{result_values}->{label}, $self->{result_values}->{severity},
         $self->{result_values}->{type}, $self->{result_values}->{generation_time});
     return $msg;
 }
@@ -68,6 +68,7 @@ sub custom_status_calc {
     $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_severity'};
     $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
     $self->{result_values}->{generation_time} = $options{new_datas}->{$self->{instance} . '_generation_time'};
+    $self->{result_values}->{label} = $options{new_datas}->{$self->{instance} . '_label'};
     return 0;
 }
 
@@ -83,7 +84,7 @@ sub set_counters {
     
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'severity' }, { name => 'type' }, { name => 'since' }, { name => 'generation_time' } ],
+                key_values => [ { name => 'severity' }, { name => 'type' }, { name => 'label'}, { name => 'since' }, { name => 'generation_time' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
