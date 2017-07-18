@@ -1088,12 +1088,16 @@ sub load_cast {
 sub get_informations {
     my ($self, %options) = @_;
 
+    my $custom_load_method = $self->can('custom_load');
+    my $custom_add_result_method = $self->can('custom_add_result');
+
     $self->get_selection();
     $self->{array_interface_selected} = [keys %{$self->{interface_selected}}];    
     $self->load_status() if (defined($self->{option_results}->{add_status}) || defined($self->{option_results}->{add_global}));
     $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
     $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
+    $self->$custom_load_method() if ($custom_load_method);
 
     $self->{results} = $self->{snmp}->get_leef();
     
@@ -1103,6 +1107,7 @@ sub get_informations {
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
         $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
+        $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
     }
 }
 
