@@ -160,7 +160,7 @@ Specify the testo to send (Required).
 
 =item B<--from>
 
-Specify the sender. It should NOT start with a number and have a max of 11 charracter.
+Specify the sender. It should NOT start with a number and have a max of 11 characters.
 
 =item B<--timeout>
 
