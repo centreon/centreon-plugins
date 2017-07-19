@@ -72,7 +72,7 @@ sub set_counters {
             ],
         }
     };
-    $self->{maps_counters}->{int}->{'091_input_power'} = { filter => 'add_optical',
+    $self->{maps_counters}->{int}->{'091_input-power'} = { filter => 'add_optical',
         set => {
             key_values => [ { name => 'input_power' }, { name => 'display' } ],
             output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
@@ -82,7 +82,7 @@ sub set_counters {
             ],
         }
     };
-    $self->{maps_counters}->{int}->{'091_output_power'} = { filter => 'add_optical',
+    $self->{maps_counters}->{int}->{'091_output-power'} = { filter => 'add_optical',
         set => {
             key_values => [ { name => 'output_power' }, { name => 'display' } ],
             output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
