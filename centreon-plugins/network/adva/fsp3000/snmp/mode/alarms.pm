@@ -277,7 +277,7 @@ sub manage_selection {
     foreach (keys %$oids) {
         push @$get_oids, { oid => $oids->{$_}->{oid} };
     }
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => $get_oids, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => $get_oids);
     
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
@@ -303,7 +303,7 @@ sub manage_selection {
                 $timezone = sprintf("%s%02d%02d", $date[7], $date[8], $date[9]);
             }
 
-            my $dt = DateTime->new(year => $date[0], month => $date[1], day => $date[2], hour => $date[3], minute => $date[4], second => $date[6],
+            my $dt = DateTime->new(year => $date[0], month => $date[1], day => $date[2], hour => $date[3], minute => $date[4], second => $date[5],
                                    time_zone => $timezone);
 
             next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
