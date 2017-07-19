@@ -27,10 +27,41 @@ use warnings;
 
 my $instance_mode;
 
+sub set_oids_traffic {
+    my ($self, %options) = @_;
+    
+    $self->{currentEthRx15minBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.52.1.5'; # in B
+    $self->{currentEthRx1dayBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.53.1.5'; # in B
+    $self->{currentEthTx15minBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.56.1.3'; # in B
+    $self->{currentEthTx1dayBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.57.1.3'; # in B
+    $self->{currentEthRxHighSpeed15minBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.88.1.4'; # in B
+    $self->{currentEthRxHighSpeed1dayBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.89.1.4'; # in B
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters} = { int => {}, global => {} };
+    $self->{maps_counters}->{int}->{'030_traffic-in'} = { filter => 'add_traffic',
+        set => {
+            key_values => [ { name => 'traffic_in_15min', diff => 1 }, { name => 'traffic_in_1day', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
+            per_second => 1,
+            closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+            closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
+            closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+        }
+    };
+    $self->{maps_counters}->{int}->{'031_traffic-out'} = { filter => 'add_traffic',
+        set => {
+            key_values => [ { name => 'traffic_out_15min', diff => 1 }, { name => 'traffic_out_1day', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
+            per_second => 1,
+            closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+            closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
+            closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+        }
+    };
     $self->{maps_counters}->{int}->{'090_laser-temp'} = { filter => 'add_optical',
         set => {
             key_values => [ { name => 'laser_temp' }, { name => 'display' } ],
@@ -65,9 +96,83 @@ sub set_counters {
     $self->SUPER::set_counters(%options);
 }
 
+sub custom_traffic_perfdata {
+    my ($self, %options) = @_;
+    
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+    
+    my ($warning, $critical);
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    }
+    
+    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
+                                  value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+                                  warning => $warning,
+                                  critical => $critical,
+                                  min => 0, max => $self->{result_values}->{speed});
+}
+
+sub custom_traffic_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_traffic_output {
+    my ($self, %options) = @_;
+    
+    my $label = $self->{result_values}->{label};
+    $label =~ s/_/ /g;
+    $label =~ s/(\w+)/\u$1/g;
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
+    my $msg = sprintf("Traffic %s : %s/s (%s)",
+                      $label, $traffic_value . $traffic_unit,
+                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
+    return $msg;
+}
+
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+    
+    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+
+    # we choose the performance value (1day is updated every 15 minutes. 15min is updated all the time but reset every 15min
+    my $counter = 'traffic_' . $options{extra_options}->{label_ref} . '_15min';
+    if ($options{delta_time} >= 600) {
+        $counter = 'traffic_' . $options{extra_options}->{label_ref} . '_1day';
+    }
+
+    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $counter} - $options{old_datas}->{$self->{instance} . '_' . $counter});
+    
+    $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
+    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+        $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+    }
+    
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_traffic => 1, no_errors => 1, no_cast => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_set_traffic => 1, no_errors => 1, no_cast => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments =>
@@ -116,6 +221,46 @@ sub custom_add_result {
     }
 }
 
+sub load_traffic {
+    my ($self, %options) = @_;
+    
+    if ($self->{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->set_oids_traffic();
+    $self->{snmp}->load(oids => [$self->{currentEthRx15minBytes}, $self->{currentEthRx1dayBytes}, 
+                                 $self->{currentEthTx15minBytes}, $self->{currentEthTx1dayBytes},
+                                 $self->{currentEthRxHighSpeed15minBytes}, $self->{currentEthRxHighSpeed1dayBytes}], instances => $self->{array_interface_selected});
+}
+
+sub add_result_traffic {
+    my ($self, %options) = @_;
+    
+    $self->{interface_selected}->{$options{instance}}->{traffic_in_15min} = 
+        defined($self->{results}->{$self->{currentEthRxHighSpeed15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRxHighSpeed15minBytes} . '.' . $options{instance}} * 8 :
+            (defined($self->{results}->{$self->{currentEthRx15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRx15minBytes} . '.' . $options{instance}} * 8 : undef);
+    $self->{interface_selected}->{$options{instance}}->{traffic_in_1day} = 
+        defined($self->{results}->{$self->{currentEthRxHighSpeed1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRxHighSpeed1dayBytes} . '.' . $options{instance}} * 8 :
+            (defined($self->{results}->{$self->{currentEthRx1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRx1dayBytes} . '.' . $options{instance}} * 8 : undef);
+    $self->{interface_selected}->{$options{instance}}->{traffic_out_15min} = 
+        defined($self->{results}->{$self->{currentEthTx15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthTx15minBytes} . '.' . $options{instance}} * 8 : undef;
+    $self->{interface_selected}->{$options{instance}}->{traffic_out_1day} = 
+        defined($self->{results}->{$self->{currentEthTx1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthTx1dayBytes} . '.' . $options{instance}} * 8 : undef;
+    
+    $self->{interface_selected}->{$options{instance}}->{speed_in} = 0;
+    $self->{interface_selected}->{$options{instance}}->{speed_out} = 0;
+    if ($self->{get_speed} == 0) {
+        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+            $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
+            $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
+        }
+        $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+        $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
+    }
+}
+
 1;
 
 __END__
@@ -129,6 +274,10 @@ Check interfaces.
 =item B<--add-status>
 
 Check interface status.
+
+=item B<--add-traffic>
+
+Check interface traffic.
 
 =item B<--add-optical>
 
@@ -147,12 +296,16 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'laser-temp', 'input-power', 'output-power'.
+Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'laser-temp', 'input-power', 'output-power'.
+Can be: 'laser-temp', 'input-power', 'output-power', 'traffic-in', 'traffic-out'.
+
+=item B<--units-traffic>
+
+Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
 =item B<--interface>
 
@@ -161,6 +314,18 @@ Set the interface (number expected) ex: 1,2,... (empty means 'check all interfac
 =item B<--name>
 
 Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+
+=item B<--speed>
+
+Set interface speed for incoming/outgoing traffic (in Mb).
+
+=item B<--speed-in>
+
+Set interface speed for incoming traffic (in Mb).
+
+=item B<--speed-out>
+
+Set interface speed for outgoing traffic (in Mb).
 
 =item B<--reload-cache-time>
 

@@ -34,6 +34,7 @@ sub new {
                          'alarms'           => 'network::adva::fsp3000::snmp::mode::alarms',
                          'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'snmp_standard::mode::memory',
                          );
 
     return $self;
