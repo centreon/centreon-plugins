@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 
-use constant SEND_PAGE => '/source/send_sms.php';
-
 # use Data::Dumper;
 
 sub new {
@@ -41,9 +39,11 @@ sub new {
             "username:s"    => { name => 'username', default => 'centreon' },
             "password:s"    => { name => 'password' },
             "from:s"        => { name => 'from',     default => 'centreon' },
+            "proto:s"       => { name => 'proto',    default => 'http' },
+            "sendpage:s"    => { name => 'sendpage', default => '/source/send_sms.php' },
             "phonenumber:s" => { name => 'phonenumber' },
             "hostname:s"    => { name => 'hostname' },
-            "testo:s"       => { name => 'testo' },
+            "texto:s"       => { name => 'texto' },
             "timeout:s"     => { name => 'timeout',  default => 10 },
         }
     );
@@ -74,8 +74,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{testo})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --testo option");
+    if (!defined($self->{option_results}->{texto})) {
+        $self->{output}->add_option_msg(short_msg => "Please set the --texto option");
         $self->{output}->option_exit();
     }
 
@@ -87,7 +87,10 @@ sub run {
 
     my ($ua, $html_page, $response, $status_code, $litteral_code);
 
-    my $url = 'http' . '://' . $self->{option_results}->{hostname} . SEND_PAGE;
+    my $url
+        = $self->{option_results}->{proto} . '://'
+        . $self->{option_results}->{hostname}
+        . $self->{option_results}->{sendpage};
 
     $ua = LWP::UserAgent->new;
     $ua->timeout($self->{option_results}->{timeout});
@@ -98,33 +101,45 @@ sub run {
             "pwd"      => $self->{option_results}->{password},
             "from"     => $self->{option_results}->{from},
             "nphone"   => $self->{option_results}->{phonenumber},
-            "testo"    => $self->{option_results}->{testo},
+            "testo"    => $self->{option_results}->{texto},
             "nc"       => $url,
         ]
     );
 
     if ($response->{_rc} != 200) {
-        print("ERROR: " . $response->{_msg} . "\n");
-        $status_code = $self->{output}->{errors}->{UNKNOWN};
+        $status_code   = $self->{output}->{errors}->{UNKNOWN};
+        $litteral_code = $self->{output}->{errors_num}->{$status_code};
+        $self->{output}->output_add(
+            severity  => $litteral_code,
+            short_msg => 'ERROR: ' . $response->{_msg}
+        );
     }
     else {
         $html_page = $response->{_content};
         if ($html_page =~ /p class="(\w+)"/g) {
             if ($1 eq "confneg") {
-                print("ERROR: Unable to send SMS\n");
-                $status_code = $self->{output}->{errors}->{UNKNOWN};
+                $status_code   = $self->{output}->{errors}->{UNKNOWN};
+                $litteral_code = $self->{output}->{errors_num}->{$status_code};
+                $self->{output}->output_add(
+                    severity  => $litteral_code,
+                    short_msg => 'ERROR: Unable to send SMS'
+                );
             }
             else {
-                $status_code = $self->{output}->{errors}->{OK};
+                $status_code   = $self->{output}->{errors}->{OK};
+                $litteral_code = $self->{output}->{errors_num}->{$status_code};
             }
         }
         else {
-            print("ERROR: Unknown page output\n");
-            $status_code = $self->{output}->{errors}->{UNKNOWN};
+            $status_code   = $self->{output}->{errors}->{UNKNOWN};
+            $litteral_code = $self->{output}->{errors_num}->{$status_code};
+            $self->{output}->output_add(
+                severity  => $litteral_code,
+                short_msg => 'ERROR: Unknown page output'
+            );
         }
     }
-
-    $litteral_code = $self->{output}->{errors_num}->{$status_code};
+    $self->{output}->display();
     $self->{output}->exit(exit_litteral => $litteral_code);
 }
 
@@ -142,6 +157,10 @@ Send SMS with Foxbox API.
 
 url of the Foxbox Server.
 
+=item B<--sendpage>
+
+The path describes a specific resource. (Default: /source/send_sms.php)
+
 =item B<--username>
 
 Specify username for API authentification (Default: centreon).
@@ -150,17 +169,21 @@ Specify username for API authentification (Default: centreon).
 
 Specify password for API authentification (Required).
 
+=item B<--proto>
+
+Specify http or https protocol. (Default: http)
+
 =item B<--phonenumber>
 
 Specify phone number (Required).
 
-=item B<--testo>
+=item B<--texto>
 
-Specify the testo to send (Required).
+Specify the content of your SMS message (Required).
 
 =item B<--from>
 
-Specify the sender. It should NOT start with a number and have a max of 11 characters.
+Specify the sender. It should NOT start with a number and have a max of 11 characters (Default: centreon).
 
 =item B<--timeout>
 
