@@ -113,7 +113,7 @@ sub set_counters {
         },
         { label => 'ipv4-oper-down-events', set => {
                 key_values => [ { name => 'ipv4_oper_down_events', diff => 1 }, { name => 'display' } ],
-                output_template => 'IPv4 Oper sDown Events : %s',
+                output_template => 'IPv4 Oper Down Events : %s',
                 perfdatas => [
                     { label => 'ipv4_oper_down_events', value => 'ipv4_oper_down_events_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
