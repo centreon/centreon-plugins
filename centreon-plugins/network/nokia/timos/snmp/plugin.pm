@@ -33,8 +33,10 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::nokia::timos::snmp::mode::cpu',
                          'hardware'         => 'network::nokia::timos::snmp::mode::hardware',
+                         'ldp-usage'        => 'network::nokia::timos::snmp::mode::ldpusage',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-ldp'         => 'network::nokia::timos::snmp::mode::listldp',
                          'memory'           => 'network::nokia::timos::snmp::mode::memory',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
