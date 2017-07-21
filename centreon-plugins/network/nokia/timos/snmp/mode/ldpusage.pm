@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'ipv4_active_link_adj' }, { name => 'display' } ],
                 output_template => 'IPv4 Active Link Adjacencies : %s',
                 perfdatas => [
-                    { label => 'ipv4_active_target_adj', value => 'ipv4_active_link_adj_absolute', template => '%s',
+                    { label => 'ipv4_active_link_adj', value => 'ipv4_active_link_adj_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
