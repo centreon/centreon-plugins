@@ -35,6 +35,7 @@ sub new {
                          'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'snmp_standard::mode::memory',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
