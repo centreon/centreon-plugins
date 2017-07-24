@@ -42,8 +42,10 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'list-isis'        => 'network::nokia::timos::snmp::mode::listisis',
                          'list-ldp'         => 'network::nokia::timos::snmp::mode::listldp',
+                         'list-sap'         => 'network::nokia::timos::snmp::mode::listsap',
                          'list-vrtr'        => 'network::nokia::timos::snmp::mode::listvrtr',
                          'memory'           => 'network::nokia::timos::snmp::mode::memory',
+                         'sap-usage'        => 'network::nokia::timos::snmp::mode::sapusage',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
