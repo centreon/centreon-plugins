@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::nokia::timos::snmp::mode::listldp;
+package network::nokia::timos::snmp::mode::listvrtr;
 
 use base qw(centreon::plugins::mode);
 
@@ -44,12 +44,10 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my %map_oper_state = (1 => 'unknown', 2 => 'inService', 3 => 'outOfService', 4 => 'transition');
-my %map_admin_state = (1 => 'noop', 2 => 'inService', 3 => 'outOfService');
+my %map_type = (1 => 'baseRouter', 2 => 'vprn', 3 => 'vr');
 my $mapping = {
-    vRtrName                    => { oid => '.1.3.6.1.4.1.6527.3.1.2.3.1.1.4' },
-    vRtrLdpNgGenAdminState      => { oid => '.1.3.6.1.4.1.6527.3.1.2.91.47.1.5', map => \%map_admin_state },
-    vRtrLdpNgGenIPv4OperState   => { oid => '.1.3.6.1.4.1.6527.3.1.2.91.47.1.6', map => \%map_oper_state },
+    vRtrName      => { oid => '.1.3.6.1.4.1.6527.3.1.2.3.1.1.4' },
+    vRtrType      => { oid => '.1.3.6.1.4.1.6527.3.1.2.3.1.1.28', map => \%map_type },
 };
 
 sub manage_selection {
@@ -57,13 +55,12 @@ sub manage_selection {
 
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $mapping->{vRtrName}->{oid} },
-            { oid => $mapping->{vRtrLdpNgGenAdminState}->{oid} },
-            { oid => $mapping->{vRtrLdpNgGenIPv4OperState}->{oid} },
+            { oid => $mapping->{vRtrType}->{oid} },
         ],
         return_type => 1, nothing_quit => 1);
 
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{vRtrLdpNgGenAdminState}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{vRtrName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
@@ -73,8 +70,10 @@ sub manage_selection {
             next;
         }
         
-        $self->{ldp}->{$instance} = { name => $result->{vRtrName}, 
-            admin_state => $result->{vRtrLdpNgGenAdminState}, ipv4_oper_state => $result->{vRtrLdpNgGenIPv4OperState} };
+        $self->{vrtr}->{$instance} = { 
+            name => $result->{vRtrName}, 
+            type => $result->{vRtrType} 
+        };
     }
 }
 
@@ -82,14 +81,14 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{ldp}}) { 
-        $self->{output}->output_add(long_msg => '[name = ' . $self->{ldp}->{$instance}->{name} . 
-            "] [admin = '" . $self->{ldp}->{$instance}->{admin_state} . 
-            "'] [ipv4_oper = '" . $self->{ldp}->{$instance}->{ipv4_oper_state} . '"]');
+    foreach my $instance (sort keys %{$self->{vrtr}}) { 
+        $self->{output}->output_add(long_msg => '[name = ' . $self->{vrtr}->{$instance}->{name} . 
+            "] [type = '" . $self->{vrtr}->{$instance}->{type} . 
+            "']");
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List LDPs:');
+                                short_msg => 'List virtual routers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -97,17 +96,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'admin', 'ipv4_oper']);
+    $self->{output}->add_disco_format(elements => ['name', 'type']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $instance (sort keys %{$self->{ldp}}) {             
-        $self->{output}->add_disco_entry(name => $self->{ldp}->{$instance}->{name},
-            admin => $self->{ldp}->{$instance}->{admin_state},
-            ipv4_oper => $self->{ldp}->{$instance}->{ipv4_oper_state},
+    foreach my $instance (sort keys %{$self->{vrtr}}) {             
+        $self->{output}->add_disco_entry(name => $self->{vrtr}->{$instance}->{name},
+            type => $self->{vrtr}->{$instance}->{type},
         );
     }
 }
@@ -118,13 +116,13 @@ __END__
 
 =head1 MODE
 
-List LDPs.
+List virtual routers.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter by ldp instance (can be a regexp).
+Filter by virtual router name (can be a regexp).
 
 =back
 
