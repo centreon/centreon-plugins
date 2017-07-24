@@ -193,7 +193,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $mapping->{sapDescription}->{oid} },
                                                          ], return_type => 1, nothing_quit => 1);
-
+    my $done_description = {};
     $self->{sap} = {};
     foreach my $oid (keys %{$snmp_result}) {
         $oid =~ /^$mapping->{sapDescription}->{oid}\.(.*)$/;
@@ -208,6 +208,12 @@ sub manage_selection {
             next;
         }
         
+        if (defined($done_description->{$snmp_result->{$oid}})) {
+            $self->{output}->output_add(long_msg => "skipping sap '" . $snmp_result->{$oid} . "': duplicated description.", debug => 1);
+            next;
+        } else {
+            $done_description->{$snmp_result->{$oid}} = 1;
+        }
         $self->{sap}->{$instance} = { display => $snmp_result->{$oid} };
     }
     
