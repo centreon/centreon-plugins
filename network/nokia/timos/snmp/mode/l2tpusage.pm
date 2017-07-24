@@ -79,8 +79,12 @@ sub custom_total_sessions_calc {
             next if (!defined($options{old_datas}->{$_}));
             my $old_total = $options{old_datas}->{$_};
             
-            $total_sessions += $new_total - $old_total;
-            $total_sessions += $old_total if ($total_sessions <= 0);
+            my $diff_sessions += $new_total - $old_total;
+            if ($diff_sessions < 0) {
+                $total_sessions += $old_total;
+            } else {
+                $total_sessions += $diff_sessions;
+            }
         }
     }
     
@@ -196,7 +200,7 @@ sub prefix_peer_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
