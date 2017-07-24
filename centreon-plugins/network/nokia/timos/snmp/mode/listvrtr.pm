@@ -35,7 +35,6 @@ sub new {
                                 {
                                   "filter-name:s"       => { name => 'filter_name' },
                                 });
-    $self->{ldp} = {};
     return $self;
 }
 
@@ -58,7 +57,7 @@ sub manage_selection {
             { oid => $mapping->{vRtrType}->{oid} },
         ],
         return_type => 1, nothing_quit => 1);
-
+    $self->{vrtr} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vRtrName}->{oid}\.(.*)$/);
         my $instance = $1;
