@@ -114,7 +114,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-out-below-cir', set => {
+        { label => 'traffic-out-above-cir', set => {
                 key_values => [ { name => 'sapBaseStatsEgressQchipForwardedOutProfOctets', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out Above CIR : %s %s/s',
