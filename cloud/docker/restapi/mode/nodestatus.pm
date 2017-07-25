@@ -180,7 +180,7 @@ sub manage_selection {
         }
     }
     
-    if (scalar(keys %{$self->{nodes}}) <= 0) {
+    if (scalar(keys %{$self->{node}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No node found.");
         $self->{output}->option_exit();
     }
