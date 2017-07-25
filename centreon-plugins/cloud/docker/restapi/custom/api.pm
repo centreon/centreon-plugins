@@ -331,8 +331,10 @@ sub api_get_containers {
     }
 
     my $content_total = $self->cache_containers(statefile => $options{statefile});
-    if (defined($options{container_id}) && $options{container_id} ne '' && defined($content_total->{$options{container_id}})) {
-         $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+    if (defined($options{container_id}) && $options{container_id} ne '') {
+        if (defined($content_total->{$options{container_id}})) {
+            $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+        }
     } else {
         foreach my $container_id (keys %{$content_total}) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
