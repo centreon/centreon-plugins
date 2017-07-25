@@ -74,6 +74,7 @@ sub custom_cpu_calc {
     my $delta_cpu_total = $options{new_datas}->{$self->{instance} . '_cpu_total_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_total_usage'};
     my $delta_cpu_system = $options{new_datas}->{$self->{instance} . '_cpu_system_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_system_usage'};
     $self->{result_values}->{prct_cpu} = (($delta_cpu_total / $delta_cpu_system) * $options{new_datas}->{$self->{instance} . '_cpu_number'}) * 100;
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
 
     return 0;
 }
@@ -149,7 +150,7 @@ sub set_counters {
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
