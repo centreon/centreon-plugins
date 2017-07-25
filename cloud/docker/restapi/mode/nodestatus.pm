@@ -72,7 +72,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes are ok', skipped_code => { -11 => 1 } },
+        { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node informations are ok', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node status are ok', skipped_code => { -11 => 1 } },
     ];
     
     $self->{maps_counters}->{nodes} = [
@@ -82,6 +83,35 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+    ];
+    $self->{maps_counters}->{node} = [
+         { label => 'containers-running', set => {
+                key_values => [ { name => 'containers_running' }, { name => 'display' } ],
+                output_template => 'Containers Running : %s',
+                perfdatas => [
+                    { label => 'containers_running', value => 'containers_running_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'containers-stopped', set => {
+                key_values => [ { name => 'containers_stopped' }, { name => 'display' } ],
+                output_template => 'Containers Stopped : %s',
+                perfdatas => [
+                    { label => 'containers_stopped', value => 'containers_stopped_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'containers-running', set => {
+                key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
+                output_template => 'Containers Paused : %s',
+                perfdatas => [
+                    { label => 'containers_paused', value => 'containers_paused_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -128,12 +158,19 @@ sub change_macros {
 
 sub manage_selection {
     my ($self, %options) = @_;
-                                                           
+                  
+    $self->{node} = {};
     $self->{nodes} = {};
     my $result = $options{custom}->api_list_nodes();
 
     foreach my $node_name (keys %{$result}) {
-        foreach my $entry (@{$result->{$node_name}}) {
+        $self->{node}->{$node_name} = {
+            display => $node_name,
+            containers_running => $result->{$node_name}->{containers_running},
+            containers_stopped => $result->{$node_name}->{containers_stopped},
+            containers_paused => $result->{$node_name}->{containers_paused},
+        };
+        foreach my $entry (@{$result->{$node_name}->{nodes}}) {
             my $name = $node_name . '/' . $entry->{Addr};
             $self->{nodes}->{$name} = {
                 display => $name ,
@@ -168,6 +205,16 @@ Can used special variables like: %{display}, %{status}, %{manager_status}.
 
 Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
 Can used special variables like: %{display}, %{status}, %{manager_status}.
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'containers-running', 'containers-paused', 'containers-stopped'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'containers-running', 'containers-paused', 'containers-stopped'., 
 
 =back
 
