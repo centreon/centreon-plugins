@@ -228,6 +228,25 @@ sub internal_api_list_nodes {
     return $nodes;
 }
 
+sub internal_api_info {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->{$options{node_name}}->request(
+        url_path => '/info',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $nodes;
+    eval {
+        $nodes = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $nodes = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Node '$options{node_name}': cannot decode json info response: $@");
+    }
+    
+    return $nodes;
+}
+
 sub internal_api_list_containers {
     my ($self, %options) = @_;
     
@@ -289,10 +308,15 @@ sub api_list_nodes {
     
     my $nodes = {};
     foreach my $node_name (keys %{$self->{http}}) {
-        $nodes->{$node_name} = [];
+        my $info_node = $self->internal_api_info(node_name => $node_name);
         my $list_nodes = $self->internal_api_list_nodes(node_name => $node_name);
+        $nodes->{$node_name} = { nodes => [], 
+            containers_running => $info_node->{ContainersRunning},
+            containers_stopped => $info_node->{ContainersStopped},
+            containers_paused => $info_node->{ContainersPaused},
+        };
         foreach my $node (@$list_nodes) {
-            push @{$nodes->{$node_name}}, { Status => $node->{Status}->{State}, ManagerStatus => $node->{ManagerStatus}->{Reachability}, Addr => $node->{Status}->{Addr} };
+            push @{$nodes->{$node_name}->{nodes}}, { Status => $node->{Status}->{State}, ManagerStatus => $node->{ManagerStatus}->{Reachability}, Addr => $node->{Status}->{Addr} };
         }
     }
     
