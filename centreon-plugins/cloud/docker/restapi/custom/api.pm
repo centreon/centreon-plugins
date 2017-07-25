@@ -223,6 +223,8 @@ sub internal_api_list_nodes {
         $nodes = [];
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+    } else {
+        $nodes = [] if (ref($item) eq 'HASH'); # nodes is not in a swarm
     }
     
     return $nodes;
