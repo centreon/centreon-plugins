@@ -63,7 +63,6 @@ sub new {
             "unknown-status:s"      => { name => 'unknown_status' },
             "warning-status:s"      => { name => 'warning_status' },
             "critical-status:s"     => { name => 'critical_status' },
-
             "warning-numeric:s"       => { name => 'warning_numeric' },
             "critical-numeric:s"      => { name => 'critical_numeric' },
             "warning-string:s"        => { name => 'warning_string' },
@@ -121,17 +120,24 @@ sub load_request {
     my ($self, %options) = @_;
 
     $self->{method} = 'GET';
-    if (defined($self->{option_results}->{data})) {
-        local $/ = undef;
-        if (!open(FILE, "<", $self->{option_results}->{data})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-        $self->{json_request} = <FILE>;
-        close FILE;
+    if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
         $self->{method} = 'POST';
+        if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
+            $self->{json_request} = do {
+                local $/;
+                my $fh;
+                if (!open($fh, "<:encoding(UTF-8)", $self->{option_results}->{data})) {
+                    $self->{output}->output_add(severity => 'UNKNOWN',
+                                                short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
+                    $self->{output}->display();
+                    $self->{output}->exit();
+                }
+            };
+            $self->{json_request} = <FILE>;
+            close FILE;
+        } else {
+           $self->{json_request} = $self->{option_results}->{data};
+        }
     }
 }
 
