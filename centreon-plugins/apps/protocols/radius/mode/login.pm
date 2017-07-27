@@ -20,12 +20,84 @@
 
 package apps::protocols::radius::mode::login;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Authen::Radius;
+
+my $instance_mode;
+my $radius_result_attributes = {};
+
+sub custom_status_threshold {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    my $message;
+
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'Radius Access Request Status: ' . $self->{result_values}->{status} . 
+        ' [error msg: ' . $self->{result_values}->{error_msg} . ']';
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{error_msg} = $options{new_datas}->{$self->{instance} . '_error_msg'};
+    $self->{result_values}->{attributes} = $radius_result_attributes;
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'radius', type => 0, message_separator => ' - ' },
+    ];
+
+    $self->{maps_counters}->{radius} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'error_msg' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'time', set => {
+                key_values => [ { name => 'elapsed' } ],
+                output_template => 'Response time : %.3f second(s)',
+                perfdatas => [
+                    { label => 'time', value => 'elapsed_absolute', template => '%.3f',
+                      min => 0, unit => 's' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -36,81 +108,141 @@ sub new {
     $options{options}->add_options(arguments =>
          {
          "hostname:s"       => { name => 'hostname' },
+         "port:s"           => { name => 'port', default => 1812 },
          "secret:s"         => { name => 'secret' },
          "username:s"       => { name => 'username' },
          "password:s"       => { name => 'password' },
          "warning:s"        => { name => 'warning' },
          "critical:s"       => { name => 'critical' },
-         "timeout:s"        => { name => 'timeout', default => '30' },
+         "timeout:s"        => { name => 'timeout', default => 5 },
+         "retry:s"          => { name => 'retry', default => 0 },
+         'radius-attribute:s%'  => { name => 'radius_attribute' },
+         'radius-dictionary:s'  => { name => 'radius_dictionary' },
+         "warning-status:s"     => { name => 'warning_status', default => '' },
+         "critical-status:s"    => { name => 'critical_status', default => '%{status} ne "accepted"' },
          });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+    my @mandatory = ('hostname', 'secret');
+    push @mandatory, 'username', 'password' if (!defined($self->{option_results}->{radius_attribute}));
+    foreach (@mandatory) {
+        if (!defined($self->{option_results}->{$_})) {
+            $self->{output}->add_option_msg(short_msg => "Please set the " . $_ . " option");
+            $self->{output}->option_exit();
+        }
+    }
+    
+    if (defined($self->{option_results}->{radius_attribute}) && 
+        (!defined($self->{option_results}->{radius_dictionary}) || $self->{option_results}->{radius_dictionary} eq '')) {
+        $self->{output}->add_option_msg(short_msg => "Please set radius-dictionary option");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
+    
+    $self->{option_results}->{retry} = 0 if (!defined($self->{option_results}->{retry}) || $self->{option_results}->{retry} !~ /^\d+$/);
+    if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^\d+$/) {
+        $self->{option_results}->{hostname} .= ':' . $self->{option_results}->{port};
     }
+    $instance_mode = $self;
+    $self->change_macros();
+}
 
-    if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
-        $self->{output}->option_exit();
-    }
+sub change_macros {
+    my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{secret})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the secret option");
-        $self->{output}->option_exit();
-    }
-
-    if (!defined($self->{option_results}->{username})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the username option");
-        $self->{output}->option_exit();
-    }
-
-    if (!defined($self->{option_results}->{password})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the password option");
-        $self->{output}->option_exit();
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
     }
 }
 
-sub run {
+sub radius_simple_connection {
     my ($self, %options) = @_;
     
-    my $timing0 = [gettimeofday];
-    
-    my $radius = Authen::Radius->new(Host => $self->{option_results}->{hostname},
-                                    Secret => $self->{option_results}->{secret},
-                                    TimeOut => $self->{option_results}->{timeout},
-                                    );
+    $self->{timing0} = [gettimeofday];
+    my $retry = 0;
+    while ($retry <= $self->{option_results}->{retry}) {
+        if ($self->{radius_session}->check_pwd($self->{option_results}->{username}, $self->{option_results}->{password})) {
+            $self->{radius}->{status} = 'accepted';
+            last;
+        }
 
-
-    my $authentication = $radius->check_pwd($self->{option_results}->{username}, $self->{option_results}->{password});
-    
-    if ($authentication != 1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => 'Authentication failed');
+        if ($retry + 1 > $self->{option_results}->{retry}) {
+            $self->{radius}->{status} = 'rejected';
+            $self->{radius}->{error_msg} = $self->{radius_session}->strerror(); 
+        }
+        $retry++;
     }
+}
 
-    my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
+sub radius_attr_connection {
+    my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f second(s)", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+    my $message;
+    eval {
+        local $SIG{__WARN__} = sub { $message = join(' - ', @_); };
+        local $SIG{__DIE__} = sub { $message = join(' - ', @_); };
 
-    $self->{output}->display();
-    $self->{output}->exit();
+        Authen::Radius->load_dictionary($self->{option_results}->{radius_dictionary});
+        foreach (keys %{$self->{option_results}->{radius_attribute}}) {
+            $self->{radius_session}->add_attributes({ Name => $_, Value => $self->{option_results}->{radius_attribute}->{$_} });
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => $message, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Issue with dictionary and attributes");
+        $self->{output}->option_exit();
+    }
+    
+    $self->{timing0} = [gettimeofday];
+    my $retry = 0;
+    while ($retry <= $self->{option_results}->{retry}) {
+        my $type;
+
+        if ($self->{radius_session}->send_packet(ACCESS_REQUEST) && ($type = $self->{radius_session}->recv_packet()) == ACCESS_ACCEPT) {
+            $self->{radius}->{status} = 'accepted';
+            last;
+        }
+
+        if ($retry + 1 > $self->{option_results}->{retry}) {
+            $self->{radius}->{status} = 'unknown';
+            $self->{radius}->{error_msg} = $self->{radius_session}->strerror(); 
+            if (defined($type) && $type == ACCESS_REJECT) {
+                $self->{radius}->{status} = 'rejected';
+            }
+        }
+        $retry++;
+    }
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{radius} = { status => 'unknown', error_msg => 'none' };
+    $self->{radius_session} = Authen::Radius->new(
+        Host => $self->{option_results}->{hostname},
+        Secret => $self->{option_results}->{secret},
+        TimeOut => $self->{option_results}->{timeout},
+    );
+    
+    if (defined($self->{option_results}->{radius_attribute})) {
+        $self->radius_attr_connection();
+    } else {
+        $self->radius_simple_connection();
+    }
+    
+    $self->{radius}->{elapsed} = tv_interval($self->{timing0}, [gettimeofday]);
+    foreach my $attr ($self->{radius_session}->get_attributes()) {
+        $radius_result_attributes->{$attr->{Name}} = defined($attr->{Value}) ? $attr->{Value} : '';
+        $self->{output}->output_add(long_msg => 'Attribute Name = ' .  $attr->{Name} . 
+            ', Value = ' . (defined($attr->{Value}) ? $attr->{Value} : ''), debug => 1);
+    }
 }
 
 1;
@@ -119,13 +251,20 @@ __END__
 
 =head1 MODE
 
-Check Connection (also login) to a Radius Server.
+Check login to a Radius Server.
+
+Example with attributes:
+centreon_plugins.pl --plugin=apps/protocols/radius/plugin.pm --mode=login --hostname=192.168.1.2 --secret=centreon --radius-attribute='User-Password=test' --radius-attribute='User-Name=user@test.com' --radius-dictionary=dictionary.txt
 
 =over 8
 
 =item B<--hostname>
 
 IP Addr/FQDN of the radius host
+
+=item B<--port>
+
+Radius port (Default: 1812)
 
 =item B<--secret>
 
@@ -141,13 +280,37 @@ Specify password for authentication
 
 =item B<--timeout>
 
-Connection timeout in seconds (Default: 30)
+Connection timeout in seconds (Default: 5)
 
-=item B<--warning>
+=item B<--timeout>
+
+Number of retry connection (Default: 0)
+
+=item B<--radius-attribute>
+
+If you need to add option, please following attributes. 
+Option username and password should be set with that option.
+Example: --radius-attribute="User-Password=test"
+
+=item B<--radius-dictionary>
+
+Set radius-dictionary file (mandatory with --radius-attribute).
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{error_msg}, %{attributes}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} ne "accepted"').
+Can used special variables like: %{status}, %{error_msg}, %{attributes}.
+
+=item B<--warning-time>
 
 Threshold warning in seconds
 
-=item B<--critical>
+=item B<--critical-time>
 
 Threshold critical in seconds
 
