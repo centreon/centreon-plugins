@@ -211,13 +211,13 @@ sub custom_add_result {
     $self->{interface_selected}->{$options{instance}}->{input_power} = undef;
     if (defined($self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}}) &&
         $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}} != -65535) {
-        $self->{interface_selected}->{$options{instance}}->{input_power} = $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}};
+        $self->{interface_selected}->{$options{instance}}->{input_power} = $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}} / 10;
     }
     
     $self->{interface_selected}->{$options{instance}}->{output_power} = undef;
     if (defined($self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}}) &&
         $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}} != -65535) {
-        $self->{interface_selected}->{$options{instance}}->{output_power} = $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}};
+        $self->{interface_selected}->{$options{instance}}->{output_power} = $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}} / 10;
     }
 }
 
