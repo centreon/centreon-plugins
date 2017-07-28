@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'alarms'           => 'network::adva::fsp3000::snmp::mode::alarms',
                          'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-interfaces'  => 'network::adva::fsp3000::snmp::mode::listinterfaces',
                          'memory'           => 'snmp_standard::mode::memory',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
