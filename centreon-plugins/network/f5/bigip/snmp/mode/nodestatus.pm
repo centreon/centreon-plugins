@@ -196,8 +196,8 @@ sub manage_selection {
         $oid =~ /^$branch_name\.(.*)$/;
         my $instance = $1;
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$oid} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping node '" . $snmp_result->{$oid} . "'.", debug => 1);
+            $snmp_result->{$branch_name}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping node '" . $snmp_result->{$branch_name}->{$oid} . "'.", debug => 1);
             next;
         }
         
