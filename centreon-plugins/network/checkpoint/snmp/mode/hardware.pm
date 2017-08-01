@@ -51,6 +51,7 @@ sub set_system {
         psu => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
+            ['dummy', 'OK'], 
             ['.*', 'UNKNOWN'],
         ],        
         raiddisk => [
