@@ -64,11 +64,11 @@ sub init {
     # $options{version} = string version
     # $options{help} = string help
 
-    if (defined($options{help}) && !defined($self->{mode_name})) {
+    if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
     }
-    if (defined($options{version}) && !defined($self->{mode_name})) {
+    if (defined($options{version}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->version();
     }
     if (defined($self->{list_mode})) {
