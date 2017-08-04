@@ -217,34 +217,7 @@ sub manage_selection {
     #    </workers>
     #</connector>
     #</status>
-    #my $webcontent = $self->{http}->request();
-    my $webcontent = '<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xsl" href="//manager/xform.xsl" ?>
-<status>
-    <jvm>
-        <memory free="382845792" total="515899392" max="954728448"/><memorypool name="PS Eden Space" type="Heap memory" usageInit="134742016" usageCommitted="137887744" usageMax="316669952" usageUsed="121694384"/>
-        <memorypool name="PS Old Gen" type="Heap memory" usageInit="358088704" usageCommitted="358088704" usageMax="716177408" usageUsed="10903208"/>
-        <memorypool name="PS Survivor Space" type="Heap memory" usageInit="22020096" usageCommitted="19922944" usageMax="19922944" usageUsed="456008"/>
-        <memorypool name="Code Cache" type="Non-heap memory" usageInit="2555904" usageCommitted="9306112" usageMax="251658240" usageUsed="9241920"/>
-        <memorypool name="Compressed Class Space" type="Non-heap memory" usageInit="0" usageCommitted="2359296" usageMax="1073741824" usageUsed="2158664"/>
-        <memorypool name="Metaspace" type="Non-heap memory" usageInit="0" usageCommitted="20971520" usageMax="-1" usageUsed="20197776"/>
-    </jvm>
-    <connector name="ajp-nio-8009">
-        <threadInfo  maxThreads="200" currentThreadCount="10" currentThreadsBusy="0" />
-        <requestInfo  maxTime="0" processingTime="0" requestCount="0" errorCount="0" bytesReceived="0" bytesSent="0" />
-        <workers>
-            <worker  stage="R" requestProcessingTime="0" requestBytesSent="0" requestBytesReceived="0" remoteAddr="&#63;" virtualHost="&#63;" method="&#63;" currentUri="&#63;" currentQueryString="&#63;" protocol="&#63;" />
-        </workers>
-    </connector>
-    <connector name="http-nio-8080">
-        <threadInfo  maxThreads="200" currentThreadCount="10" currentThreadsBusy="1" />
-        <requestInfo  maxTime="246" processingTime="2164" requestCount="200" errorCount="9" bytesReceived="0" bytesSent="572422" />
-        <workers>
-            <worker  stage="R" requestProcessingTime="0" requestBytesSent="0" requestBytesReceived="0" remoteAddr="&#63;" virtualHost="&#63;" method="&#63;" currentUri="&#63;" currentQueryString="&#63;" protocol="&#63;" />
-            <worker  stage="S" requestProcessingTime="3" requestBytesSent="0" requestBytesReceived="0" remoteAddr="10.43.7.17" virtualHost="10.41.7.22" method="GET" currentUri="//manager/status" currentQueryString="XML=true" protocol="HTTP/1.1" />
-        </workers>
-    </connector>
-</status>
-';
+    my $webcontent = $self->{http}->request();
 
     #GET XML DATA
     my $xpath = XML::XPath->new(xml => $webcontent);
