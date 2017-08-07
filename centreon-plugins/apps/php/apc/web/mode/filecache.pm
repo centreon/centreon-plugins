@@ -293,7 +293,7 @@ Threshold for HTTP timeout (Default: 30)
 
 Threshold warning.
 Can be: 'request-rate', 'request-rate-now', 
-'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now', 'insert-rate',
+'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now',
 'hit-percent', 'hit-percent-now'.
 '*-now' are rate between two calls.
 
@@ -301,7 +301,7 @@ Can be: 'request-rate', 'request-rate-now',
 
 Threshold critical.
 Can be: 'request-rate', 'request-rate-now', 
-'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now', 'insert-rate',
+'hit-rate', 'hit-rate-now', 'miss-rate', 'miss-rate-now',
 'hit-percent', 'hit-percent-now'.
 '*-now' are rate between two calls.
 
