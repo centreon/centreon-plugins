@@ -64,7 +64,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'statement', set => {
+        { label => 'marks', set => {
                 key_values => [ { name => 'marks', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Marks : %.2f',
