@@ -228,8 +228,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    #my $webcontent = $self->{http}->request();
-    my $webcontent = 'plop';
+    my $webcontent = $self->{http}->request();
     
     $self->{fcache} = {};
     $self->{fcache}->{hits} = $webcontent =~ /File Cache Information.*?Hits.*?(\d+)/msi ? $1 : undef;
