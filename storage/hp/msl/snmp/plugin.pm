@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'status'   => 'storage::hp::msl::snmp::mode::status',
+                         'hardware' => 'storage::hp::msl::snmp::mode::hardware',
                          );
 
     return $self;
