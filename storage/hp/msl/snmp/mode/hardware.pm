@@ -64,10 +64,7 @@ sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
-    #$self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-    $self->{results} = {
-        '.1.3.6.1.4.1.11.2.36.1.1.5.1.1.3' => { '.1.3.6.1.4.1.11.2.36.1.1.5.1.1.3.1' => 3 },
-    };
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
 1;
