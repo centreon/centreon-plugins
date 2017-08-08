@@ -32,7 +32,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'tag', type => 1, cb_prefix_output => 'prefix_tag_output', message_multiple => 'All RTT controls are ok',
-          skipped_code => { -2 => 1 } }
+          skipped_code => { -2 => 1, -3 => 1, -10 => 1 } }
     ];
     $self->{maps_counters}->{tag} = [
         { label => 'status', threshold => 0, set => {
