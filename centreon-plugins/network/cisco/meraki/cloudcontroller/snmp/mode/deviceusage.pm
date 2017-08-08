@@ -302,15 +302,17 @@ sub manage_selection {
                                          status => $result->{devStatus}, 
                                          clients => $result->{devClientCount}};
     }
-    
-    $options{snmp}->load(oids => [$mapping2->{devInterfaceSentBytes}->{oid}, $mapping2->{devInterfaceRecvBytes}->{oid}],
-        instances => [keys %{$self->{interface}}], instance_regexp => '^(.*)$');
-    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    foreach (keys %{$self->{interface}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
 
-        $self->{interface}->{$_}->{in} = $result->{devInterfaceRecvBytes} * 8;
-        $self->{interface}->{$_}->{out} = $result->{devInterfaceSentBytes} * 8;
+    if (scalar(keys %{$self->{interface}}) > 0) {
+        $options{snmp}->load(oids => [$mapping2->{devInterfaceSentBytes}->{oid}, $mapping2->{devInterfaceRecvBytes}->{oid}],
+            instances => [keys %{$self->{interface}}], instance_regexp => '^(.*)$');
+        $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+        foreach (keys %{$self->{interface}}) {
+            my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+
+            $self->{interface}->{$_}->{in} = $result->{devInterfaceRecvBytes} * 8;
+            $self->{interface}->{$_}->{out} = $result->{devInterfaceSentBytes} * 8;
+        }
     }
     
     $self->{cache_name} = "cisco_meraki_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
