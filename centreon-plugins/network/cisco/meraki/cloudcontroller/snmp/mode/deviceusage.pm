@@ -249,12 +249,10 @@ my %map_status = (
     1 => 'online',
 );
 my $mapping = {
-    devMac          => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.1' },
     devName         => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.2' },
     devStatus       => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.3', map => \%map_status },
     devClientCount  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.5' },
 };
-my $oid_devEntry = '.1.3.6.1.4.1.29671.1.1.4.1';
 my $mapping2 = {
     devInterfaceName        => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.3' },
     devInterfaceSentBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.6' },
@@ -269,17 +267,17 @@ sub manage_selection {
     $self->{global} = { total => 0 };
     
      my $snmp_result = $options{snmp}->get_multiple_table(oids => 
-        [ { oid => $oid_devEntry, end => $mapping->{devClientCount}->{oid} },
+        [ { oid => $mapping->{devName}->{oid} },
           { oid => $mapping2->{devInterfaceName}->{oid} },
         ], nothing_quit => 1);
     
-    foreach my $oid (keys %{$snmp_result->{ $oid_devEntry }}) {
-        next if ($oid !~ /^$mapping->{devName}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{ $mapping->{devName}->{oid} }}) {
+        $oid =~ /^$mapping->{devName}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_devEntry}, instance => $instance);
+        my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid}; 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{devName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping device '" . $result->{devName} . "': no matching filter.", debug => 1);
+            $dev_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
             next;
         }
         
@@ -290,17 +288,15 @@ sub manage_selection {
             my $interface_name = $snmp_result->{ $mapping2->{devInterfaceName}->{oid} }->{$_};
             if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
                 $interface_name !~ /$self->{option_results}->{filter_interface}/) {
-                $self->{output}->output_add(long_msg => "skipping interface '" . $result->{devName} . '.' . $interface_name . "': no matching filter.", debug => 1);
+                $self->{output}->output_add(long_msg => "skipping interface '" . $dev_name . '.' . $interface_name . "': no matching filter.", debug => 1);
                 next;
             }
             
-            $self->{interface}->{$instance . '.' . $index} = { display => $result->{devName} . '.' . $interface_name };
+            $self->{interface}->{$instance . '.' . $index} = { display => $dev_name . '.' . $interface_name };
         }
         
         $self->{global}->{total}++;
-        $self->{device}->{$instance} = { display => $result->{devName}, 
-                                         status => $result->{devStatus}, 
-                                         clients => $result->{devClientCount}};
+        $self->{device}->{$instance} = { display => $dev_name };
     }
 
     if (scalar(keys %{$self->{interface}}) > 0) {
@@ -312,6 +308,18 @@ sub manage_selection {
 
             $self->{interface}->{$_}->{in} = $result->{devInterfaceRecvBytes} * 8;
             $self->{interface}->{$_}->{out} = $result->{devInterfaceSentBytes} * 8;
+        }
+    }
+    
+    if (scalar(keys %{$self->{device}}) > 0) {
+        $options{snmp}->load(oids => [$mapping->{devStatus}->{oid}, $mapping->{devClientCount}->{oid}],
+            instances => [keys %{$self->{device}}], instance_regexp => '^(.*)$');
+        $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+        foreach (keys %{$self->{device}}) {
+            my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+            $self->{device}->{$_}->{status} = $result->{devStatus};
+            $self->{device}->{$_}->{clients} = $result->{devClientCount};
         }
     }
     
