@@ -179,7 +179,7 @@ Threshold warning.
 
 Threshold critical.
 
-Can be: queue, total-in, total-out, msg-in, msg-out.
+Can be: queue, total-msg-in, total-msg-out, msg-in, msg-out.
 
 =back
 
