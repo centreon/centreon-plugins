@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::snmp::isg::plugin;
+package network::juniper::isg::snmp::plugin;
 
 use strict;
 use warnings;
