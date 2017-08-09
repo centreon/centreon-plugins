@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::digi::standard::snmp::mode::temperature;
+package network::digi::sarian::snmp::mode::temperature;
 
 use base qw(centreon::plugins::templates::counter);
 

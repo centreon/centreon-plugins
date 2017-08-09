@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::sessions;
+package network::juniper::common::screenos::snmp::mode::sessions;
 
 use base qw(centreon::plugins::templates::counter);
 
