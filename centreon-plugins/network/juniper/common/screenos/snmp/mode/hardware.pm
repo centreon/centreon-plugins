@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::hardware;
+package network::juniper::common::screenos::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -48,7 +48,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::juniper::common::screenos::mode::components';
+    $self->{components_path} = 'network::juniper::common::screenos::snmp::mode::components';
     $self->{components_module} = ['psu', 'fan', 'temperature', 'module'];
 }
 

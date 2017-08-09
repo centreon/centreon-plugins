@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::components::temperature;
+package network::juniper::common::screenos::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

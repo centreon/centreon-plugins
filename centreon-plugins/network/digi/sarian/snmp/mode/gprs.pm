@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::digi::standard::snmp::mode::gprs;
+package network::digi::sarian::snmp::mode::gprs;
 
 use base qw(centreon::plugins::templates::counter);
 

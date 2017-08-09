@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::components::psu;
+package network::juniper::common::screenos::snmp::mode::components::psu;
 
 use strict;
 use warnings;

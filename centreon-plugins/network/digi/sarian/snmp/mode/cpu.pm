@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::digi::standard::snmp::mode::memory;
+package network::digi::sarian::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 
@@ -36,6 +36,7 @@ sub new {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
                                 });
+
     return $self;
 }
 
@@ -48,7 +49,7 @@ sub check_options {
        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
 }
@@ -57,31 +58,22 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_totalMemory = '.1.3.6.1.4.1.16378.10000.3.17.0'; # in Kbytes
-    my $oid_freeMemory = '.1.3.6.1.4.1.16378.10000.3.18.0'; # in Kbytes
+    my $oid_cpuUtil = '.1.3.6.1.4.1.16378.10000.3.1.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_totalMemory, $oid_freeMemory],
-                                         nothing_quit => 1);
-    my $free = $result->{$oid_freeMemory} * 1024;
-    my $total_size = $result->{$oid_totalMemory} * 1024;
-    my $used = $total_size - $free;
+    $self->{results} = $self->{snmp}->get_leef(oids => [ $oid_cpuUtil ],
+                                               nothing_quit => 1);
 
-    my $prct_used = $used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $cpu = $self->{results}->{$oid_cpuUtil};
 
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
-
+    my $exit = $self->{perfdata}->threshold_check(value => $cpu,
+                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used %s (%.2f%%), Total: %s",
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $total_value . " " . $total_unit));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+                                short_msg => sprintf("CPU Usage is %.2f%%", $cpu));
+    $self->{output}->perfdata_add(label => "cpu", unit => '%',
+                                  value => $cpu,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0, max => 100);
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -93,7 +85,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (sarian-monitor.mib).
+Check cpu usage (sarian-monitor.mib).
 
 =over 8
 

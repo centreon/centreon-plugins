@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::components::fan;
+package network::juniper::common::screenos::snmp::mode::components::fan;
 
 use strict;
 use warnings;

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::memory;
+package network::juniper::common::screenos::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::mode::cpu;
+package network::juniper::common::screenos::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 

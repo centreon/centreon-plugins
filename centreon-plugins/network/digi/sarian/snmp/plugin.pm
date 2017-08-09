@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::isg::plugin;
+package network::digi::sarian::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::juniper::common::screenos::mode::cpu',
-                        'memory'            => 'network::juniper::common::screenos::mode::memory',
-                        'sessions'          => 'network::juniper::common::screenos::mode::sessions',
-                        'hardware'          => 'network::juniper::common::screenos::mode::hardware',
-                        'interfaces'        => 'snmp_standard::mode::interfaces', 
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+                         'interfaces'      => 'snmp_standard::mode::interfaces',
+                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+                         'cpu'             => 'network::digi::sarian::snmp::mode::cpu',
+                         'memory'          => 'network::digi::sarian::snmp::mode::memory',
+                         'temperature'     => 'network::digi::sarian::snmp::mode::temperature',
+                         'gprs'            => 'network::digi::sarian::snmp::mode::gprs',
                          );
 
     return $self;
@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper ISG series in SNMP.
+Check DIGI equipement supporting standard sarian-monitor.mib
 
 =cut
