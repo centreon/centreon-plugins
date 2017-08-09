@@ -230,7 +230,7 @@ __END__
 
 =head1 MODE
 
-Check AP status.
+Check GPRS status.
 
 =over 8
 
