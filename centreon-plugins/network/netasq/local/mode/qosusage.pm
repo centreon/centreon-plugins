@@ -235,7 +235,13 @@ sub manage_selection {
     $self->load_speed_config();    
     $self->{qos} = {};
     
-    while ($content =~ /(\S+?)=([^,]+?),(\d+),(\d+),(\d+),(\d+)(?:\s|\Z)/msg) {
+    # Version 3, there is 7 fields (5 before)
+    my $pattern = '(\S+?)=([^,]+?),(\d+),(\d+),(\d+),(\d+)(?:\s|\Z)';
+    if ($content !~ /$pattern/) {
+        $pattern = '(\S+?)=([^,]+?),(\d+),(\d+),(\d+),(\d+),\d+,\d+(?:\s|\Z)';
+    }
+    
+    while ($content =~ /$pattern/msg) {
         my ($vlan, $name, $in, $in_max, $out, $out_max) = ($1, $2, $3, $4, $5, $6);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
