@@ -24,9 +24,9 @@ use strict;
 use warnings;
 
 my $mapping = {
-    raisecomTemperatureValue => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.1' },
-    raisecomTemperatureThresholdLow => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.5' },
-    raisecomTemperatureThresholdHigh => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.6' },
+    raisecomTemperatureValue            => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.1' },
+    raisecomTemperatureThresholdLow     => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.5' },
+    raisecomTemperatureThresholdHigh    => { oid => '.1.3.6.1.4.1.8886.1.1.4.2.6' },
 };
 my $oid_raisecomTemperatureEntry = '.1.3.6.1.4.1.8886.1.1.4.2';
 
@@ -57,7 +57,7 @@ sub check {
 
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{raisecomTemperatureValue});
         if ($checked == 0) {
-            my $warn_th = ':' . $result->{raisecomTemperatureThresholdLow};
+            my $warn_th = $result->{raisecomTemperatureThresholdLow} . ':';
             my $crit_th = ':' . $result->{raisecomTemperatureThresholdHigh};
             $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);

@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|voltage)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan|voltage)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan.speed|voltage)$';
 
     $self->{cb_hook2} = 'snmp_execute';
 
@@ -70,18 +70,18 @@ __END__
 
 =head1 MODE
 
-Check hardware (temperatures, fans, voltages).
+Check hardware.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'temperature'.
+Can be: 'temperature', 'fan', 'voltage'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
+Exclude some parts (comma seperated list) (Example: --filter=fan
 Can also exclude specific instance: --filter=fan,1
 
 =item B<--no-component>
@@ -93,7 +93,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='fan,CRITICAL,^(?!(good)$)'
+Example: --threshold-overload='fan,WARNING,twoHour'
 
 =item B<--warning>
 

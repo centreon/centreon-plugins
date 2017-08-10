@@ -29,8 +29,8 @@ my %map_fan_state = (
 );
 
 my $mapping = {
-    raisecomFanSpeedValue => { oid => '.1.3.6.1.4.1.8886.1.1.5.2.2.1.2' },
-    raisecomFanWorkState => { oid => '.1.3.6.1.4.1.8886.1.1.5.2.2.1.3', map => \%map_fan_state },
+    raisecomFanSpeedValue   => { oid => '.1.3.6.1.4.1.8886.1.1.5.2.2.1.2' },
+    raisecomFanWorkState    => { oid => '.1.3.6.1.4.1.8886.1.1.5.2.2.1.3', map => \%map_fan_state },
 };
 my $oid_raisecomFanMonitorStateEntry = '.1.3.6.1.4.1.8886.1.1.5.2.2.1';
 
@@ -59,19 +59,21 @@ sub check {
                                                         $instance, $result->{raisecomFanWorkState}, $instance));
         my $exit = $self->get_severity(section => 'fan', value => $result->{raisecomFanWorkState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{raisecomFanWorkState}));
+            $self->{output}->output_add(severity => $exit,
+                                       short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{raisecomFanWorkState}));
         }
+        
         my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'fan.speed', instance => $instance, value => $result->{raisecomFanSpeedValue});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Fan speed '%s' is %s rpm", $instance, $result->{raisecomFanSpeedValue}));
-            $self->{output}->perfdata_add(label => 'fan_speed_' . $instance, unit => 'rpm',
+        }
+        
+        $self->{output}->perfdata_add(label => 'fan_' . $instance, unit => 'rpm',
                                       value => $result->{raisecomFanSpeedValue},
                                       warning => $warn,
                                       critical => $crit,
-                                      );
-        }
+                                      min => 0);
     }
 }
 

@@ -31,49 +31,49 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'cpu', type => 0, cb_prefix_output => 'prefix_cpu_output' }
     ];
-    
+
     $self->{maps_counters}->{cpu} = [
        { label => '1s', set => {
-                key_values => [ { name => 'raisecomCPUUtilization1sec' } ],
+                key_values => [ { name => 'oneSec' } ],
                 output_template => '1 seconde : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1s', value => 'raisecomCPUUtilization1sec_absolute', template => '%.2f',
+                    { label => 'cpu_1s', value => 'oneSec_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => '5s', set => {
-                key_values => [ { name => 'raisecomCPUUtilization5sec' } ],
+                key_values => [ { name => 'fiveSec' } ],
                 output_template => '5 secondes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'raisecomCPUUtilization5sec_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'fiveSec_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => '1m', set => {
-                key_values => [ { name => 'raisecomCPUUtilization1min' } ],
+                key_values => [ { name => 'oneMin' } ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'raisecomCPUUtilization1min_absolute', template => '%.2f',
+                    { label => 'cpu_1m', value => 'oneMin_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => '10m', set => {
-                key_values => [ { name => 'raisecomCPUUtilization10min' } ],
+                key_values => [ { name => 'tenMin' } ],
                 output_template => '10 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_10m', value => 'raisecomCPUUtilization10min_absolute', template => '%.2f',
+                    { label => 'cpu_10m', value => 'tenMin_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => '2h', set => {
-                key_values => [ { name => 'raisecomCPUUtilization2h' } ],
+                key_values => [ { name => 'twoHour' } ],
                 output_template => '2 hours : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_2h', value => 'raisecomCPUUtilization2h_absolute', template => '%.2f',
+                    { label => 'cpu_2h', value => 'twoHour_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -100,27 +100,28 @@ sub new {
     return $self;
 }
 
+my %mapping_period = (1 => 'oneSec', 2 => 'fiveSec', 3 => 'oneMin', 4 => 'tenMin', 5 => 'twoHour');
+
+my $mapping = {
+    raisecomCPUUtilizationPeriod    => { oid => '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.2', map => \%mapping_period },
+    raisecomCPUUtilization          => { oid => '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3' },
+};
+
+my $oid_raisecomCPUUtilizationEntry = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1';
+
 sub manage_selection {
     my ($self, %options) = @_;
     
-    # RAISECOM-SYSTEM-MIB
-    my $oid_raisecomCPUUtilization1sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.1';
-    my $oid_raisecomCPUUtilization5sec = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.2';
-    my $oid_raisecomCPUUtilization1min = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.3';
-    my $oid_raisecomCPUUtilization10min = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.4';
-    my $oid_raisecomCPUUtilization2h = '.1.3.6.1.4.1.8886.1.1.1.5.1.1.1.3.5';
-   
-    my $results = $options{snmp}->get_leef(oids => [$oid_raisecomCPUUtilization1sec, $oid_raisecomCPUUtilization5sec,
-                                                    $oid_raisecomCPUUtilization1min, , $oid_raisecomCPUUtilization10min,
-                                                    $oid_raisecomCPUUtilization2h ],
-                                           nothing_quit => 1);
-       
-    $self->{cpu} = { raisecomCPUUtilization1sec => $results->{$oid_raisecomCPUUtilization1sec},
-                     raisecomCPUUtilization5sec => $results->{$oid_raisecomCPUUtilization5sec},
-                     raisecomCPUUtilization1min => $results->{$oid_raisecomCPUUtilization1min},
-                     raisecomCPUUtilization10min => $results->{$oid_raisecomCPUUtilization10min},
-                     raisecomCPUUtilization2h => $results->{$oid_raisecomCPUUtilization2h},
-                     };
+    $self->{cpu} = {};
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_raisecomCPUUtilizationEntry,
+                                                nothing_quit => 1);
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{raisecomCPUUtilization}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        
+        $self->{cpu}->{$result->{raisecomCPUUtilizationPeriod}} = $result->{raisecomCPUUtilization};
+    }
 }
 
 1;
@@ -141,12 +142,12 @@ Example: --filter-counters='^(1s|1m)$'
 =item B<--warning-*>
 
 Threshold warning.
-Can be: '1s', '5s', '1m', '10m', '2h'
+Can be: '1s', '5s', '1m', '10m', '2h'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: '1s', '5s', '1m', '10m', '2h'
+Can be: '1s', '5s', '1m', '10m', '2h'.
 
 =back
 
