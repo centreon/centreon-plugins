@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'        => 'network::raisecom::snmp::mode::cpu',
-                         'memory'     => 'network::raisecom::snmp::mode::memory',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'hardware'   => 'network::raisecom::snmp::mode::hardware',
-                         );
+        'cpu'              => 'network::raisecom::snmp::mode::cpu',
+        'hardware'         => 'network::raisecom::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::raisecom::snmp::mode::memory',
+    );
 
     return $self;
 }

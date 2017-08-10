@@ -24,9 +24,9 @@ use strict;
 use warnings;
 
 my $mapping = {
-    raisecomVoltValue => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.3' },
-    raisecomVoltThresholdLow => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.7' },
-    raisecomVoltThresholdHigh => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.8' },
+    raisecomVoltValue           => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.3' },
+    raisecomVoltThresholdLow    => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.7' },
+    raisecomVoltThresholdHigh   => { oid => '.1.3.6.1.4.1.8886.1.1.4.3.1.1.8' },
 };
 my $oid_raisecomVoltEntry = '.1.3.6.1.4.1.8886.1.1.4.3.1.1';
 
@@ -51,13 +51,13 @@ sub check {
         next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' is %.2f V [instance: %s].",
+        $self->{output}->output_add(long_msg => sprintf("voltage '%s' is %.2f mV [instance: %s].",
                                     $instance, $result->{raisecomVoltValue}, $instance
                                     ));
 
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{raisecomVoltValue});
         if ($checked == 0) {
-            my $warn_th = ':' . $result->{raisecomVoltThresholdLow};
+            my $warn_th = $result->{raisecomVoltThresholdLow} . ':';
             my $crit_th = ':' . $result->{raisecomVoltThresholdHigh};
             $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
@@ -70,9 +70,9 @@ sub check {
 
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' is %.2f V", $instance, $result->{raisecomVoltValue}));
+                                        short_msg => sprintf("Voltage '%s' is %.2f mV", $instance, $result->{raisecomVoltValue}));
         }
-        $self->{output}->perfdata_add(label => 'volt_' . $instance, unit => 'V',
+        $self->{output}->perfdata_add(label => 'volt_' . $instance, unit => 'mV',
                                       value => $result->{raisecomVoltValue},
                                       warning => $warn,
                                       critical => $crit,
