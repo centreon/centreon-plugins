@@ -33,18 +33,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu} = [
-       { label => '1s', set => {
-                key_values => [ { name => 'oneSec' } ],
-                output_template => '1 seconde : %.2f %%',
-                perfdatas => [
-                    { label => 'cpu_1s', value => 'oneSec_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
         { label => '5s', set => {
                 key_values => [ { name => 'fiveSec' } ],
-                output_template => '5 secondes : %.2f %%',
+                output_template => '%.2f%% (5sec)',
                 perfdatas => [
                     { label => 'cpu_5s', value => 'fiveSec_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
@@ -53,7 +44,7 @@ sub set_counters {
         },
         { label => '1m', set => {
                 key_values => [ { name => 'oneMin' } ],
-                output_template => '1 minute : %.2f %%',
+                output_template => '%.2f%% (1min)',
                 perfdatas => [
                     { label => 'cpu_1m', value => 'oneMin_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
@@ -62,7 +53,7 @@ sub set_counters {
         },
         { label => '10m', set => {
                 key_values => [ { name => 'tenMin' } ],
-                output_template => '10 minutes : %.2f %%',
+                output_template => '%.2f%% (10min)',
                 perfdatas => [
                     { label => 'cpu_10m', value => 'tenMin_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
@@ -71,7 +62,7 @@ sub set_counters {
         },
         { label => '2h', set => {
                 key_values => [ { name => 'twoHour' } ],
-                output_template => '2 hours : %.2f %%',
+                output_template => '%.2f%% (2h)',
                 perfdatas => [
                     { label => 'cpu_2h', value => 'twoHour_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
