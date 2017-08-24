@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::snmp::mode::connections;
+package network::stormshield::snmp::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -70,7 +70,7 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{cache_name} = "fw_netasq_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
+    $self->{cache_name} = "fw_stormshield_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
 
     my $oid_ntqASQStatsStatefulUdpConn = '.1.3.6.1.4.1.11256.1.12.1.33.0';
     my $oid_ntqASQStatsStatefulTcpConn = '.1.3.6.1.4.1.11256.1.12.1.23.0';
@@ -89,7 +89,7 @@ __END__
 
 =head1 MODE
 
-Check connections setup rate on Netasq Firewall equipments.
+Check connections setup rate on Stormshield Firewall equipments.
 
 =over 8
 

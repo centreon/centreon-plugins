@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::snmp::mode::vpnstatus;
+package network::stormshield::snmp::mode::vpnstatus;
 
 use base qw(centreon::plugins::mode);
 
@@ -163,7 +163,7 @@ sub run {
         $matching .= defined($self->{option_results}->{$_}) ? $self->{option_results}->{$_} : 'all';
     }
     $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "netasq_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($matching));
+    $self->{statefile_value}->read(statefile => "stormshield_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($matching));
     $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $id (sort keys %{$self->{vpn}}) {     

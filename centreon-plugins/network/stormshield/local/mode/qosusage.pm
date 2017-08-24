@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::local::mode::qosusage;
+package network::stormshield::local::mode::qosusage;
 
 use base qw(centreon::plugins::templates::counter);
 
