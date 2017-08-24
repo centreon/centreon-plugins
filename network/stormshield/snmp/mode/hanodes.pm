@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::snmp::mode::hanodes;
+package network::stormshield::snmp::mode::hanodes;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -227,7 +227,7 @@ __END__
 
 =head1 MODE
 
-Check Netasq dead nodes and state and health of nodes
+Check Stormshield dead nodes and state and health of nodes
 
 =over 8
 

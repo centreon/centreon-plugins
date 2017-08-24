@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::snmp::plugin;
+package network::stormshield::snmp::plugin;
 
 use strict;
 use warnings;
@@ -33,15 +33,15 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'                  => 'snmp_standard::mode::cpu',
                          'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
-                         'connections'          => 'network::netasq::snmp::mode::connections',
+                         'connections'          => 'network::stormshield::snmp::mode::connections',
                          'interfaces'           => 'snmp_standard::mode::interfaces',
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'load'                 => 'snmp_standard::mode::loadaverage',
-                         'ha-nodes'             => 'network::netasq::snmp::mode::hanodes',
+                         'ha-nodes'             => 'network::stormshield::snmp::mode::hanodes',
                          'memory'               => 'os::freebsd::snmp::mode::memory',
                          'storage'              => 'snmp_standard::mode::storage',
                          'swap'                 => 'snmp_standard::mode::swap',
-                         'vpn-status'           => 'network::netasq::snmp::mode::vpnstatus',
+                         'vpn-status'           => 'network::stormshield::snmp::mode::vpnstatus',
                          );
 
     return $self;
@@ -53,6 +53,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Netasq equipment in SNMP.
+Check Stormshield equipment (also Netasq) in SNMP.
 
 =cut

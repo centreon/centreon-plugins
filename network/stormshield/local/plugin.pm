@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::netasq::local::plugin;
+package network::stormshield::local::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'qos-usage'    => 'network::netasq::local::mode::qosusage',
+                         'qos-usage'    => 'network::stormshield::local::mode::qosusage',
                          );
 
     return $self;
@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Netasq equipment.
+Check Stormshield equipment (also Netasq).
 
 =cut
