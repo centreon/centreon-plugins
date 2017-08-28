@@ -54,6 +54,7 @@ my $mapping = {
 };
 my $oid_sapDescription = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1.5';
 my $oid_svcDescription = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.6';
+my $oid_svcBaseInfoEntry = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -62,13 +63,13 @@ sub manage_selection {
     my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_sapDescription }, 
             { oid => $oid_svcDescription },
-            { oid => $mapping->{oid}->{sapAdminStatus}, end => $mapping->{oid}->{sapOperStatus} },
+            { oid => $oid_svcBaseInfoEntry, begin => $mapping->{sapAdminStatus}->{oid}, end => $mapping->{sapOperStatus}->{oid} },
         ], nothing_quit => 1);
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         my ($SvcId, $SapPortId, $SapEncapValue) = ($1, $2, $3);
         
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{ $mapping->{sapAdminStatus}->{oid} }, instance => $SvcId . '.' . $SapPortId . '.' . $SapEncapValue);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{ $oid_svcBaseInfoEntry }, instance => $SvcId . '.' . $SapPortId . '.' . $SapEncapValue);
         $self->{sap}->{$SvcId . '.' . $SapPortId . '.' . $SapEncapValue} = {
             SvcId => $SvcId,
             SapPortId => $SapPortId,
