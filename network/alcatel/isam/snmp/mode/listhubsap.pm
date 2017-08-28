@@ -53,17 +53,17 @@ sub manage_selection {
     my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_sapDescription }, { oid => $oid_svcDescription } ], 
                                                     nothing_quit => 1);
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
-        next if ($oid !~ /^$oid_tnSapDescription\.(.*?)\.(.*?)\.(.*?)$/);
+        next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         my ($SvcId, $SapPortId, $SapEncapValue) = ($1, $2, $3);
         
         $self->{sap}->{$SvcId . '.' . $SapPortId . '.' . $SapEncapValue} = {
             SvcId => $SvcId,
             SapPortId => $SapPortId,
             SapEncapValue => $SapEncapValue,
-            SapDescription => $snmp_result->{$oid_sapDescription}->{$oid},
-            SvcDescription => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId}) ?
+            SapDescription => $snmp_result->{$oid_sapDescription}->{$oid} ne '' ? $snmp_result->{$oid_sapDescription}->{$oid} : 'unknown',
+            SvcDescription => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} ne '' ?
                 $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} : $SvcId,
-            SapEncapName => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue}) ?
+            SapEncapName => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} ne '' ?
                 $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} : $SapEncapValue,
         };        
     }
