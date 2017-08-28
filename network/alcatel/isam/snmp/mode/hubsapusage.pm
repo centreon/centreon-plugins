@@ -188,7 +188,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
-                                  "display-name:s"      => { name => 'display_name', default => '%{SvcName}.%{IfName}.%{SapEncapName}' },
+                                  "display-name:s"      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
                                   "filter-name:s"       => { name => 'filter_name' },
                                   "speed-in:s"          => { name => 'speed_in' },
                                   "speed-out:s"         => { name => 'speed_out' },
@@ -248,19 +248,19 @@ my $mapping = {
 };
 
 my $oid_sapDescription = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1.5';
-my $oid_svcName = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.29';
-my $oid_ifName  = '.1.3.6.1.2.1.31.1.1.1.2';
+my $oid_svcDescription = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.6';
+my $oid_ifName  = '.1.3.6.1.2.1.31.1.1.1.1';
 
 sub reload_cache {
     my ($self, %options) = @_;
     
+    my $datas = { last_timestamp => time() };
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_sapDescription }, 
-            { oid => $oid_svcName },
+            { oid => $oid_svcDescription },
             { oid => $oid_ifName },
         ],
         nothing_quit => 1);
-    $datas->{last_timestamp} = time();
     $datas->{snmp_result} = $snmp_result;
    
     if (scalar(keys %{$datas->{snmp_result}->{$oid_sapDescription}}) <= 0) {
@@ -283,7 +283,7 @@ sub manage_selection {
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 || !defined($timestamp_cache) ||
         ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-        $self->reload_cache();
+        $self->reload_cache(%options);
         $self->{statefile_cache}->read();
     }
 
@@ -298,16 +298,16 @@ sub manage_selection {
         
         my $SapDescription = $snmp_result->{$oid_sapDescription}->{$oid} ne '' ?
             $snmp_result->{$oid_sapDescription}->{$oid} : 'unknown';
-        my $SvcName = defined($snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SvcId}) && $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SvcId} ne '' ?
-           $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SvcId} : $SvcId;
+        my $SvcDescription = defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} ne '' ?
+           $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} : $SvcId;
         my $IfName = defined($snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId}) && $snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId} ne '' ?
            $snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId} :  $SapPortId;
-        my $SapEncapName = defined($snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SapEncapValue}) && $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SapEncapValue} ne '' ?
-           $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SapEncapValue} : $SapEncapValue;
+        my $SapEncapName = defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} ne '' ?
+           $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} : $SapEncapValue;
         
         my $name = $self->get_display_name(
             SapDescription => $SapDescription, 
-            SvcName => $SvcName,
+            SvcDescription => $SvcDescription,
             SapEncapName => $SapEncapName, 
             IfName => $IfName,
             SvcId => $SvcId, 
@@ -357,7 +357,7 @@ Check SAP QoS usage.
 
 =item B<--display-name>
 
-Display name (Default: '%{SvcName}.%{IfName}.%{SapEncapName}').
+Display name (Default: '%{SvcDescription}.%{IfName}.%{SapEncapName}').
 Can also be: %{SapDescription}, %{SapPortId}
 
 =item B<--filter-name>

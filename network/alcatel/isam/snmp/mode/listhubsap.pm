@@ -44,13 +44,13 @@ sub check_options {
 }
 
 my $oid_sapDescription = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1.5';
-my $oid_svcName = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.29';
+my $oid_svcDescription = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.6';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{sap} = {};
-    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_sapDescription }, { oid => $oid_svcName } ], 
+    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_sapDescription }, { oid => $oid_svcDescription } ], 
                                                     nothing_quit => 1);
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_tnSapDescription\.(.*?)\.(.*?)\.(.*?)$/);
@@ -61,10 +61,10 @@ sub manage_selection {
             SapPortId => $SapPortId,
             SapEncapValue => $SapEncapValue,
             SapDescription => $snmp_result->{$oid_sapDescription}->{$oid},
-            SvcName => defined($snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SvcId}) ?
-                $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SvcId} : $SvcId,
-            SapEncapName => defined($snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SapEncapValue}) ?
-                $snmp_result->{$oid_svcName}->{$oid_svcName . '.' . $SapEncapValue} : $SapEncapValue,
+            SvcDescription => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId}) ?
+                $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} : $SvcId,
+            SapEncapName => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue}) ?
+                $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SapEncapValue} : $SapEncapValue,
         };        
     }
 }
@@ -81,7 +81,7 @@ sub run {
             "[SapPortId = " . $self->{sap}->{$instance}->{SapPortId} . "]" .
             "[SapEncapValue = " . $self->{sap}->{$instance}->{SapEncapValue} . "]" .
             "[SapDescription = " . $self->{sap}->{$instance}->{SapDescription} . "]" .
-            "[SvcName = " . $self->{sap}->{$instance}->{SvcName} . "]" .
+            "[SvcDescription = " . $self->{sap}->{$instance}->{SvcDescription} . "]" .
             "[SapEncapName = " . $self->{sap}->{$instance}->{SapEncapName} . "]"
         );
     }
@@ -95,7 +95,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['SvcId', 'SapPortId', 'SapEncapValue', 'SapDescription', 'SvcName', 'SapEncapName']);
+    $self->{output}->add_disco_format(elements => ['SvcId', 'SapPortId', 'SapEncapValue', 'SapDescription', 'SvcDescription', 'SapEncapName']);
 }
 
 sub disco_show {
