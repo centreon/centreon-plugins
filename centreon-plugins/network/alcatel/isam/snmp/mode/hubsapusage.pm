@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::statefile;
 
 my $instance_mode;
 
@@ -186,6 +187,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
+                                  "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
                                   "display-name:s"      => { name => 'display_name', default => '%{SvcName}.%{IfName}.%{SapEncapName}' },
                                   "filter-name:s"       => { name => 'filter_name' },
                                   "speed-in:s"          => { name => 'speed_in' },
@@ -195,6 +197,7 @@ sub new {
                                   "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
                                 });
     
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -204,6 +207,7 @@ sub check_options {
     
     $instance_mode = $self;
     $self->change_macros();
+    $self->{statefile_cache}->check_options(%options);
 }
 
 sub change_macros {
@@ -247,6 +251,26 @@ my $oid_sapDescription = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1.5';
 my $oid_svcName = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.29';
 my $oid_ifName  = '.1.3.6.1.2.1.31.1.1.1.2';
 
+sub reload_cache {
+    my ($self, %options) = @_;
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
+            { oid => $oid_sapDescription }, 
+            { oid => $oid_svcName },
+            { oid => $oid_ifName },
+        ],
+        nothing_quit => 1);
+    $datas->{last_timestamp} = time();
+    $datas->{snmp_result} = $snmp_result;
+   
+    if (scalar(keys %{$datas->{snmp_result}->{$oid_sapDescription}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
+        $self->{output}->option_exit();
+    }
+
+    $self->{statefile_cache}->write(data => $datas);
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     
@@ -254,15 +278,18 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
+    
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_alcatel_isam_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
+    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) ||
+        ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        $self->reload_cache();
+        $self->{statefile_cache}->read();
+    }
+
+    my $snmp_result = $self->{statefile_cache}->get(name => 'snmp_result');
 
     $self->{sap} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
-            { oid => $oid_sapDescription }, 
-            { oid => $oid_svcName },
-            { oid => $oid_ifName },
-        ],
-        nothing_quit => 1);
-    
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         # $SvcId and $SapEncapValue is the same. We use service table
@@ -362,12 +389,16 @@ Can used special variables like: %{admin}, %{status}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'in-traffic', 'out-traffic', 'in-drop-packets'.
+Can be: 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'in-traffic', 'out-traffic', 'in-drop-packets'.
+Can be: 'in-traffic', 'out-traffic'.
+
+=item B<--reload-cache-time>
+
+Time in seconds before reloading cache file (default: 300).
 
 =back
 
