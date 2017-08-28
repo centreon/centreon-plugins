@@ -56,7 +56,7 @@ sub check_options {
     $self->SUPER::init(%options);
     if (!defined($self->{option_results}->{foxbox_password})) {
         $self->{output}
-            ->add_option_msg(short_msg => "You need to set --foxbox-username= and --foxbox-password option");
+            ->add_option_msg(short_msg => "You need to set --foxbox-username and --foxbox-password options");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{phonenumber})) {
