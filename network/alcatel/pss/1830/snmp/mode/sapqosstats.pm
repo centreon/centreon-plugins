@@ -196,10 +196,10 @@ my %map_oper = (1 => 'up', 2 => 'down', 3 => 'ingressQosMismatch',
 my $mapping = {
     tnSapAdminStatus    => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.6', map => \%map_admin },
     tnSapOperStatus     => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.7', map => \%map_oper },
-    tnSapBaseStatsIngressQchipForwardedInProfOctets     => { oid => '.1.3.6.1.4.1.6527.3.1.2.4.3.6.1.12' },
-    tnSapBaseStatsIngressQchipForwardedOutProfOctets    => { oid => '.1.3.6.1.4.1.6527.3.1.2.4.3.6.1.14' },
-    tnSapBaseStatsEgressQchipForwardedInProfOctets      => { oid => '.1.3.6.1.4.1.6527.3.1.2.4.3.6.1.20' },
-    tnSapBaseStatsEgressQchipForwardedOutProfOctets     => { oid => '.1.3.6.1.4.1.6527.3.1.2.4.3.6.1.22' },
+    tnSapBaseStatsIngressQchipForwardedInProfOctets     => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.6.1.12' },
+    tnSapBaseStatsIngressQchipForwardedOutProfOctets    => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.6.1.14' },
+    tnSapBaseStatsEgressQchipForwardedInProfOctets      => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.6.1.20' },
+    tnSapBaseStatsEgressQchipForwardedOutProfOctets     => { oid => '.1.3.6.1.4.1.7483.6.1.2.4.3.6.1.22' },
 };
 
 my $oid_tnSapDescription = '.1.3.6.1.4.1.7483.6.1.2.4.3.2.1.5';
