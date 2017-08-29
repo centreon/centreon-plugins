@@ -272,7 +272,7 @@ sub manage_selection {
         
         foreach my $name (('tnSapBaseStatsIngressQchipForwardedInProfOctets', 'tnSapBaseStatsIngressQchipForwardedOutProfOctets',
                            'tnSapBaseStatsEgressQchipForwardedInProfOctets', 'tnSapBaseStatsEgressQchipForwardedOutProfOctets')) {
-            $result->{$name} *= 8;
+            $result->{$name} *= 8 if (defined($result->{$name}));
         }
         
         foreach my $name (keys %$mapping) {
