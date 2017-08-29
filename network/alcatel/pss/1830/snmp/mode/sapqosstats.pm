@@ -146,9 +146,6 @@ sub new {
                                   "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
                                   "display-name:s"      => { name => 'display_name', default => '%{SysSwitchId}.%{SvcId}.%{SapPortId}.%{SapEncapValue}' },
                                   "filter-name:s"       => { name => 'filter_name' },
-                                  "speed-in:s"          => { name => 'speed_in' },
-                                  "speed-out:s"         => { name => 'speed_out' },
-                                  "units-traffic:s"     => { name => 'units_traffic', default => '%' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
                                 });
@@ -311,18 +308,6 @@ Can also be: %{SapDescription}, %{SvcName}
 =item B<--filter-name>
 
 Filter by SAP name (can be a regexp).
-
-=item B<--speed-in>
-
-Set interface speed for incoming traffic (in Mb).
-
-=item B<--speed-out>
-
-Set interface speed for outgoing traffic (in Mb).
-
-=item B<--units-traffic>
-
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
 =item B<--warning-status>
 
