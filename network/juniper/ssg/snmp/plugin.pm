@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::ssg::plugin;
+package network::juniper::ssg::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::juniper::common::screenos::mode::cpu',
-                        'memory'            => 'network::juniper::common::screenos::mode::memory',
-                        'sessions'          => 'network::juniper::common::screenos::mode::sessions',
-                        'hardware'          => 'network::juniper::common::screenos::mode::hardware',
+                        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
+                        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
+                        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
+                        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
                         'interfaces'        => 'snmp_standard::mode::interfaces', 
                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                          );
