@@ -44,17 +44,9 @@ sub new {
             "max-depth:s"           => { name => 'max_depth',           default => 6 },
             "max-objects:s"         => { name => 'max_objects',         default => 10000 },
             "max-collection-size:s" => { name => 'max_collection_size', default => 150 },
-            "mbean-pattern-name:s"  => {
-                name    => 'mbean_pattern_name',
+            "mbean-name:s"          => {
+                name    => 'mbean_name',
                 default => 'NAME'
-            },
-            "mbean-pattern-side:s" => {
-                name    => 'mbean_pattern_side',
-                default => 'SIDE'
-            },
-            "mbean-pattern-type:s" => {
-                name    => 'mbean_pattern_type',
-                default => 'TYPE'
             },
             "max-delayed-check:s" => { name => 'max-delayed-check', default => '200' },
             "hostname:s"          => { name => 'hostname' },
@@ -81,7 +73,26 @@ sub exploit_data {
     my ($self, %params) = @_;
 
     my %options = %{ $params{'-option_results'} };
-    my %hash    = %{ $params{'-data'} };
+    my %data    = %{ $params{'-data'} };
+
+    my $name
+        = defined($options{'mbean_name'})
+        ? $options{'mbean_name'}
+        : 'NAME';
+
+    print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
+
+    my @list_key = keys(%data);
+
+    unless (grep(/^$name$/, @list_key)) {
+
+        print "no name=$name found\n";
+        exit 1;
+    }
+
+    print Data::Dumper->Dump([ \@list_key ], [qw(*list_key)]) if $debug;
+
+    my %hash = %{ $data{$name}{'attributes'} };
 
     my ($extented_status_information, $status_information, $severity,);
 
@@ -185,16 +196,18 @@ sub disco_show {
 
     $self->{connector} = $options{custom};
 
-    my $ref_hash
-        = $self->{connector}->get_data_disco('-option_results' => \%{ $self->{'option_results'} },);
+    my $ref_data = $self->{connector}->get_data_disco(
+        '-option_results' => \%{ $self->{'option_results'} },
+        '-side'           => 'Agents',
+    );
 
-    print Data::Dumper->Dump([$ref_hash], [qw(*ref_hash)]) if $debug;
+    print Data::Dumper->Dump([$ref_data], [qw(*ref_data)]) if $debug;
 
-    foreach my $key (keys %{ $ref_hash->{'disco'} }) {
+    foreach my $key (keys %{$ref_data}) {
         $self->{output}->add_disco_entry(
             'name' => $key,
-            'side' => $ref_hash->{'disco'}{$key}{'extend_infos'}{'side'},
-            'type' => $ref_hash->{'disco'}{$key}{'extend_infos'}{'type'},
+            'type' => $ref_data->{$key}{'mbean_infos'}{'type'},
+            'side' => $ref_data->{$key}{'mbean_infos'}{'side'},
         );
     }
 }
@@ -203,13 +216,14 @@ sub run {
     my ($self, %options) = @_;
 
     $self->{connector} = $options{custom};
-    my $ref_hash = $self->{connector}->get_data(
+    my $ref_data = $self->{connector}->get_data(
         '-option_results' => \%{ $self->{'option_results'} },
-        '-data'           => \@input
+        '-data'           => \@input,
+        '-side'           => 'Agents',
     );
     $self->exploit_data(
         '-option_results' => \%{ $self->{'option_results'} },
-        '-data'           => $ref_hash,
+        '-data'           => $ref_data,
     );
     $self->{output}->exit();
 }
@@ -240,17 +254,9 @@ Maximum size of a collection after which it gets truncated (default: 150)
 
 Maximum overall objects to fetch for a mbean (default: 10000)
 
-=item B<--mbean-pattern-name>
+=item B<--mbean-name>
 
 Pattern matching for name (Default: 'NAME').
-
-=item B<--mbean-pattern-side>
-
-Pattern matching for side (Default: 'SIDE').
-
-=item B<--mbean-pattern-type>
-
-Pattern matching for type (Default: 'TYPE').
 
 =item B<--max-delayed-check>
 

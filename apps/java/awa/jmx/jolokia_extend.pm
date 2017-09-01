@@ -52,13 +52,10 @@ sub match_input {
 sub get_data_disco {
     my ($self, %params) = @_;
 
-    my %options = %{ $params{'-option_results'} };
+    my %options      = %{ $params{'-option_results'} };
+    my $pattern_side = $params{'-side'};
 
     my $pattern_name = '*';
-    my $pattern_side
-        = defined($options{'mbean_pattern_side'})
-        ? $options{'mbean_pattern_side'}
-        : 'SIDE';
     my $pattern_type = '*';
     my $pattern      = "Automic:name=$pattern_name," . "side=$pattern_side," . "type=$pattern_type";
 
@@ -74,16 +71,18 @@ sub get_data_disco {
 
     for my $mbean (@$mbeans) {
 
-        $mbean =~ s/Automic:(.*)/$1/g;
-        $mbean =~ s/name=(.*)/$1/g;
-        $mbean =~ s/side=(.*)/$1/g;
-        $mbean =~ s/type=(.*)/$1/g;
-        my ($name, $side, $type) = split /,/, $mbean;
+        my $mb = $mbean;
+        $mb =~ s/Automic:(.*)/$1/g;
+        $mb =~ s/name=(.*)/$1/g;
+        $mb =~ s/side=(.*)/$1/g;
+        $mb =~ s/type=(.*)/$1/g;
 
-        my %extend_infos;
-        $extend_infos{'side'}                   = $side;
-        $extend_infos{'type'}                   = $type;
-        $output{'disco'}{$name}{'extend_infos'} = \%extend_infos;
+        my ($name, $side, $type) = split /,/, $mb;
+
+        my %mbean_infos;
+        $mbean_infos{'side'}          = $side;
+        $mbean_infos{'type'}          = $type;
+        $output{$name}{'mbean_infos'} = \%mbean_infos;
     }
 
     print Data::Dumper->Dump([ \%output ], [qw(*output)]) if $debug;
@@ -93,8 +92,9 @@ sub get_data_disco {
 sub get_data {
     my ($self, %params) = @_;
 
-    my %options = %{ $params{'-option_results'} };
-    my @input   = @{ $params{'-data'} };
+    my %options      = %{ $params{'-option_results'} };
+    my @input        = @{ $params{'-data'} };
+    my $pattern_side = $params{'-side'};
 
     my $max_depth   = defined($options{'max_depth'})   ? $options{'max_depth'}   : 5;
     my $max_objects = defined($options{'max_objects'}) ? $options{'max_objects'} : 100;
@@ -103,21 +103,18 @@ sub get_data {
         ? $options{'max_collection_size'}
         : 50;
 
-    my $pattern_name
-        = defined($options{'mbean_pattern_name'})
-        ? $options{'mbean_pattern_name'}
+    my $name
+        = defined($options{'mbean_name'})
+        ? $options{'mbean_name'}
         : 'NAME';
-    my $pattern_side
-        = defined($options{'mbean_pattern_side'})
-        ? $options{'mbean_pattern_side'}
-        : 'SIDE';
-    my $pattern_type
-        = defined($options{'mbean_pattern_type'})
-        ? $options{'mbean_pattern_type'}
-        : 'TYPE';
+    my $pattern_name = '*';
+    my $pattern_type = '*';
 
     my $pattern = "Automic:name=$pattern_name," . "side=$pattern_side," . "type=$pattern_type";
-    my %output  = ();
+
+    print Data::Dumper->Dump([$pattern], [qw(*pattern)]) if $debug;
+
+    my %output = ();
 
     eval { local $SIG{__DIE__} = 'IGNORE'; };
 
@@ -128,6 +125,22 @@ sub get_data {
     my $mbeans = $self->{jmx4perl}->search($pattern);
 
     for my $mbean (@$mbeans) {
+
+        my $mb = $mbean;
+
+        $mb =~ s/Automic:(.*)/$1/g;
+        $mb =~ s/name=(.*)/$1/g;
+        $mb =~ s/side=(.*)/$1/g;
+        $mb =~ s/type=(.*)/$1/g;
+        my ($name, $side, $type) = split /,/, $mb;
+
+        my %attributes;
+        my %mbean_infos;
+        $mbean_infos{'side'}          = $side;
+        $mbean_infos{'type'}          = $type;
+        $output{$name}{'mbean_infos'} = \%mbean_infos;
+        $output{$name}{'attributes'}  = \%attributes;
+
         my $request = JMX::Jmx4Perl::Request->new(
             READ, $mbean, undef,
             {   maxDepth          => $max_depth,
@@ -137,6 +150,7 @@ sub get_data {
             }
         );
         my $response = $self->{'jmx4perl'}->request($request);
+
         if ($response->is_error) {
             print "ERROR: " . $response->error_text . "\n";
             print JMX::Jmx4Perl::Util->dump_value($response, { format => 'DATA' });
@@ -152,14 +166,14 @@ sub get_data {
                     if (JMX::Jmx4Perl::Util->is_object_to_dump($val)) {
                         my $v = JMX::Jmx4Perl::Util->dump_value($val, { format => 'DATA' });
                         $v =~ s/^\s*//;
-                        $output{$k} = $v;
+                        $attributes{$k} = $v;
                     }
                     else {
                         if (my $scal = JMX::Jmx4Perl::Util->dump_scalar($val)) {
-                            $output{$k} = $scal;
+                            $attributes{$k} = $scal;
                         }
                         else {
-                            $output{$k} = undef;
+                            $attributes{$k} = undef;
                         }
                     }
                 }
@@ -167,7 +181,7 @@ sub get_data {
         }
     }
 
-    # print Data::Dumper->Dump([\%output], [qw(*output)]);
+    print Data::Dumper->Dump([ \%output ], [qw(*output)]) if $debug;
     return \%output;
 }
 
