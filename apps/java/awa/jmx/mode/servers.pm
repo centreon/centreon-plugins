@@ -67,21 +67,29 @@ sub exploit_data {
         ? $options{'mbean_name'}
         : 'NAME';
 
+    my ($extented_status_information, $status_information, $severity,);
+
     print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
 
     my @list_key = keys(%data);
 
     unless (grep(/^$name$/, @list_key)) {
+        $status_information = "No Server found: $name\n";
+        $severity           = 'CRITICAL';
 
-        print "no name=$name found\n";
-        exit 1;
+        $self->{output}->output_add(
+            severity  => $severity,
+            short_msg => $status_information,
+            long_msg  => $extented_status_information,
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
+        return undef;
     }
 
     print Data::Dumper->Dump([ \@list_key ], [qw(*list_key)]) if $debug;
 
     my %hash = %{ $data{$name}{'attributes'} };
-
-    my ($extented_status_information, $status_information, $severity,);
 
     if (!keys %hash) {
         $status_information = "No data\n";
