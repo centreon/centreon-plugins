@@ -25,13 +25,12 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use POSIX qw(strftime);
 use Time::Local;
 
-use Data::Dumper;
-
 my $debug = 0;
-my @input = ('Active', 'Name', 'LastCheck', 'IpAddress', 'NetArea',);
 
 sub new {
     my ($class, %options) = @_;
@@ -44,12 +43,12 @@ sub new {
             "max-depth:s"           => { name => 'max_depth',           default => 6 },
             "max-objects:s"         => { name => 'max_objects',         default => 10000 },
             "max-collection-size:s" => { name => 'max_collection_size', default => 150 },
-            "mbean-name:s"          => {
-                name    => 'mbean_name',
+            "max-lastcheck:s"       => { name => 'max_lastcheck',       default => 200 },
+            "agent-name:s"          => {
+                name    => 'agent_name',
                 default => 'NAME'
             },
-            "max-delayed-check:s" => { name => 'max-delayed-check', default => '200' },
-            "hostname:s"          => { name => 'hostname' },
+            "hostname:s" => { name => 'hostname' },
         }
     );
     return $self;
@@ -76,8 +75,8 @@ sub exploit_data {
     my %data    = %{ $params{'-data'} };
 
     my $name
-        = defined($options{'mbean_name'})
-        ? $options{'mbean_name'}
+        = defined($options{'agent_name'})
+        ? $options{'agent_name'}
         : 'NAME';
 
     my ($extented_status_information, $status_information, $severity,);
@@ -118,9 +117,9 @@ sub exploit_data {
         return undef;
     }
 
-    $hash{'max_delayed_check'}
-        = defined($options{'max-delayed-check'})
-        ? $options{'max-delayed-check'}
+    $hash{'max_lastcheck'}
+        = defined($options{'max_lastcheck'})
+        ? $options{'max_lastcheck'}
         : '200';
 
     $hash{'real_date'}      = strftime "%Y-%m-%d %H:%M:%S", localtime;
@@ -130,21 +129,26 @@ sub exploit_data {
 
     print Data::Dumper->Dump([ \%hash ], [qw(*hash)]) if $debug;
 
-    if (    ($hash{'delta'} < $hash{'max_delayed_check'})
-        and ($hash{'Active'} eq '[true]'))
+    my $json = $hash{'Active'};
+    my $v = JMX::Jmx4Perl::Util->dump_value($json, { format => 'DATA' });
+    $v =~ s/^\s*//;
+    chomp($v);
+
+    if (    ($hash{'delta'} < $hash{'max_lastcheck'})
+        and ($v eq "'[true]'"))
     {
         $status_information
-            = "Lastcheck is fewer than $hash{'max_delayed_check'} seconds:($hash{'delta'}s).";
+            = "Lastcheck is fewer than $hash{'max_lastcheck'} seconds:($hash{'delta'}s).";
         $status_information .= " Agent is OK.\n";
 
         $severity = 'OK';
     }
 
-    elsif ( ($hash{'delta'} < $hash{'max_delayed_check'})
-        and ($hash{'Active'} eq '[false]'))
+    elsif ( ($hash{'delta'} < $hash{'max_lastcheck'})
+        and ($v eq "'[false]'"))
     {
         $status_information
-            = "Lastcheck is fewer than $hash{'max_delayed_check'} seconds:($hash{'delta'}s).";
+            = "Lastcheck is fewer than $hash{'max_lastcheck'} seconds:($hash{'delta'}s).";
         $status_information .= " Agent is not active.\n";
 
         $extented_status_information = "Server : $hash{'IpAddress'}\n";
@@ -154,20 +158,20 @@ sub exploit_data {
         $severity = 'CRITICAL';
     }
 
-    elsif ( ($hash{'delta'} >= $hash{'max_delayed_check'})
-        and ($hash{'Active'} eq '[true]'))
+    elsif ( ($hash{'delta'} >= $hash{'max_lastcheck'})
+        and ($v eq "'[true]'"))
     {
         $status_information
-            = "Lastcheck is greater than $hash{'max_delayed_check'} seconds:($hash{'delta'}s).";
+            = "Lastcheck is greater than $hash{'max_lastcheck'} seconds:($hash{'delta'}s).";
         $status_information .= " Agent is OK.\n";
         $severity = 'CRITICAL';
     }
 
-    elsif ( ($hash{'delta'} >= $hash{'max_delayed_check'})
-        and ($hash{'Active'} eq '[false]'))
+    elsif ( ($hash{'delta'} >= $hash{'max_lastcheck'})
+        and ($v eq "'[false]'"))
     {
         $status_information
-            = "Lastcheck is greater than $hash{'max_delayed_check'} seconds:($hash{'delta'}s).";
+            = "Lastcheck is greater than $hash{'max_lastcheck'} seconds:($hash{'delta'}s).";
         $status_information .= " Agent is not active.\n";
 
         $extented_status_information = "Server : $hash{'IpAddress'}\n";
@@ -202,12 +206,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->{connector} = $options{custom};
-
-    my $ref_data = $self->{connector}->get_data_disco(
-        '-option_results' => \%{ $self->{'option_results'} },
-        '-side'           => 'Agents',
-    );
+    my $ref_data = $self->manage_selection(%options);
 
     print Data::Dumper->Dump([$ref_data], [qw(*ref_data)]) if $debug;
 
@@ -220,15 +219,48 @@ sub disco_show {
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{connector} = $options{custom};
-    my $ref_data = $self->{connector}->get_data(
-        '-option_results' => \%{ $self->{'option_results'} },
-        '-data'           => \@input,
-        '-side'           => 'Agents',
-    );
+    $self->{request} = [
+        {   mbean      => 'Automic:name=*,type=*,side=Agents',
+            attributes => [
+                { name => 'Active' },
+                { name => 'Name' },
+                { name => 'IpAddress' },
+                { name => 'LastCheck' },
+                { name => 'NetArea' },
+            ]
+        },
+    ];
+
+    my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
+    print Data::Dumper->Dump([$result], [qw(*result)]) if $debug;
+
+    my @list_key = keys(%{$result});
+
+    my %data = ();
+    foreach my $key (@list_key) {
+        my $rec = $key;
+
+        $rec =~ s/Automic://;
+        my %mbean_infos = split /[=,]/, $rec;
+        my $name = $mbean_infos{'name'};
+        delete $mbean_infos{'name'};
+
+        $data{$name}{'mbean_infos'} = \%mbean_infos;
+        $data{$name}{'attributes'}  = $result->{$key};
+
+        print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
+    }
+
+    return \%data;
+}
+
+sub run {
+    my ($self, %options) = @_;
+    my $ref_data = $self->manage_selection(%options);
+
     $self->exploit_data(
         '-option_results' => \%{ $self->{'option_results'} },
         '-data'           => $ref_data,
@@ -262,13 +294,13 @@ Maximum size of a collection after which it gets truncated (default: 150)
 
 Maximum overall objects to fetch for a mbean (default: 10000)
 
-=item B<--mbean-name>
+=item B<--agent-name>
 
-Pattern matching for name (Default: 'NAME').
+Name of agent (Default: 'NAME').
 
-=item B<--max-delayed-check>
+=item B<--max-lastcheck>
 
-Maximum delayed check time (default: 200)
+Maximum last check time (default: 200)
 
 =back
 

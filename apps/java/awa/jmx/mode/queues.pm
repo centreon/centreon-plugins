@@ -28,7 +28,6 @@ use warnings;
 use Data::Dumper;
 
 my $debug = 0;
-my @input = ('Status', 'Name',);
 
 sub new {
     my ($class, %options) = @_;
@@ -41,8 +40,8 @@ sub new {
             "max-depth:s"           => { name => 'max_depth',           default => 6 },
             "max-objects:s"         => { name => 'max_objects',         default => 10000 },
             "max-collection-size:s" => { name => 'max_collection_size', default => 150 },
-            "mbean-name:s"          => {
-                name    => 'mbean_name',
+            "queue-name:s"          => {
+                name    => 'queue_name',
                 default => 'NAME'
             },
             "hostname:s" => { name => 'hostname' },
@@ -63,8 +62,8 @@ sub exploit_data {
     my %data    = %{ $params{'-data'} };
 
     my $name
-        = defined($options{'mbean_name'})
-        ? $options{'mbean_name'}
+        = defined($options{'queue_name'})
+        ? $options{'queue_name'}
         : 'NAME';
 
     my ($extented_status_information, $status_information, $severity,);
@@ -148,12 +147,7 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->{connector} = $options{custom};
-
-    my $ref_data = $self->{connector}->get_data_disco(
-        '-option_results' => \%{ $self->{'option_results'} },
-        '-side'           => 'Queues',
-    );
+    my $ref_data = $self->manage_selection(%options);
 
     print Data::Dumper->Dump([$ref_data], [qw(*ref_data)]) if $debug;
 
@@ -166,15 +160,43 @@ sub disco_show {
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{connector} = $options{custom};
-    my $ref_data = $self->{connector}->get_data(
-        '-option_results' => \%{ $self->{'option_results'} },
-        '-data'           => \@input,
-        '-side'           => 'Queues',
-    );
+    $self->{request} = [
+        {   mbean      => 'Automic:name=*,type=*,side=Queues',
+            attributes => [ { name => 'Status' }, { name => 'Name' }, ]
+        },
+    ];
+
+    my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
+
+    print Data::Dumper->Dump([$result], [qw(*result)]) if $debug;
+
+    my @list_key = keys(%{$result});
+
+    my %data = ();
+    foreach my $key (@list_key) {
+        my $rec = $key;
+
+        $rec =~ s/Automic://;
+        my %mbean_infos = split /[=,]/, $rec;
+        my $name = $mbean_infos{'name'};
+        delete $mbean_infos{'name'};
+
+        $data{$name}{'mbean_infos'} = \%mbean_infos;
+        $data{$name}{'attributes'}  = $result->{$key};
+
+        print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
+    }
+
+    return \%data;
+}
+
+sub run {
+    my ($self, %options) = @_;
+    my $ref_data = $self->manage_selection(%options);
+
     $self->exploit_data(
         '-option_results' => \%{ $self->{'option_results'} },
         '-data'           => $ref_data,
@@ -208,9 +230,9 @@ Maximum size of a collection after which it gets truncated (default: 150)
 
 Maximum overall objects to fetch for a mbean (default: 10000)
 
-=item B<--mbean-name>
+=item B<--queue-name>
 
-Pattern matching for name (Default: 'NAME').
+Name of queue (Default: 'NAME').
 
 =back
 

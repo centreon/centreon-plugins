@@ -36,7 +36,8 @@ sub new {
         'servers' => 'apps::java::awa::jmx::mode::servers',
     );
 
-    $self->{custom_modes}{jolokia} = 'apps::java::awa::jmx::jolokia_extend';
+    $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
+
     return $self;
 }
 
