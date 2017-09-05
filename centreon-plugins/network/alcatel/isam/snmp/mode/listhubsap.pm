@@ -55,6 +55,7 @@ my $mapping = {
 my $oid_sapDescription = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1.5';
 my $oid_svcDescription = '.1.3.6.1.4.1.6527.3.1.2.4.2.2.1.6';
 my $oid_sapBaseInfoEntry = '.1.3.6.1.4.1.6527.3.1.2.4.3.2.1';
+my $oid_ifName  = '.1.3.6.1.2.1.31.1.1.1.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -63,6 +64,7 @@ sub manage_selection {
     my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_sapDescription }, 
             { oid => $oid_svcDescription },
+            { oid => $oid_ifName },
             { oid => $oid_sapBaseInfoEntry, start => $mapping->{sapAdminStatus}->{oid}, end => $mapping->{sapOperStatus}->{oid} },
         ], nothing_quit => 1);
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
@@ -74,6 +76,8 @@ sub manage_selection {
             SvcId => $SvcId,
             SapPortId => $SapPortId,
             SapEncapValue => $SapEncapValue,
+            IfName => defined($snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId}) && $snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId} ne '' ?
+                $snmp_result->{$oid_ifName}->{$oid_ifName . '.' . $SapPortId} :  $SapPortId,
             SapDescription => $snmp_result->{$oid_sapDescription}->{$oid} ne '' ? $snmp_result->{$oid_sapDescription}->{$oid} : 'unknown',
             SvcDescription => defined($snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId}) && $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} ne '' ?
                 $snmp_result->{$oid_svcDescription}->{$oid_svcDescription . '.' . $SvcId} : $SvcId,
@@ -100,7 +104,8 @@ sub run {
             "[SvcDescription = " . $self->{sap}->{$instance}->{SvcDescription} . "]" .
             "[SapEncapName = " . $self->{sap}->{$instance}->{SapEncapName} . "]" .
             "[SapAdminStatus = " . $self->{sap}->{$instance}->{SapAdminStatus} . "]" .
-            "[SapOperStatus = " . $self->{sap}->{$instance}->{SapOperStatus} . "]"
+            "[SapOperStatus = " . $self->{sap}->{$instance}->{SapOperStatus} . "]" .
+            "[IfName = " . $self->{sap}->{$instance}->{IfName}
         );
     }
     
@@ -114,7 +119,7 @@ sub disco_format {
     my ($self, %options) = @_;
     
     $self->{output}->add_disco_format(elements => ['SvcId', 'SapPortId', 'SapEncapValue', 'SapDescription', 
-        'SvcDescription', 'SapEncapName', 'SapAdminStatus', 'SapOperStatus']);
+        'SvcDescription', 'SapEncapName', 'SapAdminStatus', 'SapOperStatus', 'IfName']);
 }
 
 sub disco_show {
