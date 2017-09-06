@@ -20,18 +20,121 @@
 
 package apps::tomcat::web::mode::traffic;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
+
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
 use URI::Escape;
 
+my $instance_mode;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'connector', type => 1, cb_prefix_output => 'prefix_connector_output', message_multiple => 'All connector traffics are ok' },
+    ];
+
+    $self->{maps_counters}->{connector} = [
+        { label => 'in', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+    ];
+}
+
+sub custom_traffic_perfdata {
+    my ($self, %options) = @_;
+
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+
+    my ($warning, $critical);
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    }
+
+    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
+                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
+                                  warning => $warning,
+                                  critical => $critical,
+                                  min => 0, max => $self->{result_values}->{speed});
+}
+
+sub custom_traffic_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_traffic_output {
+    my ($self, %options) = @_;
+
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
+    my ($total_value, $total_unit);
+    if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
+        ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
+    }
+
+    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
+                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+                      defined($total_value) ? $total_value . $total_unit : '-');
+    return $msg;
+}
+
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    my $diff_traffic = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
+    $self->{result_values}->{traffic} = $diff_traffic / $options{delta_time};
+    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    }
+    return 0;
+}
+
+sub prefix_connector_output {
+    my ($self, %options) = @_;
+
+    return "Connector '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -46,72 +149,36 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "timeout:s"             => { name => 'timeout' },
             "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-            "name:s"                => { name => 'name' },
-            "regexp"                => { name => 'use_regexp' },
-            "regexp-isensitive"     => { name => 'use_regexpi' },
-            "speed:s"               => { name => 'speed' },
-            "warning-in:s"          => { name => 'warning_in' },
-            "critical-in:s"         => { name => 'critical_in' },
-            "warning-out:s"         => { name => 'warning_out' },
-            "critical-out:s"        => { name => 'critical_out' },
+            "filter-name:s"         => { name => 'filter_name' },
+            "speed-in:s"            => { name => 'speed_in' },
+            "speed-out:s"           => { name => 'speed_out' },
+            "units-traffic:s"       => { name => 'units_traffic', default => '%' },
             });
 
-    $self->{result} = {};
-    $self->{hostname} = undef;
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning-in', value => $self->{option_results}->{warning_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'in' threshold '" . $self->{option_results}->{warning_in} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-in', value => $self->{option_results}->{critical_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'in' threshold '" . $self->{option_results}->{critical_in} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-out', value => $self->{option_results}->{warning_out})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'out' threshold '" . $self->{option_results}->{warning_out} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-out', value => $self->{option_results}->{critical_out})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'out' threshold '" . $self->{option_results}->{critical_out} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' && $self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
-        $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also).");
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{units}) && $self->{option_results}->{units} eq '%' && 
-        (!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '')) {
-        $self->{output}->add_option_msg(short_msg => "To use percent, you need to set --speed option.");
-        $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
 
-    $self->{statefile_value}->check_options(%options);
     $self->{hostname} = $self->{option_results}->{hostname};
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
     
     $self->{http}->set_options(%{$self->{option_results}});
+    $instance_mode = $self;
 }
 
 my %xpath_to_check = (
-    in        => '/status/connector/requestInfo/@bytesReceived',
-    out       => '/status/connector/requestInfo/@bytesSent',
+    in  => '/status/connector/requestInfo/@bytesReceived',
+    out => '/status/connector/requestInfo/@bytesSent',
 );
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $webcontent = $self->{http}->request();
-    my $port = $self->{option_results}->{port};
 
     #EXAMPLE 1:
     #<status>
@@ -150,21 +217,28 @@ sub manage_selection {
     #    </workers>
     #</connector>
     #</status>
+    my $webcontent = $self->{http}->request();
 
     #GET XML DATA
-    my $xpath = XML::XPath->new( xml => $webcontent );
+    my $xpath = XML::XPath->new(xml => $webcontent);
     my %xpath_check_results;
 
-    foreach my $xpath_check ( keys %xpath_to_check ) {
-        my $singlepath = $xpath_to_check{$xpath_check};
-        $singlepath =~ s{\$port}{$port};
+    $self->{connector} = {};
+    foreach my $label (keys %xpath_to_check) {
+        my $singlepath = $xpath_to_check{$label};
         my $nodeset = $xpath->find($singlepath);
 
-        foreach my $node ($nodeset->get_nodelist) {
+        foreach my $node ($nodeset->get_nodelist()) {
             my $connector_name = $node->getParentNode()->getParentNode()->getAttribute("name");
             $connector_name =~ s/^["'\s]+//;
             $connector_name =~ s/["'\s]+$//;
             $connector_name = uri_unescape($connector_name);
+
+            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                $connector_name !~ /$self->{option_results}->{filter_name}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $connector_name . "': no matching filter.", debug => 1);
+                next;
+            }
 
             next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
                 && $connector_name !~ /$self->{option_results}->{name}/i);
@@ -173,126 +247,23 @@ sub manage_selection {
             next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
                 && $connector_name ne $self->{option_results}->{name});
 
+            $self->{connector}->{$connector_name} = { display => $connector_name } if (!defined($self->{connector}->{$connector_name}));
             my $value = $node->string_value();
-            if ( $value =~ /^"?([0-9.]+)"?$/ ) {
-                $self->{result}->{$connector_name}{$xpath_check} = $1;
-            } else {
-                $self->{result}->{$connector_name}{$xpath_check} = "not_numeric";
-            };
-        };
-
-        if (scalar(keys %{$self->{result}}) <= 0) {
-                if (defined($self->{option_results}->{name})) {
-                    $self->{output}->add_option_msg(short_msg => "No information found for name '" . $self->{option_results}->{name} . "'.");
-                } else {
-                    $self->{output}->add_option_msg(short_msg => "No information found.");
-                }
-                $self->{output}->option_exit();
-        };
-    };
-};
-
-sub run {
-    my ($self, %options) = @_;
-    
-    $self->manage_selection();
-
-    my $new_datas = {};
-    $self->{statefile_value}->read(statefile => 'cache_apps_tomcat_web_' . $self->{option_results}->{hostname} . '_' . $self->{http}->get_port() . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $new_datas->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All traffic are ok.');
-    }
-
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $new_datas->{'in_' . $name} = $self->{result}->{$name}->{in} * 8;
-        $new_datas->{'out_' . $name} = $self->{result}->{$name}->{out} * 8;
-        
-        my $old_in = $self->{statefile_value}->get(name => 'in_' . $name);
-        my $old_out = $self->{statefile_value}->get(name => 'out_' . $name);
-        if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
-            next;
-        }
-        if ($new_datas->{'in_' . $name} < $old_in) {
-            # We set 0. Has reboot.
-            $old_in = 0;
-        }
-        if ($new_datas->{'out_' . $name} < $old_out) {
-            # We set 0. Has reboot.
-            $old_out = 0;
-        }
-
-        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
-        if ($time_delta <= 0) {
-            # At least one second. two fast calls ;)
-            $time_delta = 1;
-        }
-        my $in_absolute_per_sec = ($new_datas->{'in_' . $name} - $old_in) / $time_delta;
-        my $out_absolute_per_sec = ($new_datas->{'out_' . $name} - $old_out) / $time_delta;
-
-        my ($exit, $interface_speed, $in_prct, $out_prct);
-        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $interface_speed = $self->{option_results}->{speed} * 1000000;
-            $in_prct = $in_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            $out_prct = $out_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            if ($self->{option_results}->{units} eq '%') {
-                my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-                my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-                $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
+            if ($value =~ /^"?([0-9.]+)"?$/) {
+                $self->{connector}->{$connector_name}->{$label} = $1 * 8;
             }
-            $in_prct = sprintf("%.2f", $in_prct);
-            $out_prct = sprintf("%.2f", $out_prct);
-        } else {
-            my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-            my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-            $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-            $in_prct = '-';
-            $out_prct = '-';
         }
-       
-        ###########
-        # Manage Output
-        ###########
-        
-        my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
-        my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_absolute_per_sec, network => 1);
-        $self->{output}->output_add(long_msg => sprintf("Connector '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                       $in_value . $in_unit, $in_prct,
-                                       $out_value . $out_unit, $out_prct));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Connector '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                            $in_value . $in_unit, $in_prct,
-                                            $out_value . $out_unit, $out_prct));
-        }
-
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-
-        $self->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $in_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
-        $self->{output}->perfdata_add(label => 'traffic_out' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $out_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
     }
     
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
+    if (scalar(keys %{$self->{connector}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No information found.");
+        $self->{output}->option_exit();
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
-};
+    
+    $self->{cache_name} = "tomcat_web_" . $self->{mode} . '_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+}
 
 1;
 
@@ -340,37 +311,31 @@ Threshold for HTTP timeout
 
 Path to the Tomcat Manager XML (Default: '/manager/status?XML=true')
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the filter name (empty means 'check all contexts')
+Filter by context name (can be a regexp).
 
-=item B<--regexp>
+=item B<--warning-*>
 
-Allows to use regexp to filter (with option --name).
+Threshold warning.
+Can be: 'in', 'out'.
 
-=item B<--regexp-isensitive>
+=item B<--critical-*>
 
-Allows to use regexp non case-sensitive (with --regexp).
+Threshold critical.
+Can be: 'in', 'out'.
 
-=item B<--warning-in>
+=item B<--units-traffic>
 
-Threshold warning in percent for 'in' traffic.
+Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 
-=item B<--critical-in>
+=item B<--speed-in>
 
-Threshold critical in percent for 'in' traffic.
+Set interface speed for incoming traffic (in Mb).
 
-=item B<--warning-out>
+=item B<--speed-out>
 
-Threshold warning in percent for 'out' traffic.
-
-=item B<--critical-out>
-
-Threshold critical in percent for 'out' traffic.
-
-=item B<--speed>
-
-Set Connector Interface speed (in Mb).
+Set interface speed for outgoing traffic (in Mb).
 
 =back
 

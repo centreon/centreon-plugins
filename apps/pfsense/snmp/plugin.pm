@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'runtime'     	            => 'apps::pfsense::snmp::mode::runtime',
-                         'memory-dropped-packets'   => 'apps::pfsense::snmp::mode::memorydroppedpackets',
-                         'blocked-packets'          => 'apps::pfsense::snmp::mode::blockedpackets',
+                         'list-pfinterfaces'    => 'apps::pfsense::snmp::mode::listpfinterfaces',
+                         'packet-stats'         => 'apps::pfsense::snmp::mode::packetstats',
+                         'pfinterfaces'         => 'apps::pfsense::snmp::mode::pfinterfaces',
+                         'runtime'     	        => 'apps::pfsense::snmp::mode::runtime',
                          );
 
     return $self;

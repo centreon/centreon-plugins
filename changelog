@@ -1,3 +1,15 @@
+2017-08-11 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ruckus AP SNMP
+ * Plugin added: Adva FSP3000 SNMP
+ * Plugin added: Nokia Timos SNMP
+ * Plugin added: Huawei SNMP
+ * Plugin added: Hibernate JMX
+ * Plugin added: Raisecom SNMP
+ * Break: mode change for Pfsense SNMP
+ * Break: mode change for HP MSL SNMP
+ * Break: mode change for Juniper ISG SNMP
+ * Break: mode change for Digi Standard (sarian now) SNMP
+
 2017-07-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Supermicro SNMP
  * Plugin added: QuadStor VTL Local

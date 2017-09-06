@@ -20,56 +20,61 @@
 
 package database::firebird::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    global => {
-        '000_used'   => { set => {
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'used', set => {
                 key_values => [ { name => 'database_used' }, { name => 'database_allocated' } ],
-                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'database' },
-                closure_custom_output => \&custom_used_output,
+                closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'database' },
+                closure_custom_output => $self->can('custom_used_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => \&custom_used_perfdata,
+                closure_custom_perfdata => $self->can('custom_used_perfdata'),
             }
         },
-        '001_attachment'   => { set => {
+        { label => 'attachment', set => {
                 key_values => [ { name => 'attachment_used' }, { name => 'database_allocated' } ],
-                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'attachment' },
-                closure_custom_output => \&custom_unit_output,
+                closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'attachment' },
+                closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => \&custom_unit_perfdata,
+                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        '002_transaction'   => { set => {
+        { label => 'transaction', set => {
                 key_values => [ { name => 'transaction_used' }, { name => 'database_allocated' } ],
-                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'transaction' },
-                closure_custom_output => \&custom_unit_output,
+                closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'transaction' },
+                closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => \&custom_unit_perfdata,
+                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        '003_statement'   => { set => {
+        { label => 'statement', set => {
                 key_values => [ { name => 'statement_used' }, { name => 'database_allocated' } ],
-                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'statement' },
-                closure_custom_output => \&custom_unit_output,
+                closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'statement' },
+                closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => \&custom_unit_perfdata,
+                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        '004_call'   => { set => {
+        { label => 'call', set => {
                 key_values => [ { name => 'call_used' }, { name => 'database_allocated' } ],
-                closure_custom_calc => \&custom_unit_calc, closure_custom_calc_extra_options => { label_ref => 'call' },
-                closure_custom_output => \&custom_unit_output,
+                closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'call' },
+                closure_custom_output => $self->can('custom_unit_output'),
                 threshold_use => 'prct',
-                closure_custom_perfdata => \&custom_unit_perfdata,
+                closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-    },
-};
+    ];
+}
 
 sub custom_used_output {
     my ($self, %options) = @_;
@@ -130,6 +135,12 @@ sub custom_unit_calc {
     return 0;
 }
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "Memory ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -140,101 +151,25 @@ sub new {
                                 {
                                 });
     
-    foreach my $key (('global')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output},
-                                                      perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    foreach my $key (('global')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
-
-    $self->manage_selection();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    
-    foreach (sort keys %{$maps_counters->{global}}) {
-        my $obj = $maps_counters->{global}->{$_}->{obj};
-                
-        $obj->set(instance => 'firebird');
-    
-        my ($value_check) = $obj->execute(values => $self->{firebird});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Memory $short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "Memory $long_msg");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT MON$STAT_GROUP as MYGROUP, MON$MEMORY_ALLOCATED AS MYTOTAL, MON$MEMORY_USED AS MYUSED FROM MON$MEMORY_USAGE});
+    $options{sql}->connect();
+    $options{sql}->query(query => q{SELECT MON$STAT_GROUP as MYGROUP, MON$MEMORY_ALLOCATED AS MYTOTAL, MON$MEMORY_USED AS MYUSED FROM MON$MEMORY_USAGE});
     
     my %map_group = (0 => 'database', 1 => 'attachment', 2 => 'transaction', 3 => 'statement', 4 => 'call'); 
     
-    $self->{firebird} = {};
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
+    $self->{global} = {};
+    while ((my $row = $options{sql}->fetchrow_hashref())) {
         if (!defined($self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'})) {
-            $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'} = 0;
-            $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_allocated'} = 0;
+            $self->{global}->{$map_group{$row->{MYGROUP}} . '_used'} = 0;
+            $self->{global}->{$map_group{$row->{MYGROUP}} . '_allocated'} = 0;
         }
-        $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_used'} += $row->{MYUSED};
-        $self->{firebird}->{$map_group{$row->{MYGROUP}} . '_allocated'} += $row->{MYTOTAL};
+        $self->{global}->{$map_group{$row->{MYGROUP}} . '_used'} += $row->{MYUSED};
+        $self->{global}->{$map_group{$row->{MYGROUP}} . '_allocated'} += $row->{MYTOTAL};
     }
 }
 
