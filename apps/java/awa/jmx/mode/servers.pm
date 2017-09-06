@@ -20,14 +20,10 @@
 
 package apps::java::awa::jmx::mode::servers;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-use Data::Dumper;
-
-my $debug = 0;
 
 sub new {
     my ($class, %options) = @_;
@@ -37,111 +33,13 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(
         arguments => {
-            "max-depth:s"           => { name => 'max_depth',           default => 6 },
-            "max-objects:s"         => { name => 'max_objects',         default => 10000 },
-            "max-collection-size:s" => { name => 'max_collection_size', default => 150 },
-            "server-name:s"         => {
+            "server-name:s" => {
                 name    => 'server_name',
                 default => 'NAME'
             },
-            "hostname:s" => { name => 'hostname' },
         }
     );
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
-sub exploit_data {
-    my ($self, %params) = @_;
-
-    my %options = %{ $params{'-option_results'} };
-    my %data    = %{ $params{'-data'} };
-
-    my $name
-        = defined($options{'server_name'})
-        ? $options{'server_name'}
-        : 'NAME';
-
-    my ($extented_status_information, $status_information, $severity,);
-
-    print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
-
-    my @list_key = keys(%data);
-
-    unless (grep(/^$name$/, @list_key)) {
-        $status_information = "No Server found: $name\n";
-        $severity           = 'CRITICAL';
-
-        $self->{output}->output_add(
-            severity  => $severity,
-            short_msg => $status_information,
-            long_msg  => $extented_status_information,
-        );
-        $self->{output}->display();
-        $self->{output}->exit();
-        return undef;
-    }
-
-    print Data::Dumper->Dump([ \@list_key ], [qw(*list_key)]) if $debug;
-
-    my %hash = %{ $data{$name}{'attributes'} };
-
-    if (!keys %hash) {
-        $status_information = "No data\n";
-        $severity           = 'CRITICAL';
-
-        $self->{output}->output_add(
-            severity  => $severity,
-            short_msg => $status_information,
-            long_msg  => $extented_status_information,
-        );
-        $self->{output}->display();
-        $self->{output}->exit();
-        return undef;
-    }
-
-    print Data::Dumper->Dump([ \%hash ], [qw(*hash)]) if $debug;
-
-    my $json = $hash{'Active'};
-    my $v = JMX::Jmx4Perl::Util->dump_value($json, { format => 'DATA' });
-    $v =~ s/^\s*//;
-    chomp($v);
-
-    if ($v eq "'[true]'") {
-        print "lala\n";
-        $status_information = "Server $hash{'Name'} is started.";
-        $status_information .= " Server is OK.\n";
-
-        $severity = 'OK';
-    }
-
-    elsif ($v eq "'[false]'") {
-        $status_information = "Server $hash{'Name'} is not started.\n";
-
-        $extented_status_information = "Server: $hash{'IpAddress'}\n";
-        $extented_status_information .= "Name: $hash{'Name'}\n";
-        $extented_status_information .= "Env:  $data{$name}{'mbean_infos'}{'type'}\n";
-
-        $severity = 'CRITICAL';
-    }
-
-    else {
-        $status_information = "Case not implemented";
-
-        $severity = 'CRITICAL';
-    }
-
-    $self->{output}->output_add(
-        severity  => $severity,
-        short_msg => $status_information,
-        long_msg  => $extented_status_information,
-    );
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub disco_format {
@@ -155,8 +53,6 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $ref_data = $self->manage_selection(%options);
-
-    print Data::Dumper->Dump([$ref_data], [qw(*ref_data)]) if $debug;
 
     foreach my $key (keys %{$ref_data}) {
         $self->{output}->add_disco_entry(
@@ -177,7 +73,6 @@ sub manage_selection {
     ];
 
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
-    print Data::Dumper->Dump([$result], [qw(*result)]) if $debug;
 
     my @list_key = keys(%{$result});
 
@@ -192,21 +87,72 @@ sub manage_selection {
 
         $data{$name}{'mbean_infos'} = \%mbean_infos;
         $data{$name}{'attributes'}  = $result->{$key};
-
-        print Data::Dumper->Dump([ \%data ], [qw(*data)]) if $debug;
     }
 
-    return \%data;
-}
+    my $name
+        = defined($self->{'option_results'}{'server_name'})
+        ? $self->{'option_results'}{'server_name'}
+        : 'NAME';
 
-sub run {
-    my ($self, %options) = @_;
-    my $ref_data = $self->manage_selection(%options);
+    my ($extented_status_information, $status_information, $severity,);
 
-    $self->exploit_data(
-        '-option_results' => \%{ $self->{'option_results'} },
-        '-data'           => $ref_data,
+    @list_key = keys(%data);
+
+    unless (grep(/^$name$/, @list_key)) {
+        $status_information = "Server ($name) No found\n";
+        $severity           = 'CRITICAL';
+        $self->{output}->output_add(
+            severity  => $severity,
+            short_msg => $status_information,
+            long_msg  => $extented_status_information,
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
+        return undef;
+    }
+
+    my %hash = %{ $data{$name}{'attributes'} };
+
+    if (!keys %hash) {
+        $status_information = "No data\n";
+        $severity           = 'CRITICAL';
+        $self->{output}->output_add(
+            severity  => $severity,
+            short_msg => $status_information,
+            long_msg  => $extented_status_information,
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
+        return undef;
+    }
+
+    my $v = JMX::Jmx4Perl::Util->dump_value($hash{'Active'}, { format => 'DATA' });
+    $v =~ s/^\s*//;
+    chomp($v);
+
+    if ($v eq "'[true]'") {
+        $status_information = "Server $hash{'Name'} is started.";
+        $status_information .= " Server is OK.\n";
+        $severity = 'OK';
+    }
+    elsif ($v eq "'[false]'") {
+        $status_information          = "Server $hash{'Name'} is not started.\n";
+        $extented_status_information = "Server: $hash{'IpAddress'}\n";
+        $extented_status_information .= "Name: $hash{'Name'}\n";
+        $extented_status_information .= "Env:  $data{$name}{'mbean_infos'}{'type'}\n";
+        $severity = 'CRITICAL';
+    }
+    else {
+        $status_information = "Case not implemented";
+        $severity           = 'CRITICAL';
+    }
+
+    $self->{output}->output_add(
+        severity  => $severity,
+        short_msg => $status_information,
+        long_msg  => $extented_status_information,
     );
+    $self->{output}->display();
     $self->{output}->exit();
 }
 
@@ -216,25 +162,9 @@ __END__
 
 =head1 MODE
 
-Agen Monitoring.
+Server Monitoring.
 
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--max-depth>
-
-Maximum nesting level of the returned JSON structure for a certain MBean (Default: 6)
-
-=item B<--max-collection-size>
-
-Maximum size of a collection after which it gets truncated (default: 150)
-
-=item B<--max-objects>
-
-Maximum overall objects to fetch for a mbean (default: 10000)
 
 =item B<--server-name>
 
