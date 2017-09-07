@@ -81,11 +81,11 @@ sub set_counters {
                 ],
             }
         },
-         { label => 'half-close', set => {
+         { label => 'half-closed', set => {
                 key_values => [ { name => 'halfClosedConnections' } ],
                 output_template => 'half closed %s',
                 perfdatas => [
-                    { label => 'half_closed', value => 'halfClosedConnectionsabsolute', template => '%s', min => 0 },
+                    { label => 'half_closed', value => 'halfClosedConnections_absolute', template => '%s', min => 0 },
                 ],
             }
         },
