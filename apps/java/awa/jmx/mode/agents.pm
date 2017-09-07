@@ -43,6 +43,7 @@ sub new {
             },
         }
     );
+
     return $self;
 }
 
@@ -60,6 +61,8 @@ sub disco_format {
 
     my $attributs = [ 'name', 'side', 'type' ];
     $self->{output}->add_disco_format(elements => $attributs);
+
+    return;
 }
 
 sub disco_show {
@@ -74,6 +77,8 @@ sub disco_show {
             'side' => $ref_data->{$key}{'mbean_infos'}{'side'},
         );
     }
+
+    return;
 }
 
 sub manage_selection {
@@ -117,7 +122,7 @@ sub manage_selection {
         ? $self->{'option_results'}{'agent_name'}
         : 'NAME';
 
-    unless (grep(/^$name$/, @list_key)) {
+    unless (grep {/^$name$/}, @list_key) {
         $status_information = "Agent ($name) No found\n";
         $severity           = 'CRITICAL';
         $self->{output}->output_add(
@@ -127,7 +132,8 @@ sub manage_selection {
         );
         $self->{output}->display();
         $self->{output}->exit();
-        return undef;
+
+        return;
     }
 
     my %hash = %{ $data{$name}{'attributes'} };
@@ -143,7 +149,8 @@ sub manage_selection {
         );
         $self->{output}->display();
         $self->{output}->exit();
-        return undef;
+
+        return;
     }
 
     $hash{'max_lastcheck'}
@@ -210,6 +217,8 @@ sub manage_selection {
     );
     $self->{output}->display();
     $self->{output}->exit();
+
+    return;
 }
 
 1;

@@ -39,6 +39,7 @@ sub new {
             },
         }
     );
+
     return $self;
 }
 
@@ -47,6 +48,8 @@ sub disco_format {
 
     my $attributs = [ 'name', 'side', 'type' ];
     $self->{output}->add_disco_format(elements => $attributs);
+
+    return;
 }
 
 sub disco_show {
@@ -61,6 +64,8 @@ sub disco_show {
             'side' => $ref_data->{$key}{'mbean_infos'}{'side'},
         );
     }
+
+    return;
 }
 
 sub manage_selection {
@@ -98,7 +103,7 @@ sub manage_selection {
 
     @list_key = keys(%data);
 
-    unless (grep(/^$name$/, @list_key)) {
+    unless (grep {/^$name$/}, @list_key) {
         $status_information = "Queue ($name) No found\n";
         $severity           = 'CRITICAL';
 
@@ -109,7 +114,8 @@ sub manage_selection {
         );
         $self->{output}->display();
         $self->{output}->exit();
-        return undef;
+
+        return;
     }
 
     my %hash = %{ $data{$name}{'attributes'} };
@@ -124,7 +130,8 @@ sub manage_selection {
         );
         $self->{output}->display();
         $self->{output}->exit();
-        return undef;
+
+        return;
     }
 
     if ($hash{'Status'} eq 'GREEN') {
@@ -150,6 +157,8 @@ sub manage_selection {
     );
     $self->{output}->display();
     $self->{output}->exit();
+
+    return;
 }
 
 1;
