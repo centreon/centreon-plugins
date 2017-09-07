@@ -103,7 +103,7 @@ sub manage_selection {
 
     @list_key = keys(%data);
 
-    unless (grep {/^$name$/}, @list_key) {
+    unless (grep {/^$name$/} @list_key) {
         $status_information = "Server ($name) No found\n";
         $severity           = 'CRITICAL';
         $self->{output}->output_add(

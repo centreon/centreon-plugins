@@ -122,7 +122,7 @@ sub manage_selection {
         ? $self->{'option_results'}{'agent_name'}
         : 'NAME';
 
-    unless (grep {/^$name$/}, @list_key) {
+    unless (grep {/^$name$/} @list_key) {
         $status_information = "Agent ($name) No found\n";
         $severity           = 'CRITICAL';
         $self->{output}->output_add(
