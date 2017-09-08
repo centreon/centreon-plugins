@@ -27,9 +27,6 @@ use warnings;
 
 use POSIX qw(strftime);
 use Time::Local;
-use Data::Dumper;
-
-my $debug = 0;
 
 sub new {
     my ($class, %options) = @_;
@@ -71,8 +68,6 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    print Data::Dumper->Dump([ \%options ], [qw(*options)]) if $debug;
-
     $self->manage_selection(%options);
 
     return;
@@ -82,8 +77,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{'disco_show'} = $options{'custom'}{'output'}{'option_results'}{'disco_show'};
-
-    print Data::Dumper->Dump([ \%options ], [qw(*options)]) if $debug;
 
     $self->{request} = [
         {   mbean      => 'Automic:name=*,type=*,side=Agents',
@@ -151,8 +144,6 @@ sub manage_selection {
         return;
     }
 
-    print Data::Dumper->Dump([ $self->{'app'} ], [qw(*app)]) if $debug;
-
     my $expected_name = undef;
 
     if (   (defined($self->{'option_results'}{'agent_name'}))
@@ -198,8 +189,6 @@ sub manage_selection {
         'type'    => $self->{'app'}->{$expected_name}->{'mbean_infos'}->{'type'},
         'side'    => $self->{'app'}->{$expected_name}->{'mbean_infos'}->{'side'},
     };
-
-    print Data::Dumper->Dump([$hash], [qw(*hash)]) if $debug;
 
     if (    ($hash->{'delta'} < $hash->{'max_lastcheck'})
         and ($v eq 'true'))

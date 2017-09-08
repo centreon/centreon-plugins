@@ -24,9 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Data::Dumper;
-
-my $debug = 0;
 
 sub new {
     my ($class, %options) = @_;
@@ -69,8 +66,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{'disco_show'} = $options{'custom'}{'output'}{'option_results'}{'disco_show'};
-
-    print Data::Dumper->Dump([ \%options ], [qw(*options)]) if $debug;
 
     $self->{request} = [
         {   mbean      => 'Automic:name=*,type=*,side=Queues',
@@ -129,8 +124,6 @@ sub manage_selection {
         }
         return;
     }
-
-    print Data::Dumper->Dump([ $self->{'app'} ], [qw(*app)]) if $debug;
 
     my $expected_name = undef;
 
