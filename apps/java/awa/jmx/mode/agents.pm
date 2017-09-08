@@ -27,6 +27,9 @@ use warnings;
 
 use POSIX qw(strftime);
 use Time::Local;
+use Data::Dumper;
+
+my $debug = 0;
 
 sub new {
     my ($class, %options) = @_;
@@ -39,7 +42,7 @@ sub new {
             "max-lastcheck:s" => { name => 'max_lastcheck', default => 200 },
             "agent-name:s"    => {
                 name    => 'agent_name',
-                default => 'NAME'
+                default => 'NAME',
             },
         }
     );
@@ -68,21 +71,19 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $ref_data = $self->manage_selection(%options);
+    print Data::Dumper->Dump([ \%options ], [qw(*options)]) if $debug;
 
-    foreach my $key (keys %{$ref_data}) {
-        $self->{output}->add_disco_entry(
-            'name' => $key,
-            'type' => $ref_data->{$key}{'mbean_infos'}{'type'},
-            'side' => $ref_data->{$key}{'mbean_infos'}{'side'},
-        );
-    }
+    $self->manage_selection(%options);
 
     return;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $options{'disco_show'} = $options{'custom'}{'output'}{'option_results'}{'disco_show'};
+
+    print Data::Dumper->Dump([ \%options ], [qw(*options)]) if $debug;
 
     $self->{request} = [
         {   mbean      => 'Automic:name=*,type=*,side=Agents',
@@ -98,32 +99,74 @@ sub manage_selection {
 
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
-    my @list_key = keys(%{$result});
+    my $app;
+    foreach my $mbean (keys %{$result}) {
+        $mbean =~ /Automic:name=(.*?),side=(.*),type=(.*)/;
+        my $app  = defined($1) ? $1 : 'global';
+        my $side = defined($2) ? $2 : 'global';
+        my $type = defined($3) ? $3 : 'global';
 
-    my %data = ();
-    foreach my $key (@list_key) {
-        my $rec = $key;
+        if ($options{'disco_show'}) {
 
-        $rec =~ s/Automic://;
-        my %mbean_infos = split /[=,]/, $rec;
-        my $name = $mbean_infos{'name'};
-        delete $mbean_infos{'name'};
+            $self->{'app'}->{$app} = {
+                'display'     => $app,
+                'mbean_infos' => {
+                    'side' => $side,
+                    'type' => $type,
+                },
+            };
+            next;
+        }
 
-        $data{$name}{'mbean_infos'} = \%mbean_infos;
-        $data{$name}{'attributes'}  = $result->{$key};
+        if (   (defined($self->{'option_results'}{'agent_name'}))
+            && ($self->{'option_results'}{'agent_name'} ne '')
+            && ($app !~ /$self->{'option_results'}{'agent_name'}/)
+            && (!defined($options{'disco_show'})))
+        {
+            next;
+        }
+
+        $self->{'app'}->{$app} = {
+            'display'     => $app,
+            'Active'      => $result->{$mbean}->{'Active'},
+            'Name'        => $result->{$mbean}->{'Name'},
+            'LastCheck'   => $result->{$mbean}->{'LastCheck'},
+            'NetArea'     => $result->{$mbean}->{'NetArea'},
+            'mbean_infos' => {
+                'side' => $side,
+                'type' => $type,
+            },
+        };
     }
 
+    if (defined($options{'disco_show'})) {
+
+        foreach my $key (keys %{ $self->{'app'} }) {
+            $self->{output}->add_disco_entry(
+                'name' => $key,
+                'type' => $self->{'app'}->{$key}->{'mbean_infos'}->{'type'},
+                'side' => $self->{'app'}->{$key}->{'mbean_infos'}->{'side'},
+            );
+        }
+        return;
+    }
+
+    print Data::Dumper->Dump([ $self->{'app'} ], [qw(*app)]) if $debug;
+
+    my $expected_name = undef;
+
+    if (   (defined($self->{'option_results'}{'agent_name'}))
+        && ($self->{'option_results'}{'agent_name'} ne ''))
+    {
+        $expected_name = $self->{'option_results'}{'agent_name'};
+    }
+
+    # start algo
     my ($extented_status_information, $status_information, $severity,);
 
-    @list_key = keys(%data);
+    if (scalar(keys %{ $self->{app} }) <= 0) {
 
-    my $name
-        = defined($self->{'option_results'}{'agent_name'})
-        ? $self->{'option_results'}{'agent_name'}
-        : 'NAME';
-
-    unless (grep {/^$name$/} @list_key) {
-        $status_information = "Agent ($name) No found\n";
+        $status_information = "Agent ($expected_name) No found\n";
         $severity           = 'CRITICAL';
         $self->{output}->output_add(
             severity  => $severity,
@@ -136,73 +179,64 @@ sub manage_selection {
         return;
     }
 
-    my %hash = %{ $data{$name}{'attributes'} };
-
-    if (!keys %hash) {
-        $status_information = "No data\n";
-        $severity           = 'CRITICAL';
-
-        $self->{output}->output_add(
-            severity  => $severity,
-            short_msg => $status_information,
-            long_msg  => $extented_status_information,
-        );
-        $self->{output}->display();
-        $self->{output}->exit();
-
-        return;
-    }
-
-    $hash{'max_lastcheck'}
-        = defined($self->{'option_results'}{'max_lastcheck'})
-        ? $self->{'option_results'}{'max_lastcheck'}
-        : '200';
-
-    $hash{'real_date'}      = strftime "%Y-%m-%d %H:%M:%S", localtime;
-    $hash{'real_time'}      = $self->epoch_time($hash{'real_date'});
-    $hash{'lastcheck_time'} = $self->epoch_time($hash{'LastCheck'});
-    $hash{'delta'}          = $hash{'real_time'} - $hash{'lastcheck_time'};
-
-    my $v = JMX::Jmx4Perl::Util->dump_value($hash{'Active'}, { format => 'DATA' });
+    my $v = JMX::Jmx4Perl::Util->dump_value($self->{'app'}->{$expected_name}->{'Active'},
+        { format => 'DATA' });
     $v =~ s/^\s*//;
+    $v =~ s/'//g;
+    $v =~ s/\[//;
+    $v =~ s/\]//;
     chomp($v);
 
-    if (    ($hash{'delta'} < $hash{'max_lastcheck'})
-        and ($v eq "'[true]'"))
+    my $hash = {
+        'max_lastcheck' => $self->{'option_results'}{'max_lastcheck'},
+        'delta'         => $self->epoch_time(strftime "%Y-%m-%d %H:%M:%S", localtime)
+            - $self->epoch_time($self->{'app'}->{$expected_name}->{'LastCheck'}),
+        'NetArea' => $self->{'app'}->{$expected_name}->{'NetArea'},
+        'Active'  => $v,
+        'Name'    => $self->{'app'}->{$expected_name}->{'Name'},
+        'display' => $self->{'app'}->{$expected_name}->{'display'},
+        'type'    => $self->{'app'}->{$expected_name}->{'mbean_infos'}->{'type'},
+        'side'    => $self->{'app'}->{$expected_name}->{'mbean_infos'}->{'side'},
+    };
+
+    print Data::Dumper->Dump([$hash], [qw(*hash)]) if $debug;
+
+    if (    ($hash->{'delta'} < $hash->{'max_lastcheck'})
+        and ($v eq 'true'))
     {
         $status_information
-            = "Lastcheck ($hash{'delta'}s) is fewer than $hash{'max_lastcheck'} seconds.";
+            = "Lastcheck ($hash->{'delta'}s) is fewer than $hash->{'max_lastcheck'} seconds.";
         $status_information .= " Agent is OK.\n";
         $severity = 'OK';
     }
-    elsif ( ($hash{'delta'} < $hash{'max_lastcheck'})
-        and ($v eq "'[false]'"))
+    elsif ( ($hash->{'delta'} < $hash->{'max_lastcheck'})
+        and ($hash->{'Active'} eq 'false'))
     {
         $status_information
-            = "Lastcheck ($hash{'delta'}s) is fewer than $hash{'max_lastcheck'} seconds.";
+            = "Lastcheck ($hash->{'delta'}s) is fewer than $hash->{'max_lastcheck'} seconds.";
         $status_information .= " Agent is not active.\n";
-        $extented_status_information = "Server : $hash{'IpAddress'}\n";
-        $extented_status_information .= "Agent : $hash{'Name'}\n";
-        $extented_status_information .= "Env : $hash{'NetArea'}\n";
+        $extented_status_information = "Server : $hash->{'IpAddress'}\n";
+        $extented_status_information .= "Agent : $hash->{'Name'}\n";
+        $extented_status_information .= "Env : $hash->{'NetArea'}\n";
         $severity = 'CRITICAL';
     }
-    elsif ( ($hash{'delta'} >= $hash{'max_lastcheck'})
-        and ($v eq "'[true]'"))
+    elsif ( ($hash->{'delta'} >= $hash->{'max_lastcheck'})
+        and ($hash->{'Active'} eq 'true'))
     {
         $status_information
-            = "Lastcheck ($hash{'delta'}s) is greater than $hash{'max_lastcheck'} seconds.";
+            = "Lastcheck ($hash->{'delta'}s) is greater than $hash->{'max_lastcheck'} seconds.";
         $status_information .= " Agent is OK.\n";
         $severity = 'CRITICAL';
     }
-    elsif ( ($hash{'delta'} >= $hash{'max_lastcheck'})
-        and ($v eq "'[false]'"))
+    elsif ( ($hash->{'delta'} >= $hash->{'max_lastcheck'})
+        and ($hash->{'Active'} eq 'false'))
     {
         $status_information
-            = "Lastcheck ($hash{'delta'}s) is greater than $hash{'max_lastcheck'} seconds.";
+            = "Lastcheck ($hash->{'delta'}s) is greater than $hash->{'max_lastcheck'} seconds.";
         $status_information .= " Agent is not active.\n";
-        $extented_status_information = "Server : $hash{'IpAddress'}\n";
-        $extented_status_information .= "Agent : $hash{'Name'}\n";
-        $extented_status_information .= "Env : $hash{'NetArea'}\n";
+        $extented_status_information = "Server : $hash->{'IpAddress'}\n";
+        $extented_status_information .= "Agent : $hash->{'Name'}\n";
+        $extented_status_information .= "Env : $hash->{'NetArea'}\n";
         $severity = 'CRITICAL';
     }
     else {
@@ -226,7 +260,7 @@ sub manage_selection {
 __END__
 
 =head1 MODE
-
+    
 Agent Monitoring.
 
 =over 8
