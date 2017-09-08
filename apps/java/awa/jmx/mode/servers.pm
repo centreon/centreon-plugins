@@ -55,8 +55,6 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $options{'disco_show'} = $options{'custom'}{'output'}{'option_results'}{'disco_show'};
-
     $self->manage_selection(%options);
 
     return;
