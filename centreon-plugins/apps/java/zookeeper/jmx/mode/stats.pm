@@ -79,6 +79,15 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'num-connections', set => {
+                key_values => [ { name => 'NumAliveConnections' } ],
+                output_template => 'Num Alive Connections : %s',
+                perfdatas => [
+                    { label => 'num_connections', value => 'NumAliveConnections_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
     ];
 }
 
@@ -109,11 +118,11 @@ sub manage_selection {
          { mbean => 'org.apache.ZooKeeperService:name0=*,name1=*,name2=Leader',
           attributes => [ { name => 'AvgRequestLatency' }, { name => 'MaxRequestLatency' }, 
                           { name => 'OutstandingRequests' }, { name => 'PacketsReceived' },
-                          { name => 'PacketsSent' } ] },
+                          { name => 'PacketsSent' }, { name => 'NumAliveConnections' } ] },
          { mbean => 'org.apache.ZooKeeperService:name0=*,name1=*,name2=Follower',
           attributes => [ { name => 'AvgRequestLatency' }, { name => 'MaxRequestLatency' }, 
                           { name => 'OutstandingRequests' }, { name => 'PacketsReceived' },
-                          { name => 'PacketsSent' } ] },
+                          { name => 'PacketsSent' }, { name => 'NumAliveConnections' } ] },
     ];
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
@@ -155,13 +164,13 @@ Example: --filter-counters='^avg-request-latency$'
 
 Threshold warning.
 Can be: 'avg-request-latency', 'max-request-latency', 'outstanding-requests',
-'packets-received' 'packets-sent'.
+'packets-received' 'packets-sent', 'num-connections'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'avg-request-latency', 'max-request-latency', 'outstanding-requests',
-'packets-received' 'packets-sent'.
+'packets-received' 'packets-sent', 'num-connections'.
 
 =back
 
