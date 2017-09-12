@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'zk', type => 0, cb_prefix_output => 'prefix_zk_output', skipped_code => { -10 => 1 } },
+        { name => 'zk', type => 1, cb_prefix_output => 'prefix_zk_output', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{zk} = [
@@ -121,7 +121,7 @@ sub manage_selection {
         next if ($mbean !~ /name2=(.*?)(?:,|$)/);
         my $type = $1;
         
-        $self->{zk} = { 
+        $self->{zk}->{$type} = { 
             display => $type, 
             %{$result->{$mbean}},
         };
