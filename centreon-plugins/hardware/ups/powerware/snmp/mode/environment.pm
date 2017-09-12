@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-connections', set => {
+        { label => 'humidity', set => {
                 key_values => [ { name => 'humidity' } ],
                 output_template => 'Humidity: %.2f %%',
                 perfdatas => [
