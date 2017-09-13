@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => '15minRateRequestsPerSecond' }, { name => 'display' } ],
                 output_template => '15min Rate Requests : %.7f/s',
                 perfdatas => [
-                    { label => '15min_rate_requests', value => '15minRateRequestsPerSecond_absolute', template => '%.2f', 
+                    { label => '15min_rate_requests', value => '15minRateRequestsPerSecond_absolute', template => '%.7f', 
                       min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'avgRequestsPerSecond' }, { name => 'display' } ],
                 output_template => 'Average Requests : %.7f/s',
                 perfdatas => [
-                    { label => 'avg_requests', value => 'avgRequestsPerSecond_absolute', template => '%.2f',
+                    { label => 'avg_requests', value => 'avgRequestsPerSecond_absolute', template => '%.7f',
                       min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
