@@ -81,7 +81,7 @@ sub set_counters {
         { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All integration services are ok' },
     ];
     $self->{maps_counters}->{vm} = [
-        { label => 'snapshot', set => {
+        { label => 'status', , threshold => 0, set => {
                 key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vmaddition' }, 
                     { name => 'operatingsystemshutdownenabled' }, { name => 'timesynchronizationenabled' }, 
                     { name => 'dataexchangeenabled' }, { name => 'heartbeatenabled' }, { name => 'backupenabled' } ],
