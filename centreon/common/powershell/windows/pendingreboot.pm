@@ -49,26 +49,26 @@ Try {
  
     ## Making registry connection to the local/remote computer 
     $HKLM = [UInt32] "0x80000002" 
-    $WMI_Reg = [WMIClass] "\\$ComputerName\root\default:StdRegProv" 
+    $WMI_Reg = [WMIClass] "\\\\$ComputerName\\root\\default:StdRegProv" 
 
     ## If Vista/2008 & Above query the CBS Reg Key 
     If ([Int32]$WMI_OS.BuildNumber -ge 6001) { 
-        $RegSubKeysCBS = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\") 
+        $RegSubKeysCBS = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\") 
         $CBSRebootPend = $RegSubKeysCBS.sNames -contains "RebootPending"     
     } 
                
     ## Query WUAU from the registry 
-    $RegWUAURebootReq = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\") 
+    $RegWUAURebootReq = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\") 
     $WUAURebootReq = $RegWUAURebootReq.sNames -contains "RebootRequired" 
              
     ## Query PendingFileRenameOperations from the registry 
-    $RegSubKeySM = $WMI_Reg.GetMultiStringValue($HKLM,"SYSTEM\CurrentControlSet\Control\Session Manager\","PendingFileRenameOperations") 
+    $RegSubKeySM = $WMI_Reg.GetMultiStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\","PendingFileRenameOperations") 
     $RegValuePFRO = $RegSubKeySM.sValue 
  
     ## Query ComputerName and ActiveComputerName from the registry 
-    $ActCompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName\","ComputerName")       
-    $CompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName\","ComputerName") 
-    If ($ActCompNm -ne $CompNm) { 
+    $ActCompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName\\","ComputerName")       
+	$CompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName\\","ComputerName") 
+	If ($ActCompNm -ne $CompNm) {
         $CompPendRen = $true 
     } 
              
@@ -81,7 +81,7 @@ Try {
     ## To avoid nested "if" statements and unneeded WMI calls to determine if the CCM_ClientUtilities class exist, setting EA = 0 
     $CCMClientSDK = $null 
     $CCMSplat = @{ 
-        NameSpace="ROOT\ccm\ClientSDK" 
+        NameSpace="ROOT\\ccm\\ClientSDK" 
         Class="CCM_ClientUtilities" 
         Name="DetermineIfRebootPending" 
         ComputerName=$ComputerName 
@@ -138,3 +138,4 @@ __END__
 Method to get pending reboot informations.
 
 =cut
+

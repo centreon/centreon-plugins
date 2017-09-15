@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::common::powershell::windows::pendingreboot
+use centreon::common::powershell::windows::pendingreboot;
 
 my $instance_mode;
 
@@ -74,9 +74,9 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1,  },
+        { name => 'pendingreboot', type => 0  },
     ];
-    $self->{maps_counters}->{vm} = [
+    $self->{maps_counters}->{pendingreboot} = [
         { label => 'status', , threshold => 0, set => {
                 key_values => [ { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' }, 
                     { name => 'CCMClientSDK' } ],
@@ -148,7 +148,7 @@ sub manage_selection {
     
     #[CBServicing=False][WindowsUpdate=False][CCMClientSDK=][PendComputerRename=False][PendFileRename=False][PendFileRenVal=][RebootPending=False]
     $self->{pendingreboot} = {};
-    while ($line =~ /\[(.*?)=\s*(.*?)\s*\]/mg) {
+    while ($stdout =~ /\[(.*?)=\s*(.*?)\s*\]/mg) {
         $self->{pendingreboot}->{$1} = $2;
     }
 }
