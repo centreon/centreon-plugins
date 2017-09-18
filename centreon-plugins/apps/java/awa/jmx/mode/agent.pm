@@ -155,12 +155,12 @@ sub manage_selection {
             next;
         }
         
-        next if ($result->{$mbean}->{LastCheck} !~ /^\s*(\d+)-(\S+)-(\d+)\s+(\d+):(\d+):(\d+)/);
+        next if ($result->{$mbean}->{LastCheck} !~ /^\s*(\d+)-(\d+)-(\d+)\s+(\d+):(\d+):(\d+)/);
         
         my $dt = DateTime->new(
-            year       => $3,
+            year       => $1,
             month      => $2,
-            day        => $1,
+            day        => $3,
             hour       => $4,
             minute     => $5,
             second     => $6,
