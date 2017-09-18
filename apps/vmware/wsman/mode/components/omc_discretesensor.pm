@@ -24,14 +24,16 @@ use strict;
 use warnings;
 use apps::vmware::wsman::mode::components::resources qw($mapping_EnableState);
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_DiscreteSensor');
+    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_DiscreteSensor', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking OMC discrete sensors");
     $self->{components}->{omc_discretesensor} = {name => 'omc discrete sensors', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'omc_discretesensor'));
+    return if ($self->check_filter(section => 'omc_discretesensor') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = $_->{Name};

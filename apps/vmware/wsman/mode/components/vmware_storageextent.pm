@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::vmware_storageextent;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_StorageExtent');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_StorageExtent', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking vmware storage extent");
     $self->{components}->{vmware_storageextent} = {name => 'storage extent', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'vmware_storageextent'));
+    return if ($self->check_filter(section => 'vmware_storageextent') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};
