@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::cim_recordlog;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_RecordLog');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_RecordLog', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking cim recordlog");
     $self->{components}->{cim_recordlog} = {name => 'recordlog', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'cim_recordlog'));
+    return if ($self->check_filter(section => 'cim_recordlog') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};

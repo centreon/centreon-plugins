@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::cim_computersystem;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking cim computer systems");
     $self->{components}->{cim_computersystem} = {name => 'computer systems', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'cim_computersystem'));
+    return if ($self->check_filter(section => 'cim_computersystem') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};
