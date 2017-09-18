@@ -35,33 +35,35 @@ sub set_system {
     
     $self->{cb_hook1} = 'get_type';
     
-    $self->{thresholds} = {        
-        ['Unknown', 'OK'],
-        ['OK', 'OK'],
-        ['Degraded', 'WARNING'],
-        ['Minor failure', 'WARNING'],
-        ['Major failure', 'CRITICAL'],
-        ['Critical failure', 'CRITICAL'],
-        ['Non-recoverable error', 'CRITICAL'],
-        
-        ['Other', 'UNKNOWN'],
-        ['Stressed', 'WARNING'],
-        ['Predictive Failure', 'WARNING'],
-        ['Error', 'CRITICAL'],
-        ['Starting', 'OK'],
-        ['Stopping', 'WARNING'],
-        ['In Service', 'OK'],
-        ['No Contact', 'CRITICAL'],
-        ['Lost Communication', 'CRITICAL'],
-        ['Aborted', 'CRITICAL'],
-        ['Dormant', 'OK'],
-        ['Supporting Entity in Error', 'CRITICAL'],
-        ['Completed', 'OK'],
-        ['Power Mode', 'OK'],
-        ['Relocating', 'WARNING'],
+    $self->{thresholds} = {
+        default => [    
+            ['Unknown', 'OK'],
+            ['OK', 'OK'],
+            ['Degraded', 'WARNING'],
+            ['Minor failure', 'WARNING'],
+            ['Major failure', 'CRITICAL'],
+            ['Critical failure', 'CRITICAL'],
+            ['Non-recoverable error', 'CRITICAL'],
+            
+            ['Other', 'UNKNOWN'],
+            ['Stressed', 'WARNING'],
+            ['Predictive Failure', 'WARNING'],
+            ['Error', 'CRITICAL'],
+            ['Starting', 'OK'],
+            ['Stopping', 'WARNING'],
+            ['In Service', 'OK'],
+            ['No Contact', 'CRITICAL'],
+            ['Lost Communication', 'CRITICAL'],
+            ['Aborted', 'CRITICAL'],
+            ['Dormant', 'OK'],
+            ['Supporting Entity in Error', 'CRITICAL'],
+            ['Completed', 'OK'],
+            ['Power Mode', 'OK'],
+            ['Relocating', 'WARNING'],
+        ],
     };
     
-    $self->{components_path} = 'apps::vmware::wsman::mode::components::components';
+    $self->{components_path} = 'apps::vmware::wsman::mode::components';
     $self->{components_module} = ['omc_discretesensor', 'omc_fan', 'omc_psu', 'vmware_storageextent', 'vmware_controller',
         'vmware_storagevolume', 'vmware_battery', 'vmware_sassataport', 'cim_card',
         'cim_computersystem', 'cim_numericsensor', 'cim_memory', 'cim_processor', 'cim_recordlog'];
@@ -83,14 +85,14 @@ sub new {
 sub get_type {
     my ($self, %options) = @_;
     
-    my $result = $options{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_SMASHFirmwareIdentity');
-    $result = pop(@$result);
+    my $result = $options{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_SMASHFirmwareIdentity', dont_quit => 1);
+    $result = pop(@$result) if (defined($result));
     $self->{manufacturer} = 'unknown';
     if (defined($result->{Manufacturer}) && $result->{Manufacturer} ne '') {
         $self->{manufacturer} = $result->{Manufacturer};
     }
     
-    $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Chassis');
+    $result = $options{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Chassis');
     $result = pop(@$result);
     my $model = defined($result->{Model}) && $result->{Model} ne '' ? $result->{Model} : 'unknown';
     
