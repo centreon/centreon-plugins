@@ -140,7 +140,7 @@ Specify https if needed (Default: 'http')
 
 =item B<--urlpath>
 
-Set path to get Elasticsearch information (Default: '_cluster/stats')
+Set path to get Elasticsearch information (Default: '/_cluster/stats')
 
 =item B<--credentials>
 
