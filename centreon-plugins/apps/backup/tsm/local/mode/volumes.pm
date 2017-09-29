@@ -135,7 +135,7 @@ sub manage_selection {
     $self->{volumes} = {};
     $self->{global} = { total => 0, online => 0, offline => 0, empty => 0, pending => 0, filling => 0, full => 0 };
 
-    while ($response =~ /^(.*?),(.*?),(.*?),(.*?),(.*?)$/mg) {
+    while ($response =~ /^(.*?),(.*?),(.*?),(.*?)$/mg) {
         my ($volume_name, $stgpool, $status, $pct_utilized) = ($1, $2, $3, $4);
 
         if (defined($self->{option_results}->{filter_volume}) && $self->{option_results}->{filter_volume} ne '' &&
