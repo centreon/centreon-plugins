@@ -35,6 +35,7 @@ sub new {
                          'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
                          'metaservice'              => 'apps::centreon::local::mode::metaservice',
                          'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
+                         'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
                          );
 
     return $self;
