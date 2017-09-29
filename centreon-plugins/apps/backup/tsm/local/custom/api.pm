@@ -203,11 +203,11 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information. Used it you have output in a file.
+Specify command (default: 'dsmadmc').
 
 =item B<--command-path>
 
-Command path.
+Specify path (default: '/opt/tivoli/tsm/client/ba/bin')
 
 =item B<--command-options>
 

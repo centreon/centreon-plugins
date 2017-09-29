@@ -180,12 +180,12 @@ Filter by storage pool name.
 =item B<--warning-*>
 
 Set warning threshold. Can be : 'total', 'used', 
-online', offline', empty', pending', filling', full'.
+'online',' offline', 'empty', 'pending', 'filling', full'.
 
 =item B<--critical-*>
 
 Set critical threshold. Can be : 'total', 'used', 
-online', offline', empty', pending', filling', full'.
+'online', 'offline', empty', 'pending', 'filling', full'.
 
 =back
 
