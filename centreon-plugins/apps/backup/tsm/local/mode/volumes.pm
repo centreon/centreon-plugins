@@ -130,7 +130,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $response = $options{custom}->execute_command(
-        query => "SELECT volume,name, stgpool_name, status, pct_utilized FROM volumes"
+        query => "SELECT volume_name, stgpool_name, status, pct_utilized FROM volumes"
     );
     $self->{volumes} = {};
     $self->{global} = { total => 0, online => 0, offline => 0, empty => 0, pending => 0, filling => 0, full => 0 };

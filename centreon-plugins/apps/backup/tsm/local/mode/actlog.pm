@@ -140,7 +140,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $response = $options{custom}->execute_command(
-        query => "SELECT date_time, severity, message FROM actlog WHERE date_time > current_timestamp-" . $self->{option_results}->{filter_time} . " hours"
+        query => "SELECT date_time, severity, message FROM actlog WHERE date_time>current_timestamp-" . $self->{option_results}->{filter_time} . " hours"
     );
     $self->{alarms}->{global} = { alarm => {} };
     my $last_time;
