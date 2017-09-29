@@ -56,7 +56,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'active : ' . $self->{result_values}->{active} . '[IpAddress: ' . $self->{result_values}->{ipaddress} . ' ]' . 
+    my $msg = 'active : ' . $self->{result_values}->{active} . ' [IpAddress: ' . $self->{result_values}->{ipaddress} . ' ]' . 
         '[LastCheck: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since}) . ']';
     return $msg;
 }
