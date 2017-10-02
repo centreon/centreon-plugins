@@ -149,7 +149,7 @@ sub run {
 
         $self->{output}->output_add(long_msg => sprintf("Phase '%s' on Bank '%s' status is '%s' [instance: %s, value: %s]", 
                                     $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoadState},
-                                    $instance, $result->{rPDULoadStatusLoad}));
+                                    $instance, defined($result->{rPDULoadStatusLoad}) ? $result->{rPDULoadStatusLoad} : '-'));
         my $exit = $self->get_severity(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoadState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
