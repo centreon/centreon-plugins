@@ -217,6 +217,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "container-id:s"              => { name => 'container_id' },
+                                  "container-name:s"            => { name => 'container_name' },
                                   "filter-name:s"               => { name => 'filter_name' },
                                   "use-name"                    => { name => 'use_name' },
                                   "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
@@ -263,7 +264,8 @@ sub manage_selection {
                                                            
     $self->{containers} = {};
     $self->{containers_traffic} = {};
-    my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, statefile => $self->{statefile_cache_containers});
+    my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, 
+        container_name => $self->{option_results}->{container_name}, statefile => $self->{statefile_cache_containers});
 
     foreach my $container_id (keys %{$result}) {
         next if (!defined($result->{$container_id}->{Stats})); 
@@ -309,7 +311,8 @@ sub manage_selection {
     $self->{cache_name} = "docker_" . $self->{mode} . '_' . join('_', @$hostnames) . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{container_id}) ? md5_hex($self->{option_results}->{container_id}) : md5_hex('all'));
+        (defined($self->{option_results}->{container_id}) ? md5_hex($self->{option_results}->{container_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{container_name}) ? md5_hex($self->{option_results}->{container_name}) : md5_hex('all'));
 }
 
 1;
@@ -325,6 +328,10 @@ Check container usage.
 =item B<--container-id>
 
 Exact container ID.
+
+=item B<--container-name>
+
+Exact container name (if multiple names: names separated by ':').
 
 =item B<--use-name>
 
