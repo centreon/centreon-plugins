@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::toshiba::storemate::sql::mode::cashregisterstatus;
+package apps::toshiba::storemate::sql::mode::posstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -195,7 +195,7 @@ sub set_counters {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Cash Registers ";
+    return "Points of sale ";
 }
 
 sub prefix_state_output {
@@ -267,7 +267,7 @@ __END__
 
 =head1 MODE
 
-Check the cash register status
+Check points of sale status
 
 =over 8
 
