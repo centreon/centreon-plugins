@@ -123,8 +123,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i' },
+                                  "filter-name:s"       => { name => 'filter_name' },
+                                  "warning-status:s"    => { name => 'warning_status', default => '' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{state} =~ /activated/ and %{alarm} !~ /greenActive/i' },
                                 });
     
     return $self;
@@ -197,8 +198,15 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{status}, results => $datas->{status}, instance => $instance);
         my $result2 = $options{snmp}->map_instance(mapping => $mapping->{usage}, results => $datas->{usage}, instance => $instance . '.0');
         
+        my $display = defined($result->{acTrunkName}) && $result->{acTrunkName} ne '' ? $result->{acTrunkName} : $instance;
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $display !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
+            next;
+        }
+        
         $self->{trunk}->{$instance} = { 
-            display => defined($result->{acTrunkName}) && $result->{acTrunkName} ne '' ? $result->{acTrunkName} : $instance, 
+            display => $display, 
             alarm => $result->{acTrunkStatusAlarm},
             state => $result->{acTrunkDeactivate},
             dchannel => $result->{acTrunkStatusDChannel},
@@ -223,6 +231,10 @@ __END__
 Check trunk status.
 
 =over 8
+
+=item B<--filter-name>
+
+Filter by name (can be a regexp).
 
 =item B<--warning-status>
 
