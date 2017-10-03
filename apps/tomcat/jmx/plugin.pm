@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                           'class-count'      => 'centreon::common::jvm::mode::classcount',
+                          'connector-usage'  => 'apps::tomcat::jmx::mode::connectorusage',
                           'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
                           'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
                           'gc-usage'         => 'centreon::common::jvm::mode::gcusage',
