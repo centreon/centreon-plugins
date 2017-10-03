@@ -142,7 +142,7 @@ sub custom_usage_output {
                    $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
                    $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used});
     } else {
-        $msg = sprintf("Used: %s", $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used});
+        $msg = sprintf("Used: %s", $total_used_value . " " . $total_used_unit);
     }
     return $msg;
 }
