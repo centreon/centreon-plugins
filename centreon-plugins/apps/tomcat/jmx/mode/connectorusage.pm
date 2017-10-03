@@ -185,9 +185,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # Tomcat: Catalina
+    # Jboss: jboss.web
     $self->{request} = [
-         { mbean => "Catalina:name=*,type=ThreadPool", attributes => [ { name => 'currentThreadCount' }, { name => 'currentThreadsBusy' }, { name => 'maxThreads' } ] },
-         { mbean => "Catalina:name=*,type=GlobalRequestProcessor", attributes => [ { name => 'bytesReceived' }, { name => 'bytesSent' }, { name => 'requestCount' } ] }
+         { mbean => "*:name=*,type=ThreadPool", attributes => [ { name => 'currentThreadCount' }, { name => 'currentThreadsBusy' }, { name => 'maxThreads' } ] },
+         { mbean => "*:name=*,type=GlobalRequestProcessor", attributes => [ { name => 'bytesReceived' }, { name => 'bytesSent' }, { name => 'requestCount' } ] }
     ];
     
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
