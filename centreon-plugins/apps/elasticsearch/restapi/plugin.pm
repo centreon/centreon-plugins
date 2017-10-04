@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package apps::elasticsearch::plugin;
+package apps::elasticsearch::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'cluster'     => 'apps::elasticsearch::mode::cluster',
-                        'nodescount'   => 'apps::elasticsearch::mode::nodescount',
-                        'indices'      => 'apps::elasticsearch::mode::indices',
+                        'cluster'       => 'apps::elasticsearch::restapi::mode::cluster',
+                        'indices'       => 'apps::elasticsearch::restapi::mode::indices',
+                        'nodes'         => 'apps::elasticsearch::restapi::mode::nodes',
                         );
+    $self->{custom_modes}{api} = 'apps::elasticsearch::restapi::custom::api';
     return $self;
 }
 
@@ -44,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check elasticsearch status.
+Check elasticsearch through HTTP/REST API.
 
 =cut
