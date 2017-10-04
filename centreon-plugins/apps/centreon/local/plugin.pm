@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
                          'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
                          'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
                          'metaservice'              => 'apps::centreon::local::mode::metaservice',
