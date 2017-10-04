@@ -272,12 +272,12 @@ Filter service set name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} =~ /warning/).
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} =~ /critical/').
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--warning-*>
 
