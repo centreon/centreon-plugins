@@ -141,7 +141,7 @@ sub new {
                                   "sudo"                    => { name => 'sudo' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{type} eq "output" and (%{queue_file_enabled} =~ /yes/i or %{state} ne "connected")' },
+                                  "critical-status:s"       => { name => 'critical_status', default => '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i' },
                                 });
     
     return $self;
@@ -281,7 +281,7 @@ Can used special variables like: %{queue_file_enabled}, %{state}, %{status}, %{t
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} eq "output" and (%{queue_file_enabled} =~ /yes/i or %{state} ne "connected")').
+Set critical threshold for status (Default: '%{type} eq "output" and %{queue_file_enabled} =~ /yes/i').
 Can used special variables like: %{queue_file_enabled}, %{state}, %{status}, %{type}, %{display}
 
 =back
