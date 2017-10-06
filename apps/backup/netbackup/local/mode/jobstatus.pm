@@ -173,9 +173,21 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output', message_multiple => 'All policies are ok',
           group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ] 
         }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total Jobs : %s',
+                perfdatas => [
+                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
     ];
     
     $self->{maps_counters}->{job} = [
@@ -226,6 +238,7 @@ sub new {
                                   "command-options:s" => { name => 'command_options', default => '-report -most_columns' },
                                   "filter-policy-name:s"    => { name => 'filter_policy_name' },
                                   "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
+                                  "filter-start-time:s"     => { name => 'filter_start_time' },
                                   "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
                                   "warning-status:s"        => { name => 'warning_status', default => '%{status} == 1' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} > 1' },
@@ -297,7 +310,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = "netbackup_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_policy_name}) ? md5_hex($self->{option_results}->{filter_policy_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_start_time}) ? md5_hex($self->{option_results}->{filter_start_time}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{job_end_time}) ? md5_hex($self->{option_results}->{job_end_time}) : md5_hex('all'));
     
     my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
                                                     options => $self->{option_results},
@@ -305,6 +321,8 @@ sub manage_selection {
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
                                                     command_options => $self->{option_results}->{command_options});    
+    
+    $self->{global} = { total => 0 };
     $self->{policy} = {};
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
@@ -321,7 +339,12 @@ sub manage_selection {
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
             defined($job_end_time) && $job_end_time =~ /[0-9]+/ && $job_end_time < $current_time - $self->{option_results}->{filter_end_time}) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': too old.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': end time too old.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_start_time}) && $self->{option_results}->{filter_start_time} =~ /[0-9]+/ &&
+            defined($job_start_time) && $job_start_time =~ /[0-9]+/ && $job_start_time < $current_time - $self->{option_results}->{filter_start_time}) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': start time too old.", debug => 1);
             next;
         }
         
@@ -330,11 +353,7 @@ sub manage_selection {
         $self->{policy}->{$job_pname}->{job}->{$job_id} = { display => $job_id, elapsed => $elapsed_time, 
                                                             status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
                                                             kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef };
-    }
-    
-    if (scalar(keys %{$self->{policy}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No job found.");
-        $self->{output}->option_exit();
+        $self->{global}->{total}++;
     }
 }
 
@@ -393,6 +412,10 @@ Command options (Default: '-report -most_columns').
 
 Filter job policy name (can be a regexp).
 
+=item B<--filter-start-time>
+
+Filter job with start time greater than current time less value in seconds.
+
 =item B<--filter-end-time>
 
 Filter job with end time greater than current time less value in seconds (Default: 86400).
@@ -431,6 +454,14 @@ Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}, %{k
 
 Set critical threshold for frozen jobs (Default: '%{state} =~ /active|queue/ && %{kb} == 0').
 Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}, %{kb}
+
+=item B<--warning-total>
+
+Set warning threshold for total jobs.
+
+=item B<--critical-total>
+
+Set critical threshold for total jobs.
 
 =back
 
