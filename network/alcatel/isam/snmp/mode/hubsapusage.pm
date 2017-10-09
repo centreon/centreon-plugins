@@ -33,6 +33,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'sap', type => 1, cb_prefix_output => 'prefix_sap_output', message_multiple => 'All SAP are ok', skipped_code => { -10 => 1 } },
     ];
     
@@ -64,6 +65,102 @@ sub set_counters {
             }
         },
     ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-in-traffic', set => {
+                key_values => [],
+                manual_keys => 1, per_second => 1, output_change_bytes => 2,
+                closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_total_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_total_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
+            }
+        },
+        { label => 'total-out-traffic', set => {
+                key_values => [],
+                manual_keys => 1, per_second => 1, output_change_bytes => 2,
+                closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_total_traffic_output'),
+                closure_custom_perfdata => $self->can('custom_total_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
+            }
+        },
+    ];
+}
+
+sub custom_total_traffic_perfdata {
+    my ($self, %options) = @_;
+    
+    my ($warning, $critical);
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    }
+    
+    $self->{output}->perfdata_add(label => 'total_traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+                                  value => sprintf("%.2f", $self->{result_values}->{total_traffic}),
+                                  warning => $warning,
+                                  critical => $critical,
+                                  min => 0, max => $self->{result_values}->{speed});
+}
+
+sub custom_total_traffic_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = 'ok';
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{total_traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_total_traffic_output {
+    my ($self, %options) = @_;
+    
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_traffic}, network => 1);
+    my ($total_value, $total_unit);
+    if (defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} =~ /[0-9]/) {
+        ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
+    }
+   
+    my $msg = sprintf("Total Traffic %s : %s/s (%s on %s)",
+                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+                      defined($total_value) ? $total_value . $total_unit : '-');
+    return $msg;
+}
+
+sub custom_total_traffic_calc {
+    my ($self, %options) = @_;
+
+    my $total_traffic = 0;
+    foreach (keys %{$options{new_datas}}) {
+        if (/^global_traffic_$options{extra_options}->{label_ref}_/) {
+            my $new_total = $options{new_datas}->{$_};
+            next if (!defined($options{old_datas}->{$_}));
+            my $old_total = $options{old_datas}->{$_};
+
+            my $diff_traffic = $new_total - $old_total;
+            if ($diff_traffic < 0) {
+                $total_traffic += $old_total;
+            } else {
+                $total_traffic += $diff_traffic;
+            }
+        }
+    }
+
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{total_traffic} = $total_traffic / $options{delta_time};
+    if (defined($instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{total_traffic} * 100 / ($instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000;
+    }
+    return 0;
 }
 
 sub custom_status_threshold {
@@ -192,6 +289,8 @@ sub new {
                                   "filter-name:s"       => { name => 'filter_name' },
                                   "speed-in:s"          => { name => 'speed_in' },
                                   "speed-out:s"         => { name => 'speed_out' },
+                                  "speed-total-in:s"    => { name => 'speed_total_in' },
+                                  "speed-total-out:s"   => { name => 'speed_total_out' },
                                   "units-traffic:s"     => { name => 'units_traffic', default => '%' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
@@ -289,6 +388,7 @@ sub manage_selection {
 
     my $snmp_result = $self->{statefile_cache}->get(name => 'snmp_result');
 
+    $self->{global} = {};
     $self->{sap} = {};
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
@@ -333,6 +433,9 @@ sub manage_selection {
         $self->{sap}->{$_}->{out} = $result->{fadSapStatsEgressOctets} * 8;
         $self->{sap}->{$_}->{status} = $result->{sapOperStatus};
         $self->{sap}->{$_}->{admin} = $result->{sapAdminStatus};
+        
+        $self->{global}->{'traffic_in_' . $_} = $result->{fadSapStatsIngressOctets} * 8;
+        $self->{global}->{'traffic_out_' . $_} = $result->{fadSapStatsEgressOctets} * 8;
     }
 
     if (scalar(keys %{$self->{sap}}) <= 0) {
@@ -372,6 +475,14 @@ Set interface speed for incoming traffic (in Mb).
 
 Set interface speed for outgoing traffic (in Mb).
 
+=item B<--speed-total-in>
+
+Set interface speed for total incoming traffic (in Mb).
+
+=item B<--speed-total-out>
+
+Set interface speed for total outgoing traffic (in Mb).
+
 =item B<--units-traffic>
 
 Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
@@ -389,12 +500,12 @@ Can used special variables like: %{admin}, %{status}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'in-traffic', 'out-traffic'.
+Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'in-traffic', 'out-traffic'.
+Can be: 'total-in-traffic', 'total-out-traffic', 'in-traffic', 'out-traffic'.
 
 =item B<--reload-cache-time>
 
