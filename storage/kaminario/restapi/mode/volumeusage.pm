@@ -54,19 +54,19 @@ sub set_counters {
         },
         { label => 'latency-inner', set => {
                 key_values => [ { name => 'latency_inner' }, { name => 'display' } ],
-                output_template => 'Latency Inner : %.6fs',
+                output_template => 'Latency Inner : %.6fms',
                 perfdatas => [
                     { label => 'latency_inner', value => 'latency_inner_absolute', template => '%.6f', 
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'latency-outer', set => {
                 key_values => [ { name => 'latency_outer' }, { name => 'display' } ],
-                output_template => 'Latency Outer : %.6fs',
+                output_template => 'Latency Outer : %.6fms',
                 perfdatas => [
                     { label => 'latency_outer', value => 'latency_outer_absolute', template => '%.6f', 
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
