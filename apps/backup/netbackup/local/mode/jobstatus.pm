@@ -165,6 +165,9 @@ sub custom_frozen_calc {
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{kb} = $options{new_datas}->{$self->{instance} . '_kb'} - $options{old_datas}->{$self->{instance} . '_kb'};
+    $self->{result_values}->{parentid} = $options{new_datas}->{$self->{instance} . '_parentid'};
+    $self->{result_values}->{schedule} = $options{new_datas}->{$self->{instance} . '_schedule'};
+    $self->{result_values}->{jobid} = $options{new_datas}->{$self->{instance} . '_jobid'};
 
     return 0;
 }
@@ -208,7 +211,9 @@ sub set_counters {
             }
         },
         { label => 'frozen', threshold => 0, set => {
-                key_values => [ { name => 'kb', diff => 1 }, { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'state' } ],
+                key_values => [ { name => 'kb', diff => 1 }, { name => 'status' }, 
+                    { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'state' },
+                    { name => 'parentid' }, { name => 'schedule' }, { name => 'jobid' } ],
                 closure_custom_calc => $self->can('custom_frozen_calc'),
                 closure_custom_output => $self->can('custom_frozen_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -237,6 +242,7 @@ sub new {
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options', default => '-report -most_columns' },
                                   "filter-policy-name:s"    => { name => 'filter_policy_name' },
+                                  "filter-type:s"           => { name => 'filter_type' },
                                   "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
                                   "filter-start-time:s"     => { name => 'filter_start_time' },
                                   "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
@@ -327,14 +333,19 @@ sub manage_selection {
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
         my @values = split /,/, $line;
-        my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_start_time, $job_end_time, $job_kb) = 
-            ($values[0], $values[1], $values[2], $values[3], $values[4], $values[8], $values[10], $values[14]);
+        my ($job_id, $job_type, $job_state, $job_status, $job_pname, $job_schedule, $job_start_time, $job_end_time, $job_kb, $job_parentid) = 
+            ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[8], $values[10], $values[14], $values[33]);
         
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
         $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : undef;
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $job_type{$job_type} !~ /$self->{option_results}->{filter_type}/) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter type.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
@@ -350,9 +361,14 @@ sub manage_selection {
         
         $self->{policy}->{$job_pname} = { job => {}, display => $job_pname } if (!defined($self->{policy}->{$job_pname}));
         my $elapsed_time = $current_time - $job_start_time;
-        $self->{policy}->{$job_pname}->{job}->{$job_id} = { display => $job_id, elapsed => $elapsed_time, 
-                                                            status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
-                                                            kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef };
+        $self->{policy}->{$job_pname}->{job}->{$job_id} = {
+            display => $job_id, elapsed => $elapsed_time, 
+            status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
+            kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef,
+            parentid => defined($job_parentid) ? $job_parentid : '',
+            jobid => $job_id,
+            schedule => defined($job_schedule) ? $job_schedule : '',
+        };
         $self->{global}->{total}++;
     }
 }
@@ -412,6 +428,10 @@ Command options (Default: '-report -most_columns').
 
 Filter job policy name (can be a regexp).
 
+=item B<--filter-type>
+
+Filter job type (can be a regexp).
+
 =item B<--filter-start-time>
 
 Filter job with start time greater than current time less value in seconds.
@@ -448,12 +468,14 @@ Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}
 =item B<--warning-frozen>
 
 Set warning threshold for frozen jobs (Default: none)
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}, %{kb}
+Can used special variables like:
+%{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 
 =item B<--critical-frozen>
 
 Set critical threshold for frozen jobs (Default: '%{state} =~ /active|queue/ && %{kb} == 0').
-Can used special variables like: %{display}, %{status}, %{elapsed}, %{type}, %{kb}
+Can used special variables like: 
+%{display}, %{status}, %{elapsed}, %{type}, %{kb}, %{parentid}, %{schedule}, %{jobid}
 
 =item B<--warning-total>
 
