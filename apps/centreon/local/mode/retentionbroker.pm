@@ -132,7 +132,7 @@ sub run {
             $current_total += $total;
             $total_size += $size;            
             my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
-            $self->{output}->output_add(long_msg => sprintf("failover '%s': %d file(s) finded (%s)", 
+            $self->{output}->output_add(long_msg => sprintf("failover '%s': %d file(s) found (%s)", 
                                                             $failover, $total, $size_value . ' ' . $size_unit));
         }
         
@@ -149,7 +149,7 @@ sub run {
         my ($status, $total, $size) = $self->check_directory(config => $config, path => $temporary);
         if ($status) {
             my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
-            $self->{output}->output_add(long_msg => sprintf("temporary: %d file(s) finded (%s)", 
+            $self->{output}->output_add(long_msg => sprintf("temporary: %d file(s) found (%s)", 
                                                             $total, $size_value . ' ' . $size_unit));
             if ($total > 0) {
                 $self->{output}->output_add(severity => 'CRITICAL',
