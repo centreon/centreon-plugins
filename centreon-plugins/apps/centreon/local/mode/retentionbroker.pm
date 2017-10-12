@@ -98,20 +98,20 @@ sub run {
                                         short_msg => "'$config': cannot parse xml");
             next;
         }
-        my %failover_finded = ();
-        my %file_finded = ();
+        my %failover_found = ();
+        my %file_found = ();
         my $temporary;
         foreach my $node ($xml->findnodes('/centreonBroker/output')) {
             my %load = ();
             foreach my $element ($node->getChildrenByTagName('*')) {
                 if ($element->nodeName eq 'failover') {
-                    $failover_finded{$element->textContent} = 1;
+                    $failover_found{$element->textContent} = 1;
                 } elsif ($element->nodeName =~ /^(name|type|path)$/) {
                     $load{$element->nodeName} = $element->textContent;
                 }
             }
             if (defined($load{type}) && $load{type} eq 'file') {
-                $file_finded{$load{name}} = {%load};
+                $file_found{$load{name}} = {%load};
             }
         }
         
@@ -123,10 +123,10 @@ sub run {
         
         # Check failovers
         my $current_total = 0;
-        foreach my $failover (sort keys %failover_finded) {
-            next if (!defined($file_finded{$failover}));
+        foreach my $failover (sort keys %failover_found) {
+            next if (!defined($file_found{$failover}));
             
-            my ($status, $total, $size) = $self->check_directory(config => $config, path => $file_finded{$failover}->{path});
+            my ($status, $total, $size) = $self->check_directory(config => $config, path => $file_found{$failover}->{path});
             next if (!$status);
             
             $current_total += $total;
