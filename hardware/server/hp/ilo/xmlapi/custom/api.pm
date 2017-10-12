@@ -229,6 +229,28 @@ sub change_shitty_xml {
     $options{response} =~ s/<Backplane firmware version="(.*?)", enclosure addr="(.*?)"/<BACKPLANE FIRMWARE_VERSION="$1" ENCLOSURE_ADDR="$2"/mg;
     $options{response} =~ s/<Drive Bay: "(.*?)"; status: "(.*?)"; uid led: "(.*?)">/<DRIVE_BAY NUM="$1" STATUS="$2" UID_LED="$3" \/>/mg;
 
+    #Other shitty xml:
+    #  <BACKPLANE>
+    #    <ENCLOSURE_ADDR VALUE="224"/>
+    #    <DRIVE_BAY VALUE = "1"/>
+    #      <PRODUCT_ID VALUE = "EG0300FCVBF"/>
+    #      <STATUS VALUE = "Ok"/>
+    #      <UID_LED VALUE = "Off"/>
+    #    <DRIVE_BAY VALUE = "2"/>
+    #      <PRODUCT_ID VALUE = "EH0146FARUB"/>
+    #      <STATUS VALUE = "Ok"/>
+    #      <UID_LED VALUE = "Off"/>
+    #    <DRIVE_BAY VALUE = "3"/>
+    #      <PRODUCT_ID VALUE = "EH0146FBQDC"/>
+    #      <STATUS VALUE = "Ok"/>
+    #      <UID_LED VALUE = "Off"/>
+    #    <DRIVE_BAY VALUE = "4"/>
+    #      <PRODUCT_ID VALUE = "N/A"/>
+    #      <STATUS VALUE = "Not Installed"/>
+    #      <UID_LED VALUE = "Off"/>
+    # </BACKPLANE>
+    $options{response} =~ s/<DRIVE_BAY\s+VALUE\s*=\s*"(.*?)".*?<STATUS\s+VALUE\s*=\s*"(.*?)".*?<UID_LED\s+VALUE\s*=\s*"(.*?)".*?\/>/<DRIVE_BAY NUM="$1" STATUS="$2" UID_LED="$3" \/>/msg;
+
     return $options{response};
 }
 
@@ -250,7 +272,7 @@ sub get_ilo_response {
         $xml_result = XMLin($response, 
             ForceArray => ['FAN', 'TEMP', 'MODULE', 'SUPPLY', 'PROCESSOR', 'NIC', 
                            'SMART_STORAGE_BATTERY', 'CONTROLLER', 'DRIVE_ENCLOSURE', 
-                           'LOGICAL_DRIVE', 'PHYSICAL_DRIVE', 'DRIVE_BAY']);
+                           'LOGICAL_DRIVE', 'PHYSICAL_DRIVE', 'DRIVE_BAY', 'BACKPLANE']);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
@@ -264,6 +286,7 @@ sub get_ilo_data {
     my ($self, %options) = @_;
     
     $self->{content} = '';
+    
     if (!defined($self->{option_results}->{force_ilo3})) {
         $self->find_ilo_version();
     } else {
