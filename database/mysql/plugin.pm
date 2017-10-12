@@ -44,6 +44,7 @@ sub new {
                          'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
                          'slow-queries'                 => 'database::mysql::mode::slowqueries',
                          'sql'                          => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
                          'threads-connected'            => 'database::mysql::mode::threadsconnected',
                          'uptime'                       => 'database::mysql::mode::uptime',
                          'tables-size'                  => 'database::mysql::mode::tablessize',
