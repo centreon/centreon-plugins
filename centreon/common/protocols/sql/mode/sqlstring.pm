@@ -71,17 +71,49 @@ sub run {
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
     $self->{sql}->query(query => $self->{option_results}->{sql_statement});
-    my $value = $self->{sql}->fetchrow_hashref();
-	my $exit_code = 'ok';
-	if (defined($self->{option_results}->{critical_status}) && $self->{option_results}->{critical_status} ne '' && eval "$self->{option_results}->{critical_status}" ) {
-        $exit_code= 'critical';
-    } elsif (defined($self->{option_results}->{warning_status}) && $self->{option_results}->{warning_status} ne '' && eval "$self->{option_results}->{warning_status}" ) {
-        $exit_code = 'warning';
-    } elsif (defined($self->{option_results}->{unknown_status}) && $self->{option_results}->{unknown_status} ne '' && eval "$self->{option_results}->{unknown_status}" ) {
-        $exit_code = 'unknown';
+	my $exit_code;
+	my @critical_strings;
+	my @warning_strings;
+	my @unknown_strings;
+	my @ok_strings;
+	my $nb_rows;
+	
+    while (my $value = $self->{sql}->fetchrow_hashref()) {
+		if (defined($self->{option_results}->{critical_status}) && $self->{option_results}->{critical_status} ne '' && eval "$self->{option_results}->{critical_status}" ) {
+			push(@critical_strings, eval $self->{option_results}->{format_field});
+    	} elsif (defined($self->{option_results}->{warning_status}) && $self->{option_results}->{warning_status} ne '' && eval "$self->{option_results}->{warning_status}" ) {
+			push(@warning_strings, eval $self->{option_results}->{format_field});
+    	} elsif (defined($self->{option_results}->{unknown_status}) && $self->{option_results}->{unknown_status} ne '' && eval "$self->{option_results}->{unknown_status}" ) {
+			push(@unknown_strings, eval $self->{option_results}->{format_field});
+    	} else {
+			push(@ok_strings, eval $self->{option_results}->{format_field});
+		}
 	}
-
-    $self->{output}->output_add(severity => $exit_code, short_msg => sprintf($self->{option_results}->{format}, eval $self->{option_results}->{format_field}));
+	$nb_rows = @critical_strings + @warning_strings + @unknown_strings + @ok_strings;
+	if ( @critical_strings > 0) {
+    	$exit_code= 'critical';
+		my $output_str = (scalar @critical_strings > 1)?"(".scalar @critical_strings." rows) ":"";
+		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @critical_strings));
+        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
+	}
+	if ( @warning_strings > 0) {
+    	$exit_code = 'warning';
+		my $output_str = (scalar @warning_strings > 1)?"(".scalar @warning_strings." rows) ":"";
+		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @warning_strings));
+        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
+	}
+	if ( @unknown_strings > 0) {
+    	$exit_code = 'unknown';
+		my $output_str = (scalar @unknown_strings > 1)?"(".scalar @unknown_strings." rows) ":"";
+		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @unknown_strings));
+        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
+	}
+	if ( @critical_strings + @warning_strings + @unknown_strings == 0 && @ok_strings > 0 ) {
+		$exit_code = 'ok';
+		my $output_str = (scalar @ok_strings > 1)?"(".scalar @ok_strings." rows) ":"";
+		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @ok_strings));
+        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
+	}
     $self->{output}->display();
     $self->{output}->exit();
 }
