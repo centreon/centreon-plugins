@@ -337,6 +337,19 @@ sub api_get_containers {
         if (defined($content_total->{$options{container_id}})) {
             $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
         }
+    } elsif (defined($options{container_name}) && $options{container_name} ne '') {
+        my $container_id;
+        
+        foreach (keys %$content_total) {
+            if ($content_total->{$_}->{Name} eq $options{container_name}) {
+                $container_id = $_;
+                last;
+            }
+        }
+        
+        if (defined($container_id)) {
+            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+        }
     } else {
         foreach my $container_id (keys %{$content_total}) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);

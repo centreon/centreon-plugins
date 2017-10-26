@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 my $instance_mode;
 
@@ -70,7 +71,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, message_separator => ' - ' },
     ];
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
@@ -79,6 +80,14 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold_output'),
+            }
+        },
+        { label => 'time', set => {
+                key_values => [ { name => 'time_elapsed' } ],
+                output_template => 'Response time %.3fs',
+                perfdatas => [
+                    { label => 'time', value => 'time_elapsed_absolute', template => '%.3f', unit => 's', min => 0 },
+                ],
             }
         },
     ];
@@ -120,8 +129,10 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $timing0 = [gettimeofday];
     my $result = $options{custom}->login();
-    $self->{global} = { %$result };
+    my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    $self->{global} = { %$result, time_elapsed => $timeelapsed };
 }
 
 1;
@@ -143,6 +154,14 @@ Can used special variables like: %{status}, %{message}
 
 Set critical threshold for status (Default: '%{message} !~ /authentification succeeded/i'
 Can used special variables like: %{status}, %{message}
+
+=item B<--warning-time>
+
+Threshold warning in seconds.
+
+=item B<--critical-time>
+
+Threshold critical in seconds.
 
 =back
 

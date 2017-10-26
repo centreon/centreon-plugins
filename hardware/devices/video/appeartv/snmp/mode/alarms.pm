@@ -102,6 +102,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "filter-msg:s"        => { name => 'filter_msg' },
                                   "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
                                   "memory"              => { name => 'memory' },
@@ -175,6 +176,11 @@ sub manage_selection {
         }
         
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
+        if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
+            $result->{msgText} !~ /$self->{option_results}->{filter_msg}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{msgText} . "': no matching filter.", debug => 1);
+            next;
+        }
         
         my $diff_time = $current_time - $create_time;
         
@@ -196,6 +202,10 @@ __END__
 Check alarms.
 
 =over 8
+
+=item B<--filter-msg>
+
+Filter by message (can be a regexp).
 
 =item B<--warning-status>
 

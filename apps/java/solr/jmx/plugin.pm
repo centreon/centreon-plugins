@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package apps::elasticsearch::plugin;
+package apps::java::solr::jmx::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'cluster'     => 'apps::elasticsearch::mode::cluster',
-                        'nodescount'   => 'apps::elasticsearch::mode::nodescount',
-                        'indices'      => 'apps::elasticsearch::mode::indices',
-                        );
+                          'cache-usage'             => 'apps::java::solr::jmx::mode::cacheusage',
+                          'request-handler-usage'   => 'apps::java::solr::jmx::mode::requesthandlerusage',
+                         );
+
+    $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
 }
 
@@ -44,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check elasticsearch status.
+Check Solr in JMX. Need Jolokia agent.
 
 =cut

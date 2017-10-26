@@ -160,7 +160,7 @@ sub manage_selection {
     my $oid_fwConnNumber = '.1.3.6.1.4.1.1369.5.2.1.4.0';
     $self->{results} = $self->{snmp}->get_leef(oids => [$oid_fwConnNumber],
                                                nothing_quit => 1);
-    $self->{global} = { fwConnNumber => $self->{result}->{$oid_fwConnNumber} };
+    $self->{global} = { fwConnNumber => $self->{results}->{$oid_fwConnNumber} };
 }
 
 1;

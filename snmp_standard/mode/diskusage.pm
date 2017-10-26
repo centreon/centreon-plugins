@@ -302,7 +302,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 180).
+Time in minutes before reloading cache file (default: 180).
 
 =item B<--display-transform-src>
 

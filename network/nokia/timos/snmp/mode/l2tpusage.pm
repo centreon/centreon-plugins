@@ -79,7 +79,7 @@ sub custom_total_sessions_calc {
             next if (!defined($options{old_datas}->{$_}));
             my $old_total = $options{old_datas}->{$_};
             
-            my $diff_sessions += $new_total - $old_total;
+            my $diff_sessions = $new_total - $old_total;
             if ($diff_sessions < 0) {
                 $total_sessions += $old_total;
             } else {

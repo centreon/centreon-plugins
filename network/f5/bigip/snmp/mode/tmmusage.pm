@@ -241,13 +241,13 @@ Filter by TMM name (regexp can be used).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'cpu1m', 'cpu5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
+Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
 'total-server-connections', 'current-server-connections'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'cpu1m', 'cpu5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
+Can be: 'cpu-1m', 'cpu-5m', 'memory-usage' (%), 'total-client-connections', 'current-client-connections',
 'total-server-connections', 'current-server-connections'.
 
 =back
