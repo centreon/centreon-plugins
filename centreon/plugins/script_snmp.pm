@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,11 +66,11 @@ sub init {
     # $options{version} = string version
     # $options{help} = string help
 
-    if (defined($options{help}) && !defined($self->{mode_name})) {
+    if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
     }
-    if (defined($options{version}) && !defined($self->{mode_name})) {
+    if (defined($options{version}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->version();
     }
     if (defined($self->{list_mode})) {

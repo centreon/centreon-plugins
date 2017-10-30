@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -110,7 +110,7 @@ sub manage_selection {
     my @lines = split /\n/, $stdout;
     foreach my $policy_name (@lines) {
         my $command2 = $self->{option_results}->{command2};
-        $command2 =~ s/%{policy_name}/$policy_name/g;
+        $command2 =~ s/%\{policy_name\}/$policy_name/g;
         my ($stdout2) = centreon::plugins::misc::execute(output => $self->{output},
                                                          options => $self->{option_results},
                                                          sudo => $self->{option_results}->{sudo},

@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -85,12 +85,12 @@ sub run {
     $self->{sql}->connect();
     my $query;
     if (defined($self->{option_results}->{incremental_level})) {
-        $query = q{SELECT v$rman_status.object_type,       
+        $query = q{SELECT v$rman_status.object_type,
                     ((max(v$rman_status.start_time) - date '1970-01-01')*24*60*60) as last_time,
-                    NVL(v$backup_set_details.incremental_level, 0)
+                    SUM(v$backup_set_details.incremental_level)
                     FROM v$rman_status LEFT JOIN v$backup_set_details ON v$rman_status.session_recid = v$backup_set_details.session_recid
                     WHERE operation='BACKUP'
-                    GROUP BY object_type, incremental_level ORDER BY last_time DESC
+                    GROUP BY object_type, v$backup_set_details.session_recid ORDER BY last_time DESC
         };
     } else {
         $query = q{SELECT object_type,
@@ -114,13 +114,12 @@ sub run {
         foreach my $row (@$result) {
             if (defined($self->{option_results}->{incremental_level})) {
                 # db incr with incremental level 0 = DB FULL
-                if (/db full/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0) { # it's a full. we get
+                 if (/db full/ && $$row[0] =~ /db incr/i && (!defined($$row[2]) || $$row[2] == 0)) { # it's a full. we get
                     $$row[0] = 'DB FULL';
                 } else {
-                    next if (/db incr/ && $$row[0] =~ /db incr/i && defined($$row[2]) && $$row[2] == 0); # it's a full. we skip.
+                    next if (/db incr/ && $$row[0] =~ /db incr/i && (!defined($$row[2]) || $$row[2] == 0)); # it's a full. we skip.
                     next if ($$row[0] !~ /$_/i);
                 }
-
             } else {
                 next if ($$row[0] !~ /$_/i);
             }

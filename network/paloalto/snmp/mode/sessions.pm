@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,165 +20,118 @@
 
 package network::paloalto::snmp::mode::sessions;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    '001_active'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'panSessionActive' }, { name => 'panSessionMax' },
-                                      ],
-                        output_template => 'Active : %.2f %%', threshold_use => 'active_prct', output_use => 'active_prct',
-                        closure_custom_calc => \&custom_active_calc,
-                        perfdatas => [
-                            { label => 'active', value => 'panSessionActive_absolute', template => '%s',
-                              min => 0, max => 'panSessionMax_absolute' },
-                        ],
-                    }
-               },
-    '002_active-ssl-proxy'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'panSessionSslProxyUtilization' },
-                                      ],
-                        output_template => 'Active SSL Proxy : %.2f %%',
-                        perfdatas => [
-                            { label => 'active_ssl_proxy', value => 'panSessionSslProxyUtilization_absolute', template => '%.2f', unit => '%',
-                              min => 0, max => 100 },
-                        ],
-                    }
-               },
-    '003_active-tcp'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'panSessionActiveTcp' },
-                                      ],
-                        output_template => 'Active TCP : %s',
-                        perfdatas => [
-                            { label => 'active_tcp', value => 'panSessionActiveTcp_absolute', template => '%s', min => 0 },
-                        ],
-                    }
-               },
-    '004_active-udp'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'panSessionActiveUdp' },
-                                      ],
-                        output_template => 'Active UDP : %s',
-                        perfdatas => [
-                            { label => 'active_udp', value => 'panSessionActiveUdp_absolute', template => '%s', min => 0 },
-                        ],
-                    }
-               },
-    '005_active-icmp'   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'panSessionActiveICMP' },
-                                      ],
-                        output_template => 'Active ICMP : %s',
-                        perfdatas => [
-                            { label => 'active_icmp', value => 'panSessionActiveICMP_absolute', template => '%s', min => 0 },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'active', set => {
+                key_values => [ { name => 'panSessionActive' }, { name => 'panSessionMax' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                closure_custom_perfdata => $self->can('custom_active_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+               
+            }
+        },
+        { label => 'active-ssl-proxy', set => {
+                key_values => [ { name => 'panSessionSslProxyUtilization' } ],
+                output_template => 'Active SSL Proxy : %.2f %%',
+                perfdatas => [
+                    { label => 'active_ssl_proxy', value => 'panSessionSslProxyUtilization_absolute', template => '%.2f', unit => '%',
+                      min => 0, max => 100 },
+                ],
+            }
+        },
+        { label => 'active-tcp', set => {
+                key_values => [ { name => 'panSessionActiveTcp' } ],
+                output_template => 'Active TCP : %s',
+                perfdatas => [
+                    { label => 'active_tcp', value => 'panSessionActiveTcp_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'active-udp', set => {
+                key_values => [ { name => 'panSessionActiveUdp' } ],
+                output_template => 'Active UDP : %s',
+                perfdatas => [
+                    { label => 'active_udp', value => 'panSessionActiveUdp_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'active-icmp', set => {
+                key_values => [ { name => 'panSessionActiveICMP' } ],
+                output_template => 'Active ICMP : %s',
+                perfdatas => [
+                    { label => 'active_icmp', value => 'panSessionActiveICMP_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Sessions ";
+}
+
+sub custom_active_perfdata {
+    my ($self, %options) = @_;
+    
+    my $label = 'active';
+    my %total_options = ();
+    if ($self->{result_values}->{panSessionMax} != 0) {
+        $total_options{total} = $self->{result_values}->{panSessionMax};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => $label,
+                                  value => $self->{result_values}->{panSessionActive},
+                                  warning => defined($total_options{total}) ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options) : undef,
+                                  critical => defined($total_options{total}) ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options) : undef,
+                                  min => 0, max => $self->{result_values}->{panSessionMax});
+}
+
+sub custom_active_threshold {
+    my ($self, %options) = @_;
+    
+    my ($exit, $threshold_value) = ('ok');
+    if ($self->{result_values}->{panSessionMax} != 0) {
+        $threshold_value = $self->{result_values}->{active_prct};
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => 
+        [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]) if (defined($threshold_value));
+    return $exit;
+}
+
+sub custom_active_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Active : %s (%s)",
+                      $self->{result_values}->{panSessionActive},
+                      $self->{result_values}->{panSessionMax} != 0 ? $self->{result_values}->{active_prct} . " %" : 
+                      '-');
+    return $msg;
+}
 
 sub custom_active_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{panSessionActive_absolute} = $options{new_datas}->{$self->{instance} . '_panSessionActive'};
-    $self->{result_values}->{panSessionMax_absolute} = $options{new_datas}->{$self->{instance} . '_panSessionMax'};
+    $self->{result_values}->{panSessionActive} = $options{new_datas}->{$self->{instance} . '_panSessionActive'};
+    $self->{result_values}->{panSessionMax} = $options{new_datas}->{$self->{instance} . '_panSessionMax'};
     $self->{result_values}->{active_prct} = 0;
-    if ($self->{result_values}->{panSessionMax_absolute} != 0) {
-        $self->{result_values}->{active_prct} = $self->{result_values}->{panSessionActive_absolute} * 100 / $self->{result_values}->{panSessionMax_absolute};
+    if ($self->{result_values}->{panSessionMax} != 0) {
+        $self->{result_values}->{active_prct} = $self->{result_values}->{panSessionActive} * 100 / $self->{result_values}->{panSessionMax};
     }
     return 0;
-}
-
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });                         
-
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }    
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    $self->manage_selection();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->set(instance => 'global');
-    
-        my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{global});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $maps_counters->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $maps_counters->{$_}->{obj}->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Sessions $short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "Sessions $long_msg");
-    }
-     
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -195,9 +148,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_panSession = '.1.3.6.1.4.1.25461.2.1.2.3';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_panSession,
+    $self->{results} = $options{snmp}->get_table(oid => $oid_panSession,
                                                 nothing_quit => 1);
-    $self->{global} = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => '0');
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => '0');
+    $self->{global}->{panSessionMax} = 0 if (!defined($self->{global}->{panSessionMax}));
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,17 +60,18 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
     my @lines = split /\n/, $stdout;
-    # Header not needed
-    shift @lines;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
+        next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
         
         if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&

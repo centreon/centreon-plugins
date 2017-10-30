@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -188,7 +188,7 @@ my $oid_wlsxUserEntry = '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1';
 my $oid_wlsxSwitchRole = '.1.3.6.1.4.1.14823.2.2.1.1.1.4';
 my $oid_apESSID = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.2';
 my $oid_apIpAddress = '.1.3.6.1.4.1.14823.2.2.1.1.3.3.1.5';
-my $oid_wlanAPName = '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3';
+#my $oid_wlanAPName = '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -205,7 +205,7 @@ sub manage_selection {
                                                                    { oid => $mapping2->{nUserApBSSID}->{oid} },
                                                                    { oid => $oid_apESSID },
                                                                    { oid => $oid_apIpAddress },
-                                                                   { oid => $oid_wlanAPName },
+                                                                   #{ oid => $oid_wlanAPName },
                                                                  ],
                                                          nothing_quit => 1);
     
@@ -241,8 +241,8 @@ sub manage_selection {
             $bssid !~ /$self->{option_results}->{filter_bssid}/);
     
         my $ap_id = $bssid;
-        $ap_id = $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} 
-            if (defined($self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid}) && $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} ne '');
+        #$ap_id = $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} 
+        #    if (defined($self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid}) && $self->{results}->{$oid_wlanAPName}->{$oid_wlanAPName . '.' . $bssid} ne '');
         $self->{ap}->{$bssid} = { users => 0, ap_id => $ap_id } if (!defined($self->{ap}->{$bssid}));
         $self->{ap}->{$bssid}->{users}++;
     

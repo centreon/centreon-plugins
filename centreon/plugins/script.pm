@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20161212;
+my $global_version = 20171013;
 my $alternative_fatpacker = 0;
 
 sub new {
@@ -78,6 +78,10 @@ sub handle_DIE {
     $self->{output}->die_exit();
 }
 
+sub get_global_version {
+    return $global_version;
+}
+
 sub get_plugin {
     my ($self) = @_;
     
@@ -102,6 +106,7 @@ sub get_plugin {
                                                 'version'           => { name => 'version' },
                                                 'runas:s'           => { name => 'runas' },
                                                 'environment:s%'    => { name => 'environment' },
+                                                'convert-args:s'    => { name => 'convert_args' },
                                                 } );
 
     $self->{options}->parse_options();
@@ -113,12 +118,24 @@ sub get_plugin {
     $self->{runas} = $self->{options}->get_option(argument => 'runas' );
     $self->{environment} = $self->{options}->get_option(argument => 'environment' );
     $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg' );
+    $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args' );
 
     $self->{output}->mode(name => $self->{mode});
     $self->{output}->plugin(name => $self->{plugin});
     $self->{output}->check_options(option_results => $self->{options}->get_options());
 
     $self->{options}->clean();
+}
+
+sub convert_args {
+    my ($self) = @_;
+    
+    if ($self->{convert_args} =~ /^(.+?),(.*)/) {
+        my ($search, $replace) = ($1, $2);
+        for (my $i = 0; $i <= $#ARGV; $i++) {
+            eval "\$ARGV[\$i] =~ s/$search/$replace/g";
+        }
+    }
 }
 
 sub display_local_help {
@@ -214,7 +231,7 @@ sub display_list_plugin {
         
         foreach my $key (@$integrated_plugins) {
             # Need to load it to get the description
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
+            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $key, 
                                                    error_msg => "Cannot load module --plugin.");
                                                
             my $name = $key;
@@ -325,12 +342,11 @@ sub run {
         $self->display_list_plugin();
         $self->{output}->option_exit();
     }
-    if (!defined($self->{plugin}) || $self->{plugin} eq '') {
-        $self->check_plugin_option();
-    }
+    $self->check_plugin_option() if (!defined($self->{plugin}) || $self->{plugin} eq '');
     if (defined($self->{ignore_warn_msg})) {
         $SIG{__WARN__} = sub {};
     }
+    $self->convert_args() if (defined($self->{convert_args}));
 
     $self->check_relaunch();
     
@@ -386,6 +402,11 @@ Run the script as a different user (prefer to use directly the good user).
 =item B<--environment>
 
 Set environment variables for the script (prefer to set it before running it for better performance).
+
+=item B<--convert-args>
+
+Change strings of arguments. Useful to use '!' in nrpe protocol.
+Example: --convert-args='##,\x21'
 
 =back
 

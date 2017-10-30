@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::vmware_storagevolume;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_StorageVolume');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_StorageVolume', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking vmware storage volumes");
     $self->{components}->{vmware_storagevolume} = {name => 'storage volumes', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'vmware_storagevolume'));
+    return if ($self->check_filter(section => 'vmware_storagevolume') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};

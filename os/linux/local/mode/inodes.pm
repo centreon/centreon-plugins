@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,11 +20,37 @@
 
 package os::linux::local::mode::inodes;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'inodes', type => 1, cb_prefix_output => 'prefix_inodes_output', message_multiple => 'All inode partitions are ok' }
+    ];
+    
+    $self->{maps_counters}->{inodes} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'used' }, { name => 'display' } ],
+                output_template => 'Used: %s %%',
+                perfdatas => [
+                    { label => 'used', value => 'used_absolute', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_inodes_output {
+    my ($self, %options) = @_;
+    
+    return "Inodes partition '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -46,8 +72,6 @@ sub new {
                                   "command-options:s" => { name => 'command_options', default => '-P -i -T 2>&1' },
                                   "filter-type:s"     => { name => 'filter_type', },
                                   "filter-fs:s"       => { name => 'filter_fs', },
-                                  "warning:s"         => { name => 'warning' },
-                                  "critical:s"        => { name => 'critical' },
                                   "name:s"            => { name => 'name' },
                                   "regexp"              => { name => 'use_regexp' },
                                   "regexp-isensitive"   => { name => 'use_regexpi' },
@@ -56,33 +80,22 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
+    $self->{inodes} = {};
     my @lines = split /\n/, $stdout;
-    # Header not needed
-    shift @lines;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
+        next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
         
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
@@ -98,54 +111,16 @@ sub manage_selection {
             && $mount ne $self->{option_results}->{name});
         
         $percent =~ s/%//g;
-        $self->{result}->{$mount} = {fs => $fs, type => $type, total => $size, percent => $percent};
+        $self->{inodes}->{$mount} = { display => $mount, fs => $fs, type => $type, total => $size, used => $percent };
     }
     
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No storage found for mount point '" . $self->{option_results}->{name} . "'.");
-        } else {
-            $self->{output}->add_option_msg(short_msg => "No storage found.");
+    if (scalar(keys %{$self->{inodes}}) <= 0) {
+        if ($exit_code != 0) {
+            $self->{output}->output_add(long_msg => "command output:" . $stdout);
         }
+        $self->{output}->add_option_msg(short_msg => "No storage found (filters or command issue)");
         $self->{output}->option_exit();
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-	
-    $self->manage_selection();
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All inode partitions are ok.');
-    }
-    
-    foreach my $name (sort(keys %{$self->{result}})) {    
-        my $prct_used = $self->{result}->{$name}->{percent};
-        my $prct_free = 100 - $prct_used;
-
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-        $self->{output}->output_add(long_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name, $prct_used, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Inodes partition '%s' Used: %s %%  Free: %s %%", 
-                                            $name, $prct_used, $prct_free));
-        }    
-
-        my $label = 'used';
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => '%',
-                                      value => $prct_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -199,11 +174,11 @@ Command path (Default: none).
 
 Command options (Default: '-P -i -T 2>&1').
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
 

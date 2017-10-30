@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,7 +76,7 @@ sub check_ilo4 {
 sub check_ilo2 {
     my ($self) = @_;
 
-     return if (!defined($self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{DRIVES}->{DRIVE_BAY}));
+    return if (!defined($self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{DRIVES}->{DRIVE_BAY}));
     # In ILO2:
     # <DRIVES>
     #    <BACKPLANE FIRMWARE_VERSION="1.16" ENCLOSURE_ADDR="224"/>
@@ -103,6 +103,52 @@ sub check_ilo2 {
     }
 }
 
+sub check_ilo3 {
+    my ($self) = @_;
+
+    return if (!defined($self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{DRIVES}->{BACKPLANE}));
+    # In ILO3:
+    # <DRIVES>
+    #   <BACKPLANE>
+    #        <FIRMWARE_VERSION VALUE="1.14"/>
+    #        <ENCLOSURE_ADDR VALUE="224"/>
+    #        <DRIVE_BAY NUM="1" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="2" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="3" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="4" STATUS="Not Installed" UID_LED="Off" />
+    #    </BACKPLANE>
+    #    <BACKPLANE>
+    #        <FIRMWARE_VERSION VALUE="1.14"/>
+    #        <ENCLOSURE_ADDR VALUE="226"/>
+    #        <DRIVE_BAY NUM="5" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="6" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="7" STATUS="Ok" UID_LED="Off" />
+    #        <DRIVE_BAY NUM="8" STATUS="Not Installed" UID_LED="Off" />
+    #    </BACKPLANE>
+    foreach my $backplane (@{$self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{DRIVES}->{BACKPLANE}}) {
+        next if (!defined($backplane->{DRIVE_BAY}));
+        
+        foreach my $result (@{$backplane->{DRIVE_BAY}}) {
+            my $instance = $result->{NUM};
+            
+            next if ($self->check_filter(section => 'pdrive', instance => $instance));
+            next if ($result->{STATUS} =~ /not installed|n\/a|not present|not applicable/i &&
+                     $self->absent_problem(section => 'pdrive', instance => $instance));
+
+            $self->{components}->{pdrive}->{total}++;
+            
+            $self->{output}->output_add(long_msg => sprintf("physical drive '%s' status is '%s' [instance = %s]",
+                                        $result->{NUM}, $result->{STATUS}, $instance));
+            
+            my $exit = $self->get_severity(label => 'default', section => 'pdrive', value => $result->{STATUS});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Physical drive '%s' status is '%s'", $result->{NUM}, $result->{STATUS}));
+            }
+        }
+    }
+}
+
 sub check {
     my ($self) = @_;
 
@@ -111,6 +157,7 @@ sub check {
     return if ($self->check_filter(section => 'pdrive'));
 
     check_ilo4($self);
+    check_ilo3($self);
     check_ilo2($self);
 }
 

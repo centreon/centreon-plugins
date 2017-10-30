@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'vlan-traffic'  => 'network::alcatel::isam::snmp::mode::vlantraffic',
+        'cpu'               => 'network::alcatel::isam::snmp::mode::cpu',
+        'hardware'          => 'network::alcatel::isam::snmp::mode::hardware',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-hub-sap'      => 'network::alcatel::isam::snmp::mode::listhubsap',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::alcatel::isam::snmp::mode::memory',
+        'hub-sap-usage'     => 'network::alcatel::isam::snmp::mode::hubsapusage',
     );
 
     return $self;

@@ -555,6 +555,7 @@ Cloner ``centreon-plugins``:
 Copier les fichiers communs à l'ensemble des sondes:
 ::
 
+  # find . -name "*.pm" -exec sed -i ' /__END__/d' \{\} \;
   # cp -R --parent centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ ../plugin/lib/
   # cp centreon_plugins.pl ../plugin
   # sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../plugin/lib/centreon/plugins/script.pm
@@ -884,3 +885,268 @@ Voici un exemple pour le formulaire d'authentification de ``demo.centreon.com`` 
 
   $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
   OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
+
+----------------
+Protocole Modbus
+----------------
+
+Contrôler 3 registres holding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Le contenu du fichier ``modbus.json`` peut être spécifié directement dans l'option ``--config`` (exemple: ``--config='{ "selection": { "metric1":{...'``).
+L'attribut ``type`` peut avoir les valeurs suivantes :
+
+* holding (défaut)
+* coils
+* discrete
+* input
+
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            }
+        }
+    }
+
+Le résultat de la commande :
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    Metric 'metric1' value is '0'
+    Metric 'metric2' value is '41291'
+    Metric 'metric3' value is '42655'
+
+Comment modifier la sortie ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Il existe une section pour modifier la sortie globallement. Il est aussi possible de surcharger une métrique spécifiquement :
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true,
+                "formatting": {
+                    "printf_msg": "Override '%s' value is %.2f",
+                    "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+                }
+            }
+        },
+        "formatting": {
+            "printf_msg": "My metric '%s' value is %.2f",
+            "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+        }
+    }
+
+Le résultat de la commande :
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    My Metric 'metric1' value is 0.00
+    My Metric 'metric2' value is 41291.00
+    Override 'metric3' value is 42655.00
+
+Comment moyenner 4 registres ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Nous créons les valeurs moyennées suivantes : ``[x1 + x2 / 2 = y]`` ``[x3 + x4 / 2 = z]``.
+Avec l'attribut ``pattern``, il est possible de sélectionner les valeurs. Dans notre cas, nous récupérons 4 valeurs en 1 seule sélection. 
+Les valeurs sélectionnées se nomment : ``metrics.0``, ``metrics.1``, ``metrics.2``, ``metrics.3`` (order is preserved).
+
+L'attribut ``aggregation`` peut avoir les valeurs suivantes :
+
+* avg: retourne la moyenne des valeurs.
+* sum: retourne la somme des valeurs.
+* min: retourne la plus petite valeur numérique des valeurs.
+* max: retourne la plus grande valeur numérique des valeurs.
+
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg1":{
+                "pattern": "metrics\\.[01]$",
+                "aggregation": "avg",
+                "unit": "con"
+            },
+            "avg2":{
+                "pattern": "metrics\\.[23]$",
+                "aggregation": "avg",
+                "unit": "con"
+            }
+        }
+    }
+
+Le résultat de la commande :
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Global metrics are OK | 'avg1'=42192con;;;; 'avg2'=40574con;;;;
+    Metric 'avg1' value is '42192'
+    Metric 'avg2' value is '40574'
+
+Appliquer un calcul spécifique
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+L'attribut ``custom`` permet d'appliquer des modifications à la valeur :
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg":{
+                "aggregation": "avg",
+                "custom": " / 10",
+                "unit": "con"
+            }
+        }
+    }
+
+Le résultat de la commande :
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Metric 'avg' value is '3072.3' | 'avg'=3072.3con;;;;
+    Metric 'avg' value is '3072.3'
+
+--------------------
+Multi-service plugin
+--------------------
+
+Ce mode permet de compiler/aggréger le résultat de plusieurs checks dans un seul. Il peut aussi être utilisé pour réaliser des aggregation dans des groupes logiques, il a été pensé pour récupérer au travers de réseaux bas débit des résultats de contrôle sur des Centreon distants, mais il peut aussi permettre d'éviter de checker deux fois les ressources dans deux Centreon différents.
+
+Format du fichier de configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+    {
+        "mode":"sqlmatching",
+        "selection":{
+            "ESX":{
+                "host_name_filter":"%clus-esx-n%",
+                "service_name_filter":"Esx-Status"
+            },
+            "XIVO":{
+                "host_name_filter":"%xivo%",
+                "service_name_filter":"Ping"
+            }
+        },
+        "counters":{
+            "totalservices":true,
+            "totalhosts":true,
+            "groups":true
+        },
+        "formatting":{
+            "groups_global_msg":"Nothing special on groups",
+            "host_service_separator":"/",
+            "display_details":true
+        }
+    }
+
+* mode (obligatoire) : valeurs possibles: 'sqlmatching' or 'exactmatch'. Liés au format du bloc "selection" ;
+* selection (obligatoire) : Lorsque le mode 'sqlmatching' est choisis, on va alors définir les filtres comme ci-dessus (host/service_name_filter). Au contraire, si l'on utilise le mode "exactmatch", alors on passe des clés valeurs correspondant à la correspondant host/service. (Exemple avec deux aggregation logqies "groups" esx-status/load ci-dessous) 
+
+::
+
+    "selection":{
+        "esx-status":{
+            "esx-n1":"Esx-Status",
+            "esx-n2":"Esx-Status",
+            "esx-n3":"Esx-Status"
+        },
+        "esx-load":{
+            "esx-n1":"Esx-Memory",
+            "esx-n2":"Esx-Memory",
+            "esx-n3":"Esx-Memory",
+            "esx-n1":"Esx-Cpu",
+            "esx-n2":"Esx-Cpu",
+            "esx-n3":"Esx-Cpu"
+        }
+    },
+
+* counters (optionnel) : Contiens trois booléens, à configurer en 'true' ou 'false' selon les compteurs que l'on veut utiliser et considérer (totalservices, totalhosts, groups).
+* formatting (optionnel) : Contiens trois clés/valeurs, 'groups_global_msg' pour définir un statut global lorsque tout va bien, 'host_service_separator' pour choisir le séparateur entre le nom de l'hôte et celui du service dans les éléments de l'output, 'display_details' afin de définir si le plugin doit détailler les hôtes et/ou services en erreur dans l'output étendu (mode verbose)
+
+Ligne de commande, output, seuils
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Exemple de commande :
+
+::
+
+/usr/lib/nagios/plugins/centreon_plugins.pl --plugin database::mysql::plugin --dyn-mode apps::centreon::sql::mode::multiservices --host localhost --username centreon --password c3ntreon --config-file '/root/global-services.json' --verbose
+
+Example de sortie : 
+
+::
+
+    OK: Hosts state summary [up:4][down:2][unreachable:0] - Services state summary [ok:4][warning:0][critical:2][unknown:0] - Nothing special on groups |
+
+Données de performance :
+
+::
+
+'total_host_up'=4;;;0; 'total_host_down'=2;;;0; 'total_host_unreachable'=0;;;0; 'total_host_ok'=4;;;0; 'total_host_warning'=0;;;0; 'total_host_critical'=2;;;0; 'total_host_unknown'=0;;;0; 'host_up_ESX'=4;;;0; 'host_down_ESX'=0;;;0; 'host_unreachable_ESX'=0;;;0; 'service_ok_ESX'=4;;;0; 'service_warning_ESX'=0;;;0; 'service_critical_ESX'=0;;;0; 'service_unknown_ESX'=0;;;0; 'host_up_XIVO'=0;;;0; 'host_down_XIVO'=2;;;0; 'host_unreachable_XIVO'=0;;;0; 'service_ok_XIVO'=0;;;0; 'service_warning_XIVO'=0;;;0; 'service_critical_XIVO'=2;;;0; 'service_unknown_XIVO'=0;;;0;
+
+Mode verbeux (avec l'affichage détaillé d'activé) :
+
+::
+
+    Group 'ESX': HOSTS: [up: 4 (clus-esx-n1.com - clus-esx-n2.com - clus-esx-n3.com - clus-esx-n4.com)][down: 0][unreachable: 0] -      SERVICES: [ok: 4 (clus-esx-n1.com/Esx-Status - clus-esx-n2.com/Esx-Status - clus-esx-n3.com/Esx-Status - clus-esx-n4.com/Esx-Status)][warning: 0][critical: 0][unknown: 0]
+    Group 'XIVO': HOSTS: [up: 0][down: 2 (srvi-xivo-n1 - srvi-xivo-n2)][unreachable: 0] - SERVICES: [ok: 0][warning: 0][critical: 2 (srvi-xivo-n1/Ping - srvi-xivo-n2/Ping)][unknown: 0]
+
+Voici la manière de définir les seuils (total_statut pour les warning/critical-total et définition de l'instance et du décompte du nombre de statut pour les seuils par "groupes logiques") :
+
+::
+
+--critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'

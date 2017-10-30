@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -101,6 +101,8 @@ sub run {
     my %ntp;
     # Need to set following patch: https://rt.cpan.org/Public/Bug/Display.html?id=59607
     eval {
+        local $SIG{__WARN__} = sub { die $_[0] };
+        
         %ntp = Net::NTP::get_ntp_response($ntp_hostname, $self->{option_results}->{ntp_port});
     };
     if ($@) {

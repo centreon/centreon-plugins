@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::vmware_sassataport;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_SASSATAPort');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_SASSATAPort', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking vmware sas/sata ports");
     $self->{components}->{vmware_sassataport} = {name => 'sas/sata ports', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'vmware_sassataport'));
+    return if ($self->check_filter(section => 'vmware_sassataport') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};

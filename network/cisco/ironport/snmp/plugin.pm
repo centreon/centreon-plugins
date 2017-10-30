@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'              => 'network::cisco::ironport::snmp::mode::cpu',
                          'hardware'         => 'network::cisco::ironport::snmp::mode::hardware',
+                         'keys-expire'      => 'network::cisco::ironport::snmp::mode::keysexpire',
                          'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'network::cisco::ironport::snmp::mode::memory',

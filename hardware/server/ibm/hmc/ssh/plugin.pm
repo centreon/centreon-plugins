@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'hardware-errors'      => 'hardware::server::ibm::hmc::ssh::mode::hardwareerrors',
+                         'led-status'           => 'hardware::server::ibm::hmc::ssh::mode::ledstatus',
                          );
 
     return $self;

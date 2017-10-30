@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -69,6 +69,7 @@ sub manage_selection {
                                                   command_options => $self->{option_results}->{command_options});
     while ($stdout =~ /^(\S+)(.*?)(\n\n|\n$)/msg) {
         my ($interface_name, $values) = ($1, $2);
+        $interface_name =~ s/:$//;
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING/ms);
         $states .= 'U' if ($values =~ /UP/ms);

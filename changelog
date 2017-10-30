@@ -1,3 +1,106 @@
+2017-10-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kaminario Rest API
+ * Plugin added: Protocol SSH
+ * Plugin added: Tivoli Storage Manager
+ * Plugin added: Toshiba Storemate
+ * Mode added: [windows] 'pending-reboot'
+ * Mode added: [storeonce] 'nas-usage'
+ * Mode added: [tomcat] 'connector-usage'
+
+2017-09-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Zookeeper JMX
+ * Plugin added: Solr JMX
+ * Plugin added: Automic Workload Automation JMX
+ * Plugin added: Fujitsu Server SNMP
+ * Plugin added: Foxbox Notification
+ * Break: Netasq renamed to Stormshield
+
+2017-08-11 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ruckus AP SNMP
+ * Plugin added: Adva FSP3000 SNMP
+ * Plugin added: Nokia Timos SNMP
+ * Plugin added: Huawei SNMP
+ * Plugin added: Hibernate JMX
+ * Plugin added: Raisecom SNMP
+ * Break: mode change for Pfsense SNMP
+ * Break: mode change for HP MSL SNMP
+ * Break: mode change for Juniper ISG SNMP
+ * Break: mode change for Digi Standard (sarian now) SNMP
+
+2017-07-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Supermicro SNMP
+ * Plugin added: QuadStor VTL Local
+ * Plugin added: Docker Rest API
+ * Mode added: [linux] directlvm-usage	
+ * Mode added: [oracle] rollback-segment-usage
+ * Mode added: [oracle] event-waits-usage
+
+2017-06-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: HP Eva CLI
+ * Plugin added: Acme Packet SNMP
+ * Plugin added: A10 AX SNMP
+ * Plugin added: OpenHeadend SNMP
+ * Plugin added: Zixi Rest API
+ * Plugin added: Various Evertz SNMP
+ * Plugin added: Qsan Nas SNMP
+ * Plugin added: Citrix SDX SNMP
+ * Plugin added: IBM TS2900 SNMP
+ * Plugin added: Fortinet Fortimanager SNMP
+ * Mode added: [pacemaker] clustat
+ * Break: path change for Alcatel Omniswitch SNMP
+
+2017-05-19 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Alteon SNMP
+ * Plugin added: Nutanix SNMP
+ * Plugin added: Citrix Cloudbridge SNMP 
+ * Plugin added: Protocol Modbus
+ * Plugin added: Notification HighSMS
+ * Plugin added: Jmeter Scenario
+ * Plugin added: AppearTV SNMP
+ * Plugin added: QSan NAS SNMP
+ * Mode added: [linux] systemd services
+ * Break: path change for Alcatel Omniswitch
+ 
+2017-03-29 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Watchguard SNMP
+ * Plugin added: Intelligence Interactive SNMP
+ * Plugin added: Oracle Infiniband SNMP
+ * Plugin added: Beeware SNMP
+ * Plugin added: Oracle ZFS Storage ZS SNMP
+ * Plugin added: Safenet Keysecure SNMP
+ * Plugin added: Oracle OTD SNMP
+ * Break: path change for Alteon SNMP
+
+2017-03-10 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Dell FluidFS SNMP
+ * Plugin added: Clamav
+ * Plugin added: Sendmail SNMP
+ * Plugin added: Centreon DSM
+ * Plugin added: Audiocodes SNMP
+ * Mode added: [snmp_standard] 'vrrp-status'
+ * Mode added: [centreon] 'virtualservice'
+ * Break: path change for Netscaler SNMP
+ * Fix: perl connector issue
+
+2017-02-16 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Hyper-v 2012
+ * Plugin added: Avocent ACS 6000 SNMP
+ * Plugin added: Alcatel PSS 1830
+ * Mode added:: [hp lefthand] 'volume-usage'
+ * Mode added:: [checkpoint] 'vpn-status'
+ * Mode added:: [f-5 bigip] 'tmm-usage'
+ * Break: path change for F-5 BigIp
+ * Break: path change for Checkpoint
+
+2017-01-20 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: SAP Hana DB
+ * Plugin added: Efficient IP
+ * Plugin added: IBM TS3500
+ * Plugin added: Sophos Email Security appliance
+ * Mode added: [hmc] 'led-status'
+ * Add a special mode to send SNMP trap
+ * Break: path changed for IBM TS3100 and TS3200
+
 2016-12-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: to check Cisco Meraki Cloud Ctrl SNMP
  * Plugin added: to check Polycom RMX SNMP

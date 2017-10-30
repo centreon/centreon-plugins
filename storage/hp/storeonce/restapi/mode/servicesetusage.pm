@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,7 +54,8 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'status : ' . $self->{result_values}->{health};
+    my $msg = sprintf('status : %s [replication health: %s] [housekeeping health: %s]', 
+        $self->{result_values}->{health}, $self->{result_values}->{replication_health}, $self->{result_values}->{housekeeping_health});
     return $msg;
 }
 
@@ -63,6 +64,7 @@ sub custom_status_calc {
      
     $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
     $self->{result_values}->{housekeeping_health} = $options{new_datas}->{$self->{instance} . '_housekeeping_health'};
+    $self->{result_values}->{replication_health} = $options{new_datas}->{$self->{instance} . '_replication_health'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -140,7 +142,7 @@ sub set_counters {
     
     $self->{maps_counters}->{scs} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'health' }, { name => 'housekeeping_health' }, { name => 'display' } ],
+                key_values => [ { name => 'health' }, { name => 'replication_health' }, { name => 'housekeeping_health' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -235,6 +237,7 @@ sub manage_selection {
                 display => $entry->{properties}->{alias}, 
                 health => $mapping_health_level{$entry->{properties}->{healthLevel}},
                 housekeeping_health => $mapping_health_level{$entry->{properties}->{housekeepingHealthLevel}},
+                replication_health => $mapping_health_level{$entry->{properties}->{repHealthLevel}},
                 total => $entry->{properties}->{capacityBytes}, 
                 used => $entry->{properties}->{capacityBytes} - $entry->{properties}->{freeBytes},
                 dedup => $entry->{properties}->{dedupeRatio} };
@@ -269,12 +272,12 @@ Filter service set name (can be a regexp).
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{health} =~ /warning/).
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{health} =~ /critical/').
-Can used special variables like: %{health}, %{housekeeping_health}, %{display}
+Can used special variables like: %{health}, %{replication_health}, %{housekeeping_health}, %{display}
 
 =item B<--warning-*>
 

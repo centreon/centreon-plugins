@@ -555,6 +555,7 @@ Clone ``centreon-plugins``:
 Copy the common files for all plugins:
 ::
 
+  # find . -name "*.pm" -exec sed -i ' /__END__/d' \{\} \;
   # cp -R --parent centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ ../plugin/lib/
   # cp centreon_plugins.pl ../plugin
   # sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' ../plugin/lib/centreon/plugins/script.pm
@@ -883,3 +884,268 @@ An example for authentification form of ``demo.centreon.com``:
 
   $ perl centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=expected-content --hostname=demo.centreon.com  --method='POST' --post-param='useralias=admin' --post-param='password=centreon'  --cookies-file='/tmp/lwp_cookies.dat' --urlpath='/centreon/index.php' --expected-string='color_UNREACHABLE'
   OK: 'color_UNREACHABLE' is present in content. | 'time'=0.575s;;;0; 'size'=20708B;;;0;
+
+---------------
+Modbus Protocol
+---------------
+
+Check 3 holding registers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The content of the ``modbus.json`` file can be set directly in ``--config`` option (eg. : ``--config='{ "selection": { "metric1":{...'``).
+The ``type`` attribute can have following values:
+
+* holding (default)
+* coils
+* discrete
+* input
+
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    Metric 'metric1' value is '0'
+    Metric 'metric2' value is '41291'
+    Metric 'metric3' value is '42655'
+
+How to change the formatting output ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is a command section to change formatting output globally and also to override for each metrics:
+::
+
+    {
+        "selection":{
+            "metric1":{
+                "address": 1,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric2":{
+                "address": 2,
+                "quantity": 1,
+                "type": "holding",
+                "display": true
+            },
+            "metric3":{
+                "address": 3,
+                "quantity": 1,
+                "type": "holding",
+                "display": true,
+                "formatting": {
+                    "printf_msg": "Override '%s' value is %.2f",
+                    "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+                }
+            }
+        },
+        "formatting": {
+            "printf_msg": "My metric '%s' value is %.2f",
+            "printf_var": "$self->{result_values}->{instance}, $self->{result_values}->{value}"
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: All metrics are OK | 'metric1'=0;;;; 'metric2'=41291;;;; 'metric3'=42655;;;;
+    My Metric 'metric1' value is 0.00
+    My Metric 'metric2' value is 41291.00
+    Override 'metric3' value is 42655.00
+
+How to average 4 registers ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We create following average values: ``[x1 + x2 / 2 = y]`` ``[x3 + x4 / 2 = z]``.
+With the pattern, you can select the metrics. In our case, we get 4 values in one selection. 
+Selected metric names are: ``metrics.0``, ``metrics.1``, ``metrics.2``, ``metrics.3`` (order is preserved).
+
+The ``aggregation`` attribute can have following values:
+
+* avg: returns the average of all the elements.
+* sum: returns the numerical sum of all the elements.
+* min: returns the entry in elements with the lowest numerical value.
+* max: returns the entry in elements with the highest numerical value.
+
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg1":{
+                "pattern": "metrics\\.[01]$",
+                "aggregation": "avg",
+                "unit": "con"
+            },
+            "avg2":{
+                "pattern": "metrics\\.[23]$",
+                "aggregation": "avg",
+                "unit": "con"
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Global metrics are OK | 'avg1'=42192con;;;; 'avg2'=40574con;;;;
+    Metric 'avg1' value is '42192'
+    Metric 'avg2' value is '40574'
+
+Apply a custom calculation
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There is a ``custom`` attribute to applied some change on the value:
+::
+
+    {
+        "selection":{
+            "metrics":{
+                "address": 1,
+                "quantity": 4,
+                "type": "holding",
+                "display": false
+            }
+        },
+        "virtualcurve":{
+            "avg":{
+                "aggregation": "avg",
+                "custom": " / 10",
+                "unit": "con"
+            }
+        }
+    }
+
+The command result:
+::
+
+    $ perl centreon_plugins.pl --plugin=apps/protocols/modbus/plugin.pm --mode=numeric-value --tcp-host=10.0.0.1 --config=modbus.json --verbose
+    OK: Metric 'avg' value is '3072.3' | 'avg'=3072.3con;;;;
+    Metric 'avg' value is '3072.3'
+    
+--------------------
+Multi-service plugin
+--------------------
+
+This mode allow you to concatenate several result of host and/or service check into one check. Can be used to make some aggregation into logical group or gather information from one Centreon to display in another without checking resources twice.
+
+Design of configuration file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+::
+
+    {
+        "mode":"sqlmatching",
+        "selection":{
+            "ESX":{
+                "host_name_filter":"%clus-esx-n%",
+                "service_name_filter":"Esx-Status"
+            },
+            "XIVO":{
+                "host_name_filter":"%xivo%",
+                "service_name_filter":"Ping"
+            }
+        },
+        "counters":{
+            "totalservices":true,
+            "totalhosts":true,
+            "groups":true
+        },
+        "formatting":{
+            "groups_global_msg":"Nothing special on groups",
+            "host_service_separator":"/",
+            "display_details":true
+        }
+    }
+
+* mode (mandatory) : can be 'sqlmatching' or 'exactmatch'. Linked to the layout of "selection" bloc
+* selection (mandatory) : if we use sqlmatching, we define filters like above, if we use exact match, need to pass a key/value pair corresponding to host/service (example below with two "groups" esx-status/load) 
+
+::
+
+    "selection":{
+        "esx-status":{
+            "esx-n1":"Esx-Status",
+            "esx-n2":"Esx-Status",
+            "esx-n3":"Esx-Status"
+        },
+        "esx-load":{
+            "esx-n1":"Esx-Memory",
+            "esx-n2":"Esx-Memory",
+            "esx-n3":"Esx-Memory",
+            "esx-n1":"Esx-Cpu",
+            "esx-n2":"Esx-Cpu",
+            "esx-n3":"Esx-Cpu"
+        }
+    },
+
+* counters (optionnal) : Contains three keys to choose which counters we should use and consider (totalservices, totalhosts, groups)
+* formatting (optionnal) : Contains three keys, 'groups_global_msg' to define a global OK status message, 'host_service_separator' to define separator used between host and service name in output, 'display_details' to config if plugin should display details of host/service name in the verbose output.
+
+Command line, output, threshold ...
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sample command :
+
+::
+
+/usr/lib/nagios/plugins/centreon_plugins.pl --plugin database::mysql::plugin --dyn-mode apps::centreon::sql::mode::multiservices --host localhost --username centreon --password c3ntreon --config-file '/root/global-services.json' --verbose
+
+Sample output : 
+
+::
+
+    OK: Hosts state summary [up:4][down:2][unreachable:0] - Services state summary [ok:4][warning:0][critical:2][unknown:0] - Nothing special on groups |
+
+Perfdatas :
+
+::
+
+'total_host_up'=4;;;0; 'total_host_down'=2;;;0; 'total_host_unreachable'=0;;;0; 'total_host_ok'=4;;;0; 'total_host_warning'=0;;;0; 'total_host_critical'=2;;;0; 'total_host_unknown'=0;;;0; 'host_up_ESX'=4;;;0; 'host_down_ESX'=0;;;0; 'host_unreachable_ESX'=0;;;0; 'service_ok_ESX'=4;;;0; 'service_warning_ESX'=0;;;0; 'service_critical_ESX'=0;;;0; 'service_unknown_ESX'=0;;;0; 'host_up_XIVO'=0;;;0; 'host_down_XIVO'=2;;;0; 'host_unreachable_XIVO'=0;;;0; 'service_ok_XIVO'=0;;;0; 'service_warning_XIVO'=0;;;0; 'service_critical_XIVO'=2;;;0; 'service_unknown_XIVO'=0;;;0;
+
+Verbose mode (with display details set as true) :
+
+::
+
+    Group 'ESX': HOSTS: [up: 4 (clus-esx-n1.com - clus-esx-n2.com - clus-esx-n3.com - clus-esx-n4.com)][down: 0][unreachable: 0] -      SERVICES: [ok: 4 (clus-esx-n1.com/Esx-Status - clus-esx-n2.com/Esx-Status - clus-esx-n3.com/Esx-Status - clus-esx-n4.com/Esx-Status)][warning: 0][critical: 0][unknown: 0]
+    Group 'XIVO': HOSTS: [up: 0][down: 2 (srvi-xivo-n1 - srvi-xivo-n2)][unreachable: 0] - SERVICES: [ok: 0][warning: 0][critical: 2 (srvi-xivo-n1/Ping - srvi-xivo-n2/Ping)][unknown: 0]
+
+Concerning the threshold, you can use some example below :
+
+::
+
+--critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'

@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use POSIX;
 
 sub new {
@@ -36,7 +37,6 @@ sub new {
                                 { 
                                   "warning:s"          => { name => 'warning', },
                                   "critical:s"         => { name => 'critical', },
-                                  "seconds"            => { name => 'seconds', },
                                 });
 
     return $self;
@@ -78,7 +78,7 @@ sub run {
                                       min => 0);
         $self->{output}->output_add(severity => $exit_code,
                                     short_msg => sprintf("PfSense running since : %s",
-                                                 defined($self->{option_results}->{seconds}) ? floor($valueRuntime / 100) . " seconds" : floor($valueRuntime / 86400 / 100) . " days" ));
+                                                         centreon::plugins::misc::change_seconds(value => floor($valueRuntime / 100))));
 
     } else {
         $self->{output}->perfdata_add(label => 'runtime', unit => 's',
@@ -87,7 +87,7 @@ sub run {
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
         $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("PfSense not running."));
+                                    short_msg => 'PfSense not running');
         
     }
     $self->{output}->display();
@@ -111,10 +111,6 @@ Threshold warning in seconds.
 =item B<--critical>
 
 Threshold critical in seconds.
-
-=item B<--seconds>
-
-Display runtime in seconds.
 
 =back
 

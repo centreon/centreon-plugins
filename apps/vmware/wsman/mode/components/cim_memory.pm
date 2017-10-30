@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::cim_memory;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Memory');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Memory', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking cim memories");
     $self->{components}->{cim_memory} = {name => 'memories', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'cim_memory'));
+    return if ($self->check_filter(section => 'cim_memory') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};

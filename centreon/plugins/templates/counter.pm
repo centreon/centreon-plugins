@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -263,7 +263,10 @@ sub run_instances {
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}");
+        # in mode grouped, we don't display 'ok'
+        my $debug = 0;
+        $debug = 1 if ($display_status_lo == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
+        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}", debug => $debug);
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
             next;
@@ -329,6 +332,12 @@ sub run_group {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => "$total_problems problem(s) detected");
         }
+    }
+    
+    if (defined($options{config}->{display_counter_problem})) {
+        $self->{output}->perfdata_add(label => $options{config}->{display_counter_problem}->{label}, unit => $options{config}->{display_counter_problem}->{unit},
+                                      value => $total_problems,
+                                      min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max});
     }
 }
 

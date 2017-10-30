@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Dell Chassis Management Controller (CMC) in SNMP (Dell m1000e).
+Check Dell Chassis Management Controller (CMC) in SNMP (Dell m1000e, VRTX, FX2).
 
 =cut

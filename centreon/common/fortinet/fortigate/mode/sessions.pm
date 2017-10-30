@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -124,7 +124,7 @@ sub run {
                                threshold => [ { label => 'crit60', exit_litteral => 'critical' }, { label => 'warn60', exit_litteral => 'warning' } ]);
     $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3, $exit4 ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Averate session setup rate: %s, %s, %s, %s (1min, 10min, 30min, 60min)", 
+                                short_msg => sprintf("Average session setup rate: %s, %s, %s, %s (1min, 10min, 30min, 60min)", 
                                                       $result->{$oid_fgSysSesRate1}, $result->{$oid_fgSysSesRate10}, 
                                                       $result->{$oid_fgSysSesRate30}, $result->{$oid_fgSysSesRate60}));
             

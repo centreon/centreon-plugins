@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -154,7 +154,8 @@ sub run {
 
         $self->{output}->output_add(long_msg => sprintf("Outlet '%s' state is '%s' [instance: %s, bank : %s, phase : %s, load: %s]", 
                                     $result->{rPDUOutletStatusOutletName}, $result->{rPDUOutletStatusOutletState}, 
-                                    $instance, $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}, $result->{rPDUOutletStatusLoad}));
+                                    $instance, $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}, 
+                                    defined($result->{rPDUOutletStatusLoad}) ? $result->{rPDUOutletStatusLoad} : '-'));
         my $exit = $self->get_severity(section => 'outlet', instance => $instance, value => $result->{rPDUOutletStatusOutletState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -164,6 +165,7 @@ sub run {
         }
         
         if (defined($result->{rPDUOutletStatusLoad}) && $result->{rPDUOutletStatusLoad} =~ /[0-9]/ && $result->{rPDUOutletStatusLoad} != 0) {
+            $result->{rPDUOutletStatusLoad} /= 10;
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDUOutletStatusLoad});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,

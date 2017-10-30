@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,7 +40,8 @@ sub get_assigned_value {
     my (%options) = @_;
     
     if (!defined($options{val}) || $options{val} eq '') {
-        if ($options{pos} + 1 < $options{num_args} && $ARGV[$options{pos} + 1] !~ /^--/) {
+        # Add defined also. Hardened code: already see: $ARGV[6] = undef for example
+        if ($options{pos} + 1 < $options{num_args} && defined($ARGV[$options{pos} + 1]) && $ARGV[$options{pos} + 1] !~ /^--/) {
             my $val = $ARGV[$options{pos} + 1];
             splice @ARGV, $options{pos} + 1, 1;
             return ($options{num_args} - 1, $val);

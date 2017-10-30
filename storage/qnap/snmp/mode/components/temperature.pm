@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,10 +30,9 @@ my $oid_SystemTemperature_entry = '.1.3.6.1.4.1.24681.1.2.6';
 my $oid_SystemTemperature = '.1.3.6.1.4.1.24681.1.2.6.0';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_CPU_Temperature_entry };
-    push @{$options{request}}, { oid => $oid_SystemTemperature_entry };
+    push @{$self->{request}}, { oid => $oid_CPU_Temperature_entry }, { oid => $oid_SystemTemperature_entry };
 }
 
 sub check {
@@ -41,11 +40,11 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     my $cpu_temp = defined($self->{results}->{$oid_CPU_Temperature_entry}->{$oid_CPU_Temperature}) ? 
                            $self->{results}->{$oid_CPU_Temperature_entry}->{$oid_CPU_Temperature} : 'unknown';
-    if ($cpu_temp =~ /([0-9]+)\s*C/ && !$self->check_exclude(section => 'temperature', instance => 'cpu')) {
+    if ($cpu_temp =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("CPU Temperature is '%s' degree centigrade",
@@ -62,7 +61,7 @@ sub check {
     
     my $system_temp = defined($self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature}) ? 
                            $self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature} : 'unknown';
-    if ($system_temp =~ /([0-9]+)\s*C/ && !$self->check_exclude(section => 'temperature', instance => 'system')) {
+    if ($system_temp =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'system')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("System Temperature is '%s' degree centigrade",

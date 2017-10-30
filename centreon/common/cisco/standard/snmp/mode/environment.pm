@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,12 +24,13 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
     
     $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|temperature|voltage|module|physical|sensor)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|sensor)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|sensor.*)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -123,6 +124,9 @@ sub snmp_execute {
     
     push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
+        $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
+    }
     $self->{output}->output_add(long_msg => sprintf("Environment type: %s", 
                                 defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
                                 $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'));

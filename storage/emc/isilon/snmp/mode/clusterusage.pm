@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,7 +147,7 @@ sub set_counters {
                 key_values => [ { name => 'health' } ],
                 output_template => 'Node health: %.2f%%',
                 perfdatas => [
-                    { label => 'health', value => 'health_absolute', template => '%2f',
+                    { label => 'health', value => 'health_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

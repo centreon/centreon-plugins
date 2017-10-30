@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,9 +54,9 @@ sub netdom {
     my $netdom_cmd = 'netdom verify ';
     $netdom_cmd .= ' /Domain:' . $self->{option_results}->{domain} if (defined($self->{option_results}->{domain}) && $self->{option_results}->{domain} ne '');
     if (defined($self->{option_results}->{workstation})) {
-        $netdom_cmd .= ' ' . . $self->{option_results}->{workstation};
+        $netdom_cmd .= ' ' . $self->{option_results}->{workstation};
     } else {
-        $netdom_cmd .= ' ' . . Win32::NodeName();
+        $netdom_cmd .= ' ' . Win32::NodeName();
     }
     
     my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(output => $self->{output},

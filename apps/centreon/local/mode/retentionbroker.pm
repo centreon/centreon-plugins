@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,7 +76,7 @@ sub run {
     my ($self, %options) = @_;
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'centreon-broker failover files and tempory are ok');
+                                short_msg => 'centreon-broker failover/temporary files are ok');
     
     my $total_size = 0;
     foreach my $config (@{$self->{option_results}->{broker_config}}) {
@@ -98,20 +98,20 @@ sub run {
                                         short_msg => "'$config': cannot parse xml");
             next;
         }
-        my %failover_finded = ();
-        my %file_finded = ();
+        my %failover_found = ();
+        my %file_found = ();
         my $temporary;
         foreach my $node ($xml->findnodes('/centreonBroker/output')) {
             my %load = ();
             foreach my $element ($node->getChildrenByTagName('*')) {
                 if ($element->nodeName eq 'failover') {
-                    $failover_finded{$element->textContent} = 1;
+                    $failover_found{$element->textContent} = 1;
                 } elsif ($element->nodeName =~ /^(name|type|path)$/) {
                     $load{$element->nodeName} = $element->textContent;
                 }
             }
             if (defined($load{type}) && $load{type} eq 'file') {
-                $file_finded{$load{name}} = {%load};
+                $file_found{$load{name}} = {%load};
             }
         }
         
@@ -123,16 +123,16 @@ sub run {
         
         # Check failovers
         my $current_total = 0;
-        foreach my $failover (sort keys %failover_finded) {
-            next if (!defined($file_finded{$failover}));
+        foreach my $failover (sort keys %failover_found) {
+            next if (!defined($file_found{$failover}));
             
-            my ($status, $total, $size) = $self->check_directory(config => $config, path => $file_finded{$failover}->{path});
+            my ($status, $total, $size) = $self->check_directory(config => $config, path => $file_found{$failover}->{path});
             next if (!$status);
             
             $current_total += $total;
             $total_size += $size;            
             my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
-            $self->{output}->output_add(long_msg => sprintf("failover '%s': %d file(s) finded (%s)", 
+            $self->{output}->output_add(long_msg => sprintf("failover '%s': %d file(s) found (%s)", 
                                                             $failover, $total, $size_value . ' ' . $size_unit));
         }
         
@@ -149,7 +149,7 @@ sub run {
         my ($status, $total, $size) = $self->check_directory(config => $config, path => $temporary);
         if ($status) {
             my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $size);
-            $self->{output}->output_add(long_msg => sprintf("temporary: %d file(s) finded (%s)", 
+            $self->{output}->output_add(long_msg => sprintf("temporary: %d file(s) found (%s)", 
                                                             $total, $size_value . ' ' . $size_unit));
             if ($total > 0) {
                 $self->{output}->output_add(severity => 'CRITICAL',

@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -52,6 +52,7 @@ sub new {
                   "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
                   "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
                   "subsetleef:s"              => { name => 'subsetleef', default => 50 },
+                  "subsettable:s"             => { name => 'subsettable', default => 100 },
                   "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
                   "snmp-username:s"           => { name => 'snmp_security_name' },
                   "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
@@ -68,11 +69,11 @@ sub new {
     #####
     $self->{session} = undef;
     $self->{output} = $options{output};
-    $self->{maxrepetitions} = undef;
     $self->{snmp_params} = {};
     
     # Dont load MIB
     $SNMP::auto_init_mib = 0;
+    $ENV{MIBS} = '';
     # For snmpv v1 - get request retries when you have "NoSuchName"
     $self->{RetryNoSuch} = 1;
     # Dont try to translate OID (we keep value)
@@ -348,6 +349,7 @@ sub get_multiple_table {
             push @bases, $key;
             
             $current_oids++;
+            last if ($current_oids > $self->{subsettable});
         }
         
         # Nothing more to check. We quit
@@ -358,7 +360,7 @@ sub get_multiple_table {
         if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
             $self->{session}->getnext($vb);
         } else {
-            my $current_repeat_count = floor($repeat_count / (scalar(keys %{$working_oids})));
+            my $current_repeat_count = floor($repeat_count / $current_oids);
             $current_repeat_count = 1 if ($current_repeat_count == 0);
             $self->{session}->getbulk(0, $current_repeat_count, $vb);
         }
@@ -433,7 +435,6 @@ sub get_multiple_table {
     if ($nothing_quit == 1) {
         if ($return_type == 1) {
             $total = scalar(keys %{$results});
-           
         } else {
             foreach (keys %{$results}) {
                 $total += scalar(keys %{$results->{$_}});
@@ -646,6 +647,7 @@ sub check_options {
     $self->{snmp_force_getnext} = $options{option_results}->{snmp_force_getnext};
     $self->{maxrepetitions} = $options{option_results}->{maxrepetitions};
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
+    $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
 
     %{$self->{snmp_params}} = (DestHost => $options{option_results}->{host},

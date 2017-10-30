@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -125,11 +125,11 @@ Minutes to lookback (From you to UTC) default: 65
 
 =item B<--warning-*>
 
-Set warning threshold for number of poor calls. Can be : 'total', 'user'
+Set warning threshold for number of poor calls. Can be : 'global', 'user'
 
 =item B<--critical-*>
 
-Set critical threshold for number of poor calls. Can be : 'total', 'user'
+Set critical threshold for number of poor calls. Can be : 'global', 'user'
 
 =back
 

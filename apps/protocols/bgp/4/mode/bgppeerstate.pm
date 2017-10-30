@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -198,6 +198,11 @@ sub manage_selection {
                                         peerstate => $mapped_value->{bgpPeerState}, remote => $remote_addr,
                                         seconds => $mapped_value->{bgpPeerInUpdateElpasedTime}, as => $mapped_value->{bgpPeerRemoteAs},
                                         display => $instance };
+    }
+
+    if (scalar(keys %{$self->{peers}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No peers detected, check your filter ? ');
+        $self->{output}->option_exit();
     }
 }
 

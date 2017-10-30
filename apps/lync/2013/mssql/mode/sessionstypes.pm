@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -99,6 +99,17 @@ sub set_counters {
                 output_template => 'Video : %d',
                 perfdatas => [
                     { label => 'video', value => 'value_absolute', template => '%d', 
+                      unit => 'sessions', min => 0, label_extra_instance => 0 },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{app_invite} = [
+        { label => 'app-invite', set => {
+                key_values => [ { name => 'value' } ],
+                output_template => 'App Invite : %d',
+                perfdatas => [
+                    { label => 'app_invite', value => 'value_absolute', template => '%d', 
                       unit => 'sessions', min => 0, label_extra_instance => 0 },
                 ],
             }

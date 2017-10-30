@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -110,6 +110,8 @@ sub new {
         });
     }
     
+    $self->{load_components} = (defined($options{no_load_components}) && $options{no_load_components} == 1) ?
+        0 : 1;
     $self->{components} = {};
     $self->{no_components} = undef;
     
@@ -223,7 +225,7 @@ sub load_components {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::$_";
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.");
+                                                   error_msg => "Cannot load module '$mod_name'.") if ($self->{load_components} == 1);
             $self->{loaded} = 1;
             if ($self->{components_exec_load} == 1) {
                 my $func = $mod_name->can('load');

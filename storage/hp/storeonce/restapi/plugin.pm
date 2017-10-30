@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
                          'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
+                         'nas-usage'        => 'storage::hp::storeonce::restapi::mode::nasusage',
                          'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
                          );
 

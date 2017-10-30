@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,6 +41,7 @@ sub new {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
                                   "format:s"                => { name => 'format' },
+                                  "format-custom:s"         => { name => 'format_custom' },
                                   "format-scale"            => { name => 'format_scale' },
                                   "format-scale-type:s"     => { name => 'format_scale_type' },
                                   "perfdata-unit:s"         => { name => 'perfdata_unit' },
@@ -83,7 +84,8 @@ sub add_data {
         $self->{output}->option_exit();
     }
     
-    foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], ['format_scale'],
+    foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], 
+             ['format_custom', ''], ['format_scale'],
              ['perfdata_unit', ''], ['perfdata_name', 'value'],
              ['perfdata_min', ''], ['perfdata_max', '']) {
         if (defined($options{data}->{$_->[0]})) {
@@ -172,6 +174,10 @@ sub check_data {
         }
     }
     
+    if ($options{entry}->{format_custom} ne '') {
+        $value = eval "$value $options{entry}->{format_custom}";
+    }
+    
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
                                                   threshold => [ { label => 'critical-' . $options{num}, exit_litteral => 'critical' }, { label => 'warning-' . $options{num}, exit_litteral => 'warning' } ]);
     if (defined($options{entry}->{format_scale})) {
@@ -254,6 +260,11 @@ Convert counter value on a value per seconds (only with type 'counter').
 =item B<--format>
 
 Output format (Default: 'current value is %s')
+
+=item B<--format-custom>
+
+Apply a custom change on the value 
+(Example to multiply the value: --format-custom='* 8').
 
 =item B<--format-scale>
 

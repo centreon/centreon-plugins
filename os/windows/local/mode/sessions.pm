@@ -1,0 +1,297 @@
+#
+# Copyright 2017 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package os::windows::local::mode::sessions;
+
+use base qw(centreon::plugins::templates::counter);
+
+use strict;
+use warnings;
+use Digest::MD5 qw(md5_hex);
+use XML::Simple;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output',  },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'sessions-created', set => {
+                key_values => [ { name => 'sessions_created', diff => 1 } ],
+                output_template => 'Created : %s',
+                perfdatas => [
+                    { label => 'sessions_created', value => 'sessions_created_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-disconnected', set => {
+                key_values => [ { name => 'sessions_disconnected', diff => 1 } ],
+                output_template => 'Disconnected : %s',
+                perfdatas => [
+                    { label => 'sessions_disconnected', value => 'sessions_disconnected_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-reconnected', set => {
+                key_values => [ { name => 'sessions_reconnected', diff => 1 } ],
+                output_template => 'Reconnected : %s',
+                perfdatas => [
+                    { label => 'sessions_reconnected', value => 'sessions_reconnected_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-active', set => {
+                key_values => [ { name => 'sessions_active' } ],
+                output_template => 'Active : %s',
+                perfdatas => [
+                    { label => 'sessions_active', value => 'sessions_active_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Sessions ";
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    bless $self, $class;
+    
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                {
+                                  "command:s"               => { name => 'command', default => 'qwinsta' },
+                                  "command-path:s"          => { name => 'command_path' },
+                                  "command-options:s"       => { name => 'command_options', default => '/COUNTER' },
+                                  "timeout:s"               => { name => 'timeout', default => 30 },
+                                  "filter-sessionname:s"    => { name => 'filter_sessionname' },
+                                  "config:s"                => { name => 'config' },
+                                  "language:s"              => { name => 'language', default => 'en' },
+                                });
+    
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+    if (defined($self->{option_results}->{config})) {
+        $self->{config_file} = $self->{option_results}->{config};
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Need to specify config file option.");
+        $self->{output}->option_exit();;
+    }
+}
+
+sub read_config {
+    my ($self, %options) = @_;
+    
+    my $content_file = do {
+        local $/ = undef;
+        if (!open my $fh, "<", $self->{option_results}->{config}) {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{config} : $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
+    
+    my $content;
+    eval {
+        $content = XMLin($content_file, ForceArray => ['qwinsta'], KeyAttr => ['language']);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    if (!defined($content->{qwinsta}->{$self->{option_results}->{language}})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find language '$self->{option_results}->{language}' in config file");
+        $self->{output}->option_exit();
+    }
+
+    return $content->{qwinsta}->{$self->{option_results}->{language}};
+}
+
+sub read_qwinsta {
+    my ($self, %options) = @_;
+    
+    $self->{output}->output_add(long_msg => $options{stdout}, debug => 1);
+    if ($options{stdout} !~ /^(.*?)$options{config}->{created}/si) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find information in command output");
+        $self->{output}->option_exit();
+    }
+    my $sessions = $1;
+
+    my @lines = split /\n/, $sessions;
+    my $header = shift @lines;
+
+    my @position_wrap = ();
+    while ($header =~ /(\s+(\S+))/g) {
+        push @position_wrap, { begin => $-[1], word_begin => $-[2], end => $+[1], label => $2 };
+    }
+    my $session_data = [];
+    foreach my $line (@lines) {
+        my $data = {};
+        for (my $pos = 0; $pos <= $#position_wrap; $pos++) {
+            my $area;
+            
+            if (length($line) < $position_wrap[$pos]->{begin}) {
+                $area = '';
+            } else {
+                if ($pos + 1 <= $#position_wrap) {
+                    $area = substr($line, $position_wrap[$pos]->{begin}, ($position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin}) + ($position_wrap[$pos + 1]->{word_begin} - $position_wrap[$pos]->{end}));
+                } else {
+                    $area = substr($line, $position_wrap[$pos]->{begin});
+                }
+            }
+            
+            $data->{$position_wrap[$pos]->{label}} = '-';
+            while ($area =~ /([^\s]+)/g) {
+                if (($-[1] >= $position_wrap[$pos]->{word_begin} - $position_wrap[$pos]->{begin} && $-[1] <= $position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin}) 
+                    ||
+                    ($+[1] >= $position_wrap[$pos]->{word_begin} - $position_wrap[$pos]->{begin} && $+[1] <= $position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin})) {
+                    $data->{$position_wrap[$pos]->{label}} = $1;
+                    last;
+                }
+            }
+        }
+        push @$session_data, $data;
+    }
+    
+    return $session_data;
+}
+
+sub read_qwinsta_counters {
+    my ($self, %options) = @_;
+
+    my $counters = {};
+    $counters->{sessions_created} = $1
+        if ($options{stdout} =~ /$options{config}->{created}.*?(\d+)/si);
+    $counters->{sessions_disconnected} = $1
+        if ($options{stdout} =~ /$options{config}->{disconnected}.*?(\d+)/si);
+    $counters->{sessions_reconnected} = $1
+        if ($options{stdout} =~ /$options{config}->{reconnected}.*?(\d+)/si);
+    
+    return $counters;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $config = $self->read_config();
+    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    command => $self->{option_results}->{command},
+                                                    command_path => $self->{option_results}->{command_path},
+                                                    command_options => $self->{option_results}->{command_options});
+    
+    my $datas = $self->read_qwinsta(stdout => $stdout, config => $config);
+    my $counters = $self->read_qwinsta_counters(stdout => $stdout, config => $config);
+
+    my $active = 0;
+    foreach my $session (@$datas) {
+        if (defined($self->{option_results}->{filter_sessionname}) && $self->{option_results}->{filter_sessionname} ne '' &&
+            $session->{$config->{header_sessionname}} !~ /$self->{option_results}->{filter_sessionname}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $session->{$config->{header_sessionname}} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
+        my $matching = 0;
+        foreach my $label (keys %$session) {
+            $matching = 1 if ($label =~ /$config->{header_state}/ && 
+                $session->{$label} =~ /$config->{activestate}/);            
+        }
+        
+        if ($matching == 1) {
+            $active++;
+            my $output = '';
+            $output .= " [$_ => $session->{$_}]" for (sort keys %$session);
+            $self->{output}->output_add(long_msg => $output);
+        }
+    }
+
+    $self->{global} = { %$counters, sessions_active => $active };
+
+    $self->{cache_name} = "windows_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+}
+
+1;
+
+__END__
+
+=head1 MODE
+
+Check sessions.
+
+=over 8
+
+=item B<--config>
+
+command can be localized by using a configuration file.
+This parameter can be used to specify an alternative location for the configuration file
+
+=item B<--language>
+
+Set the language used in config file (default: 'en').
+
+=item B<--command>
+
+Command to get information (Default: 'qwinsta').
+Can be changed if you have output in a file.
+
+=item B<--command-path>
+
+Command path (Default: none).
+
+=item B<--command-options>
+
+Command options (Default: '/COUNTER').
+
+=item B<--timeout>
+
+Timeout in seconds for the command (Default: 30).
+
+=item B<--filter-sessionname>
+
+Filter session name (can be a regexp).
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'inactive', 'active'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'inactive', 'active', 'time' (in seconds since the session starts).
+
+=back
+
+=cut

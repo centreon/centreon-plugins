@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,6 +37,7 @@ sub new {
                          'hardware'             => 'centreon::common::fortinet::fortigate::mode::hardware',
                          'interfaces'           => 'snmp_standard::mode::interfaces', 
                          'ips-stats'            => 'centreon::common::fortinet::fortigate::mode::ipsstats',
+                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'list-virtualdomains'  => 'centreon::common::fortinet::fortigate::mode::listvirtualdomains',
                          'memory'               => 'centreon::common::fortinet::fortigate::mode::memory',
                          'sessions'             => 'centreon::common::fortinet::fortigate::mode::sessions',

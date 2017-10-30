@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -209,7 +209,9 @@ sub manage_selection {
 
     $self->{snmp} = $options{snmp};
     $self->{cache_name} = "fortigate_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_vpn}) ? md5_hex($self->{option_results}->{filter_vpn}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_vdomain}) ? md5_hex($self->{option_results}->{filter_vdomain}) : md5_hex('all'));
 
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_fgVdEntName },

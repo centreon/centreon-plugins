@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package apps::vmware::connector::custom::connector;
 use strict;
 use warnings;
 use JSON;
-use ZMQ::LibZMQ3;
+use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use UUID;
 

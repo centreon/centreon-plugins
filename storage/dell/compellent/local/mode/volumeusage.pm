@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -223,7 +223,8 @@ sub manage_selection {
                                                                             cem_port => $self->{option_results}->{cem_port},
                                                                             sdk_path_dll => $self->{option_results}->{sdk_path_dll},
                                                                             no_ps => $self->{option_results}->{no_ps},
-                                                                            filter_sc => $self->{option_results}->{ps_sc_filter});
+                                                                            filter_sc => $self->{option_results}->{ps_sc_filter},
+                                                                            filter_vol => $self->{option_results}->{ps_sc_volume});
     
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},

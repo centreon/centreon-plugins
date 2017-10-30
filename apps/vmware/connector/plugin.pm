@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,6 +47,7 @@ sub new {
                          'getmap'               => 'apps::vmware::connector::mode::getmap',
                          'health-host'          => 'apps::vmware::connector::mode::healthhost',
                          'limit-vm'             => 'apps::vmware::connector::mode::limitvm',
+                         'list-clusters'        => 'apps::vmware::connector::mode::listclusters',
                          'list-datacenters'     => 'apps::vmware::connector::mode::listdatacenters',
                          'list-datastores'      => 'apps::vmware::connector::mode::listdatastores',
                          'list-nichost'         => 'apps::vmware::connector::mode::listnichost',

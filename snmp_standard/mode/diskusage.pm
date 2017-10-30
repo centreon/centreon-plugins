@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -302,7 +302,7 @@ Allows to use regexp non case-sensitive (with --regexp).
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading cache file (default: 180).
+Time in minutes before reloading cache file (default: 180).
 
 =item B<--display-transform-src>
 

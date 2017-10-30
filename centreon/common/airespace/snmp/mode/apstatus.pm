@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,6 +108,24 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'total-enabled', set => {
+                key_values => [ { name => 'enable' } ],
+                output_template => 'Total ap enabled : %s',
+                perfdatas => [
+                    { label => 'total_enabled', value => 'enable_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-disabled', set => {
+                key_values => [ { name => 'disable' } ],
+                output_template => 'Total ap disabled : %s',
+                perfdatas => [
+                    { label => 'total_disabled', value => 'disable_absolute', template => '%s', 
+                      min => 0 },
+                ],
+            }
+        },
     ];
     
     $self->{maps_counters}->{ap} = [
@@ -192,14 +210,15 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{ap} = {};
-    $self->{global} = { total => 0, associated => 0, disassociating => 0, downloading => 0 };
+    $self->{global} = { total => 0, associated => 0, disassociating => 0, downloading => 0, enable => 0, disable => 0 };
     $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
                                                                    { oid => $mapping->{bsnAPName}->{oid} },
                                                                    { oid => $mapping2->{bsnAPOperationStatus}->{oid} },
                                                                    { oid => $mapping3->{bsnAPAdminStatus}->{oid} },
                                                                  ],
                                                          nothing_quit => 1);
-    $self->{output}->output_add(long_msg => "Model: " . $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'});
+    $self->{output}->output_add(long_msg => "Model: " . 
+        (defined($self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'}) ? $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'));
     foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnAPName}->{oid} }}) {
         $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
         my $instance = $1;
@@ -214,6 +233,7 @@ sub manage_selection {
         
         $self->{global}->{total}++;
         $self->{global}->{$result2->{bsnAPOperationStatus}}++;
+        $self->{global}->{$result3->{bsnAPAdminStatus}}++;
         
         $self->{ap}->{$instance} = { display => $result->{bsnAPName}, 
                                      opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
@@ -256,12 +276,12 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total', 'total-associated', 'total-disassociating'.
+Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled', 'total-disabled'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total', 'total-associated', 'total-disassociating'.
+Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled', 'total-disabled'.
 
 =back
 

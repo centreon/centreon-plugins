@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,6 +35,7 @@ sub new {
                          'cpu-detailed'     => 'os::linux::local::mode::cpudetailed',
                          'cmd-return'       => 'os::linux::local::mode::cmdreturn',
                          'connections'      => 'os::linux::local::mode::connections',
+                         'directlvm-usage'  => 'os::linux::local::mode::directlvmusage',
                          'diskio'           => 'os::linux::local::mode::diskio',
                          'files-size'       => 'os::linux::local::mode::filessize',
                          'files-date'       => 'os::linux::local::mode::filesdate',
@@ -47,10 +48,12 @@ sub new {
                          'packet-errors'    => 'os::linux::local::mode::packeterrors',
                          'paging'           => 'os::linux::local::mode::paging',
                          'process'          => 'os::linux::local::mode::process',
+                         'quota'            => 'os::linux::local::mode::quota',
                          'storage'          => 'os::linux::local::mode::storage',
                          'swap'             => 'os::linux::local::mode::swap',
-                         'traffic'          => 'os::linux::local::mode::traffic',
-                         'uptime'           => 'os::linux::local::mode::uptime',
+                         'systemd-sc-status'    => 'os::linux::local::mode::systemdscstatus',
+                         'traffic'              => 'os::linux::local::mode::traffic',
+                         'uptime'               => 'os::linux::local::mode::uptime',
                          );
 
     return $self;
