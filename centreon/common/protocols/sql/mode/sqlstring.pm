@@ -17,13 +17,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#FIXME: correct handling of multi-rows queries
 
 package centreon::common::protocols::sql::mode::sqlstring;
 
-use base qw(centreon::plugins::mode);
-
+use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
+
+my $instance_mode;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,9 +35,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "sql-statement:s"   		=> { name => 'sql_statement', },
-                                  "format:s"                => { name => 'format', default => 'SQL statement result : "%s".'},
-                                  "format-field:s"          => { name => 'format_field', default => '%{result_string}'},
+                                  "sql-statement:s"         => { name => 'sql_statement', },
+                                  "format-prefix:s"         => { name => 'format_prefix', default => 'SQL statement result: '},
+                                  "format-suffix:s"         => { name => 'format_suffix', default => ' '},
                                   "warning-status:s"        => { name => 'warning_status', },
                                   "critical-status:s"       => { name => 'critical_status', },
                                   "unknown-status:s"        => { name => 'unknown_status', },
@@ -43,79 +45,99 @@ sub new {
     return $self;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'rows', type => 1, cb_prefix_output => 'custom_prefix_output', cb_suffix_output => 'custom_suffix_output', message_multiple => 'All rows are ok' },
+    ];
+
+    $self->{maps_counters}->{rows} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'string' }, { name => 'key' } ],
+                output_template => '%s',
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                 perfdatas => [ ]
+            }
+        },
+    ];
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+    $self->{sql} = $options{sql};
+    $self->{sql}->connect();
+    $self->{sql}->query(query => $self->{option_results}->{sql_statement});
+    $self->{rows} = {};
+    my $row = '';
+    my $rownum = 1;
+    while ($row = $self->{sql}->fetchrow_hashref()) {
+        # preparing a 'key' column to handle multi-rows
+        if (defined($row->{key}) && $row->{key} ne '' ) {
+            $self->{rows}->{$row->{key}.'.'.$row->{value}} = { key => $row->{key}, string => $row->{value} };
+        } else {
+            $self->{rows}->{'string'.$rownum.'.'.$row->{value}} = { key => 'string'.$rownum, string => $row->{value} };
+        }
+        $rownum++;
+    }
+}
+
+sub custom_prefix_output {
+    my ($self, %options) = @_;
+    if (defined($instance_mode->{option_results}->{format_prefix})) {
+        return $instance_mode->{option_results}->{format_prefix};
+    }
+    return "Status string: ";
+}
+
+sub custom_suffix_output {
+    my ($self, %options) = @_;
+    if (defined($instance_mode->{option_results}->{format_suffix})) {
+        return $instance_mode->{option_results}->{format_suffix};
+    }
+    return " ";
+}
+
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $self->{output}->option_exit();
+    #$self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+    $instance_mode = $self;
+    if (!defined($instance_mode->{option_results}->{sql_statement}) || $instance_mode->{option_results}->{sql_statement} eq '') {
+        $instance_mode->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
+        $instance_mode->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{format}) || $self->{option_results}->{format} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify '--format' option.");
-        $self->{output}->option_exit();
-    }
-    $self->change_macros();
+    $instance_mode->change_macros();
 }
 
 sub change_macros {
     my ($self, %options) = @_;
-    foreach (('warning_status', 'critical_status', 'unknown_status', 'format_field')) {
+    foreach (('warning_status', 'critical_status', 'unknown_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$value->{$1}/g;
         }
     }
 }
 
-sub run {
+sub custom_status_threshold {
     my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
-    $self->{sql}->query(query => $self->{option_results}->{sql_statement});
-	my $exit_code;
-	my @critical_strings;
-	my @warning_strings;
-	my @unknown_strings;
-	my @ok_strings;
-	my $nb_rows;
-	
-    while (my $value = $self->{sql}->fetchrow_hashref()) {
-		if (defined($self->{option_results}->{critical_status}) && $self->{option_results}->{critical_status} ne '' && eval "$self->{option_results}->{critical_status}" ) {
-			push(@critical_strings, eval $self->{option_results}->{format_field});
-    	} elsif (defined($self->{option_results}->{warning_status}) && $self->{option_results}->{warning_status} ne '' && eval "$self->{option_results}->{warning_status}" ) {
-			push(@warning_strings, eval $self->{option_results}->{format_field});
-    	} elsif (defined($self->{option_results}->{unknown_status}) && $self->{option_results}->{unknown_status} ne '' && eval "$self->{option_results}->{unknown_status}" ) {
-			push(@unknown_strings, eval $self->{option_results}->{format_field});
-    	} else {
-			push(@ok_strings, eval $self->{option_results}->{format_field});
-		}
-	}
-	$nb_rows = @critical_strings + @warning_strings + @unknown_strings + @ok_strings;
-	if ( @critical_strings > 0) {
-    	$exit_code= 'critical';
-		my $output_str = (scalar @critical_strings > 1)?"(".scalar @critical_strings." rows) ":"";
-		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @critical_strings));
-        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
-	}
-	if ( @warning_strings > 0) {
-    	$exit_code = 'warning';
-		my $output_str = (scalar @warning_strings > 1)?"(".scalar @warning_strings." rows) ":"";
-		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @warning_strings));
-        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
-	}
-	if ( @unknown_strings > 0) {
-    	$exit_code = 'unknown';
-		my $output_str = (scalar @unknown_strings > 1)?"(".scalar @unknown_strings." rows) ":"";
-		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @unknown_strings));
-        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
-	}
-	if ( @critical_strings + @warning_strings + @unknown_strings == 0 && @ok_strings > 0 ) {
-		$exit_code = 'ok';
-		my $output_str = (scalar @ok_strings > 1)?"(".scalar @ok_strings." rows) ":"";
-		$output_str .= sprintf($self->{option_results}->{format}, join(", ", @ok_strings));
-        $self->{output}->output_add(severity => $exit_code, short_msg => $output_str);
-	}
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $status = 'ok';
+    for my $value (values %{$instance_mode->{rows}}) {
+        if (defined($instance_mode->{option_results}->{critical_status}) &&
+                $instance_mode->{option_results}->{critical_status} ne '' && 
+                eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) &&
+                $instance_mode->{option_results}->{warning_status} ne '' &&
+                eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        } elsif (defined($instance_mode->{option_results}->{unknown_status}) &&
+                $instance_mode->{option_results}->{unknown_status} ne '' &&
+                eval "$instance_mode->{option_results}->{unknown_status}" ) {
+            $status = 'unknown';
+        }
+    }
+    return $status;
 }
 
 1;
@@ -131,7 +153,7 @@ Check SQL statement providing a string.
 =item B<--sql-statement>
 
 SQL statement that returns a string. 
-NOTICE: Unless you define --format-field otherwise, you need to write your query beginning with 'SELECT <field> AS result_string' (ie. at least one output column must be named 'result_string') for this plugin to work properly.
+NOTICE: You need to write your query beginning with 'SELECT <field> AS value' (ie. at least one output column must be named 'value') for this plugin to work properly.
 If you need to assess a numeric value, please refer to sql mode.
 
 =item B<--unknown-status>
@@ -155,17 +177,17 @@ Can use special variables like: %{result_string} or any %{column_name} from the 
 
 Example: '%{result_string} =~ /crit/i'
 
-=item B<--format>
+=item B<--format-prefix>
 
-Output format (printf syntax).
+Output prefix.
 
 Default: 'SQL statement result : "%s".'
 
-=item B<--format-field>
+=item B<--format-suffix>
 
-Output field(s) the --format argument refers to (printf arguments #2, #3, ...).
+Output suffix.
 
-Default: '%{result_string}'
+Default: ' '
 
 =back
 
