@@ -375,15 +375,17 @@ sub manage_selection {
             traffic_usage => $traffic_usage * 8, drop_usage => $drop_usage * 8, total => $total
         };
         
-        if ($name =~ /:child:/){
-            $class_name = 'child-'.$class_name;
+        if (defined($qos_data->{queueing})){
+            my $name_spolicy = $name;
+            $name_spolicy =~ s/^.*:([^:]+):[^:]+$/$1/;
+            $class_name = $name_spolicy.'-'.$class_name;
         }
         
         $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
         $self->{classmap}->{$name}->{traffic_usage} += $traffic_usage * 8;
         $self->{classmap}->{$name}->{drop_usage} += $drop_usage * 8;
         
-        if ($name !~ /:child:/){
+        if (!defined($qos_data->{queueing})){
             $self->{total}->{traffic_usage} += $traffic_usage * 8;
             $self->{total}->{drop_usage} += $drop_usage * 8;
         }
