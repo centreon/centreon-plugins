@@ -184,21 +184,25 @@ __END__
 
 =head1 MODE
 
-Check Oracle rollback segment usage.
+Check Oracle UNDO tablespaces
 
 =over 8
 
-=item B<--warning-*>
+=item B<--units>
+
+Unit of threshold (Can be : '%' (default) or 'B')
+
+=item B<--free>
+
+Threshold are on free space left
+
+=item B<--warning-usage>
 
 Threshold warning.
-Can be: 'header-contention', 'block-contention', 'hit-ratio',
-'extends', 'wraps'.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
 Threshold critical.
-Can be: 'header-contention', 'block-contention', 'hit-ratio',
-'extends', 'wraps'.
 
 =back
 
