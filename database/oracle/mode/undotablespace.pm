@@ -140,38 +140,36 @@ sub manage_selection {
     $self->{sql}->connect();
 
     my $query = q{
-WITH
-  UND as
-  (
-  SELECT
-      a.tablespace_name,
-      nvl(sum(bytes),0)  used_bytes
-  FROM
-      dba_undo_extents a
-  WHERE
-   tablespace_name in (select upper(value) from gv$parameter where name='undo_tablespace')
-and status in ('ACTIVE','UNEXPIRED')
+                WITH
+                UND as
+                (
+                SELECT
+                    a.tablespace_name,
+                    nvl(sum(bytes),0)  used_bytes
+                FROM
+                    dba_undo_extents a
+                WHERE
+                    tablespace_name in (select upper(value) from gv$parameter where name='undo_tablespace') and status in ('ACTIVE','UNEXPIRED')
 group by a.tablespace_name
-),
-  DF as
-  (
-  SELECT
-      b.tablespace_name,
-      round(SUM(decode(B.maxbytes, 0, B.BYTES/(1024*1024), B.maxbytes))) total_bytes
-from
-      dba_data_files b
-where
-     tablespace_name in (select upper(value) from gv$parameter where name='undo_tablespace')
-group by b.tablespace_name
-)
-SELECT    UND.tablespace_name,
-          UND.used_bytes,
-          DF.total_bytes
-from UND left outer join
-     DF
-     on (UND.tablespace_name=DF.tablespace_name)
-     order by DF.tablespace_name
-         };
+                ),
+                DF as
+                (
+                SELECT
+                    b.tablespace_name,
+                    round(SUM(decode(B.maxbytes, 0, B.BYTES/(1024*1024), B.maxbytes))) total_bytes
+                FROM
+                    dba_data_files b
+                WHERE
+                    tablespace_name in (select upper(value) from gv$parameter where name='undo_tablespace') group by b.tablespace_name
+                )
+                SELECT
+                    UND.tablespace_name,
+                    UND.used_bytes,
+                    DF.total_bytes
+                FROM UND left outer join DF
+                    on (UND.tablespace_name=DF.tablespace_name)
+                    order by DF.tablespace_name
+                };
 
     $self->{sql}->query(query => $query);
 
