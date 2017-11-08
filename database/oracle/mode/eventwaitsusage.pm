@@ -169,16 +169,18 @@ sub manage_selection {
                                  a.event EVENT,
                                  round(a.WAIT_TIME_MICRO/1000000,0) SEC_WAIT,
                                  d.sql_text SQL_TEXT
-                                FROM
+                             FROM
                                  v\$session a,
                                  v\$sqlstats d
-                                WHERE
+                             WHERE
                                  a.sql_id = d.sql_id
                                  and a.status='ACTIVE'
                                  and a.wait_class <> 'Idle'
                                  and WAIT_TIME_MICRO>" . $self->{option_results}->{wait_time_min} . "
                                  and a.sid not in (SELECT SID FROM V\$SESSION WHERE audsid = userenv('SESSIONID'))
-                                ORDER BY a.WAIT_TIME_MICRO desc";
+                             ORDER BY
+                                a.WAIT_TIME_MICRO desc";
+                                
         $self->{sql}->query(query => $query_details );
         while (my $result = $self->{sql}->fetchrow_hashref()) {
             $self->{output}->output_add(long_msg => sprintf("Username: '%s', Program: '%s' Event: '%s', Second wait: '%s's, Details: '%s'\n",
@@ -210,16 +212,24 @@ Check Oracle event wait usage.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-waits-sec', 'total-waits-time'.
+Can be: 'total-waits-sec', 'total-waits-time', 'count'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-waits-sec', 'total-waits-time'.
+Can be: 'total-waits-sec', 'total-waits-time', 'count'.
 
 =item B<--filter-name>
 
 Filter by event name. Can be a regex.
+
+=item B<--wait-time-min>
+
+Time in ms above which we count an event as waiting
+
+=item B<--show-details>
+
+Print details of waiting events (user, query, ...) in long output
 
 =back
 
