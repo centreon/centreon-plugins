@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'rdp-sessions' => 'os::windows::local::mode::rdpsessions',
-                         'time'         => 'os::windows::local::mode::ntp',
+                         'pending-reboot'   => 'os::windows::local::mode::pendingreboot',
+                         'sessions'         => 'os::windows::local::mode::sessions',
+                         'time'             => 'os::windows::local::mode::ntp',
                          );
 
     return $self;

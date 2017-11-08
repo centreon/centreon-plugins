@@ -127,9 +127,9 @@ Threshold warning (number of long queries).
 
 Threshold critical (number of long queries).
 
-=item B<--critical>
+=item B<--seconds>
 
-Threshold critical (number of long queries).
+Filter queries over X seconds (Default: 60).
 
 =item B<--filter-user>
 

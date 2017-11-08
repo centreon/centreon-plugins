@@ -59,20 +59,15 @@ sub new {
 
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -88,8 +83,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
@@ -130,18 +123,15 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-#my $xml = XMLin($biggest_reponse, ForceArray => 1);
-
 sub get {
     my ($self, %options) = @_;
 
     $self->settings();
-
     my $response = $self->{http}->request(url_path => '/storeonceservices' . $options{path},
                                           critical_status => '', warning_status => '');
     my $content;
     eval {
-        $content = XMLin($response, ForceArray => $options{ForceArray});
+        $content = XMLin($response, ForceArray => $options{ForceArray}, KeyAttr => []);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");

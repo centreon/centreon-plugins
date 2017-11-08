@@ -20,10 +20,83 @@
 
 package network::riverbed::steelhead::snmp::mode::connections;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_connection_output' }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'totalConnections' } ],
+                output_template => 'total %s',
+                perfdatas => [
+                    { label => 'total', value => 'totalConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'established', set => {
+                key_values => [ { name => 'establishedConnections' } ],
+                output_template => 'established %s',
+                perfdatas => [
+                    { label => 'established', value => 'establishedConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'active', set => {
+                key_values => [ { name => 'activeConnections' } ],
+                output_template => 'active %s',
+                perfdatas => [
+                    { label => 'active', value => 'activeConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'optimized', set => {
+                key_values => [ { name => 'optimizedConnections' } ],
+                output_template => 'optimized %s',
+                perfdatas => [
+                    { label => 'optimized', value => 'optimizedConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'passthrough', set => {
+                key_values => [ { name => 'passthroughConnections' } ],
+                output_template => 'passthrough %s',
+                perfdatas => [
+                    { label => 'passthrough', value => 'passthroughConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+         { label => 'half-opened', set => {
+                key_values => [ { name => 'halfOpenedConnections' } ],
+                output_template => 'half opened %s',
+                perfdatas => [
+                    { label => 'half_opened', value => 'halfOpenedConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+         { label => 'half-closed', set => {
+                key_values => [ { name => 'halfClosedConnections' } ],
+                output_template => 'half closed %s',
+                perfdatas => [
+                    { label => 'half_closed', value => 'halfClosedConnections_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_connection_output {
+    my ($self, %options) = @_;
+    
+    return "Connections: ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,87 +106,31 @@ sub new {
     $self->{version} = '0.1';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
                                 });
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
+    my $oids = {
+        optimizedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.1.0',
+        passthroughConnections => '.1.3.6.1.4.1.17163.1.1.5.2.2.0',
+        halfOpenedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.3.0',
+        halfClosedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.4.0',
+        establishedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.5.0',
+        activeConnections => '.1.3.6.1.4.1.17163.1.1.5.2.6.0',
+        totalConnections => '.1.3.6.1.4.1.17163.1.1.5.2.7.0',
+    };
+
+    my $snmp_result = $options{snmp}->get_leef(oids => [
+            values %$oids
+        ], nothing_quit => 1);
+
+    $self->{global} = {};
+    foreach (keys %$oids) {
+        $self->{global}->{$_} = $snmp_result->{$oids->{$_}};
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    my $oid_optimizedConnections = '.1.3.6.1.4.1.17163.1.1.5.2.1.0';
-    my $oid_passthroughConnections = '.1.3.6.1.4.1.17163.1.1.5.2.2.0';
-    my $oid_halfOpenedConnections = '.1.3.6.1.4.1.17163.1.1.5.2.3.0';
-    my $oid_halfClosedConnections = '.1.3.6.1.4.1.17163.1.1.5.2.4.0';
-    my $oid_establishedConnections = '.1.3.6.1.4.1.17163.1.1.5.2.5.0';
-    my $oid_activeConnections = '.1.3.6.1.4.1.17163.1.1.5.2.6.0';
-    my $oid_totalConnections = '.1.3.6.1.4.1.17163.1.1.5.2.7.0';
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_optimizedConnections, $oid_passthroughConnections, $oid_halfOpenedConnections, $oid_halfClosedConnections,
-                                                  $oid_establishedConnections, $oid_activeConnections, $oid_totalConnections, ], nothing_quit => 1);
-    my $optimized = $result->{$oid_optimizedConnections};
-    my $passthrough = $result->{$oid_passthroughConnections};
-    my $halfOpened = $result->{$oid_halfOpenedConnections};
-    my $halfClosed = $result->{$oid_halfClosedConnections};
-    my $established = $result->{$oid_establishedConnections};
-    my $active = $result->{$oid_activeConnections};
-    my $total = $result->{$oid_totalConnections};
-
-    my $exit = $self->{perfdata}->threshold_check(value => $total, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Connections: total %d, established %d, active %d, optimized %d, passthrough %d, half opened %d, half closed %d ",
-                                                     $total, $established, $active, $optimized, $passthrough, $halfOpened, $halfClosed));
-
-    $self->{output}->perfdata_add(label => "total",
-                                  value => $total,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "established",
-                                  value => $established,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "active",
-                                  value => $active,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "optimized",
-                                  value => $optimized,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "passthrough",
-                                  value => $passthrough,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "half opened",
-                                  value => $halfOpened,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "half closed",
-                                  value => $halfClosed,
-                                  min => 0
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -126,13 +143,22 @@ Current connections: total, established, active, optimized, passthrough, half op
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning for total connections.
+Only display some counters (regexp can be used).
+Example: --filter-counters='^(total)$'
 
-=item B<--critical>
+=item B<--warning-*>
 
-Threshold critical for total connections.
+Threshold warning.
+Can be: 'total', 'established', 'active', 'optimized',
+'passthrough', 'half-opened', 'half-closed'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'total', 'established', 'active', 'optimized',
+'passthrough', 'half-opened', 'half-closed'.
 
 =back
 

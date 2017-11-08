@@ -28,23 +28,31 @@ my %map_states_disk = (
     0 => 'online',
     1 => 'missing',
     2 => 'not_compatible',
-    3 => 'failed',
+    3 => 'disc_failed',
     4 => 'initializing',
     5 => 'offline_requested',
     6 => 'failed_requested',
+    7 => 'unconfigured_good_spun_up',
+    8 => 'unconfigured_good_spun_down',
+    9 => 'unconfigured_bad',
+    10 => 'hotspare',
+    11 => 'drive_offline',
+    12 => 'rebuild',
+    13 => 'failed',
+    14 => 'copyback',
     255 => 'other_offline',
 );
 
 my $mapping = {
     raidDiskProductID => { oid => '.1.3.6.1.4.1.2620.1.6.7.7.2.1.6' },
-    raidDiskSyncState => { oid => '.1.3.6.1.4.1.2620.1.6.7.7.2.1.11', map => \%map_states_disk },
+    raidDiskState => { oid => '.1.3.6.1.4.1.2620.1.6.7.7.2.1.9', map => \%map_states_disk },
 };
 
 sub load {
     my ($self) = @_;
     
     push @{$self->{request}}, { oid => $mapping->{raidDiskProductID}->{oid} }, 
-        { oid => $mapping->{raidDiskSyncState}->{oid} };
+        { oid => $mapping->{raidDiskState}->{oid} };
 }
 
 sub check {
@@ -57,19 +65,20 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{raidDiskProductID}->{oid}}})) {
         $oid =~ /^$mapping->{raidDiskProductID}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{raidDiskSyncState}->{oid}}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results =>
+												$self->{results}->{$mapping->{raidDiskState}->{oid}}, instance => $instance);
     
         next if ($self->check_filter(section => 'raiddisk', instance => $instance));
 
         my $name = centreon::plugins::misc::trim($self->{results}->{$mapping->{raidDiskProductID}->{oid}}->{$oid});
         $self->{components}->{raiddisk}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("raid disk '%s' status is '%s'",
-                                    $name, $result->{raidDiskSyncState}));
-        my $exit = $self->get_severity(section => 'raiddisk', value => $result->{raidDiskSyncState});
+                                    $name, $result->{raidDiskState}));
+        my $exit = $self->get_severity(section => 'raiddisk', value => $result->{raidDiskState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Raid disk '%s' status is '%s'", 
-                                            $name, $result->{raidDiskSyncState}));
+                                            $name, $result->{raidDiskState}));
         }
     }
 }

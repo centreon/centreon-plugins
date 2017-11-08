@@ -292,7 +292,8 @@ sub list_attributes {
                         $v =~ s/^\s*//;
                         print " = " . $v;
                     } else {
-                        if (my $scal = JMX::Jmx4Perl::Util->dump_scalar($val)) {
+                        my $scal = JMX::Jmx4Perl::Util->dump_scalar($val);
+                        if (defined($scal)) {
                             print " = " . $scal . "\n";
                         } else {
                             print " = undef\n";

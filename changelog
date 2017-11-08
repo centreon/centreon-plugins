@@ -1,6 +1,39 @@
-2017-07-XX Quentin Garnier <qgarnier@centreon.com>
+2017-10-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kaminario Rest API
+ * Plugin added: Protocol SSH
+ * Plugin added: Tivoli Storage Manager
+ * Plugin added: Toshiba Storemate
+ * Mode added: [windows] 'pending-reboot'
+ * Mode added: [storeonce] 'nas-usage'
+ * Mode added: [tomcat] 'connector-usage'
+
+2017-09-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Zookeeper JMX
+ * Plugin added: Solr JMX
+ * Plugin added: Automic Workload Automation JMX
+ * Plugin added: Fujitsu Server SNMP
+ * Plugin added: Foxbox Notification
+ * Break: Netasq renamed to Stormshield
+
+2017-08-11 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ruckus AP SNMP
+ * Plugin added: Adva FSP3000 SNMP
+ * Plugin added: Nokia Timos SNMP
+ * Plugin added: Huawei SNMP
+ * Plugin added: Hibernate JMX
+ * Plugin added: Raisecom SNMP
+ * Break: mode change for Pfsense SNMP
+ * Break: mode change for HP MSL SNMP
+ * Break: mode change for Juniper ISG SNMP
+ * Break: mode change for Digi Standard (sarian now) SNMP
+
+2017-07-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Supermicro SNMP
  * Plugin added: QuadStor VTL Local
+ * Plugin added: Docker Rest API
+ * Mode added: [linux] directlvm-usage	
+ * Mode added: [oracle] rollback-segment-usage
+ * Mode added: [oracle] event-waits-usage
 
 2017-06-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: HP Eva CLI

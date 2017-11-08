@@ -86,7 +86,7 @@ sub check {
         my $exit = $self->get_severity(section => 'lnic', value => $result3->{cpqNicIfLogMapCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("logical nic '%s' is %s (%s)", 
+                                        short_msg => sprintf("logical nic '%s' is %s", 
                                             $instance, $result3->{cpqNicIfLogMapCondition}));
         }
     }

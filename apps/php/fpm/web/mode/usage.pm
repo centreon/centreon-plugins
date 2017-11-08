@@ -20,33 +20,38 @@
 
 package apps::php::fpm::web::mode::usage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::values;
-use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 
-my $maps_counters = {
-    fpm => {
-        '000_active-processes'   => { set => {
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'fpm', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{fpm} = [
+        { label => 'active-processes', set => {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
-                closure_custom_calc => \&custom_active_calc,
-                closure_custom_output => \&custom_active_output,
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
                 threshold_use => 'active_prct',
-                closure_custom_perfdata =>  => \&custom_active_perfdata,
+                closure_custom_perfdata =>  => $self->can('custom_active_perfdata'),
             }
         },
-        '001_idle-processes'   => { set => {
+        { label => 'idle-processes', set => {
                 key_values => [ { name => 'idle' }, { name => 'total' } ],
-                closure_custom_calc => \&custom_idle_calc,
-                closure_custom_output => \&custom_idle_output,
+                closure_custom_calc => $self->can('custom_idle_calc'),
+                closure_custom_output => $self->can('custom_idle_output'),
                 threshold_use => 'idle_prct',
-                closure_custom_perfdata =>  => \&custom_idle_perfdata,
+                closure_custom_perfdata =>  => $self->can('custom_idle_perfdata'),
             }
-        }, 
-        '002_listen-queue'   => { set => {
+        },
+        { label => 'listen-queue', set => {
                 key_values => [ { name => 'listen_queue' }, { name => 'max_listen_queue' } ],
                 output_template => 'Listen queue : %s',
                 output_use => 'listen_queue_absolute', threshold_use => 'listen_queue_absolute',
@@ -56,7 +61,7 @@ my $maps_counters = {
                 ],
             }
         },
-        '003_requests'   => { set => {
+        { label => 'requests', set => {
                 key_values => [ { name => 'request', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Requests : %.2f/s',
@@ -66,8 +71,8 @@ my $maps_counters = {
                 ],
             }
         },
-    },
-};
+    ];
+}
 
 sub custom_active_calc {
     my ($self, %options) = @_;
@@ -123,9 +128,15 @@ sub custom_idle_perfdata {
                                   min => 0, max => $self->{result_values}->{total});
 }
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "php-fpm ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -141,108 +152,34 @@ sub new {
                                 "proxyurl:s"        => { name => 'proxyurl' },
                                 "timeout:s"         => { name => 'timeout', default => 5 },
                                 });
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
-    
-    foreach my $key (('fpm')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                      output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
     
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    foreach my $key (('fpm')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-
-    $self->{statefile_value}->check_options(%options);
     $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{webcontent} = $self->{http}->request();
-
-    $self->manage_selection();
-    
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "php_fpm_" . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
-    $self->{new_datas}->{last_timestamp} = time();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    
-    foreach (sort keys %{$maps_counters->{fpm}}) {
-        my $obj = $maps_counters->{fpm}->{$_}->{obj};
-                
-        $obj->set(instance => 'fpm');
-    
-        my ($value_check) = $obj->execute(values => $self->{fpm},
-                                          new_datas => $self->{new_datas});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $obj->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $obj->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $obj->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "php-fpm $short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "php-fpm $long_msg");
-    }
-    
-    $self->{statefile_value}->write(data => $self->{new_datas});
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
+    my $webcontent = $self->{http}->request();
+
     $self->{fpm} = { request => undef, listen_queue => undef, max_listen_queue => undef,
                      idle => undef, active => undef, total => undef };
-    $self->{fpm}->{request} = $1 if ($self->{webcontent} =~ /accepted\s+conn:\s+(\d+)/msi);
-    $self->{fpm}->{listen_queue} = $1 if ($self->{webcontent} =~ /listen\s+queue:\s+(\d+)/msi);
-    $self->{fpm}->{max_listen_queue} = $1 if ($self->{webcontent} =~ /max\s+listen\s+queue:\s+(\d+)/msi);
-    $self->{fpm}->{idle} = $1 if ($self->{webcontent} =~ /idle\s+processes:\s+(\d+)/msi);
-    $self->{fpm}->{active} = $1 if ($self->{webcontent} =~ /active\s+processes:\s+(\d+)/msi);
-    $self->{fpm}->{total} = $1 if ($self->{webcontent} =~ /total\s+processes:\s+(\d+)/msi);
+    $self->{fpm}->{request} = $1 if ($webcontent =~ /accepted\s+conn:\s+(\d+)/msi);
+    $self->{fpm}->{listen_queue} = $1 if ($webcontent =~ /listen\s+queue:\s+(\d+)/msi);
+    $self->{fpm}->{max_listen_queue} = $1 if ($webcontent =~ /max\s+listen\s+queue:\s+(\d+)/msi);
+    $self->{fpm}->{idle} = $1 if ($webcontent =~ /idle\s+processes:\s+(\d+)/msi);
+    $self->{fpm}->{active} = $1 if ($webcontent =~ /active\s+processes:\s+(\d+)/msi);
+    $self->{fpm}->{total} = $1 if ($webcontent =~ /total\s+processes:\s+(\d+)/msi);
+    
+    $self->{cache_name} = "php_fpm_" . $self->{mode} . '_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;

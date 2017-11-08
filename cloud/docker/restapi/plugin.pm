@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.3';
     %{$self->{modes}} = (
                         'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
+                        'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
                         'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
                         );
 

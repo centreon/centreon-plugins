@@ -24,14 +24,16 @@ use strict;
 use warnings;
 use apps::vmware::wsman::mode::components::resources qw($mapping_units $mapping_sensortype);
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_NumericSensor');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_NumericSensor', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking cim numeric sensors");
     $self->{components}->{cim_numericsensor} = {name => 'numeric sensors', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'cim_numericsensor'));
+    return if ($self->check_filter(section => 'cim_numericsensor') || !defined($result));
 
     foreach (@{$result}) {
         my $sensor_type = defined($mapping_sensortype->{$_->{SensorType}}) ? $mapping_sensortype->{$_->{SensorType}} : 'unknown';

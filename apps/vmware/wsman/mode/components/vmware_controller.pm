@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::vmware_controller;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_Controller');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.vmware.com/wbem/wscim/1/cim-schema/2/VMware_Controller', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking vmware controller");
     $self->{components}->{vmware_controller} = {name => 'controller', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'vmware_controller'));
+    return if ($self->check_filter(section => 'vmware_controller') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};

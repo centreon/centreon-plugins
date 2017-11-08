@@ -20,43 +20,45 @@
 
 package apps::php::apc::web::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::values;
+use centreon::plugins::misc;
 
-my $maps_counters = {
-    'used' => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'free' }, { name => 'used' }, 
-                                      ],
-                        closure_custom_calc => \&custom_used_calc,
-                        closure_custom_output => \&custom_used_output,
-                        threshold_use => 'used_prct',
-                        output_error_template => 'Memory Usage: %s',
-                        perfdatas => [
-                            { value => 'used', label => 'used', template => '%d',
-                              unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
-                        ],
-                    }
-               },
-    'fragmentation' => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'fragmentation' },
-                                      ],
-                        output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
-                        output_use => 'fragmentation_absolute', threshold_use => 'fragmentation_absolute',
-                        perfdatas => [
-                            { value => 'fragmentation_absolute', label => 'fragmentation', template => '%.2f',
-                              unit => '%', min => 0, max => 100 },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'mem', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+    
+    $self->{maps_counters}->{mem} = [
+        { label => 'used', set => {
+                key_values => [ { name => 'free' }, { name => 'free' } ],
+                closure_custom_calc => $self->can('custom_used_calc'),
+                closure_custom_output => $self->can('custom_used_output'),
+                threshold_use => 'used_prct',
+                output_error_template => 'Memory Usage: %s',
+                perfdatas => [
+                    { value => 'used', label => 'used', template => '%d',
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
+                ],
+            }
+        },
+        { label => 'fragmentation', set => {
+                key_values => [ { name => 'fragmentation' } ],
+                output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
+                output_use => 'fragmentation_absolute', threshold_use => 'fragmentation_absolute',
+                perfdatas => [
+                    { value => 'fragmentation_absolute', label => 'fragmentation', template => '%.2f',
+                      unit => '%', min => 0, max => 100 },
+                ],
+            }
+        },
+    ];
+}
 
 sub custom_used_calc {
     my ($self, %options) = @_;
@@ -82,6 +84,12 @@ sub custom_used_output {
                    $free_value . " " . $free_unit, $self->{result_values}->{free_prct});
 }
 
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "Apc ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -103,106 +111,32 @@ sub new {
     
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
+    $self->SUPER::check_options(%options);
 
     $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{webcontent} = $self->{http}->request();
-
-    $self->manage_selection();
-
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->set(instance => 'mem');
-    
-        my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{mem});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $maps_counters->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $maps_counters->{$_}->{obj}->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Apc $short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "Apc $long_msg");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub in_bytes {
-    my ($self, %options) = @_;
-    my $value = $options{value};
-    
-    if ($options{unit} =~ /^G/) {
-        $value *= 1024 * 1024 * 1024;
-    } elsif ($options{unit} =~ /^M/) {
-        $value *= 1024 * 1024;
-    } elsif ($options{unit} =~ /^K/) {
-        $value *= 1024;
-    }
-    
-    return $value;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
+    my $webcontent = $self->{http}->request();
+    
     my ($free, $used);
-    if ($self->{webcontent} =~ /Memory Usage.*?Free:.*?([0-9\.]+)\s*(\S*)/msi) {
-        $free = $self->in_bytes(value => $1, unit => $2);
+    if ($webcontent =~ /Memory Usage.*?Free:.*?([0-9\.]+)\s*(\S*)/msi) {
+        $free = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
     }
-    if ($self->{webcontent} =~ /Memory Usage.*?Used:.*?([0-9\.]+)\s*(\S*)/msi) {
-        $used = $self->in_bytes(value => $1, unit => $2);
+    if ($webcontent =~ /Memory Usage.*?Used:.*?([0-9\.]+)\s*(\S*)/msi) {
+        $used = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
     }
     $self->{mem} = {};
     $self->{mem}->{free} = $free;
     $self->{mem}->{used} = $used;
-    $self->{mem}->{fragmentation} = $self->{webcontent} =~ /Fragmentation:.*?([0-9\.]+)/msi ? $1 : undef;
+    $self->{mem}->{fragmentation} = $webcontent =~ /Fragmentation:.*?([0-9\.]+)/msi ? $1 : undef;
 }
 
 1;

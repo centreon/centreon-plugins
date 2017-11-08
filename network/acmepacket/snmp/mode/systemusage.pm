@@ -25,6 +25,48 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my $instance_mode;
+
+sub custom_status_threshold {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
+    
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        my $label = $self->{label};
+        $label =~ s/-/_/g;
+        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
+            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
+                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf('replication state : %s', $self->{result_values}->{replication_state});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{replication_state} = $options{new_datas}->{$self->{instance} . '_replication_state'};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -87,6 +129,14 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'replication-status', threshold => 0, set => {
+                key_values => [ { name => 'replication_state' }, ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
     ];
 }
 
@@ -98,27 +148,55 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
+                                "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{replication_state} =~ /outOfService/i' },
                                 });
    
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
+    $self->change_macros();
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning_replication_status', 'critical_replication_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
-                                                           
+    
+    my %mapping_redundancy = (
+        0 => 'unknown', 1 => 'initial', 2 => 'active', 3 => 'standby', 
+        4 => 'outOfService', 5 => 'unassigned', 6 => 'activePending', 
+        7 => 'standbyPending', 8 => 'outOfServicePending', 9 => 'recovery',
+    );
     my $oid_apSysCPUUtil = '.1.3.6.1.4.1.9148.3.2.1.1.1.0';
     my $oid_apSysMemoryUtil = '.1.3.6.1.4.1.9148.3.2.1.1.2.0';
     my $oid_apSysHealthScore = '.1.3.6.1.4.1.9148.3.2.1.1.3.0';
+    my $oid_apSysRedundancy = '.1.3.6.1.4.1.9148.3.2.1.1.4.0';
     my $oid_apSysGlobalConSess = '.1.3.6.1.4.1.9148.3.2.1.1.5.0';
     my $oid_apSysGlobalCPS = '.1.3.6.1.4.1.9148.3.2.1.1.6.0';
     my $oid_apSysLicenseCapacity = '.1.3.6.1.4.1.9148.3.2.1.1.10.0';
     my $result = $options{snmp}->get_leef(oids => [
-            $oid_apSysCPUUtil, $oid_apSysMemoryUtil, $oid_apSysHealthScore,
+            $oid_apSysCPUUtil, $oid_apSysMemoryUtil, $oid_apSysHealthScore, $oid_apSysRedundancy,
             $oid_apSysLicenseCapacity, $oid_apSysGlobalConSess, $oid_apSysGlobalCPS
         ], 
         nothing_quit => 1);
-    $self->{global} = { cpu_load => $result->{$oid_apSysCPUUtil},
+    $self->{global} = { 
+        cpu_load => $result->{$oid_apSysCPUUtil},
         memory_used => $result->{$oid_apSysMemoryUtil},
+        replication_state => $mapping_redundancy{$result->{$oid_apSysRedundancy}},
         license_used => $result->{$oid_apSysLicenseCapacity},
         health_score => $result->{$oid_apSysHealthScore},
         current_sessions => $result->{$oid_apSysGlobalConSess},
@@ -140,6 +218,16 @@ Check system usage.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^memory-usage$'
+
+=item B<--warning-replication-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{replication_state}
+
+=item B<--critical-replication-status>
+
+Set critical threshold for status (Default: '%{replication_state} =~ /outOfService/i').
+Can used special variables like: %{replication_state}
 
 =item B<--warning-*>
 
