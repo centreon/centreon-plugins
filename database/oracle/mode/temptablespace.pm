@@ -140,24 +140,29 @@ sub manage_selection {
     $self->{sql}->connect();
 
     my $query = q{
-        WITH
-          TMP as
-          (
-          SELECT         B.name,
-                          C.block_size,
-                          SUM (C.bytes) b_total
-                 FROM     v$tablespace B join
-                          v$tempfile C
-                 using  ( ts#)
-                 GROUP BY B.name, C.block_size
-          )
-          SELECT   A.tablespace_name tablespace, TMP.b_total,
-                     SUM (A.used_blocks * TMP.block_size) b_used,
-                     TMP.b_total - SUM (A.used_blocks * TMP.block_size) / 1024 b_free
-           FROM        v$sort_segment A join TMP
-                on    A.tablespace_name = TMP.name
-          GROUP by A.tablespace_name, TMP.b_total
-         };
+                WITH
+                TMP as
+                (
+                SELECT
+                    B.name,
+                    C.block_size,
+                    SUM (C.bytes) b_total
+                 FROM
+                    v$tablespace B join
+                    v$tempfile C
+                    using  ( ts#)
+                 GROUP BY
+                    B.name, C.block_size
+                )
+                SELECT
+                    A.tablespace_name tablespace, TMP.b_total,
+                    SUM (A.used_blocks * TMP.block_size) b_used,
+                    TMP.b_total - SUM (A.used_blocks * TMP.block_size) / 1024 b_free
+                FROM
+                    v$sort_segment A join TMP on A.tablespace_name = TMP.name
+                GROUP by
+                    A.tablespace_name, TMP.b_total
+                };
 
     $self->{sql}->query(query => $query);
 
@@ -172,21 +177,25 @@ __END__
 
 =head1 MODE
 
-Check Oracle rollback segment usage.
+Check Oracle TEMP tablespaces
 
 =over 8
 
-=item B<--warning-*>
+=item B<--units>
+
+Unit of thresholds (Can be : '%' (default) or 'B')
+
+=item B<--free>
+
+Threshold are on free space left
+
+=item B<--warning-usage>
 
 Threshold warning.
-Can be: 'header-contention', 'block-contention', 'hit-ratio',
-'extends', 'wraps'.
 
-=item B<--critical-*>
+=item B<--critical-usage>
 
 Threshold critical.
-Can be: 'header-contention', 'block-contention', 'hit-ratio',
-'extends', 'wraps'.
 
 =back
 
