@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <qwinsta language="en">
+        <created>Total sessions created</created>
+        <disconnected>Total sessions disconnected</disconnected>
+        <reconnected>Total sessions reconnected</reconnected>
+        <activestate>Active</activestate>
+        <header_sessionname>SESSIONNAME</header_sessionname>
+        <header_state>STATE</header_state>
+    </qwinsta>
+    <qwinsta language="fr">
+        <created>Nombre total de sessions c.*?s</created>
+        <disconnected>Nombre total de sessions d.*?connect.*?es</disconnected>
+        <reconnected>Nombre total de sessions reconnect.*?es</reconnected>
+        <activestate>Actif</activestate>
+        <header_sessionname>SESSION</header_sessionname>
+        <header_state>^.*?TAT</header_state>
+    </qwinsta>
+</root>

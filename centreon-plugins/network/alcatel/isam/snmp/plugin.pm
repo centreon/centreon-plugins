@@ -34,9 +34,10 @@ sub new {
         'cpu'               => 'network::alcatel::isam::snmp::mode::cpu',
         'hardware'          => 'network::alcatel::isam::snmp::mode::hardware',
         'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-hub-sap'      => 'network::alcatel::isam::snmp::mode::listhubsap',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'memory'            => 'network::alcatel::isam::snmp::mode::memory',
-        'vlan-traffic'      => 'network::alcatel::isam::snmp::mode::vlantraffic',
+        'hub-sap-usage'     => 'network::alcatel::isam::snmp::mode::hubsapusage',
     );
 
     return $self;

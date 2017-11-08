@@ -393,7 +393,7 @@ sub convert_bytes {
     my (%options) = @_;
     my %expo = (k => 1, m => 2, g => 3, t => 4);
     my $value = $options{value};
-    my $base = defined($options{network}) ? 1000 : 1020;
+    my $base = defined($options{network}) ? 1000 : 1024;
     
     if ($options{unit} =~ /([kmgt])b/i) {
         $value = $value * ($base ** $expo{lc($1)});

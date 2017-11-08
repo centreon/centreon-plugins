@@ -35,6 +35,7 @@ sub new {
                          'hardware'         => 'network::audiocodes::snmp::mode::hardware',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-trunks'      => 'network::audiocodes::snmp::mode::listtrunks',
                          'memory'           => 'network::audiocodes::snmp::mode::memory',
                          'trunk-status'     => 'network::audiocodes::snmp::mode::trunkstatus',
                          );

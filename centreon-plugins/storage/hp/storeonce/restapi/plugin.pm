@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
                          'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
+                         'nas-usage'        => 'storage::hp::storeonce::restapi::mode::nasusage',
                          'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
                          );
 

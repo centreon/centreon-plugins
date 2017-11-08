@@ -171,6 +171,18 @@ sub api_read_file {
     return $content;
 }
 
+sub get_hostnames {
+    my ($self, %options) = @_;
+    
+    return $self->{hostname};
+}
+
+sub get_port {
+    my ($self, %options) = @_;
+    
+    return $self->{option_results}->{port};
+}
+
 sub cache_containers {
     my ($self, %options) = @_;
 
@@ -195,6 +207,46 @@ sub cache_containers {
     }
 
     return $containers;
+}
+
+sub internal_api_list_nodes {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->{$options{node_name}}->request(
+        url_path => '/nodes',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $nodes;
+    eval {
+        $nodes = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $nodes = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+    } else {
+        $nodes = [] if (ref($nodes) eq 'HASH'); # nodes is not in a swarm
+    }
+    
+    return $nodes;
+}
+
+sub internal_api_info {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->{$options{node_name}}->request(
+        url_path => '/info',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $nodes;
+    eval {
+        $nodes = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $nodes = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Node '$options{node_name}': cannot decode json info response: $@");
+    }
+    
+    return $nodes;
 }
 
 sub internal_api_list_containers {
@@ -235,6 +287,44 @@ sub internal_api_get_container_stats {
     return $container_stats;
 }
 
+sub api_list_containers {
+    my ($self, %options) = @_;
+    
+    my $containers = {};
+    foreach my $node_name (keys %{$self->{http}}) {
+        my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
+        foreach my $container (@$list_containers) {
+            $containers->{$container->{Id}} = {
+                State => $container->{State},
+                NodeName => $node_name,
+                Name => join(':', @{$container->{Names}}),
+            };
+        }
+    }
+    
+    return $containers;
+}
+
+sub api_list_nodes {
+    my ($self, %options) = @_;
+    
+    my $nodes = {};
+    foreach my $node_name (keys %{$self->{http}}) {
+        my $info_node = $self->internal_api_info(node_name => $node_name);
+        my $list_nodes = $self->internal_api_list_nodes(node_name => $node_name);
+        $nodes->{$node_name} = { nodes => [], 
+            containers_running => $info_node->{ContainersRunning},
+            containers_stopped => $info_node->{ContainersStopped},
+            containers_paused => $info_node->{ContainersPaused},
+        };
+        foreach my $node (@$list_nodes) {
+            push @{$nodes->{$node_name}->{nodes}}, { Status => $node->{Status}->{State}, ManagerStatus => $node->{ManagerStatus}->{Reachability}, Addr => $node->{Status}->{Addr} };
+        }
+    }
+    
+    return $nodes;
+}
+
 sub api_get_containers {
     my ($self, %options) = @_;
 
@@ -243,8 +333,23 @@ sub api_get_containers {
     }
 
     my $content_total = $self->cache_containers(statefile => $options{statefile});
-    if (defined($options{container_id}) && $options{container_id} ne '' && defined($content_total->{$options{container_id}})) {
-         $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+    if (defined($options{container_id}) && $options{container_id} ne '') {
+        if (defined($content_total->{$options{container_id}})) {
+            $content_total->{$options{container_id}}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$options{container_id}}->{NodeName}, container_id => $options{container_id});
+        }
+    } elsif (defined($options{container_name}) && $options{container_name} ne '') {
+        my $container_id;
+        
+        foreach (keys %$content_total) {
+            if ($content_total->{$_}->{Name} eq $options{container_name}) {
+                $container_id = $_;
+                last;
+            }
+        }
+        
+        if (defined($container_id)) {
+            $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
+        }
     } else {
         foreach my $container_id (keys %{$content_total}) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);

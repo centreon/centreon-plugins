@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::cim_card;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Card');
+    my $result = $self->{wsman}->request(uri => 'http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_Card', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking cim cards");
     $self->{components}->{cim_card} = {name => 'cards', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'cim_card'));
+    return if ($self->check_filter(section => 'cim_card') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = defined($_->{Name}) && $_->{Name} ne '' ? $_->{Name} : $_->{ElementName};
