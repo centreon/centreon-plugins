@@ -24,60 +24,65 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+my $mapping = {
+    voltDescr               => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.2' },
+    voltReading             => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.3' },
+    voltCritLimitHigh       => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.6' },
+    voltNonCritLimitHigh    => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.7' },
+    voltCritLimitLow        => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.9' },
+    voltNonCritLimitLow     => { oid => '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.10' },
+};
+my $oid_voltEntry = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1';
+
+sub load {
+    my ($self) = @_;
+    
+    push @{$self->{request}}, { oid => $oid_voltEntry };
+}
+
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{voltages} = {name => 'voltages', total => 0};
     $self->{output}->output_add(long_msg => "Checking voltages");
-    return if ($self->check_exclude('voltages'));
+    $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'voltage'));
     
-    my $oid_voltEntry = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1';
-    my $oid_voltDescr = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.2';
-    my $oid_voltReading = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.3';
-    my $oid_voltCritLimitHigh = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.6';
-    my $oid_voltNonCritLimitHigh = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.7';
-    my $oid_voltCritLimitLow = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.9';
-    my $oid_voltNonCritLimitLow = '.1.3.6.1.4.1.2.3.51.3.1.2.2.1.10';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_voltEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_voltDescr\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_voltEntry}})) {
+        next if ($oid !~ /^$mapping->{voltDescr}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        my $volt_descr = centreon::plugins::misc::trim($result->{$oid_voltDescr . '.' . $instance});
-        my $volt_value = $result->{$oid_voltReading . '.' . $instance};
-        my $volt_crit_high = $result->{$oid_voltCritLimitHigh . '.' . $instance};
-        my $volt_warn_high = $result->{$oid_voltNonCritLimitHigh . '.' . $instance};
-        my $volt_crit_low = $result->{$oid_voltCritLimitLow . '.' . $instance};
-        my $volt_warn_low = $result->{$oid_voltNonCritLimitLow . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_voltEntry}, instance => $instance);
+
+        next if ($self->check_filter(section => 'voltage', instance => $instance));
+        $result->{voltDescr} = centreon::plugins::misc::trim($result->{voltDescr});
+        $self->{components}->{voltage}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("voltage '%s' value is %s [instance: %s].",
+                                    $result->{voltDescr}, $result->{voltReading}, $instance));
         
-        my $warn_threshold = '';
-        $warn_threshold = $volt_warn_low . ':' if ($volt_warn_low != 0);
-        $warn_threshold .= $volt_warn_high if ($volt_warn_high != 0);
-        my $crit_threshold = '';
-        $crit_threshold = $volt_crit_low . ':' if ($volt_crit_low != 0);
-        $crit_threshold .= $volt_crit_high if ($volt_crit_high != 0);
-        
-        $self->{perfdata}->threshold_validate(label => 'warning_' . $instance, value => $warn_threshold);
-        $self->{perfdata}->threshold_validate(label => 'critical_' . $instance, value => $crit_threshold);
-        
-        my $exit = $self->{perfdata}->threshold_check(value => $volt_value, threshold => [ { label => 'critical_' . $instance, 'exit_litteral' => 'critical' }, { label => 'warning_' . $instance, exit_litteral => 'warning' } ]);
-        
-        $self->{components}->{temperatures}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Voltage '%s' value is %s.", 
-                                    $volt_descr, $volt_value));
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage '%s' value is %s", $volt_descr, $volt_value));
+        if (defined($result->{voltReading})) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{voltReading});
+            if ($checked == 0) {
+                my $warn_th = $result->{voltNonCritLimitLow} . ':' . $result->{voltNonCritLimitHigh};
+                my $crit_th = $result->{voltCritLimitLow} . ':' . $result->{voltCritLimitHigh};
+                $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
+                $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{voltReading},
+                    threshold => [ { label => 'critical-voltage-instance-' . $instance, exit_litteral => 'critical' },
+                                   { label => 'warning-voltage-instance-' . $instance, exit_litteral => 'warning' } ]);
+                
+                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-voltage-instance-' . $instance);
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-voltage-instance-' . $instance);    
+            }
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Voltage '%s' is %s", $result->{voltDescr}, $result->{voltReading}));
+            }
+            $self->{output}->perfdata_add(label => "volt_" . $result->{voltDescr},
+                                          value => $result->{voltReading},
+                                          warning => $warn,
+                                          critical => $crit);
         }
-        
-        $self->{output}->perfdata_add(label => 'volt_' . $volt_descr,
-                                      value => $volt_value,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $instance),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $instance),
-                                      );
     }
 }
 
