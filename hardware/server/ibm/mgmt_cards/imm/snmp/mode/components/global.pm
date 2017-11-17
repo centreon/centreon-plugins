@@ -52,6 +52,7 @@ sub check {
     return if (!defined($self->{results}->{$mapping->{systemHealthStat}->{oid}}) || scalar(keys %{$self->{results}->{$mapping->{systemHealthStat}->{oid}}}) <= 0);
     
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{systemHealthStat}->{oid}}, instance => '0');
+    $self->{components}->{global}->{total}++;
     
     $self->{output}->output_add(long_msg => sprintf("system health status is '%s'", 
                                                     $result->{systemHealthStat}));

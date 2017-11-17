@@ -62,8 +62,8 @@ sub check {
         if (defined($result->{voltReading})) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{voltReading});
             if ($checked == 0) {
-                my $warn_th = $result->{voltNonCritLimitLow} . ':' . $result->{voltNonCritLimitHigh};
-                my $crit_th = $result->{voltCritLimitLow} . ':' . $result->{voltCritLimitHigh};
+                my $warn_th = $result->{voltNonCritLimitLow} . ':' . ($result->{voltNonCritLimitHigh} > 0 ? $result->{voltNonCritLimitHigh} : '');
+                my $crit_th = $result->{voltCritLimitLow} . ':' . ($result->{voltCritLimitHigh} > 0 ? $result->{voltCritLimitHigh} : '');
                 $self->{perfdata}->threshold_validate(label => 'warning-voltage-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-voltage-instance-' . $instance, value => $crit_th);
                 $exit = $self->{perfdata}->threshold_check(
