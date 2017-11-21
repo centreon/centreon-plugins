@@ -28,7 +28,7 @@ use warnings;
 my %battery_status = (
     1 => ['batteryCharging', 'OK'], 
     2 => ['batteryDischarging', 'WARNING'], 
-    3 => ['batteryFloating', 'WARNING'], 
+    3 => ['batteryFloating', 'OK'], 
     4 => ['batteryResting', 'OK'],
     5 => ['unknown', 'UNKNOWN'],
 );
