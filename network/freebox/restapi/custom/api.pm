@@ -49,7 +49,7 @@ sub new {
                       "freebox-api-version:s@"  => { name => 'freebox_api_version', },
                       "proxyurl:s@"         => { name => 'proxyurl' },
                       "timeout:s@"          => { name => 'timeout' },
-                      "precision:s@"        => { name => 'precision' },
+                      "resolution:s@"       => { name => 'resolution' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -208,7 +208,40 @@ sub get_data {
 sub get_performance {
     my ($self, %options) = @_;
 
+    if (!defined($self->{session_token})) {
+        $self->get_session();
+    }
     
+    my $json_request = { db => $options{db}, date_start => time() - $self->{resolution}, precision => 100 };
+    my $encoded;
+    eval {
+        $encoded = encode_json($json_request);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+        $self->{output}->option_exit();
+    }
+    
+    $self->settings();
+    my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
+                                         method => 'POST', query_form_post => $encoded, 
+                                         critical_status => '', warning_status => '');
+    my $decoded = $self->manage_response(content => $content);
+    my ($datas, $total) = ({}, 0);
+    foreach my $data (@{$decoded->{result}->{datas}}) {
+        foreach my $label (keys %$data) {
+            next if ($label eq 'time');
+            $datas->{label} = 0 if (!defined($datas->{$label}));
+            $datas->{label} += $datas->{$label};
+        }
+        $total++;
+    }
+    
+    foreach (keys %$datas) {
+        $datas->{$_} /= $total;
+    }
+
+    return $datas;
 }
 
 sub DESTROY {
@@ -259,7 +292,7 @@ Proxy URL if any.
 
 Set HTTP timeout in seconds (Default: '10').
 
-=item B<--precision>
+=item B<--resolution>
 
 Selected data performance resolution in seconds (Default: '300').
 
