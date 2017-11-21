@@ -47,6 +47,8 @@ sub new {
                          'threads-connected'            => 'database::mysql::mode::threadsconnected',
                          'uptime'                       => 'database::mysql::mode::uptime',
                          'tables-size'                  => 'database::mysql::mode::tablessize',
+                         'tables-count'                 => 'database::mysql::mode::tablescount',
+                         'open-tables'                  => 'database::mysql::mode::opentables',
                          );
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
