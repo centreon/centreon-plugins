@@ -135,6 +135,7 @@ sub settings {
         $self->{http}->add_header(key => 'X-Fbx-App-Auth', value => $self->{session_token});
     }
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
+    $self->{http}->add_header(key => 'Content-type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -169,8 +170,8 @@ sub get_session {
     
     $self->settings();
     my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/login/',
-                                         critical_status => '', warning_status => '');
-    my $decoded = $self->manage_response(content => $content);
+                                         critical_status => '', warning_status => '', unknown_status => '');
+    my $decoded = $self->manage_response(content => $content, type => 'login');
     my $challenge = $decoded->{result}->{challenge};
     my $password = hmac_sha1_hex($challenge, $self->{freebox_app_token});
     
@@ -185,8 +186,8 @@ sub get_session {
     }
     
     $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/login/session/', method => 'POST',
-                                      query_form_post => $encoded, critical_status => '', warning_status => '');
-    $decoded = $self->manage_response(content => $content);
+                                      query_form_post => $encoded, critical_status => '', warning_status => '', unknown_status => '');
+    $decoded = $self->manage_response(content => $content, type => 'login/session');
     
     $self->{session_token} = $decoded->{result}->{session_token};
 }
@@ -200,8 +201,8 @@ sub get_data {
     
     $self->settings();
     my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
-                                         critical_status => '', warning_status => '');
-    my $decoded = $self->manage_response(content => $content);
+                                         critical_status => '', warning_status => '', unknown_status => '');
+    my $decoded = $self->manage_response(content => $content, type => $options{path});
     return $decoded->{result};
 }
 
@@ -225,14 +226,14 @@ sub get_performance {
     $self->settings();
     my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
                                          method => 'POST', query_form_post => $encoded, 
-                                         critical_status => '', warning_status => '');
+                                         critical_status => '', warning_status => '', unknown_status => '');
     my $decoded = $self->manage_response(content => $content);
     my ($datas, $total) = ({}, 0);
-    foreach my $data (@{$decoded->{result}->{datas}}) {
+    foreach my $data (@{$decoded->{result}->{data}}) {
         foreach my $label (keys %$data) {
             next if ($label eq 'time');
-            $datas->{label} = 0 if (!defined($datas->{$label}));
-            $datas->{label} += $datas->{$label};
+            $datas->{$label} = 0 if (!defined($datas->{$label}));
+            $datas->{$label} += $data->{$label};
         }
         $total++;
     }
