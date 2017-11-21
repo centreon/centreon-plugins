@@ -31,8 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'system'   => 'network::freebox::restapi::mode::system',
-                         );
+        'dsl-usage' => 'network::freebox::restapi::mode::dslusage',
+        'net-usage' => 'network::freebox::restapi::mode::netusage',
+        'system'    => 'network::freebox::restapi::mode::system',
+    );
 
     $self->{custom_modes}{api} = 'network::freebox::restapi::custom::api';
     return $self;
