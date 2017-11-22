@@ -31,6 +31,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
+        { name => 'wifi', type => 1, cb_prefix_output => 'prefix_wifi_output', message_multiple => 'All wifis are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -72,16 +73,20 @@ sub set_counters {
         },
         { label => 'disk-status', threshold => 0, set => {
                 key_values => [ { name => 'disk_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'disk' },
-                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_calc => $self->can('custom_disk_status_calc'),
+                closure_custom_output => $self->can('custom_disk_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
+        
+    ];
+    
+    $self->{maps_counters}->{wifi} = [
         { label => 'wifi-status', threshold => 0, set => {
-                key_values => [ { name => 'wifi_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'wifi' },
-                closure_custom_output => $self->can('custom_status_output'),
+                key_values => [ { name => 'wifi_status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_wifi_status_calc'),
+                closure_custom_output => $self->can('custom_wifi_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
@@ -115,18 +120,32 @@ sub custom_status_threshold {
     return $status;
 }
 
-sub custom_status_output {
+sub custom_disk_status_output {
     my ($self, %options) = @_;
-    my $msg = ucfirst($self->{result_values}->{label}) . ' status : ' . $self->{result_values}->{status};
+    my $msg = 'Disk status : ' . $self->{result_values}->{status};
 
     return $msg;
 }
 
-sub custom_status_calc {
+sub custom_disk_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label} . '_status'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_disk_status'};
+    return 0;
+}
+
+sub custom_wifi_status_output {
+    my ($self, %options) = @_;
+    my $msg = "Wifi '" . $self->{result_values}->{display} . "' status : " . $self->{result_values}->{status};
+
+    return $msg;
+}
+
+sub custom_wifi_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_wifi_status'};
     return 0;
 }
 
@@ -172,7 +191,15 @@ sub manage_selection {
     $self->{global} = { %{$result} };
     
     $result = $options{custom}->get_data(path => 'wifi/ap/');
-    $self->{global}->{wifi_status} = $result->{status}->{state};
+    $self->{wifi} = {};
+    
+    $result = [$result] if (ref($result) ne 'ARRAY');
+    foreach (@$result) {
+        $self->{wifi}->{$_->{id}} = {
+            display => $_->{name},
+            wifi_status => $_->{status}->{state},
+        };
+    }
 }
 
 1;
@@ -193,12 +220,12 @@ Example: --filter-counters='^temperature-cpum$'
 =item B<--warning-wifi-status>
 
 Set warning threshold for wifi status (Default: '%{status} =~ /bad_param/i').
-Can used special variables like: %{status}
+Can used special variables like: %{status}, %{display}
 
 =item B<--critical-wifi-status>
 
 Set critical threshold for wifi status (Default: '%{status} =~ /failed/i').
-Can used special variables like: %{status}
+Can used special variables like: %{status}, %{display}
 
 =item B<--warning-disk-status>
 
