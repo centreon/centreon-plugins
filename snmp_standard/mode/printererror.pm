@@ -72,8 +72,6 @@ sub run {
     my $oid_hrPrinterDetectedErrorState = '.1.3.6.1.2.1.25.3.5.1.2';
     my $result = $self->{snmp}->get_table(oid => $oid_hrPrinterDetectedErrorState, nothing_quit => 1);
     
-    use Data::Dumper;
-    print Data::Dumper::Dumper($result);
     foreach (keys %$result) {
         # 16 bits value
         my $value = unpack('S', $result->{$_});
