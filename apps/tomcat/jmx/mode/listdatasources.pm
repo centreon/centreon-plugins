@@ -61,6 +61,7 @@ sub manage_selection {
         my $path = $1;
         $mbean =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $name = $1;
+        $name =~ s/^"(.*)"$/$1/;
         
         if (defined($self->{option_results}->{filter_host}) && $self->{option_results}->{filter_host} ne '' &&
             $host !~ /$self->{option_results}->{filter_host}/) {
