@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::kemp::snmp::mode::listvs;
+package network::zyxel::snmp::mode::listvpn;
 
 use base qw(centreon::plugins::mode);
 
@@ -35,8 +35,7 @@ sub new {
                                 {
                                   "filter-name:s"         => { name => 'filter_name' },
                                 });
-    $self->{vs_id_selected} = [];
-
+    $self->{vpn} = {};
     return $self;
 }
 
@@ -45,52 +44,53 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my %map_state = (
-    1 => 'inService',
-    2 => 'outOfService',
-    4 => 'disabled',
-    5 => 'sorry',
-    6 => 'redirect',
-    7 => 'errormsg',
-);
+my %map_active_status = (0 => 'inactive', 1 => 'active');
+my %map_connect_status = (0 => 'disconnected', 1 => 'connected');
+
 my $mapping = {
-    vSname          => { oid => '.1.3.6.1.4.1.12196.13.1.1.13' },
-    vSstate         => { oid => '.1.3.6.1.4.1.12196.13.1.1.14', map => \%map_state },
+    vpnStatusConnectionName => { oid => '.1.3.6.1.4.1.890.1.6.22.2.4.1.2' },
+    vpnStatusActiveStatus   => { oid => '.1.3.6.1.4.1.890.1.6.22.2.4.1.5', map => \%map_active_status },
+    vpnStatusConnectStatus  => { oid => '.1.3.6.1.4.1.890.1.6.22.2.4.1.6', map => \%map_connect_status },
 };
+
+my $oid_vpnStatusEntry = '.1.3.6.1.4.1.890.1.6.22.2.4.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [ { oid => $mapping->{vSname}->{oid} }, { oid => $mapping->{vSstate}->{oid} } ], 
-                                                         nothing_quit => 1, return_type => 1);
-    foreach my $oid (keys %{$self->{results}}) {
-        next if ($oid !~ /^$mapping->{vSname}->{oid}\.(.*)$/);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_vpnStatusEntry, nothing_quit => 1);
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{vpnStatusConnectionName}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{vSname} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{vSname} . "': no matching filter.", debug => 1);
+            $result->{vpnStatusConnectionName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{vpnStatusConnectionName} . "': no matching filter.", debug => 1);
             next;
         }
         
-        push @{$self->{vs_id_selected}}, $instance;
+        $self->{vpn}->{$result->{vpnStatusConnectionName}} = { 
+            name => $result->{vpnStatusConnectionName},
+            active_status => $result->{vpnStatusActiveStatus},
+            connect_status => $result->{vpnStatusConnectStatus},
+        };
     }
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    $self->{snmp} = $options{snmp};
-    $self->manage_selection();
-    foreach my $instance (sort @{$self->{vs_id_selected}}) { 
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-
-        $self->{output}->output_add(long_msg => "'" . $result->{vSname} . "' [state = " . $result->{vSstate} . "]");
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{vpn}}) { 
+        $self->{output}->output_add(long_msg => '[name = ' . $self->{vpn}->{$instance}->{name} . "]" .
+            " [active status = '" . $self->{vpn}->{$instance}->{active_status} . "']" .
+            " [connect status = '" . $self->{vpn}->{$instance}->{connect_status} . "']"
+        );
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Virtual Servers:');
+                                short_msg => 'List VPNs:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -98,18 +98,17 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'state']);
+    $self->{output}->add_disco_format(elements => ['name', 'active_status', 'connect_status']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection(disco => 1);
-    foreach my $instance (sort @{$self->{vs_id_selected}}) {        
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-        
-        $self->{output}->add_disco_entry(name => $result->{vSname}, state => $result->{vSstate});
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{vpn}}) {             
+        $self->{output}->add_disco_entry(
+            %{$self->{vpn}->{$instance}}
+        );
     }
 }
 
@@ -119,13 +118,13 @@ __END__
 
 =head1 MODE
 
-List virtual servers.
+List VPNs.
 
 =over 8
 
 =item B<--filter-name>
 
-Set the virtual server name.
+Filter by VPN name.
 
 =back
 
