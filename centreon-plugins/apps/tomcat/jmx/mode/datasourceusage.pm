@@ -168,9 +168,11 @@ sub manage_selection {
         $key =~ /(?:[:,])host=(.*?)(?:,|$)/;
         my $ds_name = $1;
         $key =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/;
-        $ds_name .= '.' . $1;       
-        $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
         $ds_name .= '.' . $1;
+        $key =~ /(?:[:,])name=(.*?)(?:,|$)/; # double quote a virer
+        my $tmp_name = $1;
+        $tmp_name =~ s/^"(.*)"$/$1/;
+        $ds_name .= '.' . $tmp_name;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $ds_name !~ /$self->{option_results}->{filter_name}/) {

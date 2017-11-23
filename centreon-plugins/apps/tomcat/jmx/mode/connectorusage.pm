@@ -197,7 +197,8 @@ sub manage_selection {
     $self->{tomcatconnector} = {};
     foreach my $key (keys %$result) {         
         $key =~ /name=(.*?),type=(.*)/;
-        my ($connector, $type) = ($1, $2);
+        my ($connector, $type) = ($1, $2); # double quote nivo du name si existe
+        $connector =~ s/^"(.*)"$/$1/g;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $connector !~ /$self->{option_results}->{filter_name}/) {
