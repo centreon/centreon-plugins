@@ -34,7 +34,7 @@ sub new {
                          'cpu'              => 'network::zyxel::snmp::mode::cpu',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-vpn'         => 'snmp_standard::mode::listvpn',
+                         'list-vpn'         => 'network::zyxel::snmp::mode::listvpn',
                          'memory'           => 'network::zyxel::snmp::mode::memory',
                          'vpn-status'       => 'network::zyxel::snmp::mode::vpnstatus',
                          );
