@@ -18,29 +18,27 @@
 # limitations under the License.
 #
 
-package apps::voip::asterisk::remote::plugin;
+package apps::voip::asterisk::ami::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'showpeers' => 'apps::voip::asterisk::remote::mode::showpeers',
-                         'dahdistatus' => 'apps::voip::asterisk::remote::mode::dahdistatus',
-                         'activecalls' => 'apps::voip::asterisk::remote::mode::activecalls',
-			             'externalcalls' => 'apps::voip::asterisk::remote::mode::externalcalls',
-			            );
+                         'channel-usage'    => 'apps::voip::asterisk::ami::mode::channelusage',
+                         'dahdi-status'     => 'apps::voip::asterisk::ami::mode::dahdistatus',
+                         'sip-peers-usage'  => 'apps::voip::asterisk::ami::mode::sippeersusage',
+                         );
 
+    $self->{custom_modes}{api} = 'apps::voip::asterisk::ami::custom::api';
     return $self;
 }
-
 
 1;
 
@@ -48,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Asterisk through AMI interface (AMI socket; telnet perl module required)
+Check Asterisk through AMI interface.
 
 =cut
