@@ -102,7 +102,8 @@ sub get_invalids {
     
     $self->{global}->{$options{type}} = 0;
     $options{sql}->query(query => $options{query});
-    foreach ($options{sql}->fetchall_arrayref()) {
+    my $result = $options{sql}->fetchall_arrayref();
+    foreach (@$result) {
         if (defined($self->{option_results}->{filter_message}) && $self->{option_results}->{filter_message} ne '' &&
             $_->[0] !~ /$self->{option_results}->{filter_message}/) {
             $self->{output}->output_add(long_msg => "skipping $options{type} => '" . $_->[0] . "': no matching filter.", debug => 1);
@@ -140,7 +141,7 @@ sub manage_selection {
           WHERE status <> 'USABLE' AND status <> 'N/A'
     });
 
-    if ($self->{sql}->is_version_minimum(version => '10.x')) {
+    if ($options{sql}->is_version_minimum(version => '10.x')) {
         $self->get_invalids(%options, type => 'invalid_ind_subpartitions', query => q{
           SELECT subpartition_name||' of '||partition_name||' of '||index_owner||'.'||index_name||' is '||status
             FROM dba_ind_subpartitions
@@ -148,7 +149,7 @@ sub manage_selection {
         });
     }
 
-    if ($self->{sql}->is_version_minimum(version => '10.x')) {
+    if ($options{sql}->is_version_minimum(version => '10.x')) {
         $self->get_invalids(%options, type => 'invalid_registry_components', query => q{
           SELECT namespace||'.'||comp_name||'-'||version||' is '||status
             FROM dba_registry
