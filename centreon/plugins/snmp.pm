@@ -570,10 +570,11 @@ sub set {
         # Get last value
         next if ($oid !~ /(.*)\.(\d+)([\.\s]*)$/);
         
-        my $value = $options{oids}->{$oid};
+        my $value = $options{oids}->{$oid}->{value};
+        my $type = $options{oids}->{$oid}->{type};
         my ($oid, $instance) = ($1, $2);
        
-        push @$vars, [$oid, $instance, $value];
+        push @$vars, [$oid, $instance, $value, $type];
     }
     
     $self->{session}->set($vars);

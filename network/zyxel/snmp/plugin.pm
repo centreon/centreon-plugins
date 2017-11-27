@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::voip::asterisk::snmp::plugin;
+package network::zyxel::snmp::plugin;
 
 use strict;
 use warnings;
@@ -26,18 +26,21 @@ use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'channel-usage'    => 'apps::voip::asterisk::snmp::mode::channelusage',
-    );
+                         'cpu'              => 'network::zyxel::snmp::mode::cpu',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'list-vpn'         => 'network::zyxel::snmp::mode::listvpn',
+                         'memory'           => 'network::zyxel::snmp::mode::memory',
+                         'vpn-status'       => 'network::zyxel::snmp::mode::vpnstatus',
+                         );
 
     return $self;
 }
-
 
 1;
 
@@ -45,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Asterisk through SNMP
+Check Zyxel equipments in SNMP.
 
 =cut

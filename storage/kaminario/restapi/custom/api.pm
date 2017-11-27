@@ -129,18 +129,9 @@ sub get_performance {
     my ($self, %options) = @_;
 
     $self->settings();
-    #my $content = $self->{http}->request(url_path => '/api/v2' . $options{path} . '&__resolution=' . $self->{resolution},
-    #                                    critical_status => '', warning_status => '');
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", '/tmp/4.json') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file toto : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-    
-    #my $response = $self->{http}->get_response();
+    my $content = $self->{http}->request(url_path => '/api/v2' . $options{path} . '&__resolution=' . $self->{resolution},
+                                        critical_status => '', warning_status => '');
+    my $response = $self->{http}->get_response();
     
     my $decoded;
     eval {
@@ -151,10 +142,10 @@ sub get_performance {
         $self->{output}->option_exit();
     }
     
-    #if ($response->code() != 200) {
-    #    $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{message});
-    #    $self->{output}->option_exit();
-    #}
+    if ($response->code() != 200) {
+        $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{message});
+        $self->{output}->option_exit();
+    }
 
     return $decoded;
 }

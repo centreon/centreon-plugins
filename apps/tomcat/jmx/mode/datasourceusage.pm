@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::tomcat::jmx::mode::connectorusage;
+package apps::tomcat::jmx::mode::datasourceusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -32,58 +32,28 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'tomcatconnector', type => 1, cb_prefix_output => 'prefix_connector_output', message_multiple => 'All connectors are ok' },
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_ds_output', message_multiple => 'All datasources are ok' },
     ];
     
-    $self->{maps_counters}->{tomcatconnector} = [
-        { label => 'threads-count', set => {
-                key_values => [ { name => 'currentThreadCount' }, { name => 'maxThreads' }, { name => 'display' } ],
+    $self->{maps_counters}->{datasource} = [
+        { label => 'num-active', set => {
+                key_values => [ { name => 'numActive' }, { name => 'maxActive' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), 
-                closure_custom_calc_extra_options => { label_ref => 'currentThreadCount', message => 'Current Threads' },
+                closure_custom_calc_extra_options => { label_ref => 'Active', message => 'Current Num Active' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
             }
         },
-        { label => 'threads-busy', set => {
-                key_values => [ { name => 'currentThreadsBusy' }, { name => 'maxThreads' }, { name => 'display' } ],
+        { label => 'num-idle', set => {
+                key_values => [ { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), 
-                closure_custom_calc_extra_options => { label_ref => 'currentThreadsBusy', message => 'Current Busy Threads' },
+                closure_custom_calc_extra_options => { label_ref => 'Idle', message => 'Current Num Idle' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
             }
         },
-        { label => 'request-count', set => {
-                key_values => [ { name => 'requestCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'Request Count : %s',
-                perfdatas => [
-                    { label => 'request_count', value => 'requestCount_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-        { label => 'traffic-in', set => {
-                key_values => [ { name => 'bytesReceived', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
-                output_template => 'Traffic In : %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_in', value => 'bytesReceived_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-        { label => 'traffic-out', set => {
-                key_values => [ { name => 'bytesSent', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
-                output_template => 'Traffic Out : %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_out', value => 'bytesSent_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-
     ];
 }
 
@@ -146,8 +116,8 @@ sub custom_usage_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{message} = $options{extra_options}->{message};
-    $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_maxThreads'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_max' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_num' . $options{extra_options}->{label_ref}};
     if ($self->{result_values}->{max} > 0) {
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{max};
     }
@@ -155,10 +125,10 @@ sub custom_usage_calc {
     return 0;
 }
 
-sub prefix_connector_output {
+sub prefix_ds_output {
     my ($self, %options) = @_;
 
-    return "Connector '" . $options{instance_value}->{display} . "' ";
+    return "Datasource '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -185,32 +155,38 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Tomcat: Catalina
-    # Jboss: jboss.web
+    # maxActive or maxTotal
     $self->{request} = [
-         { mbean => "*:name=*,type=ThreadPool", attributes => [ { name => 'currentThreadCount' }, { name => 'currentThreadsBusy' }, { name => 'maxThreads' } ] },
-         { mbean => "*:name=*,type=GlobalRequestProcessor", attributes => [ { name => 'bytesReceived' }, { name => 'bytesSent' }, { name => 'requestCount' } ] }
+         { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
+             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
     ];
     
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
-    $self->{tomcatconnector} = {};
-    foreach my $key (keys %$result) {         
-        $key =~ /name=(.*?),type=(.*)/;
-        my ($connector, $type) = ($1, $2); # double quote nivo du name si existe
-        $connector =~ s/^"(.*)"$/$1/g;
+    $self->{datasource} = {};
+    foreach my $key (keys %$result) {
+        $key =~ /(?:[:,])host=(.*?)(?:,|$)/;
+        my $ds_name = $1;
+        $key =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/;
+        $ds_name .= '.' . $1;
+        $key =~ /(?:[:,])name=(.*?)(?:,|$)/; # double quote a virer
+        my $tmp_name = $1;
+        $tmp_name =~ s/^"(.*)"$/$1/;
+        $ds_name .= '.' . $tmp_name;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $connector !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $connector . "': no matching filter.", debug => 1);
+            $ds_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $ds_name . "': no matching filter.", debug => 1);
             next;
         }
      
-        $result->{$key}->{bytesSent} *= 8 if (defined($result->{$key}->{bytesSent}));
-        $result->{$key}->{bytesReceived} *= 8 if (defined($result->{$key}->{bytesReceived}));
-        $self->{tomcatconnector}->{$connector} = { display => $connector }
-            if (!defined($self->{tomcatconnector}->{$connector}));
-        $self->{tomcatconnector}->{$connector} = { %{$self->{tomcatconnector}->{$connector}}, %{$result->{$key}} };
+        $self->{datasource}->{$ds_name} = {
+            display => $ds_name,
+            numActive => $result->{$key}->{numActive},
+            maxActive => defined($result->{$key}->{maxTotal}) ? $result->{$key}->{maxTotal} : $result->{$key}->{maxActive},
+            numIdle => $result->{$key}->{numIdle},
+            maxIdle => $result->{$key}->{maxIdle},
+        };
     }
     
     $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->{url}) . '_' .
@@ -224,28 +200,28 @@ __END__
 
 =head1 MODE
 
-Check connector usage.
+Check data sources usage.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='threads-busy'
+Example: --filter-counters='num-active'
 
 =item B<--filter-name>
 
-Filter connector name (can be a regexp).
+Filter datasource name (can be a regexp).
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
+Can be: 'num-active', 'num-idle'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
+Can be: 'num-active', 'num-idle'.
 
 =item B<--units>
 

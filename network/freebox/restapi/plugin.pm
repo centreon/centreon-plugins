@@ -18,26 +18,27 @@
 # limitations under the License.
 #
 
-package apps::voip::asterisk::snmp::plugin;
+package network::freebox::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'channel-usage'    => 'apps::voip::asterisk::snmp::mode::channelusage',
+        'dsl-usage' => 'network::freebox::restapi::mode::dslusage',
+        'net-usage' => 'network::freebox::restapi::mode::netusage',
+        'system'    => 'network::freebox::restapi::mode::system',
     );
 
+    $self->{custom_modes}{api} = 'network::freebox::restapi::custom::api';
     return $self;
 }
-
 
 1;
 
@@ -45,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Asterisk through SNMP
+Check Freebox through HTTP/REST API.
 
 =cut

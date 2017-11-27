@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::tomcat::jmx::mode::connectorusage;
+package apps::tomcat::jmx::mode::webappssessions;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -32,12 +32,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'tomcatconnector', type => 1, cb_prefix_output => 'prefix_connector_output', message_multiple => 'All connectors are ok' },
+        { name => 'webapps', type => 1, cb_prefix_output => 'prefix_webapps_output', message_multiple => 'All webapp sessions are ok' },
     ];
     
-    $self->{maps_counters}->{tomcatconnector} = [
-        { label => 'threads-count', set => {
-                key_values => [ { name => 'currentThreadCount' }, { name => 'maxThreads' }, { name => 'display' } ],
+    $self->{maps_counters}->{webapps} = [
+        { label => 'sessions-active', set => {
+                key_values => [ { name => 'activeSessions' }, { name => 'maxActiveSessions' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), 
                 closure_custom_calc_extra_options => { label_ref => 'currentThreadCount', message => 'Current Threads' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -45,45 +45,15 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
             }
         },
-        { label => 'threads-busy', set => {
-                key_values => [ { name => 'currentThreadsBusy' }, { name => 'maxThreads' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'), 
-                closure_custom_calc_extra_options => { label_ref => 'currentThreadsBusy', message => 'Current Busy Threads' },
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-            }
-        },
-        { label => 'request-count', set => {
-                key_values => [ { name => 'requestCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'Request Count : %s',
+        { label => 'sessions-count', set => {
+                key_values => [ { name => 'sessionCounter', diff => 1 }, { name => 'display' } ],
+                output_template => 'Sessions Count : %s',
                 perfdatas => [
-                    { label => 'request_count', value => 'requestCount_absolute', template => '%s',
+                    { label => 'sessions_count', value => 'sessionCounter_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'traffic-in', set => {
-                key_values => [ { name => 'bytesReceived', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
-                output_template => 'Traffic In : %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_in', value => 'bytesReceived_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-        { label => 'traffic-out', set => {
-                key_values => [ { name => 'bytesSent', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
-                output_template => 'Traffic Out : %s %s/s',
-                perfdatas => [
-                    { label => 'traffic_out', value => 'bytesSent_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-
     ];
 }
 
@@ -131,12 +101,12 @@ sub custom_usage_output {
     
     my $msg;
     if ($self->{result_values}->{max} > 0) {
-        $msg = sprintf("%s Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $self->{result_values}->{message}, $self->{result_values}->{max},
+        $msg = sprintf("Current Active Sessions  Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                   $self->{result_values}->{max},
                    $self->{result_values}->{used}, $self->{result_values}->{prct_used},
                    $self->{result_values}->{max} - $self->{result_values}->{used}, 100 - $self->{result_values}->{prct_used});
     } else {
-        $msg = sprintf("%s : %s", $self->{result_values}->{message}, $self->{result_values}->{used});
+        $msg = sprintf("Current Active Sessions : %s", $self->{result_values}->{used});
     }
     return $msg;
 }
@@ -145,9 +115,8 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{message} = $options{extra_options}->{message};
-    $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_maxThreads'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{max} = $options{new_datas}->{$self->{instance} . '_maxActiveSessions'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_activeSessions'};
     if ($self->{result_values}->{max} > 0) {
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{max};
     }
@@ -155,10 +124,10 @@ sub custom_usage_calc {
     return 0;
 }
 
-sub prefix_connector_output {
+sub prefix_webapps_output {
     my ($self, %options) = @_;
 
-    return "Connector '" . $options{instance_value}->{display} . "' ";
+    return "Webapp '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -185,32 +154,34 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Tomcat: Catalina
-    # Jboss: jboss.web
+    # can be path or context    
+    # Tomcat: Catalina:context=/xxxxx,host=localhost,type=Manager
+    # Jboss:  jboss.web:host=localhost,path=/invoker,type=Manager
+    # maxActiveSessions = -1 (no limit)
     $self->{request} = [
-         { mbean => "*:name=*,type=ThreadPool", attributes => [ { name => 'currentThreadCount' }, { name => 'currentThreadsBusy' }, { name => 'maxThreads' } ] },
-         { mbean => "*:name=*,type=GlobalRequestProcessor", attributes => [ { name => 'bytesReceived' }, { name => 'bytesSent' }, { name => 'requestCount' } ] }
+         { mbean => "*:context=*,host=*,type=Manager", attributes => [ { name => 'activeSessions' }, { name => 'sessionCounter' }, { name => 'maxActiveSessions' } ] },
+         { mbean => "*:path=*,host=*,type=Manager", attributes => [ { name => 'activeSessions' }, { name => 'sessionCounter' }, { name => 'maxActiveSessions' } ] },
     ];
     
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
-    $self->{tomcatconnector} = {};
-    foreach my $key (keys %$result) {         
-        $key =~ /name=(.*?),type=(.*)/;
-        my ($connector, $type) = ($1, $2); # double quote nivo du name si existe
-        $connector =~ s/^"(.*)"$/$1/g;
+    $self->{webapps} = {};
+    foreach my $key (keys %$result) {
+        $key =~ /(?:[:,])host=(.*?)(?:,|$)/;
+        my $webapps = $1;
+        $key =~ /(?:[:,])(?:path|context)=(.*?)(?:,|$)/;
+        $webapps .= '.' . $1;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $connector !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $connector . "': no matching filter.", debug => 1);
+            $webapps !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $webapps . "': no matching filter.", debug => 1);
             next;
         }
      
-        $result->{$key}->{bytesSent} *= 8 if (defined($result->{$key}->{bytesSent}));
-        $result->{$key}->{bytesReceived} *= 8 if (defined($result->{$key}->{bytesReceived}));
-        $self->{tomcatconnector}->{$connector} = { display => $connector }
-            if (!defined($self->{tomcatconnector}->{$connector}));
-        $self->{tomcatconnector}->{$connector} = { %{$self->{tomcatconnector}->{$connector}}, %{$result->{$key}} };
+        $self->{webapps}->{$webapps} = { 
+            display => $webapps,
+            %{$result->{$key}}
+        };
     }
     
     $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->{url}) . '_' .
@@ -224,28 +195,28 @@ __END__
 
 =head1 MODE
 
-Check connector usage.
+Check webapps session usage.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='threads-busy'
+Example: --filter-counters='sessions-active'
 
 =item B<--filter-name>
 
-Filter connector name (can be a regexp).
+Filter webapps name (can be a regexp).
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
+Can be: 'sessions-count', 'sessions-active'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'threads-count', 'threads-busy', 'request-count', 'traffic-in', 'traffic-out'.
+Can be: 'sessions-count', 'sessions-active'.
 
 =item B<--units>
 

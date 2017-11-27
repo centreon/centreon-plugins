@@ -18,29 +18,28 @@
 # limitations under the License.
 #
 
-package apps::voip::asterisk::remote::plugin;
+package network::netgear::mseries::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'showpeers' => 'apps::voip::asterisk::remote::mode::showpeers',
-                         'dahdistatus' => 'apps::voip::asterisk::remote::mode::dahdistatus',
-                         'activecalls' => 'apps::voip::asterisk::remote::mode::activecalls',
-			             'externalcalls' => 'apps::voip::asterisk::remote::mode::externalcalls',
-			            );
+                         'cpu'              => 'network::netgear::mseries::snmp::mode::cpu',
+                         'hardware'         => 'network::netgear::mseries::snmp::mode::hardware',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::netgear::mseries::snmp::mode::memory',
+                         );
 
     return $self;
 }
-
 
 1;
 
@@ -48,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Asterisk through AMI interface (AMI socket; telnet perl module required)
+Check Netgear Fully Managed Switches (M4200, M4300, M6100,...) in SNMP.
 
 =cut

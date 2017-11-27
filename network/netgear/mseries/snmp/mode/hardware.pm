@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::ibm::mgmt_cards::imm::snmp::mode::environment;
+package network::netgear::mseries::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -28,26 +28,34 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(global|temperature|voltage|fan)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|psu)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
-    $self->{thresholds} = {
-        global => [
-            ['non recoverable', 'CRITICAL'],
-            ['non critical', 'WARNING'],
-            ['critical', 'CRITICAL'],
-            ['nominal', 'OK'],
+    $self->{thresholds} = {        
+        default => [
+            ['notPresent', 'OK'],
+            ['operational', 'OK'],
+            ['failed', 'CRITICAL'],
+            ['notpowering', 'WARNING'],
+            ['powering', 'OK'],
+            ['nopower', 'OK'],
+            ['incompatible', 'WARNING'],
         ],
-        fan => [
-            ['offline', 'WARNING'],
-            ['.*', 'OK'],
+        temperature => [        
+            ['low', 'OK'],
+            ['normal', 'OK'],
+            ['warning', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['notpresent', 'OK'],
+            ['shutdown', 'OK'],
+            ['notoperational', 'WARNING'],
         ],
     };
     
-    $self->{components_path} = 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::components';
-    $self->{components_module} = ['global', 'temperature', 'voltage', 'fan'];
+    $self->{components_path} = 'network::netgear::mseries::snmp::mode::components';
+    $self->{components_module} = ['fan', 'psu', 'temperature'];
 }
 
 sub snmp_execute {
@@ -76,19 +84,24 @@ __END__
 
 =head1 MODE
 
-Check sensors (Fans, Temperatures, Voltages).
+Check hardware.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'global', 'fan', 'temperature', 'voltage'.
+Can be: 'fan', 'psu', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=temperature)
-Can also exclude specific instance: --filter=fan,1
+Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
+Can also exclude specific instance: --filter=fan,1.1
+
+=item B<--absent-problem>
+
+Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
+Can be specific or global: --absent-problem=fan,1
 
 =item B<--no-component>
 
@@ -99,19 +112,18 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='fan,OK,offline'
+Example: --threshold-overload='psu,CRITICAL,^(?!(operational)$)'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
-Example: --warning='temperature,.*,30'
+Set warning threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,40'
 
 =item B<--critical>
 
-Set critical threshold for temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,40'
+Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,50'
 
 =back
 
 =cut
-    
