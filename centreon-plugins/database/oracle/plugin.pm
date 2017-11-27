@@ -39,6 +39,7 @@ sub new {
                          'data-files-status'        => 'database::oracle::mode::datafilesstatus',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
                          'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+                         'invalid-object'           => 'database::oracle::mode::invalidobject',
                          'long-queries'             => 'database::oracle::mode::longqueries',
                          'process-usage'            => 'database::oracle::mode::processusage',
                          'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
