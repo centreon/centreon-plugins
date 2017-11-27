@@ -256,8 +256,6 @@ sub run {
             $value_perf = $total_free;
             $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
                                         value => $value_perf,
-                                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
                                         min => 0, max => int($total_size - $reserved_value));
         }
     }
