@@ -81,6 +81,7 @@ sub new {
                                   "critical:s"              => { name => 'critical' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
+                                  "onlyfree"                => { name => 'onlyfree' },
                                   "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
                                   "name"                    => { name => 'use_name' },
                                   "storage:s"               => { name => 'storage' },
@@ -232,7 +233,7 @@ sub run {
 
         my $label = 'used';
         my $value_perf = $total_used;
-        if (defined($self->{option_results}->{free})) {
+        if (defined($self->{option_results}->{onlyfree})) {
             $label = 'free';
             $value_perf = $total_free;
         }
@@ -248,6 +249,17 @@ sub run {
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
                                       min => 0, max => int($total_size - $reserved_value));
+                                      
+        if (defined($self->{option_results}->{free}) and
+            !defined($self->{option_results}->{onlyfree})) {
+            $label = 'free';
+            $value_perf = $total_free;
+            $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
+                                        value => $value_perf,
+                                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+                                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
+                                        min => 0, max => int($total_size - $reserved_value));
+        }
     }
 
     $self->{output}->display();
