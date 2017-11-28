@@ -50,7 +50,7 @@ Try {
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
         $isClustered = $vm.IsClustered
-        if ($node_is_clustered == 0) {
+        if ($node_is_clustered -eq 0) {
             $isClustered = "nodeNotClustered"
         }
         Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $isClustered "][note=" $note "]"
