@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 sub new {
     my ($class, %options) = @_;
@@ -34,6 +35,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "warning-time:s"    => { name => 'warning_time' },
+                                  "critical-time:s"   => { name => 'critical_time' },
                                   "timeout:s"         => { name => 'timeout', default => 30 },
                                   "command:s"         => { name => 'command' },
                                   "command-path:s"    => { name => 'command_path' },
@@ -66,17 +69,29 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify manage-returns option correctly.");
        $self->{output}->option_exit();
     }
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warning-time', value => $self->{option_results}->{warning_time})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning_time} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-time', value => $self->{option_results}->{critical_time})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical_time} . "'.");
+        $self->{output}->option_exit();
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
 
+    my $timing0 = [gettimeofday];
     my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
                                                                 options => $self->{option_results},
                                                                 command => $self->{option_results}->{command},
                                                                 command_path => $self->{option_results}->{command_path},
                                                                 command_options => $self->{option_results}->{command_options},
                                                                 no_quit => 1);
+    my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    
     my $long_msg = $stdout;
     $long_msg =~ s/\|/-/mg;
     $self->{output}->output_add(long_msg => $long_msg);
@@ -96,6 +111,19 @@ sub run {
         $self->{output}->perfdata_add(label => "code",
                                       value => $exit_code);
     }
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
+        threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
+    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(severity => $exit,
+                                    short_msg => sprintf("Response time %.3fs", $timeelapsed));
+    }
+
+    $self->{output}->perfdata_add(label => 'time', unit => 's',
+                                  value => sprintf('%.3f', $timeelapsed),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_time'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_time'),
+                                  min => 0);
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -131,6 +159,14 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: none).
+
+=item B<--warning-time>
+
+Threshold warning in seconds.
+
+=item B<--critical-time>
+
+Threshold critical in seconds.
 
 =back
 
