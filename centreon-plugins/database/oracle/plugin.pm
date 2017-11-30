@@ -48,6 +48,7 @@ sub new {
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
                          'session-usage'            => 'database::oracle::mode::sessionusage',
                          'sql'                      => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
                          'tnsping'                  => 'database::oracle::mode::tnsping',
                          );
 
