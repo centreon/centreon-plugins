@@ -38,7 +38,7 @@ sub new {
          {
          "hostname:s"       => { name => 'hostname' },
          "http-peer-addr:s" => { name => 'http_peer_addr' },
-         "port:s"           => { name => 'port', default => 8433 },
+         "port:s"           => { name => 'port', default => 8443 },
          "proto:s"          => { name => 'proto', default => 'https' },
          "credentials"          => { name => 'credentials' },
          "username:s"           => { name => 'username' },
