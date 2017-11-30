@@ -50,9 +50,9 @@ sub new {
          "ssl:s"		        => { name => 'ssl' },
          "command:s"            => { name => 'command' },
          "arg:s@"               => { name => 'arg' },
-         "unknown-status:s"     => { name => 'unknown_status', default => '' },
+         "unknown-status:s"     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
          "warning-status:s"     => { name => 'warning_status' },
-         "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+         "critical-status:s"    => { name => 'critical_status', default => '' },
          });
     
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -231,15 +231,16 @@ Set arguments (Multiple option. Example: --arg='arg1')
 
 =item B<--unknown-status>
 
-Threshold warning for http response code
+Threshold warning for http response code.
+(Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
-Threshold warning for http response code
+Threshold warning for http response code.
 
 =item B<--critical-status>
 
-Threshold critical for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Threshold critical for http response code.
 
 =back
 
