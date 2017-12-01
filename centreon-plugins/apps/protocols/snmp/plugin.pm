@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package snmp_standard::plugin;
+package apps::protocols::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'numeric-value'      => 'snmp_standard::mode::numericvalue',
-                         'string-value'       => 'snmp_standard::mode::stringvalue',
-                         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
-                         'uptime'             => 'snmp_standard::mode::uptime',
-                         );
+        'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
+        'numeric-value'      => 'snmp_standard::mode::numericvalue',
+        'string-value'       => 'snmp_standard::mode::stringvalue',
+        'uptime'             => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }
@@ -46,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check SNMP values (string, numeric or execute commands) or standard (uptime).
+Check SNMP values (string, numeric or execute commands).
 
 =cut
