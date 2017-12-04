@@ -146,6 +146,14 @@ sub check_options {
     return 1;
 }
 
+sub get_connection_info {
+    my ($self, %options) = @_;
+
+    my $connection_info = $self->{url};
+    $connection_info .= '_' . $self->{proxy_url} if (defined($self->{proxy_url}));
+    return $connection_info;
+}
+
 sub connect {
     my ($self, %options) = @_;
     
