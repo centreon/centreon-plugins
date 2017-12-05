@@ -32,7 +32,6 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                          'clients'                  => 'apps::redis::cli::mode::clients',
-                         'cluster'                  => 'apps::redis::cli::mode::cluster',
                          'commands'                 => 'apps::redis::cli::mode::commands',
                          'connections'              => 'apps::redis::cli::mode::connections',
                          'cpu'                      => 'apps::redis::cli::mode::cpu',

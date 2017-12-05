@@ -91,13 +91,14 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();
+    my $results = $options{custom}->get_info();
          
-    $self->{global} = { 'used_cpu_sys' => $self->{results}->{used_cpu_sys},
-                        'used_cpu_user' => $self->{results}->{used_cpu_user},
-                        'used_cpu_sys_children' => $self->{results}->{used_cpu_sys_children},
-                        'used_cpu_user_children' => $self->{results}->{used_cpu_user_children}};
+    $self->{global} = {
+        used_cpu_sys            => $results->{used_cpu_sys},
+        used_cpu_user           => $results->{used_cpu_user},
+        used_cpu_sys_children   => $results->{used_cpu_sys_children},
+        used_cpu_user_children  => $results->{used_cpu_user_children},
+    };
 }
 
 1;

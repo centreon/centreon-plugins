@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my $instance_mode;
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
@@ -34,8 +36,6 @@ sub custom_usage_perfdata {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, total => $self->{result_values}->{total}, cast_int => 1),
                                   min => 0, max => $self->{result_values}->{total});
 }
-
-my $instance_mode;
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
@@ -80,13 +80,13 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'used', type => 0 },
-        { name => 'rss', type => 0 },
-        { name => 'peak', type => 0 },
-        { name => 'overhead', type => 0 },
-        { name => 'startup', type => 0 },
-        { name => 'dataset', type => 0 },
-        { name => 'lua', type => 0 },
-        { name => 'stats', type => 0, cb_prefix_output => 'prefix_stats_output' }
+        { name => 'rss', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'peak', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'overhead', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'startup', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'dataset', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'lua', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'stats', type => 0, cb_prefix_output => 'prefix_stats_output', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{used} = [
@@ -225,31 +225,32 @@ sub check_options {
 }
 
 my $metrics = {
-    'used_memory' => { label => 'used', display => 'Used' },
-    'used_memory_rss' => { label => 'rss', display => 'Rss' },
-    'used_memory_peak' => { label => 'peak', display => 'Peak' },
-    'used_memory_overhead' => { label => 'overhead', display => 'Overhead' },
-    'used_memory_startup' => { label => 'startup', display => 'Startup' },
-    'used_memory_dataset' => { label => 'dataset', display => 'Dataset' },
-    'used_memory_lua' => { label => 'lua', display => 'Lua' },
+    used_memory             => { label => 'used', display => 'Used' },
+    used_memory_rss         => { label => 'rss', display => 'Rss' },
+    used_memory_peak        => { label => 'peak', display => 'Peak' },
+    used_memory_overhead    => { label => 'overhead', display => 'Overhead' },
+    used_memory_startup     => { label => 'startup', display => 'Startup' },
+    used_memory_dataset     => { label => 'dataset', display => 'Dataset' },
+    used_memory_lua         => { label => 'lua', display => 'Lua' },
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info(); 
-    
-    foreach my $type (keys $metrics) {
-        $self->{$metrics->{$type}->{label}} = { 'display' => $metrics->{$type}->{display},
-                                                'label' => $metrics->{$type}->{label},
-                                                'used' => $self->{results}->{$type},
-                                                'total' => $self->{results}->{total_system_memory} };
+    my $results = $options{custom}->get_info(); 
+    foreach my $type (keys %$metrics) {
+        next if (!defined($results->{$type}));
+        $self->{$metrics->{$type}->{label}} = { display => $metrics->{$type}->{display},
+                                                label   => $metrics->{$type}->{label},
+                                                used    => $results->{$type},
+                                                total   => $results->{total_system_memory} };
     }
 
-    $self->{stats} = {  'mem_fragmentation_ratio' => $self->{results}->{mem_fragmentation_ratio},
-                        'active_defrag_running' => $self->{results}->{active_defrag_running},
-                        'lazyfree_pending_objects' => $self->{results}->{lazyfree_pending_objects} };
+    $self->{stats} = { 
+        mem_fragmentation_ratio => $results->{mem_fragmentation_ratio},
+        active_defrag_running => $results->{active_defrag_running},
+        lazyfree_pending_objects => $results->{lazyfree_pending_objects},
+    };
 }
 
 1;

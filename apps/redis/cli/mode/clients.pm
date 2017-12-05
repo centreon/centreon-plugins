@@ -85,13 +85,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();    
-          
-    $self->{global} = {  'connected_clients' => $self->{results}->{connected_clients},
-                         'blocked_clients' => $self->{results}->{blocked_clients},
-                         'client_longest_output_list' => $self->{results}->{client_longest_output_list},
-                         'client_biggest_input_buf' => $self->{results}->{client_biggest_input_buf}};
+    my $results = $options{custom}->get_info();
+    $self->{global} = {
+        connected_clients           => $results->{connected_clients},
+        blocked_clients             => $results->{blocked_clients},
+        client_longest_output_list  => $results->{client_longest_output_list},
+        client_biggest_input_buf    => $results->{client_biggest_input_buf},
+    };
 }
 
 1;
