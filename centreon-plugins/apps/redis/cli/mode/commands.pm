@@ -21,16 +21,16 @@
 package apps::redis::cli::mode::commands;
 
 use base qw(centreon::plugins::templates::counter);
-use Digest::MD5 qw(md5_hex);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -76,13 +76,14 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' . md5_hex('all');
+    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();    
-         
-    $self->{global} = { 'total_commands_processed' => $self->{results}->{total_commands_processed},
-                        'instantaneous_ops_per_sec' => $self->{results}->{instantaneous_ops_per_sec}};
+    my $results = $options{custom}->get_info();
+    $self->{global} = {
+        total_commands_processed    => $results->{total_commands_processed},
+        instantaneous_ops_per_sec   => $results->{instantaneous_ops_per_sec},
+    };
 }
 
 1;

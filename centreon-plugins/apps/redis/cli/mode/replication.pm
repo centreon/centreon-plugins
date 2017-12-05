@@ -25,32 +25,26 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $thresholds = {
-    link => [
-        ['down', 'CRITICAL'],
-        ['up', 'OK'],
-    ],
-    sync => [
-        ['stopped', 'OK'],
-        ['in progress', 'WARNING'],
-    ],
-};
-
-my %map_sync = (
-    0 => 'stopped',
-    1 => 'in progress',
-);
+my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'master', type => 0 },
-        { name => 'slave', type => 0 }
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'master', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'slave', type => 0, skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'link_status' }, { name => 'sync_status' }, { name => 'role' }, { name => 'cluster_state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
         { label => 'connected-slaves', set => {
                 key_values => [ { name => 'connected_slaves' } ],
                 output_template => 'Number of connected slaves: %s',
@@ -108,6 +102,51 @@ sub set_counters {
     ];
 }
 
+sub custom_status_threshold {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    my $message;
+
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Node role is '%s' [cluster: %s]", $self->{result_values}->{role}, $self->{result_values}->{cluster_state});
+    if ($self->{result_values}->{role} eq 'slave') {
+        $msg .= sprintf(" [link status: %s] [sync status: %s]", 
+            $self->{result_values}->{link_status}, $self->{result_values}->{sync_status});
+    }
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
+    $self->{result_values}->{sync_status} = $options{new_datas}->{$self->{instance} . '_sync_status'};
+    $self->{result_values}->{link_status} = $options{new_datas}->{$self->{instance} . '_link_status'};
+    $self->{result_values}->{cluster_state} = $options{new_datas}->{$self->{instance} . '_cluster_state'};
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -117,7 +156,8 @@ sub new {
 
      $options{options}->add_options(arguments => 
                 {
-                    "threshold-overload:s@" => { name => 'threshold_overload' },
+                "warning-status:s"    => { name => 'warning_status', default => '%{sync_status} =~ /in progress/i' },
+                "critical-status:s"   => { name => 'critical_status', default => '%{link_status} =~ /down/i' },
                 });
 
     return $self;
@@ -125,79 +165,52 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
+    $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
+    $self->change_macros();
 }
 
-
-sub get_severity {
+sub change_macros {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
+
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
     }
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
+
+my %map_sync = (
+    0 => 'stopped',
+    1 => 'in progress',
+);
+
+my %map_cluster_state = (
+    0 => 'disabled',
+    1 => 'enabled',
+);
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();
-
-    my @exits;
+    my $results = $options{custom}->get_info();
     
-    $self->{output}->output_add(short_msg => sprintf("Node is '%s'", $self->{results}->{role}));
+    $self->{global} = { 
+        connected_slaves => $results->{connected_slaves},
+        role => $results->{role},
+        cluster_state => defined($results->{cluster_enabled}) ? $map_cluster_state{$results->{cluster_enabled}} : '-',
+        link_status => defined($results->{master_link_status}) ? $results->{master_link_status} : '-',
+        sync_status => defined($results->{master_sync_in_progress}) ? $map_sync{$results->{master_sync_in_progress}} : '-',
+    };
 
-    $self->{global} = { 'connected_slaves' => $self->{results}->{connected_slaves} };
-
-    if ($self->{results}->{role} =~ /master/) {
-        $self->{master} = { 'master_repl_offset' => $self->{results}->{master_repl_offset} };
-    } elsif ($self->{results}->{role} =~ /slave/) {
-        $self->{output}->output_add(short_msg => sprintf("Link with master '%s:%s' is '%s', Sync is '%s'", 
-            $self->{results}->{master_host}, 
-            $self->{results}->{master_port}, 
-            $self->{results}->{master_link_status},
-            $map_sync{$self->{results}->{master_sync_in_progress}}));
-
-        push @exits, $self->get_severity(section => 'link', value => $self->{results}->{master_link_status});
-        push @exits, $self->get_severity(section => 'sync', value => $map_sync{$self->{results}->{master_sync_in_progress}});
-        
-        $self->{slave} = {  'master_last_io_seconds_ago' => $self->{results}->{master_last_io_seconds_ago},
-                            'slave_repl_offset' => $self->{results}->{slave_repl_offset},
-                            'slave_priority' => $self->{results}->{slave_priority},
-                            'slave_read_only' => $self->{results}->{slave_read_only} };
-    }
- 
-    my $exit = $self->{output}->get_most_critical(status => \@exits);
-    $self->{output}->output_add(severity => $exit);
+    $self->{master} = { master_repl_offset => $results->{master_repl_offset} };
+    $self->{slave} = {
+        master_last_io_seconds_ago  => $results->{master_last_io_seconds_ago},
+        slave_repl_offset           => $results->{slave_repl_offset},
+        slave_priority              => $results->{slave_priority},
+        slave_read_only             => $results->{slave_read_only},
+    };
 }
 
 1;
@@ -206,55 +219,31 @@ __END__
 
 =head1 MODE
 
-Check replication status
+Check replication status.
 
 =over 8
 
-=item B<--threshold-overload>
+=item B<--warning-status>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-Example: --threshold-overload='link,OK,down'
-Section can be: 'link', 'sync'
+Set warning threshold for status (Default: '%{sync_status} =~ /in progress/i').
+Can used special variables like: %{sync_status}, %{link_status}, %{cluster_state}
 
-=item B<--warning-connected-slaves>
+=item B<--critical-status>
 
-Warning threshold for number of connected slave
+Set critical threshold for status (Default: '%{link_status} =~ /down/i').
+Can used special variables like: %{sync_status}, %{link_status}, %{cluster_state}
 
-=item B<--critical-connected-slaves>
+=item B<--warning-*>
 
-Critical threshold for number of connected slave
+Threshold warning.
+Can be: 'connected-slaves', 'master-repl-offset',
+'master-last-io', 'slave-priority', 'slave-read-only'.
 
-=item B<--warning-master-repl-offset>
+=item B<--critical-*>
 
-Warning threshold for master replication offset (in second)
-
-=item B<--critical-master-repl-offset>
-
-Critical threshold for master replication offset (in second)
-
-=item B<--warning-master-last-io>
-
-Warning threshold for last interaction with master (in second)
-
-=item B<--critical-master-last-io>
-
-Critical threshold for last interaction with master (in second)
-
-=item B<--warning-slave-priority>
-
-Warning threshold for slave priority
-
-=item B<--critical-slave-priority>
-
-Critical threshold for slave priority
-
-=item B<--warning-slave-read-only>
-
-Warning threshold for slave being in read-only
-
-=item B<--critical-slave-read-only>
-
-Critical threshold for slave being in read-only
+Threshold critical.
+Can be: 'connected-slaves', 'master-repl-offset',
+'master-last-io', 'slave-priority', 'slave-read-only'.
 
 =back
 

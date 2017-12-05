@@ -21,17 +21,17 @@
 package apps::redis::cli::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
-use Digest::MD5 qw(md5_hex);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'connections', type => 0, cb_prefix_output => 'prefix_connections_output' },
-        { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output' }
+        { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output' },
     ];
     
     $self->{maps_counters}->{connections} = [
@@ -59,7 +59,7 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'total_net_input_bytes_per_second', template => '%s', min => 0, unit => 'b/s' },
+                    { label => 'traffic_in', value => 'total_net_input_bytes_per_second', template => '%d', min => 0, unit => 'b/s' },
                 ],
             },
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 output_template => 'Traffic Out: %s %s/s',
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'total_net_output_bytes_per_second', template => '%s', min => 0, unit => 'b/s' },
+                    { label => 'traffic_out', value => 'total_net_output_bytes_per_second', template => '%d', min => 0, unit => 'b/s' },
                 ],
             },
         },
@@ -104,16 +104,20 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $self->{option_results}->{hostname} . '_' . md5_hex('all');
+    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();    
+    my $results = $options{custom}->get_info();
          
-    $self->{connections} = { 'total_connections_received' => $self->{results}->{total_connections_received},
-                             'rejected_connections' => $self->{results}->{rejected_connections}};
+    $self->{connections} = { 
+        total_connections_received  => $results->{total_connections_received},
+        rejected_connections        => $results->{rejected_connections},
+    };
 
-    $self->{traffic} = { 'total_net_input_bytes' => $self->{results}->{total_net_input_bytes},
-                         'total_net_output_bytes' => $self->{results}->{total_net_output_bytes}};                         
+    $self->{traffic} = {
+        total_net_input_bytes   => $results->{total_net_input_bytes} * 8,
+        total_net_output_bytes  => $results->{total_net_output_bytes} * 8,
+    };
 }
 
 1;

@@ -54,20 +54,15 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -99,15 +94,19 @@ sub check_options {
     return 0;
 }
 
+sub get_connection_info {
+    my ($self, %options) = @_;
+    
+    return $self->{hostname} . ":" . $self->{port};
+}
+
 sub get_info {
     my ($self, %options) = @_;
 
-    $self->{redis} = Redis->new(server => $self->{hostname}.":".$self->{port});
+    $self->{redis} = Redis->new(server => $self->{hostname} . ":" . $self->{port});
     
     my $response = $self->{redis}->info;
-
     my $items;
-    
     foreach my $attributes (keys %{$response}) {
         $items->{$attributes} = $response->{$attributes};
     }

@@ -25,30 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $thresholds = {
-    status => [
-        ['fail', 'CRITICAL'],
-        ['ok', 'OK'],
-    ],
-    progress => [
-        ['stopped', 'WARNING'],
-        ['in progress', 'OK'],
-    ],
-};
-
-my %map_status = (
-    0 => 'stopped',
-    1 => 'in progress',
-);
+my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'progress_status' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
         { label => 'changes', set => {
                 key_values => [ { name => 'rdb_changes_since_last_save' } ],
                 output_template => 'Number of changes since the last dump: %s',
@@ -93,6 +87,45 @@ sub set_counters {
     ];
 }
 
+sub custom_status_threshold {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    my $message;
+
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+                 eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("RDB save status is '%s' [progress status: %s]", $self->{result_values}->{status}, $self->{result_values}->{progress_status});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{progress_status} = $options{new_datas}->{$self->{instance} . '_progress_status'};
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -102,7 +135,8 @@ sub new {
 
      $options{options}->add_options(arguments => 
                 {
-                    "threshold-overload:s@" => { name => 'threshold_overload' },
+                "warning-status:s"    => { name => 'warning_status', default => '%{sync_status} =~ /in progress/i' },
+                "critical-status:s"   => { name => 'critical_status', default => '%{link_status} =~ /down/i' },
                 });
 
     return $self;
@@ -110,70 +144,41 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
+    $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
+    $self->change_macros();
 }
 
-
-sub get_severity {
+sub change_macros {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
+
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
     }
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
 }
+
+my %map_status = (
+    0 => 'stopped',
+    1 => 'in progress',
+);
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{redis} = $options{custom};
-    $self->{results} = $self->{redis}->get_info();
-
-    my @exits;
-    
-    push @exits, $self->get_severity(section => 'status', value => $self->{results}->{rdb_last_bgsave_status});
-    push @exits, $self->get_severity(section => 'progess', value => $map_status{$self->{results}->{rdb_bgsave_in_progress}});
-   
-    $self->{output}->output_add(short_msg => sprintf("RDB save is in '%s' status", $self->{results}->{rdb_last_bgsave_status}));
-    $self->{output}->output_add(short_msg => sprintf("RDB save is '%s'", $map_status{$self->{results}->{rdb_bgsave_in_progress}}));
-
-    $self->{global} = { 'rdb_changes_since_last_save' => $self->{results}->{rdb_changes_since_last_save},
-                        'rdb_last_save_time' => centreon::plugins::misc::change_seconds(value => time() - $self->{results}->{rdb_last_save_time}),
-                        'rdb_last_save_time_sec' => time() - $self->{results}->{rdb_last_save_time},
-                        'rdb_last_cow_size' => $self->{results}->{rdb_last_cow_size},
-                        'rdb_last_bgsave_time' => $self->{results}->{rdb_last_bgsave_time_sec},
-                        'rdb_current_bgsave_time' => $self->{results}->{rdb_current_bgsave_time_sec}};
-    
-    my $exit = $self->{output}->get_most_critical(status => \@exits);
-    $self->{output}->output_add(severity => $exit);
+    my $results = $options{custom}->get_info();
+    $self->{global} = {
+        status                      => $results->{rdb_last_bgsave_status},
+        progress_status             => $map_status{$results->{rdb_bgsave_in_progress}},
+        rdb_changes_since_last_save => $results->{rdb_changes_since_last_save},
+        rdb_last_save_time      => centreon::plugins::misc::change_seconds(value => time() - $results->{rdb_last_save_time}),
+        rdb_last_save_time_sec  => time() - $results->{rdb_last_save_time},
+        rdb_last_cow_size       => $results->{rdb_last_cow_size},
+        rdb_last_bgsave_time    => $results->{rdb_last_bgsave_time_sec},
+        rdb_current_bgsave_time => $results->{rdb_current_bgsave_time_sec}
+    };
 }
 
 1;
@@ -182,55 +187,31 @@ __END__
 
 =head1 MODE
 
-Check RDB persistence status
+Check RDB persistence status.
 
 =over 8
 
-=item B<--threshold-overload>
+=item B<--warning-status>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-Example: --threshold-overload='status,CRITICAL,ok'
-Section can be: 'status', 'progress'
+Set warning threshold for status (Default: '%{progress_status} =~ /in progress/i').
+Can used special variables like: %{progress_status}, %{status}
 
-=item B<--warning-changes>
+=item B<--critical-status>
 
-Warning threshold for number of changes since the last dump
+Set critical threshold for status (Default: '%{status} =~ /fail/i').
+Can used special variables like: %{progress_status}, %{status}
 
-=item B<--critical-changes>
+=item B<--warning-*>
 
-Critical threshold for number of changes since the last dump
+Threshold warning.
+Can be: 'changes', 'last-save', 'save-size', 
+'last-save-duration', 'current-save-duration'.
 
-=item B<--warning-last-save>
+=item B<--critical-*>
 
-Warning threshold for time since last successful save (in second)
-
-=item B<--critical-last-save>
-
-Critical threshold for time since last successful save (in second)
-
-=item B<--warning-save-size>
-
-Warning threshold for size of last save (in bytes)
-
-=item B<--critical-save-size>
-
-Critical threshold for size of last save (in bytes)
-
-=item B<--warning-last-save-duration>
-
-Warning threshold for duration of last save (in second)
-
-=item B<--critical-last-save-duration>
-
-Critical threshold for duration of last save (in second)
-
-=item B<--warning-current-save-duration>
-
-Warning threshold for current of last save (in second)
-
-=item B<--critical-current-save-duration>
-
-Critical threshold for current of last save (in second)
+Threshold critical.
+Can be: 'changes', 'last-save', 'save-size', 
+'last-save-duration', 'current-save-duration'.
 
 =back
 
