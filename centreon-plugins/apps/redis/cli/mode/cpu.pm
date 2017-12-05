@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -34,36 +35,44 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'sys', set => {
-                key_values => [ { name => 'used_cpu_sys' } ],
-                output_template => 'System: %.2f %%',
+                key_values => [ { name => 'used_cpu_sys', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys' },
+                output_template => 'System: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
+                per_second => 1,
                 perfdatas => [
-                    { label => 'sys', value => 'used_cpu_sys_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'sys', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
-            },
+            }
         },
         { label => 'user', set => {
-                key_values => [ { name => 'used_cpu_user' } ],
-                output_template => 'User: %.2f %%',
+                key_values => [ { name => 'used_cpu_user', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user' },
+                output_template => 'User: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
+                per_second => 1,
                 perfdatas => [
-                    { label => 'user', value => 'used_cpu_user_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'user', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
-            },
+            }
         },
         { label => 'sys-children', set => {
-                key_values => [ { name => 'used_cpu_sys_children' } ],
-                output_template => 'System children: %.2f %%',
+                key_values => [ { name => 'used_cpu_sys_children', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys_children' },
+                output_template => 'System children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
+                per_second => 1,
                 perfdatas => [
-                    { label => 'sys_children', value => 'used_cpu_sys_children_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'sys_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
-            },
+            }
         },
         { label => 'user-children', set => {
-                key_values => [ { name => 'used_cpu_user_children' } ],
-                output_template => 'User children: %.2f %%',
+                key_values => [ { name => 'used_cpu_user_children', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user_children' },
+                output_template => 'User children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
+                per_second => 1,
                 perfdatas => [
-                    { label => 'user_children', value => 'used_cpu_user_children_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'user_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
-            },
+            }
         },
     ];
 }
@@ -74,9 +83,18 @@ sub prefix_output {
     return "CPU usage: ";
 }
 
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    my $delta_total = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{used_delta} = 100 * $delta_total / $options{delta_time};
+    
+    return 0;
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '1.0';
@@ -90,6 +108,9 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $self->{cache_name} = "redis_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     my $results = $options{custom}->get_info();
          
@@ -107,7 +128,7 @@ __END__
 
 =head1 MODE
 
-Check CPU utilization
+Check CPU utilization.
 
 =over 8
 
