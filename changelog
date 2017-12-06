@@ -1,3 +1,13 @@
+2017-12-08 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kingdee Rest API
+ * Plugin added: Redis Cli
+ * Plugin added: Ubiquiti Edge SNMP
+ * Plugin added: JBoss JMX
+ * Plugin added: NSClient Query
+ * Break: Renamed Asterisk AMI
+ * Break: Renamed Dell n4000
+ * Break: Renamed Dell 62000
+
 2017-11-23 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Freebox Rest API
  * Plugin added: Netgear Mseries SNMP
