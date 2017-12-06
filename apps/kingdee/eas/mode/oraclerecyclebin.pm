@@ -68,14 +68,14 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /^COUNT.*?=\d+/i ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find oracle recyclebin status."
-		);
-		$self->{output}->option_exit();
-	}
-		
+    if ( $webcontent !~ /^COUNT.*?=\d+/i ) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find oracle recyclebin status."
+        );
+        $self->{output}->option_exit();
+    }
+        
     my $count = $1 if $webcontent =~ /^COUNT.*?=(\d+)/i;
 
     my $exit = $self->{perfdata}->threshold_check(value => $count, threshold => [ 

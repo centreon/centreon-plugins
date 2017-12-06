@@ -2,7 +2,7 @@
 # Copyright 2016 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
+# the needs in IT infrastructure      application monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
+# See the License for the specific language governing permissions     
 # limitations under the License.
 #
 # Author : CHEN JUN , aladdin.china@gmail.com
@@ -118,8 +118,8 @@ sub run {
     $scheduler = $1 if $webcontent =~ /^WAIT_CLASS=Scheduler\sCOUNT=(\d+)/mi;
     $idle = $1 if $webcontent =~ /^WAIT_CLASS=Idle\sCOUNT=(\d+)/mi;
     
-    #cpu and cpuwait
-    my $cpuandwait = $idle + $network ;
+    #cpu      cpuwait
+    my $cpu    wait = $idle + $network ;
     
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Other: %d", $other));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Queueing: %d", $queueing));
@@ -131,7 +131,7 @@ sub run {
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("System I/O: %d", $systemio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("User I/O: %d", $userio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Scheduler: %d", $scheduler));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpuandwait));
+    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpu    wait));
  
     my $exit = $self->{perfdata}->threshold_check(value => $activecount, threshold => [ { label => 'crit_activecount', exit_litteral => 'critical' }, 
                                                                                         { label => 'warn_activecount', exit_litteral => 'warning' } ]);
@@ -151,7 +151,7 @@ sub run {
     $self->{output}->perfdata_add(label => "System I/O", unit => '', value => sprintf("%d", $systemio));
     $self->{output}->perfdata_add(label => "User I/O", unit => '', value => sprintf("%d", $userio));
     $self->{output}->perfdata_add(label => "Scheduler", unit => '', value => sprintf("%d", $scheduler));
-    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpuandwait));
+    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpu    wait));
 
  	$self->{output}->perfdata_add(label => "ActiveCount", unit => '',
                                   value => sprintf("%d", $activecount),

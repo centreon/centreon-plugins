@@ -61,14 +61,14 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /(LoadedClassCount|UnloadedClassCount)/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find classloading status."
-		);
-		$self->{output}->option_exit();
-	}
-	
+    if ($webcontent !~ /(LoadedClassCount|UnloadedClassCount)/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find classloading status."
+        );
+        $self->{output}->option_exit();
+    }
+    
     my ($loadedclasscount, $unloadedclasscount) = (0, 0);
 
     if ($webcontent =~ /LoadedClassCount=\s*(\d+)/mi) {

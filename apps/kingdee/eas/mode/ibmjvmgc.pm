@@ -61,14 +61,14 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /CollectionCount=\d+/mi) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find ibm jdk j9 gc status."
-		);
-		$self->{output}->option_exit();
-	}
-	
+    if ($webcontent !~ /CollectionCount=\d+/mi) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find ibm jdk j9 gc status."
+        );
+        $self->{output}->option_exit();
+    }
+    
     my ($collectioncount, $collectiontime) = (0, 0);
 
     ($collectioncount, $collectiontime) = ($1, $2) if ($webcontent =~ /CollectionCount=(\d+)\sCollectionTime=(\d+)/mi);

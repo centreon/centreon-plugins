@@ -48,9 +48,9 @@ sub check_options {
     $self->SUPER::init(%options);
 
     ($self->{warn_activecount}, $self->{warn_timeoutcount}) 
-    	= split /,/, $self->{option_results}->{"warning"};
+        = split /,/, $self->{option_results}->{"warning"};
     ($self->{crit_activecount}, $self->{crit_timeoutcount}) 
-    	= split /,/, $self->{option_results}->{"critical"};
+        = split /,/, $self->{option_results}->{"critical"};
 
     # warning
     if (($self->{perfdata}->threshold_validate(label => 'warn_activecount', value => $self->{warn_activecount})) == 0) {
@@ -76,23 +76,23 @@ sub run {
     my ($self, %options) = @_;
     
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
-	if ($webcontent !~ /TransactionCount=\d+/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find transaction status."
-		);
-	}
+    if ($webcontent !~ /TransactionCount=\d+/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find transaction status."
+        );
+    }
 
-	my ($transactioncount, $totaltransactiontime, $committedcount, $rolledbackcount, $activecount, $maxtransactiontime, $defaulttimeout, $timeoutcount) = (0, 0, 0, 0, 0, 0, 0, 0);
+    my ($transactioncount, $totaltransactiontime, $committedcount, $rolledbackcount, $activecount, $maxtransactiontime, $defaulttimeout, $timeoutcount) = (0, 0, 0, 0, 0, 0, 0, 0);
 
-	$transactioncount = $1 if $webcontent =~ /TransactionCount=(\d+)\s/i;
-	$totaltransactiontime = $1 if $webcontent =~ /TotalTransactionTime=(\d+)\s/i;
-	$committedcount = $1 if $webcontent =~ /CommittedCount=(\d+)\s/i;
-	$rolledbackcount = $1 if $webcontent =~ /RolledbackCount=(\d+)\s/i;
-	$activecount = $1 if $webcontent =~ /ActiveCount=(\d+)\s/i;
-	$maxtransactiontime = $1 if $webcontent =~ /MaxTransactionTime=(\d+)\s/i;
-	$defaulttimeout = $1 if $webcontent =~ /DefaultTimeout=(\d+)\s/i;
-	$timeoutcount = $1 if $webcontent =~ /TimedOutCount=(\d+)\s/i;
+    $transactioncount = $1 if $webcontent =~ /TransactionCount=(\d+)\s/i;
+    $totaltransactiontime = $1 if $webcontent =~ /TotalTransactionTime=(\d+)\s/i;
+    $committedcount = $1 if $webcontent =~ /CommittedCount=(\d+)\s/i;
+    $rolledbackcount = $1 if $webcontent =~ /RolledbackCount=(\d+)\s/i;
+    $activecount = $1 if $webcontent =~ /ActiveCount=(\d+)\s/i;
+    $maxtransactiontime = $1 if $webcontent =~ /MaxTransactionTime=(\d+)\s/i;
+    $defaulttimeout = $1 if $webcontent =~ /DefaultTimeout=(\d+)\s/i;
+    $timeoutcount = $1 if $webcontent =~ /TimedOutCount=(\d+)\s/i;
 
     my $exit = $self->{perfdata}->threshold_check(value => $activecount, threshold => [ { label => 'crit_activecount', exit_litteral => 'critical' }, 
                                                                                         { label => 'warn_activecount', exit_litteral => 'warning' } ]);
