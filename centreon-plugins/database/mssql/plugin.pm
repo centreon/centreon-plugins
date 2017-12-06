@@ -43,6 +43,7 @@ sub new {
                          'dead-locks'           => 'database::mssql::mode::deadlocks',
                          'backup-age'           => 'database::mssql::mode::backupage',
                          'sql'                  => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
                          );
 
     return $self;

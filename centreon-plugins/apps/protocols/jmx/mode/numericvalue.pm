@@ -142,7 +142,7 @@ sub check_value {
     if ($self->{attributes}->{type} =~ /^counter$/i)  {
         if (!defined($self->{datas})) {
             $self->{datas} = {};
-            $self->{statefile_cache}->read(statefile => "jmxstandard_" . $self->{mode} . '_' . md5_hex($self->{connector}->{url} . ' ' . $self->{option_results}->{mbean_pattern}));
+            $self->{statefile_cache}->read(statefile => "jmxstandard_" . $self->{mode} . '_' . md5_hex($self->{connector}->get_connection_info() . ' ' . $self->{option_results}->{mbean_pattern}));
         }
     
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
