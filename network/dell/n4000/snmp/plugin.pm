@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::dell::6200::plugin;
+package network::dell::n4000::snmp::plugin;
 
 use strict;
 use warnings;
@@ -32,10 +32,10 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
                           'global-status'   => 'centreon::common::dell::powerconnect3000::mode::globalstatus',
-                          'environment'     => 'centreon::common::fastpath::mode::environment',
-                          'interfaces'      => 'snmp_standard::mode::interfaces',
-                          'memory'          => 'centreon::common::fastpath::mode::memory',
-                          'cpu'             => 'centreon::common::fastpath::mode::cpu',
+                          'environment'     => 'centreon::common::dell::fastpath::snmp::mode::environment',
+                          'interfaces'      => 'snmp_standard::mode::interfaces', 
+                          'memory'          => 'centreon::common::dell::fastpath::snmp::mode::memory',
+                          'cpu'             => 'centreon::common::dell::fastpath::snmp::mode::cpu',
                           'list-interfaces' => 'snmp_standard::mode::listinterfaces',
                          );
 
@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Dell 6200 series in SNMP.
+Check Dell N4000 series in SNMP.
 
 =cut

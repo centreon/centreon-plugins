@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fastpath::mode::components::fan;
+package centreon::common::dell::fastpath::snmp::mode::components::fan;
 
 use strict;
 use warnings;

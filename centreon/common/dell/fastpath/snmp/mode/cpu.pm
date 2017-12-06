@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fastpath::mode::cpu;
+package centreon::common::dell::fastpath::snmp::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 

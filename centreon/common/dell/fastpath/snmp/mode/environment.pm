@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fastpath::mode::environment;
+package centreon::common::dell::fastpath::snmp::mode::environment;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -54,7 +54,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'centreon::common::fastpath::mode::components';
+    $self->{components_path} = 'centreon::common::dell::fastpath::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature'];
 }
 

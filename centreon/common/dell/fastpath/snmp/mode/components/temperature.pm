@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fastpath::mode::components::temperature;
+package centreon::common::dell::fastpath::snmp::mode::components::temperature;
 
 use strict;
 use warnings;
