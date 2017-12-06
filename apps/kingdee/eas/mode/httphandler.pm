@@ -25,36 +25,26 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
-	my ( $class, %options ) = @_;
+	my ($class, %options) = @_;
 	my $self = $class->SUPER::new( package => __PACKAGE__, %options );
 	bless $self, $class;
 
 	$self->{version} = '1.0';
 	$options{options}->add_options(
 		arguments => {
-			"hostname:s"	     => { name => 'hostname' },
-			"port:s"             => { name => 'port', },
-			"proto:s"   		 => { name => 'proto' },
 			"urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkhttphandler.jsp" },
 			"warning:s"          => { name => 'warning' },
 			"critical:s"         => { name => 'critical' },
-			"credentials"        => { name => 'credentials' },
-			"username:s"         => { name => 'username' },
-			"password:s"         => { name => 'password' },
-			"proxyurl:s"         => { name => 'proxyurl' },
-			"timeout:s"          => { name => 'timeout' },
 		}
 	);
 
-	$self->{http} = centreon::plugins::http->new( output => $self->{output} );
 	return $self;
 }
 
 sub check_options {
-	my ( $self, %options ) = @_;
+	my ($self, %options) = @_;
 	$self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
@@ -66,16 +56,14 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-	$self->{http}->set_options( %{ $self->{option_results} } );
 }
 
 sub run {
-	my ( $self, %options ) = @_;
+	my ($self, %options) = @_;
 
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /MaxThreads=\d+/i ) {
+	if ($webcontent !~ /MaxThreads=\d+/i) {
 		$self->{output}->output_add(
 			severity  => 'UNKNOWN',
 			short_msg => "Cannot find httphandler status in response: '" . $webcontent . "'"
@@ -181,41 +169,9 @@ Check EAS instance httphandler(Apusic) threads pool status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Protocol to use http or https, http is default
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkhttphandler.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 

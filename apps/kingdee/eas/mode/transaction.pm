@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,20 +34,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checktransaction.jsp" },
             "datasource:s"      => { name => 'datasource' },
             "warning:s"         => { name => 'warning', default => "," },
             "critical:s"        => { name => 'critical', default => "," },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "timeout:s"         => { name => 'timeout' },
             });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -63,33 +54,29 @@ sub check_options {
 
     # warning
     if (($self->{perfdata}->threshold_validate(label => 'warn_activecount', value => $self->{warn_activecount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning activecount threshold '" . $self->{warn_activecount} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning activecount threshold '" . $self->{warn_activecount} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'warn_timeoutcount', value => $self->{warn_timeoutcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning timeoutcount threshold '" . $self->{warn_timeoutcount} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning timeoutcount threshold '" . $self->{warn_timeoutcount} . "'.");
+        $self->{output}->option_exit();
     }
     # critical
     if (($self->{perfdata}->threshold_validate(label => 'crit_activecount', value => $self->{crit_activecount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical activecount threshold '" . $self->{crit_activecount} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical activecount threshold '" . $self->{crit_activecount} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'crit_timeoutcount', value => $self->{crit_timeoutcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical timeoutcount threshold '" . $self->{crit_timeoutcount} . "'.");
-       $self->{output}->option_exit();
-    }
-    
-    $self->{http}->set_options(%{$self->{option_results}});
+        $self->{output}->add_option_msg(short_msg => "Wrong critical timeoutcount threshold '" . $self->{crit_timeoutcount} . "'.");
+        $self->{output}->option_exit();
+    }    
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
-
-	if ( $webcontent !~ /TransactionCount=\d+/i ) {
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
+	if ($webcontent !~ /TransactionCount=\d+/i) {
 		$self->{output}->output_add(
 			severity  => 'UNKNOWN',
 			short_msg => "Cannot find transaction status."
@@ -166,41 +153,9 @@ Check EAS application EJB transaction status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application server host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Specify https if needed
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checktransaction.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 
