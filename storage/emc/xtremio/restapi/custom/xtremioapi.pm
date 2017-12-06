@@ -133,7 +133,7 @@ sub settings {
 sub cache_clusters {
     my ($self, %options) = @_;
     
-    my $has_cache_file = $self->{statefile_cache_cluster}->read(statefile => 'cache_xtremio_clusters_' . $self->{hostname}  . '_' . $self->{port});
+    my $has_cache_file = $self->{statefile_cache_cluster}->read(statefile => 'cache_xtremio_clusters_' . $self->{hostname});
     my $timestamp_cache = $self->{statefile_cache_cluster}->get(name => 'last_timestamp');
     my $clusters = $self->{statefile_cache_cluster}->get(name => 'clusters');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
