@@ -44,13 +44,11 @@ sub new {
                          'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
                          'slow-queries'                 => 'database::mysql::mode::slowqueries',
                          'sql'                          => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
+                         'tables-size'                  => 'database::mysql::mode::tablessize',
                          'threads-connected'            => 'database::mysql::mode::threadsconnected',
                          'uptime'                       => 'database::mysql::mode::uptime',
-                         'tables-size'                  => 'database::mysql::mode::tablessize',
-                         'tables-count'                 => 'database::mysql::mode::tablescount',
-                         'open-tables'                  => 'database::mysql::mode::opentables',
-                         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
-                         );
+                        );
                          
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
