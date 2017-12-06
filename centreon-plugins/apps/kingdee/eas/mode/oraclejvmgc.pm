@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,19 +34,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkgc_ps.jsp" },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "timeout:s"         => { name => 'timeout' },
             });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -63,14 +54,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
         
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
 	if ( $webcontent !~ /MinorGCCount=\d+/mi ) {
 		$self->{output}->output_add(
@@ -117,41 +106,9 @@ Check EAS application jvm gc status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application server host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Specify https if needed
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkgc_ps.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 
