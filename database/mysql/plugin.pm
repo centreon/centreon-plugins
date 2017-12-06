@@ -49,7 +49,9 @@ sub new {
                          'tables-size'                  => 'database::mysql::mode::tablessize',
                          'tables-count'                 => 'database::mysql::mode::tablescount',
                          'open-tables'                  => 'database::mysql::mode::opentables',
+                         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
                          );
+                         
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
     return $self;
