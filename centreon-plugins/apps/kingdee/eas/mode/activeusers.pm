@@ -61,14 +61,14 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /.*ActiveUsers_1m=.*/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find eas actvie users info."
-		);
-		$self->{output}->option_exit();
-	}
-		
+    if ($webcontent !~ /.*ActiveUsers_1m=.*/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find eas actvie users info."
+        );
+        $self->{output}->option_exit();
+    }
+        
     my @activeusers = split(" ",$webcontent);
 
     my $info;

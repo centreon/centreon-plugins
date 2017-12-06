@@ -63,20 +63,20 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /VmName=/mi) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find java runtime status."
-		);
-		$self->{output}->option_exit();
-	}
-		
+    if ($webcontent !~ /VmName=/mi) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find java runtime status."
+        );
+        $self->{output}->option_exit();
+    }
+        
     my $vmname = $1 if $webcontent =~ /VmName=\'(.*?)\'/i;
-	my $specversion = $1 if $webcontent =~ /SpecVersion=([\d\.]+)/i;
-	my $vmversion = $1 if $webcontent =~ /VmVersion=(.*?)\s/i;
-	my $vender = $1 if $webcontent =~ /VmVendor=\'(.*?)\'/i;
-	my $uptime = $1 if $webcontent =~ /Uptime=(\d*)/i;   #unit:ms
-	my $startime = $1 if $webcontent =~ /StartTime=(\d*)/i;
+    my $specversion = $1 if $webcontent =~ /SpecVersion=([\d\.]+)/i;
+    my $vmversion = $1 if $webcontent =~ /VmVersion=(.*?)\s/i;
+    my $vender = $1 if $webcontent =~ /VmVendor=\'(.*?)\'/i;
+    my $uptime = $1 if $webcontent =~ /Uptime=(\d*)/i;   #unit:ms
+    my $startime = $1 if $webcontent =~ /StartTime=(\d*)/i;
 
     my $exit = $self->{perfdata}->threshold_check(value => $uptime / 1000, threshold => [ 
                                                   { label => 'critical', 'exit_litteral' => 'critical' }, 

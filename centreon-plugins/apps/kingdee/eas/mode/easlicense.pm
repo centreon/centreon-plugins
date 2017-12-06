@@ -60,12 +60,12 @@ sub run {
     my ($self, %options) = @_;
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
-	if ($webcontent !~ /.*BOS=.*/i) {
-		$self->{output}->output_add(severity  => 'UNKNOWN',
+    if ($webcontent !~ /.*BOS=.*/i) {
+        $self->{output}->output_add(severity  => 'UNKNOWN',
                                     short_msg => "Cannot find eas license usage info.");
-		$self->{output}->option_exit();
-	}
-		
+        $self->{output}->option_exit();
+    }
+        
     my @licenseinfo = split(" ",$webcontent);
 
     my $info;

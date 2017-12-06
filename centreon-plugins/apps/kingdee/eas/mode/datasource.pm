@@ -68,32 +68,32 @@ sub run {
     
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /^Name=/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find datasource \'" .  $self->{option_results}->{datasource} . "\' status."
-		);
-	}
+    if ($webcontent !~ /^Name=/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find datasource \'" .  $self->{option_results}->{datasource} . "\' status."
+        );
+    }
 
-	my $init_pool_size = -1;
-	my $max_pool_size = -1;
-	my $idle_timeout = -1;
-	my $cur_conn_count = -1;
-	my $cur_avail_conn_count = -1;
-	my $max_conn_count = -1;
-	my $create_count = -1;
-	my $close_count = -1; 
+    my $init_pool_size = -1;
+    my $max_pool_size = -1;
+    my $idle_timeout = -1;
+    my $cur_conn_count = -1;
+    my $cur_avail_conn_count = -1;
+    my $max_conn_count = -1;
+    my $create_count = -1;
+    my $close_count = -1; 
 
-	$init_pool_size = $1 if $webcontent =~ /InitialPoolSize=(\d+)\s/i;
-	$max_pool_size = $1 if $webcontent =~ /MaxPoolSize=(\d+)\s/i;
-	$idle_timeout = $1 if $webcontent =~ /IdleTimeout=(\d+)\s/i;
-	$cur_conn_count = $1 if $webcontent =~ /CurrentConnectionCount=(\d+)\s/i;
-	$cur_avail_conn_count = $1 if $webcontent =~ /CurrentAvailableConnectionCount=(\d+)\s/i;
-	$max_conn_count = $1 if $webcontent =~ /MaxConnectionCount=(\d+)\s/i;
-	$create_count = $1 if $webcontent =~ /CreateCount=(\d+)\s/i;
-	$close_count = $1 if $webcontent =~ /CloseCount=(\d+)\s/i;
+    $init_pool_size = $1 if $webcontent =~ /InitialPoolSize=(\d+)\s/i;
+    $max_pool_size = $1 if $webcontent =~ /MaxPoolSize=(\d+)\s/i;
+    $idle_timeout = $1 if $webcontent =~ /IdleTimeout=(\d+)\s/i;
+    $cur_conn_count = $1 if $webcontent =~ /CurrentConnectionCount=(\d+)\s/i;
+    $cur_avail_conn_count = $1 if $webcontent =~ /CurrentAvailableConnectionCount=(\d+)\s/i;
+    $max_conn_count = $1 if $webcontent =~ /MaxConnectionCount=(\d+)\s/i;
+    $create_count = $1 if $webcontent =~ /CreateCount=(\d+)\s/i;
+    $close_count = $1 if $webcontent =~ /CloseCount=(\d+)\s/i;
 
-	my $active_conn_count = $cur_conn_count - $cur_avail_conn_count;
+    my $active_conn_count = $cur_conn_count - $cur_avail_conn_count;
 
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("InitialPoolSize: %d", $init_pool_size));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxPoolSize: %d", $max_pool_size));

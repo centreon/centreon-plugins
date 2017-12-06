@@ -61,14 +61,14 @@ sub run {
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /MinorGCCount=\d+/mi ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find jvm gc status."
-		);
-		$self->{output}->option_exit();
-	}
-	
+    if ( $webcontent !~ /MinorGCCount=\d+/mi ) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find jvm gc status."
+        );
+        $self->{output}->option_exit();
+    }
+    
     my ($minorgccount, $minorgctime, $fullgccount, $fullgctime) = (0, 0, 0, 0);
 
     ($minorgccount, $minorgctime, $fullgccount, $fullgctime) = ($1, $2, $3, $4) if ($webcontent =~ /MinorGCCount=(\d+)\sMinorGCTime=(\d+)\sFullGCCount=(\d+)\sFullGCTime=(\d+)/mi);

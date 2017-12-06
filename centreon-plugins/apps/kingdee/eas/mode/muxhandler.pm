@@ -27,25 +27,25 @@ use strict;
 use warnings;
 
 sub new {
-	my ( $class, %options ) = @_;
-	my $self = $class->SUPER::new( package => __PACKAGE__, %options );
-	bless $self, $class;
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-	$self->{version} = '1.0';
-	$options{options}->add_options(
-		arguments => {
-			"urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkmuxhandler.jsp" },
-			"warning:s"          => { name => 'warning' },
-			"critical:s"         => { name => 'critical' },
-		}
-	);
+    $self->{version} = '1.0';
+    $options{options}->add_options(
+        arguments => {
+            "urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkmuxhandler.jsp" },
+            "warning:s"          => { name => 'warning' },
+            "critical:s"         => { name => 'critical' },
+        }
+    );
 
-	return $self;
+    return $self;
 }
 
 sub check_options {
-	my ( $self, %options ) = @_;
-	$self->SUPER::init(%options);
+    my ( $self, %options ) = @_;
+    $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -58,37 +58,37 @@ sub check_options {
 }
 
 sub run {
-	my ( $self, %options ) = @_;
+    my ( $self, %options ) = @_;
 
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ($webcontent !~ /MaxThreads=\d+/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find httphandler status in response: '" . $webcontent . "'"
-		);
-		$self->{output}->option_exit();
-	}
+    if ($webcontent !~ /MaxThreads=\d+/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find httphandler status in response: '" . $webcontent . "'"
+        );
+        $self->{output}->option_exit();
+    }
 
     my ($maxthreads, $minsparethreads, $maxsparethreads, $maxqueuesize, $idletimeout, $processedcount) = (0, 0, 0, 0, 0, 0);
     my ($currentthreadcount, $availablethreadcount, $busythreadcount, $maxavailablethreadcount, $maxbusythreadcount) = (0, 0, 0, 0, 0);
     my ($maxprocessedtime, $createcount, $destroycount) = (0, 0, 0);
 
-	$maxthreads = $1 if $webcontent =~ /MaxThreads=(\d+)/mi ;
-	$minsparethreads = $1 if $webcontent =~ /MinSpareThreads=(\d+)/mi ;
-	$maxsparethreads = $1 if $webcontent =~ /MaxSpareThreads=(\d+)/mi ;
-	$maxqueuesize = $1 if $webcontent =~ /MaxQueueSize=(\d+)/mi ;
-	$idletimeout = $1 if $webcontent =~ /IdleTimeout=(\d+)/mi ;
-	$processedcount = $1 if $webcontent =~ /ProcessedCount=(\d+)/mi ;
-	$currentthreadcount = $1 if $webcontent =~ /CurrentThreadCount=(\d+)/mi ;
-	$availablethreadcount = $1 if $webcontent =~ /AvailableThreadCount=(\d+)/mi ;
-	$busythreadcount = $1 if $webcontent =~ /BusyThreadCount=(\d+)/mi ;
-	$maxavailablethreadcount = $1 if $webcontent =~ /MaxAvailableThreadCount=(\d+)/mi ;
-	$maxbusythreadcount = $1 if $webcontent =~ /MaxBusyThreadCount=(\d+)/mi ;
-	$maxprocessedtime = $1 if $webcontent =~ /MaxProcessedTime=(\d+)/mi ;
-	$createcount = $1 if $webcontent =~ /CreateCount=(\d+)/mi ;
-	$destroycount = $1 if $webcontent =~ /DestroyCount=(\d+)/mi ;
-		
+    $maxthreads = $1 if $webcontent =~ /MaxThreads=(\d+)/mi ;
+    $minsparethreads = $1 if $webcontent =~ /MinSpareThreads=(\d+)/mi ;
+    $maxsparethreads = $1 if $webcontent =~ /MaxSpareThreads=(\d+)/mi ;
+    $maxqueuesize = $1 if $webcontent =~ /MaxQueueSize=(\d+)/mi ;
+    $idletimeout = $1 if $webcontent =~ /IdleTimeout=(\d+)/mi ;
+    $processedcount = $1 if $webcontent =~ /ProcessedCount=(\d+)/mi ;
+    $currentthreadcount = $1 if $webcontent =~ /CurrentThreadCount=(\d+)/mi ;
+    $availablethreadcount = $1 if $webcontent =~ /AvailableThreadCount=(\d+)/mi ;
+    $busythreadcount = $1 if $webcontent =~ /BusyThreadCount=(\d+)/mi ;
+    $maxavailablethreadcount = $1 if $webcontent =~ /MaxAvailableThreadCount=(\d+)/mi ;
+    $maxbusythreadcount = $1 if $webcontent =~ /MaxBusyThreadCount=(\d+)/mi ;
+    $maxprocessedtime = $1 if $webcontent =~ /MaxProcessedTime=(\d+)/mi ;
+    $createcount = $1 if $webcontent =~ /CreateCount=(\d+)/mi ;
+    $destroycount = $1 if $webcontent =~ /DestroyCount=(\d+)/mi ;
+        
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxThreads: %d", $maxthreads));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MinSpareThreads: %d", $minsparethreads));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxSpareThreads: %d", $maxsparethreads));
