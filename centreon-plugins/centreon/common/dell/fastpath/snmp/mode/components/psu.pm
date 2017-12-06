@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fastpath::mode::components::psu;
+package centreon::common::dell::fastpath::snmp::mode::components::psu;
 
 use strict;
 use warnings;
