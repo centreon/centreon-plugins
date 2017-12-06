@@ -33,7 +33,7 @@
 #
 ####################################################################################
 
-package network::arista::plugin;
+package network::arista::standard::snmp::plugin;
 
 use strict;
 use warnings;
