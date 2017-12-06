@@ -204,8 +204,10 @@ sub get_details_lookup_clusters {
     #   "error_code": 400
     #}
     #
-    my $clusters = $self->cache_clusters();
-    foreach my $cluster_name (keys %$clusters) {
+    if (!defined($self->{cache_clusters})) {
+        $self->{cache_clusters} = $self->cache_clusters();
+    }
+    foreach my $cluster_name (keys %{$self->{cache_clusters}}) {
         my $url = $options{url} . $options{append} . 'cluster-name=' . $cluster_name;
         my $decoded = $self->get_details_data(url => $url);
         return $decoded if (!defined($decoded->{error_code}));
