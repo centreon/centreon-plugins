@@ -47,6 +47,8 @@ sub new {
                          'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
                          'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+                         'temp-usage'               => 'database::oracle::mode::temptablespace',
+                         'undo-usage'               => 'database::oracle::mode::undotablespace',
                          'session-usage'            => 'database::oracle::mode::sessionusage',
                          'sql'                      => 'centreon::common::protocols::sql::mode::sql',
                          'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
