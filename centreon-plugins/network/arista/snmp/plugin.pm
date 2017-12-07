@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::arista::standard::snmp::plugin;
+package network::arista::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,19 +28,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    # $options->{options} = options object
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu' => 'snmp_standard::mode::cpu',
-                         'entity' => 'snmp_standard::mode::entity',
-                         'hardwaredevice' => 'snmp_standard::mode::hardwaredevice',
-                         'interfaces' => 'snmp_standard::mode::interfaces',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'ntp' => 'snmp_standard::mode::ntp',
-                         'tcpcon' => 'snmp_standard::mode::tcpcon',
-                         'uptime' => 'snmp_standard::mode::uptime',
-                         'vrrp' => 'snmp_standard::mode::vrrp',
+                         'cpu'              => 'snmp_standard::mode::cpu',
+                         'entity'           => 'snmp_standard::mode::entity',
+                         'interfaces'       => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'tcpcon'           => 'snmp_standard::mode::tcpcon',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
@@ -48,3 +44,10 @@ sub new {
 
 1;
 
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check Arista equipments in SNMP.
+
+=cut
