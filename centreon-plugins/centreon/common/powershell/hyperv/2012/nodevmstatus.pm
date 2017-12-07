@@ -39,10 +39,21 @@ Try {
     $ErrorActionPreference = "Stop"
     $vms = Get-VM
 
+    $node_is_clustered = 0
+    Try {
+        If (@(Get-ClusterNode -ea Ignore).Count -ne 0) {
+            $node_is_clustered = 1
+        }
+    } Catch {
+    }   
     Foreach ($vm in $vms) {
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $vm.IsClustered "][note=" $note "]"
+        $isClustered = $vm.IsClustered
+        if ($node_is_clustered -eq 0) {
+            $isClustered = "nodeNotClustered"
+        }
+        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][status=" $vm.Status "][IsClustered=" $isClustered "][note=" $note "]"
     }
 } Catch {
     Write-Host $Error[0].Exception

@@ -285,12 +285,14 @@ Filter session name (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'inactive', 'active'.
+Can be: 'sessions-created', 'sessions-disconnected', 
+'sessions-reconnected', 'sessions-active'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'inactive', 'active', 'time' (in seconds since the session starts).
+Can be: 'sessions-created', 'sessions-disconnected', 
+'sessions-reconnected', 'sessions-active'.
 
 =back
 

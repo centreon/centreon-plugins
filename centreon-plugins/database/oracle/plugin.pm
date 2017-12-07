@@ -39,6 +39,7 @@ sub new {
                          'data-files-status'        => 'database::oracle::mode::datafilesstatus',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
                          'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+                         'invalid-object'           => 'database::oracle::mode::invalidobject',
                          'long-queries'             => 'database::oracle::mode::longqueries',
                          'process-usage'            => 'database::oracle::mode::processusage',
                          'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
@@ -48,6 +49,7 @@ sub new {
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
                          'session-usage'            => 'database::oracle::mode::sessionusage',
                          'sql'                      => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
                          'tnsping'                  => 'database::oracle::mode::tnsping',
                          );
 

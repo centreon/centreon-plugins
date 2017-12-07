@@ -197,7 +197,8 @@ sub manage_selection {
     $self->{tomcatconnector} = {};
     foreach my $key (keys %$result) {         
         $key =~ /name=(.*?),type=(.*)/;
-        my ($connector, $type) = ($1, $2);
+        my ($connector, $type) = ($1, $2); # double quote nivo du name si existe
+        $connector =~ s/^"(.*)"$/$1/g;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $connector !~ /$self->{option_results}->{filter_name}/) {
@@ -212,7 +213,7 @@ sub manage_selection {
         $self->{tomcatconnector}->{$connector} = { %{$self->{tomcatconnector}->{$connector}}, %{$result->{$key}} };
     }
     
-    $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->{url}) . '_' .
+    $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

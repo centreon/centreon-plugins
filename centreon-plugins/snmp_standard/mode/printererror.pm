@@ -73,20 +73,11 @@ sub run {
     my $result = $self->{snmp}->get_table(oid => $oid_hrPrinterDetectedErrorState, nothing_quit => 1);
     
     foreach (keys %$result) {
-        my ($value1, $value2) = unpack('C', $result->{$_});
+        # 16 bits value
+        my $value = unpack('S', $result->{$_});
         
-        foreach my $key (keys %errors_printer) {
-            my ($byte_check, $pos);
-            if ($key >= 8) {
-                next if (!defined($value2));
-                $byte_check = $value2;
-                $pos = $key - 8;
-            } else {
-                $byte_check = $value1;
-                $pos = $key
-            }
-        
-            if (($byte_check & (1 << $pos)) &&
+        foreach my $key (keys %errors_printer) {        
+            if (($value & (1 << $key)) &&
                 (!$self->{output}->is_status(value => ${$errors_printer{$key}}[1], compare => 'ok', litteral => 1))) {
                 $self->{output}->output_add(severity => ${$errors_printer{$key}}[1],
                                             short_msg => sprintf(${$errors_printer{$key}}[0]));
