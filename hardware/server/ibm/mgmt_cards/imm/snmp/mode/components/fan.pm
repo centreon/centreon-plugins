@@ -24,39 +24,58 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+my $mapping = {
+    fanDescr => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.2' },
+    fanSpeed => { oid => '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.3' },
+};
+my $oid_fanEntry = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1';
+
+sub load {
+    my ($self) = @_;
+    
+    push @{$self->{request}}, { oid => $oid_fanEntry };
+}
+
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{fans} = {name => 'fans', total => 0};
     $self->{output}->output_add(long_msg => "Checking fans");
-    return if ($self->check_exclude('fans'));
+    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'fan'));
     
-    my $oid_fanEntry = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1';
-    my $oid_fanDescr = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.2';
-    my $oid_fanSpeed = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1.3';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_fanEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_fanDescr\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanEntry}})) {
+        next if ($oid !~ /^$mapping->{fanSpeed}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        my $fan_descr = centreon::plugins::misc::trim($result->{$oid_fanDescr . '.' . $instance});
-        my $fan_speed = centreon::plugins::misc::trim($result->{$oid_fanSpeed . '.' . $instance});
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanEntry}, instance => $instance);
+        $result->{fanDescr} = centreon::plugins::misc::trim($result->{fanDescr});
+        $result->{fanSpeed} = centreon::plugins::misc::trim($result->{fanSpeed});
+        
+        next if ($self->check_filter(section => 'fan', instance => $instance));
 
-        $self->{components}->{fans}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' speed is %s.", 
-                                    $fan_descr, $fan_speed));
-        if ($fan_speed =~ /offline/i) {
-            $self->{output}->output_add(severity =>  'WARNING',
-                                        short_msg => sprintf("Fan '%s' is offline", $fan_descr));
-        } else {
-            $fan_speed =~ /(\d+)/;
-            $self->{output}->perfdata_add(label => 'fan_' . $fan_descr, unit => '%',
-                                          value => $1,
-                                          min => 0, max => 100);
+        $self->{components}->{fan}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("Fan '%s' speed is '%s' [instance = %s]",
+                                                        $result->{fanDescr}, $result->{fanSpeed}, $instance));
+        if ($result->{fanSpeed} =~ /offline/i) {
+            my $exit = $self->get_severity(section => 'fan', value => $result->{fanSpeed});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan '%s' is offline", $result->{fanDescr}));
+            }
         }
+        
+        next if ($result->{fanSpeed} !~ /(\d+)/);
+        
+        my $fan_speed = $1;
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fan_speed);            
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Fan '%s' is '%s' %%", $result->{fanDescr}, $fan_speed));
+        }
+        $self->{output}->perfdata_add(label => 'fan_' . $result->{fanDescr}, unit => '%', 
+                                      value => $fan_speed,
+                                      warning => $warn,
+                                      critical => $crit, min => 0, max => 100
+                                      );
     }
 }
 
