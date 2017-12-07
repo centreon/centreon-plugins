@@ -35,6 +35,7 @@ sub new {
                          'entity'           => 'snmp_standard::mode::entity',
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+                         'memory'           => 'network::arista::snmp::mode::memory',
                          'tcpcon'           => 'snmp_standard::mode::tcpcon',
                          'uptime'           => 'snmp_standard::mode::uptime',
                          );
