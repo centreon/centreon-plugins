@@ -42,6 +42,7 @@ sub new {
                          'qos-usage'        => 'centreon::common::cisco::standard::snmp::mode::qosusage',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
