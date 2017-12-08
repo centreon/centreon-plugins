@@ -31,7 +31,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'dns', type => 1, cb_prefix_output => 'prefix_dns_output', message_multiple => 'All dns zones are ok' }
+        { name => 'dns', type => 1, cb_prefix_output => 'prefix_dns_output', message_multiple => 'All dns zones are ok' },
     ];
     
     $self->{maps_counters}->{global} = [
