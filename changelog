@@ -3,6 +3,7 @@
  * Plugin added: Redis Cli
  * Plugin added: Ubiquiti Edge SNMP
  * Plugin added: Arista SNMP
+ * Plugin added: Haproxy SNMP
  * Plugin added: JBoss JMX
  * Plugin added: NSClient Query
  * Break: Renamed Asterisk AMI
