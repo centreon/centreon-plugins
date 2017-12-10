@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,37 +25,27 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
-	my ( $class, %options ) = @_;
-	my $self = $class->SUPER::new( package => __PACKAGE__, %options );
-	bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-	$self->{version} = '1.0';
-	$options{options}->add_options(
-		arguments => {
-			"hostname:s"	     => { name => 'hostname' },
-			"port:s"             => { name => 'port', },
-			"proto:s"   		 => { name => 'proto' },
-			"urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkhttphandler.jsp" },
-			"warning:s"          => { name => 'warning' },
-			"critical:s"         => { name => 'critical' },
-			"credentials"        => { name => 'credentials' },
-			"username:s"         => { name => 'username' },
-			"password:s"         => { name => 'password' },
-			"proxyurl:s"         => { name => 'proxyurl' },
-			"timeout:s"          => { name => 'timeout' },
-		}
-	);
+    $self->{version} = '1.0';
+    $options{options}->add_options(
+        arguments => {
+            "urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkhttphandler.jsp" },
+            "warning:s"          => { name => 'warning' },
+            "critical:s"         => { name => 'critical' },
+        }
+    );
 
-	$self->{http} = centreon::plugins::http->new( output => $self->{output} );
-	return $self;
+    return $self;
 }
 
 sub check_options {
-	my ( $self, %options ) = @_;
-	$self->SUPER::init(%options);
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -66,42 +56,40 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-	$self->{http}->set_options( %{ $self->{option_results} } );
 }
 
 sub run {
-	my ( $self, %options ) = @_;
+    my ($self, %options) = @_;
 
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /MaxThreads=\d+/i ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find httphandler status in response: '" . $webcontent . "'"
-		);
-		$self->{output}->option_exit();
-	}
+    if ($webcontent !~ /MaxThreads=\d+/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find httphandler status in response: '" . $webcontent . "'"
+        );
+        $self->{output}->option_exit();
+    }
 
     my ($maxthreads, $minsparethreads, $maxsparethreads, $maxqueuesize, $idletimeout, $processedcount) = (0, 0, 0, 0, 0, 0);
     my ($currentthreadcount, $availablethreadcount, $busythreadcount, $maxavailablethreadcount, $maxbusythreadcount) = (0, 0, 0, 0, 0);
     my ($maxprocessedtime, $createcount, $destroycount) = (0, 0, 0);
 
-	$maxthreads = $1 if $webcontent =~ /MaxThreads=(\d+)/mi ;
-	$minsparethreads = $1 if $webcontent =~ /MinSpareThreads=(\d+)/mi ;
-	$maxsparethreads = $1 if $webcontent =~ /MaxSpareThreads=(\d+)/mi ;
-	$maxqueuesize = $1 if $webcontent =~ /MaxQueueSize=(\d+)/mi ;
-	$idletimeout = $1 if $webcontent =~ /IdleTimeout=(\d+)/mi ;
-	$processedcount = $1 if $webcontent =~ /ProcessedCount=(\d+)/mi ;
-	$currentthreadcount = $1 if $webcontent =~ /CurrentThreadCount=(\d+)/mi ;
-	$availablethreadcount = $1 if $webcontent =~ /AvailableThreadCount=(\d+)/mi ;
-	$busythreadcount = $1 if $webcontent =~ /BusyThreadCount=(\d+)/mi ;
-	$maxavailablethreadcount = $1 if $webcontent =~ /MaxAvailableThreadCount=(\d+)/mi ;
-	$maxbusythreadcount = $1 if $webcontent =~ /MaxBusyThreadCount=(\d+)/mi ;
-	$maxprocessedtime = $1 if $webcontent =~ /MaxProcessedTime=(\d+)/mi ;
-	$createcount = $1 if $webcontent =~ /CreateCount=(\d+)/mi ;
-	$destroycount = $1 if $webcontent =~ /DestroyCount=(\d+)/mi ;
-		
+    $maxthreads = $1 if $webcontent =~ /MaxThreads=(\d+)/mi ;
+    $minsparethreads = $1 if $webcontent =~ /MinSpareThreads=(\d+)/mi ;
+    $maxsparethreads = $1 if $webcontent =~ /MaxSpareThreads=(\d+)/mi ;
+    $maxqueuesize = $1 if $webcontent =~ /MaxQueueSize=(\d+)/mi ;
+    $idletimeout = $1 if $webcontent =~ /IdleTimeout=(\d+)/mi ;
+    $processedcount = $1 if $webcontent =~ /ProcessedCount=(\d+)/mi ;
+    $currentthreadcount = $1 if $webcontent =~ /CurrentThreadCount=(\d+)/mi ;
+    $availablethreadcount = $1 if $webcontent =~ /AvailableThreadCount=(\d+)/mi ;
+    $busythreadcount = $1 if $webcontent =~ /BusyThreadCount=(\d+)/mi ;
+    $maxavailablethreadcount = $1 if $webcontent =~ /MaxAvailableThreadCount=(\d+)/mi ;
+    $maxbusythreadcount = $1 if $webcontent =~ /MaxBusyThreadCount=(\d+)/mi ;
+    $maxprocessedtime = $1 if $webcontent =~ /MaxProcessedTime=(\d+)/mi ;
+    $createcount = $1 if $webcontent =~ /CreateCount=(\d+)/mi ;
+    $destroycount = $1 if $webcontent =~ /DestroyCount=(\d+)/mi ;
+        
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxThreads: %d", $maxthreads));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MinSpareThreads: %d", $minsparethreads));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxSpareThreads: %d", $maxsparethreads));
@@ -181,41 +169,9 @@ Check EAS instance httphandler(Apusic) threads pool status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Protocol to use http or https, http is default
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkhttphandler.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 

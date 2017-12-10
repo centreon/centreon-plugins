@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,48 +25,38 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
-	my ( $class, %options ) = @_;
-	my $self = $class->SUPER::new( package => __PACKAGE__, %options );
-	bless $self, $class;
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-	$self->{version} = '1.0';
-	$options{options}->add_options(
-		arguments => {
-			"hostname:s"	     => { name => 'hostname' },
-			"port:s"             => { name => 'port', },
-			"proto:s"   		 => { name => 'proto' },
-			"urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkmemory.jsp" },
-			"warning-heap:s"     => { name => 'warning-heap' , default => ",,,"},
-			"warning-nonheap:s"  => { name => 'warning-nonheap' , default => ",,,"},
-			"critical-heap:s"    => { name => 'critical-heap' , default => ",,,"},
-			"critical-nonheap:s" => { name => 'critical-nonheap' , default => ",,,"},
-			"credentials"        => { name => 'credentials' },
-			"username:s"         => { name => 'username' },
-			"password:s"         => { name => 'password' },
-			"proxyurl:s"         => { name => 'proxyurl' },
-			"timeout:s"          => { name => 'timeout' },
-		}
-	);
+    $self->{version} = '1.0';
+    $options{options}->add_options(
+        arguments => {
+            "urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkmemory.jsp" },
+            "warning-heap:s"     => { name => 'warning-heap' , default => ",,,"},
+            "warning-nonheap:s"  => { name => 'warning-nonheap' , default => ",,,"},
+            "critical-heap:s"    => { name => 'critical-heap' , default => ",,,"},
+            "critical-nonheap:s" => { name => 'critical-nonheap' , default => ",,,"},
+        }
+    );
 
-	$self->{http} = centreon::plugins::http->new( output => $self->{output} );
-	return $self;
+    return $self;
 }
 
 sub check_options {
-	my ( $self, %options ) = @_;
-	$self->SUPER::init(%options);
+    my ( $self, %options ) = @_;
+    $self->SUPER::init(%options);
 
     ($self->{warn_init_heap}, $self->{warn_max_heap}, $self->{warn_used_heap}, $self->{warn_committed_heap}) 
-    	= split /,/, $self->{option_results}->{"warning-heap"};
+        = split /,/, $self->{option_results}->{"warning-heap"};
     ($self->{warn_init_nonheap}, $self->{warn_max_nonheap}, $self->{warn_used_nonheap}, $self->{warn_committed_nonheap})
-    	= split /,/, $self->{option_results}->{"warning-nonheap"};
+        = split /,/, $self->{option_results}->{"warning-nonheap"};
     ($self->{crit_init_heap}, $self->{crit_max_heap}, $self->{crit_used_heap}, $self->{crit_committed_heap}) 
-    	= split /,/, $self->{option_results}->{"critical-heap"};
+        = split /,/, $self->{option_results}->{"critical-heap"};
     ($self->{crit_init_nonheap}, $self->{crit_max_nonheap}, $self->{crit_used_nonheap}, $self->{crit_committed_nonheap})
-    	= split /,/, $self->{option_results}->{"critical-nonheap"};
+        = split /,/, $self->{option_results}->{"critical-nonheap"};
 
     # warning-heap
     if (($self->{perfdata}->threshold_validate(label => 'warn_init_heap', value => $self->{warn_init_heap})) == 0) {
@@ -139,173 +129,170 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical-nonheap committed threshold '" . $self->{crit_committed_nonheap} . "'.");
        $self->{output}->option_exit();
     }
-
-	$self->{http}->set_options( %{ $self->{option_results} } );
 }
 
 sub run {
-	my ( $self, %options ) = @_;
+    my ( $self, %options ) = @_;
 
-	my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /(^Type=HeapMemoryUsage|^Type=NonHeapMemoryUsage)/mi ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find heap or nonheap memory usage status."
-		);
-		$self->{output}->option_exit();
-	}
+    if ($webcontent !~ /(^Type=HeapMemoryUsage|^Type=NonHeapMemoryUsage)/mi) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find heap or nonheap memory usage status."
+        );
+        $self->{output}->option_exit();
+    }
 
-	my ( $init_heap, $max_heap, $used_heap, $committed_heap ) = ( 0, 0, 0, 0 );
-	my ( $init_nonheap, $max_nonheap, $used_nonheap, $committed_nonheap ) = ( 0, 0, 0, 0 );
-	if ( $webcontent =~ /^Type=HeapMemoryUsage\sinit=(\d+)\smax=(\d+)\sused=(\d+)\scommitted=(\d+)/mi ){
-		( $init_heap, $max_heap, $used_heap, $committed_heap ) = ( $1, $2, $3, $4 );
-		$self->{output}->output_add(
-			severity  => 'ok',
-			short_msg => sprintf(
-				"Heap Memory: init %d , max %d ,used %d ,commited %d",
-				$init_heap, $max_heap, $used_heap, $committed_heap
-			)
-		);
-	}
-	if ( $webcontent =~ /^Type=NonHeapMemoryUsage\sinit=(\d+)\smax=(-{0,1}\d+)\sused=(\d+)\scommitted=(\d+)/mi ){
-		( $init_nonheap, $max_nonheap, $used_nonheap, $committed_nonheap ) = ( $1, $2, $3, $4 );
-		$self->{output}->output_add(
-			severity  => 'ok',
-			short_msg => sprintf(
-				"NonHeap Memory: init %d , max %d ,used %d ,commited %d",
-				$init_nonheap, $max_nonheap,
-				$used_nonheap, $committed_nonheap
-			)
-		);
-	}
-	
-	my $exit = $self->{perfdata}->threshold_check(value => $init_heap, 
-		threshold => [ { label => 'crit_init_heap', 'exit_litteral' => 'critical' }, 
+    my ( $init_heap, $max_heap, $used_heap, $committed_heap ) = ( 0, 0, 0, 0 );
+    my ( $init_nonheap, $max_nonheap, $used_nonheap, $committed_nonheap ) = ( 0, 0, 0, 0 );
+    if ( $webcontent =~ /^Type=HeapMemoryUsage\sinit=(\d+)\smax=(\d+)\sused=(\d+)\scommitted=(\d+)/mi ){
+        ( $init_heap, $max_heap, $used_heap, $committed_heap ) = ( $1, $2, $3, $4 );
+        $self->{output}->output_add(
+            severity  => 'ok',
+            short_msg => sprintf(
+                "Heap Memory: init %d , max %d ,used %d ,commited %d",
+                $init_heap, $max_heap, $used_heap, $committed_heap
+            )
+        );
+    }
+    if ( $webcontent =~ /^Type=NonHeapMemoryUsage\sinit=(\d+)\smax=(-{0,1}\d+)\sused=(\d+)\scommitted=(\d+)/mi ){
+        ( $init_nonheap, $max_nonheap, $used_nonheap, $committed_nonheap ) = ( $1, $2, $3, $4 );
+        $self->{output}->output_add(
+            severity  => 'ok',
+            short_msg => sprintf(
+                "NonHeap Memory: init %d , max %d ,used %d ,commited %d",
+                $init_nonheap, $max_nonheap,
+                $used_nonheap, $committed_nonheap
+            )
+        );
+    }
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $init_heap, 
+        threshold => [ { label => 'crit_init_heap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_init_heap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Init Heap: %d", $init_heap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Init Heap: %d", $init_heap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $max_heap, 
-		threshold => [ { label => 'crit_max_heap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $max_heap, 
+        threshold => [ { label => 'crit_max_heap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_max_heap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Max Heap: %d", $max_heap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Max Heap: %d", $max_heap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $used_heap, 
-		threshold => [ { label => 'crit_used_heap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $used_heap, 
+        threshold => [ { label => 'crit_used_heap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_used_heap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Used Heap: %d", $used_heap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Used Heap: %d", $used_heap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $committed_heap, 
-		threshold => [ { label => 'crit_committed_heap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $committed_heap, 
+        threshold => [ { label => 'crit_committed_heap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_committed_heap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Committed Heap: %d", $committed_heap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Committed Heap: %d", $committed_heap)
+        );
     }
 
-	$exit = $self->{perfdata}->threshold_check(value => $init_nonheap, 
-		threshold => [ { label => 'crit_init_nonheap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $init_nonheap, 
+        threshold => [ { label => 'crit_init_nonheap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_init_nonheap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Init NonHeap: %d", $init_nonheap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Init NonHeap: %d", $init_nonheap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $max_nonheap, 
-		threshold => [ { label => 'crit_max_nonheap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $max_nonheap, 
+        threshold => [ { label => 'crit_max_nonheap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_max_nonheap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Max NonHeap: %d", $max_nonheap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Max NonHeap: %d", $max_nonheap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $used_nonheap, 
-		threshold => [ { label => 'crit_used_nonheap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $used_nonheap, 
+        threshold => [ { label => 'crit_used_nonheap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_used_nonheap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Used NonHeap: %d", $used_nonheap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Used NonHeap: %d", $used_nonheap)
+        );
     }
-	$exit = $self->{perfdata}->threshold_check(value => $committed_nonheap, 
-		threshold => [ { label => 'crit_committed_nonheap', 'exit_litteral' => 'critical' }, 
+    $exit = $self->{perfdata}->threshold_check(value => $committed_nonheap, 
+        threshold => [ { label => 'crit_committed_nonheap', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_committed_nonheap', 'exit_litteral' => 'warning' } ]);
     if ($exit ne "ok"){
-		$self->{output}->output_add(
-			severity  => $exit,
-			short_msg => sprintf("Committed NonHeap: %d", $committed_nonheap)
-		);
+        $self->{output}->output_add(
+            severity  => $exit,
+            short_msg => sprintf("Committed NonHeap: %d", $committed_nonheap)
+        );
     }
 
-	$self->{output}->perfdata_add(
-		label => "init_heap",
-		value => $init_heap,
+    $self->{output}->perfdata_add(
+        label => "init_heap",
+        value => $init_heap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_init_heap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_init_heap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "max_heap",
-		value => $max_heap,
+    );
+    $self->{output}->perfdata_add(
+        label => "max_heap",
+        value => $max_heap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_max_heap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_max_heap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "used_heap",
-		value => $used_heap,
+    );
+    $self->{output}->perfdata_add(
+        label => "used_heap",
+        value => $used_heap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_used_heap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_used_heap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "committed_heap",
-		value => $committed_heap,
+    );
+    $self->{output}->perfdata_add(
+        label => "committed_heap",
+        value => $committed_heap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_committed_heap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_committed_heap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "init_nonheap",
-		value => $init_nonheap,
+    );
+    $self->{output}->perfdata_add(
+        label => "init_nonheap",
+        value => $init_nonheap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_init_nonheap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_init_nonheap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "max_nonheap",
-		value => $max_nonheap,
+    );
+    $self->{output}->perfdata_add(
+        label => "max_nonheap",
+        value => $max_nonheap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_max_nonheap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_max_nonheap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "used_nonheap",
-		value => $used_nonheap,
+    );
+    $self->{output}->perfdata_add(
+        label => "used_nonheap",
+        value => $used_nonheap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_used_nonheap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_used_nonheap'),
-	);
-	$self->{output}->perfdata_add(
-		label => "committed_nonheap",
-		value => $committed_nonheap,
+    );
+    $self->{output}->perfdata_add(
+        label => "committed_nonheap",
+        value => $committed_nonheap,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_committed_nonheap'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_committed_nonheap'),
-	);
+    );
 
-	$self->{output}->display();
-	$self->{output}->exit();
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -318,41 +305,9 @@ Check EAS instance heap & nonheap memory usage.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Protocol to use http or https, http is default
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkmemory.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning-*>
 

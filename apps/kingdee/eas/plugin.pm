@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,36 +22,36 @@ package apps::kingdee::eas::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
 	my ($class, %options) = @_;
 	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
 	bless $self, $class;
-# $options->{options} = options object
 
 	$self->{version} = '1.0';
 	%{$self->{modes}} = (
-            'classloading'         => 'apps::kingdee::eas::mode::classloading',
-            'memory'               => 'apps::kingdee::eas::mode::memory',
-            'javaruntime'          => 'apps::kingdee::eas::mode::javaruntime',
-            'datasource'           => 'apps::kingdee::eas::mode::datasource',
-            'httphandler'          => 'apps::kingdee::eas::mode::httphandler',
-            'muxhandler'           => 'apps::kingdee::eas::mode::muxhandler',
-            'transaction'          => 'apps::kingdee::eas::mode::transaction',
-            'oraclejvmgc'          => 'apps::kingdee::eas::mode::oraclejvmgc',
-            'ibmjvmgc'             => 'apps::kingdee::eas::mode::ibmjvmgc',
-            'ormrpc'               => 'apps::kingdee::eas::mode::ormrpc',
-            'easlicense'           => 'apps::kingdee::eas::mode::easlicense',
+            'classloading'          => 'apps::kingdee::eas::mode::classloading',
+            'memory'                => 'apps::kingdee::eas::mode::memory',
+            'javaruntime'           => 'apps::kingdee::eas::mode::javaruntime',
+            'datasource'            => 'apps::kingdee::eas::mode::datasource',
+            'httphandler'           => 'apps::kingdee::eas::mode::httphandler',
+            'muxhandler'            => 'apps::kingdee::eas::mode::muxhandler',
+            'transaction'           => 'apps::kingdee::eas::mode::transaction',
+            'oraclejvmgc'           => 'apps::kingdee::eas::mode::oraclejvmgc',
+            'ibmjvmgc'              => 'apps::kingdee::eas::mode::ibmjvmgc',
+            'ormrpc'                => 'apps::kingdee::eas::mode::ormrpc',
+            'easlicense'            => 'apps::kingdee::eas::mode::easlicense',
             'activeusers'           => 'apps::kingdee::eas::mode::activeusers',
-            'oracleversion'        => 'apps::kingdee::eas::mode::oracleversion',
-            'oraclesession'        => 'apps::kingdee::eas::mode::oraclesession',
-            'oracletable'          => 'apps::kingdee::eas::mode::oracletable',
-            'oraclerecyclebin'     => 'apps::kingdee::eas::mode::oraclerecyclebin',
-            'oracleksqltemptable'  => 'apps::kingdee::eas::mode::oracleksqltemptable',
-            'oracleredolog'  => 'apps::kingdee::eas::mode::oracleredolog',
+            'oracleversion'         => 'apps::kingdee::eas::mode::oracleversion',
+            'oraclesession'         => 'apps::kingdee::eas::mode::oraclesession',
+            'oracletable'           => 'apps::kingdee::eas::mode::oracletable',
+            'oraclerecyclebin'      => 'apps::kingdee::eas::mode::oraclerecyclebin',
+            'oracleksqltemptable'   => 'apps::kingdee::eas::mode::oracleksqltemptable',
+            'oracleredolog'         => 'apps::kingdee::eas::mode::oracleredolog',
 			);
 
+    $self->{custom_modes}{api} = 'apps::kingdee::eas::custom::api';
 	return $self;
 }
 

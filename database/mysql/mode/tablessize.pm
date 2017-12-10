@@ -81,15 +81,13 @@ sub prefix_table_output {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
 
-    $self->{sql}->query(query => "SELECT table_schema AS DB, table_name AS NAME, ROUND(data_length + index_length)
-                                  FROM information_schema.TABLES");
-    my $result = $self->{sql}->fetchall_arrayref();
+    $options{sql}->connect();
+    $options{sql}->query(query => "SELECT table_schema AS DB, table_name AS NAME, ROUND(data_length + index_length)
+        FROM information_schema.TABLES");
+    my $result = $options{sql}->fetchall_arrayref();
 
-    if (!($self->{sql}->is_version_minimum(version => '5'))) {
+    if (!($options{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported.");
         $self->{output}->option_exit();
     }
@@ -101,12 +99,12 @@ sub manage_selection {
         next if (!defined($$row[2]));
         if (defined($self->{option_results}->{filter_table}) && $self->{option_results}->{filter_table} ne '' &&
             $$row[1] !~ /$self->{option_results}->{filter_table}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_db}) && $self->{option_results}->{filter_db} ne '' &&
             $$row[0] !~ /$self->{option_results}->{filter_db}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $$row[0].'.'.$$row[1] . "': no matching filter.", debug => 1);
             next
         }
         $self->{table}->{$$row[0].'.'.$$row[1]} = { size => $$row[2], display => $$row[0].'.'.$$row[1] };

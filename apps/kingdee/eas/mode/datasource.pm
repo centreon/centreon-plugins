@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,20 +34,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkdatasources.jsp" },
             "datasource:s"      => { name => 'datasource' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "timeout:s"         => { name => 'timeout' },
             });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -70,42 +61,39 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-
-    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
     my ($self, %options) = @_;
     
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-	if ( $webcontent !~ /^Name=/i ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find datasource \'" .  $self->{option_results}->{datasource} . "\' status."
-		);
-	}
+    if ($webcontent !~ /^Name=/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find datasource \'" .  $self->{option_results}->{datasource} . "\' status."
+        );
+    }
 
-	my $init_pool_size = -1;
-	my $max_pool_size = -1;
-	my $idle_timeout = -1;
-	my $cur_conn_count = -1;
-	my $cur_avail_conn_count = -1;
-	my $max_conn_count = -1;
-	my $create_count = -1;
-	my $close_count = -1; 
+    my $init_pool_size = -1;
+    my $max_pool_size = -1;
+    my $idle_timeout = -1;
+    my $cur_conn_count = -1;
+    my $cur_avail_conn_count = -1;
+    my $max_conn_count = -1;
+    my $create_count = -1;
+    my $close_count = -1; 
 
-	$init_pool_size = $1 if $webcontent =~ /InitialPoolSize=(\d+)\s/i;
-	$max_pool_size = $1 if $webcontent =~ /MaxPoolSize=(\d+)\s/i;
-	$idle_timeout = $1 if $webcontent =~ /IdleTimeout=(\d+)\s/i;
-	$cur_conn_count = $1 if $webcontent =~ /CurrentConnectionCount=(\d+)\s/i;
-	$cur_avail_conn_count = $1 if $webcontent =~ /CurrentAvailableConnectionCount=(\d+)\s/i;
-	$max_conn_count = $1 if $webcontent =~ /MaxConnectionCount=(\d+)\s/i;
-	$create_count = $1 if $webcontent =~ /CreateCount=(\d+)\s/i;
-	$close_count = $1 if $webcontent =~ /CloseCount=(\d+)\s/i;
+    $init_pool_size = $1 if $webcontent =~ /InitialPoolSize=(\d+)\s/i;
+    $max_pool_size = $1 if $webcontent =~ /MaxPoolSize=(\d+)\s/i;
+    $idle_timeout = $1 if $webcontent =~ /IdleTimeout=(\d+)\s/i;
+    $cur_conn_count = $1 if $webcontent =~ /CurrentConnectionCount=(\d+)\s/i;
+    $cur_avail_conn_count = $1 if $webcontent =~ /CurrentAvailableConnectionCount=(\d+)\s/i;
+    $max_conn_count = $1 if $webcontent =~ /MaxConnectionCount=(\d+)\s/i;
+    $create_count = $1 if $webcontent =~ /CreateCount=(\d+)\s/i;
+    $close_count = $1 if $webcontent =~ /CloseCount=(\d+)\s/i;
 
-	my $active_conn_count = $cur_conn_count - $cur_avail_conn_count;
+    my $active_conn_count = $cur_conn_count - $cur_avail_conn_count;
 
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("InitialPoolSize: %d", $init_pool_size));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("MaxPoolSize: %d", $max_pool_size));
@@ -165,22 +153,6 @@ Check EAS application datasource status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application server host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Specify https if needed
-
 =item B<--urlpath>
 
 Specify path to get status page. (Default: '/easportal/tools/nagios/checkdatasources.jsp')
@@ -188,22 +160,6 @@ Specify path to get status page. (Default: '/easportal/tools/nagios/checkdatasou
 =item B<--datasource>
 
 Specify the datasource name.
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 

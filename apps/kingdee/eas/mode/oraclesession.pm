@@ -1,8 +1,8 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
+# the needs in IT infrastructure      application monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
+# See the License for the specific language governing permissions     
 # limitations under the License.
 #
 # Author : CHEN JUN , aladdin.china@gmail.com
@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,20 +34,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkoraclesession.jsp" },
             "datasource:s"      => { name => 'datasource' },
             "warning:s"         => { name => 'warning', default => "," },
             "critical:s"        => { name => 'critical', default => "," },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "timeout:s"         => { name => 'timeout' },
             });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+
     return $self;
 }
 
@@ -82,22 +73,14 @@ sub check_options {
     if (($self->{perfdata}->threshold_validate(label => 'crit_totalcount', value => $self->{crit_totalcount})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong critical totalcount threshold '" . $self->{crit_totalcount} . "'.");
        $self->{output}->option_exit();
-    }
- 
-    $self->{http}->set_options(%{$self->{option_results}});
+    } 
 }
 
 sub run {
     my ($self, %options) = @_;
  
- 	my $url_path = $self->{option_results}->{url_path};
-    $self->{option_results}->{url_path} = $url_path . "\&groupby=status";
-    $self->{http}->set_options(%{$self->{option_results}});    
-    
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
-
-	if ( $webcontent !~ /^STATUS=ACTIVE/mi ) {
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path} . '&groupby=status');
+	if ($webcontent !~ /^STATUS=ACTIVE/mi) {
 		$self->{output}->output_add(
 			severity  => 'UNKNOWN',
 			short_msg => "Cannot find oracle session info."
@@ -110,13 +93,8 @@ sub run {
     $inactivecount = $1 if $webcontent =~ /^STATUS=INACTIVE\sCOUNT=(\d+)/mi ;
     $totalcount = $activecount + $inactivecount;
 
-    $self->{option_results}->{url_path} = $url_path . "\&groupby=wait_class\&status=ACTIVE";
-    $self->{http}->set_options(%{$self->{option_results}});    
-
-    $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
-
-	if ( $webcontent !~ /^WAIT_CLASS=.*?COUNT=\d+/i ) {
+    $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path} . '&groupby=wait_class&status=ACTIVE');
+	if ($webcontent !~ /^WAIT_CLASS=.*?COUNT=\d+/i) {
 		$self->{output}->output_add(
 			severity  => 'UNKNOWN',
 			short_msg => "Cannot find oracle session info."
@@ -140,8 +118,8 @@ sub run {
     $scheduler = $1 if $webcontent =~ /^WAIT_CLASS=Scheduler\sCOUNT=(\d+)/mi;
     $idle = $1 if $webcontent =~ /^WAIT_CLASS=Idle\sCOUNT=(\d+)/mi;
     
-    #cpu and cpuwait
-    my $cpuandwait = $idle + $network ;
+    #cpu      cpuwait
+    my $cpu    wait = $idle + $network ;
     
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Other: %d", $other));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Queueing: %d", $queueing));
@@ -153,7 +131,7 @@ sub run {
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("System I/O: %d", $systemio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("User I/O: %d", $userio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Scheduler: %d", $scheduler));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpuandwait));
+    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpu    wait));
  
     my $exit = $self->{perfdata}->threshold_check(value => $activecount, threshold => [ { label => 'crit_activecount', exit_litteral => 'critical' }, 
                                                                                         { label => 'warn_activecount', exit_litteral => 'warning' } ]);
@@ -173,7 +151,7 @@ sub run {
     $self->{output}->perfdata_add(label => "System I/O", unit => '', value => sprintf("%d", $systemio));
     $self->{output}->perfdata_add(label => "User I/O", unit => '', value => sprintf("%d", $userio));
     $self->{output}->perfdata_add(label => "Scheduler", unit => '', value => sprintf("%d", $scheduler));
-    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpuandwait));
+    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpu    wait));
 
  	$self->{output}->perfdata_add(label => "ActiveCount", unit => '',
                                   value => sprintf("%d", $activecount),
@@ -201,22 +179,6 @@ Check oracle database session status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application server host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Specify https if needed
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkoraclesession.jsp')
@@ -224,22 +186,6 @@ Set path to get status page. (Default: '/easportal/tools/nagios/checkoraclesessi
 =item B<--datasource>
 
 Specify the datasource name.
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 

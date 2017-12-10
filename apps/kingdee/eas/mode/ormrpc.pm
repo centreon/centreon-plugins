@@ -1,5 +1,5 @@
 #
-# Copyright 2016 Centreon (http://www.centreon.com/)
+# Copyright 2017 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,42 +25,32 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::http;
 
 sub new {
-	my ( $class, %options ) = @_;
-	my $self = $class->SUPER::new( package => __PACKAGE__, %options );
-	bless $self, $class;
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-	$self->{version} = '1.0';
-	$options{options}->add_options(
-		arguments => {
-			"hostname:s"	     => { name => 'hostname' },
-			"port:s"             => { name => 'port', },
-			"proto:s"   		 => { name => 'proto' },
-			"urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkrpc.jsp" },
-			"warning:s"          => { name => 'warning' , default => ",,,,,,"},
-			"critical:s"         => { name => 'critical' , default => ",,,,,,"},
-			"credentials"        => { name => 'credentials' },
-			"username:s"         => { name => 'username' },
-			"password:s"         => { name => 'password' },
-			"proxyurl:s"         => { name => 'proxyurl' },
-			"timeout:s"          => { name => 'timeout' },
-		}
-	);
+    $self->{version} = '1.0';
+    $options{options}->add_options(
+        arguments => {
+            "urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkrpc.jsp" },
+            "warning:s"          => { name => 'warning' , default => ",,,,,,"},
+            "critical:s"         => { name => 'critical' , default => ",,,,,,"},
+        }
+    );
 
-	$self->{http} = centreon::plugins::http->new( output => $self->{output} );
-	return $self;
+    return $self;
 }
 
 sub check_options {
-	my ( $self, %options ) = @_;
-	$self->SUPER::init(%options);
+    my ( $self, %options ) = @_;
+    $self->SUPER::init(%options);
 
     ($self->{warn_activethreadcount}, $self->{warn_stubcount}, $self->{warn_proxycount}, $self->{warn_clientsessioncount} ,$self->{warn_serversessioncount} ,$self->{warn_invokecountpermin} ,$self->{warn_servicecountpermin}) 
-    	= split /,/, $self->{option_results}->{"warning"};
+        = split /,/, $self->{option_results}->{"warning"};
     ($self->{crit_activethreadcount}, $self->{crit_stubcount}, $self->{crit_proxycount}, $self->{crit_clientsessioncount} ,$self->{crit_serversessioncount} ,$self->{crit_invokecountpermin} ,$self->{crit_servicecountpermin}) 
-    	= split /,/, $self->{option_results}->{"critical"};
+        = split /,/, $self->{option_results}->{"critical"};
 
     # warning
     if (($self->{perfdata}->threshold_validate(label => 'warn_activethreadcount', value => $self->{warn_activethreadcount})) == 0) {
@@ -121,139 +111,135 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical servicecountpermin threshold '" . $self->{crit_servicecountpermin} . "'.");
        $self->{output}->option_exit();
     }
-
-	$self->{http}->set_options( %{ $self->{option_results} } );
 }
 
 sub run {
-	my ( $self, %options ) = @_;
+    my ( $self, %options ) = @_;
 
-    my $webcontent = $self->{http}->request();
-    $webcontent =~ s/^\s|\s+$//g;  #trim
-
-	if ( $webcontent !~ /ActiveThreadCount=\d+/i ) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find ormrpc status in response: \'" . $webcontent . "\'"
-		);
-		$self->{output}->option_exit();
-	}
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
+    if ($webcontent !~ /ActiveThreadCount=\d+/i) {
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot find ormrpc status in response: \'" . $webcontent . "\'"
+        );
+        $self->{output}->option_exit();
+    }
 
     my ($activethreadcount, $stubcount, $proxycount, $clientsessioncount, $serversessioncount, $invokecountpermin, $servicecountpermin, $invokecount, $servicecount) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-	$activethreadcount = $1 if $webcontent =~ /ActiveThreadCount=(\d+)/mi ;
-	$stubcount = $1 if $webcontent =~ /StubCount=(\d+)/mi ;
-	$proxycount = $1 if $webcontent =~ /ProxyCount=(\d+)/mi ;
-	$clientsessioncount = $1 if $webcontent =~ /ClientSessionCount=(\d+)/mi ;
-	$serversessioncount = $1 if $webcontent =~ /ServerSessionCount=(\d+)/mi ;
-	$invokecountpermin = $1 if $webcontent =~ /ClientInvokeCountPerMinute=(\d+)/mi ;
-	$servicecountpermin = $1 if $webcontent =~ /ProcessedServiceCountPerMinute=(\d+)/mi ;
-	$invokecount = $1 if $webcontent =~ /ClientInvokeCount=(\d+)/mi ;
-	$servicecount = $1 if $webcontent =~ /ProcessedServiceCount=(\d+)/mi ;
-	
-	my $exit = $self->{perfdata}->threshold_check(value => $activethreadcount, 
-		threshold => [ { label => 'crit_activethreadcount', 'exit_litteral' => 'critical' }, 
+    $activethreadcount = $1 if $webcontent =~ /ActiveThreadCount=(\d+)/mi ;
+    $stubcount = $1 if $webcontent =~ /StubCount=(\d+)/mi ;
+    $proxycount = $1 if $webcontent =~ /ProxyCount=(\d+)/mi ;
+    $clientsessioncount = $1 if $webcontent =~ /ClientSessionCount=(\d+)/mi ;
+    $serversessioncount = $1 if $webcontent =~ /ServerSessionCount=(\d+)/mi ;
+    $invokecountpermin = $1 if $webcontent =~ /ClientInvokeCountPerMinute=(\d+)/mi ;
+    $servicecountpermin = $1 if $webcontent =~ /ProcessedServiceCountPerMinute=(\d+)/mi ;
+    $invokecount = $1 if $webcontent =~ /ClientInvokeCount=(\d+)/mi ;
+    $servicecount = $1 if $webcontent =~ /ProcessedServiceCount=(\d+)/mi ;
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $activethreadcount, 
+        threshold => [ { label => 'crit_activethreadcount', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_activethreadcount', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("ActiveTrheadCount: %d", $activethreadcount)
-	);
-	$exit = $self->{perfdata}->threshold_check(value => $stubcount, 
-		threshold => [ { label => 'crit_stubcount', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("ActiveTrheadCount: %d", $activethreadcount)
+    );
+    $exit = $self->{perfdata}->threshold_check(value => $stubcount, 
+        threshold => [ { label => 'crit_stubcount', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_stubcount', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("StubCount: %d", $stubcount)
-	);
-	$exit = $self->{perfdata}->threshold_check(value => $proxycount, 
-		threshold => [ { label => 'crit_proxycount', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("StubCount: %d", $stubcount)
+    );
+    $exit = $self->{perfdata}->threshold_check(value => $proxycount, 
+        threshold => [ { label => 'crit_proxycount', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_proxycount', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("ProxyCount: %d", $proxycount)
-	);
-	$exit = $self->{perfdata}->threshold_check(value => $clientsessioncount, 
-		threshold => [ { label => 'crit_clientsessioncount', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("ProxyCount: %d", $proxycount)
+    );
+    $exit = $self->{perfdata}->threshold_check(value => $clientsessioncount, 
+        threshold => [ { label => 'crit_clientsessioncount', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_clientsessioncount', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("ClientSessionCount: %d", $clientsessioncount)
-	);
-	$exit = $self->{perfdata}->threshold_check(value => $serversessioncount, 
-		threshold => [ { label => 'crit_serversessioncount', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("ClientSessionCount: %d", $clientsessioncount)
+    );
+    $exit = $self->{perfdata}->threshold_check(value => $serversessioncount, 
+        threshold => [ { label => 'crit_serversessioncount', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_serversessioncount', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("ServerSessionCount: %d", $serversessioncount)
-	);	
-	$exit = $self->{perfdata}->threshold_check(value => $invokecountpermin, 
-		threshold => [ { label => 'crit_invokecountpermin', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("ServerSessionCount: %d", $serversessioncount)
+    );    
+    $exit = $self->{perfdata}->threshold_check(value => $invokecountpermin, 
+        threshold => [ { label => 'crit_invokecountpermin', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_invokecountpermin', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("InvokeCountPerMinute: %d", $invokecountpermin)
-	);	
-	$exit = $self->{perfdata}->threshold_check(value => $servicecountpermin, 
-		threshold => [ { label => 'crit_servicecountpermin', 'exit_litteral' => 'critical' }, 
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("InvokeCountPerMinute: %d", $invokecountpermin)
+    );    
+    $exit = $self->{perfdata}->threshold_check(value => $servicecountpermin, 
+        threshold => [ { label => 'crit_servicecountpermin', 'exit_litteral' => 'critical' }, 
                        { label => 'warn_servicecountpermin', 'exit_litteral' => 'warning' } ]);
-	$self->{output}->output_add(
-		severity  => $exit,
-		short_msg => sprintf("ServiceCountPerMinute: %d", $servicecountpermin)
-	);	
+    $self->{output}->output_add(
+        severity  => $exit,
+        short_msg => sprintf("ServiceCountPerMinute: %d", $servicecountpermin)
+    );    
 
-	$self->{output}->perfdata_add(
-		label => "ActiveTrheadCount",
-		value => $activethreadcount,
+    $self->{output}->perfdata_add(
+        label => "ActiveTrheadCount",
+        value => $activethreadcount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_activethreadcount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_activethreadcount'),
-	);
-	$self->{output}->perfdata_add(
-		label => "StubCount",
-		value => $stubcount,
+    );
+    $self->{output}->perfdata_add(
+        label => "StubCount",
+        value => $stubcount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_stubcount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_stubcount'),
-	);
-	$self->{output}->perfdata_add(
-		label => "ProxyCount",
-		value => $proxycount,
+    );
+    $self->{output}->perfdata_add(
+        label => "ProxyCount",
+        value => $proxycount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_proxycount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_proxycount'),
-	);
-	$self->{output}->perfdata_add(
-		label => "ClientSessionCount",
-		value => $clientsessioncount,
+    );
+    $self->{output}->perfdata_add(
+        label => "ClientSessionCount",
+        value => $clientsessioncount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_clientsessioncount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_clientsessioncount'),
-	);
-	$self->{output}->perfdata_add(
-		label => "ServerSessionCount",
-		value => $serversessioncount,
+    );
+    $self->{output}->perfdata_add(
+        label => "ServerSessionCount",
+        value => $serversessioncount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_serversessioncount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_serversessioncount'),
-	);	
-	$self->{output}->perfdata_add(
-		label => "InvokeCount /min",
-		value => $invokecountpermin,
+    );    
+    $self->{output}->perfdata_add(
+        label => "InvokeCount /min",
+        value => $invokecountpermin,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_invokecountpermin'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_invokecountpermin'),
-	);	
-	$self->{output}->perfdata_add(
-		label => "ServiceCount /min",
-		value => $servicecountpermin,
+    );    
+    $self->{output}->perfdata_add(
+        label => "ServiceCount /min",
+        value => $servicecountpermin,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_servicecountpermin'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_servicecountpermin'),
-	);	
-	$self->{output}->perfdata_add(
-		label => "c[InvokeCount]",
-		value => $invokecount,
- 	);	
-	$self->{output}->perfdata_add(
-		label => "c[ServiceCount]",
-		value => $servicecount,
- 	);	
-	
-	$self->{output}->display();
-	$self->{output}->exit();
+    );    
+    $self->{output}->perfdata_add(
+        label => "c[InvokeCount]",
+        value => $invokecount,
+     );    
+    $self->{output}->perfdata_add(
+        label => "c[ServiceCount]",
+        value => $servicecount,
+     );    
+    
+    $self->{output}->display();
+    $self->{output}->exit();
 }
 
 1;
@@ -266,41 +252,9 @@ Check EAS instance orm rpc status.
 
 =over 8
 
-=item B<--hostname>
-
-IP Addr/FQDN of the EAS application host
-
-=item B<--port>
-
-Port used by EAS instance.
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--proto>
-
-Protocol to use http or https, http is default
-
 =item B<--urlpath>
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkrpc.jsp')
-
-=item B<--credentials>
-
-Specify this option if you access page over basic authentification
-
-=item B<--username>
-
-Specify username for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentification (Mandatory if --credentials is specidied)
-
-=item B<--timeout>
-
-Threshold for HTTP timeout
 
 =item B<--warning>
 
