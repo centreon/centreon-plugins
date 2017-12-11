@@ -61,7 +61,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => 'SELECT table_schema AS NAME, SUM(data_length+index_length) 
+    $self->{sql}->query(query => 'SELECT table_schema AS NAME, IFNULL(SUM(data_length+index_length), 0) 
             FROM information_schema.tables
             GROUP BY table_schema');
     my $result = $self->{sql}->fetchall_arrayref();
