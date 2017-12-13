@@ -453,7 +453,7 @@ How can i check a generic SNMP OID value ?
 There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP OID:
 ::
 
-  $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
+  $ perl centreon_plugins.pl --plugin=apps::protocols::snmp::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
 ----------------------------------------
 How can i check ipv6 equipment in SNMP ?
