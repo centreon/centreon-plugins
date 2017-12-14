@@ -170,6 +170,39 @@ sub cloudwatch_get_alarms {
     return $alarm_results;
 }
 
+sub cloudwatch_list_metrics {
+    my ($self, %options) = @_;
+    
+    my $metric_results = [];
+    eval {
+        my $cw = Paws->service('CloudWatch', region => $options{region});
+        my %options = ();
+        $options{Namespace} = $options{namespace} if (defined($options{namespace}));
+        while ((my $list_metrics = $cw->ListMetrics(%options))) {
+            foreach (@{$list_metrics->{Metrics}}) {
+                my $dimensions = [];
+                foreach my $dimension (@{$_->{Dimensions}}) {
+                    push @$dimensions, { Name => $dimension->{Name}, Value => $dimension->{Value} };
+                }
+                push @{$metric_results}, { 
+                    Namespace => $_->{Namespace},
+                    MetricName => $_->{MetricName},
+                    Dimensions => $dimensions,
+                };
+            }
+            
+            last if (!defined($list_metrics->{NextToken}));
+            $options{NextToken} = $list_metrics->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return $metric_results;
+}
+
 1;
 
 __END__
