@@ -205,6 +205,38 @@ sub cloudwatch_get_alarms {
     return $alarm_results;
 }
 
+sub cloudwatch_list_metrics_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    my $cmd_options = "cloudwatch list-metrics --region $options{region} --output json";
+    return $cmd_options; 
+}
+
+sub cloudwatch_list_metrics {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->cloudwatch_list_metrics_set_cmd(%options);
+    my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options
+    );
+    my $list_metrics;
+    eval {
+        $list_metrics = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return $list_metrics->{Metrics};
+}
+
 1;
 
 __END__
