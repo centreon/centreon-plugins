@@ -158,6 +158,7 @@ sub run {
     }
     
     my ($content) = $self->{http}->request(url_path => '/query/' . $self->{option_results}->{command} . '?' . $encoded_args);
+    $self->{output}->output_add(long_msg => "nsclient return = " . $content, debug => 1);
     $self->check_nscp_result(content => $content);
                                   
     $self->{output}->exit();
