@@ -98,11 +98,13 @@ sub cloudwatch_get_metrics_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    $self->{option_results}->{command_options} = 
+    my $cmd_options =
         "cloudwatch get-metric-statistics --region $options{region} --namespace $options{namespace} --metric-name '$options{metric_name}' --start-time $options{start_time} --end-time $options{end_time} --period $options{period} --statistics " . join(' ', @{$options{statistics}}) . " --output json --dimensions";
     foreach my $entry (@{$options{dimensions}}) {
-        $self->{option_results}->{command_options} .= " 'Name=$entry->{Name},Value=$entry->{Value}'";
-    }    
+        $cmd_options .= " 'Name=$entry->{Name},Value=$entry->{Value}'";
+    }
+    
+    return $cmd_options; 
 }
 
 sub cloudwatch_get_metrics {
@@ -113,13 +115,15 @@ sub cloudwatch_get_metrics {
     my $end_time = DateTime->now->iso8601;
 
     foreach my $metric_name (@{$options{metrics}}) {
-        $self->cloudwatch_get_metrics_set_cmd(%options, metric_name => $metric_name, start_time => $start_time, end_time => $end_time);
-        my ($response) = centreon::plugins::misc::execute(output => $self->{output},
-                                                      options => $self->{option_results},
-                                                      sudo => $self->{option_results}->{sudo},
-                                                      command => $self->{option_results}->{command},
-                                                      command_path => $self->{option_results}->{command_path},
-                                                      command_options => $self->{option_results}->{command_options});
+        my $cmd_options = $self->cloudwatch_get_metrics_set_cmd(%options, metric_name => $metric_name, start_time => $start_time, end_time => $end_time);
+        my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options);
+
         my $metric_result;
         eval {
             $metric_result = JSON::XS->new->utf8->decode($response);
@@ -157,6 +161,48 @@ sub cloudwatch_get_metrics {
     }
     
     return $metric_results;
+}
+
+sub cloudwatch_get_alarms_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    my $cmd_options = "cloudwatch describe-alarms --region $options{region} --output json";
+    return $cmd_options; 
+}
+
+sub cloudwatch_get_alarms {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->cloudwatch_get_alarms_set_cmd(%options);
+    my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options
+    );
+    my $alarm_result;
+    eval {
+        $alarm_result = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    my $alarm_results = [];
+    foreach my $alarm (@{$alarm_result->{MetricAlarms}}) {
+        push @$alarm_results, {
+            AlarmName => $alarm->{AlarmName},
+            StateValue => $alarm->{StateValue},
+            MetricName => $alarm->{MetricName},
+            StateReason => $alarm->{StateReason},
+            StateUpdatedTimestamp => $alarm->{StateUpdatedTimestamp},
+        };
+    }
+    return $alarm_results;
 }
 
 1;
