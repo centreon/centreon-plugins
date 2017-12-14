@@ -94,7 +94,7 @@ sub cloudwatch_get_metrics {
     
     my $metric_results = {};
     eval {
-        my $cw = Paws->service('CloudWatch', region => $options{region});        
+        my $cw = Paws->service('CloudWatch', region => $options{region});
         my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601;
         my $end_time = DateTime->now->iso8601;
         
@@ -144,6 +144,30 @@ sub cloudwatch_get_metrics {
     }
     
     return $metric_results;
+}
+
+sub cloudwatch_get_alarms {
+    my ($self, %options) = @_;
+
+    my $alarm_results = [];
+    eval {
+        my $cw = Paws->service('CloudWatch', region => $options{region});
+        my $alarms = $cw->DescribeAlarms();
+        foreach my $alarm (@{$alarms->{MetricAlarms}}) {
+            push @$alarm_results, {
+                AlarmName => $alarm->{AlarmName},
+                StateValue => $alarm->{StateValue},
+                MetricName => $alarm->{MetricName},
+                StateReason => $alarm->{StateReason},
+                StateUpdatedTimestamp => $alarm->{StateUpdatedTimestamp},
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+    return $alarm_results;
 }
 
 1;
