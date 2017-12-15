@@ -274,6 +274,43 @@ sub ec2_get_instances_status {
     return $instance_results;
 }
 
+sub rds_get_instances_status_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
+    return $cmd_options; 
+}
+
+sub rds_get_instances_status {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->rds_get_instances_status_set_cmd(%options);
+    my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options
+    );
+    my $list_instances;
+    eval {
+        $list_instances = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    my $instance_results = {};
+    foreach (@{$list_instances->{DBInstances}}) {
+        $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
+    }
+    
+    return $instance_results;
+}
+
 1;
 
 __END__

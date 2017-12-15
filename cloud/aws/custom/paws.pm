@@ -222,6 +222,25 @@ sub ec2_get_instances_status {
     return $instance_results;
 }
 
+sub rds_get_instances_status {
+    my ($self, %options) = @_;
+    
+    my $instance_results = {};
+    eval {
+        my $rds = Paws->service('RDS', region => $options{region});
+        my $instances = $rds->DescribeDBInstances();
+        foreach (@{$instances->{DBInstances}}) {
+            $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return $instance_results;
+}
+
 1;
 
 __END__

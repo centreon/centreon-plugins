@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::ec2instancestatus;
+package cloud::aws::mode::rdsinstancestatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -78,43 +78,35 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-pending', set => {
-                key_values => [ { name => 'pending' }  ],
-                output_template => "pending : %s",
+        { label => 'total-available', set => {
+                key_values => [ { name => 'available' }  ],
+                output_template => "available : %s",
                 perfdatas => [
-                    { label => 'total_pending', value => 'pending_absolute', template => '%d', min => 0 },
+                    { label => 'total_available', value => 'available_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-running', set => {
-                key_values => [ { name => 'running' }  ],
-                output_template => "running : %s",
+        { label => 'total-failed', set => {
+                key_values => [ { name => 'failed' }  ],
+                output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-shutting-down', set => {
-                key_values => [ { name => 'shutting-down' }  ],
-                output_template => "shutting-down : %s",
+        { label => 'total-backing-up', set => {
+                key_values => [ { name => 'backing-up' }  ],
+                output_template => "backing-up : %s",
                 perfdatas => [
-                    { label => 'total_shutting_down', value => 'shutting-down_absolute', template => '%d', min => 0 },
+                    { label => 'total_backing_up', value => 'backing-up_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-terminated', set => {
-                key_values => [ { name => 'terminated' }  ],
-                output_template => "terminated : %s",
+        { label => 'total-maintenance', set => {
+                key_values => [ { name => 'maintenance' }  ],
+                output_template => "maintenance : %s",
                 perfdatas => [
-                    { label => 'total_terminated', value => 'terminated_absolute', template => '%d', min => 0 },
-                ],
-            }
-        },
-        { label => 'total-stopping', set => {
-                key_values => [ { name => 'stopping' }  ],
-                output_template => "stopping : %s",
-                perfdatas => [
-                    { label => 'total_stopping', value => 'stopping_absolute', template => '%d', min => 0 },
+                    { label => 'total_maintenance', value => 'maintenance_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -123,6 +115,14 @@ sub set_counters {
                 output_template => "stopped : %s",
                 perfdatas => [
                     { label => 'total_stopped', value => 'stopped_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-storage-full', set => {
+                key_values => [ { name => 'storage-full' }  ],
+                output_template => "storage-full : %s",
+                perfdatas => [
+                    { label => 'total_storage_full', value => 'storage-full_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -196,10 +196,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {
-        pending => 0, running => 0, 'shutting-down' => 0, terminated => 0, stopping => 0, stopped => 0,
+        available => 0, 'backing-up' => 0, failed => 0, maintenance => 0, stopped => 0, 'storage-full' => 0,
     };
     $self->{aws_instances} = {};
-    my $result = $options{custom}->ec2_get_instances_status(region => $self->{option_results}->{region});
+    my $result = $options{custom}->rds_get_instances_status(region => $self->{option_results}->{region});
     foreach my $instance_id (keys %{$result}) {
         if (defined($self->{option_results}->{filter_instanceid}) && $self->{option_results}->{filter_instanceid} ne '' &&
             $instance_id !~ /$self->{option_results}->{filter_instanceid}/) {
@@ -211,11 +211,11 @@ sub manage_selection {
             display => $instance_id, 
             state => $result->{$instance_id}->{state},
         };
-        $self->{global}->{$result->{$instance_id}->{state}}++;
+        $self->{global}->{$result->{$instance_id}->{state}}++ if (defined($self->{global}->{$result->{$instance_id}->{state}}));
     }
     
     if (scalar(keys %{$self->{aws_instances}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No aws instance found.");
+        $self->{output}->add_option_msg(short_msg => "No aws rds instance found.");
         $self->{output}->option_exit();
     }
 }
@@ -226,14 +226,14 @@ __END__
 
 =head1 MODE
 
-Check EC2 instances status.
+Check RDS instances status.
 
 =over 8
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^total-running$'
+Example: --filter-counters='^total-available$'
 
 =item B<--filter-instanceid>
 
@@ -252,14 +252,14 @@ Can used special variables like: %{state}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-pending', 'total-running', 'total-shutting-down', 
-'total-terminated', 'total-stopping', 'total-stopped'.
+Can be: 'total-available', 'total-backing-up', 'total-failed', 
+'total-maintenance', 'total-stopped', 'total-storage-full'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-pending', 'total-running', 'total-shutting-down', 
-'total-terminated', 'total-stopping', 'total-stopped'.
+Can be: 'total-available', 'total-backing-up', 'total-failed', 
+'total-maintenance', 'total-stopped', 'total-storage-full'.
 
 =back
 
