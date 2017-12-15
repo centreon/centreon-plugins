@@ -34,6 +34,7 @@ sub new {
         'cloudwatch-get-alarms'     => 'cloud::aws::mode::cloudwatchgetalarms',
         'cloudwatch-get-metrics'    => 'cloud::aws::mode::cloudwatchgetmetrics',
         'cloudwatch-list-metrics'   => 'cloud::aws::mode::cloudwatchlistmetrics',
+        'ec2-instance-status'       => 'cloud::aws::mode::ec2instancestatus',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

@@ -203,6 +203,25 @@ sub cloudwatch_list_metrics {
     return $metric_results;
 }
 
+sub ec2_get_instances_status {
+    my ($self, %options) = @_;
+    
+    my $instance_results = {};
+    eval {
+        my $ec2 = Paws->service('EC2', region => $options{region});
+        my $instances = $ec2->DescribeInstanceStatus(DryRun => 0, IncludeAllInstances => 1);
+        foreach (@{$instances->{InstanceStatuses}}) {
+            $instance_results->{$_->{InstanceId}} = { state => $_->{InstanceState}->{Name} };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return $instance_results;
+}
+
 1;
 
 __END__
