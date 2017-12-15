@@ -237,6 +237,43 @@ sub cloudwatch_list_metrics {
     return $list_metrics->{Metrics};
 }
 
+sub ec2_get_instances_status_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $options{region} --output json";
+    return $cmd_options; 
+}
+
+sub ec2_get_instances_status {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->ec2_get_instances_status_set_cmd(%options);
+    my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options
+    );
+    my $list_instances;
+    eval {
+        $list_instances = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    my $instance_results = {};
+    foreach (@{$list_instances->{InstanceStatuses}}) {
+        $instance_results->{$_->{InstanceId}} = { state => $_->{InstanceState}->{Name} };
+    }
+    
+    return $instance_results;
+}
+
 1;
 
 __END__
