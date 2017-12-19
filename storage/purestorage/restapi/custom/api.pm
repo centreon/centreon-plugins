@@ -42,11 +42,12 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {                      
-                    "hostname:s"     => { name => 'hostname', },
-                    "username:s"     => { name => 'username', },
-                    "password:s"     => { name => 'password', },
-                    "proxyurl:s"     => { name => 'proxyurl', },
-                    "timeout:s"      => { name => 'timeout', },
+                    "hostname:s"    => { name => 'hostname' },
+                    "username:s"    => { name => 'username' },
+                    "password:s"    => { name => 'password' },
+                    "proxyurl:s"    => { name => 'proxyurl' },
+                    "timeout:s"     => { name => 'timeout' },
+                    "api-path:s"    => { name => 'api_path' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -88,6 +89,7 @@ sub check_options {
     $self->{password}   = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{proxyurl}   = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
+    $self->{api_path}   = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/1.11';
  
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -164,7 +166,7 @@ sub get_api_token {
     }
 
     $self->settings();
-    my $decoded = $self->request_api(method => 'POST', url_path => '/api/1.11/auth/apitoken', query_form_post => $encoded);
+    my $decoded = $self->request_api(method => 'POST', url_path => $self->{api_path} . '/auth/apitoken', query_form_post => $encoded);
     if (!defined($decoded->{api_token})) {
         $self->{output}->add_option_msg(short_msg => "Cannot get api token");
         $self->{output}->option_exit();
@@ -187,7 +189,7 @@ sub get_session {
     }
 
     $self->settings();
-    my $decoded = $self->request_api(method => 'POST', url_path => '/api/1.11/auth/session', query_form_post => $encoded);
+    my $decoded = $self->request_api(method => 'POST', url_path => $self->{api_path} . '/auth/session', query_form_post => $encoded);
     my $headers = $self->{http}->get_header();
     my $cookie = $headers->header('Set-Cookie');
     if (!defined($cookie)) {
@@ -214,14 +216,14 @@ sub get_object {
     }
     
     $self->settings();
-    return $self->request_api(method => 'GET', url_path => '/api/1.11' . $options{path});
+    return $self->request_api(method => 'GET', url_path => $self->{api_path} . $options{path});
 }
 
 sub DESTROY {
     my $self = shift;
 
     if (defined($self->{session_id})) {
-        $self->request_api(method => 'DELETE', url_path => '/api/1.11/auth/session');
+        $self->request_api(method => 'DELETE', url_path => $self->{api_path} . '/auth/session');
     }
 }
 
@@ -260,6 +262,10 @@ Proxy URL if any.
 =item B<--timeout>
 
 Set HTTP timeout in seconds (Default: '10').
+
+=item B<--api-path>
+
+API base url path (Default: '/api/1.11').
 
 =back
 
