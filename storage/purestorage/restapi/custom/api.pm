@@ -130,14 +130,15 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $response = $self->{http}->request(method => $options{method}, url_path => $options{url},
+    my $content = $self->{http}->request(method => $options{method}, url_path => $options{url_path}, query_form_post => $options{query_form_post},
         critical_status => '', warning_status => '', unknown_status => '');
+    my $response = $self->{http}->get_response();
     my $decoded;
     eval {
-        $decoded = decode_json($response);
+        $decoded = decode_json($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $response, debug => 1);
+        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
