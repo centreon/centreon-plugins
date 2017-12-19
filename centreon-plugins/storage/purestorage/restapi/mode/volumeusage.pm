@@ -179,13 +179,13 @@ sub manage_selection {
     #]
     foreach my $entry (@{$result}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $entry->{volume_name} !~ /$self->{option_results}->{filter_name}/) {
+            $entry->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $entry->{volume_name} . "': no matching filter.", debug => 1);
             next;
         }
         
-        $self->{volume}->{$entry->{volume_name}} = {
-            display => $entry->{volume_name},
+        $self->{volume}->{$entry->{name}} = {
+            display => $entry->{name},
             %{$entry},
         };
     }
