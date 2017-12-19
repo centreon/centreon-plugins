@@ -107,6 +107,12 @@ sub check_options {
     return 0;
 }
 
+sub get_connection_infos {
+    my ($self, %options) = @_;
+    
+    return $self->{hostname}  . '_' . $self->{http}->get_port();
+}
+
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 

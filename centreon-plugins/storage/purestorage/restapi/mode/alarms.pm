@@ -67,7 +67,7 @@ sub custom_status_calc {
 
     $self->{result_values}->{category} = $options{new_datas}->{$self->{instance} . '_category'};
     $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
-    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_severity'};
+    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_current_severity'};
     $self->{result_values}->{component_name} = $options{new_datas}->{$self->{instance} . '_component_name'};
     $self->{result_values}->{opened} = $options{new_datas}->{$self->{instance} . '_opened'};
     $self->{result_values}->{event} = $options{new_datas}->{$self->{instance} . '_event'};
@@ -86,7 +86,7 @@ sub set_counters {
     
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'category' }, { name => 'code' }, { name => 'severity' }, { name => 'opened' }, { name => 'event' }, { name => 'component_name' } ],
+                key_values => [ { name => 'category' }, { name => 'code' }, { name => 'current_severity' }, { name => 'opened' }, { name => 'event' }, { name => 'component_name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -146,7 +146,7 @@ sub manage_selection {
     
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => 'cache_purestorage_' . $self->{mode} . '_' . $self->{option_results}->{region});
+        $self->{statefile_cache}->read(statefile => 'cache_purestorage_' . $self->{mode} . '_' . $options{custom}->get_connection_infos());
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
     
