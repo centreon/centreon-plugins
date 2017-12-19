@@ -31,6 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'hardware'      => 'storage::purestorage::restapi::mode::hardware',
+        'list-volumes'  => 'storage::purestorage::restapi::mode::listvolumes',
         'volume-usage'  => 'storage::purestorage::restapi::mode::volumeusage',
     );
 
