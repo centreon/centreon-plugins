@@ -99,12 +99,12 @@ Example: --threshold-overload='entity,OK,device_off'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Set warning threshold for 'temperature' (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,40'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Set critical threshold for 'temperature' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,50'
 
 =back
@@ -135,7 +135,7 @@ sub check {
                 
         next if ($self->check_filter(section => 'entity', instance => $instance));
 
-        $self->{components}->{fan}->{total}++;
+        $self->{components}->{entity}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("entity '%s' status is '%s' [instance = %s]",
                                                         $entry->{name}, $entry->{status}, $instance));
         my $exit = $self->get_severity(section => 'entity', value => $entry->{status});
