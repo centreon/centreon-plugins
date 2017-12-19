@@ -251,15 +251,15 @@ Pure Storage Rest API custom mode
 
 =item B<--hostname>
 
-PureStorage hostname.
+Pure Storage hostname.
 
 =item B<--username>
 
-PureStorage username.
+Pure Storage username.
 
 =item B<--password>
 
-v password.
+Pure Storage password.
 
 =item B<--proxyurl>
 
