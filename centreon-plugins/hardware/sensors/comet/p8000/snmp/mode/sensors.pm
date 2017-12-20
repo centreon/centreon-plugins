@@ -51,7 +51,7 @@ sub custom_humidity_perfdata {
     }
     $self->{output}->perfdata_add(
         label => $self->{label} . $extra_label, unit => $unit,
-        value => $self->{result_values}->{$self->{label}},
+        value => $self->{result_values}->{$self->{label} . '_absolute'},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
         min => 0, max => 100,
