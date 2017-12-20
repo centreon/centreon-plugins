@@ -159,6 +159,8 @@ sub manage_selection {
     $self->{request} = [
          { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
              [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+         { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
+             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
     ];
     
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
