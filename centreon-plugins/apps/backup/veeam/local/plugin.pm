@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
         'job-status'    => 'apps::backup::veeam::local::mode::jobstatus',
+        'list-jobs'     => 'apps::backup::veeam::local::mode::listjobs',
     );
 
     return $self;
