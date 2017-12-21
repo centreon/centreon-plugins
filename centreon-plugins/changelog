@@ -7,6 +7,7 @@
  * Plugin added: Colubris SNMP
  * Plugin added: Alpha ups SNMP
  * Plugin added: Infoblox SNMP
+ * Plugin added: Redis Rest API
 
 2017-12-08 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Kingdee Rest API
