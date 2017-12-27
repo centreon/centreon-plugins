@@ -101,7 +101,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+            eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -133,22 +133,6 @@ sub custom_status_calc {
     return 0;
 }
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
-    bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-node:s"     => { name => 'filter_node' },
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "free"              => { name => 'free' },
-                                });
-   
-    return $self;
-}
-
 sub prefix_output {
     my ($self, %options) = @_;
 
@@ -171,6 +155,24 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
+        { label => 'shard-count', set => {
+                key_values => [ { name => 'shard_count' }, { name => 'display' } ],
+                output_template => 'Shard count: %d',
+                perfdatas => [
+                    { label => 'shard_count', value => 'shard_count_absolute', template => '%d', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            },
+        },
+        { label => 'uptime', set => {
+                key_values => [ { name => 'uptime' }, { name => 'uptime_sec' }, { name => 'display' } ],
+                output_template => 'Uptime: %s',
+                perfdatas => [
+                    { label => 'uptime', value => 'uptime_sec_absolute', template => '%d', 
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            },
+        },
         { label => 'cpu-system', set => {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'Cpu system: %.2f %%',
@@ -189,51 +191,41 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests', set => {
-                key_values => [ { name => 'total_req', diff => 1 }, { name => 'display' } ],
-                output_template => 'Requests per seconds: %s',
-                per_second => 1,
-                perfdatas => [
-                    { label => 'requests', value => 'total_req_per_second', template => '%s',
-                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-        { label => 'memory-used', set => {
+        { label => 'memory', set => {
                 key_values => [ { name => 'free_memory' }, { name => 'total_memory' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory-used', perf => 'memory_used', 
+                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory', perf => 'memory', 
                                                         free => 'free_memory', total => 'total_memory' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'persistent-storage-used', set => {
+        { label => 'persistent-storage', set => {
                 key_values => [ { name => 'persistent_storage_free' }, { name => 'persistent_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage-used', perf => 'persistent_storage_used', 
+                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
                                                         free => 'persistent_storage_free', total => 'persistent_storage_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'ephemeral-storage-used', set => {
+        { label => 'ephemeral-storage', set => {
                 key_values => [ { name => 'ephemeral_storage_free' }, { name => 'ephemeral_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage-used', perf => 'ephemeral_storage_used', 
+                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
                                                         free => 'ephemeral_storage_free', total => 'ephemeral_storage_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'flash-storage-used', set => {
-                key_values => [ { name => 'available_flash' }, { name => 'bigstore_size' } ],
+        { label => 'flash-storage', set => {
+                key_values => [ { name => 'bigstore_free' }, { name => 'bigstore_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage-used', perf => 'flash_storage_used', 
-                                                        free => 'available_flash', total => 'bigstore_size' },
+                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
+                                                        free => 'bigstore_free', total => 'bigstore_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
@@ -241,10 +233,10 @@ sub set_counters {
         },
         { label => 'flash-iops', set => {
                 key_values => [ { name => 'bigstore_iops' }, { name => 'display' } ],
-                output_template => 'Flash IOPS: %s',
+                output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
                     { label => 'flash_iops', value => 'bigstore_iops_absolute', template => '%s',
-                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -264,6 +256,15 @@ sub set_counters {
                 perfdatas => [
                     { label => 'connections', value => 'conns_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'requests', set => {
+                key_values => [ { name => 'total_req' } ],
+                output_template => 'Requests rate: %s ops/s',
+                perfdatas => [
+                    { label => 'requests', value => 'total_req_absolute', template => '%s',
+                      min => 0, unit => 'ops/s' },
                 ],
             }
         },
@@ -287,41 +288,50 @@ sub set_counters {
                 ],
             },
         },
-        { label => 'shard-count', set => {
-                key_values => [ { name => 'shard_count' }, { name => 'display' } ],
-                output_template => 'Shard count: %d',
-                perfdatas => [
-                    { label => 'shard_count', value => 'shard_count_absolute', template => '%d', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            },
-        },
-        { label => 'uptime', set => {
-                key_values => [ { name => 'uptime' }, { name => 'uptime_sec' }, { name => 'display' } ],
-                output_template => 'Uptime: %s',
-                perfdatas => [
-                    { label => 'uptime', value => 'uptime_sec_absolute', template => '%d', 
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            },
-        },
     ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+    
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                {
+                                    "interval:s"        => { name => 'interval', default => '15min' },
+                                    "filter-node:s"     => { name => 'filter_node' },
+                                    "units:s"           => { name => 'units', default => '%' },
+                                    "free"              => { name => 'free' },
+                                    "warning-status:s"  => { name => 'warning_status', default => '' },
+                                    "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /down/i' },
+                                });
+   
+    return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $instance_mode = $self;
+    $self->change_macros();
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_restapi_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-
-    my $result = $options{custom}->get(path => '/v1/nodes/stats/last');
+    my $result = $options{custom}->get(path => '/v1/nodes/stats/last?interval='.$instance_mode->{option_results}->{interval});
     my $result2 = $options{custom}->get(path => '/v1/nodes');
 
     foreach my $node (keys $result) {
@@ -332,16 +342,23 @@ sub manage_selection {
         }
 
         my $shard_list = '-';
-        if (@{$result2->{$node}->{shard_list}}) { $shard_list = join(", ", @{$result2->{$node}->{shard_list}}); }
+        if (@{$result2->{$node}->{shard_list}}) {
+            $shard_list = join(", ", @{$result2->{$node}->{shard_list}});
+        }
         my $ext_addr = '-';
-        if (@{$result2->{$node}->{external_addr}}) { $ext_addr = join(", ", @{$result2->{$node}->{external_addr}}); }
+        if (@{$result2->{$node}->{external_addr}}) {
+            $ext_addr = join(", ", @{$result2->{$node}->{external_addr}});
+        }
 
         $self->{nodes}->{$node} = {
             display                     => $node,
             status                      => defined($result2->{$node}->{status}) ? $result2->{$node}->{status} : '-',
             shard_list                  => $shard_list,
+            shard_count                 => $result2->{$node}->{shard_count},
             int_addr                    => $result2->{$node}->{addr},
             ext_addr                    => $ext_addr,
+            uptime                      => centreon::plugins::misc::change_seconds(value => $result2->{$node}->{uptime}),
+            uptime_sec                  => $result2->{$node}->{uptime},
             cpu_system                  => $result->{$node}->{cpu_system} * 100,
             cpu_user                    => $result->{$node}->{cpu_user} * 100,
             free_memory                 => $result->{$node}->{free_memory},
@@ -350,17 +367,14 @@ sub manage_selection {
             persistent_storage_size     => $result2->{$node}->{persistent_storage_size},
             ephemeral_storage_free      => $result->{$node}->{ephemeral_storage_free},
             ephemeral_storage_size      => $result2->{$node}->{ephemeral_storage_size},
-            available_flash             => $result->{$node}->{available_flash},
+            bigstore_free               => $result->{$node}->{bigstore_free},
             bigstore_size               => $result2->{$node}->{bigstore_size},
             bigstore_iops               => $result->{$node}->{bigstore_iops},
             bigstore_throughput         => $result->{$node}->{bigstore_throughput},
             conns                       => $result->{$node}->{conns},
+            total_req                   => $result->{$node}->{total_req},
             ingress                     => $result->{$node}->{ingress_bytes} * 8,
             egress                      => $result->{$node}->{egress_bytes} * 8,
-            total_req                   => $result->{$node}->{total_req},
-            shard_count                 => $result2->{$node}->{shard_count},
-            uptime                      => centreon::plugins::misc::change_seconds(value => $result2->{$node}->{uptime}),
-            uptime_sec                  => $result2->{$node}->{uptime},
         };
 
         if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -385,32 +399,51 @@ Check RedisLabs Enterprise Cluster nodes statistics.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^cpu'
 
+=item B<--interval>
+
+Time interval from which to retrieve statistics (Default: '15min').
+Can be : '1sec', '10sec', '5min', '15min', 
+'1hour', '12hour', '1week'
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
+
+=item B<--free>
+
+Thresholds are on free space left.
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{status}, %{shard_list}, %{int_addr}, %{ext_addr}.
+Can used special variables like: %{status}, %{shard_list}, 
+%{int_addr}, %{ext_addr}.
+'status' can be: 'active', 'going_offline', 'offline', 
+'provisioning', 'decommissioning', 'down'.
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /active/i').
-Can used special variables like: %{status}, %{shard_list}, %{int_addr}, %{ext_addr}.
+Set critical threshold for status (Default: '%{status} !~ /down/i').
+Can used special variables like: %{status}, %{shard_list}, 
+%{int_addr}, %{ext_addr}.
+'status' can be: 'active', 'going_offline', 'offline', 
+'provisioning', 'decommissioning', 'down'.
 
 =item B<--warning-*>
 
 Threshold warning.
 Can be: 'cpu-system', 'cpu-user', 
-'requests', 'memory-used', 'flash-storage-used', 
-'persistent-storage-used', 'ephemeral-storage-used', 
+'requests', 'memory', 'flash-storage', 
+'persistent-storage', 'ephemeral-storage', 
 'flash-iops', 'flash-throughput', 'connections', 
-'traffic-in', 'traffic-out', 'uptime'.
+'traffic-in', 'traffic-out', 'shard-count', 'uptime'.
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'cpu-system', 'cpu-user', 
-'requests', 'memory-used', 'flash-storage-used', 
-'persistent-storage-used', 'ephemeral-storage-used', 
+'requests', 'memory', 'flash-storage', 
+'persistent-storage', 'ephemeral-storage', 
 'flash-iops', 'flash-throughput', 'connections', 
 'traffic-in', 'traffic-out', 'shard-count', 'uptime'.
 
