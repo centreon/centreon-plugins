@@ -120,6 +120,8 @@ sub build_options_for_httplib {
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{ssl} = $self->{ssl};
+    $self->{option_results}->{warning_status} = '';
+    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {

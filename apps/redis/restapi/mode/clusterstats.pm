@@ -120,51 +120,41 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests', set => {
-                key_values => [ { name => 'total_req', diff => 1 } ],
-                output_template => 'Requests per seconds: %s',
-                per_second => 1,
-                perfdatas => [
-                    { label => 'requests', value => 'total_req_per_second', template => '%s',
-                      min => 0, unit => '/s' },
-                ],
-            }
-        },
-        { label => 'memory-used', set => {
+        { label => 'memory', set => {
                 key_values => [ { name => 'free_memory' }, { name => 'total_memory' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory-used', perf => 'memory_used', 
+                closure_custom_calc_extra_options => { display => 'Ram', label => 'memory', perf => 'memory', 
                                                         free => 'free_memory', total => 'total_memory' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'persistent-storage-used', set => {
+        { label => 'persistent-storage', set => {
                 key_values => [ { name => 'persistent_storage_free' }, { name => 'persistent_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage-used', perf => 'persistent_storage_used', 
+                closure_custom_calc_extra_options => { display => 'Persistent storage', label => 'persistent-storage', perf => 'persistent_storage', 
                                                         free => 'persistent_storage_free', total => 'persistent_storage_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'ephemeral-storage-used', set => {
+        { label => 'ephemeral-storage', set => {
                 key_values => [ { name => 'ephemeral_storage_free' }, { name => 'ephemeral_storage_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage-used', perf => 'ephemeral_storage_used', 
+                closure_custom_calc_extra_options => { display => 'Ephemeral storage', label => 'ephemeral-storage', perf => 'ephemeral_storage', 
                                                         free => 'ephemeral_storage_free', total => 'ephemeral_storage_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'flash-storage-used', set => {
-                key_values => [ { name => 'available_flash' }, { name => 'bigstore_size' } ],
+        { label => 'flash-storage', set => {
+                key_values => [ { name => 'bigstore_free' }, { name => 'bigstore_size' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage-used', perf => 'flash_storage_used', 
-                                                        free => 'available_flash', total => 'bigstore_size' },
+                closure_custom_calc_extra_options => { display => 'Flash storage', label => 'flash-storage', perf => 'flash_storage', 
+                                                        free => 'bigstore_free', total => 'bigstore_size' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
@@ -172,10 +162,10 @@ sub set_counters {
         },
         { label => 'flash-iops', set => {
                 key_values => [ { name => 'bigstore_iops' } ],
-                output_template => 'Flash IOPS: %s',
+                output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
                     { label => 'flash_iops', value => 'bigstore_iops_absolute', template => '%s',
-                      min => 0, unit => '/s' },
+                      min => 0, unit => 'ops/s' },
                 ],
             }
         },
@@ -195,6 +185,15 @@ sub set_counters {
                 perfdatas => [
                     { label => 'connections', value => 'conns_absolute', template => '%s',
                       min => 0 },
+                ],
+            }
+        },
+        { label => 'requests', set => {
+                key_values => [ { name => 'total_req' } ],
+                output_template => 'Requests rate: %s ops/s',
+                perfdatas => [
+                    { label => 'requests', value => 'total_req_absolute', template => '%s',
+                      min => 0, unit => 'ops/s' },
                 ],
             }
         },
@@ -221,12 +220,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                    "interval:s"        => { name => 'interval', default => '15min' },
                                     "units:s"           => { name => 'units', default => '%' },
                                     "free"              => { name => 'free' },
                                 });
@@ -244,10 +244,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "redis_restapi_" . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-                                                          
-    my $result = $options{custom}->get(path => '/v1/cluster/stats/last');
+    my $result = $options{custom}->get(path => '/v1/cluster/stats/last?interval='.$instance_mode->{option_results}->{interval});
     my $result2 = $options{custom}->get(path => '/v1/cluster');
     my $result3 = $options{custom}->get(path => '/v1/nodes');
 
@@ -256,10 +253,18 @@ sub manage_selection {
     my $ephemeral_storage_size = 0;
     my $bigstore_size = 0;
     foreach my $node (keys $result3) {
-        $total_memory = $total_memory + $result3->{$node}->{total_memory};
-        $persistent_storage_size = $persistent_storage_size + $result3->{$node}->{persistent_storage_size};
-        $ephemeral_storage_size = $ephemeral_storage_size + $result3->{$node}->{ephemeral_storage_size};
-        $bigstore_size = $bigstore_size + $result3->{$node}->{bigstore_size};
+        if (defined($result3->{$node}->{total_memory})) {
+            $total_memory = $total_memory + $result3->{$node}->{total_memory};
+        }
+        if (defined($result3->{$node}->{persistent_storage_size})) {
+            $persistent_storage_size = $persistent_storage_size + $result3->{$node}->{persistent_storage_size};
+        }
+        if (defined($result3->{$node}->{ephemeral_storage_size})) {
+            $ephemeral_storage_size = $ephemeral_storage_size + $result3->{$node}->{ephemeral_storage_size};
+        }
+        if (defined($result3->{$node}->{bigstore_size})) {
+            $bigstore_size = $bigstore_size + $result3->{$node}->{bigstore_size};
+        }
     }
 
     $self->{cluster}->{$result2->{name}} = { 
@@ -272,15 +277,15 @@ sub manage_selection {
         persistent_storage_size     => $persistent_storage_size,
         ephemeral_storage_free      => $result->{ephemeral_storage_free},
         ephemeral_storage_size      => $ephemeral_storage_size,
-        available_flash             => $result->{available_flash},
+        bigstore_free               => $result->{bigstore_free},
         bigstore_size               => $bigstore_size,
         bigstore_iops               => $result->{bigstore_iops},
         bigstore_kv_ops             => $result->{bigstore_kv_ops},
         bigstore_throughput         => $result->{bigstore_throughput},
         conns                       => $result->{conns},
+        total_req                   => $result->{total_req},
         ingress                     => $result->{ingress_bytes} * 8,
         egress                      => $result->{egress_bytes} * 8,
-        total_req                   => $result->{total_req},
     };
 }
 
@@ -299,12 +304,26 @@ Check RedisLabs Enterprise Cluster statistics.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^cpu'
 
+=item B<--interval>
+
+Time interval from which to retrieve statistics (Default: '15min').
+Can be : '1sec', '10sec', '5min', '15min', 
+'1hour', '12hour', '1week'
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
+
+=item B<--free>
+
+Thresholds are on free space left.
+
 =item B<--warning-*>
 
 Threshold warning.
 Can be: 'cpu-system', 'cpu-user', 
-'requests', 'memory-used', 'flash-storage-used', 
-'persistent-storage-used', 'ephemeral-storage-used', 
+'requests', 'memory', 'flash-storage', 
+'persistent-storage', 'ephemeral-storage', 
 'flash-iops', 'flash-throughput', 'connections', 
 'traffic-in', 'traffic-out'.
 
@@ -312,8 +331,8 @@ Can be: 'cpu-system', 'cpu-user',
 
 Threshold critical.
 Can be: 'cpu-system', 'cpu-user', 
-'requests', 'memory-used', 'flash-storage-used', 
-'persistent-storage-used', 'ephemeral-storage-used', 
+'requests', 'memory', 'flash-storage', 
+'persistent-storage', 'ephemeral-storage', 
 'flash-iops', 'flash-throughput', 'connections', 
 'traffic-in', 'traffic-out'.
 
