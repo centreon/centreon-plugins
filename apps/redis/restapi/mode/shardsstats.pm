@@ -244,7 +244,7 @@ sub set_counters {
                 key_values => [ { name => 'no_of_expires' }, { name => 'display' } ],
                 output_template => 'Volatile keys: %s',
                 perfdatas => [
-                    { label => 'volatile-keys', value => 'no_of_expires_absolute', template => '%s',
+                    { label => 'volatile_keys', value => 'no_of_expires_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -383,7 +383,7 @@ sub manage_selection {
             fork_cpu_system             => $result->{$shard}->{fork_cpu_system} * 100,
             connected_clients           => $result->{$shard}->{connected_clients},
             blocked_clients             => $result->{$shard}->{blocked_clients},
-            total_req                   => $result->{$shard}->{total_req},
+            total_req                   => defined($result->{$shard}->{total_req}) ? $result->{$shard}->{total_req} : $result->{$shard}->{instantaneous_ops_per_sec},
             no_of_keys                  => $result->{$shard}->{no_of_keys},
             no_of_expires               => $result->{$shard}->{no_of_expires},
             evicted_objects             => $result->{$shard}->{evicted_objects},
