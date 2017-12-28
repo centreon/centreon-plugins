@@ -324,7 +324,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "interval:s"         => { name => 'interval', default => '15min' },
                                     "filter-shard:s"     => { name => 'filter_shard' },
                                     "warning-status:s"   => { name => 'warning_status', default => '' },
                                     "critical-status:s"  => { name => 'critical_status', default => '%{status} =~ /inactive/i | %{backup} =~ /failed/i | 
@@ -355,7 +354,7 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get(path => '/v1/shards/stats/last?interval='.$instance_mode->{option_results}->{interval});
+    my $result = $options{custom}->get(path => '/v1/shards/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/shards');
 
     foreach my $shard (keys $result) {
@@ -418,12 +417,6 @@ Check RedisLabs Enterprise Cluster shards statistics.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='clients'
-
-=item B<--interval>
-
-Time interval from which to retrieve statistics (Default: '15min').
-Can be : '1sec', '10sec', '5min', '15min', 
-'1hour', '12hour', '1week'
 
 =item B<--warning-status>
     

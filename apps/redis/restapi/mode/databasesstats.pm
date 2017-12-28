@@ -441,7 +441,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "interval:s"            => { name => 'interval', default => '15min' },
                                     "filter-database:s"     => { name => 'filter_database' },
                                     "units:s"               => { name => 'units', default => '%' },
                                     "free"                  => { name => 'free' },
@@ -474,7 +473,7 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get(path => '/v1/bdbs/stats/last?interval='.$instance_mode->{option_results}->{interval});
+    my $result = $options{custom}->get(path => '/v1/bdbs/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/bdbs');
 
     foreach my $database (keys $result) {
@@ -555,12 +554,6 @@ Check RedisLabs Enterprise Cluster databases statistics.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='rate|latency'
-
-=item B<--interval>
-
-Time interval from which to retrieve statistics (Default: '15min').
-Can be : '1sec', '10sec', '5min', '15min', 
-'1hour', '12hour', '1week'
 
 =item B<--warning-status>
 
