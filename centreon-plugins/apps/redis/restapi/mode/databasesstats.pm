@@ -507,7 +507,7 @@ sub manage_selection {
             memory_size                 => $result2->{$database}->{memory_size},
             mem_frag_ratio              => $result->{$database}->{mem_frag_ratio},
             conns                       => $result->{$database}->{conns},
-            total_req                   => defined($result->{$shard}->{total_req}) ? $result->{$shard}->{total_req} : $result->{$shard}->{instantaneous_ops_per_sec},
+            total_req                   => defined($result->{$database}->{total_req}) ? $result->{$database}->{total_req} : $result->{$database}->{instantaneous_ops_per_sec},
             total_res                   => $result->{$database}->{total_res},
             total_hits                  => $result->{$database}->{read_hits} + $result->{$database}->{write_hits},
             total_misses                => $result->{$database}->{read_misses} + $result->{$database}->{write_misses},
