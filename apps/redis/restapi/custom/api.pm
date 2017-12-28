@@ -42,6 +42,7 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
+                        "interval:s@" => { name => 'interval' },
                         "hostname:s@" => { name => 'hostname' },
                         "port:s@"     => { name => 'port' },
                         "proto:s@"    => { name => 'proto' },
@@ -95,6 +96,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
     $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
     $self->{ssl} = (defined($self->{option_results}->{ssl})) ? shift(@{$self->{option_results}->{ssl}}) : 'tlsv1';
+    $self->{interval} = (defined($self->{option_results}->{interval})) ? shift(@{$self->{option_results}->{interval}}) : '15min';
  
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -105,6 +107,7 @@ sub check_options {
         scalar(@{$self->{option_results}->{hostname}}) == 0) {
         return 0;
     }
+    
     return 1;
 }
 
@@ -120,6 +123,8 @@ sub build_options_for_httplib {
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{ssl} = $self->{ssl};
+    $self->{option_results}->{warning_status} = '';
+    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {
@@ -133,6 +138,12 @@ sub get_connection_info {
     my ($self, %options) = @_;
     
     return $self->{hostname} . ":" . $self->{port};
+}
+
+sub get_interval {
+    my ($self, %options) = @_;
+    
+    return $self->{interval};
 }
 
 sub get {
@@ -187,6 +198,12 @@ RedisLabs Enterprise Cluster Rest API custom mode
 
 =over 8
 
+=item B<--interval>
+
+Time interval from which to retrieve statistics (Default: '15min').
+Can be : '1sec', '10sec', '5min', '15min', 
+'1hour', '12hour', '1week'.
+
 =item B<--hostname>
 
 Cluster hostname.
@@ -214,6 +231,10 @@ Proxy URL if any
 =item B<--timeout>
 
 Set HTTP timeout
+
+=item B<--ssl>
+
+SSL version (Default: tlsv1)
 
 =back
 
