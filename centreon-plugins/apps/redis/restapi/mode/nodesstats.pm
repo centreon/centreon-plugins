@@ -299,12 +299,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "interval:s"        => { name => 'interval', default => '15min' },
                                     "filter-node:s"     => { name => 'filter_node' },
                                     "units:s"           => { name => 'units', default => '%' },
                                     "free"              => { name => 'free' },
                                     "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /down/i' },
+                                    "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /down/i' },
                                 });
    
     return $self;
@@ -331,7 +330,7 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get(path => '/v1/nodes/stats/last?interval='.$instance_mode->{option_results}->{interval});
+    my $result = $options{custom}->get(path => '/v1/nodes/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/nodes');
 
     foreach my $node (keys $result) {
@@ -399,12 +398,6 @@ Check RedisLabs Enterprise Cluster nodes statistics.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^cpu'
 
-=item B<--interval>
-
-Time interval from which to retrieve statistics (Default: '15min').
-Can be : '1sec', '10sec', '5min', '15min', 
-'1hour', '12hour', '1week'
-
 =item B<--units>
 
 Units of thresholds (Default: '%') ('%', 'B').
@@ -423,7 +416,7 @@ Can used special variables like: %{status}, %{shard_list},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /down/i').
+Set critical threshold for status (Default: '%{status} =~ /down/i').
 Can used special variables like: %{status}, %{shard_list}, 
 %{int_addr}, %{ext_addr}.
 'status' can be: 'active', 'going_offline', 'offline', 
