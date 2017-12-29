@@ -33,6 +33,9 @@ sub new {
     %{$self->{modes}} = (
                             'databasesstats'    => 'apps::redis::restapi::mode::databasesstats',
                             'clusterstats'      => 'apps::redis::restapi::mode::clusterstats',
+                            'listdatabases'     => 'apps::redis::restapi::mode::listdatabases',
+                            'listnodes'         => 'apps::redis::restapi::mode::listnodes',
+                            'listshards'        => 'apps::redis::restapi::mode::listshards',
                             'nodesstats'        => 'apps::redis::restapi::mode::nodesstats',
                             'shardsstats'       => 'apps::redis::restapi::mode::shardsstats',
                         );
