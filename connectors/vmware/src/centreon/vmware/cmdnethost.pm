@@ -59,7 +59,8 @@ sub checkArgs {
                                                 short_msg => "Argument error: wrong value for link down status '" . $options{arguments}->{link_down_status} . "'");
         return 1;
     }
-    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
+    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out', 
+                        'warning_dropped_in', 'critical_dropped_in', 'warning_dropped_out', 'critical_dropped_out')) {
         if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
             $options{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                     short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
@@ -77,7 +78,8 @@ sub initArgs {
     }
     $self->{manager} = centreon::vmware::common::init_response();
     $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
+    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out', 
+                        'warning_dropped_in', 'critical_dropped_in', 'warning_dropped_out', 'critical_dropped_out')) {
         $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
     }
 }
@@ -170,9 +172,9 @@ sub run {
         }
         if (scalar(@$instances) == 0 && 
             ($multiple == 0 || ($multiple == 1 && !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1)))) {
-            $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
-                                                   short_msg => sprintf("%s Link(s) '%s' is(are) down",
-                                                                        $entity_view->{name}, join("','", keys %{$pnic_def_down->{$entity_view->{mo_ref}->{value}}})));
+                $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
+                                                       short_msg => sprintf("%s Link(s) '%s' is/are down",
+                                                                        $entity_view->{name}, join("', '", keys %{$pnic_def_down->{$entity_view->{mo_ref}->{value}}})));
             next;
         }
         
@@ -180,7 +182,11 @@ sub run {
                               entity => $entity_view,
                               metrics => [ 
                                 {label => 'net.received.average', instances => $instances},
-                                {label => 'net.transmitted.average', instances => $instances}
+                                {label => 'net.transmitted.average', instances => $instances},
+                                {label => 'net.droppedRx.summation', instances => $instances},
+                                {label => 'net.droppedTx.summation', instances => $instances},
+                                {label => 'net.packetsRx.summation', instances => $instances},
+                                {label => 'net.packetsTx.summation', instances => $instances}
                               ]
                              };
     }  
@@ -200,14 +206,18 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};
         if (scalar(keys %{$pnic_def_down->{$entity_value}}) > 0 && 
             (($multiple == 0 && $number_nic == 1) || !$self->{manager}->{output}->is_status(value => $self->{link_down_status}, compare => 'ok', litteral => 1))) {
+            ($number_nic == 1) ? my $be = "is" : my $be = "are";
             $self->{manager}->{output}->output_add(severity => $self->{link_down_status},
-                                                   short_msg => sprintf("%s Link(s) '%s' is(are) down",
-                                                                        $entity_view->{name}, join("','", keys %{$pnic_def_down->{$entity_value}})));
+                                                   short_msg => sprintf("%s Link(s) '%s' %s down",
+                                                                        $entity_view->{name}, join("', '", keys %{$pnic_def_down->{$entity_value}}), $be));
         }
         
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits;
         foreach (sort keys %{$pnic_def_up->{$entity_value}}) {
+            my $interface = sprintf("Interface '%s'", $_);
+            my $output = '';
+
             # KBps
             my $traffic_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.received.average'}->{key} . ":" . $_})) * 1024 * 8;    
             my $traffic_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.transmitted.average'}->{key} . ":" . $_})) * 1024 * 8;
@@ -223,13 +233,13 @@ sub run {
             my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
             push @exits, $exit;
  
-            my $output = sprintf("Interface '%s' Traffic In : %s/s (%.2f %%), Out : %s/s (%.2f %%) ", $_,
+            $output = sprintf("Traffic In : %s/s (%.2f %%), Out : %s/s (%.2f %%)",
                                            $in_value . $in_unit, $in_prct,
                                            $out_value . $out_unit, $out_prct);
-            $long_msg .= $long_msg_append . $output;
+            $long_msg .= $long_msg_append . $interface . " " . $output;
             $long_msg_append = ', ';
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0 && $number_nic == 1)) {
-                $short_msg .= $short_msg_append . $output;
+                $short_msg .= $short_msg_append . $interface . " " .  $output;
                 $short_msg_append = ', ';
             }
 
@@ -246,6 +256,44 @@ sub run {
                                           warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
                                           critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
                                           min => 0, max => $interface_speed);
+
+            # Packets dropped
+            my $packets_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.packetsRx.summation'}->{key} . ":" . $_}));    
+            my $packets_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.packetsTx.summation'}->{key} . ":" . $_}));
+            my $dropped_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedRx.summation'}->{key} . ":" . $_}));    
+            my $dropped_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedTx.summation'}->{key} . ":" . $_}));
+            my $dropped_in_prct = $dropped_in * 100 / $packets_in;
+            my $dropped_out_prct = $dropped_out * 100 / $packets_out;
+
+            my $exit3 = $self->{manager}->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical_dropped_in', exit_litteral => 'critical' }, { label => 'warning_dropped_in', exit_litteral => 'warning' } ]);
+            my $exit4 = $self->{manager}->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical_dropped_out', exit_litteral => 'critical' }, { label => 'warning_dropped_out', exit_litteral => 'warning' } ]);
+
+            my $exit = $self->{manager}->{output}->get_most_critical(status => [ $exit3, $exit4 ]);
+            push @exits, $exit;
+
+            $output = sprintf("Packets In Dropped : %.2f %% (%d/%d packets), Packets Out Dropped : %.2f %% (%d/%d packets)",
+                                           $dropped_in_prct, $dropped_in, $packets_in,
+                                           $dropped_out_prct, $dropped_out, $packets_out);
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = ', ';
+            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0 && $number_nic == 1)) {
+                $short_msg .= $short_msg_append . $interface . " " .  $output;
+                $short_msg_append = ', ';
+            }
+
+            $extra_label = '';
+            $extra_label .= '_' . $_ if ($number_nic > 1);
+            $extra_label .= '_' . $entity_view->{name} if ($multiple == 1);
+            $self->{manager}->{output}->perfdata_add(label => 'packets_dropped_in' . $extra_label, unit => '%',
+                                          value => sprintf("%.2f", $dropped_in_prct),
+                                          warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-dropped-in'),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical-dropped-in'),
+                                          min => 0, max => 100);
+            $self->{manager}->{output}->perfdata_add(label => 'packets_dropped_out' . $extra_label, unit => '%',
+                                          value => sprintf("%.2f", $dropped_out_prct),
+                                          warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-dropped-out'),
+                                          critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical-dropped-out'),
+                                          min => 0, max => 100);
         }
         
         $self->{manager}->{output}->output_add(long_msg => "'$entity_view->{name}' $long_msg");
