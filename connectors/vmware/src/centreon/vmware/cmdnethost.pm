@@ -272,8 +272,8 @@ sub run {
             push @exits, $exit;
 
             $output = sprintf("Packets In Dropped : %.2f %% (%d/%d packets), Packets Out Dropped : %.2f %% (%d/%d packets)",
-                                           $dropped_in_prct, $dropped_in, $packets_in,
-                                           $dropped_out_prct, $dropped_out, $packets_out);
+                              $dropped_in_prct, $dropped_in, $packets_in,
+                              $dropped_out_prct, $dropped_out, $packets_out);
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = ', ';
             if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0 && $number_nic == 1)) {
@@ -281,9 +281,6 @@ sub run {
                 $short_msg_append = ', ';
             }
 
-            $extra_label = '';
-            $extra_label .= '_' . $_ if ($number_nic > 1);
-            $extra_label .= '_' . $entity_view->{name} if ($multiple == 1);
             $self->{manager}->{output}->perfdata_add(label => 'packets_dropped_in' . $extra_label, unit => '%',
                                           value => sprintf("%.2f", $dropped_in_prct),
                                           warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning-dropped-in'),
