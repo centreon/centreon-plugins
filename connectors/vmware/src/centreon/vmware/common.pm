@@ -399,7 +399,13 @@ sub generic_performance_values_historic {
         }
     };
     if ($@) {
-        $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
+        if ($@ =~ /querySpec.interval.*InvalidArgumentFault/msi) {
+            $manager_display->{output}->output_add(severity => 'UNKNOWN',
+                                                   short_msg => sprintf("Interval '%s' is surely not supported for the managed entity (caller: %s)",
+                                                                        $interval, join('--', caller)));
+        } else {
+            $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
+        }
         return undef;
     }
     return \%results;
