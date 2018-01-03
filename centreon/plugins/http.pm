@@ -121,6 +121,29 @@ sub check_options {
             $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
         }
     }
+    
+    $self->{ssl_context} = '';
+    if (!defined($options{request}->{ssl_opt})) {
+        $options{request}->{ssl_opt} = [];
+    }
+    if (defined($options{request}->{ssl}) && $options{request}->{ssl} ne '') {
+        push @{$options{request}->{ssl_opt}}, 'SSL_version => ' . $options{request}->{ssl};
+    }
+    if (defined($options{request}->{cert_file}) && !defined($options{request}->{cert_pkcs12})) {
+        push @{$options{request}->{ssl_opt}}, 'SSL_use_cert => 1';
+        push @{$options{request}->{ssl_opt}}, 'SSL_cert_file => "' . $options{request}->{cert_file} . '"';
+        push @{$options{request}->{ssl_opt}}, 'SSL_key_file => "' . $options{request}->{key_file} . '"'
+             if (defined($options{request}->{key_file}));
+        push @{$options{request}->{ssl_opt}}, 'SSL_ca_file => "' . $options{request}->{cacert_file} . '"'
+            if (defined($options{request}->{cacert_file}));
+    }
+    my $append = '';
+    foreach (@{$options{request}->{ssl_opt}}) {
+        if ($_ ne '') {
+            $self->{ssl_context} .= $append . $_;
+            $append = ', ';
+        }
+    }
 }
 
 sub get_port {
@@ -256,20 +279,8 @@ sub request {
         $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
     }
 
-    my $ssl_context;
-    if (defined($request_options->{ssl}) && $request_options->{ssl} ne '') {
-        $ssl_context = { SSL_version => $request_options->{ssl} };
-    }
-    if (defined($request_options->{cert_file}) && !defined($request_options->{cert_pkcs12})) {
-        $ssl_context = {} if (!defined($ssl_context));
-        $ssl_context->{SSL_use_cert} = 1;
-        $ssl_context->{SSL_cert_file} = $request_options->{cert_file};
-        $ssl_context->{SSL_key_file} = $request_options->{key_file} if (defined($request_options->{key_file}));
-        $ssl_context->{SSL_ca_file} = $request_options->{cacert_file} if (defined($request_options->{cacert_file}));
-    }
-
-    if (defined($ssl_context)) {
-        my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
+    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
+        my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
         IO::Socket::SSL::set_default_context($context);
     }
 

@@ -47,6 +47,7 @@ sub new {
          "proxyurl:s"           => { name => 'proxyurl' },
          "proxypac:s"           => { name => 'proxypac' },
          "timeout:s"            => { name => 'timeout' },
+         "ssl-opt:s@"           => { name => 'ssl_opt' },
          "ssl:s"		        => { name => 'ssl' },
          "command:s"            => { name => 'command' },
          "arg:s@"               => { name => 'arg' },
@@ -218,9 +219,9 @@ Proxy pac file (can be an url or local file)
 
 Threshold for HTTP timeout (Default: 5)
 
-=item B<--ssl>
+=item B<--ssl-opt>
 
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--command>
 
