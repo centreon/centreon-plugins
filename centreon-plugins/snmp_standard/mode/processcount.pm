@@ -129,36 +129,35 @@ sub check_options {
 
 my $filters = {
     status => { oid => '.1.3.6.1.2.1.25.4.2.1.7', default => 1, value => '', regexp => 1 }, # hrSWRunStatus
-    name => { oid => '.1.3.6.1.2.1.25.4.2.1.2', default => 1, value => '' }, # hrSWRunName (Warning: it's truncated. (15 characters))
+    name => { oid => '.1.3.6.1.2.1.25.4.2.1.2', default => 0, value => '' }, # hrSWRunName (Warning: it's truncated. (15 characters))
     path => { oid => '.1.3.6.1.2.1.25.4.2.1.4', default => 0, value => '' }, # hrSWRunPath 
     args => { oid => '.1.3.6.1.2.1.25.4.2.1.5', default => 0, value => '' }, # hrSWRunParameters (Warning: it's truncated. (128 characters))
 };
 
-my $oid_hrSWRunName = '.1.3.6.1.2.1.25.4.2.1.2';
 my $oid_hrSWRunStatus = '.1.3.6.1.2.1.25.4.2.1.7';
 my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
 my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 
-sub check_top {
+sub check_top { 
     my ($self, %options) = @_;
     
     my %data = ();
-    foreach my $key (keys %{$self->{snmp_response}->{$oid_hrSWRunName}}) {
+    foreach my $key (keys %{$self->{snmp_response}->{$oid_hrSWRunStatus}}) {
         if ($key =~ /\.([0-9]+)$/ && defined($self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1})) {
-            $data{$self->{snmp_response}->{$oid_hrSWRunName}->{$key}} = 0 if (!defined($data{$self->{snmp_response}->{$oid_hrSWRunName}->{$key}}));
-            $data{$self->{snmp_response}->{$oid_hrSWRunName}->{$key}} += $self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1} * 1024;
+            $data{$1} = 0 if (!defined($self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1}));
+            $data{$1} = $self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1} * 1024;
         }
     }
 
     my $i = 1;
-    foreach my $name (sort { $data{$b} <=> $data{$a} } keys %data) {
+    foreach my $pid (sort { $data{$b} <=> $data{$a} } keys %data) {
         last if ($i > $self->{option_results}->{top_num});
-        last if ($data{$name} < $self->{option_results}->{top_size});
+        last if ($data{$pid} < $self->{option_results}->{top_size});
         
-        my ($mem_value, $mem_unit) = $self->{perfdata}->change_bytes(value => $data{$name});
-        $self->{output}->output_add(long_msg => sprintf("Top %d '%s' memory usage: %s %s", $i, $name, $mem_value, $mem_unit));
-        $self->{output}->perfdata_add(label => 'top_' . $name, unit => 'B',
-                                      value => $data{$name}, min => 0);        
+        my ($mem_value, $mem_unit) = $self->{perfdata}->change_bytes(value => $data{$pid});
+        $self->{output}->output_add(long_msg => sprintf("Top %d '%s' memory usage: %s %s", $i, $pid, $mem_value, $mem_unit));
+        $self->{output}->perfdata_add(label => 'top_' . $pid, unit => 'B',
+                                      value => $data{$pid}, min => 0);        
         $i++;
     }
 }
@@ -187,18 +186,17 @@ sub run {
         push @{$extra_oids}, $oid_hrSWRunPerfCPU;
     }
 
-    my $oids_multiple_table = [ { oid => $oid_hrSWRunName }, { oid => $oid_hrSWRunStatus } ];
+    my $oids_multiple_table = [ { oid => $oid_hrSWRunStatus } ];
     if (defined($self->{option_results}->{top})) {
         push @{$oids_multiple_table}, { oid => $oid_hrSWRunPerfMem };
     }
 
     # First lookup on name and status
     $self->{snmp_response} = $self->{snmp}->get_multiple_table(oids => $oids_multiple_table);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{snmp_response}->{$oid_hrSWRunName}})) {
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{snmp_response}->{$oid_hrSWRunStatus}})) {
         $key =~ /\.([0-9]+)$/;
         my $pid = $1;
-        $self->{results}->{$pid}->{name} = $self->{snmp_response}->{$oid_hrSWRunName}->{$oid_hrSWRunName.'.'.$pid};
-        $self->{results}->{$pid}->{status} = $map_process_status{$self->{snmp_response}->{$oid_hrSWRunStatus}->{$oid_hrSWRunStatus.'.'.$pid}};
+        $self->{results}->{$pid}->{status} = $map_process_status{$self->{snmp_response}->{$oid_hrSWRunStatus}->{$oid_hrSWRunStatus . '.' . $pid}};
 
         foreach my $filter (keys %$filters) {
             next if !defined($self->{results}->{$pid}) || $filters->{$filter}->{value} eq '' || $filters->{$filter}->{default} == 0;
@@ -220,11 +218,11 @@ sub run {
                 foreach my $filter (keys %$filters) {
                     next if !defined($self->{results}->{$pid}) || $filters->{$filter}->{value} eq '' || $filters->{$filter}->{default} == 1;
 
-                    if ((defined($filters->{$filter}->{regexp}) && $self->{snmp_response_extra}->{$filters->{$filter}->{oid}.'.'.$pid} !~ /$filters->{$filter}->{value}/)
-                        || (!defined($filters->{$filter}->{regexp}) && $self->{snmp_response_extra}->{$filters->{$filter}->{oid}.'.'.$pid} ne $filters->{$filter}->{value})) {
+                    if ((defined($filters->{$filter}->{regexp}) && $self->{snmp_response_extra}->{$filters->{$filter}->{oid} . '.' . $pid} !~ /$filters->{$filter}->{value}/)
+                        || (!defined($filters->{$filter}->{regexp}) && $self->{snmp_response_extra}->{$filters->{$filter}->{oid} . '.' . $pid} ne $filters->{$filter}->{value})) {
                             delete $self->{results}->{$pid};
                     } else {
-                        $self->{results}->{$pid}->{$filter} = $self->{snmp_response_extra}->{$filters->{$filter}->{oid}.'.'.$pid};
+                        $self->{results}->{$pid}->{$filter} = $self->{snmp_response_extra}->{$filters->{$filter}->{oid} . '.' . $pid};
                     }
                 }
             }
@@ -248,15 +246,15 @@ sub run {
         my $total_memory = 0;
         foreach my $pid (keys %{$self->{results}}) {
             $total_memory += ($self->{snmp_response_extra}->{$oid_hrSWRunPerfMem . "." . $pid} * 1024);
-            my ($memory_value, $memory_unit) = $self->{perfdata}->change_bytes(value => $self->{snmp_response_extra}->{$oid_hrSWRunPerfMem.'.'.$pid} * 1024);
+            my ($memory_value, $memory_unit) = $self->{perfdata}->change_bytes(value => $self->{snmp_response_extra}->{$oid_hrSWRunPerfMem . '.' . $pid} * 1024);
             $self->{results}->{$pid}->{memory} = $memory_value . " " . $memory_unit;
 
-            $exit = $self->{perfdata}->threshold_check(value => $self->{snmp_response_extra}->{$oid_hrSWRunPerfMem.'.'.$pid} * 1024, 
+            $exit = $self->{perfdata}->threshold_check(value => $self->{snmp_response_extra}->{$oid_hrSWRunPerfMem . '.' . $pid} * 1024, 
                                                        threshold => [ { label => 'critical-mem-each', exit_litteral => 'critical' }, 
                                                                       { label => 'warning-mem-each', exit_litteral => 'warning' } ]);
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Process '%s' [pid: %s] memory usage: %.2f %s", $self->{results}->{$pid}->{name}, $pid, $memory_value, $memory_unit));
+                                            short_msg => sprintf("Process '%s' memory usage: %.2f %s", $pid, $memory_value, $memory_unit));
             }
         }
         
@@ -337,9 +335,8 @@ sub run {
     $self->check_top() if (defined($self->{option_results}->{top}));
 
     foreach my $pid (keys %{$self->{results}}) {
-        my $long_msg = sprintf("Process '%s' [pid: %s]", $self->{results}->{$pid}->{name}, $pid);
+        my $long_msg = sprintf("Process '%s'", $pid);
         for my $key (keys $self->{results}->{$pid}) {
-            next if ($key eq 'name');
             $long_msg .= sprintf(" [%s: %s]", $key, $self->{results}->{$pid}->{$key});
         }
         $self->{output}->output_add(long_msg => $long_msg);
