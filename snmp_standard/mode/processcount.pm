@@ -134,6 +134,7 @@ my $filters = {
     args => { oid => '.1.3.6.1.2.1.25.4.2.1.5', default => 0, value => '' }, # hrSWRunParameters (Warning: it's truncated. (128 characters))
 };
 
+my $oid_hrSWRunName = '.1.3.6.1.2.1.25.4.2.1.2';
 my $oid_hrSWRunStatus = '.1.3.6.1.2.1.25.4.2.1.7';
 my $oid_hrSWRunPerfMem = '.1.3.6.1.2.1.25.5.1.1.2';
 my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
@@ -141,23 +142,23 @@ my $oid_hrSWRunPerfCPU = '.1.3.6.1.2.1.25.5.1.1.1';
 sub check_top { 
     my ($self, %options) = @_;
     
-    my %data = ();
-    foreach my $key (keys %{$self->{snmp_response}->{$oid_hrSWRunStatus}}) {
+    my $data;
+    foreach my $key (keys %{$self->{snmp_response}->{$oid_hrSWRunName}}) {
         if ($key =~ /\.([0-9]+)$/ && defined($self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1})) {
-            $data{$1} = 0 if (!defined($self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1}));
-            $data{$1} = $self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1} * 1024;
+            $data->{$self->{snmp_response}->{$oid_hrSWRunName}->{$oid_hrSWRunName . '.' . $1}}->{memory} += $self->{snmp_response}->{$oid_hrSWRunPerfMem}->{$oid_hrSWRunPerfMem . '.' . $1} * 1024;
+            push @{$data->{$self->{snmp_response}->{$oid_hrSWRunName}->{$oid_hrSWRunName . '.' . $1}}->{pids}}, $1;
         }
     }
 
     my $i = 1;
-    foreach my $pid (sort { $data{$b} <=> $data{$a} } keys %data) {
+    foreach my $name (sort { $data->{$b}->{memory} <=> $data->{$a}->{memory} } keys %$data) {
         last if ($i > $self->{option_results}->{top_num});
-        last if ($data{$pid} < $self->{option_results}->{top_size});
+        last if ($data->{$name}->{memory} < $self->{option_results}->{top_size});
         
-        my ($mem_value, $mem_unit) = $self->{perfdata}->change_bytes(value => $data{$pid});
-        $self->{output}->output_add(long_msg => sprintf("Top %d '%s' memory usage: %s %s", $i, $pid, $mem_value, $mem_unit));
-        $self->{output}->perfdata_add(label => 'top_' . $pid, unit => 'B',
-                                      value => $data{$pid}, min => 0);        
+        my ($mem_value, $mem_unit) = $self->{perfdata}->change_bytes(value => $data->{$name}->{memory});
+        $self->{output}->output_add(long_msg => sprintf("Top %d '%s' [pids: %s] memory usage: %s %s", $i, $name, join(", ", @{$data->{$name}->{pids}}), $mem_value, $mem_unit));
+        $self->{output}->perfdata_add(label => 'top_' . $name, unit => 'B',
+                                      value => $data->{$name}->{memory}, min => 0);        
         $i++;
     }
 }
@@ -188,6 +189,7 @@ sub run {
 
     my $oids_multiple_table = [ { oid => $oid_hrSWRunStatus } ];
     if (defined($self->{option_results}->{top})) {
+        push @{$oids_multiple_table}, { oid => $oid_hrSWRunName };
         push @{$oids_multiple_table}, { oid => $oid_hrSWRunPerfMem };
     }
 
