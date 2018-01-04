@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::procurve::mode::components::sensor;
+package network::hp::procurve::snmp::mode::components::sensor;
 
 use strict;
 use warnings;
