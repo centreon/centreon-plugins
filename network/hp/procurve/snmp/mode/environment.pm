@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::procurve::mode::environment;
+package network::hp::procurve::snmp::mode::environment;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(sensor)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(sensor|fan|psu)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -40,10 +40,30 @@ sub set_system {
             ['good', 'OK'],
             ['not present', 'WARNING'],
         ],
+        psu => [
+            ['psNotPresent', 'OK'],
+            ['psNotPlugged', 'WARNING'],
+            ['psPowered', 'OK'],
+            ['psFailed', 'CRITICAL'],
+            ['psPermFailure', 'CRITICAL'],
+            ['psMax', 'WARNING'],
+            ['psAuxFailure', 'CRITICAL'],
+            ['psNotPowered', 'WARNING'],
+            ['psAuxNotPowered', 'CRITICAL'],
+        ],
+        fan => [
+            ['failed', 'CRITICAL'],
+            ['removed', 'OK'],
+            ['off', 'WARNING'],
+            ['underspeed', 'WARNING'],
+            ['overspeed', 'WARNING'],
+            ['ok', 'OK'],
+            ['maxstate', 'WARNING'],
+        ],
     };
     
-    $self->{components_path} = 'network::hp::procurve::mode::components';
-    $self->{components_module} = ['sensor'];
+    $self->{components_path} = 'network::hp::procurve::snmp::mode::components';
+    $self->{components_module} = ['sensor', 'psu', 'fan'];
 }
 
 sub snmp_execute {
@@ -79,7 +99,7 @@ Check sensors (hpicfChassis.mib).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'sensor'.
+Can be: 'sensor', 'psu', 'fan'.
 
 =item B<--filter>
 

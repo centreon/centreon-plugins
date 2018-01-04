@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::procurve::mode::memory;
+package network::hp::procurve::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
