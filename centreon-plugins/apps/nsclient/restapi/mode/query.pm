@@ -110,8 +110,8 @@ sub nscp_output_perf {
                                       value => sprintf($printf_format, $perf->{value}),
                                       warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
                                       critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
-                                      min => sprintf($printf_format, $perf->{minimum}),
-                                      max => sprintf($printf_format, $perf->{maximum}),
+                                      min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
+                                      max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
                                       );
     }
 }
