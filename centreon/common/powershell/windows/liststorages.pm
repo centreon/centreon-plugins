@@ -73,7 +73,7 @@ sub list {
     foreach my $line (split /\n/, $options{stdout}) {
 	    next if ($line !~ /^\[name=(.*?)\]\[used=(.*?)\]\[free=(.*?)\]\[provider=(.*?)\]\[path=(.*?)\]/);
         my ($disk, $used, $free, $provider, $path) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+                                                      centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
         $self->{output}->output_add(long_msg => "'" . $disk . "' [used = $used, free = $free, path = $path, provider = " . $provider . ']');
 
@@ -95,8 +95,8 @@ sub disco_show {
 
         $self->{output}->add_disco_entry(name     => $disk,
                                          used     => $used,
-										 free     => $free,
-										 provider => $provider,
+					 free     => $free,
+					 provider => $provider,
                                          path     => $path);
     }
 }
