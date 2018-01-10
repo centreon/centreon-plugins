@@ -95,8 +95,8 @@ sub disco_show {
 
         $self->{output}->add_disco_entry(name     => $disk,
                                          used     => $used,
-					 free     => $free,
-					 provider => $provider,
+                                         free     => $free,
+                                         provider => $provider,
                                          path     => $path);
     }
 }

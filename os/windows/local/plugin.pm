@@ -35,7 +35,7 @@ sub new {
                          'pending-reboot'   => 'os::windows::local::mode::pendingreboot',
                          'sessions'         => 'os::windows::local::mode::sessions',
                          'time'             => 'os::windows::local::mode::ntp',
-						 'list-storages'    => 'os::windows::local::mode::liststorages',
+                         'list-storages'    => 'os::windows::local::mode::liststorages',
                          );
 
     return $self;
