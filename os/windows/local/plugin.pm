@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'cmd-return'       => 'os::windows::local::mode::cmdreturn',
                          'pending-reboot'   => 'os::windows::local::mode::pendingreboot',
                          'sessions'         => 'os::windows::local::mode::sessions',
                          'time'             => 'os::windows::local::mode::ntp',

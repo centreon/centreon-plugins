@@ -461,7 +461,7 @@ Comment puis-je vérifier la valeur d'un OID SNMP générique ?
 Il y a un plugin SNMP générique pour vérifier cela. Voici un exemple pour obtenir l'OID SNMP 'SysUptime' :
 ::
 
-  $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
+  $ perl centreon_plugins.pl --plugin=apps::protocols::snmp::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
 ---------------------------------------------------------------------
 Comment utiliser un serveur memcached pour la rétention des données ?
@@ -1150,3 +1150,14 @@ Voici la manière de définir les seuils (total_statut pour les warning/critical
 ::
 
 --critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'
+
+--------
+NSClient
+--------
+
+Vous pouvez superviser des systèmes Windows/Linux via l'API Rest de NSClient. Les commandes et arguments sont les mêmes que via NRPE (veuillez lire la documentation NSClient pour plus d'informations) :
+
+::
+
+  $ perl centreon_plugins.pl --plugin=apps::nsclient::restapi::plugin --mode=query --hostname="10.30.2.10" --port=443 --legacy-password=centreon --command=check_drivesize --arg="drive=*" --arg="perf-config=used(unit:B)used %(ignored:true)" --arg="filter=type = 'fixed' and name not regexp '.*yst.*'" --arg="warning=total_used>80%" --arg="critical=total_used>90%"
+  OK All 2 drive(s) are ok | '\\?\Volume{7cd2d555-9868-11e7-8199-806e6f6e6963}\ used'=289468416.000B;293598003.000;330297753.000;0.000;366997504.000 'C:\ used'=23285907456.000B;42654390681.000;47986189516.000;0.000;53317988352.000

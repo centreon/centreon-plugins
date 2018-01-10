@@ -36,7 +36,9 @@ my %mapping_memory = (
     'PS Perm Gen' => 'permanent',
     'Perm Gen' => 'permanent',
     'Metaspace' => 'permanent',
+    'JIT data cache' => 'permanent',
     'Code Cache' => 'code',
+    'JIT Code Cache' => 'code',
     'CMS Old Gen' => 'tenured',
     'PS Old Gen' => 'tenured',
     'Tenured Gen' => 'tenured',
@@ -199,8 +201,8 @@ sub manage_selection {
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     $self->{mem} = {};
-    foreach my $key (keys %$result) { 
-        $key =~ /name=(.*?),type/;
+    foreach my $key (keys %$result) {
+        $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $memtype = $1;
         
         if (!defined($mapping_memory{$memtype})) {

@@ -31,19 +31,16 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'instancestate' => 'cloud::aws::mode::instancestate',
-        'list'          => 'cloud::aws::mode::list',
-        'cloudwatch'    => 'cloud::aws::mode::cloudwatch',
+        'cloudwatch-get-alarms'     => 'cloud::aws::mode::cloudwatchgetalarms',
+        'cloudwatch-get-metrics'    => 'cloud::aws::mode::cloudwatchgetmetrics',
+        'cloudwatch-list-metrics'   => 'cloud::aws::mode::cloudwatchlistmetrics',
+        'ec2-instance-status'       => 'cloud::aws::mode::ec2instancestatus',
+        'rds-instance-status'       => 'cloud::aws::mode::rdsinstancestatus',
     );
 
+    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
     $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
-}
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;
@@ -53,14 +50,5 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Amazon AWS cloud.
-
-=over 8
-
-For this plugin to work, you have to install and configure:
-awscli (http://docs.aws.amazon.com/cli/latest/userguide/installing.html#install-bundle-other-os).
-perl-json
-perl-Module-Load
-
-=back
 
 =cut
