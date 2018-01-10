@@ -40,6 +40,8 @@ our @EXPORT_OK = qw(%map_default1_status %map_default2_status %map_online %map_d
     5 => 'lowWarning',
     6 => 'lowCritical',
     7 => 'sensorError',
+    8 => 'relayOn',
+    9 => 'relayOff',
 );
 
 %map_default2_status = (

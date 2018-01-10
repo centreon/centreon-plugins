@@ -49,7 +49,8 @@ sub new {
          "proxypac:s"    => { name => 'proxypac' },
          "timeout:s"     => { name => 'timeout' },
          "no-follow"     => { name => 'no_follow', },
-         "ssl:s"		 => { name => 'ssl' },
+         "ssl:s"         => { name => 'ssl' },
+         "ssl-opt:s@"    => { name => 'ssl_opt' },
          "cert-file:s"   => { name => 'cert_file' },
          "key-file:s"    => { name => 'key_file' },
          "cacert-file:s" => { name => 'cacert_file' },
@@ -202,9 +203,9 @@ Threshold for HTTP timeout (Default: 5)
 
 Do not follow http redirect
 
-=item B<--ssl>
+=item B<--ssl-opt>
 
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

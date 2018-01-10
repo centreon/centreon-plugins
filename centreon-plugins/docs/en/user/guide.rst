@@ -453,7 +453,7 @@ How can i check a generic SNMP OID value ?
 There is a generic SNMP plugin to check it. An example to get 'SysUptime' SNMP OID:
 ::
 
-  $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
+  $ perl centreon_plugins.pl --plugin=apps::protocols::snmp::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
 ----------------------------------------
 How can i check ipv6 equipment in SNMP ?
@@ -1119,33 +1119,44 @@ Design of configuration file
 Command line, output, threshold ...
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sample command :
+Sample command:
 
 ::
 
 /usr/lib/nagios/plugins/centreon_plugins.pl --plugin database::mysql::plugin --dyn-mode apps::centreon::sql::mode::multiservices --host localhost --username centreon --password c3ntreon --config-file '/root/global-services.json' --verbose
 
-Sample output : 
+Sample output: 
 
 ::
 
     OK: Hosts state summary [up:4][down:2][unreachable:0] - Services state summary [ok:4][warning:0][critical:2][unknown:0] - Nothing special on groups |
 
-Perfdatas :
+Perfdatas:
 
 ::
 
 'total_host_up'=4;;;0; 'total_host_down'=2;;;0; 'total_host_unreachable'=0;;;0; 'total_host_ok'=4;;;0; 'total_host_warning'=0;;;0; 'total_host_critical'=2;;;0; 'total_host_unknown'=0;;;0; 'host_up_ESX'=4;;;0; 'host_down_ESX'=0;;;0; 'host_unreachable_ESX'=0;;;0; 'service_ok_ESX'=4;;;0; 'service_warning_ESX'=0;;;0; 'service_critical_ESX'=0;;;0; 'service_unknown_ESX'=0;;;0; 'host_up_XIVO'=0;;;0; 'host_down_XIVO'=2;;;0; 'host_unreachable_XIVO'=0;;;0; 'service_ok_XIVO'=0;;;0; 'service_warning_XIVO'=0;;;0; 'service_critical_XIVO'=2;;;0; 'service_unknown_XIVO'=0;;;0;
 
-Verbose mode (with display details set as true) :
+Verbose mode (with display details set as true):
 
 ::
 
     Group 'ESX': HOSTS: [up: 4 (clus-esx-n1.com - clus-esx-n2.com - clus-esx-n3.com - clus-esx-n4.com)][down: 0][unreachable: 0] -      SERVICES: [ok: 4 (clus-esx-n1.com/Esx-Status - clus-esx-n2.com/Esx-Status - clus-esx-n3.com/Esx-Status - clus-esx-n4.com/Esx-Status)][warning: 0][critical: 0][unknown: 0]
     Group 'XIVO': HOSTS: [up: 0][down: 2 (srvi-xivo-n1 - srvi-xivo-n2)][unreachable: 0] - SERVICES: [ok: 0][warning: 0][critical: 2 (srvi-xivo-n1/Ping - srvi-xivo-n2/Ping)][unknown: 0]
 
-Concerning the threshold, you can use some example below :
+Concerning the threshold, you can use some example below:
 
 ::
 
 --critical-total '%{total_down} > 4' --critical-groups '%{instance} eq 'ESX' && %{unknown} > 5'
+
+--------
+NSClient
+--------
+
+You can monitor Windows/Linux system with the Rest API of NSClient. Commands and arguments are the same than NRPE (look the NSClient documentation for more informations):
+
+::
+
+  $ perl centreon_plugins.pl --plugin=apps::nsclient::restapi::plugin --mode=query --hostname="10.30.2.10" --port=443 --legacy-password=centreon --command=check_drivesize --arg="drive=*" --arg="perf-config=used(unit:B)used %(ignored:true)" --arg="filter=type = 'fixed' and name not regexp '.*yst.*'" --arg="warning=total_used>80%" --arg="critical=total_used>90%"
+  OK All 2 drive(s) are ok | '\\?\Volume{7cd2d555-9868-11e7-8199-806e6f6e6963}\ used'=289468416.000B;293598003.000;330297753.000;0.000;366997504.000 'C:\ used'=23285907456.000B;42654390681.000;47986189516.000;0.000;53317988352.000

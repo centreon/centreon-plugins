@@ -98,7 +98,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cg} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_i3IgInfo, start => $oid_i3IgSipActiveCallsCount, end => , 
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_i3IgInfo, start => $oid_i3IgSipActiveCallsCount, 
                                                 nothing_quit => 1);
 
     foreach my $oid (keys %{$snmp_result}) {

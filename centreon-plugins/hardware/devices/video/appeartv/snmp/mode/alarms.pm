@@ -154,7 +154,7 @@ sub manage_selection {
             { oid => $mapping->{msgText}->{oid} },
             { oid => $mapping->{msgGenerationTime}->{oid} },
             { oid => $mapping->{msgSeverity}->{oid} },
-        ], nothing_quit => 1, return_type => 1);
+        ], return_type => 1);
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {

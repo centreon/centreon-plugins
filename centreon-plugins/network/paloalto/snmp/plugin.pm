@@ -31,14 +31,15 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-                        'cluster-status'    => 'network::paloalto::snmp::mode::clusterstatus',
-                        'cpu'               => 'snmp_standard::mode::cpu',
-                        'interfaces'        => 'snmp_standard::mode::interfaces', 
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'hardware'          => 'snmp_standard::mode::hardwaredevice',
-                        'panorama'          => 'network::paloalto::snmp::mode::panorama',
-                        'sessions'          => 'network::paloalto::snmp::mode::sessions',
-                         );
+        'cluster-status'    => 'network::paloalto::snmp::mode::clusterstatus',
+        'cpu'               => 'snmp_standard::mode::cpu',
+        'hardware'          => 'snmp_standard::mode::hardwaredevice',
+        'interfaces'        => 'snmp_standard::mode::interfaces', 
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::paloalto::snmp::mode::memory',
+        'panorama'          => 'network::paloalto::snmp::mode::panorama',
+        'sessions'          => 'network::paloalto::snmp::mode::sessions',
+    );
 
     return $self;
 }

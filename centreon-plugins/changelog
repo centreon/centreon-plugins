@@ -1,3 +1,42 @@
+2017-12-22 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Pure Storage SNMP
+ * Plugin added: Pure Storage Rest API
+ * Plugin added: Amazon AWS API
+ * Plugin added: Comet P8000 series SNMP
+ * Plugin added: Veeam local
+ * Plugin added: Colubris SNMP
+ * Plugin added: Alpha ups SNMP
+ * Plugin added: Infoblox SNMP
+ * Plugin added: Redis Rest API
+ * Plugin added: Cisco Call Manager SNMP
+
+2017-12-08 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kingdee Rest API
+ * Plugin added: Redis Cli
+ * Plugin added: Ubiquiti Edge SNMP
+ * Plugin added: Arista SNMP
+ * Plugin added: Haproxy SNMP
+ * Plugin added: JBoss JMX
+ * Plugin added: NSClient Query
+ * Break: Renamed Asterisk AMI
+ * Break: Renamed Dell n4000
+ * Break: Renamed Dell 62000
+
+2017-11-23 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Freebox Rest API
+ * Plugin added: Netgear Mseries SNMP
+ * Plugin added: Zyxel SNMP
+ * Add redis support for temporary datas
+
+2017-10-13 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kaminario Rest API
+ * Plugin added: Protocol SSH
+ * Plugin added: Tivoli Storage Manager
+ * Plugin added: Toshiba Storemate
+ * Mode added: [windows] 'pending-reboot'
+ * Mode added: [storeonce] 'nas-usage'
+ * Mode added: [tomcat] 'connector-usage'
+
 2017-09-13 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Zookeeper JMX
  * Plugin added: Solr JMX

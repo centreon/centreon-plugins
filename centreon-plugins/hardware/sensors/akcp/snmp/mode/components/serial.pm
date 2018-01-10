@@ -64,7 +64,6 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Serial '%s' status is '%s'", $result->{hhmsSensorArraySerialDescription}, $result->{hhmsSensorArraySerialStatus}));
-            next;
         }
     }
 }
