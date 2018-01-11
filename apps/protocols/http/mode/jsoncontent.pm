@@ -392,19 +392,19 @@ Set path to get Webpage (Default: '/')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access webpage over basic authentication
 
 =item B<--ntlm>
 
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
+Specify this option if you access webpage over ntlm authentication (Use with --credentials option)
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for basic authentication (Mandatory if --credentials is specidied)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for basic authentication (Mandatory if --credentials is specidied)
 
 =item B<--timeout>
 
