@@ -26,7 +26,6 @@ use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
 use IO::Socket::SSL;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -269,9 +268,10 @@ sub request {
     if (defined($request_options->{credentials}) && defined($request_options->{ntlm})) {
         $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
     } elsif (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
-	eval "use Authen::NTLM"; die $@ if $@;
-	ntlmv2(1);
-	$self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
+                                               error_msg => "Cannot load module 'Authen::NTLM'.");
+        Authen::NTLM::ntlmv2(1);
+        $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
     } elsif (defined($request_options->{credentials})) {
         $req->authorization_basic($request_options->{username}, $request_options->{password});
     }
