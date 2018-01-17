@@ -32,18 +32,19 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                         'backup-age'           => 'database::mssql::mode::backupage',
                          'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
                          'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
                          'connected-users'      => 'database::mssql::mode::connectedusers',
                          'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'databases-size'       => 'database::mssql::mode::databasessize',
-                         'locks-waits'          => 'database::mssql::mode::lockswaits',
-                         'transactions'         => 'database::mssql::mode::transactions',
-                         'failed-jobs'          => 'database::mssql::mode::failedjobs',
                          'dead-locks'           => 'database::mssql::mode::deadlocks',
-                         'backup-age'           => 'database::mssql::mode::backupage',
+                         'databases-size'       => 'database::mssql::mode::databasessize',
+                         'failed-jobs'          => 'database::mssql::mode::failedjobs',
+                         'locks-waits'          => 'database::mssql::mode::lockswaits',
+                         'logs-size'            => 'database::mssql::mode::logssize',
                          'sql'                  => 'centreon::common::protocols::sql::mode::sql',
                          'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
+                         'transactions'         => 'database::mssql::mode::transactions',
                          );
 
     return $self;
