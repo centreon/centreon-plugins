@@ -47,6 +47,7 @@ sub new {
             "urlpath:s"             => { name => 'url_path' },
             "credentials"           => { name => 'credentials' },
             "ntlm"                  => { name => 'ntlm' },
+            "ntlmv2"                => { name => 'ntlmv2' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
@@ -424,6 +425,10 @@ Specify this option if you access webpage over basic authentication
 =item B<--ntlm>
 
 Specify this option if you access webpage over ntlm authentication (Use with --credentials option)
+
+=item B<--ntlmv2>
+
+Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
 
 =item B<--username>
 
