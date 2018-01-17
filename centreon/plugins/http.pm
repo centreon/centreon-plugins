@@ -27,6 +27,18 @@ use HTTP::Cookies;
 use URI;
 use IO::Socket::SSL;
 
+{
+    package CentreonUserAgent;
+    our @ISA = qw(LWP::UserAgent);
+
+    sub get_basic_credentials {
+        my($self, $realm, $uri, $proxy) = @_;
+        return if $proxy;
+        return $centreon::plugins::http::request_options->{username}, $centreon::plugins::http::request_options->{password} if $centreon::plugins::http::request_options->{credentials};
+        return undef, undef;
+    }
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -204,14 +216,14 @@ sub set_proxy {
 sub request {
     my ($self, %options) = @_;
 
-    my $request_options = { %{$self->{options}} };
+    our $request_options = { %{$self->{options}} };
     foreach (keys %options) {
         $request_options->{$_} = $options{$_} if (defined($options{$_}));
     }
     $self->check_options(request => $request_options);
 
     if (!defined($self->{ua})) {
-        $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
+        $self->{ua} = CentreonUserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
         if (defined($request_options->{cookies_file})) {
             $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
                                                        autosave => 1));
@@ -264,16 +276,11 @@ sub request {
             $req->content($uri_post->query);
         }
     }
-    
-    if (defined($request_options->{credentials}) && defined($request_options->{ntlm})) {
-        $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
-    } elsif (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
+        
+    if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
                                                error_msg => "Cannot load module 'Authen::NTLM'.");
         Authen::NTLM::ntlmv2(1);
-        $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
-    } elsif (defined($request_options->{credentials})) {
-        $req->authorization_basic($request_options->{username}, $request_options->{password});
     }
 
     $self->set_proxy(request => $request_options, url => $url);
@@ -316,9 +323,15 @@ sub request {
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        my $short_msg = $response->status_line;
+        if ($short_msg =~ /^401/) {
+            my ($authenticate) = $response->www_authenticate =~ /(\S+)/;
+            $short_msg .= ' (' . $authenticate . ' authentification expected)';
+        }
+
         $self->{output}->output_add(long_msg => $response->content, debug => 1);
         $self->{output}->output_add(severity => $status,
-                                    short_msg => $response->status_line);
+                                    short_msg => $short_msg);
         $self->{output}->display();
         $self->{output}->exit();
     }
