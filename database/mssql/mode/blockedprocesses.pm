@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,8 +34,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
+                                  "warning:s"                => { name => 'warning' },
+                                  "critical:s"               => { name => 'critical' },
+                                  "warning-wait-time:s"      => { name => 'warning_waittime' },
+                                  "critical-wait-time:s"     => { name => 'critical_waittime' },
                                 });
 
     return $self;
@@ -52,6 +55,14 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-wait-time', value => $self->{option_results}->{warning_waittime})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning-wait-time threshold '" . $self->{option_results}->{warning_waittime} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-wait-time', value => $self->{option_results}->{critical_waittime})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical-wait-time threshold '" . $self->{option_results}->{critical_waittime} . "'.");
+       $self->{output}->option_exit();
+    }
 }
 
 sub run {
@@ -60,17 +71,29 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT count(*) FROM master.dbo.sysprocesses WHERE blocked <> '0'});
-    my $blocked = $self->{sql}->fetchrow_array();
+    $self->{sql}->query(query => q{SELECT spid, blocked, waittime, status FROM master.dbo.sysprocesses WHERE blocked <> '0'});
+    my $blocked = $self->{sql}->fetchall_arrayref();
+    my $num_blocked = scalar(@$blocked);
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $blocked, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit_code = $self->{perfdata}->threshold_check(value => $num_blocked, threshold => [ { label => 'critical', sexit_litteral => 'critical' }, 
+                                                                                             { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i blocked process(es).", $blocked));
+                                  short_msg => sprintf("%i blocked process(es).", $num_blocked));
     $self->{output}->perfdata_add(label => 'blocked_processes',
-                                  value => $blocked,
+                                  value => $num_blocked,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
+
+    foreach my $process (@$blocked) {
+        my $waittime = $$row[2] / 1000; # ms to s
+
+        my $exit_code = $self->{perfdata}->threshold_check(value => $waittime, threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' }, 
+                                                                                              { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
+        $self->{output}->output_add(severity => $exit_code,
+                                    long_msg => sprintf("Process ID '%s' is blocked by process ID '%s' for %s [status: %s]", 
+                                        $$process[0], $$process[1], centreon::plugins::misc::change_seconds(value => $$process[2]), centreon::plugins::misc::trim($$process[3])));
+    }
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -93,6 +116,14 @@ Threshold warning.
 =item B<--critical>
 
 Threshold critical.
+
+=item B<--warning-wait-time>
+
+Threshold warning for blocked wait time.
+
+=item B<--critical-wait-time>
+
+Threshold critical for blocked wait time.
 
 =back
 
