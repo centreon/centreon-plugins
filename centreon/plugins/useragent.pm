@@ -42,8 +42,9 @@ sub new {
 sub get_basic_credentials {
     my($self, $realm, $uri, $proxy) = @_;
     return if $proxy;
-    return $self->{username}, $self->{password} if $self->{credentials};
-    return undef, undef;
+    return $self->{username}, $self->{password} if $self->{credentials} and wantarray;
+    return $self->{username}.":".$self->{password} if $self->{credentials};
+    return undef;
 }
 
 1;
