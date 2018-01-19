@@ -22,22 +22,10 @@ package centreon::plugins::http;
 
 use strict;
 use warnings;
-use LWP::UserAgent;
+use centreon::plugins::useragent;
 use HTTP::Cookies;
 use URI;
 use IO::Socket::SSL;
-
-{
-    package CentreonUserAgent;
-    our @ISA = qw(LWP::UserAgent);
-
-    sub get_basic_credentials {
-        my($self, $realm, $uri, $proxy) = @_;
-        return if $proxy;
-        return $centreon::plugins::http::request_options->{username}, $centreon::plugins::http::request_options->{password} if $centreon::plugins::http::request_options->{credentials};
-        return undef, undef;
-    }
-}
 
 sub new {
     my ($class, %options) = @_;
@@ -216,14 +204,15 @@ sub set_proxy {
 sub request {
     my ($self, %options) = @_;
 
-    our $request_options = { %{$self->{options}} };
+    my $request_options = { %{$self->{options}} };
     foreach (keys %options) {
         $request_options->{$_} = $options{$_} if (defined($options{$_}));
     }
     $self->check_options(request => $request_options);
 
     if (!defined($self->{ua})) {
-        $self->{ua} = CentreonUserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
+        $self->{ua} = centreon::plugins::useragent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
+                                                        credentials => $request_options->{credentials}, username => $request_options->{username}, password => $request_options->{password});
         if (defined($request_options->{cookies_file})) {
             $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
                                                        autosave => 1));
