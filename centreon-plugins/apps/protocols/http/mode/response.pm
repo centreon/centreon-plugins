@@ -176,10 +176,6 @@ Set path to get webpage (Default: '/')
 
 Specify this option if you access webpage over basic authentication
 
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentication (Use with --credentials option)
-
 =item B<--ntlmv2>
 
 Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
