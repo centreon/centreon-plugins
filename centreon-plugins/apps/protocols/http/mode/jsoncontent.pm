@@ -47,6 +47,7 @@ sub new {
             "urlpath:s"             => { name => 'url_path' },
             "credentials"           => { name => 'credentials' },
             "ntlm"                  => { name => 'ntlm' },
+            "ntlmv2"                => { name => 'ntlmv2' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
@@ -392,19 +393,19 @@ Set path to get Webpage (Default: '/')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access webpage over basic authentication
 
-=item B<--ntlm>
+=item B<--ntlmv2>
 
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
+Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for basic authentication (Mandatory if --credentials is specidied)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for basic authentication (Mandatory if --credentials is specidied)
 
 =item B<--timeout>
 
