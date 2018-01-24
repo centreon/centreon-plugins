@@ -755,6 +755,14 @@ sub check_options {
         $self->{get_speed} = 1;
     }
     
+    # If use_name, interface option can still be a list of names, automatically converted into a regexp
+    if (defined($self->{option_results}->{use_name})) {
+        if (defined($self->{option_results}->{interface}) && $self->{option_results}->{interface} =~ /,/) {
+            my @names = split(/,/, $self->{option_results}->{interface});
+            $self->{option_results}->{interface} = sprintf('^(%s)$', join('|', @names));
+        }
+    }
+    
     # If no options, we set status
     if (!defined($self->{option_results}->{add_global}) &&
         !defined($self->{option_results}->{add_status}) && !defined($self->{option_results}->{add_traffic}) &&
@@ -1013,24 +1021,22 @@ sub get_selection {
     }
 
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
-    if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface}) 
-        && $self->{no_interfaceid_options} == 0) {
+    if (!defined($self->{option_results}->{use_name}) && $self->{no_interfaceid_options} == 0) {
         foreach (@{$all_ids}) {
-            if ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/) {
-                $self->add_selected_interface(id => $_);
+            if (defined($self->{option_results}->{interface})) {
+                next unless ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/);
             }
+            $self->add_selected_interface(id => $_);
         }
     } else {
         foreach (@{$all_ids}) {
             my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $_);
-            next if (!defined($filter_name));
-            if (!defined($self->{option_results}->{interface})) {
-                $self->add_selected_interface(id => $_);
-                next;
+            next unless defined($filter_name);
+
+            if (defined($self->{option_results}->{interface})) {
+                next unless ($filter_name =~ /$self->{option_results}->{interface}/);
             }
-            if ($filter_name =~ /$self->{option_results}->{interface}/) {
-                $self->add_selected_interface(id => $_);
-            }
+            $self->add_selected_interface(id => $_);
         }
     }
     
@@ -1300,11 +1306,12 @@ Display traffic perfdata to be compatible with nagvis widget.
 
 =item B<--interface>
 
-Set the interface (number expected) ex: 1,2,... (empty means 'check all interface').
+Set the interface by oid index (number expected) ex: 1,2,... (empty means 'check all interface').
+With --name option, match interface name (Can be a regexp) ex: 'Gi0/1,Gi0/2' or '^Gi0/(1|2)$'.
 
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index (Can be a regexp)
+Allows to use interface name with option --interface instead of interface oid index
 
 =item B<--speed>
 
