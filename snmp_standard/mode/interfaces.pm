@@ -658,6 +658,7 @@ sub new {
                                 "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
                                 "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
                                 "interface:s"             => { name => 'interface' },
+                                "exclude:s"               => { name => 'exclude' },
                                 "units-traffic:s"         => { name => 'units_traffic', default => '%' },
                                 "units-errors:s"          => { name => 'units_errors', default => '%' },
                                 "speed:s"                 => { name => 'speed' },
@@ -755,11 +756,15 @@ sub check_options {
         $self->{get_speed} = 1;
     }
     
-    # If use_name, interface option can still be a list of names, automatically converted into a regexp
+    # If use_name, interface (or exclude) option can still be a list of names, automatically converted into a regexp
     if (defined($self->{option_results}->{use_name})) {
         if (defined($self->{option_results}->{interface}) && $self->{option_results}->{interface} =~ /,/) {
             my @names = split(/,/, $self->{option_results}->{interface});
             $self->{option_results}->{interface} = sprintf('^(%s)$', join('|', @names));
+        }
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /,/) {
+            my @names = split(/,/, $self->{option_results}->{exclude});
+            $self->{option_results}->{exclude} = sprintf('^(%s)$', join('|', @names));
         }
     }
     
@@ -1026,6 +1031,9 @@ sub get_selection {
             if (defined($self->{option_results}->{interface})) {
                 next unless ($self->{option_results}->{interface} =~ /(^|\s|,)$_(\s*,|$)/);
             }
+            if (defined($self->{option_results}->{exclude})) {
+                next if ($self->{option_results}->{exclude} =~ /(^|\s|,)$_(\s*,|$)/);
+            }
             $self->add_selected_interface(id => $_);
         }
     } else {
@@ -1035,6 +1043,9 @@ sub get_selection {
 
             if (defined($self->{option_results}->{interface})) {
                 next unless ($filter_name =~ /$self->{option_results}->{interface}/);
+            }
+            if (defined($self->{option_results}->{exclude})) {
+                next if ($filter_name =~ /$self->{option_results}->{exclude}/);
             }
             $self->add_selected_interface(id => $_);
         }
@@ -1309,9 +1320,14 @@ Display traffic perfdata to be compatible with nagvis widget.
 Set the interface by oid index (number expected) ex: 1,2,... (empty means 'check all interface').
 With --name option, match interface name (Can be a regexp) ex: 'Gi0/1,Gi0/2' or '^Gi0/(1|2)$'.
 
+=item B<--exclude>
+
+Exclude the interface by oid index (number expected) ex: 1,2,...
+With --name option, match interface name (Can be a regexp) ex: 'Gi0/1,Gi0/2' or '^Gi0/(1|2)$'.
+
 =item B<--name>
 
-Allows to use interface name with option --interface instead of interface oid index
+Allows to use interface name with option --interface and --exclude instead of interface oid index
 
 =item B<--speed>
 
