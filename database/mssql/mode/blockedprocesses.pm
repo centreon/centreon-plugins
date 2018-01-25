@@ -86,7 +86,7 @@ sub run {
                                   min => 0);
 
     foreach my $process (@$blocked) {
-        my $waittime = $$row[2] / 1000; # ms to s
+        my $waittime = $$process[2] / 1000; # ms to s
 
         my $exit_code = $self->{perfdata}->threshold_check(value => $waittime, threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' }, 
                                                                                               { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
