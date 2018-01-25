@@ -756,6 +756,14 @@ sub check_options {
         $self->{get_speed} = 1;
     }
     
+    # Ignore interface (or exclude) option if the defined value is empty
+    if (defined($self->{option_results}->{interface})) {
+        $self->{option_results}->{interface} = undef unless (length $self->{option_results}->{interface});
+    }
+    if (defined($self->{option_results}->{exclude})) {
+        $self->{option_results}->{exclude} = undef unless (length $self->{option_results}->{exclude});
+    }
+    
     # If use_name, interface (or exclude) option can still be a list of names, automatically converted into a regexp
     if (defined($self->{option_results}->{use_name})) {
         if (defined($self->{option_results}->{interface}) && $self->{option_results}->{interface} =~ /,/) {
@@ -1322,7 +1330,7 @@ With --name option, match interface name (Can be a regexp) ex: 'Gi0/1,Gi0/2' or 
 
 =item B<--exclude>
 
-Exclude the interface by oid index (number expected) ex: 1,2,...
+Exclude the interface by oid index (number expected) ex: 1,2,... (empty means no exclusion).
 With --name option, match interface name (Can be a regexp) ex: 'Gi0/1,Gi0/2' or '^Gi0/(1|2)$'.
 
 =item B<--name>
