@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,6 +43,7 @@ sub new {
                          'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          'statistics'       => 'database::postgres::mode::statistics',
                          'tablespace'       => 'database::postgres::mode::tablespace',
+			 'database-size'    => 'database::postgres::mode::databasesize'0000
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
