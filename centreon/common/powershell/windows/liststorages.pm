@@ -54,7 +54,7 @@ Try {
     Write-Host $Error[0].Exception
 	exit 1
 }Foreach ($disk in $disks) {
-    Write-Host "[name=" $disk.Name "][used=" $disk.Used "][free=" $disk.Free "][provider=" $disk.Provider "][path=" $disk.Root "]" -NoNewline
+    Write-Host "[name=" $disk.Name "][used=" $disk.Used "][free=" $disk.Free "][provider=" $disk.Provider "][path=" $disk.Root "]"
 }
 
 exit 0
