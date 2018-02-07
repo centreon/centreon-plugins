@@ -43,6 +43,7 @@ sub new {
                          'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          'statistics'       => 'database::postgres::mode::statistics',
                          'tablespace'       => 'database::postgres::mode::tablespace',
+                         'database-size'       => 'database::postgres::mode::databasesize',
                          );
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
