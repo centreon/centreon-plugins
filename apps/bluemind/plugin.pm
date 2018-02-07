@@ -26,18 +26,21 @@ use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                          'incoming'                 => 'apps::bluemind::mode::incoming',
-                         );
+                         'mail-quota'               => 'apps::bluemind::mode::quota',
+                         'mail-count'               => 'apps::bluemind::mode::count',
+                         'archives-size'            => 'apps::bluemind::mode::archives',
+                         'groups'                   => 'apps::bluemind::mode::groups',
+                         'nb-mails'                 => 'apps::bluemind::mode::nbmails',
+                        );
 
     return $self;
 }
-
 
 1;
 
@@ -45,6 +48,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check BlueMind through InfluxDB API
+Check BlueMind through Bluemind API
 
 =cut
+
