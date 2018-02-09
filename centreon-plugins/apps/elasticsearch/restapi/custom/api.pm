@@ -194,6 +194,10 @@ Proxy URL if any
 
 Set HTTP timeout
 
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+
 =back
 
 =head1 DESCRIPTION
