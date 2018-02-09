@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,7 +219,7 @@ sub run {
     my $display = defined($row->{meta_display}) ? $row->{meta_display} : $row->{calcul_type} . ' - value : %f';
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf($display, $result));
-    $self->{output}->perfdata_add(label => (defined($DSTYPE{$row->{data_source_type}}) ? $DSTYPE{$row->{data_source_type}} : 'g') . '[value]', 
+    $self->{output}->perfdata_add(label => (defined($DSTYPE{$row->{data_source_type}}) ? $DSTYPE{$row->{data_source_type}} : 'g') . '[' . $row->{metric} . ']', 
                                   value => sprintf("%02.2f", $result),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
