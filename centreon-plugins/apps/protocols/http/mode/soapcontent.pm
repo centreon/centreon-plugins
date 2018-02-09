@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -421,10 +421,6 @@ Set path to get Webpage (Default: '/')
 =item B<--credentials>
 
 Specify this option if you access webpage over basic authentication
-
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentication (Use with --credentials option)
 
 =item B<--ntlmv2>
 
