@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,6 +44,10 @@ sub new {
                                   "critical-in:s"           => { name => 'critical_in', },
                                   "warning-out:s"           => { name => 'warning_out', },
                                   "critical-out:s"          => { name => 'critical_out', },
+                                  "warning-dropped-in:s"    => { name => 'warning_dropped_in', },
+                                  "critical-dropped-in:s"   => { name => 'critical_dropped_in', },
+                                  "warning-dropped-out:s"   => { name => 'warning_dropped_out', },
+                                  "critical-dropped-out:s"  => { name => 'critical_dropped_out', },
                                   "link-down-status:s"      => { name => 'link_down_status', default => 'critical' },
                                   "no-proxyswitch"          => { name => 'no_proxyswitch' },
                                 });
@@ -54,7 +58,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
     
-    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
+    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out', 
+                        'warning_dropped_in', 'critical_dropped_in', 'warning_dropped_out', 'critical_dropped_out')) {
         if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
             my ($label_opt) = $label;
             $label_opt =~ tr/_/-/;
@@ -140,6 +145,22 @@ Threshold warning traffic out (percent).
 =item B<--critical-out>
 
 Threshold critical traffic out (percent).
+
+=item B<--warning-dropped-in>
+
+Threshold warning packets in dropped (percent).
+
+=item B<--critical-dropped-in>
+
+Threshold critical packets in dropped (percent).
+
+=item B<--warning-dropped-out>
+
+Threshold warning packets out dropped (percent).
+
+=item B<--critical-dropped-out>
+
+Threshold critical packets out dropped (percent).
 
 =item B<--no-proxyswitch>
 

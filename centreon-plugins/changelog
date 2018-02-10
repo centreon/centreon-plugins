@@ -1,8 +1,21 @@
+2017-12-22 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Pure Storage SNMP
+ * Plugin added: Pure Storage Rest API
+ * Plugin added: Amazon AWS API
+ * Plugin added: Comet P8000 series SNMP
+ * Plugin added: Veeam local
+ * Plugin added: Colubris SNMP
+ * Plugin added: Alpha ups SNMP
+ * Plugin added: Infoblox SNMP
+ * Plugin added: Redis Rest API
+ * Plugin added: Cisco Call Manager SNMP
+
 2017-12-08 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Kingdee Rest API
  * Plugin added: Redis Cli
  * Plugin added: Ubiquiti Edge SNMP
  * Plugin added: Arista SNMP
+ * Plugin added: Haproxy SNMP
  * Plugin added: JBoss JMX
  * Plugin added: NSClient Query
  * Break: Renamed Asterisk AMI

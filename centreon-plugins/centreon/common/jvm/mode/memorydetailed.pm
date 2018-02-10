@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -201,8 +201,8 @@ sub manage_selection {
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
 
     $self->{mem} = {};
-    foreach my $key (keys %$result) { 
-        $key =~ /name=(.*?),type/;
+    foreach my $key (keys %$result) {
+        $key =~ /(?:[:,])name=(.*?)(?:,|$)/;
         my $memtype = $1;
         
         if (!defined($mapping_memory{$memtype})) {

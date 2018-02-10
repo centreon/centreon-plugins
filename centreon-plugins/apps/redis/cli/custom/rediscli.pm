@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,6 +44,7 @@ sub new {
             {
                 "hostname:s"        => { name => 'hostname' },
                 "port:s"            => { name => 'port' },
+                "password:s"        => { name => 'password' },
             });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS CLI OPTIONS', once => 1);
@@ -81,6 +82,7 @@ sub check_options {
 
     $self->{hostname} = $self->{option_results}->{hostname};
     $self->{port} = $self->{option_results}->{port};
+    $self->{password} = $self->{option_results}->{password};
 
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname argument.");
@@ -104,12 +106,17 @@ sub get_info {
     my ($self, %options) = @_;
 
     $self->{redis} = Redis->new(server => $self->{hostname} . ":" . $self->{port});
+    if (defined($self->{password})) {
+        $self->{redis}->auth($self->{password});
+    }
     
     my $response = $self->{redis}->info;
     my $items;
     foreach my $attributes (keys %{$response}) {
         $items->{$attributes} = $response->{$attributes};
     }
+
+    $self->{redis}->quit();
 
     return $items;
 }
@@ -137,6 +144,10 @@ Redis hostname.
 =item B<--port>
 
 Redis port.
+
+=item B<--password>
+
+Redis password
 
 =back
 

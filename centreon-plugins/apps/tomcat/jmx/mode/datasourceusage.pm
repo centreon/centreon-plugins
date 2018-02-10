@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -158,6 +158,8 @@ sub manage_selection {
     # maxActive or maxTotal
     $self->{request} = [
          { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
+             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+         { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
              [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
     ];
     

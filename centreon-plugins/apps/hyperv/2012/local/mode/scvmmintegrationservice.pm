@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,11 +38,13 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        my $label = $self->{label};
+        $label =~ s/-/_/g;
+        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
+            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
+                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         }
     };
@@ -74,6 +76,23 @@ sub custom_status_calc {
     return 0;
 }
 
+sub custom_integrationservice_output {
+    my ($self, %options) = @_;
+    my $msg = $self->{result_values}->{output_label} . ' : ' . $self->{result_values}->{service_status};
+
+    return $msg;
+}
+
+sub custom_integrationservice_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{output_label} = $options{extra_options}->{output_label};
+    $self->{result_values}->{service_status} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{name_status}};
+    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -87,6 +106,51 @@ sub set_counters {
                     { name => 'dataexchangeenabled' }, { name => 'heartbeatenabled' }, { name => 'backupenabled' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'osshutdown-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'operatingsystemshutdownenabled' } ],
+                closure_custom_calc => $self->can('custom_integrationservice_calc'),
+                closure_custom_calc_extra_options => { output_label => 'Operating System Shutdown', name_status => 'operatingsystemshutdownenabled' },
+                closure_custom_output => $self->can('custom_integrationservice_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'timesync-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'timesynchronizationenabled' } ],
+                closure_custom_calc => $self->can('custom_integrationservice_calc'),
+                closure_custom_calc_extra_options => { output_label => 'Time Synchronization', name_status => 'timesynchronizationenabled' },
+                closure_custom_output => $self->can('custom_integrationservice_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'dataexchange-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'dataexchangeenabled' } ],
+                closure_custom_calc => $self->can('custom_integrationservice_calc'),
+                closure_custom_calc_extra_options => { output_label => 'Data Exchange', name_status => 'dataexchangeenabled' },
+                closure_custom_output => $self->can('custom_integrationservice_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'heartbeat-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'heartbeatenabled' } ],
+                closure_custom_calc => $self->can('custom_integrationservice_calc'),
+                closure_custom_calc_extra_options => { output_label => 'Heartbeat', name_status => 'heartbeatenabled' },
+                closure_custom_output => $self->can('custom_integrationservice_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+        { label => 'backup-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'backupenabled' } ],
+                closure_custom_calc => $self->can('custom_integrationservice_calc'),
+                closure_custom_calc_extra_options => { output_label => 'Backup', name_status => 'backupenabled' },
+                closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
@@ -124,6 +188,16 @@ sub new {
                                   "filter-status:s"         => { name => 'filter_status' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{vmaddition} =~ /not detected/i' },
+                                  "warning-osshutdown-status:s"     => { name => 'warning_osshutdown_status', default => '' },
+                                  "critical-osshutdown-status:s"    => { name => 'critical_osshutdown_status', default => '' },
+                                  "warning-timesync-status:s"       => { name => 'warning_timesync_status', default => '' },
+                                  "critical-timesync-status:s"      => { name => 'critical_timesync_status', default => '' },
+                                  "warning-dataexchange-status:s"   => { name => 'warning_dataexchange_status', default => '' },
+                                  "critical-dataexchange-status:s"  => { name => 'critical_dataexchange_status', default => '' },
+                                  "warning-heartbeat-status:s"      => { name => 'warning_heartbeat_status', default => '' },
+                                  "critical-heartbeat-status:s"     => { name => 'critical_heartbeat_status', default => '' },
+                                  "warning-backup-status:s"         => { name => 'warning_backup_status', default => '' },
+                                  "critical-backup-status:s"        => { name => 'critical_backup_status', default => '' },
                                 });
     return $self;
 }
@@ -148,7 +222,9 @@ sub check_options {
 sub change_macros {
     my ($self, %options) = @_;
     
-    foreach (('warning_status', 'critical_status')) {
+    foreach (('warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
+        'warning_timesync_status', 'critical_timesync_status', 'warning_dataexchange_status', 'critical_dataexchange_status',
+        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }

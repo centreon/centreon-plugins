@@ -461,7 +461,7 @@ Comment puis-je vérifier la valeur d'un OID SNMP générique ?
 Il y a un plugin SNMP générique pour vérifier cela. Voici un exemple pour obtenir l'OID SNMP 'SysUptime' :
 ::
 
-  $ perl centreon_plugins.pl --plugin=snmp_standard::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
+  $ perl centreon_plugins.pl --plugin=apps::protocols::snmp::plugin --mode=numeric-value --oid='.1.3.6.1.2.1.1.3.0' --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public
 
 ---------------------------------------------------------------------
 Comment utiliser un serveur memcached pour la rétention des données ?

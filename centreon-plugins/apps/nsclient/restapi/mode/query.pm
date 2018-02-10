@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,6 +47,7 @@ sub new {
          "proxyurl:s"           => { name => 'proxyurl' },
          "proxypac:s"           => { name => 'proxypac' },
          "timeout:s"            => { name => 'timeout' },
+         "ssl-opt:s@"           => { name => 'ssl_opt' },
          "ssl:s"		        => { name => 'ssl' },
          "command:s"            => { name => 'command' },
          "arg:s@"               => { name => 'arg' },
@@ -109,8 +110,8 @@ sub nscp_output_perf {
                                       value => sprintf($printf_format, $perf->{value}),
                                       warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
                                       critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
-                                      min => sprintf($printf_format, $perf->{minimum}),
-                                      max => sprintf($printf_format, $perf->{maximum}),
+                                      min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
+                                      max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
                                       );
     }
 }
@@ -158,6 +159,7 @@ sub run {
     }
     
     my ($content) = $self->{http}->request(url_path => '/query/' . $self->{option_results}->{command} . '?' . $encoded_args);
+    $self->{output}->output_add(long_msg => "nsclient return = " . $content, debug => 1);
     $self->check_nscp_result(content => $content);
                                   
     $self->{output}->exit();
@@ -217,9 +219,9 @@ Proxy pac file (can be an url or local file)
 
 Threshold for HTTP timeout (Default: 5)
 
-=item B<--ssl>
+=item B<--ssl-opt>
 
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--command>
 
