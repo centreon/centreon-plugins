@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure      application monitoring for
@@ -118,8 +118,7 @@ sub run {
     $scheduler = $1 if $webcontent =~ /^WAIT_CLASS=Scheduler\sCOUNT=(\d+)/mi;
     $idle = $1 if $webcontent =~ /^WAIT_CLASS=Idle\sCOUNT=(\d+)/mi;
     
-    #cpu      cpuwait
-    my $cpu    wait = $idle + $network ;
+    my $cpuandwait = $idle + $network;
     
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Other: %d", $other));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Queueing: %d", $queueing));
@@ -131,7 +130,7 @@ sub run {
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("System I/O: %d", $systemio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("User I/O: %d", $userio));
     $self->{output}->output_add(severity => "ok", short_msg => sprintf("Scheduler: %d", $scheduler));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpu    wait));
+    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CPU + CPU Wait: %d", $cpuandwait));
  
     my $exit = $self->{perfdata}->threshold_check(value => $activecount, threshold => [ { label => 'crit_activecount', exit_litteral => 'critical' }, 
                                                                                         { label => 'warn_activecount', exit_litteral => 'warning' } ]);
@@ -151,7 +150,7 @@ sub run {
     $self->{output}->perfdata_add(label => "System I/O", unit => '', value => sprintf("%d", $systemio));
     $self->{output}->perfdata_add(label => "User I/O", unit => '', value => sprintf("%d", $userio));
     $self->{output}->perfdata_add(label => "Scheduler", unit => '', value => sprintf("%d", $scheduler));
-    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpu    wait));
+    $self->{output}->perfdata_add(label => "CPU + CPU Wait", unit => '', value => sprintf("%d", $cpuandwait));
 
  	$self->{output}->perfdata_add(label => "ActiveCount", unit => '',
                                   value => sprintf("%d", $activecount),

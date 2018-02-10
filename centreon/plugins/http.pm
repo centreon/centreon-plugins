@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package centreon::plugins::http;
 
 use strict;
 use warnings;
-use LWP::UserAgent;
+use centreon::plugins::useragent;
 use HTTP::Cookies;
 use URI;
 use IO::Socket::SSL;
@@ -121,6 +121,29 @@ sub check_options {
             $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
         }
     }
+    
+    $self->{ssl_context} = '';
+    if (!defined($options{request}->{ssl_opt})) {
+        $options{request}->{ssl_opt} = [];
+    }
+    if (defined($options{request}->{ssl}) && $options{request}->{ssl} ne '') {
+        push @{$options{request}->{ssl_opt}}, 'SSL_version => ' . $options{request}->{ssl};
+    }
+    if (defined($options{request}->{cert_file}) && !defined($options{request}->{cert_pkcs12})) {
+        push @{$options{request}->{ssl_opt}}, 'SSL_use_cert => 1';
+        push @{$options{request}->{ssl_opt}}, 'SSL_cert_file => "' . $options{request}->{cert_file} . '"';
+        push @{$options{request}->{ssl_opt}}, 'SSL_key_file => "' . $options{request}->{key_file} . '"'
+             if (defined($options{request}->{key_file}));
+        push @{$options{request}->{ssl_opt}}, 'SSL_ca_file => "' . $options{request}->{cacert_file} . '"'
+            if (defined($options{request}->{cacert_file}));
+    }
+    my $append = '';
+    foreach (@{$options{request}->{ssl_opt}}) {
+        if ($_ ne '') {
+            $self->{ssl_context} .= $append . $_;
+            $append = ', ';
+        }
+    }
 }
 
 sub get_port {
@@ -188,7 +211,8 @@ sub request {
     $self->check_options(request => $request_options);
 
     if (!defined($self->{ua})) {
-        $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
+        $self->{ua} = centreon::plugins::useragent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
+                                                        credentials => $request_options->{credentials}, username => $request_options->{username}, password => $request_options->{password});
         if (defined($request_options->{cookies_file})) {
             $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
                                                        autosave => 1));
@@ -241,11 +265,11 @@ sub request {
             $req->content($uri_post->query);
         }
     }
-
-    if (defined($request_options->{credentials}) && defined($request_options->{ntlm})) {
-        $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
-    } elsif (defined($request_options->{credentials})) {
-        $req->authorization_basic($request_options->{username}, $request_options->{password});
+        
+    if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
+                                               error_msg => "Cannot load module 'Authen::NTLM'.");
+        Authen::NTLM::ntlmv2(1);
     }
 
     $self->set_proxy(request => $request_options, url => $url);
@@ -256,20 +280,8 @@ sub request {
         $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
     }
 
-    my $ssl_context;
-    if (defined($request_options->{ssl}) && $request_options->{ssl} ne '') {
-        $ssl_context = { SSL_version => $request_options->{ssl} };
-    }
-    if (defined($request_options->{cert_file}) && !defined($request_options->{cert_pkcs12})) {
-        $ssl_context = {} if (!defined($ssl_context));
-        $ssl_context->{SSL_use_cert} = 1;
-        $ssl_context->{SSL_cert_file} = $request_options->{cert_file};
-        $ssl_context->{SSL_key_file} = $request_options->{key_file} if (defined($request_options->{key_file}));
-        $ssl_context->{SSL_ca_file} = $request_options->{cacert_file} if (defined($request_options->{cacert_file}));
-    }
-
-    if (defined($ssl_context)) {
-        my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
+    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
+        my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
         IO::Socket::SSL::set_default_context($context);
     }
 
@@ -300,9 +312,15 @@ sub request {
     }
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        my $short_msg = $response->status_line;
+        if ($short_msg =~ /^401/) {
+            my ($authenticate) = $response->www_authenticate =~ /(\S+)/;
+            $short_msg .= ' (' . $authenticate . ' authentification expected)';
+        }
+
         $self->{output}->output_add(long_msg => $response->content, debug => 1);
         $self->{output}->output_add(severity => $status,
-                                    short_msg => $response->status_line);
+                                    short_msg => $short_msg);
         $self->{output}->display();
         $self->{output}->exit();
     }
