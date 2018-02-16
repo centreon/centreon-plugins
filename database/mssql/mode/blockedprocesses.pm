@@ -75,8 +75,24 @@ sub run {
     my $blocked = $self->{sql}->fetchall_arrayref();
     my $num_blocked = scalar(@$blocked);
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => $num_blocked, threshold => [ { label => 'critical', sexit_litteral => 'critical' }, 
+    my @exits;
+    my $exit_code = $self->{perfdata}->threshold_check(value => $num_blocked, threshold => [ { label => 'critical', exit_litteral => 'critical' }, 
                                                                                              { label => 'warning', exit_litteral => 'warning' } ]);
+    push @exits, $exit_code;
+
+    foreach my $process (@$blocked) {
+        my $waittime = $$process[2] / 1000; # ms to s
+
+        $exit_code = $self->{perfdata}->threshold_check(value => $waittime, threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' }, 
+                                                                                           { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
+        push @exits, $exit_code;
+
+        $self->{output}->output_add(long_msg => sprintf("Process ID '%s' is blocked by process ID '%s' for %s [status: %s]", 
+                                        $$process[0], $$process[1], centreon::plugins::misc::change_seconds(value => $waittime), centreon::plugins::misc::trim($$process[3])));
+    }
+
+    $exit_code = $self->{output}->get_most_critical(status => \@exits);
+
     $self->{output}->output_add(severity => $exit_code,
                                   short_msg => sprintf("%i blocked process(es).", $num_blocked));
     $self->{output}->perfdata_add(label => 'blocked_processes',
@@ -84,16 +100,6 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-
-    foreach my $process (@$blocked) {
-        my $waittime = $$process[2] / 1000; # ms to s
-
-        my $exit_code = $self->{perfdata}->threshold_check(value => $waittime, threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' }, 
-                                                                                              { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    long_msg => sprintf("Process ID '%s' is blocked by process ID '%s' for %s [status: %s]", 
-                                        $$process[0], $$process[1], centreon::plugins::misc::change_seconds(value => $$process[2]), centreon::plugins::misc::trim($$process[3])));
-    }
 
     $self->{output}->display();
     $self->{output}->exit();
