@@ -333,7 +333,7 @@ sub manage_selection {
     my $result = $options{custom}->get(path => '/v1/nodes/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/nodes');
 
-    foreach my $node (keys $result) {
+    foreach my $node (keys %{$result}) {
         if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
             $node !~ /$self->{option_results}->{filter_node}/) {
             $self->{output}->output_add(long_msg => "skipping node '" . $node . "': no matching filter.", debug => 1);
