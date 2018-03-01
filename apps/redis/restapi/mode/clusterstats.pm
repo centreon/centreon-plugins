@@ -251,7 +251,7 @@ sub manage_selection {
     my $persistent_storage_size = 0;
     my $ephemeral_storage_size = 0;
     my $bigstore_size = 0;
-    foreach my $node (keys $result3) {
+    foreach my $node (keys %{$result3}) {
         if (defined($result3->{$node}->{total_memory})) {
             $total_memory = $total_memory + $result3->{$node}->{total_memory};
         }
