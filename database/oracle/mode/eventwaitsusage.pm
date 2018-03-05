@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,9 +38,9 @@ sub set_counters {
     $self->{maps_counters}->{event_count} = [
         { label => 'event-count', set => {
                 key_values => [ { name => 'count' } ],
-                output_template => 'Event Wait Count : %d events' , output_use => 'count_absolute',
+                output_template => 'Event Wait Count : %s events',
                 perfdatas => [
-                    { label => 'event_wait_count', value => 'count_absolute', template => '%d', min => 0 }
+                    { label => 'event_wait_count', value => 'count_absolute', template => '%s', min => 0 }
                 ],
             }
         },
@@ -80,17 +80,6 @@ sub custom_usage_calc {
     return 0;
 }
 
-sub custom_count_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-
-    my $delta_total = $options{new_datas}->{$self->{instance} . '_time_waited_micro'} - $options{old_datas}->{$self->{instance} . '_time_waited_micro'};
-    $self->{result_values}->{prct_wait} = 100 * ($delta_total / 1000000) / $options{delta_time};
-
-    return 0;
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
@@ -99,9 +88,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter-name:s" => { name => 'filter_name' },
-                                "wait-time-min:s" => { name => 'wait_time_min', default => 1000 },
-                                "show-details" => { name => 'show_details' }
+                                "filter-name:s"     => { name => 'filter_name' },
+                                "wait-time-min:s"   => { name => 'wait_time_min', default => 1000 },
+                                "show-details"      => { name => 'show_details' }
                                 });
     return $self;
 }
@@ -212,12 +201,12 @@ Check Oracle event wait usage.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-waits-sec', 'total-waits-time', 'count'.
+Can be: 'total-waits-sec', 'total-waits-time', 'event-count'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-waits-sec', 'total-waits-time', 'count'.
+Can be: 'total-waits-sec', 'total-waits-time', 'event-count'.
 
 =item B<--filter-name>
 

@@ -1479,7 +1479,7 @@ Then, edit **plugin.pm** and add the following lines:
 .. code-block:: perl
 
   #
-  # Copyright 2017 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for
@@ -1569,7 +1569,7 @@ Edit **memorydroppedpackets.pm** and add the following lines:
 .. code-block:: perl
 
   #
-  # Copyright 2017 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for
