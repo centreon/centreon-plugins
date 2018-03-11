@@ -476,7 +476,7 @@ sub manage_selection {
     my $result = $options{custom}->get(path => '/v1/bdbs/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/bdbs');
 
-    foreach my $database (keys $result) {
+    foreach my $database (keys %{$result}) {
         if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
             $database !~ /$self->{option_results}->{filter_database}/) {
             $self->{output}->output_add(long_msg => "skipping database '" . $database . "': no matching filter.", debug => 1);
