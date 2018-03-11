@@ -338,7 +338,7 @@ sub run {
 
     foreach my $pid (keys %{$self->{results}}) {
         my $long_msg = sprintf("Process '%s'", $pid);
-        for my $key (keys $self->{results}->{$pid}) {
+        foreach my $key (keys %{$self->{results}->{$pid}}) {
             $long_msg .= sprintf(" [%s: %s]", $key, $self->{results}->{$pid}->{$key});
         }
         $self->{output}->output_add(long_msg => $long_msg);
