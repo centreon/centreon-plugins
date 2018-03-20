@@ -166,12 +166,6 @@ sub manage_selection {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
 
-        # '2' => disabled, we skip
-        if ($results->{$oid_dot1dStpPortEnable}->{$oid} == 2) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
-            next;
-        }
-
         push @instances, $instance;
 
     }
@@ -200,6 +194,14 @@ sub manage_selection {
             my @stp_overwrite_status_ports = split /\@/, $stp_overwrite_status[$e];
             if ( $stp_overwrite_status_ports[0] eq $descr )  {
                 $custom_status = $stp_overwrite_status_ports[1];
+            }
+        }
+
+        if ($custom_status eq 'forwarding') {
+            #  no custom status
+            if ($states{$stp_state} eq 'disabled') {
+                $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
+                next;
             }
         }
 
