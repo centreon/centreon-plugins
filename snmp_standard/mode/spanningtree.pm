@@ -102,6 +102,7 @@ sub new {
                                 "filter-port:s"         => { name => 'filter_port' },
                                 "warning-status:s"      => { name => 'warning_status', default => '' },
                                 "critical-status:s"     => { name => 'critical_status', default => '%{state} =~ /blocking|broken/' },
+                                "stp-overwrite-status:s"=> { name => 'stp_overwrite_status' },
                                 });
 
     return $self;
@@ -114,6 +115,10 @@ sub change_macros {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
+    }
+
+    if (defined($self->{option_results}->{stp_overwrite_status})) {
+        $self->{option_results}->{stp_overwrite_status} = $self->{option_results}->{stp_overwrite_status};
     }
 }
 
@@ -150,15 +155,16 @@ sub manage_selection {
                                                             { oid => $oid_dot1dStpPortState },
                                                            ], nothing_quit => 1);
     my @instances = ();
+
+    my @stp_overwrite_status = {};
+    if (defined($self->{option_results}->{stp_overwrite_status})) {
+            @stp_overwrite_status = split /:/, $self->{option_results}->{stp_overwrite_status};
+            $self->{output}->output_add(long_msg => "Found " . ((scalar @stp_overwrite_status)) . " custom STP topology");
+    }
+
     foreach my $oid (keys %{$results->{$oid_dot1dStpPortEnable}}) {
         $oid =~ /\.([0-9]+)$/;
         my $instance = $1;
-
-        # '2' => disabled, we skip
-        if ($results->{$oid_dot1dStpPortEnable}->{$oid} == 2) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
-            next;
-        }
 
         push @instances, $instance;
 
@@ -182,15 +188,48 @@ sub manage_selection {
         my $descr = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ?
                         $result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
 
+        # Store default status into custom_status var and try to overwrite it with passed args
+        my $custom_status = 'forwarding';
+        for (my $e=0; $e < (scalar @stp_overwrite_status); $e++ ) {
+            my @stp_overwrite_status_ports = split /\@/, $stp_overwrite_status[$e];
+            if ( $stp_overwrite_status_ports[0] eq $descr )  {
+                $custom_status = $stp_overwrite_status_ports[1];
+            }
+        }
+
+        if ($custom_status eq 'forwarding') {
+            #  no custom status
+            if ($states{$stp_state} eq 'disabled') {
+                $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
+                next;
+            }
+        }
 
         if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
             $descr !~ /$self->{option_results}->{filter_port}/) {
             $self->{output}->output_add(long_msg => sprintf("Skipping interface '%s': filtered with options", $descr));
             next;
         }
-        $self->{stp_port}->{$descr} = { state => $states{$stp_state},
-                                        index => $result->{$oid_dot1dBasePortIfIndex . '.' . $instance},
-                                        display => $descr };
+
+        if ($states{$stp_state} ne ${custom_status}) {
+            # Interface does not match status, return CRITICAL
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("Spanning Tree interface '%s' state is %s should be %s", $descr,
+                                                             $states{$stp_state}, $custom_status));
+        } else {
+            # Interface match custom status, return OK
+          if (${custom_status} ne 'forwarding') {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => sprintf("Spanning Tree interface '%s' state is %s like it should be", $descr,
+                                                             $states{$stp_state}));
+          } else {
+            # No custom status
+            $self->{stp_port}->{$descr} = { state => $states{$stp_state},
+                                            index => $result->{$oid_dot1dBasePortIfIndex . '.' . $instance},
+                                            display => $descr };
+          }
+        }
+
     }
 
 }
