@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (https://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,15 +27,15 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-
+    
     $self->{maps_counters_type} = [
         { name => 'cpu_usage', type => 0, cb_prefix_output => 'prefix_cpu_output' },
     ];
-
+    
     $self->{maps_counters}->{cpu_usage} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => '%.2f %% (current)',
+                output_template => '%.2f %%',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_used_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
@@ -49,18 +49,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
+    
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
+                                { 
                                 });
-
+    
     return $self;
 }
 
 sub prefix_cpu_output {
     my ($self, %options) = @_;
-
+    
     return "CPU Usage ";
 }
 
@@ -70,9 +70,7 @@ sub manage_selection {
     my $oid_sonicCurrentCPUUtil = '.1.3.6.1.4.1.8741.1.3.1.3.0';
     my $snmp_result = $options{snmp}->get_leef(oids => [$oid_sonicCurrentCPUUtil], nothing_quit => 1);
 
-    $self->{global} = {
-        prct_used => $snmp_result->{$oid_sonicCurrentCPUUtil},
-    };
+    $self->{cpu_usage} = { prct_used => $snmp_result->{$oid_sonicCurrentCPUUtil} };
 }
 
 1;

@@ -34,6 +34,7 @@ sub new {
                          'cpu'              => 'network::sonicwall::snmp::mode::cpu',
                          'memory'           => 'network::sonicwall::snmp::mode::memory',
                          'connections'      => 'network::sonicwall::snmp::mode::connections',
+			 'vpn'		    => 'network::sonicwall::snmp::mode::vpn',
                          );
 
     return $self;

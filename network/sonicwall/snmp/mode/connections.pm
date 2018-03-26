@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (https://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-
+    
     $self->{maps_counters_type} = [
         { name => 'connections', type => 0 },
     ];
@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'total' }, { name => 'used' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'connections', value => 'used_absolute', template => '%s',
+                    { label => 'connections', value => 'used_absolute', template => '%s', 
                       min => 0, max => 'total_absolute', threshold_total => 'total_absolute', cast_int => 1 },
                 ],
             }
@@ -46,10 +46,10 @@ sub set_counters {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-
-    my $msg = sprintf("%.2f%% of the connections cached are used (%d of max. %d)",
-                      $self->{result_values}->{prct_used_absolute},
-                      $self->{result_values}->{used_absolute},
+ 
+    my $msg = sprintf("%.2f%% of the connections cached are used (%d of max. %d)", 
+                      $self->{result_values}->{prct_used_absolute}, 
+                      $self->{result_values}->{used_absolute}, 
                       $self->{result_values}->{total_absolute});
     return $msg;
 }
@@ -58,7 +58,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
+    
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
@@ -70,22 +70,23 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_sonicMaxConnCacheEntries = '.1.3.6.1.4.1.8741.1.3.1.1';
-    my $oid_sonicCurrentConnCacheEntries = '.1.3.6.1.4.1.8741.1.3.1.2';
-
+    my $oid_sonicMaxConnCacheEntries = '.1.3.6.1.4.1.8741.1.3.1.1.0';
+    my $oid_sonicCurrentConnCacheEntries = '.1.3.6.1.4.1.8741.1.3.1.2.0';
+    
     my $result = $options{snmp}->get_leef(oids => [$oid_sonicMaxConnCacheEntries, $oid_sonicCurrentConnCacheEntries], nothing_quit => 1);
-    $self->{global} = { total => $result->{$oid_sonicMaxConnCacheEntries},
-                        used => $result->{$oid_sonicCurrentConnCacheEntries},
-                        prct_used => $result->{$oid_sonicCurrentConnCacheEntries} * 100 / $result->{$oid_sonicMaxConnCacheEntries},
-                      };
 
+    $self->{connections} = { total => $result->{$oid_sonicMaxConnCacheEntries}, 
+                             used => $result->{$oid_sonicCurrentConnCacheEntries}, 
+                             prct_used => $result->{$oid_sonicCurrentConnCacheEntries} * 100 / $result->{$oid_sonicMaxConnCacheEntries},
+                           };
+                      
 }
 
 1;
 
 __END__
 
-Check Sonicwall connections usage
+Check Sonicwall connections usage 
 
 =over 8
 
