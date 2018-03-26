@@ -67,7 +67,7 @@ sub prefix_cpu_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_sonicCurrentCPUUtil = '.1.3.6.1.4.1.8741.1.3.1.3';
+    my $oid_sonicCurrentCPUUtil = '.1.3.6.1.4.1.8741.1.3.1.3.0';
     my $snmp_result = $options{snmp}->get_leef(oids => [$oid_sonicCurrentCPUUtil], nothing_quit => 1);
 
     $self->{global} = {
