@@ -67,8 +67,8 @@ sub prefix_cpu_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_sonicCurrentCPUUtil = '.1.3.6.1.4.1.8741.1.3.1.4';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_sonicCurrentRAMUtil], nothing_quit => 1);
+    my $oid_sonicCurrentRAMUtil = '.1.3.6.1.4.1.8741.1.3.1.4.0';
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_sonicCurrentRAMUtil ], nothing_quit => 1);
 
     $self->{memory} = {
         prct_used => $snmp_result->{$oid_sonicCurrentRAMUtil},
