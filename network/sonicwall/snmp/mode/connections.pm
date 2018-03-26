@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::screenos::snmp::mode::sessions;
+package network::sonicwall::snmp::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
