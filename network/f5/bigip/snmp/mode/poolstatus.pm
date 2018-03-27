@@ -181,8 +181,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $mapping->{new}->{AvailState}->{oid} },
                                                             { oid => $mapping->{old}->{AvailState}->{oid} },
-                                                         ],
-                                                         , nothing_quit => 1);
+                                                         ],  nothing_quit => 1);
     
     my ($branch_name, $map) = ($mapping->{new}->{AvailState}->{oid}, 'new');
     if (!defined($snmp_result->{$mapping->{new}->{AvailState}->{oid}}) || scalar(keys %{$snmp_result->{$mapping->{new}->{AvailState}->{oid}}}) == 0)  {
@@ -197,8 +196,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $instance);
         $result->{Name} = '';
         foreach (split /\./, $instance) {
-            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
         }
+        $result->{Name} =~ s/^.//;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
