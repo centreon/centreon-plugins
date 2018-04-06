@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kaspersky::snmp::mode::events;
+package apps::antivirus::kaspersky::snmp::mode::fullscan;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -54,14 +54,14 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Events status is '%s'", $self->{result_values}->{status});
+    my $msg = sprintf("Full scan status is '%s'", $self->{result_values}->{status});
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_eventsStatus'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_fullscanStatus'};
     return 0;
 }
 
@@ -74,18 +74,18 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
-                key_values => [ { name => 'eventsStatus' } ],
+                key_values => [ { name => 'fullscanStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'events', set => {
-                key_values => [ { name => 'criticalEventsCount' } ],
-                output_template => '%d critical event(s)',
+        { label => 'not-scanned', set => {
+                key_values => [ { name => 'hostsNotScannedLately' } ],
+                output_template => '%d hosts(s) has not been scanned lately',
                 perfdatas => [
-                    { label => 'events', value => 'criticalEventsCount_absolute', template => '%d', min => 0 },
+                    { label => 'not_scanned', value => 'hostsNotScannedLately_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -131,20 +131,20 @@ my %map_status = (
     3 => 'Critical',
 );
 
-my $oid_eventsStatus = '.1.3.6.1.4.1.23668.1093.1.6.1';
-my $oid_criticalEventsCount = '.1.3.6.1.4.1.23668.1093.1.6.3';
+my $oid_fullscanStatus = '.1.3.6.1.4.1.23668.1093.1.4.1';
+my $oid_hostsNotScannedLately = '.1.3.6.1.4.1.23668.1093.1.4.3';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_eventsStatus, $oid_criticalEventsCount ], 
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_fullscanStatus, $oid_hostsNotScannedLately ], 
                                                nothing_quit => 1);
     
     $self->{global} = {};
 
     $self->{global} = { 
-        eventsStatus => $map_status{$snmp_result->{$oid_eventsStatus}},
-        criticalEventsCount => $snmp_result->{$oid_criticalEventsCount},
+        fullscanStatus => $map_status{$snmp_result->{$oid_fullscanStatus}},
+        hostsNotScannedLately => $snmp_result->{$oid_hostsNotScannedLately},
     };
 }
 
@@ -154,7 +154,7 @@ __END__
 
 =head1 MODE
 
-Check events status.
+Check full scan status.
 
 =over 8
 
@@ -171,12 +171,12 @@ Can use special variables like: %{status}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'events'.
+Can be: 'not-scanned'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'events'.
+Can be: 'not-scanned'.
 
 =back
 

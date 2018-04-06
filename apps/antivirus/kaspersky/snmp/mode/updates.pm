@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kaspersky::snmp::mode::updates;
+package apps::antivirus::kaspersky::snmp::mode::updates;
 
 use base qw(centreon::plugins::templates::counter);
 
