@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kaspersky::snmp::mode::fullscan;
+package apps::antivirus::kaspersky::snmp::mode::protection;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -54,14 +54,14 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Full scan status is '%s'", $self->{result_values}->{status});
+    my $msg = sprintf("Protection status is '%s'", $self->{result_values}->{status});
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_fullscanStatus'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_protectionStatus'};
     return 0;
 }
 
@@ -74,18 +74,50 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
-                key_values => [ { name => 'fullscanStatus' } ],
+                key_values => [ { name => 'protectionStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'not-scanned', set => {
-                key_values => [ { name => 'hostsNotScannedLately' } ],
-                output_template => '%d hosts(s) has not been scanned lately',
+        { label => 'no-antivirus', set => {
+                key_values => [ { name => 'hostsAntivirusNotRunning' } ],
+                output_template => '%d host(s) without running antivirus',
                 perfdatas => [
-                    { label => 'not_scanned', value => 'hostsNotScannedLately_absolute', template => '%d', min => 0 },
+                    { label => 'no_antivirus', value => 'hostsAntivirusNotRunning_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'no-real-time', set => {
+                key_values => [ { name => 'hostsRealtimeNotRunning' } ],
+                output_template => '%d hosts(s) without running real time protection',
+                perfdatas => [
+                    { label => 'no_real_time', value => 'hostsRealtimeNotRunning_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'not-acceptable-level', set => {
+                key_values => [ { name => 'hostsRealtimeLevelChanged' } ],
+                output_template => '%d host(s) with not acceptable level of real time protection',
+                perfdatas => [
+                    { label => 'not_acceptable_level', value => 'hostsRealtimeLevelChanged_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'not-cured-objects', set => {
+                key_values => [ { name => 'hostsNotCuredObject' } ],
+                output_template => '%d host(s) with not cured objects',
+                perfdatas => [
+                    { label => 'not_cured_objects', value => 'hostsNotCuredObject_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+        { label => 'too-many-threats', set => {
+                key_values => [ { name => 'hostsTooManyThreats' } ],
+                output_template => '%d host(s) with too many threats',
+                perfdatas => [
+                    { label => 'too_many_threats', value => 'hostsTooManyThreats_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -131,20 +163,30 @@ my %map_status = (
     3 => 'Critical',
 );
 
-my $oid_fullscanStatus = '.1.3.6.1.4.1.23668.1093.1.4.1';
-my $oid_hostsNotScannedLately = '.1.3.6.1.4.1.23668.1093.1.4.3';
+my $oid_protectionStatus = '.1.3.6.1.4.1.23668.1093.1.3.1';
+my $oid_hostsAntivirusNotRunning = '.1.3.6.1.4.1.23668.1093.1.3.3';
+my $oid_hostsRealtimeNotRunning = '.1.3.6.1.4.1.23668.1093.1.3.4';
+my $oid_hostsRealtimeLevelChanged = '.1.3.6.1.4.1.23668.1093.1.3.5';
+my $oid_hostsNotCuredObject = '.1.3.6.1.4.1.23668.1093.1.3.6';
+my $oid_hostsTooManyThreats = '.1.3.6.1.4.1.23668.1093.1.3.7';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_fullscanStatus, $oid_hostsNotScannedLately ], 
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_protectionStatus, $oid_hostsAntivirusNotRunning,
+                                                         $oid_hostsRealtimeNotRunning, $oid_hostsRealtimeLevelChanged,
+                                                         $oid_hostsNotCuredObject, $oid_hostsTooManyThreats ], 
                                                nothing_quit => 1);
     
     $self->{global} = {};
 
     $self->{global} = { 
-        fullscanStatus => $map_status{$snmp_result->{$oid_fullscanStatus}},
-        hostsNotScannedLately => $snmp_result->{$oid_hostsNotScannedLately},
+        protectionStatus => $map_status{$snmp_result->{$oid_protectionStatus}},
+        hostsAntivirusNotRunning => $snmp_result->{$oid_hostsAntivirusNotRunning},
+        hostsRealtimeNotRunning => $snmp_result->{$oid_hostsRealtimeNotRunning},
+        hostsRealtimeLevelChanged => $snmp_result->{$oid_hostsRealtimeLevelChanged},
+        hostsNotCuredObject => $snmp_result->{$oid_hostsNotCuredObject},
+        hostsTooManyThreats => $snmp_result->{$oid_hostsTooManyThreats},
     };
 }
 
@@ -154,7 +196,7 @@ __END__
 
 =head1 MODE
 
-Check full scan status.
+Check protection status.
 
 =over 8
 
@@ -171,12 +213,14 @@ Can use special variables like: %{status}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'not-scanned'.
+Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
+'not-cured-objects', 'too-many-threats'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'not-scanned'.
+Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
+'not-cured-objects', 'too-many-threats'.
 
 =back
 

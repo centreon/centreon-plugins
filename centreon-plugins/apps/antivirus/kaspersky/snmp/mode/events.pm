@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kaspersky::snmp::mode::protection;
+package apps::antivirus::kaspersky::snmp::mode::events;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -54,14 +54,14 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Protection status is '%s'", $self->{result_values}->{status});
+    my $msg = sprintf("Events status is '%s'", $self->{result_values}->{status});
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_protectionStatus'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_eventsStatus'};
     return 0;
 }
 
@@ -74,50 +74,18 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
-                key_values => [ { name => 'protectionStatus' } ],
+                key_values => [ { name => 'eventsStatus' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'no-antivirus', set => {
-                key_values => [ { name => 'hostsAntivirusNotRunning' } ],
-                output_template => '%d host(s) without running antivirus',
+        { label => 'events', set => {
+                key_values => [ { name => 'criticalEventsCount' } ],
+                output_template => '%d critical event(s)',
                 perfdatas => [
-                    { label => 'no_antivirus', value => 'hostsAntivirusNotRunning_absolute', template => '%d', min => 0 },
-                ],
-            }
-        },
-        { label => 'no-real-time', set => {
-                key_values => [ { name => 'hostsRealtimeNotRunning' } ],
-                output_template => '%d hosts(s) without running real time protection',
-                perfdatas => [
-                    { label => 'no_real_time', value => 'hostsRealtimeNotRunning_absolute', template => '%d', min => 0 },
-                ],
-            }
-        },
-        { label => 'not-acceptable-level', set => {
-                key_values => [ { name => 'hostsRealtimeLevelChanged' } ],
-                output_template => '%d host(s) with not acceptable level of real time protection',
-                perfdatas => [
-                    { label => 'not_acceptable_level', value => 'hostsRealtimeLevelChanged_absolute', template => '%d', min => 0 },
-                ],
-            }
-        },
-        { label => 'not-cured-objects', set => {
-                key_values => [ { name => 'hostsNotCuredObject' } ],
-                output_template => '%d host(s) with not cured objects',
-                perfdatas => [
-                    { label => 'not_cured_objects', value => 'hostsNotCuredObject_absolute', template => '%d', min => 0 },
-                ],
-            }
-        },
-        { label => 'too-many-threats', set => {
-                key_values => [ { name => 'hostsTooManyThreats' } ],
-                output_template => '%d host(s) with too many threats',
-                perfdatas => [
-                    { label => 'too_many_threats', value => 'hostsTooManyThreats_absolute', template => '%d', min => 0 },
+                    { label => 'events', value => 'criticalEventsCount_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -163,30 +131,20 @@ my %map_status = (
     3 => 'Critical',
 );
 
-my $oid_protectionStatus = '.1.3.6.1.4.1.23668.1093.1.3.1';
-my $oid_hostsAntivirusNotRunning = '.1.3.6.1.4.1.23668.1093.1.3.3';
-my $oid_hostsRealtimeNotRunning = '.1.3.6.1.4.1.23668.1093.1.3.4';
-my $oid_hostsRealtimeLevelChanged = '.1.3.6.1.4.1.23668.1093.1.3.5';
-my $oid_hostsNotCuredObject = '.1.3.6.1.4.1.23668.1093.1.3.6';
-my $oid_hostsTooManyThreats = '.1.3.6.1.4.1.23668.1093.1.3.7';
+my $oid_eventsStatus = '.1.3.6.1.4.1.23668.1093.1.6.1';
+my $oid_criticalEventsCount = '.1.3.6.1.4.1.23668.1093.1.6.3';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_protectionStatus, $oid_hostsAntivirusNotRunning,
-                                                         $oid_hostsRealtimeNotRunning, $oid_hostsRealtimeLevelChanged,
-                                                         $oid_hostsNotCuredObject, $oid_hostsTooManyThreats ], 
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_eventsStatus, $oid_criticalEventsCount ], 
                                                nothing_quit => 1);
     
     $self->{global} = {};
 
     $self->{global} = { 
-        protectionStatus => $map_status{$snmp_result->{$oid_protectionStatus}},
-        hostsAntivirusNotRunning => $snmp_result->{$oid_hostsAntivirusNotRunning},
-        hostsRealtimeNotRunning => $snmp_result->{$oid_hostsRealtimeNotRunning},
-        hostsRealtimeLevelChanged => $snmp_result->{$oid_hostsRealtimeLevelChanged},
-        hostsNotCuredObject => $snmp_result->{$oid_hostsNotCuredObject},
-        hostsTooManyThreats => $snmp_result->{$oid_hostsTooManyThreats},
+        eventsStatus => $map_status{$snmp_result->{$oid_eventsStatus}},
+        criticalEventsCount => $snmp_result->{$oid_criticalEventsCount},
     };
 }
 
@@ -196,7 +154,7 @@ __END__
 
 =head1 MODE
 
-Check protection status.
+Check events status.
 
 =over 8
 
@@ -213,14 +171,12 @@ Can use special variables like: %{status}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
-'not-cured-objects', 'too-many-threats'.
+Can be: 'events'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'no-antivirus', 'no-real-time', 'not-acceptable-level',
-'not-cured-objects', 'too-many-threats'.
+Can be: 'events'.
 
 =back
 
