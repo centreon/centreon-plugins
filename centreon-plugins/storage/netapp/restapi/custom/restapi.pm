@@ -163,7 +163,7 @@ sub get_next {
     }
 
     my $url_path = $self->{url_path} . $options{path};
-    $url_path .= '?' . $options{uri} if (defined($options{args}));
+    $url_path .= '?' . $options{args} if (defined($options{args}));
     $url_path .= '?' . $encoded_tag if (defined($options{nextTag}) && !defined($options{args}));
     $url_path .= '&' . $encoded_tag if (defined($options{nextTag}) && defined($options{args}));
     
