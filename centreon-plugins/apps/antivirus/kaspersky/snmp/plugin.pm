@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::kaspersky::snmp::plugin;
+package apps::antivirus::kaspersky::snmp::plugin;
 
 use strict;
 use warnings;
@@ -32,12 +32,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'deployment'            => 'apps::kaspersky::snmp::mode::deployment',
-                            'events'                => 'apps::kaspersky::snmp::mode::events',
-                            'full-scan'             => 'apps::kaspersky::snmp::mode::fullscan',
-                            'logical-network'       => 'apps::kaspersky::snmp::mode::logicalnetwork',
-                            'protection'            => 'apps::kaspersky::snmp::mode::protection',
-                            'updates'               => 'apps::kaspersky::snmp::mode::updates',
+                            'deployment'            => 'apps::antivirus::kaspersky::snmp::mode::deployment',
+                            'events'                => 'apps::antivirus::kaspersky::snmp::mode::events',
+                            'full-scan'             => 'apps::antivirus::kaspersky::snmp::mode::fullscan',
+                            'logical-network'       => 'apps::antivirus::kaspersky::snmp::mode::logicalnetwork',
+                            'protection'            => 'apps::antivirus::kaspersky::snmp::mode::protection',
+                            'updates'               => 'apps::antivirus::kaspersky::snmp::mode::updates',
                         );
 
     return $self;
