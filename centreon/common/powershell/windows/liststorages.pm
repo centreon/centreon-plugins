@@ -24,8 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-
-
 sub get_powershell {
     my (%options) = @_;
     my $no_ps = (defined($options{no_ps})) ? 1 : 0;
@@ -63,7 +61,7 @@ sub list {
     #[name= C: ][type= 3 ][providername=  ][desc= OS ][size= 254406553600 ][freespace= 23851290624 ]
     #...
     foreach my $line (split /\n/, $options{stdout}) {
-	    next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
+        next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
         my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
                                                       centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
@@ -82,7 +80,7 @@ sub disco_show {
     #[name= C: ][type= 3 ][providername=  ][desc= OS ][size= 254406553600 ][freespace= 23851290624 ]
     #...
     foreach my $line (split /\n/, $options{stdout}) {
-	    next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
+        next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
         my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
                                              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 

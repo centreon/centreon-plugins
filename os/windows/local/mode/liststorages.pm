@@ -42,7 +42,6 @@ sub new {
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
                                   "ps-exec-only"              => { name => 'ps_exec_only', }
-                                  #"filter-type:s"      => { name => 'filter', default => 'local'}
                                 });
     return $self;
 }
