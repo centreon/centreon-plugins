@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -134,7 +134,7 @@ sub dcdiag {
     my ($self, %options) = @_;
 
     my $dcdiag_cmd = 'dcdiag /test:services /test:replications /test:advertising /test:fsmocheck /test:ridmanager';
-    $dcdiag_cmd .= ' /test:machineaccount' if (!defined($self->{option_results}->{machineaccount}));
+    $dcdiag_cmd .= ' /test:machineaccount' if (!defined($self->{option_results}->{nomachineaccount}));
     $dcdiag_cmd .= ' /test:frssysvol' if ($self->{os_is2003} == 1);
     $dcdiag_cmd .= ' /test:sysvolcheck' if ($self->{os_is2008} == 1 || $self->{os_is2012} == 1);
     

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -62,9 +62,10 @@ sub new {
 sub snmp_execute {
     my ($self, %options) = @_;
     
-    my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
+    my $oid_entPhysicalName     = '.1.3.6.1.2.1.47.1.1.1.1.7';
+    my $oid_entPhysicalDescr    = '.1.3.6.1.2.1.47.1.1.1.1.2';
     $self->{snmp} = $options{snmp};
-    push @{$self->{request}}, { oid => $oid_entPhysicalName};
+    push @{$self->{request}}, { oid => $oid_entPhysicalName }, { oid => $oid_entPhysicalDescr };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
@@ -186,6 +187,7 @@ sub check {
     return if ($self->check_filter(section => 'sensor'));
 
     my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
+    my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entPhysicalName}})) {
         next if ($oid !~ /^$oid_entPhysicalName\.(.*)$/);
         my $instance = $1;
@@ -194,7 +196,8 @@ sub check {
         
         next if ($self->check_filter(section => 'sensor', instance => $result->{entPhySensorType} . '.' . $instance));
 
-        my $name = $self->{results}->{$oid_entPhysicalName}->{$oid};
+        my $name = $self->{results}->{$oid_entPhysicalName}->{$oid} ne '' ? 
+            $self->{results}->{$oid_entPhysicalName}->{$oid} : $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         # It seems there is no scale
         if (!defined($self->{option_results}->{sensor_scale})) {
             $result->{entPhySensorValue} = defined($result->{entPhySensorValue}) ? 

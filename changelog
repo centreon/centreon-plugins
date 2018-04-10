@@ -1,3 +1,60 @@
+2018-04-09 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: IBM FS900 SNMP
+ * Plugin added: Kaspersky SNMP
+ * Plugin added: NetApp Rest Api
+ * Plugin added: AWS EC2 Api
+ * Plugin added: AWS RDS Api
+ * Plugin added: AWS S3 Api
+ * Plugin added: AWS ELB Api
+ * Plugin added: AWS Cloudfront Api
+ * Plugin added: AWS Billing Api
+ * Plugin added: AWS Elasticache Api
+ * Plugin added: AWS Lambda Api
+ * Mode added: [windows/local] 'liststorages'
+ * Mode added: [mssql] 'logsize'
+ * Mode added: [f5/bigip] 'trunks'
+ * Mode added: [f5/bigip] 'listtrunks'
+ * Enhancement: [vmware]{nethost} add dropped packets
+ * Enhancement: [snmp_standard]{processcount} add per process options, refactor code
+ * Enhancement: [hyperv]{scvmmintegrationservice} add some status
+ * Enhancement: [http] add new useragent.pm library to handle Basic, Digest, Ntlm and Ntlm v2 authentification 
+ * Enhancement: [snmp_standard]{spanningtree} add filtering options, refactor code (#780)
+ * Enhancement: [ups/apc]{sensors} show temp in long output (#849)
+ * Fix: [nsclient/restapi] use of uninitialized value issue (#825)
+ * Fix: [hp]{procurve} temperature sensor not present issue (#847)
+ * Fix: [veeam]{jobstatus} argument isn't numeric issue (#863)
+ * Fix: [centreon]{metaservice} use metric name defined in Meta-Service configuration (#874)
+ * Fix: [oracle]{eventwaitusage} event-count option
+ * Fix: [redis/restapi]{*} hashes deref issues
+ * Fix: [activedirectory]{dcdiag} wrong option issue (#902)
+ * Fix: [bluecoat]{hardware} typo in sensor state
+ * Fix: [stormshield]{hanodes} mapping issue
+ * Fix: [f5/bigip]{poolstatus,virtualserverstatus} bad character (#930)
+
+2017-12-22 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Pure Storage SNMP
+ * Plugin added: Pure Storage Rest API
+ * Plugin added: Amazon AWS API
+ * Plugin added: Comet P8000 series SNMP
+ * Plugin added: Veeam local
+ * Plugin added: Colubris SNMP
+ * Plugin added: Alpha ups SNMP
+ * Plugin added: Infoblox SNMP
+ * Plugin added: Redis Rest API
+ * Plugin added: Cisco Call Manager SNMP
+
+2017-12-08 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Kingdee Rest API
+ * Plugin added: Redis Cli
+ * Plugin added: Ubiquiti Edge SNMP
+ * Plugin added: Arista SNMP
+ * Plugin added: Haproxy SNMP
+ * Plugin added: JBoss JMX
+ * Plugin added: NSClient Query
+ * Break: Renamed Asterisk AMI
+ * Break: Renamed Dell n4000
+ * Break: Renamed Dell 62000
+
 2017-11-23 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Freebox Rest API
  * Plugin added: Netgear Mseries SNMP

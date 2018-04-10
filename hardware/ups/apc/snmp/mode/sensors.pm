@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -141,8 +141,10 @@ sub check {
         next if ($self->check_filter(section => 'sensor', instance => $instance));
 
         $self->{components}->{sensor}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("sensor '%s' status is '%s' [instance = %s]",
-                                                        $result->{uioSensorStatusSensorName}, $result->{uioSensorStatusAlarmStatus}, $instance));
+        $self->{output}->output_add(long_msg => sprintf("sensor '%s' status is '%s' [instance = %s] [temperature = %s C] [humidity = %s %%]",
+                                                        $result->{uioSensorStatusSensorName}, $result->{uioSensorStatusAlarmStatus}, $instance,
+                                                        $result->{uioSensorStatusTemperatureDegC} != -1 ? $result->{uioSensorStatusTemperatureDegC} : '-',
+                                                        $result->{uioSensorStatusHumidity} != -1 ? $result->{uioSensorStatusHumidity} : '-'));
         $exit = $self->get_severity(section => 'sensor', value => $result->{uioSensorStatusAlarmStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,

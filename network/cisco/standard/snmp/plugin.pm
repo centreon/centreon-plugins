@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -42,6 +42,7 @@ sub new {
                          'qos-usage'        => 'centreon::common::cisco::standard::snmp::mode::qosusage',
                          'spanning-tree'    => 'snmp_standard::mode::spanningtree',
                          'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;

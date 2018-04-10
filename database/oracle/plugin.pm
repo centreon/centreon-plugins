@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,6 +39,7 @@ sub new {
                          'data-files-status'        => 'database::oracle::mode::datafilesstatus',
                          'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
                          'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+                         'invalid-object'           => 'database::oracle::mode::invalidobject',
                          'long-queries'             => 'database::oracle::mode::longqueries',
                          'process-usage'            => 'database::oracle::mode::processusage',
                          'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
@@ -46,8 +47,11 @@ sub new {
                          'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
                          'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
                          'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+                         'temp-usage'               => 'database::oracle::mode::temptablespace',
+                         'undo-usage'               => 'database::oracle::mode::undotablespace',
                          'session-usage'            => 'database::oracle::mode::sessionusage',
                          'sql'                      => 'centreon::common::protocols::sql::mode::sql',
+                         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
                          'tnsping'                  => 'database::oracle::mode::tnsping',
                          );
 

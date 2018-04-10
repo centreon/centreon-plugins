@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -142,7 +142,7 @@ sub check_value {
     if ($self->{attributes}->{type} =~ /^counter$/i)  {
         if (!defined($self->{datas})) {
             $self->{datas} = {};
-            $self->{statefile_cache}->read(statefile => "jmxstandard_" . $self->{mode} . '_' . md5_hex($self->{connector}->{url} . ' ' . $self->{option_results}->{mbean_pattern}));
+            $self->{statefile_cache}->read(statefile => "jmxstandard_" . $self->{mode} . '_' . md5_hex($self->{connector}->get_connection_info() . ' ' . $self->{option_results}->{mbean_pattern}));
         }
     
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');

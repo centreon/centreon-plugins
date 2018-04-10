@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,10 +36,12 @@ sub new {
                          'hardware'             => 'network::f5::bigip::snmp::mode::hardware',
                          'list-nodes'           => 'network::f5::bigip::snmp::mode::listnodes',
                          'list-pools'           => 'network::f5::bigip::snmp::mode::listpools',
+                         'list-trunks'          => 'network::f5::bigip::snmp::mode::listtrunks',
                          'list-virtualservers'  => 'network::f5::bigip::snmp::mode::listvirtualservers',
                          'node-status'          => 'network::f5::bigip::snmp::mode::nodestatus',
                          'pool-status'          => 'network::f5::bigip::snmp::mode::poolstatus',
                          'tmm-usage'            => 'network::f5::bigip::snmp::mode::tmmusage',
+                         'trunks'               => 'network::f5::bigip::snmp::mode::trunks',
                          'virtualserver-status' => 'network::f5::bigip::snmp::mode::virtualserverstatus',
                          );
 

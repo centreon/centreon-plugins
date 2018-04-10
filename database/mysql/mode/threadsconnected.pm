@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -56,25 +56,20 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
+    $options{sql}->connect();
     
-    if (!($self->{sql}->is_version_minimum(version => '5'))) {
+    if (!($options{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
     
-    $self->{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Threads_connected'});
-    my ($dummy, $result) = $self->{sql}->fetchrow_array();
-    if (!defined($result)) {
+    $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Threads_connected'});
+    my ($name, $value) = $options{sql}->fetchrow_array();
+    if (!defined($value)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get number of open connections.");
         $self->{output}->option_exit();
     }
-    
-        
-    my $value = $result;
     
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,

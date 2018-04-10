@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -159,6 +159,8 @@ sub manage_selection {
     $self->{request} = [
          { mbean => "*:type=DataSource,class=*,context=*,host=*,name=*", attributes => 
              [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
+         { mbean => "*:type=DataSource,class=*,path=*,host=*,name=*", attributes => 
+             [ { name => 'numActive' }, { name => 'numIdle' }, { name => 'maxIdle' }, { name => 'maxTotal' }, { name => 'maxActive' } ] },
     ];
     
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
@@ -189,7 +191,7 @@ sub manage_selection {
         };
     }
     
-    $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->{url}) . '_' .
+    $self->{cache_name} = "tomcat_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

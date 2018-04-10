@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -171,8 +171,7 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid} },
                                                             { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
-                                                         ],
-                                                         , nothing_quit => 1);
+                                                         ], nothing_quit => 1);
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
     if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
@@ -187,8 +186,10 @@ sub manage_selection {
         
         $result->{Name} = '';
         foreach (split /\./, $instance) {
-            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
         }
+        $result->{Name} =~ s/^.//;
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");

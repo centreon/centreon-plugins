@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,19 +27,27 @@ use warnings;
 
 my $instance_mode;
 
+sub custom_node_perfdata {
+    my ($self, %options) = @_;
+    
+    $self->{output}->perfdata_add(label => 'dead_nodes',
+                                  value => sprintf("%d", $self->{result_values}->{dead_nodes}),
+                                  min => 0, max => $self->{result_values}->{total_nodes});
+}
+
 sub custom_node_threshold {
     my ($self, %options) = @_;
 
     my ($exit, $threshold_value);
     $threshold_value = defined($instance_mode->{option_results}->{percent}) ? $self->{result_values}->{prct_dead} : $self->{result_values}->{dead_nodes} ;
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-dead-nodes', exit_litteral => 'critical' }, { label => 'warning-dead-nodes', exit_litteral => 'warning' } ]);
     return $exit;
 }
 
 sub custom_node_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Dead nodes: absolute: %d/%d - percentage: %.2f%% ", 
+    my $msg = sprintf("Dead nodes: %d/%d (%.2f%%)", 
                     $self->{result_values}->{dead_nodes}, $self->{result_values}->{total_nodes}, $self->{result_values}->{prct_dead});
     return $msg;
 }
@@ -54,7 +62,7 @@ sub custom_node_calc {
     return 0;
 }
 
-sub custom_threshold_output {
+sub custom_state_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
     my $message;
@@ -72,7 +80,7 @@ sub custom_threshold_output {
         }
     };
     if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+        $self->{output}->output_add(long_msg => 'filter state issue: ' . $message);
     }
 
     return $status;
@@ -81,14 +89,15 @@ sub custom_threshold_output {
 sub custom_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s'", $self->{result_values}->{state});
+    my $msg = sprintf("state is '%s' [role: %s]", $self->{result_values}->{state}, $self->{result_values}->{role});
     return $msg;
 }
 
 sub custom_state_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_ntqOnline'};
+    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_ntqHALicence'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -104,31 +113,28 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'dead-nodes', set => {
                 key_values => [ { name => 'dead_nodes' }, { name => 'prct_dead' }, { name => 'total_nodes' } ],
-                closure_custom_calc => \&custom_node_calc,
-                closure_custom_output => \&custom_node_output,
-                closure_custom_threshold_check => \&custom_node_threshold,
-                perfdatas => [
-                    { label => 'dead_nodes', value => 'dead_nodes', template => '%d',
-                      min => 0, unit => 'nodes' },
-                ],
+                closure_custom_calc => $self->can('custom_node_calc'),
+                closure_custom_output => $self->can('custom_node_output'),
+                closure_custom_threshold_check => $self->can('custom_node_threshold'),
+                closure_custom_perfdata => $self->can('custom_node_perfdata'),
             }
         }
     ];
     $self->{maps_counters}->{nodes} = [
         { label => 'state', threshold => 0,  set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => \&custom_state_calc,
-                closure_custom_output => \&custom_state_output,
+                key_values => [ { name => 'ntqOnline' }, { name => 'ntqHALicence' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_state_calc'),
+                closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&custom_threshold_output,
+                closure_custom_threshold_check => $self->can('custom_state_threshold'),
             }
         },
         { label => 'health', set => {
-                key_values => [ { name => 'health' }, { name => 'display' } ],
-                output_template => 'node health: %s%%',
+                key_values => [ { name => 'ntqHAQuality' }, { name => 'display' } ],
+                output_template => 'health: %s%%',
                 perfdatas => [
-                    { label => 'health', value => 'health_absolute', template => '%d',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'health', value => 'ntqHAQuality_absolute', template => '%d', min => 0, max => 100,
+                       unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         }
@@ -152,7 +158,7 @@ sub new {
                                 "filter-node:s"         => { name => 'filter_node' },
                                 "percent"               => { name => 'percent' },
                                 "warning-state:s"       => { name => 'warning_state', default => '' },
-                                "critical-state:s"      => { name => 'critical_state', default => '%{state} eq "offline"' },
+                                "critical-state:s"      => { name => 'critical_state', default => '%{state} =~ /offline/i' },
                                 });
     return $self;
 }
@@ -160,7 +166,7 @@ sub new {
 sub change_macros {
     my ($self, %options) = @_;
 
-    foreach (('warning_state', 'critical_state')) {
+    foreach ('warning_state', 'critical_state') {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
@@ -171,8 +177,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros();
     $instance_mode = $self;
+    $self->change_macros();
 }
 
 my %map_status = (
@@ -180,45 +186,58 @@ my %map_status = (
     2 => 'offline',
 );
 
+my $oid_ntqFwSerial = '.1.3.6.1.4.1.11256.1.11.7.1.2';
 my $mapping = {
-    ntqFwSerial  => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.2' },
-    ntqHAQuality => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.7' },
     ntqOnline    => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.3', map => \%map_status },
+    ntqHALicence => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.6' },
+    ntqHAQuality => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.7' },
 };
 
-my $oid_ntqNodeTable = '.1.3.6.1.4.1.11256.1.11.7';
-my $oid_ntqNbNode = '.1.3.6.1.4.1.11256.1.11.1';
-my $oid_ntqNbDeadNode = '.1.3.6.1.4.1.11256.1.11.2';
+my $oid_ntqNbNode = '.1.3.6.1.4.1.11256.1.11.1.0';
+my $oid_ntqNbDeadNode = '.1.3.6.1.4.1.11256.1.11.2.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_ntqNodeTable },
-                                                                    { oid => $oid_ntqNbNode },
-                                                                    { oid => $oid_ntqNbDeadNode } ],
-                                                          nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_ntqNbNode, $oid_ntqNbDeadNode ], nothing_quit => 1);
+    
+    my $prct_dead = $snmp_result->{$oid_ntqNbDeadNode} * 100 / $snmp_result->{$oid_ntqNbNode};
 
-    foreach my $oid (keys %{$self->{results}->{$oid_ntqNodeTable}}) {
-        $oid =~ /^$mapping->{ntqOnline}->{oid}\.(.*)$/;
+    $self->{global} = { dead_nodes => $snmp_result->{$oid_ntqNbDeadNode},
+                        total_nodes => $snmp_result->{$oid_ntqNbNode},
+                        prct_dead => $prct_dead };
+
+    $snmp_result = $options{snmp}->get_table(oid => $oid_ntqFwSerial, nothing_quit => 1);
+    $self->{nodes} = {};
+    foreach my $oid (keys %{$snmp_result}) {
+        $oid =~ /^$oid_ntqFwSerial\.(.*)$/;
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ntqNodeTable}, instance => $instance);
-
         if (defined($self->{option_results}->{filter_node}) && $self->{option_results}->{filter_node} ne '' &&
-            $result->{ntqFwSerial} !~ /$self->{option_results}->{filter_node}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{ntqFwSerial} . "': no matching filter.", debug => 1);
+            $snmp_result->{$oid} !~ /$self->{option_results}->{filter_node}/) {
+            $self->{output}->output_add(long_msg => "skipping node '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
-        $self->{nodes}->{$result->{ntqFwSerial}} = { state   => $result->{ntqOnline},
-                                                     health  => $result->{ntqHAQuality},
-                                                     display => $result->{ntqFwSerial} };
+
+        $self->{nodes}->{$instance} = { display => $snmp_result->{$oid} };
     }
 
-    my $prct_dead = $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'}/$self->{results}->{$oid_ntqNbNode}->{$oid_ntqNbNode . '.' . '0'}*100;
 
-    $self->{global} = { dead_nodes => $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbDeadNode . '.' . '0'},
-                        toatl_nodes => $self->{results}->{$oid_ntqNbDeadNode}->{$oid_ntqNbNode . '.' . '0'},
-                        prct_dead => $prct_dead };
+    if (scalar(keys %{$self->{nodes}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No nodes found.");
+        $self->{output}->option_exit();
+    }
+
+    $options{snmp}->load(oids => [ $mapping->{ntqOnline}->{oid}, $mapping->{ntqHALicence}->{oid}, $mapping->{ntqHAQuality}->{oid} ],
+        instances => [keys %{$self->{nodes}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+
+    foreach (keys %{$self->{nodes}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        
+        foreach my $name (keys %$mapping) {
+            $self->{nodes}->{$_}->{$name} = $result->{$name};
+        }
+    }
 }
 
 1;
@@ -227,7 +246,7 @@ __END__
 
 =head1 MODE
 
-Check Stormshield dead nodes and state and health of nodes
+Check Stormshield nodes status (state, role and health) and dead nodes.
 
 =over 8
 
@@ -253,13 +272,13 @@ Critical on deadnode (absolute unless --percent is used)
 
 =item B<--warning-state>
 
-Set warning threshold for status. Use "%{state}" as a special variable.
-Value can be 'online' or 'offline'.
+Set warning threshold for state.
+Can used special variables like: %{state}, %{role}
 
 =item B<--critical-state>
 
-Set critical threshold for status. Use "%{state}" as a special variable.
-Value can be 'online' or 'offline'.
+Set critical threshold for state. (Default: '%{state} =~ /offline/i').
+Can used special variables like: %{state}, %{role}
 
 =item B<--percent>
 

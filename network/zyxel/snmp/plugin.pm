@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,6 +36,7 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'list-vpn'         => 'network::zyxel::snmp::mode::listvpn',
                          'memory'           => 'network::zyxel::snmp::mode::memory',
+                         'sessions'         => 'network::zyxel::snmp::mode::sessions',
                          'vpn-status'       => 'network::zyxel::snmp::mode::vpnstatus',
                          );
 
