@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::cloudwatchgetmetrics;
+package cloud::aws::cloudwatch::mode::getmetrics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -90,13 +90,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "region:s"      => { name => 'region' },
-                                "namespace:s"   => { name => 'namespace' },
-                                "dimension:s%"  => { name => 'dimension' },
-                                "metric:s@"     => { name => 'metric' },
-                                "statistic:s@"  => { name => 'statistic' },
-                                "timeframe:s"   => { name => 'timeframe', default => 600 },
-                                "period:s"      => { name => 'period', default => 60 },
+                                    "namespace:s"   => { name => 'namespace' },
+                                    "dimension:s%"  => { name => 'dimension' },
+                                    "metric:s@"     => { name => 'metric' },
                                 });
     
     return $self;
@@ -106,10 +102,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{namespace}) || $self->{option_results}->{namespace} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --namespace option.");
         $self->{output}->option_exit();
@@ -138,6 +130,9 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --dimension option.");
         $self->{output}->option_exit();
     }
+
+    $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
+    $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
     
     $self->{aws_statistics} = ['Average'];
     if (defined($self->{option_results}->{statistic})) {
@@ -174,8 +169,8 @@ sub manage_selection {
         dimensions => $self->{aws_dimensions},
         metrics => $self->{aws_metrics},
         statistics => $self->{aws_statistics},
-        timeframe => $self->{option_results}->{timeframe},
-        period => $self->{option_results}->{period},
+        timeframe => $self->{aws_timeframe},
+        period => $self->{aws_period},
     );
     
     $self->{metrics} = {};
@@ -201,13 +196,11 @@ __END__
 Check cloudwatch metrics (same dimension and namespace).
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cloudwatch-get-metrics --region=eu-west-1 --namespace=AWS/EC2 --dimension=InstanceId=i-01622936185e32a45 --metric=CPUUtilization --metric=CPUCreditUsage --statistic=average --statistic=max –-period=60 --timeframe=600 --warning-metric= --critical-metric=
+perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cloudwatch-get-metrics --region=eu-west-1
+--namespace=AWS/EC2 --dimension=InstanceId=i-01622936185e32a45 --metric=CPUUtilization --metric=CPUCreditUsage
+--statistic=average --statistic=max –-period=60 --timeframe=600 --warning-metric= --critical-metric=
 
 =over 8
-
-=item B<--region>
-
-Set the region name (Required).
 
 =item B<--namespace>
 
@@ -220,18 +213,6 @@ Set cloudwatch dimensions (Required).
 =item B<--metric>
 
 Set cloudwatch metrics (Required).
-
-=item B<--statistic>
-
-Set cloudwatch statistics (Default: 'average').
-
-=item B<--period>
-
-Set period in seconds (Default: 60).
-
-=item B<--timeframe>
-
-Set timeframe in seconds (Default: 600).
 
 =item B<--warning-metric>
 

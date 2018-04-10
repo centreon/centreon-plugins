@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::rdsinstancestatus;
+package cloud::aws::rds::mode::instancestatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -131,8 +131,8 @@ sub set_counters {
     $self->{maps_counters}->{aws_instances} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_nas_status_calc'),
-                closure_custom_output => $self->can('custom_nas_status_output'),
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
@@ -148,10 +148,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "region:s"            => { name => 'region' },
-                                "filter-instanceid:s" => { name => 'filter_instanceid' },
-                                "warning-status:s"    => { name => 'warning_status', default => '' },
-                                "critical-status:s"   => { name => 'critical_status', default => '' },
+                                    "filter-instanceid:s" => { name => 'filter_instanceid' },
+                                    "warning-status:s"    => { name => 'warning_status', default => '' },
+                                    "critical-status:s"   => { name => 'critical_status', default => '' },
                                 });
     
     return $self;

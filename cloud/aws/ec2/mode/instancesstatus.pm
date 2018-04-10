@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::ec2instancestatus;
+package cloud::aws::ec2::mode::instancesstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -56,8 +56,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('state : %s', 
-        $self->{result_values}->{health}, $self->{result_values}->{replication_health});
+    my $msg = sprintf('state: %s, status: %s', $self->{result_values}->{state}, $self->{result_values}->{status});
     return $msg;
 }
 
@@ -65,6 +64,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -130,9 +130,9 @@ sub set_counters {
     
     $self->{maps_counters}->{aws_instances} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_nas_status_calc'),
-                closure_custom_output => $self->can('custom_nas_status_output'),
+                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
@@ -210,6 +210,7 @@ sub manage_selection {
         $self->{aws_instances}->{$instance_id} = { 
             display => $instance_id, 
             state => $result->{$instance_id}->{state},
+            status => $result->{$instance_id}->{status},
         };
         $self->{global}->{$result->{$instance_id}->{state}}++;
     }
@@ -227,6 +228,12 @@ __END__
 =head1 MODE
 
 Check EC2 instances status.
+
+Example: 
+perl centreon_plugins.pl --plugin=cloud::aws::ec2::plugin --custommode=paws --mode=instances-status --region='eu-west-1'
+--filter-instanceid='.*' --filter-counters='^total-running$' --critical-total-running='10' --verbose
+
+See 'https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstanceStatus.html' for more informations.
 
 =over 8
 

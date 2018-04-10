@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,11 +38,12 @@ sub set_system {
             ['ok', 'OK'],
             ['unavailable', 'UNKNOWN'],
             ['nonoperational', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN'],
         ],
         sensor => [    
             ['ok', 'OK'],
             ['unknown', 'UNKNOWN'],
-            ['nonInstalled', 'OK'],
+            ['notInstalled', 'OK'],
             ['voltageLowWarning', 'WARNING'],
             ['voltageLowCritical', 'CRITICAL'],
             ['noPower', 'CRITICAL'],

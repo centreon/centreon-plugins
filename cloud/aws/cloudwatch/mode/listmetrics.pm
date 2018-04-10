@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::cloudwatchlistmetrics;
+package cloud::aws::cloudwatch::mode::listmetrics;
 
 use base qw(centreon::plugins::mode);
 
@@ -33,8 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "region:s"      => { name => 'region' },
-                                "namespace:s"   => { name => 'namespace' },
+                                    "namespace:s"   => { name => 'namespace' },
+                                    "metric:s"      => { name => 'metric' },
                                 });
 
     return $self;
@@ -43,17 +43,14 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{metrics} = $options{custom}->cloudwatch_list_metrics(region => $self->{option_results}->{region}, namespace => $self->{option_results}->{namespace});
+    $self->{metrics} = $options{custom}->cloudwatch_list_metrics(region => $self->{option_results}->{region},
+                                                                namespace => $self->{option_results}->{namespace},
+                                                                metric => $self->{option_results}->{metric});
 }
 
 sub get_dimensions_str {
@@ -113,13 +110,13 @@ List cloudwatch metrics.
 
 =over 8
 
-=item B<--region>
-
-Set the region name (Required).
-
 =item B<--namespace>
 
 Set cloudwatch namespace.
+
+=item B<--metric>
+
+Set cloudwatch metric.
 
 =back
 

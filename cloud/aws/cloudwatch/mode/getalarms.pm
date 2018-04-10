@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::mode::cloudwatchgetalarms;
+package cloud::aws::cloudwatch::mode::getalarms;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -103,11 +103,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "region:s"            => { name => 'region' },
-                                  "filter-alarm-name:s" => { name => 'filter_alarm_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{state_value} =~ /INSUFFICIENT_DATA/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{state_value} =~ /ALARM/i' },
-                                  "memory"              => { name => 'memory' },
+                                    "filter-alarm-name:s" => { name => 'filter_alarm_name' },
+                                    "warning-status:s"    => { name => 'warning_status', default => '%{state_value} =~ /INSUFFICIENT_DATA/i' },
+                                    "critical-status:s"   => { name => 'critical_status', default => '%{state_value} =~ /ALARM/i' },
+                                    "memory"              => { name => 'memory' },
                                 });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
@@ -120,10 +119,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
     $instance_mode = $self;
     $self->change_macros();
     
@@ -195,10 +190,6 @@ __END__
 Check cloudwatch alarms.
 
 =over 8
-
-=item B<--region>
-
-Set the region name (Required).
 
 =item B<--filter-alarm-name>
 
