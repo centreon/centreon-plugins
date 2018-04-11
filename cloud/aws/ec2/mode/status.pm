@@ -182,7 +182,7 @@ sub manage_selection {
             period => $self->{aws_period},
         );
         
-        foreach my $metric (keys $metric_results{$instance}) {
+        foreach my $metric (keys %{$metric_results{$instance}}) {
             next if (!defined($metric_results{$instance}->{$metric}->{average}));
 
             $self->{metric}->{$instance}->{display} = $instance;
