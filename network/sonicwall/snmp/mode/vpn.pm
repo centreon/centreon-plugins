@@ -157,6 +157,12 @@ sub manage_selection {
         next if ($oid !~ /^$oid_sonicSAStatUserName\.(.*)$/);
         my $instance = $1;
 
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{$oid_sonicSAStatUserName . '.' . $instance} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{$oid_sonicSAStatUserName . '.' . $instance} . "': no matching filter.", debug => 1);
+            next;
+        }
+	
         $self->{vpn}->{$result->{$oid_sonicSAStatUserName . '.' . $instance}} = { traffic_in => $result->{$oid_sonicSAStatEncryptByteCount . '.' . $instance} * 8,
 										  traffic_out => $result->{$oid_sonicSAStatDecryptByteCount . '.' . $instance} * 8,
 										  display => $result->{$oid_sonicSAStatUserName . '.' . $instance} };
