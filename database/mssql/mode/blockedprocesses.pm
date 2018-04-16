@@ -76,31 +76,28 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => "SELECT spid, trim(program_name), trim(cmd), trim(status), waittime FROM master.dbo.sysprocesses WHERE blocked <> '0'");
-    my $result = $options{sql}->fetchall_arrayref();
+    $options{sql}->query(query => "SELECT spid, trim(program_name) as program_name, trim(cmd) as cmd, trim(status) as status, waittime FROM master.dbo.sysprocesses WHERE blocked <> '0'");
 
     $self->{global} = { total => 0 };
     $self->{processwaittime} = {};
 
-    foreach my $row (@$result) {
-        my ($proc_spid, $proc_program_name, $proc_cmd, $proc_status, $proc_waittime) = @$row;
-        my $proc_identity_verbose = "spid=".$proc_spid." program_name='".$proc_program_name."' cmd='".$proc_cmd."' status='".$proc_status."'";
-        my $proc_identity = 'spid_'.$proc_spid;
+    while (my $row = $options{sql}->fetchrow_hashref()) {
+        my $proc_identity_verbose = "spid=".$row->{spid}." program_name='".$row->{program_name}."' cmd='".$row->{cmd}."' status='".$row->{status}."'";
+        my $proc_identity = 'spid_'.$row->{spid};
 
         # waittime is given in milliseconds, so we convert it to seconds
-        $proc_waittime = $proc_waittime / 1000;
+        my $proc_waittime = $row->{waittime} / 1000;
 
-        # we 
         $self->{output}->output_add(long_msg => "Process having " . $proc_identity_verbose . " waited for " . $proc_waittime . "s");
 
         if (defined($self->{option_results}->{filter_program}) && $self->{option_results}->{filter_program} ne '' &&
-            $$row[1] !~ /$self->{option_results}->{filter_program}/) {
+            $row->{program_name} !~ /$self->{option_results}->{filter_program}/) {
             $self->{output}->output_add(long_msg => "Skipping process having " . $proc_identity_verbose . ": because program is not matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
-            $$row[2] !~ /$self->{option_results}->{filter_command}/) {
-            $self->{output}->output_add(long_msg => "Skipping process having " . $proc_identity_verbose . " because command is not matching filter.", debug => 1);
+            $row->{cmd} !~ /$self->{option_results}->{filter_command}/) {
+            $self->{output}->output_add(long_msg => "Skipping process having " . $proc_identity_verbose . ": because command is not matching filter.", debug => 1);
             next
         }
 
