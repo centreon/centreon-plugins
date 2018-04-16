@@ -86,6 +86,8 @@ sub manage_selection {
 
 __END__
 
+=head1 MODE
+
 Check Sonicwall connections usage 
 
 =over 8
