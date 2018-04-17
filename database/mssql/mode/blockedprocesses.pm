@@ -55,7 +55,7 @@ sub set_counters {
 
 sub custom_processwaittime_output {
     my ($self, %options) = @_;
-    return 'Wait time too long for ' . $self->{instance};
+    return $self->{result_values}->{display_absolute};
 }
 
 sub new {
@@ -82,22 +82,20 @@ sub manage_selection {
     $self->{processwaittime} = {};
 
     while (my $row = $options{sql}->fetchrow_hashref()) {
-        my $proc_identity_verbose = "spid=".$row->{spid}." program_name='".$row->{program_name}."' cmd='".$row->{cmd}."' status='".$row->{status}."'";
-        my $proc_identity = 'spid_'.$row->{spid};
 
         # waittime is given in milliseconds, so we convert it to seconds
         my $proc_waittime = $row->{waittime} / 1000;
-
-        $self->{output}->output_add(long_msg => "Process having " . $proc_identity_verbose . " waited for " . $proc_waittime . "s");
+        my $proc_identity_verbose = "command '".$row->{cmd}."' (spid ".$row->{spid}.((defined $row->{program_name} && $row->{program_name} ne '')?(" from program '".$row->{program_name}."'"):'').", status '".$row->{status}."') waited ".$proc_waittime."s";
+        my $proc_identity = 'spid_'.$row->{spid};
 
         if (defined($self->{option_results}->{filter_program}) && $self->{option_results}->{filter_program} ne '' &&
             $row->{program_name} !~ /$self->{option_results}->{filter_program}/) {
-            $self->{output}->output_add(long_msg => "Skipping process having " . $proc_identity_verbose . ": because program is not matching filter.", debug => 1);
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process having " . $proc_identity_verbose . ": because program is not matching filter.");
             next;
         }
         if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
             $row->{cmd} !~ /$self->{option_results}->{filter_command}/) {
-            $self->{output}->output_add(long_msg => "Skipping process having " . $proc_identity_verbose . ": because command is not matching filter.", debug => 1);
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process having " . $proc_identity_verbose . ": because command is not matching filter.");
             next
         }
 
