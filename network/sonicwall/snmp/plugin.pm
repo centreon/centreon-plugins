@@ -18,28 +18,25 @@
 # limitations under the License.
 #
 
-package cloud::aws::plugin;
+package network::sonicwall::snmp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
+use base qw(centreon::plugins::script_snmp);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'cloudwatch-get-alarms'     => 'cloud::aws::mode::cloudwatchgetalarms',
-        'cloudwatch-get-metrics'    => 'cloud::aws::mode::cloudwatchgetmetrics',
-        'cloudwatch-list-metrics'   => 'cloud::aws::mode::cloudwatchlistmetrics',
-        'ec2-instance-status'       => 'cloud::aws::mode::ec2instancestatus',
-        'rds-instance-status'       => 'cloud::aws::mode::rdsinstancestatus',
-    );
+    $self->{version} = '1.0';
+    %{$self->{modes}} = (
+                         'cpu'              => 'network::sonicwall::snmp::mode::cpu',
+                         'memory'           => 'network::sonicwall::snmp::mode::memory',
+                         'connections'      => 'network::sonicwall::snmp::mode::connections',
+			 'vpn'		    => 'network::sonicwall::snmp::mode::vpn',
+                         );
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
@@ -49,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon AWS cloud.
+Check Sonicwall firewalls equipments in SNMP
 
 =cut
