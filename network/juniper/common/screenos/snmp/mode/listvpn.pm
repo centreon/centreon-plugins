@@ -62,7 +62,7 @@ sub manage_selection {
                                                             { oid => $mapping->{nsVpnMonP2State}->{oid} }
                                                         ],
                                                         return_type => 1, nothing_quit => 1);
-    foreach my $oid (keys %$snmp_result) {
+    foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{nsVpnMonVpnName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);

@@ -91,7 +91,7 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{vs} = {};
+    $self->{vpn} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
             { oid => $mapping->{nsVpnMonVpnName}->{oid} },
             { oid => $mapping->{nsVpnMonBytesIn}->{oid} },
