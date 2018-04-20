@@ -37,24 +37,14 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
-	';
+	
+    $disks = Get-CimInstance Win32_LogicalDisk
 
-    if (defined($options{filter})) {
-        $ps .= '
-    $disks = Get-PSDrive -PSProvider "' . $options{filter} . '"
-';
-    } else {
-        $ps .= '
-    $disks = Get-PSDrive
-';
-    }
-
-    $ps .= '
 } Catch {
     Write-Host $Error[0].Exception
 	exit 1
 }Foreach ($disk in $disks) {
-    Write-Host "[name=" $disk.Name "][used=" $disk.Used "][free=" $disk.Free "][provider=" $disk.Provider "][path=" $disk.Root "]"
+    Write-Host "[name=" $disk.DeviceID "][type=" $disk.DriveType "][providername=" $disk.ProviderName "][desc=" $disk.VolumeName "][size=" $disk.Size "][freespace=" $disk.FreeSpace "]"
 }
 
 exit 0
@@ -66,16 +56,16 @@ exit 0
 
 sub list {
     my ($self, %options) = @_;
-    
+    my %map_type = (2 => 'removable', 3 => 'local', 4 => 'network', 5 => 'floppy');
     # Following output:
-    #[name= c ][server= SRVI-WIN-TEST ][used= 20394858038 ][free= 509408308 ][provider= Microsoft.PowerShell.Core\FileSystem ][path= C:\ ]
+    #[name= C: ][type= 3 ][providername=  ][desc= OS ][size= 254406553600 ][freespace= 23851290624 ]
     #...
     foreach my $line (split /\n/, $options{stdout}) {
-	    next if ($line !~ /^\[name=(.*?)\]\[used=(.*?)\]\[free=(.*?)\]\[provider=(.*?)\]\[path=(.*?)\]/);
-        my ($disk, $used, $free, $provider, $path) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+        next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
+        my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
                                                       centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
-        $self->{output}->output_add(long_msg => "'" . $disk . "' [used = $used, free = $free, path = $path, provider = " . $provider . ']');
+        $self->{output}->output_add(long_msg => "'" . $disk . "' [size = $size, free = $free, desc = $desc, type = $map_type{$type}]");
 
     }
 }
@@ -84,20 +74,21 @@ sub list {
 
 sub disco_show {
     my ($self, %options) = @_;
-    
+    my %map_type = (2 => 'removable', 3 => 'local', 4 => 'network', 5 => 'floppy');
+	
     # Following output:
-    #[name= c ][server= SRVI-WIN-TEST ][used= 20394858038 ][free= 509408308 ][provider= Microsoft.PowerShell.Core\FileSystem ][path= C:\ ]
+    #[name= C: ][type= 3 ][providername=  ][desc= OS ][size= 254406553600 ][freespace= 23851290624 ]
     #...
     foreach my $line (split /\n/, $options{stdout}) {
-        next if ($line !~ /^\[name=(.*?)\]\[used=(.*?)\]\[free=(.*?)\]\[provider=(.*?)\]\[path=(.*?)\]/);
-        my ($disk, $used, $free, $provider, $path) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+        next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
+        my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
                                              centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
 
-        $self->{output}->add_disco_entry(name     => $disk,
-                                         used     => $used,
-                                         free     => $free,
-                                         provider => $provider,
-                                         path     => $path);
+        $self->{output}->add_disco_entry(name => $disk,
+                                         size => $size,
+                                         free => $free,
+                                         type => $map_type{$type},
+                                         desc => $desc);
     }
 }
 
