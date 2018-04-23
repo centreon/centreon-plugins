@@ -151,6 +151,7 @@ sub new {
                                 "password:s"        => { name => 'password' },
                                 "proxyurl:s"        => { name => 'proxyurl' },
                                 "timeout:s"         => { name => 'timeout', default => 5 },
+                                "ssl-opt:s@"        => { name => 'ssl_opt' },
                                 });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     
@@ -227,6 +228,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning-*>
 

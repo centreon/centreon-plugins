@@ -52,6 +52,7 @@ sub new {
                         "proxyurl:s@" => { name => 'proxyurl' },
                         "timeout:s@"  => { name => 'timeout' },
                         "ssl:s@"      => { name => 'ssl' },
+                        "ssl-opt:s@"  => { name => 'ssl_opt' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -250,9 +251,9 @@ Proxy URL if any
 
 Set HTTP timeout
 
-=item B<--ssl>
+=item B<--ssl-opt>
 
-SSL version (Default: tlsv1)
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 
