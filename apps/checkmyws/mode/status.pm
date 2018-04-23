@@ -51,6 +51,7 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "uid:s"                 => { name => 'uid' },
             "timeout:s"             => { name => 'timeout' },
+            "ssl-opt:s@"            => { name => 'ssl_opt' },
             "threshold-overload:s@" => { name => 'threshold_overload' },
         });
 
@@ -203,19 +204,23 @@ Specify https if needed (Default: 'https')
 
 =item B<--urlpath>
 
-Set path to get checkmyws information (Default: 'api/status')
+Set path to get checkmyws information (Default: '/api/status')
 
 =item B<--proxyurl>
 
 Proxy URL if any
 
-=item B<--uid>
-
-ID for checkmyws API
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+
+=item B<--uid>
+
+ID for checkmyws API
 
 =item B<--threshold-overload>
 

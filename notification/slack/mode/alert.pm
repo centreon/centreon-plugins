@@ -64,7 +64,6 @@ sub new {
             "link-url:s"            => { name => 'link_url' },
             "centreon-url:s"        => { name => 'centreon_url' },
             "centreon-token:s"      => { name => 'centreon_token' },
-            
             "credentials"           => { name => 'credentials' },
             "ntlm"                  => { name => 'ntlm' },
             "username:s"            => { name => 'username' },
@@ -72,6 +71,7 @@ sub new {
             "proxyurl:s"            => { name => 'proxyurl' },
             "proxypac:s"            => { name => 'proxypac' },
             "timeout:s"             => { name => 'timeout' },
+            "ssl-opt:s@"            => { name => 'ssl_opt' },
             });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{payload_attachment} = { fields => [] }; 
@@ -328,10 +328,6 @@ Proxy pac file (can be an url or local file)
 
 Specify this option if you access webpage over basic authentification
 
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
-
 =item B<--username>
 
 Specify username for basic authentification (Mandatory if --credentials is specidied)
@@ -343,6 +339,10 @@ Specify password for basic authentification (Mandatory if --credentials is speci
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 
