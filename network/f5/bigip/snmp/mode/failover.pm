@@ -61,8 +61,8 @@ sub custom_syncstatus_threshold {
         if (defined($instance_mode->{option_results}->{critical_sync_status}) && $instance_mode->{option_results}->{critical_sync_status} ne '' &&
             eval "$instance_mode->{option_results}->{critical_sync_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{critical_sync_status}) && $instance_mode->{option_results}->{critical_sync_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{critical_sync_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_sync_status}) && $instance_mode->{option_results}->{warning_sync_status} ne '' &&
+            eval "$instance_mode->{option_results}->{warning_sync_status}") {
             $status = 'warning';
         }
     };
@@ -99,8 +99,8 @@ sub custom_failoverstatus_threshold {
         if (defined($instance_mode->{option_results}->{critical_failover_status}) && $instance_mode->{option_results}->{critical_failover_status} ne '' &&
             eval "$instance_mode->{option_results}->{critical_failover_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{critical_failover_status}) && $instance_mode->{option_results}->{critical_failover_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{critical_failover_status}") {
+        } elsif (defined($instance_mode->{option_results}->{warning_failover_status}) && $instance_mode->{option_results}->{warning_failover_status} ne '' &&
+            eval "$instance_mode->{option_results}->{warning_failover_status}") {
             $status = 'warning';
         }
     };
