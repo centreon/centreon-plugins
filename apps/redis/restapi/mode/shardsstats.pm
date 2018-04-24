@@ -357,7 +357,7 @@ sub manage_selection {
     my $result = $options{custom}->get(path => '/v1/shards/stats/last?interval='.$options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/shards');
 
-    foreach my $shard (keys $result) {
+    foreach my $shard (keys %{$result}) {
         if (defined($self->{option_results}->{filter_shard}) && $self->{option_results}->{filter_shard} ne '' &&
             $shard !~ /$self->{option_results}->{filter_shard}/) {
             $self->{output}->output_add(long_msg => "skipping shard '" . $shard . "': no matching filter.", debug => 1);

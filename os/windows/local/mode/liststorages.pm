@@ -41,8 +41,7 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'powershell.exe' },
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"              => { name => 'ps_exec_only', },
-                                  "filter-type:s"      => { name => 'filter', default => 'FileSystem'},
+                                  "ps-exec-only"              => { name => 'ps_exec_only', }
                                 });
     return $self;
 }
@@ -55,9 +54,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps},
-                                                                                 filter => $self->{option_results}->{filter});
-	
+    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps});
+
     $self->{option_results}->{command_options} .= " " . $ps;
 
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
@@ -81,14 +79,13 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'used', 'free', 'provider', 'path']);
+    $self->{output}->add_disco_format(elements => ['name', 'size', 'free', 'type', 'desc']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps},
-                                                                                filter => $self->{option_results}->{filter});
+    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps});
 																				
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},

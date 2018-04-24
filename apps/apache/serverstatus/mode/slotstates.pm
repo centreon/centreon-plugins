@@ -206,6 +206,7 @@ sub new {
                                 "proxyurl:s"    => { name => 'proxyurl' },
                                 "header:s@"     => { name => 'header' },
                                 "timeout:s"     => { name => 'timeout' },
+                                "ssl-opt:s@"    => { name => 'ssl_opt' },
                                 "units:s"       => { name => 'units', default => '%' },
                                 });
     
@@ -347,15 +348,19 @@ Specify this option if you access server-status page over basic authentification
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--header>
 

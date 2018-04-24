@@ -42,6 +42,8 @@ sub new {
                                   "proxypac:s"      => { name => 'proxypac' },
                                   "username:s"      => { name => 'username' },
                                   "password:s"      => { name => 'password' },
+                                  "timeout:s"       => { name => 'timeout' },
+                                  "ssl-opt:s@"      => { name => 'ssl_opt' },
                                   "phonenumber:s"   => { name => 'phonenumber' },
                                   "message:s"       => { name => 'message' },
                                   "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
@@ -146,6 +148,14 @@ Specify username for API authentification.
 =item B<--password>
 
 Specify password for API authentification.
+
+=item B<--timeout>
+
+Threshold for HTTP timeout
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--phonenumber>
 

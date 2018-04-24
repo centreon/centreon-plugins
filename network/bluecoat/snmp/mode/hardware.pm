@@ -38,11 +38,12 @@ sub set_system {
             ['ok', 'OK'],
             ['unavailable', 'UNKNOWN'],
             ['nonoperational', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN'],
         ],
         sensor => [    
             ['ok', 'OK'],
             ['unknown', 'UNKNOWN'],
-            ['nonInstalled', 'OK'],
+            ['notInstalled', 'OK'],
             ['voltageLowWarning', 'WARNING'],
             ['voltageLowCritical', 'CRITICAL'],
             ['noPower', 'CRITICAL'],

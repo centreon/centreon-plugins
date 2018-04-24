@@ -46,6 +46,7 @@ sub new {
          "warning:s"    => { name => 'warning' },
          "critical:s"   => { name => 'critical' },
          "timeout:s"    => { name => 'timeout' },
+         "ssl-opt:s@"   => { name => 'ssl_opt' },
          "unknown-status:s"     => { name => 'unknown_status', default => '' },
          "warning-status:s"     => { name => 'warning_status' },
          "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
@@ -124,11 +125,11 @@ Specify this option if you access server-status page over basic authentification
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--proxyurl>
 
@@ -137,6 +138,10 @@ Proxy URL if any
 =item B<--timeout>
 
 Threshold for HTTP timeout
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--unknown-status>
 

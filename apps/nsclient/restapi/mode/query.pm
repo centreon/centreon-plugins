@@ -197,11 +197,11 @@ Specify this option if you access webpage over basic authentification
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for basic authentification (Mandatory if --credentials is specified)
 
 =item B<--legacy-password>
 

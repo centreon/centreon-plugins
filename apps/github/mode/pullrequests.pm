@@ -40,12 +40,14 @@ sub new {
             "proto:s"           => { name => 'proto', default => 'https' },
             "credentials"       => { name => 'credentials' },
             "username:s"        => { name => 'username' },
+            "timeout:s"         => { name => 'timeout' },
+            "proxyurl:s"        => { name => 'proxyurl' },
+            "ssl-opt:s@"        => { name => 'ssl_opt' },
             "password:s"        => { name => 'password' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
             "owner:s"           => { name => 'owner' },
             "repository:s"      => { name => 'repository' },
-            "timeout:s"         => { name => 'timeout' },
         });
 
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -145,6 +147,18 @@ Specify username
 
 Specify password
 
+=item B<--proxyurl>
+
+Proxy URL if any
+
+=item B<--timeout>
+
+Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+
 =item B<--warning>
 
 Threshold warning.
@@ -160,10 +174,6 @@ Specify GitHub's owner
 =item B<--repository>
 
 Specify GitHub's repository
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 5)
 
 =back
 
