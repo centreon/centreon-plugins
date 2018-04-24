@@ -62,11 +62,11 @@ sub custom_traffic_perfdata {
     
     my ($warning, $critical);
     if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
     } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{label});
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label});
     }
     
     $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
@@ -81,9 +81,9 @@ sub custom_traffic_threshold {
     
     my $exit = 'ok';
     if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-traffic-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-traffic-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -107,10 +107,6 @@ sub custom_traffic_calc {
     }
   
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
-    }
     
     $self->{result_values}->{speed} = defined($instance_mode->{option_results}->{speed}) ? $instance_mode->{option_results}->{speed} : $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{speed}};
     $self->{result_values}->{speed} = $self->{result_values}->{speed} * 1000 * 1000; # bits
@@ -129,8 +125,8 @@ sub custom_errors_perfdata {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
     
-    my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '-error');
-    my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '-error');
+    my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-packets-error-' . $self->{result_values}->{label});
+    my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-packets-error-' . $self->{result_values}->{label});
     
     $self->{output}->perfdata_add(label => 'packets_error_' . $self->{result_values}->{label} . $extra_label, unit => '%',
                                     value => sprintf("%.2f", $self->{result_values}->{errors_prct}),
@@ -143,7 +139,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{errors_prct}, threshold => [ { label => 'critical-' . $self->{label} . '-error', exit_litteral => 'critical' }, { label => 'warning-' . $self->{label} . '-error', exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{errors_prct}, threshold => [ { label => 'critical-packets-error-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-packets-error-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     
     return $exit;
 }
@@ -166,12 +162,8 @@ sub custom_errors_calc {
   
     my $diff_errors = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{errors}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{errors}});
     my $diff_packets = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{packets}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{packets}});
-    if ($diff_errors == 0 || $diff_packets == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
-    }
     
-    $self->{result_values}->{errors_prct} = $diff_errors * 100 / $diff_packets;
+    $self->{result_values}->{errors_prct} = ($diff_packets != 0) ? $diff_errors * 100 / $diff_packets : 0;
     $self->{result_values}->{label} = $options{extra_options}->{label};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -185,8 +177,8 @@ sub custom_drops_perfdata {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
     
-    my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '-drop');
-    my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '-drop');
+    my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-packets-drop-' . $self->{result_values}->{label});
+    my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-packets-drop-' . $self->{result_values}->{label});
     
     $self->{output}->perfdata_add(label => 'packets_drop_' . $self->{result_values}->{label} . $extra_label, unit => '%',
                                     value => sprintf("%.2f", $self->{result_values}->{drops_prct}),
@@ -199,7 +191,7 @@ sub custom_drops_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{drops_prct}, threshold => [ { label => 'critical-' . $self->{label} . '-drop', exit_litteral => 'critical' }, { label => 'warning-' . $self->{label} . '-drop', exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{drops_prct}, threshold => [ { label => 'critial-packets-drop-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-packets-drop-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     
     return $exit;
 }
@@ -207,7 +199,7 @@ sub custom_drops_threshold {
 sub custom_drops_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Packets %s Error : %s",
+    my $msg = sprintf("Packets %s Drop : %s",
                       ucfirst($self->{result_values}->{label}), defined($self->{result_values}->{drops_prct}) ? sprintf("%.2f%%", $self->{result_values}->{drops_prct}) : '-');
     return $msg;
 }
@@ -222,12 +214,8 @@ sub custom_drops_calc {
   
     my $diff_drops = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{drops}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{drops}});
     my $diff_packets = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{packets}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{packets}});
-    if ($diff_drops == 0 || $diff_packets == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
-        $self->{error_msg} = "skipped";
-        return -2;
-    }
     
-    $self->{result_values}->{drops_prct} = $diff_drops * 100 / $diff_packets;    
+    $self->{result_values}->{drops_prct} = ($diff_packets != 0) ? $diff_drops * 100 / $diff_packets : 0;
     $self->{result_values}->{label} = $options{extra_options}->{label};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -288,20 +276,20 @@ sub set_counters {
         },
         { label => 'packets-drop-in', set => {
                 key_values => [ { name => 'sysTrunkStatDropsIn', diff => 1 }, { name => 'sysTrunkStatPktsIn', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { errors => 'sysTrunkStatDropsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Drop : %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_calc => $self->can('custom_drops_calc'),
+                closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
+                closure_custom_output => $self->can('custom_drops_output'), output_error_template => 'Packets In Drop : %s',
+                closure_custom_perfdata => $self->can('custom_drops_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_drops_threshold'),
             }
         },
         { label => 'packets-drop-out', set => {
                 key_values => [ { name => 'sysTrunkStatDropsOut', diff => 1 }, { name => 'sysTrunkStatPktsOut', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_errors_calc'),
-                closure_custom_calc_extra_options => { errors => 'sysTrunkStatDropsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
-                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Drop : %s',
-                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_calc => $self->can('custom_drops_calc'),
+                closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
+                closure_custom_output => $self->can('custom_drops_output'), output_error_template => 'Packets Out Drop : %s',
+                closure_custom_perfdata => $self->can('custom_drops_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_drops_threshold'),
             }
         },
     ];
@@ -395,8 +383,6 @@ my $mapping_sysTrunkStat = {
     sysTrunkStatBytesIn     => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.3' }, # Bytes
     sysTrunkStatPktsOut     => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.4' },
     sysTrunkStatBytesOut    => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.5' }, # Bytes
-    sysTrunkStatMcastIn     => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.6' },
-    sysTrunkStatMcastOut    => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.7' },
     sysTrunkStatErrorsIn    => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.8' },
     sysTrunkStatErrorsOut   => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.9' },
     sysTrunkStatDropsIn     => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.2.3.1.10' },
@@ -473,14 +459,14 @@ Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'traffic-in', 'traffic-out', 'packets-error-in',
-'packets-error-out', 'packets-drop-in', 'packets-drop-out'
+Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
+'packets-error-out' (%), 'packets-drop-in' (%), 'packets-drop-out' (%)
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'traffic-in', 'traffic-out', 'packets-error-in',
-'packets-error-out', 'packets-drop-in', 'packets-drop-out'
+Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
+'packets-error-out' (%), 'packets-drop-in' (%), 'packets-drop-out' (%)
 
 =item B<--speed>
 
