@@ -261,6 +261,14 @@ sub custom_errors_calc {
     return 0;
 }
 
+sub custom_speed_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
 #########################
 # OIDs mapping functions
 #########################
@@ -468,6 +476,21 @@ sub set_counters {
             }
         };
     }
+    if ($self->{no_speed} == 0 && $self->{no_set_speed} == 0) {
+        $self->{maps_counters}->{int}->{'080_speed'} = { filter => 'add_speed',
+            set => {
+                key_values => [ { name => 'speed' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_speed_calc'),
+                output_template => 'Speed : %s%s/s', output_error_template => 'Speed : %s%s/s',
+                output_change_bytes => 2,
+                output_use => 'speed',  threshold_use => 'speed',
+                perfdatas => [
+                    { value => 'speed', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        };
+    }
 }
 
 sub set_key_values_status {
@@ -557,6 +580,13 @@ sub set_oids_cast {
     $self->{oid_ifHCOutBroadcastPkts} = '.1.3.6.1.2.1.31.1.1.1.13';
 }
 
+sub set_oids_speed {
+    my ($self, %options) = @_;
+    
+    $self->{oid_speed32} = '.1.3.6.1.2.1.2.2.1.5'; # in b/s
+    $self->{oid_speed64} = '.1.3.6.1.2.1.31.1.1.1.15'; # need multiple by '1000000'
+}
+
 sub check_oids_label {
     my ($self, %options) = @_;
     
@@ -641,7 +671,7 @@ sub new {
     $self->{no_oid_options} = defined($options{no_oid_options}) && $options{no_oid_options} =~ /^[01]$/ ? $options{no_oid_options} : 0;
     $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ? 
         $options{no_interfaceid_options} : 0;
-    foreach (('traffic', 'errors', 'cast')) {
+    foreach (('traffic', 'errors', 'cast', 'speed')) {
         $self->{'no_' . $_} = defined($options{'no_' . $_}) && $options{'no_' . $_} =~ /^[01]$/ ? $options{'no_' . $_} : 0;
         $self->{'no_set_' . $_} = defined($options{'no_set_' . $_}) && $options{'no_set_' . $_} =~ /^[01]$/ ? $options{'no_set_' . $_} : 0;
     }
@@ -679,6 +709,9 @@ sub new {
     }
     if ($self->{no_cast} == 0) {
         $options{options}->add_options(arguments => { "add-cast" => { name => 'add_cast' }, });
+    }
+    if ($self->{no_speed} == 0) {
+        $options{options}->add_options(arguments => { "add-speed" => { name => 'add_speed' }, });
     }
     if ($self->{no_oid_options} == 0) {
         $options{options}->add_options(arguments =>
@@ -753,6 +786,9 @@ sub check_options {
         ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
         (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq ''))) {
         $self->{get_speed} = 1;
+    } elsif (defined($self->{option_results}->{add_speed})) {
+        $self->{output}->add_option_msg(short_msg => "Cannot use option --add-speed with --speed, --speed-in or --speed-out options.");
+        $self->{output}->option_exit();
     }
     
     # If no options, we set status
@@ -762,7 +798,7 @@ sub check_options {
         $self->{option_results}->{add_status} = 1;
     }
     $self->{checking} = '';
-    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
@@ -1085,6 +1121,16 @@ sub load_cast {
     }
 }
 
+sub load_speed {
+    my ($self, %options) = @_;
+    
+    $self->set_oids_speed();
+    $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
+        $self->{snmp}->load(oids => [$self->{oid_speed64}], instances => $self->{array_interface_selected});
+    }
+}
+
 sub get_informations {
     my ($self, %options) = @_;
 
@@ -1097,6 +1143,7 @@ sub get_informations {
     $self->load_errors() if (defined($self->{option_results}->{add_errors}));
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
     $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
+    $self->load_speed() if (defined($self->{option_results}->{add_speed}));
     $self->$custom_load_method() if ($custom_load_method);
 
     $self->{results} = $self->{snmp}->get_leef();
@@ -1107,6 +1154,7 @@ sub get_informations {
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
         $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
+        $self->add_result_speed(instance => $_) if (defined($self->{option_results}->{add_speed}));
         $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
     }
 }
@@ -1232,6 +1280,23 @@ sub add_result_cast {
     $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
 }
 
+sub add_result_speed {
+    my ($self, %options) = @_;
+    
+    my $interface_speed = 0;
+    if (defined($self->{results}->{$self->{oid_speed64} . "." . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
+        $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;
+        # If 0, we put the 32 bits
+        if ($interface_speed == 0) {
+            $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
+        }
+    } else {
+        $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
+    }
+    
+    $self->{interface_selected}->{$options{instance}}->{speed} = $interface_speed;
+}
+
 1;
 
 __END__
@@ -1262,6 +1327,10 @@ Check interface errors.
 
 Check interface cast.
 
+=item B<--add-speed>
+
+Check interface speed.
+
 =item B<--warning-status>
 
 Set warning threshold for status.
@@ -1277,14 +1346,16 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 Threshold warning.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
+'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'speed' (b/s).
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%).
+'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'speed' (b/s).
 
 =item B<--units-traffic>
 
