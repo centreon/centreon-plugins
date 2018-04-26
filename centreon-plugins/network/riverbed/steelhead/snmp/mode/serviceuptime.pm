@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use POSIX;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -60,23 +60,24 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
+    # STEELHEAD-MIB
     my $oid_serviceUptime = '.1.3.6.1.4.1.17163.1.1.2.4.0';
-    my ($result, $value);
+    # STEELHEAD-EX-MIB
+    my $oid_ex_serviceUptime = '.1.3.6.1.4.1.17163.1.51.2.4.0';
 
-    $result = $self->{snmp}->get_leef(oids => [ $oid_serviceUptime ], nothing_quit => 1);
-    $value = $result->{$oid_serviceUptime};
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_serviceUptime, $oid_ex_serviceUptime ], nothing_quit => 1);
+    my $value = defined($result->{$oid_serviceUptime}) ? $result->{$oid_serviceUptime} : $result->{$oid_ex_serviceUptime};
 
-    my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / 100),
+    my $exit_code = $self->{perfdata}->threshold_check(value => sprintf("%d", $value / 100),
                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->perfdata_add(label => 'uptime', unit => 's',
-                                  value => floor($value / 100),
+                                  value => sprintf("%d", $value / 100),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Service uptime is: %s",
-                                    defined($self->{option_results}->{seconds}) ? floor($value / 100) . " seconds" : floor($value / 86400 / 100) . " days" ));
+                                short_msg => sprintf("Service uptime is: %s", centreon::plugins::misc::change_seconds(value => $value / 100)));
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -88,7 +89,7 @@ __END__
 
 =head1 MODE
 
-Uptime of the optimization service (STEELHEAD-MIB).
+Uptime of the optimization service (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 
 =over 8
 
