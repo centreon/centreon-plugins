@@ -58,9 +58,10 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_dsAveDiskUtilization = '.1.3.6.1.4.1.17163.1.1.5.4.4.0'; # in %
+    my $oid_ex_dsAveDiskUtilization = '.1.3.6.1.4.1.17163.1.51.5.4.4.0'; # in %
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_dsAveDiskUtilization], nothing_quit => 1);
-    my $disk_usage = $result->{$oid_dsAveDiskUtilization};
+    my $result = $self->{snmp}->get_leef(oids => [$oid_dsAveDiskUtilization, $oid_ex_dsAveDiskUtilization], nothing_quit => 1);
+    my $disk_usage = defined($result->{$oid_dsAveDiskUtilization}) ? $result->{$oid_dsAveDiskUtilization} : $result->{$oid_ex_dsAveDiskUtilization};
 
     my $exit = $self->{perfdata}->threshold_check(value => $disk_usage, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
@@ -85,7 +86,7 @@ __END__
 
 =head1 MODE
 
-Average disk utilization, a more accurate measurement of the underlying disk activities, and correlates directly to disk pressure (STEELHEAD-MIB).
+Average disk utilization, a more accurate measurement of the underlying disk activities, and correlates directly to disk pressure (STEELHEAD-MIB & STEELHEAD-EX-MIB).
 
 =over 8
 

@@ -61,10 +61,12 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     my $oid_serviceUptime = '.1.3.6.1.4.1.17163.1.1.2.4.0';
+    my $oid_ex_serviceUptime = '.1.3.6.1.4.1.17163.1.51.2.4.0';
+
     my ($result, $value);
 
-    $result = $self->{snmp}->get_leef(oids => [ $oid_serviceUptime ], nothing_quit => 1);
-    $value = $result->{$oid_serviceUptime};
+    $result = $self->{snmp}->get_leef(oids => [ $oid_serviceUptime, $oid_ex_serviceUptime ], nothing_quit => 1);
+    $value = defined($result->{$oid_serviceUptime}) ? $result->{$oid_serviceUptime} : $result->{$oid_ex_serviceUptime};
 
     my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / 100),
                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -88,7 +90,7 @@ __END__
 
 =head1 MODE
 
-Uptime of the optimization service (STEELHEAD-MIB).
+Uptime of the optimization service (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 
 =over 8
 
