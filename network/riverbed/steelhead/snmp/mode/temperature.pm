@@ -57,7 +57,9 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
+    # STEELHEAD-MIB
     my $oid_systemTemperature = '.1.3.6.1.4.1.17163.1.1.2.9.0'; # in Celsius
+    # STEELHEAD-EX-MIB
     my $oid_ex_systemTemperature = '.1.3.6.1.4.1.17163.1.51.2.9.0'; # in Celsius
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_systemTemperature, $oid_ex_systemTemperature], nothing_quit => 1);

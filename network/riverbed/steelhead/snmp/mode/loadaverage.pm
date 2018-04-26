@@ -113,6 +113,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # STEELHEAD-MIB
     my $oids = {
         cpuUtil1  => '.1.3.6.1.4.1.17163.1.1.5.1.1.0',
         cpuLoad1  => '.1.3.6.1.4.1.17163.1.1.5.1.2.0',
@@ -120,6 +121,7 @@ sub manage_selection {
         cpuLoad15 => '.1.3.6.1.4.1.17163.1.1.5.1.4.0',
     };
 
+    # STEELHEAD-EX-MIB
     my $oids_ex = {
         cpuUtil1  => '.1.3.6.1.4.1.17163.1.51.5.1.1.0',
         cpuLoad1  => '.1.3.6.1.4.1.17163.1.51.5.1.2.0',
@@ -127,18 +129,16 @@ sub manage_selection {
         cpuLoad15 => '.1.3.6.1.4.1.17163.1.51.5.1.4.0',
     };
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-            values %$oids, values %$oids_ex,
-        ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);
 
     $self->{load} = {};
     
     if (defined($snmp_result->{$oids->{cpuUtil1}})) {
-        foreach (keys %$oids) {
+        foreach (keys %{$oids}) {
             $self->{load}->{$_} = $snmp_result->{$oids->{$_}};
         }
     } else {
-        foreach (keys %$oids) {
+        foreach (keys %{$oids}) {
             $self->{load}->{$_} = $snmp_result->{$oids_ex->{$_}};
         }
     }

@@ -122,9 +122,11 @@ my %map_status = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{opt_service} = {};
+    $self->{health} = {};
 
+    # STEELHEAD-MIB
     my $oid_optSystemHealth = '.1.3.6.1.4.1.17163.1.1.2.7.0';
+    # STEELHEAD-EX-MIB
     my $oid_ex_optSystemHealth = '.1.3.6.1.4.1.17163.1.51.2.7.0';
 
     my $result = $options{snmp}->get_leef(oids => [ $oid_optSystemHealth, $oid_ex_optSystemHealth ], nothing_quit => 1);
@@ -144,10 +146,12 @@ Check the global system health (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 =over 8
 
 =item B<--warning-status>
+
 Set warning threshold for status (Default: '%{state} =~ /degraded/').
 Special var is %{state}
 
 =item B<--critical-status>
+
 Set critical threshold for status (Default: '%{state} !~ /(critical|admission)/').
 Special var is %{state}
 

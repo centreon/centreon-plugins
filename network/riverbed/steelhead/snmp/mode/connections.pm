@@ -113,6 +113,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    # STEELHEAD-MIB
     my $oids = {
         optimizedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.1.0',
         passthroughConnections => '.1.3.6.1.4.1.17163.1.1.5.2.2.0',
@@ -123,6 +124,7 @@ sub manage_selection {
         totalConnections => '.1.3.6.1.4.1.17163.1.1.5.2.7.0',
     };
 
+    # STEELHEAD-EX-MIB
     my $oids_ex = {
         optimizedConnections => '.1.3.6.1.4.1.17163.1.51.5.2.1.0',
         passthroughConnections => '.1.3.6.1.4.1.17163.1.51.5.2.2.0',
@@ -133,22 +135,17 @@ sub manage_selection {
         totalConnections => '.1.3.6.1.4.1.17163.1.51.5.2.7.0',
     };
 
+    my $snmp_result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);
 
-
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-            values %$oids, values %$oids_ex,
-        ], nothing_quit => 1);
-
-		
     $self->{global} = {};
 
     if (defined($snmp_result->{$oids->{optimizedConnections}})) {
-        foreach (keys %$oids) {
+        foreach (keys %{$oids}) {
             $self->{global}->{$_} = $snmp_result->{$oids->{$_}};
         }
     } else {
-        foreach (keys %$oids_ex) {
-	    $self->{global}->{$_} = $snmp_result->{$oids_ex->{$_}};
+        foreach (keys %{$oids_ex}) {
+            $self->{global}->{$_} = $snmp_result->{$oids_ex->{$_}};
         }	
     }
 }
@@ -159,7 +156,8 @@ __END__
 
 =head1 MODE
 
-Current connections: total, established, active, optimized, passthrough, half opened and half closed ones (STEELHEAD-MIB and STEELHEAD-EX-MIB).
+Current connections: total, established, active, optimized, passthrough,
+half opened and half closed ones (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 
 =over 8
 

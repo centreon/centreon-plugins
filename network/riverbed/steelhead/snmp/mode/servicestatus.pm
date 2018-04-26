@@ -129,7 +129,9 @@ sub manage_selection {
 
     $self->{opt_service} = {};
 
+    # STEELHEAD-MIB
     my $oid_optServiceStatus = '.1.3.6.1.4.1.17163.1.1.2.8.0';
+    # STEELHEAD-EX-MIB
     my $oid_ex_optServiceStatus = '.1.3.6.1.4.1.17163.1.51.2.8.0';
 
     my $result = $options{snmp}->get_leef(oids => [ $oid_optServiceStatus, $oid_ex_optServiceStatus ], nothing_quit => 1);
@@ -149,10 +151,12 @@ Check the current status of the optimization service (STEELHEAD-MIB and STEELHEA
 =over 8
 
 =item B<--warning-status>
+
 Set warning threshold for status (Default: '').
 Special var is %{state}
 
 =item B<--critical-status>
+
 Set critical threshold for status (Default: '%{state} !~ /running/').
 Special var is %{state}
 
