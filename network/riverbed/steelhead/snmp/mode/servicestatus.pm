@@ -38,7 +38,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+            eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -88,7 +88,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /running/' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{state} !~ /running/' },
                                 });
 
     return $self;
