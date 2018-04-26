@@ -64,12 +64,12 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'wan2lan-lan', set => {
+        { label => 'lan2wan-wan', set => {
                 key_values => [ { name => 'bwHCAggOutWan', diff => 1 } ],
                 output_template => 'Lan2Wan on Wan: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'wan2lan_lan', value => 'bwHCAggOutWan_absolute',
+                    { label => 'lan2wan_wan', value => 'bwHCAggOutWan_absolute',
                     template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
