@@ -42,7 +42,8 @@ sub new {
             "proto:s"               => { name => 'proto' },
             "urlpath:s"             => { name => 'url_path' },
             "credentials"           => { name => 'credentials' },
-            "ntlm"                  => { name => 'ntlm' },
+            "basic"                 => { name => 'basic' },
+            "ntlm"                  => { name => 'ntlm' }, # Deprecated
             "ntlmv2"                => { name => 'ntlmv2' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
@@ -196,19 +197,27 @@ Set path to get Webpage (Default: '/')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentication
+Specify this option if you access webpage with authentication
+
+=item B<--username>
+
+Specify username for authentication (Mandatory if --credentials is specified)
+
+=item B<--password>
+
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--ntlmv2>
 
 Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
-
-=item B<--username>
-
-Specify username for basic authentication (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentication (Mandatory if --credentials is specidied)
 
 =item B<--timeout>
 
