@@ -123,6 +123,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{credentials} = 1;
+    $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
 }
