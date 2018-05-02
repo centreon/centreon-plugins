@@ -26,48 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = 'connection status : ' . $self->{result_values}->{connectstatus} . ' [activation status: ' . $self->{result_values}->{activestatus} . ']';
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{activestatus} = $options{new_datas}->{$self->{instance} . '_activestatus'};
-    $self->{result_values}->{connectstatus} = $options{new_datas}->{$self->{instance} . '_connectstatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -114,28 +72,13 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-name:s"     => { name => 'filter_name' },
-                                "warning-status:s"  => { name => 'warning_status', default => '' },
-                                "critical-status:s" => { name => 'critical_status', default => '%{connectstatus} eq "disconnected"' },
                                 });
     return $self;
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    $self->change_macros();
-    $instance_mode = $self;
 }
 
 my $oid_sonicSAStatEntry = '.1.3.6.1.4.1.8741.1.3.2.1.1.1';
@@ -164,8 +107,8 @@ sub manage_selection {
         }
 	
         $self->{vpn}->{$result->{$oid_sonicSAStatUserName . '.' . $instance}} = { traffic_in => $result->{$oid_sonicSAStatEncryptByteCount . '.' . $instance} * 8,
-										  traffic_out => $result->{$oid_sonicSAStatDecryptByteCount . '.' . $instance} * 8,
-										  display => $result->{$oid_sonicSAStatUserName . '.' . $instance} };
+                                                                                  traffic_out => $result->{$oid_sonicSAStatDecryptByteCount . '.' . $instance} * 8,
+                                                                                  display => $result->{$oid_sonicSAStatUserName . '.' . $instance} };
     }
     
     if (scalar(keys %{$self->{vpn}}) <= 0) {
@@ -197,16 +140,6 @@ Can be: 'traffic-in', 'traffic-out'.
 
 Threshold critical.
 Can be: 'traffic-in', 'traffic-out'.
-
-=item B<--warning-status>
-
-Set warning threshold for status.
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{connectstatus} eq "disconnected"').
-Can used special variables like: %{activestatus}, %{connectstatus}, %{display}
 
 =back
 
