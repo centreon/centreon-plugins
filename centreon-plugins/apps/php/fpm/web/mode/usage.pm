@@ -147,6 +147,7 @@ sub new {
                                 "proto:s"           => { name => 'proto' },
                                 "urlpath:s"         => { name => 'url_path', default => "/fpm-status" },
                                 "credentials"       => { name => 'credentials' },
+                                "basic"             => { name => 'basic' },
                                 "username:s"        => { name => 'username' },
                                 "password:s"        => { name => 'password' },
                                 "proxyurl:s"        => { name => 'proxyurl' },
@@ -215,15 +216,23 @@ Set path to get server-status page in auto mode (Default: '/fpm-status')
 
 =item B<--credentials>
 
-Specify this option if you access server-status page over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 

@@ -42,6 +42,7 @@ sub new {
             "urlpath:s"            => { name => 'url_path' },
             "timeout:s"            => { name => 'timeout' },
             "credentials"          => { name => 'credentials' },
+            "basic"                => { name => 'basic' },
             "username:s"           => { name => 'username' },
             "password:s"           => { name => 'password' },
             "proxyurl:s"           => { name => 'proxyurl' },
@@ -162,6 +163,14 @@ Set path to get Jenkins information
 =item B<--credentials>
 
 Required to use username/password authentication method
+
+=item B<--basic>
+
+Specify this option if you access API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--username>
 
