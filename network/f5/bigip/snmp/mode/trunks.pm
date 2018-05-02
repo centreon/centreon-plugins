@@ -61,26 +61,28 @@ sub custom_traffic_perfdata {
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
     } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label});
     }
+
+    my $speed = $self->{result_values}->{speed} > 0 ? $self->{result_values}->{speed} : undef;
     
     $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
                                     value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
                                     warning => $warning,
                                     critical => $critical,
-                                    min => 0, max => $self->{result_values}->{speed});
+                                    min => 0, max => $speed);
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
@@ -108,10 +110,10 @@ sub custom_traffic_calc {
   
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
     
-    $self->{result_values}->{speed} = defined($instance_mode->{option_results}->{speed}) ? $instance_mode->{option_results}->{speed} : $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{speed}};
+    $self->{result_values}->{speed} = defined($instance_mode->{option_results}->{speed}) && $instance_mode->{option_results}->{speed} ne '' ? $instance_mode->{option_results}->{speed} : $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{speed}};
     $self->{result_values}->{speed} = $self->{result_values}->{speed} * 1000 * 1000; # bits
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic * 8 / $options{delta_time};
-    $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $self->{result_values}->{speed};
+    $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $self->{result_values}->{speed} if ($self->{result_values}->{speed} > 0);
     $self->{result_values}->{label} = $options{extra_options}->{label};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -471,6 +473,8 @@ Can be: 'traffic-in', 'traffic-out', 'packets-error-in' (%),
 =item B<--speed>
 
 Set trunk speed in Mbps (Default: sysTrunkOperBw).
+If not set and sysTrunkOperBw OID value is 0,
+percentage thresholds will not be applied on traffic metrics.
 
 =back
 
