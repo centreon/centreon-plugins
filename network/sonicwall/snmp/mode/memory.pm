@@ -29,13 +29,13 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'memory_usage', type => 0, cb_prefix_output => 'prefix_memory_output' },
+        { name => 'memory_usage', type => 0 },
     ];
     
     $self->{maps_counters}->{memory_usage} = [
-        { label => 'memory', set => {
+        { label => 'usage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => '%.2f %%',
+                output_template => 'Memory Usage %.2f %%',
                 perfdatas => [
                     { label => 'memory', value => 'prct_used_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
@@ -58,12 +58,6 @@ sub new {
     return $self;
 }
 
-sub prefix_memory_output {
-    my ($self, %options) = @_;
-    
-    return "Memory Usage ";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -83,11 +77,11 @@ Check Memory usage.
 
 =over 8
 
-=item B<--warning-memory>
+=item B<--warning-usage>
 
 Threshold warning. (percent)
 
-=item B<--critical-memory>
+=item B<--critical-usage>
 
 Threshold critical. (percent)
 
