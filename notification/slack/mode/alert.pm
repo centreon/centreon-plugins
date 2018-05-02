@@ -65,6 +65,7 @@ sub new {
             "centreon-url:s"        => { name => 'centreon_url' },
             "centreon-token:s"      => { name => 'centreon_token' },
             "credentials"           => { name => 'credentials' },
+            "basic"                 => { name => 'basic' },
             "ntlm"                  => { name => 'ntlm' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
@@ -326,15 +327,23 @@ Proxy pac file (can be an url or local file)
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 

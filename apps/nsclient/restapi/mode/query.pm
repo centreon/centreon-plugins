@@ -36,11 +36,12 @@ sub new {
     $self->{version} = '1.1';
     $options{options}->add_options(arguments =>
          {
-         "hostname:s"       => { name => 'hostname' },
-         "http-peer-addr:s" => { name => 'http_peer_addr' },
-         "port:s"           => { name => 'port', default => 8443 },
-         "proto:s"          => { name => 'proto', default => 'https' },
+         "hostname:s"           => { name => 'hostname' },
+         "http-peer-addr:s"     => { name => 'http_peer_addr' },
+         "port:s"               => { name => 'port', default => 8443 },
+         "proto:s"              => { name => 'proto', default => 'https' },
          "credentials"          => { name => 'credentials' },
+         "basic"                => { name => 'basic' },
          "username:s"           => { name => 'username' },
          "password:s"           => { name => 'password' },
          "legacy-password:s"    => { name => 'legacy_password' },
@@ -193,15 +194,23 @@ Specify https if needed (Default: 'https')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specified)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specified)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--legacy-password>
 

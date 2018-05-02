@@ -47,9 +47,6 @@ sub new {
             "port:s"                    => { name => 'port', default => '443'},
             "proto:s"                   => { name => 'proto', default => 'https' },
             "urlpath:s"                 => { name => 'url_path', default => '/api/last-message.json' },
-            "credentials"               => { name => 'credentials' },
-            "username:s"                => { name => 'username' },
-            "password:s"                => { name => 'password' },
             "timeout:s"                 => { name => 'timeout' },
             "proxyurl:s"                => { name => 'proxyurl' },
             "ssl-opt:s@"                => { name => 'ssl_opt' },
@@ -153,18 +150,6 @@ Specify https if needed (Default: 'https')
 =item B<--urlpath>
 
 Set path to get GitHub's status information (Default: '/api/last-message.json')
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
 
 =item B<--proxyurl>
 

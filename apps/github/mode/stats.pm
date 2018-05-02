@@ -39,9 +39,6 @@ sub new {
             "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
             "port:s"            => { name => 'port', default => '443'},
             "proto:s"           => { name => 'proto', default => 'https' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
             "timeout:s"         => { name => 'timeout' },
             "proxyurl:s"        => { name => 'proxyurl' },
             "ssl-opt:s@"        => { name => 'ssl_opt' },
@@ -133,18 +130,6 @@ Specify https if needed (Default: 'https')
 =item B<--urlpath>
 
 Set path to get GitHub's status information (Default: '/repo/:owner/:repository')
-
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
 
 =item B<--proxyurl>
 
