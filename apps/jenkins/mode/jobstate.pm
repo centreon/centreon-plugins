@@ -40,14 +40,17 @@ sub new {
             "port:s"               => { name => 'port' },
             "proto:s"              => { name => 'proto' },
             "urlpath:s"            => { name => 'url_path' },
-            "jobname:s"            => { name => 'jobname' },
+            "timeout:s"            => { name => 'timeout' },
             "credentials"          => { name => 'credentials' },
+            "basic"                => { name => 'basic' },
             "username:s"           => { name => 'username' },
             "password:s"           => { name => 'password' },
+            "proxyurl:s"           => { name => 'proxyurl' },
+            "ssl-opt:s@"           => { name => 'ssl_opt' },
+            "jobname:s"            => { name => 'jobname' },
             "warning:s"            => { name => 'warning' },
             "critical:s"           => { name => 'critical' },
-            "checkstyle"            => { name => 'checkstyle' },
-            "timeout:s"            => { name => 'timeout' },
+            "checkstyle"           => { name => 'checkstyle' },
         });
 
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -157,9 +160,17 @@ Specify https if needed (Default: 'http')
 
 Set path to get Jenkins information
 
-=item B <--credentials>
+=item B<--credentials>
 
 Required to use username/password authentication method
+
+=item B<--basic>
+
+Specify this option if you access API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--username>
 
@@ -168,6 +179,18 @@ Specify username for API authentification
 =item B<--password>
 
 Specify password for API authentification
+
+=item B<--proxyurl>
+
+Proxy URL if any
+
+=item B<--timeout>
+
+Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 
@@ -180,10 +203,6 @@ Critical Threshold for tendency score
 =item B<--checkstyle>
 
 Add checkstyle's violation output and perfdata
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 5)
 
 =back
 

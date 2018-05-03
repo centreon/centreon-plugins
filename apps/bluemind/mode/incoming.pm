@@ -43,9 +43,11 @@ sub new {
             "database:s"        => { name => 'database' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "proxyurl:s"        => { name => 'proxyurl' },
+            "ssl-opt:s@"        => { name => 'ssl_opt' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
-            "timeout:s"         => { name => 'timeout' },
         });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -196,9 +198,17 @@ Specify username for API authentification
 
 Specify password for API authentification
 
+=item B<--proxyurl>
+
+Proxy URL if any
+
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 3)
+Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 

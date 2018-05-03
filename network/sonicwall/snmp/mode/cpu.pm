@@ -29,13 +29,13 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'cpu_usage', type => 0, cb_prefix_output => 'prefix_cpu_output' },
+        { name => 'cpu_usage', type => 0 },
     ];
     
     $self->{maps_counters}->{cpu_usage} = [
-        { label => 'cpu', set => {
+        { label => 'usage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => '%.2f %%',
+                output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_used_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
@@ -58,12 +58,6 @@ sub new {
     return $self;
 }
 
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-    
-    return "CPU Usage ";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -83,11 +77,11 @@ Check CPU usage.
 
 =over 8
 
-=item B<--warning-cpu>
+=item B<--warning-usage>
 
 Threshold warning.
 
-=item B<--critical-cpu>
+=item B<--critical-usage>
 
 Threshold critical.
 

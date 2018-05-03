@@ -20,124 +20,93 @@
 
 package network::riverbed::steelhead::snmp::mode::bwpassthrough;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use POSIX;
-use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'traffic-in', set => {
+                key_values => [ { name => 'bwPassThroughIn', diff => 1 } ],
+                output_template => 'Traffic In (Wan2Lan): %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'traffic_in', value => 'bwPassThroughIn_absolute',
+                    template => '%s', min => 0, unit => 'B/s' },
+                ],
+            }
+        },
+        { label => 'traffic-out', set => {
+                key_values => [ { name => 'bwPassThroughOut', diff => 1 } ],
+                output_template => 'Traffic Out (Lan2Wan): %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'traffic_out', value => 'bwPassThroughOut_absolute',
+                    template => '%s', min => 0, unit => 'B/s' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_output {
+    my ($self, %options) = @_;
+    
+    return "Passthrough: ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $self->{version} = '0.1';
-
     $options{options}->add_options(arguments =>
-                              {
-                                "warning-in:s"          => { name => 'warning_in', },
-                                "critical-in:s"         => { name => 'critical_in', },
-                                "warning-out:s"          => { name => 'warning_out', },
-                                "critical-out:s"         => { name => 'critical_out', },
-                              });
+                                { 
+                                });
 
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning_in', value => $self->{option_results}->{warning_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold for Wan2Lan'" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical_in', value => $self->{option_results}->{critical_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold for Wan2Lan'" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning_out', value => $self->{option_results}->{warning_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold for Wan2Lan'" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical_in', value => $self->{option_results}->{critical_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold for Wan2Lan'" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    $self->{statefile_value}->check_options(%options);
-}
-
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
+    # STEELHEAD-MIB
+    my $oids = {
+        bwPassThroughIn => '.1.3.6.1.4.1.17163.1.1.5.3.3.1.0',
+        bwPassThroughOut => '.1.3.6.1.4.1.17163.1.1.5.3.3.2.0',
+    };
 
-    my $oid_bwPassThroughIn = '.1.3.6.1.4.1.17163.1.1.5.3.3.1.0';
-    my $oid_bwPassThroughOut = '.1.3.6.1.4.1.17163.1.1.5.3.3.2.0';
-    my ($result, $bw_inn, $bw_out);
+    # STEELHEAD-EX-MIB
+    my $oids_ex = {
+        bwPassThroughIn => '.1.3.6.1.4.1.17163.1.51.5.3.3.1.0',
+        bwPassThroughOut => '.1.3.6.1.4.1.17163.1.51.5.3.3.2.0',
+    };
 
-    $result = $self->{snmp}->get_leef(oids => [ $oid_bwPassThroughIn, $oid_bwPassThroughOut ], nothing_quit => 1);
-    $bw_inn = $result->{$oid_bwPassThroughIn};
-    $bw_out = $result->{$oid_bwPassThroughOut};
+    my $result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);
 
-    $self->{statefile_value}->read(statefile => 'steelhead_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_bwPassThroughIn = $self->{statefile_value}->get(name => 'bwPassThroughIn');
-    my $old_bwPassThroughOut = $self->{statefile_value}->get(name => 'bwPassThroughOut');
+    $self->{cache_name} = "riverbed_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
+        '_' . $self->{mode} . '_' . md5_hex('all');
+        
+    $self->{global} = {};
 
-    my $new_datas = {};
-    $new_datas->{last_timestamp} = time();
-    $new_datas->{bwPassThroughIn} = $bw_inn;
-    $new_datas->{bwPassThroughOut} = $bw_out;
-
-    $self->{statefile_value}->write(data => $new_datas);
-
-    if (!defined($old_timestamp) || !defined($old_bwPassThroughIn) || !defined($old_bwPassThroughOut)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
+    if (defined($result->{$oids->{bwPassThroughIn}})) {
+        foreach (keys %{$oids}) {
+            $self->{global}->{$_} = $result->{$oids->{$_}};
+        }
+    } else {
+        foreach (keys %{$oids_ex}) {
+	        $self->{global}->{$_} = $result->{$oids_ex->{$_}};
+        }
     }
-
-    $old_bwPassThroughIn = 0 if ($old_bwPassThroughIn > $new_datas->{bwPassThroughIn});
-    $old_bwPassThroughOut = 0 if ($old_bwPassThroughOut > $new_datas->{bwPassThroughOut});
-
-    my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0);
-
-    my $bwPassThroughInPerSec = int(($new_datas->{bwPassThroughIn} - $old_bwPassThroughIn) / $delta_time);
-    my $bwPassThroughOutPerSec = int(($new_datas->{bwPassThroughOut} - $old_bwPassThroughOut) / $delta_time);
-
-    my $exit1 = $self->{perfdata}->threshold_check(value => $bwPassThroughInPerSec,
-                                                     threshold => [ { label => 'critical_in', exit_litteral => 'critical' }, { label => 'warning_in', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $bwPassThroughOutPerSec,
-                                                   threshold => [ { label => 'critical_out', exit_litteral => 'critical' }, { label => 'warning_out', exit_litteral => 'warning' } ]);
-    my $exit_code = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-
-    $self->{output}->perfdata_add(label => 'Traffic_In', unit => 'B/s',
-                                  value => $bwPassThroughInPerSec,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_in'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_in'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'Traffic_Out', unit => 'B/s',
-                                  value => $bwPassThroughOutPerSec,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_out'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_out'),
-                                  min => 0);
-
-    my ($bwPassThroughInPerSec_value, $bwPassThroughInPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwPassThroughInPerSec);
-    my ($bwPassThroughOutPerSec_value, $bwPassThroughOutPerSec_unit) = $self->{perfdata}->change_bytes(value => $bwPassThroughOutPerSec);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Passthrough: Wan2Lan %s/s, Lan2Wan %s/s",
-                                  $bwPassThroughInPerSec_value . " " . $bwPassThroughInPerSec_unit, 
-                                  $bwPassThroughOutPerSec_value . " " . $bwPassThroughOutPerSec_unit));
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -146,25 +115,19 @@ __END__
 
 =head1 MODE
 
-Check passthrough bandwidth in both directions (STEELHEAD-MIB).
+Check passthrough bandwidth in both directions (STEELHEAD-MIB and STEELHEAD-EX-MIB).
 
 =over 8
 
-=item B<--warning-in>
+=item B<--warning-traffic-*>
 
-Threshold warning for Wan2Lan passthrough in bytes per second.
+Threshold warning (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
-=item B<--critical-in>
+=item B<--critical-traffic-*>
 
-Threshold critical for Wan2Lan passthrough in bytes per second.
+Threshold critical (Can be: 'in' (Wan2Lan), 'out' (Lan2Wan))
 
-=item B<--warning-out>
-
-Threshold warning for Lan2Wan passthrough in bytes per second.
-
-=item B<--critical-out>
-
-Threshold critical for Lan2Wan passthrough in bytes per second.
+=over 8
 
 =back
 

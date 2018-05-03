@@ -42,12 +42,13 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => 
                     {
-                      "hostname:s@"     => { name => 'hostname', },
-                      "username:s@"     => { name => 'username', },
-                      "password:s@"     => { name => 'password', },
-                      "proxyurl:s@"     => { name => 'proxyurl', },
-                      "timeout:s@"      => { name => 'timeout', },
-                      "resolution:s@"   => { name => 'resolution', },
+                      "hostname:s@"     => { name => 'hostname' },
+                      "username:s@"     => { name => 'username' },
+                      "password:s@"     => { name => 'password' },
+                      "proxyurl:s@"     => { name => 'proxyurl' },
+                      "timeout:s@"      => { name => 'timeout' },
+                      "ssl-opt:s@"      => { name => 'ssl_opt' },
+                      "resolution:s@"   => { name => 'resolution' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -113,6 +114,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = 'https';
     $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{credentials} = 1;
+    $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
 }
@@ -185,6 +187,10 @@ Proxy URL if any.
 =item B<--timeout>
 
 Set HTTP timeout in seconds (Default: '10').
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--resolution>
 

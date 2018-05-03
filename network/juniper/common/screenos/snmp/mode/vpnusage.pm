@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::sonicwall::snmp::mode::vpn;
+package network::juniper::common::screenos::snmp::mode::vpnusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,53 +26,54 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_vpn_output {
+    my ($self, %options) = @_;
+    
+    return "VPN '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
-
+    
     $self->{maps_counters_type} = [
-        { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All VPN tunnels are OK' },
+        { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All VPN are ok' }
     ];
-
+    
     $self->{maps_counters}->{vpn} = [
         { label => 'traffic-in', set => {
                 key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
+                    { label => 'traffic_in', value => 'traffic_in_absolute', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
+                    { label => 'traffic_out', value => 'traffic_out_absolute', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
-        }
+        },
     ];
-}
-
-sub prefix_vpn_output {
-    my ($self, %options) = @_;
-
-    return "VPN '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-
+    
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"     => { name => 'filter_name' },
+                                { 
+                                  "filter-name:s"           => { name => 'filter_name' },
                                 });
+    
     return $self;
 }
 
@@ -81,40 +82,45 @@ sub check_options {
     $self->SUPER::check_options(%options);
 }
 
-my $oid_sonicSAStatEntry = '.1.3.6.1.4.1.8741.1.3.2.1.1.1';
-my $oid_sonicSAStatUserName = '.1.3.6.1.4.1.8741.1.3.2.1.1.1.14';
-my $oid_sonicSAStatEncryptByteCount = '.1.3.6.1.4.1.8741.1.3.2.1.1.1.9';
-my $oid_sonicSAStatDecryptByteCount = '.1.3.6.1.4.1.8741.1.3.2.1.1.1.11';
+my $mapping = {
+    nsVpnMonVpnName     => { oid => '.1.3.6.1.4.1.3224.4.1.1.1.4' },
+    nsVpnMonBytesIn     => { oid => '.1.3.6.1.4.1.3224.4.1.1.1.35' },
+    nsVpnMonBytesOut    => { oid => '.1.3.6.1.4.1.3224.4.1.1.1.36' },
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = "sonicwall_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
-
     $self->{vpn} = {};
-    my $result = $options{snmp}->get_table(oid => $oid_sonicSAStatEntry, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+            { oid => $mapping->{nsVpnMonVpnName}->{oid} },
+            { oid => $mapping->{nsVpnMonBytesIn}->{oid} },
+            { oid => $mapping->{nsVpnMonBytesOut}->{oid} },
+        ], nothing_quit => 1, return_type => 1);
 
-    foreach my $oid (sort keys %{$result}) {
-        next if ($oid !~ /^$oid_sonicSAStatUserName\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{nsVpnMonVpnName}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{$oid_sonicSAStatUserName . '.' . $instance} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{$oid_sonicSAStatUserName . '.' . $instance} . "': no matching filter.", debug => 1);
+            $result->{nsVpnMonVpnName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{nsVpnMonVpnName} . "': no matching filter.", debug => 1);
             next;
         }
-	
-        $self->{vpn}->{$result->{$oid_sonicSAStatUserName . '.' . $instance}} = { traffic_in => $result->{$oid_sonicSAStatEncryptByteCount . '.' . $instance} * 8,
-                                                                                  traffic_out => $result->{$oid_sonicSAStatDecryptByteCount . '.' . $instance} * 8,
-                                                                                  display => $result->{$oid_sonicSAStatUserName . '.' . $instance} };
+        
+        $self->{vpn}->{$instance} = { display => $result->{nsVpnMonVpnName}, 
+                                      traffic_in => $result->{nsVpnMonBytesIn},
+                                      traffic_out => $result->{nsVpnMonBytesOut} };
     }
-    
+
     if (scalar(keys %{$self->{vpn}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No vpn found.");
         $self->{output}->option_exit();
     }
+
+    $self->{cache_name} = "juniper_ssg_" . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;
@@ -123,13 +129,13 @@ __END__
 
 =head1 MODE
 
-Check VPN state and traffic.
+Check Juniper VPN usage (NETSCREEN-VPN-MON-MIB).
 
 =over 8
 
 =item B<--filter-name>
 
-Filter vpn name with regexp.
+Filter VPN name (can be a regexp).
 
 =item B<--warning-*>
 
