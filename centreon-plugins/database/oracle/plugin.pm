@@ -55,6 +55,8 @@ sub new {
                          'tnsping'                  => 'database::oracle::mode::tnsping',
                          );
 
+	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+						 
     return $self;
 }
 
