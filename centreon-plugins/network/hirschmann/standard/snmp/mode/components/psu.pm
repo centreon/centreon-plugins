@@ -32,7 +32,7 @@ my %map_psu_status = (
 
 # In MIB 'hmpriv.mib'
 my $mapping = {
-    hmPSState => { oid => '.1.3.6.1.4.1.2352.2.4.1.2.1.2', map => \%map_psu_status },
+    hmPSState => { oid => '.1.3.6.1.4.1.248.14.1.2.1.3', map => \%map_psu_status },
 };
 
 sub load {
@@ -55,7 +55,7 @@ sub check {
 
         next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($result->{hmPSState} =~ /notInstalled/i && 
-                 $self->absent_problem(section => 'psu', instance => $instance));
+            $self->absent_problem(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is %s [instance: %s].",
