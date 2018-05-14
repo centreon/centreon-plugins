@@ -240,7 +240,8 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
+    $self->{global}->{count} = 0;
     $self->{tape} = {};
     #Pool    Label    Element Address Vtype       WORM Size  Used% Status
     #Default 701862L2 Unknown 0       LTO 2 200GB No   200   99    Vaulted
