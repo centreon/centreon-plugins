@@ -41,7 +41,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+            eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -136,7 +136,20 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'tape', type => 1, cb_prefix_output => 'prefix_tape_output', message_multiple => 'All tapes are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'count', set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Number of tapes : %s',
+                perfdatas => [
+                    { label => 'count', value => 'count_absolute', template => '%s', 
+                      unit => 'tapes', min => 0 },
+                ],
+            }
+        },
     ];
     
     $self->{maps_counters}->{tape} = [
@@ -257,6 +270,7 @@ sub manage_selection {
             used_prct => $used_prct,
             status => $status,
         };
+        $self->{global}->{count}++;
     }
 
     if (scalar(keys %{$self->{tape}}) == 0) {
@@ -345,12 +359,12 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'usage'.
+Can be: 'count', 'usage'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'usage'.
+Can be: 'count', 'usage'.
 
 =back
 
