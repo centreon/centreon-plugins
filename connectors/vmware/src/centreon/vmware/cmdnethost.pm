@@ -262,8 +262,8 @@ sub run {
             my $packets_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.packetsTx.summation'}->{key} . ":" . $_}));
             my $dropped_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedRx.summation'}->{key} . ":" . $_}));    
             my $dropped_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedTx.summation'}->{key} . ":" . $_}));
-            my $dropped_in_prct = $dropped_in * 100 / $packets_in;
-            my $dropped_out_prct = $dropped_out * 100 / $packets_out;
+            my $dropped_in_prct = ($packets_in > 0) ? $dropped_in * 100 / $packets_in : 0;
+            my $dropped_out_prct = ($packets_out > 0) ? $dropped_out * 100 / $packets_out : 0;
 
             my $exit3 = $self->{manager}->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical_dropped_in', exit_litteral => 'critical' }, { label => 'warning_dropped_in', exit_litteral => 'warning' } ]);
             my $exit4 = $self->{manager}->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical_dropped_out', exit_litteral => 'critical' }, { label => 'warning_dropped_out', exit_litteral => 'warning' } ]);
