@@ -23,6 +23,7 @@ package database::oracle::plugin;
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_sql);
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -76,13 +77,17 @@ sub init {
 
     if (defined($options_result->{hostname})) {
         @{$self->{sqldefault}->{dbi}} = ();
+        @{$self->{sqldefault}->{sqlpluscmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{hostname}}); $i++) {
             $self->{sqldefault}->{dbi}[$i] = { data_source => 'Oracle:host=' . $options_result->{hostname}[$i] };
+            $self->{sqldefault}->{sqlpluscmd}[$i] = { hostname => $options_result->{hostname}[$i] };
             if (defined($options_result->{port}[$i])) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
+                $self->{sqldefault}->{sqlpluscmd}[$i]->{port} = $options_result->{port}[$i];
             }
             if ((defined($options_result->{sid})) && ($options_result->{sid} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';sid=' . $options_result->{sid};
+	            $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
             }
         }
     }

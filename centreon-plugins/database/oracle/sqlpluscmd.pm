@@ -27,16 +27,6 @@ use Digest::MD5 qw(md5_hex);
 use File::Temp qw(tempfile);
 use Data::Dumper;
 
-my $debug = 0;
-
-sub printd  {
-	my @msg = @_;
-	
-	if($debug) {
-		print @msg;
-	}
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -55,20 +45,21 @@ sub new {
         $options{output}->option_exit();
     }
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "sqlplus-cmd:s"            => { name => 'sqlplus_cmd'},
-                      "oracle-sid:s"             => { name => 'oracle_sid' },
-                      "oracle-home:s"           => { name => 'oracle_home' },
-                      "tnsadmin-home:s"         => { name => 'tnsadmin_home' },
-                      "username:s"              => { name => 'username' },
-                      "password:s"              => { name => 'password' },
-                      "local-connexion"       => { name => 'local_connexion', default=>0 }, 
-                      "oracle-debug"       => { name => 'oracle_debug', default=>0 }, 
-                      "sysdba"                => { name => 'sysdba', default=>0 }, 
-                      "sql-errors-exit:s"        => { name => 'sql_errors_exit', default => 'unknown' },
-                      "tempdir:s"        		=> { name => 'tempdir', default => '/tmp' },
-        });
-    }
+        $options{options}->add_options(
+									   arguments => {
+													"sqlplus-cmd:s"     => { name => 'sqlplus_cmd'},
+													"oracle-home:s"     => { name => 'oracle_home' },
+													"tnsadmin-home:s"   => { name => 'tnsadmin_home' },
+													"tnsnames-sid:s"    => { name => 'tnsnames_sid'},
+													"username:s"        => { name => 'username' },
+													"password:s"        => { name => 'password' },
+													"local-connexion"   => { name => 'local_connexion', default=>0 }, 
+													"sysdba"            => { name => 'sysdba', default=>0 }, 
+													"sql-errors-exit:s" => { name => 'sql_errors_exit', default => 'unknown' },
+													"tempdir:s"         => { name => 'tempdir', default => '/tmp' },
+													}
+										);
+	}
     $options{options}->add_help(package => __PACKAGE__, sections => 'sqlpluscmd OPTIONS', once => 1);
 
     $self->{output} = $options{output};
@@ -78,14 +69,10 @@ sub new {
     $self->{columns} = undef;
     $self->{version} = undef;
     
-    $self->{oracle_sid} = undef;
+    $self->{sid} = undef;
     $self->{oracle_home} = undef;
     $self->{tnsadmin_home} = undef;
     $self->{local_connexion} = undef;
-    $self->{sysdba} = undef;
-    $self->{username} = undef;
-    $self->{password} = undef;
-    $self->{tempdir} = undef;
     
     return $self;
 }
@@ -122,66 +109,64 @@ sub check_options {
     # return 1 = ok still data_source
     # return 0 = no data_source left
 
-    $self->{oracle_sid} = $self->{option_results}->{oracle_sid};
-    $self->{oracle_home} = $self->{option_results}->{oracle_home};
-    $self->{tnsadmin_home} = $self->{option_results}->{tnsadmin_home};
-    $self->{username} = $self->{option_results}->{username};
-    $self->{password} = $self->{option_results}->{password};
+    $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0]: $self->{option_results}->{tnsnames_sid};
+    $self->{oracle_home} = defined($self->{option_results}->{oracle_home}) ? $self->{option_results}->{oracle_home} : $ENV{'ORACLE_HOME'};
+    $self->{tnsadmin_home} = defined($self->{option_results}->{tnsadmin_home}) ? $self->{option_results}->{tnsadmin_home} : $ENV{'TNSADMIN'};
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
-    $self->{sysdba} = $self->{option_results}->{sysdba};
-    $self->{sql_errors_exit} = $self->{option_results}->{sql_errors_exit};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
-    $self->{tempdir} = $self->{option_results}->{tempdir};
-    $debug = $self->{option_results}->{oracle_debug};
 		
-	printd "*** DEBUG MODE****\n";
-	printd Dumper($self->{option_results}),"\n";
+	$self->{output}->output_add(long_msg=>"*** DEBUG MODE****\n");
+	$self->{output}->output_add(long_msg=>Dumper($self->{option_results}));;
  
-    if (!defined($self->{oracle_sid}) || $self->{oracle_sid} eq '') {
+	# check the SID prerequisite option
+    if (!defined($self->{sid}) || $self->{sid} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify sid argument.");
-        $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
     
-	if (!defined($self->{oracle_home}) && defined($ENV{'ORACLE_HOME'})) {
-		$self->{oracle_home} = $ENV{'ORACLE_HOME'};
-	}
+	# check the ORACLE_HOME variable
     if (!defined($self->{oracle_home}) || $self->{oracle_home} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify oracle-home argument.");
-        $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
-
-	if (!defined($self->{tnsadmin_home}) && defined($ENV{'TNSADMIN'})) {
-		$self->{tnsadmin_home} = $ENV{'TNSADMIN'};
-	} elsif(!defined($self->{tnsadmin_home})) {
+	
+	# construct the TNSADMIN variable if not available
+	if(!defined($self->{tnsadmin_home})) {
 		$self->{tnsadmin_home} = $self->{oracle_home}."/network/admin";
 	}
 	
+	# check the SQLPLUS command to use
 	if(!$self->{sqlplus_cmd}) {
 		 $self->{sqlplus_cmd} = $self->{oracle_home}."/bin/sqlplus";
 	}
 	
     $self->{args} = ['-L', '-S'];
 	my $connection_string = "";
-	if($self->{sysdba} == 1) {
-		printd "*** SYDBA MODE****\n";
+	if($self->{option_results}->{sysdba} == 1) {
+		$self->{output}->output_add(long_msg=>"*** SYDBA MODE****\n");
 		$connection_string="/ as sysdba";
 		$self->{local_connexion} = 1;
-	} elsif(defined($self->{username}) && defined($self->{password})) {
-		$connection_string=$self->{username}."/".$self->{password};
+	} elsif(defined($self->{option_results}->{username}) && defined($self->{option_results}->{password})) {
+		$connection_string=$self->{option_results}->{username}."/".$self->{option_results}->{password};
 	} else {
         $self->{output}->add_option_msg(short_msg => "Need to specify username/password arguments or sysdba option.");
-        $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
 	}
 
 	if($self->{local_connexion} == 0) {
-		$connection_string .= "\@".$self->{oracle_sid};
+		if(defined($self->{option_results}->{hostname})) {
+			my $port = defined($self->{option_results}->{port}) ? $self->{option_results}->{port}[0] : 1521;
+			$connection_string .= "\@//".$self->{option_results}->{hostname}[0].":".$port."/".$self->{sid};
+		} else {
+			$connection_string .= "\@".$self->{sid};
+		}
 	} else {
-		printd "*** LOCAL CONNEXION MODE****\n";
-		$ENV{ORACLE_SID} = $self->{oracle_sid};
+		$self->{output}->output_add(long_msg=>"*** LOCAL CONNEXION MODE****\n");
+		$ENV{ORACLE_SID} = $self->{sid};
 	}
 	
 	# register a false data_source to be compliant with tnsping mode
-	$self->{data_source}="sid=".$self->{oracle_sid};
+	$self->{data_source}="sid=".$self->{sid};
 	
 	push @{$self->{args}}, $connection_string;
 	
@@ -189,7 +174,7 @@ sub check_options {
 	$ENV{ORACLE_HOME} = $self->{oracle_home};
 	$ENV{TNSADMIN} = $self->{tnsadmin_home};
 	
-    if (defined($self->{option_results}->{oracle_sid})) {
+    if (defined($self->{option_results}->{sid})) {
         return 0;
     }
     return 1;
@@ -216,7 +201,7 @@ sub is_version_minimum {
 sub get_id {
     my ($self, %options) = @_;
     
-    my $msg = $self->{oracle_sid};
+    my $msg = $self->{sid};
     return $msg;
 }
 
@@ -224,7 +209,7 @@ sub get_id {
 sub get_unique_id4save {
     my ($self, %options) = @_;
 
-    my $msg = $self->{oracle_sid};
+    my $msg = $self->{sid};
     return md5_hex($msg);
 }
 
@@ -237,7 +222,7 @@ sub quote {
 sub command_execution {
     my ($self, %options) = @_;
     
-	my ($fh, $tempfile) = tempfile( DIR => $self->{tempdir}, TEMPLATE => "centreonOracle.".$self->{oracle_sid}.".XXXXXX", UNLINK => 1 );
+	my ($fh, $tempfile) = tempfile( DIR => $self->{option_results}->{tempdir}, TEMPLATE => "centreonOracle.".$self->{sid}.".XXXXXX", UNLINK => 1 );
 	print $fh "set echo off
 -- set heading off
 set feedback off
@@ -248,8 +233,8 @@ set numwidth 15
 $options{request};
 exit;";
 	
-	printd "*** COMMAND: ",$self->{sqlplus_cmd},' ',join(' ',(@{$self->{args}},'@', $tempfile)),"\n";
-	printd "*** REQUEST: ",$options{request},"\n";
+	$self->{output}->output_add(long_msg=>"*** COMMAND: ".$self->{sqlplus_cmd}.' '.join(' ',(@{$self->{args}},'@', $tempfile))."\n");
+	$self->{output}->output_add(long_msg=>"*** REQUEST: ".$options{request}."\n");
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
                                                  command => $self->{sqlplus_cmd},
                                                  arguments =>  [@{$self->{args}}, '@', $tempfile],
@@ -257,11 +242,11 @@ exit;";
                                                  wait_exit => 1,
                                                  redirect_stderr => 1
                                                  );
-	printd "REQ. STDOUT: '$stdout'\n";
-	printd "REQ. EXIT_CODE: $exit_code\n";
+	$self->{output}->output_add(long_msg=>"REQ. STDOUT: '$stdout'\n");
+	$self->{output}->output_add(long_msg=>"REQ. EXIT_CODE: $exit_code\n");
 	
 	# search oracle error lines
-	$exit_code = -1 if($stdout =~ /ORA\-\d+|TNS\-\d+|SP\d\-\d+/);
+	$exit_code = -1 if($stdout =~ /^(ORA\-\d+|TNS\-\d+|SP\d\-\d+)/);
 	
     if ($exit_code <= -1000) {
         if ($exit_code == -1000) {
@@ -284,14 +269,14 @@ sub connect {
     if ($exit_code != 0) {
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => "Cannot connect: " . $self->{stdout});
-            $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+            $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
         }
         return (-1, "Cannot connect: " . $self->{stdout});
     }
     
     $self->{version} = $self->fetchrow_array();
 	
-	printd "VERSION: ",$self->{version},"\n";
+	$self->{output}->output_add(long_msg=>"VERSION: ".$self->{version}."\n");
     return 0;
 }
 
@@ -300,14 +285,14 @@ sub fetchall_arrayref {
     my $array_ref = [];
     
 	if($self->{stdout} eq '') {
-		printd "fetchall_arrayref: no data returned (no rows selected)\n";
+		$self->{output}->output_add(long_msg=>"fetchall_arrayref: no data returned (no rows selected)\n");
 		return $array_ref;
 	}
 	
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
 		my $line = $1;
-		printd "fetchall_arrayref COLUMNS: $line\n" if(defined($line));
+		$self->{output}->output_add(long_msg=>"fetchall_arrayref COLUMNS: $line\n") if(defined($line));
         @{$self->{columns}} = split(/#&!#/, $line);
 		map { s/^\s+|\s+$//g; } @{$self->{columns}};
 		$self->{stdout} =~ s/[\-#&!]+(\n|$)//;
@@ -318,7 +303,7 @@ sub fetchall_arrayref {
 		$line =~ s/#&!#\s+/#&!#/g;
 		$line =~ s/\s+#&!#/#&!#/g;
 		
-		printd "fetchall_arrayref VALUE: ",$line,"\n";
+		$self->{output}->output_add(long_msg=>"fetchall_arrayref VALUE: ".$line."\n");
 		push @$array_ref, [map({ s/\\n/\x{0a}/g; s/\\t/\x{09}/g; s/\\/\x{5c}/g; $_; } split(/#&!#/, $line))];
     }
     return $array_ref;
@@ -329,28 +314,28 @@ sub fetchrow_array {
     my @array_result = ();
 	
 	if($self->{stdout} eq '') {
-		printd "fetchrow_array: no data returned (no rows selected)\n";
+		$self->{output}->output_add("fetchrow_array: no data returned (no rows selected)\n");
 		return @array_result;
 	}
 	
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
 		my $line = $1;
-		printd "fetchrow_array COLUMNS: $line\n";
+		$self->{output}->output_add(long_msg=>"fetchrow_array COLUMNS: $line\n");
         @{$self->{columns}} = split(/#&!#/, $line);
 		map { s/^\s+|\s+$//g; } @{$self->{columns}};
      	$self->{stdout} =~ s/[\-#&!]+(\n|$)//;
     }
-	printd "fetchrow_array STDOUT: '",$self->{stdout},"'\n";
+	$self->{output}->output_add(long_msg=>"fetchrow_array STDOUT: '".$self->{stdout}."'\n");
     if (($self->{stdout} =~ s/^(.*?)(\n|$)//)) {
 		my $line = $1;
-        printd "fetchrow_array VALUE: '",$line,"'\n";
+        $self->{output}->output_add(long_msg=>"fetchrow_array VALUE: '".$line."'\n");
 		push @array_result, map({ s/\\n/\x{0a}/g; s/\\t/\x{09}/g; s/\\/\x{5c}/g; $_; } split(/#&!#/, $line));
 		map { s/^\s+|\s+$//g; } @array_result;
-		printd "ARRAY: ",Dumper(@array_result),"\n";
+		$self->{output}->output_add(long_msg=>"ARRAY: ".Dumper(@array_result)."\n");
     }
     
-	printd "RETURN: ",Dumper(@array_result),"\n";
+	$self->{output}->output_add(long_msg=>"RETURN: ".Dumper(@array_result)."\n");
     return scalar(@array_result) == 1 ? $array_result[0] : @array_result	;
 }
 
@@ -359,21 +344,21 @@ sub fetchrow_hashref {
     my $array_result = undef;
     
 	if($self->{stdout} eq '') {
-		printd "fetchrow_hashref: no data returned (no rows selected)\n";
+		$self->{output}->output_add(long_msg=>"fetchrow_hashref: no data returned (no rows selected)\n");
 		return $array_result;
 	}
 	
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
 		my $line = $1;
-		printd "fetchrow_hashref COLUMNS: $line\n";
+		$self->{output}->output_add(long_msg=>"fetchrow_hashref COLUMNS: $line\n");
         @{$self->{columns}} = split(/#&!#/, $line);
 		map { s/^\s+|\s+$//g; } @{$self->{columns}};
      	$self->{stdout} =~ s/[\-#&!]+(\n|$)//;
     }
     if ($self->{stdout} ne '' && $self->{stdout} =~ s/^(.*?)(\n|$)//) {
 		my $line = $1;
-		printd "fetchrow_hashref VALUE: ",$line,"\n";
+		$self->{output}->output_add(long_msg=>"fetchrow_hashref VALUE: ".$line."\n");
         $array_result = {};
         my @values = split(/#&!#/, $line);
         for (my $i = 0; $i < scalar(@values); $i++) {
@@ -382,7 +367,7 @@ sub fetchrow_hashref {
             $value =~ s/\\n/\x{0a}/g;
             $value =~ s/\\t/\x{09}/g;
             $value =~ s/\\/\x{5c}/g;
-			printd "fetchrow_hashref RES: '",$self->{columns}[$i],"' = '$value'\n";
+			$self->{output}->output_add(long_msg=>"fetchrow_hashref RES: '".$self->{columns}[$i]."' = '$value'\n");
             $array_result->{$self->{columns}[$i]} = $value;
         }
     }
@@ -396,8 +381,8 @@ sub query {
     $self->{columns} = undef;
     (my $exit_code, $self->{stdout}) = $self->command_execution(request => $options{query});
     if ($exit_code != 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{stdout});
-        $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
+        $self->{output}->add_option_msg(short_msg => "Cannot execute query:\nQuery:".$options{query}."\nOutput: ". $self->{stdout});
+        $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
 }
 
@@ -421,10 +406,6 @@ sqlpluscmd class
 
 sqlplus command (Default: 'sqlplus').
 
-=item B<--sid>
-
-Database Oracle ID (SID).
-
 =item B<--oracle-home>
 
 Oracle Database Server Home.
@@ -432,6 +413,10 @@ Oracle Database Server Home.
 =item B<--tnsadmin-home>
 
 Oracle TNS Admin Home. Where to locate tnsnames.ora file (default: ${ORACLE_HOME}/network/admin)
+
+=item B<--tnsnames-sid>
+
+Oracle SID defined in tnsnames.ora. 
 
 =item B<--username>
 
@@ -448,10 +433,6 @@ Use a sysdba connexion, need to be execute under the oracle local user on the se
 =item B<--local-connexion>
 
 Use a local connexion, don't need listener.
-
-=item B<--oracle-debug>
-
-Active the debug mode in the plugin (displaying request, output, etc.)
 
 =item B<--sql-errors-exit>
 
