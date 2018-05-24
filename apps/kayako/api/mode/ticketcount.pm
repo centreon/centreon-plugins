@@ -46,23 +46,26 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-         {
-		"hostname:s"            => { name => 'hostname' },
-		"port:s"                => { name => 'port' },
-		"proto:s"               => { name => 'proto' },
-		"urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
-		"kayako-api-key:s"		=> { name => 'kayako_api_key' },
-		"kayako-secret-key:s"	=> { name => 'kayako_secret_key' },
-		"reload-cache-time:s"   => { name => 'reload_cache_time', default => 180 },
-		"department-id:s"		=> { name => 'department_id' },
-        "staff-id:s"			=> { name => 'staff_id' },
-        "status-id:s"			=> { name => 'status_id' },
-		"priority-id:s"			=> { name => 'priority_id' },
-		"warning:s"				=> { name => 'warning' },
-        "critical:s"            => { name => 'critical' },
-		"start-date:s"			=> { name => 'start_date' },
-        "end-date:s"			=> { name => 'end_date' },
-         });
+            {
+                "hostname:s"            => { name => 'hostname' },
+                "port:s"                => { name => 'port' },
+                "proto:s"               => { name => 'proto' },
+                "urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
+                "proxyurl:s"            => { name => 'proxyurl' },
+                "timeout:s"             => { name => 'timeout' },
+                "ssl-opt:s@"            => { name => 'ssl_opt' },
+                "kayako-api-key:s"		=> { name => 'kayako_api_key' },
+                "kayako-secret-key:s"	=> { name => 'kayako_secret_key' },
+                "reload-cache-time:s"   => { name => 'reload_cache_time', default => 180 },
+                "department-id:s"		=> { name => 'department_id' },
+                "staff-id:s"			=> { name => 'staff_id' },
+                "status-id:s"			=> { name => 'status_id' },
+                "priority-id:s"			=> { name => 'priority_id' },
+                "warning:s"				=> { name => 'warning' },
+                "critical:s"            => { name => 'critical' },
+                "start-date:s"			=> { name => 'start_date' },
+                "end-date:s"			=> { name => 'end_date' },
+            });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -340,9 +343,17 @@ Specify https if needed
 
 Proxy URL if any
 
-=item B<--kayako-api-url>
+=item B<--urlpath>
 
-This is the URL you should dispatch all GET, POST, PUT & DELETE requests to. (required)
+This is the URL you should dispatch all GET, POST, PUT & DELETE requests to (Default: '/api/index.php?')
+
+=item B<--timeout>
+
+Threshold for HTTP timeout.
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--kayako-api-key>
 

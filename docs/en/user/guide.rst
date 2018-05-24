@@ -81,24 +81,23 @@ It's exactly what i need. Now i'll the option ``--list-mode`` to know what can i
   $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --list-mode
   ...
   Modes Available:
-   processcount
-   time
-   list-storages
+   cpu
+   cpu-detailed
    disk-usage
    diskio
-   uptime
-   swap
-   cpu-detailed
-   load
-   traffic
-   cpu
    inodes
+   interfaces
    list-diskspath
    list-interfaces
-   packet-errors
+   list-storages
+   load
    memory
-   tcpcon
+   processcount
    storage
+   swap
+   tcpcon
+   time
+   uptime
 
 I would like to test the 'load' mode:
 ::
@@ -477,7 +476,7 @@ To use 'memcached', you must have a memcached server and the CPAN 'Memcached::li
 You can set the memcached server with the option ``--memcached``:
 ::
 
-  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=traffic --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --skip --skip-speed0 --memcached=127.0.0.1
+  $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=interfaces --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --verbose --add-traffic --memcached=127.0.0.1
   OK: All traffic are ok | 'traffic_in_lo'=197.40b/s;;;0;10000000 'traffic_out_lo'=197.40b/s;;;0;10000000 'traffic_in_eth0'=14539.11b/s;;;0;1000000000 'traffic_out_eth0'=399.59b/s;;;0;1000000000 'traffic_in_eth1'=13883.82b/s;;;0;1000000000 'traffic_out_eth1'=1688.66b/s;;;0;1000000000
   Interface 'lo' Traffic In : 197.40b/s (0.00 %), Out : 197.40b/s (0.00 %)
   Interface 'eth0' Traffic In : 14.54Kb/s (0.00 %), Out : 399.59b/s (0.00 %)

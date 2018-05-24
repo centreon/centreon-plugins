@@ -48,12 +48,14 @@ sub new {
                         "port:s"        => { name => 'port', default => 8080 },
                         "proto:s"       => { name => 'proto' },
 						"credentials"   => { name => 'credentials' },
+                        "basic"         => { name => 'basic' },
 						"username:s"    => { name => 'username' },
 						"password:s"    => { name => 'password' },
 						"proxyurl:s"    => { name => 'proxyurl' },
                         "proxypac:s"    => { name => 'proxypac' },
                         "timeout:s"     => { name => 'timeout', default => 10 },
                         "ssl:s"         => { name => 'ssl' },
+                        "ssl-opt:s@"    => { name => 'ssl_opt' },
                         "cert-file:s"   => { name => 'cert_file' },
                         "key-file:s"    => { name => 'key_file' },
                         "cacert-file:s" => { name => 'cacert_file' },
@@ -390,15 +392,23 @@ Specify https if needed (Default: 'http')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--proxyurl>
 
@@ -412,9 +422,9 @@ Proxy pac file (can be an url or local file)
 
 Threshold for HTTP timeout (Default: 10)
 
-=item B<--ssl>
+=item B<--ssl-opt>
 
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

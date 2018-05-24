@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::ssg::snmp::plugin;
+package network::sonicwall::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,15 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
-                        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
-                        'interfaces'        => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'list-vpn'          => 'network::juniper::common::screenos::snmp::mode::listvpn',
-                        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-                        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
-                        'vpn-status'        => 'network::juniper::common::screenos::snmp::mode::vpnstatus',
-                        'vpn-usage'         => 'network::juniper::common::screenos::snmp::mode::vpnusage',
+                         'cpu'              => 'network::sonicwall::snmp::mode::cpu',
+                         'memory'           => 'network::sonicwall::snmp::mode::memory',
+                         'connections'      => 'network::sonicwall::snmp::mode::connections',
+			 'vpn'		    => 'network::sonicwall::snmp::mode::vpn',
                          );
 
     return $self;
@@ -51,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Juniper SSG in SNMP.
+Check Sonicwall firewalls equipments in SNMP
 
 =cut
