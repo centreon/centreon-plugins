@@ -222,7 +222,7 @@ sub quote {
 sub command_execution {
     my ($self, %options) = @_;
     
-    my ($fh, $tempfile) = tempfile( DIR => $self->{option_results}->{tempdir}, TEMPLATE => "centreonOracle.".$self->{sid}.".XXXXXX", UNLINK => 1 );
+    my ($fh, $tempfile) = tempfile( DIR => $self->{option_results}->{tempdir}, SUFFIX => ".sql", UNLINK => 1 );
     print $fh "set echo off
 -- set heading off
 set feedback off
