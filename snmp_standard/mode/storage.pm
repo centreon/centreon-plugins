@@ -77,8 +77,22 @@ sub custom_usage_perfdata {
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
     if (defined($instance_mode->{option_results}->{free})) {
+        my $extra_label = '';
+        $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+        my %total_options = ();
+        if ($instance_mode->{option_results}->{units} eq '%') {
+            $total_options{total} = $self->{result_values}->{total};
+            $total_options{cast_int} = 1;
+        }
+    
+        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
+                                      value => $value_perf,
+                                      warning => "",
+                                      critical => "",
+                                      min => 0, max => $self->{result_values}->{total});
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
+    
     }
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
