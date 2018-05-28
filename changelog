@@ -1,3 +1,12 @@
+2018-05-28 Colin Gagnaire <cgagnaire@centreon.com>
+ * Enhancement: [http] handle hidden basic authent (#974)
+ * Enhancement: add basic option to mode using http lib (#975)
+ * Enhancement: [sonicwall] enhance modes outputs and thresholds (#978)
+ * Enhancement: [quadstor]{vtltapeusage} add tapes count (#987)
+ * Fix: [f5/bigip]{trunks} div by 0 error (#964)
+ * Fix: [hirschmann]{hardware/psu} wrong oid (#985)
+ * Fix: [cisco/standard]{qosusage} calcul of total and child (#792)
+
 2018-04-27 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Sonicwall SNMP (#914)
  * Mode added: [juniper/ssg] 'vpnstatus' (#891)
