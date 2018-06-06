@@ -268,8 +268,8 @@ sub run {
                                     short_msg => sprintf("Total memory usage: %s", $total_mem_value . " " . $total_mem_unit));
         $self->{output}->perfdata_add(label => 'mem_total', unit => 'B',
                                       value => $total_memory,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_mem_total'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_mem_total'),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-mem-total'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-mem-total'),
                                       min => 0);
                                       
         $exit = $self->{perfdata}->threshold_check(value => $total_memory / $num_processes_match, 
@@ -280,8 +280,8 @@ sub run {
                                     short_msg => sprintf("Average memory usage: %.2f %s", $avg_mem_value, $avg_mem_unit));
         $self->{output}->perfdata_add(label => 'mem_avg', unit => 'B',
                                       value => sprintf("%.2f", $total_memory / $num_processes_match),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_avg_total'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_avg_total'),
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-mem-avg'),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-mem-avg'),
                                       min => 0);
     }
 
@@ -326,8 +326,8 @@ sub run {
                                         short_msg => sprintf("Total CPU usage: %.2f %%", $total_cpu));
             $self->{output}->perfdata_add(label => 'cpu_total', unit => '%',
                                           value => sprintf("%.2f", $total_cpu),
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_cpu_total'),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_cpu_total'),
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-cpu-total'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-cpu-total'),
                                           min => 0);
         }
         
