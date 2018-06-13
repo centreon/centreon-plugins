@@ -25,11 +25,11 @@ use warnings;
 use hardware::server::dell::idrac::snmp::mode::components::resources qw(%map_status %map_state);
 
 my $mapping = {
-    processorDeviceStatusStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.32.1.4', map => \%map_state },
-    processorDeviceStatusStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.32.1.5', map => \%map_status },
-    processorDeviceStatusLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.32.1.7' },
+    processorDeviceStatusStateSettings  => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.4', map => \%map_state },
+    processorDeviceStatusStatus         => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.5', map => \%map_status },
+    processorDeviceStatusLocationName   => { oid => '.1.3.6.1.4.1.674.10892.5.4.1100.30.1.26' },
 };
-my $oid_processorDeviceStatusTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.32.1';
+my $oid_processorDeviceStatusTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.30.1';
 
 sub load {
     my ($self) = @_;
