@@ -160,7 +160,7 @@ sub manage_selection {
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->read(statefile => "cache_appeartv_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
+        $self->{statefile_cache}->read(statefile => "cache_silverpeak_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port(). '_' . $self->{mode});
         $last_time = $self->{statefile_cache}->get(name => 'last_time');
     }
     
@@ -173,7 +173,7 @@ sub manage_selection {
 	my $create_time = $result->{spsActiveAlarmLogTime};
         if (!defined($create_time)) {
             $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't Parse date '" . $result->{spsActiveAlarmLogTime} . "'");
+                                                   short_msg => "Can't get date '" . $result->{spsActiveAlarmLogTime} . "'");
             next;
         }
         
