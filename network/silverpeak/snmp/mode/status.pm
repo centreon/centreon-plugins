@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Data::Dumper;
 
 my $instance_mode;
 
@@ -124,7 +123,6 @@ sub manage_selection {
     my $result = $options{snmp}->get_leef(oids => [ $oid_spsOperStatus ],
                                           nothing_quit => 1);
 
-    #print Dumper($result);
     $self->{operationnal_state} = { operStatus => $result->{$oid_spsOperStatus}};
 }
 

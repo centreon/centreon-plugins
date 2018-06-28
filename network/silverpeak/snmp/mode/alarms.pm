@@ -24,8 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
+
 
 my $instance_mode;
 
@@ -64,11 +66,11 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{source} = $options{new_datas}->{$self->{instance} . '_msgSourceName'};
-    $self->{result_values}->{text} = $options{new_datas}->{$self->{instance} . '_msgText'};
-    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_msgSeverity'};
+    $self->{result_values}->{source} = $options{new_datas}->{$self->{instance} . '_spsActiveAlarmSource'};
+    $self->{result_values}->{text} = $options{new_datas}->{$self->{instance} . '_spsActiveAlarmDescr'};
+    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_spsActiveAlarmSeverity'};
     $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
-    $self->{result_values}->{generation_time} = $options{new_datas}->{$self->{instance} . '_msgGenerationTime'};
+    $self->{result_values}->{generation_time} = $options{new_datas}->{$self->{instance} . '_spsActiveAlarmLogTime'};
     return 0;
 }
 
@@ -84,7 +86,7 @@ sub set_counters {
     
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'msgSourceName' }, { name => 'msgText' }, { name => 'since' }, { name => 'msgSeverity' }, { name => 'msgGenerationTime' } ],
+                key_values => [ { name => 'spsActiveAlarmSource' }, { name => 'spsActiveAlarmDescr' }, { name => 'since' }, { name => 'spsActiveAlarmSeverity' }, { name => 'spsActiveAlarmLogTime' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -139,10 +141,10 @@ my %map_severity = (0 => 'info', 1 => 'warning', 2 => 'minor', 3 => 'major',
     4 => 'critical', 5 => 'cleared', 6 => 'acknowledged', 7 => 'unacknowledged', 8 => 'indeterminate');
 
 my $mapping = {
-    msgSourceName           => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.6' },
-    msgText                 => { oid => ' 1.3.6.1.4.1.23867.3.1.1.2.1.1.5' },
-    msgGenerationTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' }, # 2016-12-16 14:49:18
-    msgSeverity             => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.3', map => \%map_severity },
+    spsActiveAlarmSource        => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.6' },
+    spsActiveAlarmDescr         => { oid => ' 1.3.6.1.4.1.23867.3.1.1.2.1.1.5' },
+    spsActiveAlarmLogTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' }, # timestamp
+    spsActiveAlarmSeverity      => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.3', map => \%map_severity },
 };
 
 sub manage_selection {
@@ -150,10 +152,10 @@ sub manage_selection {
 
     $self->{alarms}->{global} = { alarm => {} };
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-            { oid => $mapping->{msgSourceName}->{oid} },
-            { oid => $mapping->{msgText}->{oid} },
-            { oid => $mapping->{msgGenerationTime}->{oid} },
-            { oid => $mapping->{msgSeverity}->{oid} },
+            { oid => $mapping->{spsActiveAlarmSource}->{oid} },
+            { oid => $mapping->{spsActiveAlarmDescr}->{oid} },
+            { oid => $mapping->{spsActiveAlarmLogTime}->{oid} },
+            { oid => $mapping->{spsActiveAlarmSeverity}->{oid} },
         ], return_type => 1);
 
     my $last_time;
@@ -164,21 +166,21 @@ sub manage_selection {
     
     my ($i, $current_time) = (1, time());
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{msgSeverity}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{spsActiveAlarmSeverity}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        my $create_time = Date::Parse::str2time($result->{msgGenerationTime});
+	my $create_time = $result->{spsActiveAlarmLogTime};
         if (!defined($create_time)) {
             $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't Parse date '" . $result->{msgGenerationTime} . "'");
+                                                   short_msg => "Can't Parse date '" . $result->{spsActiveAlarmLogTime} . "'");
             next;
         }
         
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
         if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
-            $result->{msgText} !~ /$self->{option_results}->{filter_msg}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{msgText} . "': no matching filter.", debug => 1);
+            $result->{spsActiveAlarmDescr} !~ /$self->{option_results}->{filter_msg}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{spsActiveAlarmDescr} . "': no matching filter.", debug => 1);
             next;
         }
         

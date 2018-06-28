@@ -99,20 +99,14 @@ sub run {
     
     # spsSystemUptime from  SILVERPEAK-MGMT-MIB 8.0
     my $oid_hrSystemUptime = '.1.3.6.1.4.1.23867.3.1.1.1.5.0';
-    # For network equipment or others
-    my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
     my ($result, $value);
     
     if (defined($self->{option_results}->{force_oid})) {
         $result = $self->{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
         $value = $result->{$self->{option_results}->{force_oid}};
     } else {
-        $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime, $oid_sysUpTime ], nothing_quit => 1);
-        if (defined($result->{$oid_hrSystemUptime})) {
-            $value = $result->{$oid_hrSystemUptime};
-        } else {
-            $value = $result->{$oid_sysUpTime};
-        }
+        $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemUptime ], nothing_quit => 1);
+        $value = $result->{$oid_hrSystemUptime};
     }
     
     $value = $self->check_overload(timeticks => $value);
