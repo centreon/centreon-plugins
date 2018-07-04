@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -71,8 +71,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the port option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{validity_mode}) || $self->{option_results}->{validity_mode} !~ /^expiration|subject|issuer$/) {
-        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option (issuer, subject or expiration)");
+    if (!defined($self->{option_results}->{validity_mode}) || $self->{option_results}->{validity_mode} !~ /^expiration|subject|issuer|expiration-and-subject$/) {
+        $self->{output}->add_option_msg(short_msg => "Please set the validity-mode option (issuer, subject, expiration or expiration-and-subject)");
         $self->{output}->option_exit();
     }
     
@@ -155,6 +155,44 @@ sub run {
             $self->{output}->output_add(severity => 'OK',
                                         short_msg => sprintf("Subject Name [%s] is present in Certificate", join(', ', @subject_matched)));
         }
+
+    #BOTH expiration and subject
+    } elsif ($self->{option_results}->{validity_mode} eq 'expiration-and-subject') {
+	my @subject_matched = ();
+
+        if ($subject =~ /$self->{option_results}->{subjectname}/mi) {
+            push @subject_matched, $subject;
+        } else {
+            $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $subject), debug => 1);
+        }
+
+        my @subject_alt_names = Net::SSLeay::X509_get_subjectAltNames($cert);
+        for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
+            my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
+            if ($type == GEN_IPADD) {
+                $name = inet_ntoa($name);
+            }
+            if ($name =~ /$self->{option_results}->{subjectname}/mi) {
+                push @subject_matched, $name;
+            } else {
+                $self->{output}->output_add(long_msg => sprintf("Subject Name '%s' is also present in Certificate", $name), debug => 1);
+            }
+        }
+
+        if (@subject_matched == 0) {
+            $self->{output}->output_add(severity => 'CRITICAL',
+					short_msg => sprintf("No Subject Name matched '%s' in Certificate", $self->{option_results}->{subjectname}));
+        } else {
+            $self->{output}->output_add(severity => 'OK',
+					short_msg => sprintf("Subject Name [%s] is present in Certificate", join(', ', @subject_matched)));
+
+	    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Manip',
+						error_msg => "Cannot load module 'Date::Manip'.");
+	    (my $notafterdate = Net::SSLeay::P_ASN1_UTCTIME_put2string(Net::SSLeay::X509_get_notAfter($cert))) =~ s/ GMT//;
+	    my $daysbefore = int((Date::Manip::UnixDate(Date::Manip::ParseDate($notafterdate),"%s") - time) / 86400);
+	    my $exit = $self->{perfdata}->threshold_check(value => $daysbefore, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+	    $self->{output}->output_add(severity => $exit, short_msg => sprintf("Certificate expiration for '%s' in days: %s - Validity Date: %s", $subject, $daysbefore, $notafterdate));
+	}
 
     #Issuer Name
     } elsif ($self->{option_results}->{validity_mode} eq 'issuer') {
