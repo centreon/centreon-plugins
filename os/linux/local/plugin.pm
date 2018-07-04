@@ -41,6 +41,7 @@ sub new {
                          'files-date'       => 'os::linux::local::mode::filesdate',
                          'inodes'           => 'os::linux::local::mode::inodes',
                          'load'             => 'os::linux::local::mode::loadaverage',
+						 'list-ro-filesystems' => 'os::linux::local::mode::mountro',
                          'list-interfaces'  => 'os::linux::local::mode::listinterfaces',
                          'list-partitions'  => 'os::linux::local::mode::listpartitions',
                          'list-storages'    => 'os::linux::local::mode::liststorages',
