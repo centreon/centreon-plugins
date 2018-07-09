@@ -46,6 +46,7 @@ sub new {
                          'list-partitions'           => 'os::linux::local::mode::listpartitions',
                          'list-storages'             => 'os::linux::local::mode::liststorages',
                          'memory'                    => 'os::linux::local::mode::memory',
+                         'ntp'                       => 'os::linux::local::mode::ntp',
                          'packet-errors'             => 'os::linux::local::mode::packeterrors',
                          'paging'                    => 'os::linux::local::mode::paging',
                          'process'                   => 'os::linux::local::mode::process',
