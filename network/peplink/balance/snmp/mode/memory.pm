@@ -97,7 +97,7 @@ __END__
 
 =head1 MODE
 
-Check memory usage (Device.mib).
+Check memory usage (PEPLINK-BALANCE-MIB).
 
 =over 8
 
