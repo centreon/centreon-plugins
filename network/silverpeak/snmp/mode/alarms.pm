@@ -28,7 +28,6 @@ use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
-
 my $instance_mode;
 
 sub custom_status_threshold {
@@ -44,7 +43,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+            eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -74,7 +73,6 @@ sub custom_status_calc {
     return 0;
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -86,7 +84,8 @@ sub set_counters {
     
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'spsActiveAlarmSource' }, { name => 'spsActiveAlarmDescr' }, { name => 'since' }, { name => 'spsActiveAlarmSeverity' }, { name => 'spsActiveAlarmLogTime' } ],
+                key_values => [ { name => 'spsActiveAlarmSource' }, { name => 'spsActiveAlarmDescr' },
+                    { name => 'since' }, { name => 'spsActiveAlarmSeverity' }, { name => 'spsActiveAlarmLogTime' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
