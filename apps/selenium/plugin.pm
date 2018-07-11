@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'scenario'  => 'apps::selenium::mode::scenario',
+        'scenario'              => 'apps::selenium::mode::scenario',
+        'scenario-katalon'      => 'apps::selenium::mode::scenariokatalon',
     );
 
     return $self;
