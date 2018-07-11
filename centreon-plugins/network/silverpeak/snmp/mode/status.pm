@@ -38,7 +38,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+            eval "$instance_mode->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -78,7 +78,6 @@ sub set_counters {
         },
     ];
 }
-
 
 sub new {
     my ($class, %options) = @_;
@@ -141,7 +140,7 @@ Trigger warning on %{operStatus} values
 =item B<--critical-status>
 
 Trigger critical on %{operStatus} values
-(default: '%{operStatus} !~ /(Normal)/')
+(Default: '%{operStatus} !~ /(Normal)/')
 
 =back
 

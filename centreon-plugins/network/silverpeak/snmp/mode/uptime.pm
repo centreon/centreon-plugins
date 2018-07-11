@@ -40,7 +40,7 @@ sub new {
                                   "warning:s"       => { name => 'warning' },
                                   "critical:s"      => { name => 'critical' },
                                   "force-oid:s"     => { name => 'force_oid' },
-                                  "check-overload"  => { name => 'check_overload' },
+                                  "check-overflow"  => { name => 'check_overflow' },
                                 });
     
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -63,17 +63,17 @@ sub check_options {
     $self->{statefile_cache}->check_options(%options);
 }
 
-sub check_overload {
+sub check_overflow {
     my ($self, %options) = @_;
     
-    return $options{timeticks} if (!defined($self->{option_results}->{check_overload}));
+    return $options{timeticks} if (!defined($self->{option_results}->{check_overflow}));
     
     my $current_time = floor(time() * 100);
-    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks}, overload => 0 };
+    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks}, overflow => 0 };
     $self->{statefile_cache}->read(statefile => "cache_" . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
     my $old_uptime = $self->{statefile_cache}->get(name => 'uptime');
     my $last_time = $self->{statefile_cache}->get(name => 'last_time');
-    my $overload = $self->{statefile_cache}->get(name => 'overload');
+    my $overflow = $self->{statefile_cache}->get(name => 'overflow');
     
     if (defined($old_uptime) && $old_uptime < $current_time) {
         my $diff_time = $current_time - $last_time;
@@ -82,12 +82,12 @@ sub check_overload {
         if ($division >= 1 && 
             $overflow >= ($options{timeticks} - 5000) &&
             $overflow <= ($options{timeticks} + 5000)) {
-            $overload++;
+            $overflow++;
         }
         
-        $options{timeticks} += ($overload * 4294967296);
+        $options{timeticks} += ($overflow * 4294967296);
     }
-    $self->{new_datas}->{overload} = $overload if (defined($overload));
+    $self->{new_datas}->{overflow} = $overflow if (defined($overflow));
     
     $self->{statefile_cache}->write(data => $self->{new_datas});
     return $options{timeticks};
@@ -97,7 +97,7 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
     
-    # spsSystemUptime from  SILVERPEAK-MGMT-MIB 8.0
+    # spsSystemUptime from SILVERPEAK-MGMT-MIB 8.0
     my $oid_hrSystemUptime = '.1.3.6.1.4.1.23867.3.1.1.1.5.0';
     my ($result, $value);
     
@@ -109,7 +109,7 @@ sub run {
         $value = $result->{$oid_hrSystemUptime};
     }
     
-    $value = $self->check_overload(timeticks => $value);
+    $value = $self->check_overflow(timeticks => $value);
     $value = floor($value / 100);
     
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, 
@@ -150,7 +150,7 @@ Threshold critical in seconds.
 
 Can choose your oid (numeric format only).
 
-=item B<--check-overload>
+=item B<--check-overflow>
 
 Uptime counter limit is 4294967296 and overflow.
 With that option, we manage the counter going back. But there is a few chance we can miss a reboot.
