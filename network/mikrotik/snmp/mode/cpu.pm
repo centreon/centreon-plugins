@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::watchguard::snmp::mode::cpu;
+package network::mikrotik::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -35,31 +35,13 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => '1min', set => {
                 key_values => [ { name => '1min' } ],
-                output_template => '1 minute : %.2f %%',
+                output_template => '1 minute average : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1min', value => '1min_absolute', template => '%.2f',
+                    { label => 'cpu_1min_avg', value => '1min_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
-        },
-        { label => '5min', set => {
-                key_values => [ { name => '5min' } ],
-                output_template => '5 minutes : %.2f %%',
-                perfdatas => [
-                    { label => 'cpu_5min', value => '5min_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
-        { label => '15min', set => {
-                key_values => [ { name => '15min' } ],
-                output_template => '5 minutes : %.2f %%',
-                perfdatas => [
-                    { label => 'cpu_5min', value => '15min_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
+        }
     ];
 }
 
@@ -90,14 +72,12 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my $oid_wgSystemCpuUtil1 = '.1.3.6.1.4.1.3097.6.3.77.0';
-    my $oid_wgSystemCpuUtil5 = '.1.3.6.1.4.1.3097.6.3.78.0';
-    my $oid_wgSystemCpuUtil15 = '.1.3.6.1.4.1.3097.6.3.79.0';
+    my $oid_AvgCpuMikro = '.1.3.6.1.4.1.2021.11.10.0';
     my $snmp_result = $options{snmp}->get_leef(oids => [
-            $oid_wgSystemCpuUtil1, $oid_wgSystemCpuUtil5, $oid_wgSystemCpuUtil15
+            $oid_AvgCpuMikro
         ], nothing_quit => 1);
 
-    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1}/100, '5min' => $snmp_result->{$oid_wgSystemCpuUtil5}/100, '15min' => $snmp_result->{$oid_wgSystemCpuUtil15}/100 };
+    $self->{global} = { '1min' => $snmp_result->{$oid_AvgCpuMikro}};
 }
 
 1;
@@ -110,20 +90,13 @@ Check CPU usages.
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='^(1min|5min)$'
-
-=item B<--warning-*>
+=item B<--warning>
 
 Threshold warning.
-Can be: '1min', '5min', '15min'.
 
-=item B<--critical-*>
+=item B<--critical>
 
 Threshold critical.
-Can be: '1min', '5min', '15min'.
 
 =back
 
