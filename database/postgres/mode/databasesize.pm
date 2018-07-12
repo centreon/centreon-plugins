@@ -20,79 +20,72 @@
 
 package database::postgres::mode::databasesize;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'databases', type => 1, cb_prefix_output => 'prefix_database_output', message_multiple => 'All databases are ok' },
+    ];
+
+    $self->{maps_counters}->{databases} = [
+        { label => 'size', set => {
+                key_values => [ { name => 'size' }, { name => 'display' } ],
+                output_template => 'size : %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'size', value => 'size_absolute', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_database_output {
+    my ($self, %options) = @_;
+
+    return "Database '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', default => ''},
-                                  "critical:s"              => { name => 'critical', default => ''},
-                                  "filter:s"                => { name => 'filter', }, # database name to check
+                                {
+                                    "filter-database:s"   => { name => 'filter_database' },
                                 });
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
+    
     $self->{sql} = $options{sql};
-
     $self->{sql}->connect();
-    
-    my $target_fields = undef;
+    $self->{sql}->query(query => "SELECT pg_database.datname, pg_database_size(pg_database.datname) FROM pg_database;");
 
-    # Query to get database size
-    my $query = sprintf("SELECT pg_database.datname, pg_database_size(pg_database.datname);",$self->{option_results}->{database});
-    
     my $result = $self->{sql}->fetchall_arrayref();
-	
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "All databases are ok.");	
-								
-    foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter}) && 
-                 $$row[0] !~ /$self->{option_results}->{filter}/);
-    
-        my $exit_code = $self->{perfdata}->threshold_check(value => $$row[1], threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        my ($value, $value_unit) = $self->{perfdata}->change_bytes(value => $$row[1]);
-        $self->{output}->output_add(long_msg => sprintf("DB '" . $$row[0] . "' size: %s%s", $value, $value_unit));
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("DB '" . $$row[0] . "' size: %s%s", $value, $value_unit));
-        }
-        $self->{output}->perfdata_add(label => $$row[0] . '_size', unit => 'B',
-                                      value => $$row[1],
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-    }
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    foreach my $row (@$result) {
+        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
+            && $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        
+        $self->{databases}->{$$row[0]}->{display} = $$row[0];
+        $self->{databases}->{$$row[0]}->{size} = $$row[1];
+    }
 }
 
 1;
@@ -101,21 +94,21 @@ __END__
 
 =head1 MODE
 
-Check a database size
+Check databases size
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-database>
+
+Filter database to checks (Can use regexp).
+
+=item B<--warning-size>
 
 Threshold warning in bytes, maximum size allowed.
 
-=item B<--critical>
+=item B<--critical-size>
 
 Threshold critical in bytes, maximum size allowed.
-
-=item B<--filter>
-
-Filter database to checks.
 
 =back
 
