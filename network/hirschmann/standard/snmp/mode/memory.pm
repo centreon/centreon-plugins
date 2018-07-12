@@ -67,7 +67,7 @@ sub run {
 
     my $mem_total = $mem_allocated + $mem_free;
 
-    my $mem_percent_used = $mem_allocated / $mem_total * 100;
+    my $mem_percent_used = ($mem_total != 0) ? $mem_allocated / $mem_total * 100 : '0';
 
     my $exit = $self->{perfdata}->threshold_check(value => $mem_percent_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
