@@ -90,7 +90,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
+            eval "$instance_mode->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         }
     };
@@ -238,32 +238,32 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for device status
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-con-status>
+=item B<--warning-device-con-status>
 
 Set warning threshold for device connection status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-con-status>
+=item B<--critical-device-con-status>
 
 Set critical threshold for device connection status (Default: '%{status} =~ /down/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-db-status>
+=item B<--warning-device-db-status>
 
 Set warning threshold for device DB status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-db-status>
+=item B<--critical-device-db-status>
 
 Set critical threshold for device DB status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-config-status>
+=item B<--warning-device-config-status>
 
 Set warning threshold for device configuration status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-config-status>
+=item B<--critical-device-config-status>
 
 Set critical threshold for device configuration status.
 Can used special variables like: %{status}, %{display}
