@@ -78,7 +78,7 @@ sub manage_selection {
 
     my $webcontent = $self->{http}->request();
 
-    while ($webcontent =~ m/(.*):(.*):(.*):(.*)/g) {      
+    while ($webcontent =~ /(.*):(.*):(\d+):(.*)/g) {      
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
 
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
