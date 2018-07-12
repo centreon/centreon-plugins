@@ -79,12 +79,19 @@ sub manage_selection {
 
     my $result = $self->{sql}->fetchall_arrayref();
 
+    $self->{databases} = {};
+
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $$row[0] !~ /$self->{option_results}->{filter_database}/);
         
         $self->{databases}->{$$row[0]}->{display} = $$row[0];
         $self->{databases}->{$$row[0]}->{size} = $$row[1];
+    }
+
+    if (scalar(keys %{$self->{databases}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No databases found');
+        $self->{output}->option_exit();
     }
 }
 
