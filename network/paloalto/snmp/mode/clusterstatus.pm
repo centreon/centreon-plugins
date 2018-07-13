@@ -125,7 +125,9 @@ sub run {
         }
         
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Cluster status is ok."));
+                                    short_msg => sprintf("Cluster status is ok [member: %s] [peer: %s]",
+                                        $self->{result}->{$oid_panSysHAState},
+                                        $self->{result}->{$oid_panSysHAPeerState}));
         
         $self->{output}->output_add(long_msg => sprintf("current high-availability state is %s",
                                                          $self->{result}->{$oid_panSysHAState}));
