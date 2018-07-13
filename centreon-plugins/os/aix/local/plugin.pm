@@ -34,6 +34,7 @@ sub new {
                          'errpt'            => 'os::aix::local::mode::errpt',
                          'list-storages'    => 'os::aix::local::mode::liststorages',
                          'storage'          => 'os::aix::local::mode::storage',
+                         'inodes'           => 'os::aix::local::mode::inodes',
                          'lvsync'         => 'os::aix::local::mode::lvsync',
                          );
 
