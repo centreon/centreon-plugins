@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,11 +20,37 @@
 
 package os::aix::local::mode::inodes;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'inodes', type => 1, cb_prefix_output => 'prefix_inodes_output', message_multiple => 'All inode partitions are ok' }
+    ];
+    
+    $self->{maps_counters}->{inodes} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'used' }, { name => 'display' } ],
+                output_template => 'Used: %s %%',
+                perfdatas => [
+                    { label => 'used', value => 'used_absolute', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_inodes_output {
+    my ($self, %options) = @_;
+    
+    return "Inodes partition '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -34,55 +60,39 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'df' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-i -v 2>&1' },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                  "warning:s"         => { name => 'warning' },
-                                  "critical:s"        => { name => 'critical' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                  "name:s"            => { name => 'name' },
+                                  "hostname:s"          => { name => 'hostname' },
+                                  "remote"              => { name => 'remote' },
+                                  "ssh-option:s@"       => { name => 'ssh_option' },
+                                  "ssh-path:s"          => { name => 'ssh_path' },
+                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+                                  "timeout:s"           => { name => 'timeout', default => 30 },
+                                  "sudo"                => { name => 'sudo' },
+                                  "command:s"           => { name => 'command', default => 'df' },
+                                  "command-path:s"      => { name => 'command_path' },
+                                  "command-options:s"   => { name => 'command_options', default => '-i -v 2>&1' },
+                                  "filter-fs:s"         => { name => 'filter_fs', },
+                                  "name:s"              => { name => 'name' },
                                   "regexp"              => { name => 'use_regexp' },
                                   "regexp-isensitive"   => { name => 'use_regexpi' },
-                                  "space-reservation:s" => { name => 'space_reservation' },
                                 });
     $self->{result} = {};
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
+    $self->{inodes} = {};
     my @lines = split /\n/, $stdout;
-    # Header not needed
-    shift @lines;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/);
         my ($fs, $size, $used, $available, $percent, $iused, $ifree, $ipercent, $mount) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
@@ -96,102 +106,19 @@ sub manage_selection {
             && $mount !~ /$self->{option_results}->{name}/);
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $mount ne $self->{option_results}->{name});
-
-	next if ($ifree !~ m/^\d+$/ || $iused !~ m/^\d+$/ || $ipercent !~ m/^\d+%$/);
-
-        $self->{result}->{$mount} = {fs => $fs, total => $ifree + $iused, used => $iused, free => $ifree};
-    }
-    
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No file systems found for mount point '" . $self->{option_results}->{name} . "'.");
-        } else {
-            $self->{output}->add_option_msg(short_msg => "No file systems found.");
-        }
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-	
-    $self->manage_selection();
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All file systems are ok.');
-    }
-    
-    my $num_disk_check = 0;
-    foreach my $name (sort(keys %{$self->{result}})) {
-        my $total_size = $self->{result}->{$name}->{total};
-        if (defined($self->{option_results}->{space_reservation})) {
-            $total_size = $total_size - ($self->{option_results}->{space_reservation} * $total_size / 100);
-        }
-        next if ($total_size == 0);
         
-        $num_disk_check++;
-        my $total_used = $self->{result}->{$name}->{used};
-        my $total_free = $self->{result}->{$name}->{free};
-        my $prct_used = $total_used * 100 / $total_size;
-        my $prct_free = 100 - $prct_used;
+        next if ($ifree !~ m/^\d+$/ || $iused !~ m/^\d+$/);
 
-        my ($exit, $threshold_value);
-
-        $threshold_value = $total_used;
-        $threshold_value = $total_free if (defined($self->{option_results}->{free}));
-        if ($self->{option_results}->{units} eq '%') {
-            $threshold_value = $prct_used;
-            $threshold_value = $prct_free if (defined($self->{option_results}->{free}));
-        } 
-        $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-        #my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-        #my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
-        #my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $total_used));
-
-        my ($total_size_value, $total_size_unit) =  ($total_size, 'inodes');
-        my ($total_used_value, $total_used_unit) = ($total_used, 'inodes');
-        my ($total_free_value, $total_free_unit) = (($total_size - $total_used), 'inodes');
-
-        $self->{output}->output_add(long_msg => sprintf("FS '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("FS '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
-        }    
-
-        my $label = 'used';
-        my $value_perf = $total_used;
-        if (defined($self->{option_results}->{free})) {
-            $label = 'free';
-            $value_perf = $total_free;
-        }
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        my %total_options = ();
-        if ($self->{option_results}->{units} eq '%') {
-            $total_options{total} = $total_size;
-            $total_options{cast_int} = 1; 
-        }
-        $self->{output}->perfdata_add(label => $label . $extra_label,
-                                      value => $value_perf,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                      min => 0, max => $total_size);
-    }
-
-    if ($num_disk_check == 0) {
-        $self->{output}->add_option_msg(short_msg => "No file systems checked.");
-        $self->{output}->option_exit();
+        $self->{inodes}->{$mount} = { display => $mount, used => $iused };
     }
     
-    $self->{output}->display();
-    $self->{output}->exit();
+    if (scalar(keys %{$self->{inodes}}) <= 0) {
+        if ($exit_code != 0) {
+            $self->{output}->output_add(long_msg => "command output:" . $stdout);
+        }
+        $self->{output}->add_option_msg(short_msg => "No storage found (filters or command issue)");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -200,7 +127,7 @@ __END__
 
 =head1 MODE
 
-Check file systems usage.
+Check inodes usage on partitions.
 
 =over 8
 
@@ -243,23 +170,15 @@ Command path (Default: none).
 
 =item B<--command-options>
 
-Command options (Default: '-P -k 2>&1').
+Command options (Default: '-i -v 2>&1').
 
-=item B<--warning>
+=item B<--warning-usage>
 
-Threshold warning.
+Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
-Threshold critical.
-
-=item B<--units>
-
-Units of thresholds (Default: '%') ('%', 'B').
-
-=item B<--free>
-
-Thresholds are on free space left.
+Threshold critical in percent.
 
 =item B<--name>
 
@@ -276,11 +195,6 @@ Allows to use regexp non case-sensitive (with --regexp).
 =item B<--filter-fs>
 
 Filter filesystem (regexp can be used).
-
-=item B<--space-reservation>
-
-Some filesystem has space reserved (like ext4 for root).
-The value is in percent of total (Default: none).
 
 =back
 
