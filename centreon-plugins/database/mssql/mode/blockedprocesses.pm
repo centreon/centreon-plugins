@@ -24,38 +24,77 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use POSIX qw/floor/;
+use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'processwaittime', type => 1, message_multiple => 'No processes have been waiting for longer than thresholds' },
+        { name => 'processes', type => 1 },
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => 'There are %s blocked processes',
+        { label => 'blocked-processes', set => {
+                key_values => [ { name => 'blocked_processes' } ],
+                output_template => 'Number of blocked processes : %s',
                 perfdatas => [
-                    { label => 'total_blocked_processes', value => 'total_absolute', template => '%s',
+                    { label => 'blocked_processes', value => 'blocked_processes_absolute', template => '%s',
                       unit => '', min => 0 },
                 ],
             }
         },
     ];
-    $self->{maps_counters}->{processwaittime} = [
-        { label => 'processwaittime', set => {
-                key_values => [ { name => 'waittime' }, { name => 'display' } ],
-                closure_custom_output => $self->can('custom_processwaittime_output'),
+    $self->{maps_counters}->{processes} = [
+        { label => 'wait-time', set => {
+                key_values => [ { name => 'spid' }, { name => 'blocked' }, { name => 'status' },
+                    { name => 'waittime' }, { name => 'program' }, { name => 'cmd' } ],
+                closure_custom_calc => $self->can('custom_processes_calc'),
+                closure_custom_output => $self->can('custom_processes_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_processes_threshold'),
             }
         },
     ];
 }
 
-sub custom_processwaittime_output {
+sub custom_processes_threshold {
     my ($self, %options) = @_;
-    return $self->{result_values}->{display_absolute};
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{waittime},
+                                                  threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' },
+                                                                 { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
+    
+    return $exit;
+}
+
+sub custom_processes_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Process ID '%s' is blocked by process ID '%s' for %s [status: %s] [program: %s] [command: %s]",
+        $self->{result_values}->{spid},
+        $self->{result_values}->{blocked},
+        ($self->{result_values}->{waittime} > 0) ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{waittime}) : "0s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{program},
+        $self->{result_values}->{cmd});
+
+    return $msg;
+}
+
+sub custom_processes_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{spid} = $options{new_datas}->{$self->{instance} . '_spid'};
+    $self->{result_values}->{blocked} = $options{new_datas}->{$self->{instance} . '_blocked'};
+    $self->{result_values}->{waittime} = (defined($options{new_datas}->{$self->{instance} . '_waittime'}) &&
+        $options{new_datas}->{$self->{instance} . '_waittime'} ne '') ?
+            floor($options{new_datas}->{$self->{instance} . '_waittime'} / 1000) : '0';
+    $self->{result_values}->{status} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_status'});
+    $self->{result_values}->{program} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_program'});
+    $self->{result_values}->{cmd} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_cmd'});
+    return 0;
 }
 
 sub new {
@@ -66,8 +105,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                "filter-program:s" => { name => 'filter_program' },
-                                "filter-command:s" => { name => 'filter_command' },
+                                    "filter-status:s" => { name => 'filter_status' },
+                                    "filter-program:s" => { name => 'filter_program' },
+                                    "filter-command:s" => { name => 'filter_command' },
                                 });
     return $self;
 }
@@ -76,33 +116,38 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => "SELECT spid, trim(program_name) as program_name, trim(cmd) as cmd, trim(status) as status, waittime FROM master.dbo.sysprocesses WHERE blocked <> '0'");
+    $options{sql}->query(query => q{SELECT spid, blocked, waittime, status, trim(program_name) as program, trim(cmd) as cmd FROM master.dbo.sysprocesses});
 
-    $self->{global} = { total => 0 };
-    $self->{processwaittime} = {};
+    $self->{global} = { blocked_processes => 0 };
+    $self->{processes} = {};
 
     while (my $row = $options{sql}->fetchrow_hashref()) {
-
-        # waittime is given in milliseconds, so we convert it to seconds
-        my $proc_waittime = $row->{waittime} / 1000;
-        my $proc_identity_verbose = "command '".$row->{cmd}."' (spid ".$row->{spid}.((defined $row->{program_name} && $row->{program_name} ne '')?(" from program '".$row->{program_name}."'"):'').", status '".$row->{status}."') waited ".$proc_waittime."s";
-        my $proc_identity = 'spid_'.$row->{spid};
-
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
+            $row->{status} !~ /$self->{option_results}->{filter_status}/) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because status is not matching filter.");
+            next;
+        }
         if (defined($self->{option_results}->{filter_program}) && $self->{option_results}->{filter_program} ne '' &&
-            $row->{program_name} !~ /$self->{option_results}->{filter_program}/) {
-            $self->{output}->output_add(debug => 1, long_msg => "Skipping process having " . $proc_identity_verbose . ": because program is not matching filter.");
+            $row->{program} !~ /$self->{option_results}->{filter_program}/) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because program is not matching filter.");
             next;
         }
         if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
             $row->{cmd} !~ /$self->{option_results}->{filter_command}/) {
-            $self->{output}->output_add(debug => 1, long_msg => "Skipping process having " . $proc_identity_verbose . ": because command is not matching filter.");
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because command is not matching filter.");
             next
         }
 
-        # We increment the total number of blocked processes
-        $self->{global}->{total} += 1;
+        $self->{processes}->{$row->{spid}} = {
+            waittime => $row->{waittime},
+            spid => $row->{spid},
+            blocked => $row->{blocked},
+            status => $row->{status},
+            program => $row->{program},
+            cmd => $row->{cmd},
+        };
 
-        $self->{processwaittime}->{$proc_identity} = { waittime => $proc_waittime, display => $proc_identity_verbose };
+        $self->{global}->{blocked_processes}++;
     }
 }
 
@@ -112,9 +157,13 @@ __END__
 
 =head1 MODE
 
-Checks if some processes are in a blocked state on a MSSQL Server instance.
+Checks if some processes are in a blocked state.
 
 =over 8
+
+=item B<--filter-status>
+
+Filter results based on the status (can be a regexp).
 
 =item B<--filter-program>
 
@@ -124,13 +173,21 @@ Filter results based on the program (client) name  (can be a regexp).
 
 Filter results based on the command name (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-blocked-processes>
 
-Set warning threshold for number of user. Can be : 'total', 'processwaittime'
+Threshold warning for total number of blocked processes.
 
-=item B<--critical-*>
+=item B<--critical-blocked-processes>
 
-Set critical threshold for number of user. Can be : 'total', 'processwaittime'
+Threshold critical for total number of blocked processes.
+
+=item B<--warning-wait-time>
+
+Threshold warning for blocked wait time.
+
+=item B<--critical-wait-time>
+
+Threshold critical for blocked wait time.
 
 =back
 
