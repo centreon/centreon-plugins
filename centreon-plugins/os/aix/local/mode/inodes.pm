@@ -93,9 +93,11 @@ sub manage_selection {
     );
     $self->{inodes} = {};
     my @lines = split /\n/, $stdout;
+    # Header not needed
+    shift @lines;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/);
-        my ($fs, $size, $used, $available, $percent, $iused, $ifree, $ipercent, $mount) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/);
+        my ($fs, $size, $available, $percent, $iused, $ipercent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
         
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
                  $fs !~ /$self->{option_results}->{filter_fs}/);
@@ -108,8 +110,9 @@ sub manage_selection {
             && $mount ne $self->{option_results}->{name});
         
         next if ($ifree !~ m/^\d+$/ || $iused !~ m/^\d+$/);
-
-        $self->{inodes}->{$mount} = { display => $mount, used => $iused };
+        
+        $ipercent =~ s/%//g;
+        $self->{inodes}->{$mount} = { display => $mount, used => $ipercent };
     }
     
     if (scalar(keys %{$self->{inodes}}) <= 0) {
