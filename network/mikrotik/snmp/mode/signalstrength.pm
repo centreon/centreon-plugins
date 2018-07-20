@@ -92,15 +92,15 @@ sub manage_selection {
 
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
     my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'regmac'}->{'oid'} }});
-    my @KeyRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'rx'}->{'oid'} }});
-    my @KeyTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'tx'}->{'oid'} }});
+    my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'rx'}->{'oid'} }});
+    my @KeysTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'tx'}->{'oid'} }});
     foreach my $index (0 .. $#KeyMac) {
         next if ($KeyMac[$index] !~ /^$mapping->{'regmac'}->{'oid'}\.(.*)$/);
         next if ($KeysRx[$index] !~ /^$mapping->{'rx'}->{'oid'}\.(.*)$/);
         next if ($KeysTx[$index] !~ /^$mapping->{'tx'}->{'oid'}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
-                                                  results => [$interfaceTables->{$mapping->{'rx'}->{'oid'}}, $interfaceTables->{$mapping->{'tx'}->{'oid'}}], 
+                                                  results => { rx => $interfaceTables->{$mapping->{'rx'}->{'oid'}}, tx => $interfaceTables->{$mapping->{'tx'}->{'oid'}}}, 
                                                   instance => $instance);
         my $mac = unpack('H*', $interfaceTables->{$mapping->{'regmac'}->{'oid'}}->{$KeyMac[$index]});
         $mac =~ s/..\K\B/:/g;
