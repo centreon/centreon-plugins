@@ -35,9 +35,11 @@ sub new {
                                 {
                                   "warning:s"               => { name => 'warning' },
                                   "critical:s"              => { name => 'critical' },
+                                  "real-swap"               => { name => 'real_swap' },
                                 });
 
     $self->{swap_memory_id} = undef;
+    $self->{physical_memory_id} = undef;
 
     return $self;
 }
@@ -79,7 +81,7 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Cannot find virtual memory informations.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{physical_memory_id})) {
+    if (defined($self->{option_results}->{real_swap}) && !defined($self->{physical_memory_id})) {
         $self->{output}->add_option_msg(short_msg => "Cannot find physical memory informations.");
         $self->{output}->option_exit();
     }
@@ -88,11 +90,15 @@ sub run {
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
 
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
-                        instances => [$self->{physical_memory_id}]);
-    $result = $self->{snmp}->get_leef();
-    my $physicalSize = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}};
-    my $physicalUsed = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}};
+    my $physicalSize = 0;
+    my $physicalUsed = 0;
+    if (defined($self->{option_results}->{real_swap})) {
+        $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
+                            instances => [$self->{physical_memory_id}]);
+        $result = $self->{snmp}->get_leef();
+        $physicalSize = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}};
+        $physicalUsed = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}};
+    }
 
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
                         instances => [$self->{swap_memory_id}]);
