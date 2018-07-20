@@ -62,7 +62,7 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'transactions/sec' AND instance_name = '_Total'});
+    $self->{sql}->query(query => q{SELECT cntr_value FROM sys.dm_os_performance_counters WHERE UPPER(counter_name) = UPPER('transactions/sec') AND instance_name = '_Total'});
     my $transactions = $self->{sql}->fetchrow_array();
 
 	$self->{statefile_cache}->read(statefile => 'mssql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
