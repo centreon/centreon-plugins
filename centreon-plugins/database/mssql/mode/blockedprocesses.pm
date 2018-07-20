@@ -91,9 +91,9 @@ sub custom_processes_calc {
     $self->{result_values}->{waittime} = (defined($options{new_datas}->{$self->{instance} . '_waittime'}) &&
         $options{new_datas}->{$self->{instance} . '_waittime'} ne '') ?
             floor($options{new_datas}->{$self->{instance} . '_waittime'} / 1000) : '0';
-    $self->{result_values}->{status} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_status'});
-    $self->{result_values}->{program} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_program'});
-    $self->{result_values}->{cmd} = centreon::plugins::misc::trim($options{new_datas}->{$self->{instance} . '_cmd'});
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{program} = $options{new_datas}->{$self->{instance} . '_program'};
+    $self->{result_values}->{cmd} = $options{new_datas}->{$self->{instance} . '_cmd'};
     return 0;
 }
 
@@ -116,24 +116,28 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => q{SELECT spid, blocked, waittime, status, trim(program_name) as program, trim(cmd) as cmd FROM master.dbo.sysprocesses});
+    $options{sql}->query(query => q{SELECT spid, blocked, waittime, status, program_name, cmd FROM master.dbo.sysprocesses WHERE blocked <> '0'});
 
     $self->{global} = { blocked_processes => 0 };
     $self->{processes} = {};
 
     while (my $row = $options{sql}->fetchrow_hashref()) {
+        my $status = centreon::plugins::misc::trim($row->{status});
+        my $program = centreon::plugins::misc::trim($row->{program_name});
+        my $cmd = centreon::plugins::misc::trim($row->{cmd});
+
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $row->{status} !~ /$self->{option_results}->{filter_status}/) {
+            $status !~ /$self->{option_results}->{filter_status}/) {
             $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because status is not matching filter.");
             next;
         }
         if (defined($self->{option_results}->{filter_program}) && $self->{option_results}->{filter_program} ne '' &&
-            $row->{program} !~ /$self->{option_results}->{filter_program}/) {
+            $program !~ /$self->{option_results}->{filter_program}/) {
             $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because program is not matching filter.");
             next;
         }
         if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
-            $row->{cmd} !~ /$self->{option_results}->{filter_command}/) {
+            $cmd !~ /$self->{option_results}->{filter_command}/) {
             $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because command is not matching filter.");
             next
         }
@@ -142,9 +146,9 @@ sub manage_selection {
             waittime => $row->{waittime},
             spid => $row->{spid},
             blocked => $row->{blocked},
-            status => $row->{status},
-            program => $row->{program},
-            cmd => $row->{cmd},
+            status => $status,
+            program => $program,
+            cmd => $cmd,
         };
 
         $self->{global}->{blocked_processes}++;
