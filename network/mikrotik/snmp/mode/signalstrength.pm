@@ -99,9 +99,6 @@ sub manage_selection {
         next if ($KeysRx[$index] !~ /^$mapping->{'rx'}->{'oid'}\.(.*)$/);
         next if ($KeysTx[$index] !~ /^$mapping->{'tx'}->{'oid'}\.(.*)$/);
         my $instance = $1;
-        printf $instance . "\n";
-        printf $KeysRx[$index] . "\n";
-        printf $KeysTx[$index] . "\n";
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
                                                   results => $interfaceTables,  
                                                   instance => $instance);
