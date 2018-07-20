@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'rx' }, { name => 'display' } ],
                 output_template => 'Signal Strngth Rx : %s',
                 perfdatas => [
-                    { label => 'signal', value => 'signal_rx_absolute', template => '%s', 
+                    { label => 'signal-rx', value => 'signal_rx_absolute', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'tx' }, { name => 'display' } ],
                 output_template => 'Signal Strngth Tx : %s',
                 perfdatas => [
-                    { label => 'signal', value => 'signal_tx_absolute', template => '%s', 
+                    { label => 'signal-tx', value => 'signal_tx_absolute', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -99,9 +99,11 @@ sub manage_selection {
         next if ($KeysRx[$index] !~ /^$mapping->{'rx'}->{'oid'}\.(.*)$/);
         next if ($KeysTx[$index] !~ /^$mapping->{'tx'}->{'oid'}\.(.*)$/);
         my $instance = $1;
+        printf $instance . "\n";
+        printf $KeysRx[$index] . "\n";
+        printf $KeysTx[$index] . "\n";
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
-                                                  results => { $mapping->{'rx'}->{'oid'} => $interfaceTables->{$mapping->{'rx'}->{'oid'}}, 
-                                                               $mapping->{'tx'}->{'oid'} => $interfaceTables->{$mapping->{'tx'}->{'oid'}}}, 
+                                                  results => $interfaceTables,  
                                                   instance => $instance);
         my $mac = unpack('H*', $interfaceTables->{$mapping->{'regmac'}->{'oid'}}->{$KeyMac[$index]});
         $mac =~ s/..\K\B/:/g;
