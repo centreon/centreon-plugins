@@ -90,7 +90,7 @@ sub manage_selection {
     my $oids = [$mapping->{'regmac'}, $mapping->{'tx'},  $mapping->{'rx'}];
     $self->{snmp} = $options{snmp};
 
-    $self->{signalstrength} = {}
+    $self->{signalstrength} = {};
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
     my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'regmac'}->{'oid'} }});
     my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'rx'}->{'oid'} }});
