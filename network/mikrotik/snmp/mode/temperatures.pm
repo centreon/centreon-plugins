@@ -41,6 +41,15 @@ sub set_counters {
                       min => 0, max => 9999, unit => 'C' },
                 ],
             }
+        },
+        { label => 'cpu_1min', set => {
+                key_values => [ { name => 'cpu_1min' } ],
+                output_template => '1 minute average : %.1f C',
+                perfdatas => [
+                    { label => 'temperature_cpu_1min_avg', value => 'cpu_1min_absolute', temperaturelate => '%.1f',
+                      min => 0, max => 9999, unit => 'C' },
+                ],
+            }
         }
     ];
 }
@@ -73,11 +82,13 @@ sub manage_selection {
     }
 
     my $oid_AvgtemperatureMikro = '.1.3.6.1.4.1.14988.1.1.3.10.0';
+    my $oid_AvgCputemperatureMikro = '.1.3.6.1.4.1.14988.1.1.3.11.0';
     my $snmp_result = $options{snmp}->get_leef(oids => [
-            $oid_AvgtemperatureMikro
+            $oid_AvgtemperatureMikro,
+            $oid_AvgCputemperatureMikro
         ], nothing_quit => 1);
 
-    $self->{global} = { '1min' => $snmp_result->{$oid_AvgtemperatureMikro}/10};
+    $self->{global} = { '1min' => $snmp_result->{$oid_AvgtemperatureMikro}/10, 'cpu_1min' => $snmp_result->{$oid_AvgCputemperatureMikro}/10};
 }
 
 1;
