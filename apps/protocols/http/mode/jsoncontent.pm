@@ -126,20 +126,21 @@ sub load_request {
     if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
         $self->{method} = 'POST';
         if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
-            $self->{json_request} = do {
-                local $/;
-                my $fh;
-                if (!open($fh, "<:encoding(UTF-8)", $self->{option_results}->{data})) {
-                    $self->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
-                    $self->{output}->display();
-                    $self->{output}->exit();
-                }
-            };
-            $self->{json_request} = <FILE>;
-            close FILE;
+            local $/ = undef;
+            my $fh;
+            if (!open($fh, "<:encoding(UTF-8)", $self->{option_results}->{data})) {
+                $self->{output}->output_add(severity => 'UNKNOWN',
+                                            short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!));
+                $self->{output}->display();
+                $self->{output}->exit();
+            }
+            my $file_content = <$fh>;
+            close $fh;
+            $/ = "\n";
+            chomp $file_content;
+            $self->{json_request} = $file_content;
         } else {
-           $self->{json_request} = $self->{option_results}->{data};
+            $self->{json_request} = $self->{option_results}->{data};
         }
     }
 }
