@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'rx' }, { name => 'display' } ],
                 output_template => 'Signal Strngth Rx : %s',
                 perfdatas => [
-                    { label => 'signal-rx', value => 'signal_rx_absolute', template => '%s', 
+                    { label => 'signal-rx', value => 'rx_absolute', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'tx' }, { name => 'display' } ],
                 output_template => 'Signal Strngth Tx : %s',
                 perfdatas => [
-                    { label => 'signal-tx', value => 'signal_tx_absolute', template => '%s', 
+                    { label => 'signal-tx', value => 'tx_absolute', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -90,6 +90,7 @@ sub manage_selection {
     my $oids = [$mapping->{'regmac'}, $mapping->{'tx'},  $mapping->{'rx'}];
     $self->{snmp} = $options{snmp};
 
+    $self->{signalstrength} = {}
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
     my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'regmac'}->{'oid'} }});
     my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'rx'}->{'oid'} }});

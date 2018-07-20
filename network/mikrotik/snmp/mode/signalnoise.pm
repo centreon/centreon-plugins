@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'regs2n' }, { name => 'display' } ],
                 output_template => 'Signal To Noise : %s',
                 perfdatas => [
-                    { label => 'signal', value => 'signal_to_noise_absolute', template => '%s', 
+                    { label => 'signal', value => 'regs2n_absolute', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
