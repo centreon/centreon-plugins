@@ -40,7 +40,6 @@ sub new {
                          'voltage'          => 'network::mikrotik::snmp::mode::voltages',
                          'temperature'      => 'network::mikrotik::snmp::mode::temperatures',
                          'signalstrength'     => 'network::mikrotik::snmp::mode::signalstrength',
-                         'ccq'              => 'network::mikrotik::snmp::mode::ccq',
                          'ssid'             => 'network::mikrotik::snmp::mode::ssid',
                          'signalnoise'      => 'network::mikrotik::snmp::mode::signalnoise'
                          );

@@ -100,7 +100,8 @@ sub manage_selection {
         next if ($KeysTx[$index] !~ /^$mapping->{'tx'}->{'oid'}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
-                                                  results => { rx => $interfaceTables->{$mapping->{'rx'}->{'oid'}}, tx => $interfaceTables->{$mapping->{'tx'}->{'oid'}}}, 
+                                                  results => { $mapping->{'rx'}->{'oid'} => $interfaceTables->{$mapping->{'rx'}->{'oid'}}, 
+                                                               $mapping->{'tx'}->{'oid'} => $interfaceTables->{$mapping->{'tx'}->{'oid'}}}, 
                                                   instance => $instance);
         my $mac = unpack('H*', $interfaceTables->{$mapping->{'regmac'}->{'oid'}}->{$KeyMac[$index]});
         $mac =~ s/..\K\B/:/g;
