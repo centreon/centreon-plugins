@@ -48,6 +48,7 @@ sub new {
                          'mountpoint'                => 'os::linux::local::mode::mountpoint',
                          'packet-errors'             => 'os::linux::local::mode::packeterrors',
                          'paging'                    => 'os::linux::local::mode::paging',
+                         'pending-updates'           => 'os::linux::local::mode::pendingupdates',
                          'process'                   => 'os::linux::local::mode::process',
                          'quota'                     => 'os::linux::local::mode::quota',
                          'storage'                   => 'os::linux::local::mode::storage',
