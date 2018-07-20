@@ -97,7 +97,7 @@ sub custom_progress_calc {
 
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_hostsInGroups'};
     $self->{result_values}->{installed} = $options{new_datas}->{$self->{instance} . '_hostsWithAntivirus'};
-    $self->{result_values}->{prct_installed} = $self->{result_values}->{installed} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_installed} = ($self->{result_values}->{total} != 0) ? $self->{result_values}->{installed} * 100 / $self->{result_values}->{total} : 0;
 
     return 0;
 }
