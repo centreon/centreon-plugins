@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => '1 minute average : %.1f V',
                 perfdatas => [
                     { label => 'voltage_1min_avg', value => '1min_absolute', voltagelate => '%.2f',
-                      min => 0, max => 9999, unit => 'V' },
+                      min => 22, max => 25, unit => 'V' },
                 ],
             }
         }
@@ -90,11 +90,11 @@ Check voltage.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-1min>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-1min>
 
 Threshold critical.
 

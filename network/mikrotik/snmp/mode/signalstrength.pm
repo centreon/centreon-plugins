@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'Signal Strngth Rx : %s',
                 perfdatas => [
                     { label => 'signal-rx', value => 'rx_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => -90, max => -20, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 output_template => 'Signal Strngth Tx : %s',
                 perfdatas => [
                     { label => 'signal-tx', value => 'tx_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => -90, max => -20, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         }
@@ -132,8 +132,11 @@ Check signal strength.
 
 =item B<--warning-*>
 
+Can be rx or tx
+
 =item B<--critical-*>
 
+Can be rx or tx
 
 =back
 

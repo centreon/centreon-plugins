@@ -92,11 +92,11 @@ Check memory usages.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-1min>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-1min>
 
 Threshold critical.
 

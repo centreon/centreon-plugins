@@ -101,13 +101,17 @@ Check temperature.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*>
 
 Threshold warning.
 
-=item B<--critical>
+can be 1min or cpu_1min
+
+=item B<--critical-*>
 
 Threshold critical.
+
+can be 1min or cpu_1min
 
 =back
 

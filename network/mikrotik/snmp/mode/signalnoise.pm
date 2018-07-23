@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'Signal To Noise : %s',
                 perfdatas => [
                     { label => 'signal', value => 'regs2n_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 20, max => 80, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         }
@@ -115,10 +115,13 @@ Check signal to noise ratio.
 =over 8
 
 
-=item B<--warning-*>
+=item B<--warning-regs2n>
 
-=item B<--critical-*>
+Threshold for warning
 
+=item B<--critical-regs2n>
+
+Threshold for critical
 
 =back
 
