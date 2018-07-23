@@ -116,13 +116,13 @@ sub new {
                                   "critical-string:s"       => { name => 'critical_string', default => '' },
                                   "printf-format:s"         => { name => 'printf_format' },
                                   "printf-value:s"          => { name => 'printf_value' },
+                                  "dual-table"              => { name => 'dual_table' },
                                 });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    #$self->SUPER::init(%options);
     $self->SUPER::check_options(%options);
     $instance_mode = $self;
 
@@ -152,6 +152,12 @@ sub manage_selection {
     my $row_count = 0;
 
     while (my $row = $self->{sql}->fetchrow_hashref()) {
+        if (defined($self->{option_results}->{dual_table})) {
+            $row->{$self->{option_results}->{value_column}} = delete $row->{keys %{$row}};
+            foreach (keys %{$row}) {
+                $row->{$self->{option_results}->{value_column}} = $row->{$_};
+            }
+        }
         if (!defined($self->{option_results}->{key_column})) {
             $self->{rows}->{$self->{option_results}->{value_column} . $row_count} = { key_field => $row->{$self->{option_results}->{value_column}},
                                                                                       value_field => $row->{$self->{option_results}->{value_column}}};
@@ -211,6 +217,10 @@ e.g --warning-string '%{key_field} eq 'Central' && %{value_field} =~ /127.0.0.1/
 
 Set critical condition (if statement syntax) for status evaluation.
 (Can be: %{key_field} or %{value_field})
+
+=item B<--dual-table>
+
+Set this option to ensure compatibility with dual table and Oracle.
 
 =back
 
