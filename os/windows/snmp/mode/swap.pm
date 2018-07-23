@@ -72,7 +72,7 @@ sub run {
         if ($result->{$key} =~ /^Virtual memory$/i) {
             $self->{swap_memory_id} = $oid;
         }
-        if ($result->{$key} =~ /^Physical memory$/i) {
+        if ($result->{$key} =~ /^Physical (memory|RAM)$/i) {
             $self->{physical_memory_id} = $oid;
         }
     }
