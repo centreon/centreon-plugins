@@ -148,6 +148,11 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
+=item B<--real-swap>
+
+Use this option to remove physical
+memory from Windows SNMP swap values.
+
 =back
 
 =cut
