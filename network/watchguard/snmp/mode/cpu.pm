@@ -97,7 +97,7 @@ sub manage_selection {
             $oid_wgSystemCpuUtil1, $oid_wgSystemCpuUtil5, $oid_wgSystemCpuUtil15
         ], nothing_quit => 1);
 
-    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1}/100, '5min' => $snmp_result->{$oid_wgSystemCpuUtil5}/100, '15min' => $snmp_result->{$oid_wgSystemCpuUtil15}/100 };
+    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1}, '5min' => $snmp_result->{$oid_wgSystemCpuUtil5}, '15min' => $snmp_result->{$oid_wgSystemCpuUtil15} };
 }
 
 1;
