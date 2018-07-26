@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::signalstrength;
+package network::mikrotik::snmp::mode::signal;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,25 +29,38 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'signalstrength', type => 1, cb_prefix_output => 'prefix_mac_output', message_multiple => 'All signals are ok' }
+        { name => 'signalstrength', type => 1, cb_prefix_output => 'prefix_mac_output', message_multiple => 'All signals are ok' },
+        { name => 'signalnoise', type => 1, cb_prefix_output => 'prefix_mac_output', message_multiple => 'All signals are ok' }
     ];
     
     $self->{maps_counters}->{signalstrength} = [
         { label => 'rx-strength', set => {
                 key_values => [ { name => 'rx' }, { name => 'display' } ],
-                output_template => 'Signal Strngth Rx : %s',
+                output_template => 'Signal Strength Rx : %s',
                 perfdatas => [
-                    { label => 'signal-rx', value => 'rx_absolute', template => '%s', 
+                    { label => 'signal_rx', value => 'rx_absolute', template => '%s', 
                       min => -90, max => -20, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'tx-strength', set => {
                 key_values => [ { name => 'tx' }, { name => 'display' } ],
-                output_template => 'Signal Strngth Tx : %s',
+                output_template => 'Signal Strength Tx : %s',
                 perfdatas => [
-                    { label => 'signal-tx', value => 'tx_absolute', template => '%s', 
+                    { label => 'signal_tx', value => 'tx_absolute', template => '%s', 
                       min => -90, max => -20, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{signalnoise} = [
+        { label => 'signal2noise', set => {
+                key_values => [ { name => 'regs2n' }, { name => 'display' } ],
+                output_template => 'Signal To Noise : %s',
+                perfdatas => [
+                    { label => 'signal_noise', value => 'regs2n_absolute', template => '%s', 
+                      min => 20, max => 80, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         }
@@ -76,7 +89,8 @@ sub prefix_mac_output {
 my $mapping = {
     regmac      => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.1' },
     rx          => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.3' },
-    tx          => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.19' }
+    tx          => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.19' },
+    regs2n      => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.12' },
 };
 
 sub manage_selection {
@@ -87,26 +101,33 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $oids = [$mapping->{'regmac'}, $mapping->{'tx'},  $mapping->{'rx'}];
+    my $oids = [$mapping->{regmac}, $mapping->{tx},  $mapping->{rx}, $mapping->{regs2n}];
     $self->{snmp} = $options{snmp};
 
     $self->{signalstrength} = {};
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
-    my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'regmac'}->{'oid'} }});
-    my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'rx'}->{'oid'} }});
-    my @KeysTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{'tx'}->{'oid'} }});
+    my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{regmac}->{oid} }});
+    my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{rx}->{oid} }});
+    my @KeysTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{tx}->{oid} }});
+    my @Keys2n = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{regs2n}->{oid} }});
     foreach my $index (0 .. $#KeyMac) {
-        next if ($KeyMac[$index] !~ /^$mapping->{'regmac'}->{'oid'}\.(.*)$/);
-        next if ($KeysRx[$index] !~ /^$mapping->{'rx'}->{'oid'}\.(.*)$/);
-        next if ($KeysTx[$index] !~ /^$mapping->{'tx'}->{'oid'}\.(.*)$/);
+        next if ($KeyMac[$index] !~ /^$mapping->{regmac}->{oid}\.(.*)$/ && 
+                 $KeysRx[$index] !~ /^$mapping->{rx}->{oid}\.(.*)$/ && 
+                 $KeysTx[$index] !~ /^$mapping->{tx}->{oid}\.(.*)$/ &&
+                 $Keys2n[$index] !~ /^$mapping->{regs2n}->{oid}\.(.*)$/);
+                 
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
                                                   results => $interfaceTables,  
                                                   instance => $instance);
-        my $mac = unpack('H*', $interfaceTables->{$mapping->{'regmac'}->{'oid'}}->{$KeyMac[$index]});
+        my $mac = unpack('H*', $interfaceTables->{$mapping->{regmac}->{oid}}->{$KeyMac[$index]});
         $mac =~ s/..\K\B/:/g;
         
         $self->{signalstrength}->{$instance} = { display => $mac, 
+            %$result
+        };
+
+        $self->{signalnoise}->{$instance} = { display => $mac, 
             %$result
         };
     }
