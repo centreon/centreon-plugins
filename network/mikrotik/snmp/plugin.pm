@@ -37,7 +37,7 @@ sub new {
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'frequency'        => 'network::mikrotik::snmp::mode::frequency',
                          'memory'           => 'network::mikrotik::snmp::mode::memory',
-                         'signal'           => 'network::mikrotik::snmp::mode::signalstrength',
+                         'signal'           => 'network::mikrotik::snmp::mode::signal',
                          'ssid'             => 'network::mikrotik::snmp::mode::ssid',
                          );
 

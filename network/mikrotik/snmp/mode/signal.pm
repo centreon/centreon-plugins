@@ -74,7 +74,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
+                                    "strength:s" =>  { name => "strength" },
+                                    "noise:s"    =>  { name => "noise" }
                                 });
     
     return $self;
@@ -101,21 +103,39 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $oids = [$mapping->{regmac}, $mapping->{tx},  $mapping->{rx}, $mapping->{regs2n}];
+    my $oids = [$mapping->{regmac}];
+    
+    if(defined($self->{option_results}->{strength})){
+        push @{$oids}, ($mapping->{rx}, $mapping->{tx});
+    }
+
+    if(defined($self->{option_results}->{noise})){
+        push @{$oids}, $mapping->{regs2n};
+    }
+
     $self->{snmp} = $options{snmp};
 
     $self->{signalstrength} = {};
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
+
     my @KeyMac = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{regmac}->{oid} }});
-    my @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{rx}->{oid} }});
-    my @KeysTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{tx}->{oid} }});
-    my @Keys2n = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{regs2n}->{oid} }});
+    my (@KeysRx, @KeysTx, @Keys2n);
+
+    if (defined($self->{option_results}->{strength})) {
+        @KeysRx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{rx}->{oid} }});
+        @KeysTx = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{tx}->{oid} }});
+
+    } elsif (defined($self->{option_results}->{noise})){
+        @Keys2n = $self->{snmp}->oid_lex_sort(keys %{$interfaceTables->{ $mapping->{regs2n}->{oid} }});
+    }
+
     foreach my $index (0 .. $#KeyMac) {
-        next if ($KeyMac[$index] !~ /^$mapping->{regmac}->{oid}\.(.*)$/ && 
+        next if ($KeyMac[$index] !~ /^$mapping->{regmac}->{oid}\.(.*)$/); 
+        next if (defined($self->{option_results}->{strength}) && 
                  $KeysRx[$index] !~ /^$mapping->{rx}->{oid}\.(.*)$/ && 
-                 $KeysTx[$index] !~ /^$mapping->{tx}->{oid}\.(.*)$/ &&
-                 $Keys2n[$index] !~ /^$mapping->{regs2n}->{oid}\.(.*)$/);
-                 
+                 $KeysTx[$index] !~ /^$mapping->{tx}->{oid}\.(.*)$/); 
+        next if (defined($self->{option_results}->{noise}) && $Keys2n[$index] !~ /^$mapping->{regs2n}->{oid}\.(.*)$/);
+
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, 
                                                   results => $interfaceTables,  
@@ -123,17 +143,21 @@ sub manage_selection {
         my $mac = unpack('H*', $interfaceTables->{$mapping->{regmac}->{oid}}->{$KeyMac[$index]});
         $mac =~ s/..\K\B/:/g;
         
-        $self->{signalstrength}->{$instance} = { display => $mac, 
-            %$result
-        };
+        if(defined($self->{option_results}->{strength})) {
+            $self->{signalstrength}->{$instance} = { display => $mac, 
+                %$result
+            };
+        }
 
-        $self->{signalnoise}->{$instance} = { display => $mac, 
-            %$result
-        };
+        if(defined($self->{option_results}->{noise})) {
+            $self->{signalnoise}->{$instance} = { display => $mac, 
+                %$result
+            };
+        }
     }
     
-    if (scalar(keys %{$self->{signalstrength}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No signal to noise found.");
+    if (scalar(keys %{$self->{signalstrength}}) <= 0 && scalar(keys %{$self->{signalnoise}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No signal found.");
         $self->{output}->option_exit();
     }
 
@@ -153,11 +177,11 @@ Check signal strength.
 
 =item B<--warning-*>
 
-Can be rx or tx
+Can be rx, tx or regs2n
 
 =item B<--critical-*>
 
-Can be rx or tx
+Can be rx, tx or regs2n
 
 =back
 
