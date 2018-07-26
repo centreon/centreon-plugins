@@ -107,22 +107,4 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
-=item B<--swap>
-
-Check swap also.
-
-=item B<--warning-swap>
-
-Threshold warning in percent.
-
-=item B<--critical-swap>
-
-Threshold critical in percent.
-
-=item B<--no-swap>
-
-Threshold if no active swap (default: 'critical').
-
-=back
-
 =cut
