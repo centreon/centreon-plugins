@@ -40,11 +40,11 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 1, skip => 0};
     return if ($self->check_filter(section => 'voltage'));
-
+    my $instance = 0;
     my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
-    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', 0, value => $result->{voltage}/10);
+    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{voltage}/10);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Voltage is '%s' Volts", $result->{voltage}/10));
