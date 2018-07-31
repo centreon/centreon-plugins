@@ -28,13 +28,12 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|voltage)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['voltage', 'temperature'];
+    $self->{components_module} = ['voltage', 'temperature', 'fan'];
 }
 
 sub snmp_execute {
@@ -87,11 +86,6 @@ Can be specific or global: --absent-problem=fan,1
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
 
-=item B<--threshold-overload>
-
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='psu,CRITICAL,^(?!(operational)$)'
 
 =item B<--warning>
 

@@ -39,13 +39,13 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 1, skip => 0};
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_filter(section => 'temperature'));
-
+    $instance = 0;
     my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
-    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', 0, value => $result->{overallTemp}/10);
+    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{overallTemp}/10);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Overall Temperature is '%s' °C", $result->{overallTemp}/10));
@@ -55,9 +55,10 @@ sub check {
                                   warning => $warn,
                                   critical => $crit,
                                   );
+    $self->{components}->{temperature}->{total}++;
 
     if(defined($result->{cpuTemp}) && $result->{cpuTemp} > 0) {
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', 0, value => $result->{cpuTemp}/10);
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{cpuTemp}/10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("CPU Temperature is '%s' °C", $result->{cpuTemp}/10));
@@ -67,7 +68,7 @@ sub check {
                                     warning => $warn,
                                     critical => $crit,
                                     );
-        $self->{components}->{temperature}->{total} = 2;
+        $self->{components}->{temperature}->{total}++;
     }
 }
 
