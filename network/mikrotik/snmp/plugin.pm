@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'hardware'         => 'network::mikrotik::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'frequency'        => 'network::mikrotik::snmp::mode::frequency',
-                         'memory'           => 'network::mikrotik::snmp::mode::memory',
-                         'signal'           => 'network::mikrotik::snmp::mode::signal',
-                         'ssid'             => 'network::mikrotik::snmp::mode::ssid',
+                         'cpu'               => 'snmp_standard::mode::cpu',
+                         'hardware'          => 'network::mikrotik::snmp::mode::hardware',
+                         'interfaces'        => 'snmp_standard::mode::interfaces',
+                         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+                         'list-frequencies'  => 'network::mikrotik::snmp::mode::listfrequencies',
+                         'memory'            => 'network::mikrotik::snmp::mode::memory',
+                         'signal'            => 'network::mikrotik::snmp::mode::signal',
+                         'list-ssids'        => 'network::mikrotik::snmp::mode::listssids',
                          );
 
     return $self;

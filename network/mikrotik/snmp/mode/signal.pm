@@ -170,10 +170,17 @@ __END__
 
 =head1 MODE
 
-Check signal strength.
+Check signal strength and signal to noise.
 
 =over 8
 
+=item B<--noise>
+
+Gets values for signal to noise
+
+=item B<--strength>
+
+Gets values for signal strength
 
 =item B<--warning-*>
 

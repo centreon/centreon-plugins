@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::frequency;
+package network::mikrotik::snmp::mode::listfrequencies;
 
 use base qw(centreon::plugins::mode);
 
@@ -105,7 +105,7 @@ __END__
 
 =head1 MODE
 
-Check frequency for each interface.
+Lists frequencies for each interface.
 
 =over 8
 

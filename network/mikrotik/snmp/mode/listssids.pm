@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::ssid;
+package network::mikrotik::snmp::mode::listssids;
 
 use base qw(centreon::plugins::mode);
 
@@ -105,7 +105,7 @@ __END__
 
 =head1 MODE
 
-Check ssid for each interface.
+lists ssids for each interface.
 
 =over 8
 

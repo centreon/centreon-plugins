@@ -25,35 +25,46 @@ use warnings;
 
 
 my $mapping = {
-    voltage   => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' },
+    active_fan   => { oid => '.1.3.6.1.4.1.14988.1.1.3.9' },
+    fan_speed1   => { oid => '.1.3.6.1.4.1.14988.1.1.3.17' },
+    fan_speed2   => { oid => '.1.3.6.1.4.1.14988.1.1.3.18' },
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, $mapping->{voltage};
+    push @{$self->{request}}, ($mapping->{active_fan}, $mapping->{fan_speed1}, $mapping->{fan_speed2});
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking voltages");
-    $self->{components}->{voltage} = {name => 'voltages', total => 1, skip => 0};
-    return if ($self->check_filter(section => 'voltage'));
-
+    $self->{output}->output_add(long_msg => "Checking fans");
+    $self->{components}->{active_fan} = {name => 'fans', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'fans'));
+    my $instance = 0;
     my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => 0);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
-    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', 0, value => $result->{voltage}/10);
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Voltage is '%s' Volts", $result->{voltage}/10));
+    if(defined($result->{active_fan}) && $result->{active_fan} ne "n/a") {
+        my @fans = ($result->{fan_speed1}, $result->{fan_speed2});
+        for my $i (0 .. 1){
+            ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $fans[$i]);
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Fan " . ($i+1) . " RPM is '%s'", $fans[$i]));
+            }
+            $self->{output}->perfdata_add(label => ('Fan_' . ($i+1)), unit => 'RPM', 
+                                        value => $fans[$i],
+                                        warning => $warn,
+                                        critical => $crit,
+                                        );
+            $self->{components}->{active_fan}->{total}++;
+        }
+       
+    } else {
+        $self->{components}->{active_fan}->{skip}++;
     }
-    $self->{output}->perfdata_add(label => 'voltage', unit => 'V', 
-                                  value => $result->{voltage}/10,
-                                  warning => $warn,
-                                  critical => $crit,
-                                  );
 }
 
 1;

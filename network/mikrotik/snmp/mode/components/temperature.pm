@@ -41,7 +41,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
     return if ($self->check_filter(section => 'temperature'));
-    $instance = 0;
+    my $instance = 0;
     my ($exit, $warn, $crit, $checked);
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 

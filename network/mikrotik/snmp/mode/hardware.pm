@@ -69,11 +69,11 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'voltage', 'temperature'.
+Can be: 'voltage', 'temperature', 'fan'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
+Exclude some parts (comma seperated list) (Example: --filter=fan --filter=voltage)
 Can also exclude specific instance: --filter=fan,1.1
 
 =item B<--absent-problem>
@@ -89,12 +89,12 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Set warning threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
 Example: --warning='temperature,.*,40'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
+Set critical threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,50'
 
 =back
