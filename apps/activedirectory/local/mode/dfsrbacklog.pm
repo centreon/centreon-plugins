@@ -75,7 +75,10 @@ sub check_options {
     }
     
     $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
-
+    
+    if (defined($self->{option_results}->{receiving_member})) {
+        $self->{option_results}->{command_options} .= '/ReceivingMember:' . $self->{option_results}->{receiving_member} . ' ';
+    }
     
     if (!defined($self->{option_results}->{replication_group}) || $self->{option_results}->{replication_group} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify replication-group option.");
