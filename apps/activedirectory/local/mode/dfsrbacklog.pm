@@ -76,10 +76,6 @@ sub check_options {
     
     $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
 
-    if (!defined($self->{option_results}->{receiving_member}) || $self->{option_results}->{receiving_member} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify receiving-member option.");
-        $self->{output}->option_exit();
-    }
     
     if (!defined($self->{option_results}->{replication_group}) || $self->{option_results}->{replication_group} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify replication-group option.");
@@ -123,19 +119,19 @@ Check dfsr backlog.
 
 =item B<--sending-member>
 
-Name of the member that is sending the replication data.
+Name of the member that is sending the replication data. (Mandatory)
 
 =item B<--receiving-member>
 
-Name of the member that is receiving the replication data.
+Name of the member that is receiving the replication data. (NOT Mandatory)
 
 =item B<--replication-group>
 
-Name for the replication group.
+Name for the replication group. (Mandatory)
 
 =item B<--replicated-folder>
 
-Name name for the replicated folder.
+Name name for the replicated folder. (Mandatory)
 
 =item B<--timeout>
 
