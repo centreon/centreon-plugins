@@ -53,6 +53,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "sending-member:s"        => { name => 'sending_member' },
+                                  "receiving-member:s"      => { name => 'receiving_member' },
                                   "replication-group:s"     => { name => 'replication_group' },
                                   "replicated-folder:s"     => { name => 'replicated_folder' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
@@ -72,7 +73,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify sending-member option.");
         $self->{output}->option_exit();
     }
+    
     $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
+
+    if (!defined($self->{option_results}->{receiving_member}) || $self->{option_results}->{receiving_member} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify receiving-member option.");
+        $self->{output}->option_exit();
+    }
     
     if (!defined($self->{option_results}->{replication_group}) || $self->{option_results}->{replication_group} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify replication-group option.");
@@ -117,6 +124,10 @@ Check dfsr backlog.
 =item B<--sending-member>
 
 Name of the member that is sending the replication data.
+
+=item B<--receiving-member>
+
+Name of the member that is receiving the replication data.
 
 =item B<--replication-group>
 
