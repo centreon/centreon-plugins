@@ -37,7 +37,7 @@ my %map_default_status = (
     33 => 'sfpBothError',
     41 => 'fanError',
     51 => 'psuError',
-    61 => 'rpsError(',
+    61 => 'rpsError',
     71 => 'moduleFaulty',
     81 => 'sensorError',
     91 => 'hardwareFaulty',
@@ -64,10 +64,12 @@ sub check {
             next;
         }
         
-        my $name = $self->get_long_name(instance => $instance);
+        my $name = '';
+        $name = $self->get_short_name(instance => $instance) if (defined($self->{short_name}) && $self->{short_name} == 1);
+        $name = $self->get_long_name(instance => $instance) unless (defined($self->{short_name}) && $self->{short_name} == 1 && defined($name) && $name ne '');
         $self->{components}->{$options{component}}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("%s '%s' status is '%s' [instance = %s]",
-                                                        $options{component}, $name, $result->{EntityExtErrorStatus}, $instance));
+                                                        ucfirst($options{component}), $name, $result->{EntityExtErrorStatus}, $instance));
         my $exit = $self->get_severity(section => $options{component}, value => $result->{EntityExtErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
