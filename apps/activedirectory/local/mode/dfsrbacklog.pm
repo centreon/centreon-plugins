@@ -72,7 +72,7 @@ sub check_options {
     if (!defined($self->{option_results}->{sending_member}) || $self->{option_results}->{sending_member} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify sending-member option.");
         $self->{output}->option_exit();
-    }   
+    }
     $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
 
     if (defined($self->{option_results}->{receiving_member}) && $self->{option_results}->{receiving_member} ne '') {
