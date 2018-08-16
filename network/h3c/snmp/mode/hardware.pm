@@ -174,10 +174,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{short_name} = 0;
-    if (defined($self->{option_results}->{short_name})) {
-        $self->{short_name} = 1;
-    }
+    $self->{short_name} = (defined($self->{option_results}->{short_name})) ? 1 : 0;
     
     $self->{statefile_cache}->check_options(%options);
 }
