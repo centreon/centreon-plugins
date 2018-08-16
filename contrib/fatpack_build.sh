@@ -1,11 +1,9 @@
 #!/bin/bash
 #
-# Centreon Plungins : create the fatpack plugin versions
+# Centreon Plugins : create the fatpack versions
 
-# Needed on CentOS
-# yum install perl-App-FatPacker
-
-# Colors
+# Env
+SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
 RED='\033[1;31m'
 NC='\033[0m'
 
@@ -47,15 +45,30 @@ processmode()
 build()
 {
 	find fatpack/build -name "*.pm" -exec sed -i ' /__END__/d' {} \;
-	cd fatpack/build
+	#cd fatpack/build
 	local name=${1//\//-}
 	name=${name/-plugin.pm/.pl}
+	cd fatpack/build/
 	fatpack file centreon_plugins.pl > ../$name
 	cd - >/dev/null
 	rm -rf fatpack/build
 }
 
 # Main
+if ! which fatpack >/dev/null 2>&1
+then
+	echo "You need App::FatPacker to continue."
+	echo "On CentOS, just type: yum install perl-App-FatPacker"
+	exit
+fi
+if [[ ! -f $SCRIPT_DIR/../centreon_plugins.pl ]]
+then
+	echo "$SCRIPT_DIR/../centreon_plugins.pl not found"
+	exit
+else
+	start_dir=$(pwd)
+	cd $SCRIPT_DIR/..
+fi
 rm -rf fatpack
 for plugin in $(find . -name plugin.pm -printf '%P\n')
 do
@@ -66,3 +79,5 @@ do
 	build $plugin
 	echo
 done
+cd $start_dir
+
