@@ -85,17 +85,17 @@ sub custom_hosts_threshold {
 sub custom_services_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{total_ok} = $options{new_datas}->{$self->{instance} . '_ok'};
-    $self->{result_values}->{total_warning} = $options{new_datas}->{$self->{instance} . '_warning'};
-    $self->{result_values}->{total_critical} = $options{new_datas}->{$self->{instance} . '_critical'};
-    $self->{result_values}->{total_unknown} = $options{new_datas}->{$self->{instance} . '_unknown'};
+    $self->{result_values}->{ok_total} = $options{new_datas}->{$self->{instance} . '_ok'};
+    $self->{result_values}->{warning_total} = $options{new_datas}->{$self->{instance} . '_warning'};
+    $self->{result_values}->{critical_total} = $options{new_datas}->{$self->{instance} . '_critical'};
+    $self->{result_values}->{unknown_total} = $options{new_datas}->{$self->{instance} . '_unknown'};
     return 0
 }
 
 sub custom_services_output {
     my ($self, %options) = @_;
     my $msg = '';
-    $msg .= "[ok:$self->{result_values}->{total_ok}][warning:$self->{result_values}->{total_warning}][critical:$self->{result_values}->{total_critical}][unknown:$self->{result_values}->{total_unknown}]\n";
+    $msg .= "[ok:$self->{result_values}->{ok_total}][warning:$self->{result_values}->{warning_total}][critical:$self->{result_values}->{critical_total}][unknown:$self->{result_values}->{unknown_total}]\n";
     return $msg
 }
 
@@ -103,7 +103,7 @@ sub custom_services_perfdata {
     my ($self, %options) = @_;
 
     foreach my $sstate ('ok', 'warning', 'critical', 'unknown') {
-        $self->{output}->perfdata_add(label => 'total_host_' . $sstate,
+        $self->{output}->perfdata_add(label => 'total_service_' . $sstate,
                                       value => $self->{result_values}->{'total_'.$sstate},
                                       min => 0);
     }
@@ -124,7 +124,7 @@ sub custom_services_threshold {
             eval "$instance_mode->{option_results}->{critical_total}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_total}) && $instance_mode->{option_results}->{warning_total} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_total}") {
+            eval "$instance_mode->{option_results}->{warning_total}") {
             $status = 'warning';
         }
     };
@@ -148,6 +148,7 @@ sub custom_groups_calc {
     $self->{result_values}->{down} = $options{new_datas}->{$self->{instance} . '_down'};
     $self->{result_values}->{unreachable} = $options{new_datas}->{$self->{instance} . '_unreachable'};
 
+
     return 0
 }
 
@@ -157,29 +158,27 @@ sub custom_groups_output {
     my $msg_host = '';
     my $msg_svc = '';
 
-    my $msg_up = '';
-
     if ($config_data->{formatting}->{display_details} eq 'true') {
-        $msg_host .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_up}}))
+        $msg_host .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_up}))
                         ? "HOSTS: [up: $self->{result_values}->{up} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_up}}) . ")]"
                         : "HOSTS: [up: $self->{result_values}->{up}]";
-        $msg_host .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_down}}))
+        $msg_host .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_down}))
                         ? "[down: $self->{result_values}->{down} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_down}}) . ")]"
                         : "[down: $self->{result_values}->{down}]";
-        $msg_host .= (defined(@{$instance_mode->{inventory}->{groups}->{unreachable}->{$self->{result_values}->{instance}}->{list_unreachable}}))
+        $msg_host .= (defined($instance_mode->{inventory}->{groups}->{unreachable}->{$self->{result_values}->{instance}}->{list_unreachable}))
                         ? "[unreachable: $self->{result_values}->{unreachable} (" . join('-', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_unreachable}}) . ")"
                         : "[unreachable: $self->{result_values}->{unreachable}]";
 
-        $msg_svc .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_ok}}))
+        $msg_svc .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_ok}))
                         ? "SERVICES: [ok: $self->{result_values}->{ok} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_ok}}) .")]"
                         : "SERVICES: [ok: $self->{result_values}->{ok}]";
-        $msg_svc .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_warning}}))
+        $msg_svc .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_warning}))
                         ? "[warning: $self->{result_values}->{warning} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_warning}}) .")]"
                         : "[warning: $self->{result_values}->{warning}]";
-        $msg_svc .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_critical}}))
+        $msg_svc .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_critical}) > 0)
                         ? "[critical: $self->{result_values}->{critical} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_critical}}) .")]"
                         : "[critical: $self->{result_values}->{critical}]";
-        $msg_svc .= (defined(@{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_unknown}}))
+        $msg_svc .= (defined($instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_unknown}) > 0)
                         ? "[unknown: $self->{result_values}->{unknown} (" . join(' - ', @{$instance_mode->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_unknown}}) .")]"
                         : "[unknown: $self->{result_values}->{unknown}]";
 
@@ -325,6 +324,15 @@ sub check_options {
     if (!exists(${config_data}->{formatting}->{host_service_separator})) {
         ${config_data}->{formatting}->{host_service_separator} = '/';
     }
+    if (!exists($config_data->{counters}->{totalhosts})) {
+        $config_data->{counters}->{totalhosts} = 'true';
+    }
+    if (!exists($config_data->{counters}->{totalservices})) {
+        $config_data->{counters}->{totalservices} = 'true';
+    }
+    if (!exists($config_data->{counters}->{groups})) {
+        $config_data->{counters}->{groups} = 'false';
+    }
     if (!exists($config_data->{selection}) || scalar(keys(%{$config_data->{selection}})) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Check config file: selection is not present or empty");
         $self->{output}->option_exit();
@@ -457,6 +465,8 @@ sub manage_selection {
                 $self->{logicalgroups}->{$group}->{$map_service_state{$row->{sstate}}}++;
             }
         }
+        use Data::Dumper;
+        print Dumper($instance_mode->{inventory});
     } elsif ($config_data->{mode} eq 'exactmatch') {
         foreach my $group (keys %{$config_data->{selection}}) {
             $self->{logicalgroups}->{$group} = { display => $group,
@@ -485,6 +495,8 @@ sub manage_selection {
                 }
             }
         }
+        use Data::Dumper;
+        print Dumper($instance_mode->{inventory});
     }
 }
 
@@ -503,7 +515,7 @@ Specify the full path to a json config file
 
 =item B<--json-data>
 
-JSON input 
+JSON input
 
 =item B<--filter-counters>
 
