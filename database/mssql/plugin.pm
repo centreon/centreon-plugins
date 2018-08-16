@@ -40,6 +40,7 @@ sub new {
                          'dead-locks'           => 'database::mssql::mode::deadlocks',
                          'databases-size'       => 'database::mssql::mode::databasessize',
                          'failed-jobs'          => 'database::mssql::mode::failedjobs',
+                         'list-databases'       => 'database::mssql::mode::listdatabases',
                          'locks-waits'          => 'database::mssql::mode::lockswaits',
                          'logs-size'            => 'database::mssql::mode::logssize',
                          'sql'                  => 'centreon::common::protocols::sql::mode::sql',
