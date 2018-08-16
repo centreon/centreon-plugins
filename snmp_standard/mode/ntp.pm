@@ -75,7 +75,7 @@ sub run {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    if (defined($self->{option_results}->{ntp_hostname})) {
+    if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
         
         eval {

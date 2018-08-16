@@ -374,12 +374,20 @@ sub manage_selection {
             display => $name,
             traffic_usage => $traffic_usage * 8, drop_usage => $drop_usage * 8, total => $total
         };
-        $self->{classmap}->{$class_name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$class_name}));
-        $self->{classmap}->{$class_name}->{traffic_usage} += $traffic_usage * 8;
-        $self->{classmap}->{$class_name}->{drop_usage} += $drop_usage * 8;
         
-        $self->{total}->{traffic_usage} += $traffic_usage * 8;
-        $self->{total}->{drop_usage} += $drop_usage * 8;
+        my @tabname = split /:/, $name;
+        if (defined($tabname[3])){
+            $class_name = $tabname[3].'-'.$class_name;
+        }
+        
+        $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
+        $self->{classmap}->{$name}->{traffic_usage} += $traffic_usage * 8;
+        $self->{classmap}->{$name}->{drop_usage} += $drop_usage * 8;
+        
+        if (!defined($tabname[3])){
+            $self->{total}->{traffic_usage} += $traffic_usage * 8;
+            $self->{total}->{drop_usage} += $drop_usage * 8;
+        }
     }
     
     $self->{cache_name} = "cisco_qos_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .

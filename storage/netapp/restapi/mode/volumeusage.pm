@@ -270,7 +270,7 @@ sub custom_deduplication_perfdata {
                                   min => 0, max => $self->{result_values}->{total});
 }
 
-sub custom_deduplicationn_threshold {
+sub custom_deduplication_threshold {
     my ($self, %options) = @_;
     
     my ($exit, $threshold_value);

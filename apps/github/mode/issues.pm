@@ -38,15 +38,14 @@ sub new {
             "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
             "port:s"            => { name => 'port', default => '443'},
             "proto:s"           => { name => 'proto', default => 'https' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "proxyurl:s"        => { name => 'proxyurl' },
+            "ssl-opt:s@"        => { name => 'ssl_opt' },
             "warning:s"         => { name => 'warning' },
             "critical:s"        => { name => 'critical' },
             "owner:s"           => { name => 'owner' },
             "repository:s"      => { name => 'repository' },
             "label:s"           => { name => 'label', default => '' },
-            "timeout:s"         => { name => 'timeout' },
         });
 
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
@@ -148,17 +147,17 @@ Port used by GitHub's API (Default: '443')
 
 Specify https if needed (Default: 'https')
 
-=item B<--credentials>
+=item B<--proxyurl>
 
-Specify this option if you access webpage over basic authentification
+Proxy URL if any
 
-=item B<--username>
+=item B<--timeout>
 
-Specify username
+Threshold for HTTP timeout (Default: 5)
 
-=item B<--password>
+=item B<--ssl-opt>
 
-Specify password
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 
@@ -179,10 +178,6 @@ Specify GitHub's repository
 =item B<--label>
 
 Specify label for issues
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 3)
 
 =back
 

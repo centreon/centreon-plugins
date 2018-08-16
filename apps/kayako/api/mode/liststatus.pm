@@ -35,14 +35,17 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-         {
-      "hostname:s"            => { name => 'hostname' },
-      "port:s"                => { name => 'port' },
-      "proto:s"               => { name => 'proto' },
-      "urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
-      "kayako-api-key:s"      => { name => 'kayako_api_key' },
-      "kayako-secret-key:s"   => { name => 'kayako_secret_key' },
-         });
+            {
+                "hostname:s"            => { name => 'hostname' },
+                "port:s"                => { name => 'port' },
+                "proto:s"               => { name => 'proto' },
+                "urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
+                "proxyurl:s"            => { name => 'proxyurl' },
+                "timeout:s"             => { name => 'timeout' },
+                "ssl-opt:s@"            => { name => 'ssl_opt' },
+                "kayako-api-key:s"      => { name => 'kayako_api_key' },
+                "kayako-secret-key:s"   => { name => 'kayako_secret_key' },
+            });
     
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
@@ -115,9 +118,17 @@ Specify https if needed
 
 Proxy URL if any
 
-=item B<--kayako-api-url>
+=item B<--urlpath>
 
-This is the URL you should dispatch all GET, POST, PUT & DELETE requests to.
+This is the URL you should dispatch all GET, POST, PUT & DELETE requests to (Default: '/api/index.php?')
+
+=item B<--timeout>
+
+Threshold for HTTP timeout.
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--kayako-api-key>
 

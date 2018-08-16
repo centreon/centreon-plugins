@@ -265,11 +265,15 @@ sub request {
             $req->content($uri_post->query);
         }
     }
-        
+
     if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
                                                error_msg => "Cannot load module 'Authen::NTLM'.");
         Authen::NTLM::ntlmv2(1);
+    }
+
+    if (defined($request_options->{credentials}) && defined($request_options->{basic})) {
+        $req->authorization_basic($request_options->{username}, $request_options->{password});
     }
 
     $self->set_proxy(request => $request_options, url => $url);
@@ -315,7 +319,7 @@ sub request {
         my $short_msg = $response->status_line;
         if ($short_msg =~ /^401/) {
             my ($authenticate) = $response->www_authenticate =~ /(\S+)/;
-            $short_msg .= ' (' . $authenticate . ' authentification expected)';
+            $short_msg .= ' (' . $authenticate . ' authentication expected)';
         }
 
         $self->{output}->output_add(long_msg => $response->content, debug => 1);

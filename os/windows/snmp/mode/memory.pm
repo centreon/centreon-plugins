@@ -145,7 +145,7 @@ sub manage_selection {
     foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);
         my $oid = $1;
-        if ($result->{$key} =~ /^Physical memory$/i) {
+        if ($result->{$key} =~ /^Physical (memory|RAM)$/i) {
             $self->{physical_memory_id} = $oid;
         }
     }

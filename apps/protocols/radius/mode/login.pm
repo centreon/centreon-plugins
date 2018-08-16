@@ -282,7 +282,7 @@ Specify password for authentication
 
 Connection timeout in seconds (Default: 5)
 
-=item B<--timeout>
+=item B<--retry>
 
 Number of retry connection (Default: 0)
 

@@ -47,6 +47,7 @@ sub new {
                     "password:s"    => { name => 'password' },
                     "proxyurl:s"    => { name => 'proxyurl' },
                     "timeout:s"     => { name => 'timeout' },
+                    "ssl-opt:s@"    => { name => 'ssl_opt' },
                     "api-path:s"    => { name => 'api_path' },
                     });
     }
@@ -120,7 +121,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = 443;
     $self->{option_results}->{proto} = 'https';
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};    
+    $self->{option_results}->{proxyurl} = $self->{proxyurl};
 }
 
 sub settings {
@@ -268,6 +269,10 @@ Proxy URL if any.
 =item B<--timeout>
 
 Set HTTP timeout in seconds (Default: '10').
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--api-path>
 

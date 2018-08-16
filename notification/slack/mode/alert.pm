@@ -64,14 +64,15 @@ sub new {
             "link-url:s"            => { name => 'link_url' },
             "centreon-url:s"        => { name => 'centreon_url' },
             "centreon-token:s"      => { name => 'centreon_token' },
-            
             "credentials"           => { name => 'credentials' },
+            "basic"                 => { name => 'basic' },
             "ntlm"                  => { name => 'ntlm' },
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "proxyurl:s"            => { name => 'proxyurl' },
             "proxypac:s"            => { name => 'proxypac' },
             "timeout:s"             => { name => 'timeout' },
+            "ssl-opt:s@"            => { name => 'ssl_opt' },
             });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{payload_attachment} = { fields => [] }; 
@@ -326,23 +327,31 @@ Proxy pac file (can be an url or local file)
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
-
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
+Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

@@ -1,3 +1,29 @@
+2018-05-28 Colin Gagnaire <cgagnaire@centreon.com>
+ * Enhancement: [http] handle hidden basic authent (#974)
+ * Enhancement: add basic option to mode using http lib (#975)
+ * Enhancement: [sonicwall] enhance modes outputs and thresholds (#978)
+ * Enhancement: [quadstor]{vtltapeusage} add tapes count (#987)
+ * Fix: [f5/bigip]{trunks} div by 0 error (#964)
+ * Fix: [hirschmann]{hardware/psu} wrong oid (#985)
+ * Fix: [cisco/standard]{qosusage} calcul of total and child (#792)
+
+2018-04-27 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: Sonicwall SNMP (#914)
+ * Mode added: [juniper/ssg] 'vpnstatus' (#891)
+ * Mode added: [juniper/ssg] 'vpnusage' (#891)
+ * Mode added: [juniper/ssg] 'listvpn' (#891)
+ * Enhancement: [snmp_standard/ntp] improve ntp mode empty ntp_hostname option
+ * Enhancement: [windows/local] improve liststorages
+ * Enhancement: add --ssl-opt on plugin using http library (#961)
+ * Enhancement: [snmp_standard/interfaces] add interfaces speed check (#762, #954)
+ * Enhancement: [riverbed/steelhead/snmp] refactor plugin to handle EX series (#970)
+ * Fix: [netapp/restapi] fix uri uninitialized option in custom mode
+ * Fix: [netapp/restapi] fix snapmiror modes debug output
+ * Fix: [aws/ec2] fix perl 5.10/el6 compatibility (#945)
+ * Fix: [f5/bigip] fix failover warning thresholds (#964)
+ * Fix: [f5/bigip] fix trunks thresholds management (#964)
+ * Doc: correcting mode formely named 'traffic' to 'interfaces'
+
 2018-04-09 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: IBM FS900 SNMP
  * Plugin added: Kaspersky SNMP
