@@ -266,7 +266,7 @@ sub run_instances {
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
         $debug = 1 if ($display_status_lo == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
-        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}", debug => $debug);
+        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}", debug => $debug) if ($long_msg ne '');
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
             next;
