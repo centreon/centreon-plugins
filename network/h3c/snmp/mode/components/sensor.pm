@@ -65,7 +65,9 @@ sub check {
             next;
         }
         
-        my $name = $self->get_long_name(instance => $instance);
+        my $name = '';
+        $name = $self->get_short_name(instance => $instance) if (defined($self->{short_name}) && $self->{short_name} == 1);
+        $name = $self->get_long_name(instance => $instance) unless (defined($self->{short_name}) && $self->{short_name} == 1 && defined($name) && $name ne '');
         $self->{components}->{sensor}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance = %s]",

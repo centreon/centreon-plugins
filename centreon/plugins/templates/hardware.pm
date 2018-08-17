@@ -118,7 +118,18 @@ sub new {
     $self->{components_module} = [];
     $self->{components_exec_load} = 1;
     $self->set_system();
-    
+
+    $self->{count} = (defined($options{no_count}) && $options{no_count} == 1) ?
+        0 : 1;
+    if ($self->{count} == 1) {
+        foreach my $component (@{$self->{components_module}}) {
+            $options{options}->add_options(arguments => {
+                'warning-count-' . $component . ':s'    => { name => 'warning_count_' . $component },
+                'critical-count-' . $component . ':s'    => { name => 'critical_count_' . $component },
+            });
+        }
+    }
+
     $self->{request} = [];
     
     return $self;
@@ -216,6 +227,17 @@ sub check_options {
             }
         }
     }
+    
+    if ($self->{count} == 1) {
+        foreach my $comp (@{$self->{components_module}}) {
+            foreach my $threshold (('warning', 'critical')) {
+                if (($self->{perfdata}->threshold_validate(label => $threshold . '-count-' . $comp, value => $self->{option_results}->{$threshold . '_count_' . $comp})) == 0) {
+                    $self->{output}->add_option_msg(short_msg => "Wrong " . $threshold . " threshold '" . $self->{option_results}->{$threshold . '_count_' . $comp} . "'.");
+                    $self->{output}->option_exit();
+                }
+            }
+        }
+    }
 }
 
 sub load_components {
@@ -253,20 +275,43 @@ sub display {
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
+    my $exit = 'OK';
+    my $exits = [];
+    my ($warn, $crit);
+
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
         next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+
+        if ($self->{count} == 1) {
+            ($exit, $warn, $crit) = $self->get_severity_count(label => $comp, value => $self->{components}->{$comp}->{total});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("'%s' components '%s' checked",
+                                                            $self->{components}->{$comp}->{total},
+                                                            $comp));
+            }
+            $self->{output}->perfdata_add(label => 'count_' . $comp,
+                                          value => $self->{components}->{$comp}->{total},
+                                          warning => $warn,
+                                          critical => $crit);
+            push @{$exits}, $exit;
+        }
+
         $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
         my $count_by_components = $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip}; 
         $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $count_by_components . ' ' . $self->{components}->{$comp}->{name};
         $display_by_component_append = ', ';
     }
+
+    $exit = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components are ok [%s].", 
-                                                     $total_components,
-                                                     $display_by_component)
-                                );
+    if ($self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(short_msg => sprintf("All %s components are ok [%s].", 
+                                                        $total_components,
+                                                        $display_by_component)
+                                    );
+    }
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(severity => $self->{no_components},
@@ -347,6 +392,20 @@ sub absent_problem {
     }
     
     return 0;
+}
+
+sub get_severity_count {
+    my ($self, %options) = @_;
+    my $status = 'OK'; # default
+    my $thresholds = { warning => undef, critical => undef };
+    
+    $status = $self->{perfdata}->threshold_check(value => $options{value},
+                                                 threshold => [ { label => 'critical-count-' . $options{label}, 'exit_litteral' => 'critical' }, 
+                                                                { label => 'warning-count-' . $options{label}, 'exit_litteral' => 'warning' } ]);
+    $thresholds->{critical} = $self->{perfdata}->get_perfdata_for_output(label => 'critical-count-' . $options{label});
+    $thresholds->{warning} = $self->{perfdata}->get_perfdata_for_output(label => 'warning-count-' . $options{label});
+
+    return ($status, $thresholds->{warning}, $thresholds->{critical});
 }
 
 sub get_severity_numeric {
@@ -439,6 +498,14 @@ Example: --warning='xxxxx,.*,30'
 
 Set critical threshold for temperatures (syntax: type,instance,threshold)
 Example: --critical='xxxxx,.*,40'
+
+=item B<--warning-count-xxxx>
+
+Set warning threshold for component count.
+
+=item B<--critical-count-xxxx>
+
+Set critical threshold for component count.
 
 =back
 

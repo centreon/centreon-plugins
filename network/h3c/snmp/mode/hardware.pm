@@ -113,7 +113,8 @@ sub set_system {
     };
     
     $self->{components_path} = 'network::h3c::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'slot', 'temperature'];
+    $self->{components_module} = ['chassis', 'backplane', 'container', 'psu', 'fan', 'sensor',
+        'module', 'port', 'stack', 'cpu', 'other', 'unknown'];
     
     $self->{mapping_name} = {
         1 => 'other', 2 => 'unknown', 3 => 'chassis', 4 => 'backplane', 5 => 'container', 6 => 'psu', 
@@ -162,6 +163,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+                                  "short-name"              => { name => 'short_name' },
                                 });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);    
@@ -171,6 +173,8 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $self->{short_name} = (defined($self->{option_results}->{short_name})) ? 1 : 0;
     
     $self->{statefile_cache}->check_options(%options);
 }
@@ -209,6 +213,12 @@ sub write_cache {
     } else {
         $self->{results}->{$oid_entPhysicalEntry} = $self->{statefile_cache}->get(name => 'oids');
     }
+}
+
+sub get_short_name {
+    my ($self, %options) = @_;
+    
+    return $self->{results}->{$oid_entPhysicalEntry}->{$oid_entPhysicalName . '.' . $options{instance}};
 }
 
 sub get_long_name {
@@ -279,7 +289,7 @@ Check Hardware (Fans, Power Supplies, Module,...).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane', 
+Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane',
 'container', 'module', 'port', 'stack', 'cpu'.
 
 =item B<--filter>
@@ -312,6 +322,18 @@ Example: --warning='temperature,.*,40'
 
 Set critical threshold for 'temperature' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,45'
+
+=item B<--warning-count-*>
+
+Set warning threshold for component count.
+Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane',
+'container', 'module', 'port', 'stack', 'cpu'.
+
+=item B<--critical-count-*>
+
+Set critical threshold for component count.
+Can be: 'fan', 'psu', 'other', 'unknown', 'sensor', 'chassis', 'backplane',
+'container', 'module', 'port', 'stack', 'cpu'.
 
 =item B<--reload-cache-time>
 
