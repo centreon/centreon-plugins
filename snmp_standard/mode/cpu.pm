@@ -21,6 +21,7 @@
 package snmp_standard::mode::cpu;
 
 use base qw(centreon::plugins::mode);
+use List::Util qw[min max];
 
 use strict;
 use warnings;
@@ -35,6 +36,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "percore"                 => { name => 'percore', },
                                 });
 
     return $self;
@@ -61,13 +63,30 @@ sub run {
     my $oid_cputable = '.1.3.6.1.2.1.25.3.3.1.2';
     my $result = $self->{snmp}->get_table(oid => $oid_cputable, nothing_quit => 1);
     
+    my $exit_code='ok';
     my $cpu = 0;
     my $i = 0;
+    my $core_critical = 0;
+    my $core_warning = 0;
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
         $key =~ /\.([0-9]+)$/;
         my $cpu_num = $1;
         
         $cpu += $result->{$key};
+
+        if (defined($self->{option_results}->{percore})) {
+            my $core = $self->{perfdata}->threshold_check(value => $result->{$key},
+                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            if($core eq "critical") {
+                $core_critical++;
+                $exit_code='critical';
+            } elsif ($core eq "warning") {
+                $core_warning++;
+                if ($exit_code eq 'critical') {
+                    $exit_code='warning';
+                }
+            }
+        }
         
         $self->{output}->output_add(long_msg => sprintf("CPU $i Usage is %.2f%%", $result->{$key}));
         $self->{output}->perfdata_add(label => 'cpu' . $i, unit => '%',
@@ -77,10 +96,16 @@ sub run {
     }
 
     my $avg_cpu = $cpu / $i;
-    my $exit_code = $self->{perfdata}->threshold_check(value => $avg_cpu, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $overall = $self->{perfdata}->threshold_check(value => $avg_cpu, 
+                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    if($overall eq "critical") {
+        $exit_code='critical';
+    } elsif ($overall eq "warning" && $exit_code eq 'critical') {
+        $exit_code='warning';
+    }
+
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%s CPU(s) average usage is: %.2f%%", $i, $avg_cpu));
+                                short_msg => sprintf("%s CPU(s)%s average usage is: %.2f%%", $i, (($core_warning + $core_critical > 0) ? " $core_warning warn $core_critical crit," : ""), $avg_cpu));
     $self->{output}->perfdata_add(label => 'total_cpu_avg', unit => '%',
                                   value => sprintf("%.2f", $avg_cpu),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
@@ -110,6 +135,10 @@ Threshold warning in percent.
 =item B<--critical>
 
 Threshold critical in percent.
+
+=item B<--percore>
+
+Apply thresholds on every core rather than overall.
 
 =back
 
