@@ -526,7 +526,11 @@ For example, we want to execute the mode only if the version >= 2.x:
 Can i have one standalone Perl file ?
 -------------------------------------
 
-We have done some tests and it will cost around 4% more of execution time. We are going to create a standalone Linux SNMP plugin.
+We have done some tests and it will cost around 4% more of execution time.
+
+You can simply launch script ``contrib/fatpack_build.sh`` which will automatically build the standalone versions for you. They will then be available next to ``centreon_plugins.pl`` in the ``fatpack`` directory.
+
+Below we are going to manually create a standalone Linux SNMP plugin.
 
 Download the Perl module ``App::FatPacker`` on metacpan:
 ::

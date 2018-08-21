@@ -526,7 +526,11 @@ Par exemple, nous voulons exécuter le mode seulement si sa version >= 2.x :
 Comment puis-je avoir un seul fichier Perl ?
 --------------------------------------------
 
-Nous avons réalisé des tests et le temps d'éxecution est augmenté d'environ 4%. Nous allons créer un fichier unique pour la sonde Linux SNMP.
+Nous avons réalisé des tests et le temps d'éxecution est augmenté d'environ 4%.
+
+Vous pouvez simplement exécuter le script ``contrib/fatpack_build.sh`` qui créera automatiquement les versions fichier unique. Elles seront disponibles à côté de ``centreon_plugins.pl`` dans le répertoire ``fatpack``.
+
+Ci-dessous nous allons créer manuellement un fichier unique pour la sonde Linux SNMP.
 
 Télécharger le module Perl ``App::FatPacker`` sur metacpan:
 ::

@@ -1,5 +1,7 @@
 # HOWTO Centos 
 
+## C wrapper
+
 Install dependencies:
 
     # yum install perl-devel 'perl(ExtUtils::Embed)'
@@ -32,6 +34,15 @@ Test it:
 
     $ cwrapper_perl centreon_protocol_udp.pl --plugin --mode=connection --hostname=10.30.2.65 --port=161
 
+## fatpack build
 
+Install dependencies:
 
+    # yum install perl-App-FatPacker
+
+Build the fatpack version of every plugin:
+
+    # bash fatpack_build.sh
+
+They will then be available next to ``centreon_plugins.pl`` in the ``fatpack`` directory.
 
