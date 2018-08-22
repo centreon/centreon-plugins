@@ -251,6 +251,30 @@ sub change_shitty_xml {
     # </BACKPLANE>
     $options{response} =~ s/<DRIVE_BAY\s+VALUE\s*=\s*"(.*?)".*?<STATUS\s+VALUE\s*=\s*"(.*?)".*?<UID_LED\s+VALUE\s*=\s*"(.*?)".*?\/>/<DRIVE_BAY NUM="$1" STATUS="$2" UID_LED="$3" \/>/msg;
 
+    # 3rd variant, known as the ArnoMLT variant
+    # <BACKPLANE>
+    #   <FIRMWARE VERSION="1.16"/>
+    #   <ENCLOSURE ADDR="224"/>
+    #   <DRIVE BAY="1"/>
+    #     <PRODUCT ID="EG0300FCVBF"/>
+    #     <DRIVE_STATUS VALUE="Ok"/>
+    #     <UID LED="Off"/>
+    #   <DRIVE BAY="2"/>
+    #     <PRODUCT ID="EH0146FARUB"/>
+    #     <DRIVE_STATUS VALUE="Ok"/>
+    #     <UID LED="Off"/>
+    #   <DRIVE BAY="3"/>
+    #     <PRODUCT ID="EH0146FBQDC"/>
+    #     <DRIVE_STATUS VALUE="Ok"/>
+    #     <UID LED="Off"/>
+    #   <DRIVE BAY="4"/>
+    #     <PRODUCT ID="N/A"/>
+    #     <DRIVE_STATUS VALUE="Not Installed"/>
+    #     <UID LED="Off"/>
+    # </BACKPLANE>
+    $options{response} =~ s/<FIRMWARE\s+VERSION\s*=\s*"(.*?)".*?<ENCLOSURE\s+ADDR\s*=\s*"(.*?)".*?\/>/<BACKPLANE FIRMWARE_VERSION="$1" ENCLOSURE_ADDR="$2"/mg;
+    $options{response} =~ s/<DRIVE\s+BAY\s*=\s*"(.*?)".*?<DRIVE_STATUS\s+VALUE\s*=\s*"(.*?)".*?<UID\s+LED\s*=\s*"(.*?)".*?\/>/<DRIVE_BAY NUM="$1" STATUS="$2" UID_LED="$3" \/>/msg;
+
     return $options{response};
 }
 
