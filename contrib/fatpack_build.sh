@@ -2,59 +2,115 @@
 #
 # Centreon Plugins : create the fatpack versions
 
-# Env
-SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
-RED='\033[1;31m'
-NC='\033[0m'
+### Env
 
-# Copy common files
+SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
+
+
+
+#### Copy base plugin files
+
 base()
 {
 	rm -rf fatpack/build
 	mkdir -p fatpack/build/lib
-	cp -R --parents centreon/plugins/{misc,mode,options,output,perfdata,script,statefile,values}.pm centreon/plugins/templates/ centreon/plugins/alternative/ fatpack/build/lib/
+	cp -R --parents $(dirname $1) fatpack/build/lib/
+	find fatpack/build/lib/ -type f ! -name "*.pm" -delete
 	cp centreon_plugins.pl fatpack/build/
-	sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' fatpack/build/lib/centreon/plugins/script.pm
-	cp -R --parents $1 fatpack/build/lib/
 }
 
-# Copy pm files
+
+
+### Find required pm files recursively
+
+findpm()
+{
+	local f
+
+	# Skip modules not in this files tree
+	if [[ ! -f $1 ]]
+	then
+		return
+	fi
+
+	# Do not reprocess files
+	if echo "$processedpm" | grep -q " $1 "
+	then
+		return
+	fi
+	processedpm="$processedpm$1 "
+
+	# use/require pattern
+	for f in $(grep -P "^\s*(use(?! lib)|require) (base )?(qw\()?(')?.*::" $1 | sed -E "s+^\s*(use|require) (base )?(qw\()?(')?++; s+::+/+g; s+[ ');].*+.pm+")
+	do
+		findpm $f
+	done
+
+	# (custom_)?modes pattern
+	for f in $(awk -F\' '/^\s*%{ *\$self->{([a-z][a-z]*_)?modes} *} = \(/ {p=1} p && $4 {print} /);/ {p=0}' $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $4".pm"}')
+	do
+		findpm $f
+	done
+
+	# custom modes pattern
+	for f in $(grep "\$self->{[a-z][a-z]*_modes}{[a-z][a-z]*} = '[^'][^']*';" $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $2".pm"}')
+	do
+		findpm $f
+	done
+
+	# defined components path pattern
+	components_path=$(grep "\$self->{components_path} = '[^'][^']*';" $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $2}')
+	if [[ -d "$components_path" ]]
+	then
+		for f in $components_path/*
+		do
+			findpm $f
+		done
+	fi
+}
+
+
+
+### Copy required pm files
+
 processpm()
 {
 	local f
-	for f in $(grep "^use .*centreon::" $1 | sed "s+.*centreon::+centreon::+; s+::+/+g; s+[);].*+.pm+")
+	processedpm=" "
+	for f in $(find fatpack/build/ -type f | sed -E 's+fatpack/build/(lib/)?++')
 	do
-		processpm $f
-		echo "Found pm $f"
-		cp -f --parents $f fatpack/build/lib/ 2>/dev/null || echo -e "${RED}File not found${NC}"
+		findpm $f
+	done
+	for f in $processedpm
+	do
+		if [[ "$f" == *.pm ]] && [[ ! -f fatpack/build/lib/$f ]]
+		then
+			echo "+ $f"
+			cp -f --parents $f fatpack/build/lib/
+		fi
 	done
 }
 
-# Copy mode files
-processmode()
-{
-	local f
-	for f in $(sed '0,/$self->{modes}.*=/d;/);/,$d' $1 | sed '/^\s*#.*/d' | sed "s+.*=> '++;s+::+/+g;s+'.*+.pm+")
-	do
-		echo "Found mode $f"
-		cp -f --parents $f fatpack/build/lib/ 2>/dev/null || echo -e "${RED}File not found${NC}"
-	done
-}
 
-# Build fatpack script
+
+### Build fatpack script
+
 build()
 {
+	sed -i 's/alternative_fatpacker = 0/alternative_fatpacker = 1/' fatpack/build/lib/centreon/plugins/script.pm
 	find fatpack/build -name "*.pm" -exec sed -i ' /__END__/d' {} \;
-	#cd fatpack/build
 	local name=${1//\//-}
 	name=${name/-plugin.pm/.pl}
-	cd fatpack/build/
+	cd fatpack/build
 	fatpack file centreon_plugins.pl > ../$name
 	cd - >/dev/null
 	rm -rf fatpack/build
 }
 
-# Main
+
+
+### Main
+
 if ! which fatpack >/dev/null 2>&1
 then
 	echo "You need App::FatPacker to continue."
@@ -72,10 +128,9 @@ fi
 rm -rf fatpack
 for plugin in $(find . -name plugin.pm -printf '%P\n')
 do
-	echo "### Processing $plugin"
+	echo "# "$(dirname $plugin)
 	base $plugin
-	processpm $plugin
-	processmode $plugin
+	processpm
 	build $plugin
 	echo
 done
