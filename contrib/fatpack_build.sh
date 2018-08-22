@@ -2,9 +2,18 @@
 #
 # Centreon Plugins : create the fatpack versions
 
-### Env
 
-SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
+
+### --dyn-mode relations
+
+DYN_MODES="
+database/mssql/:apps/biztalk/sql
+database/mysql/:apps/centreon/sql
+database/mssql/:apps/jive/sql
+database/mysql/:apps/jive/sql
+database/oracle/:apps/jive/sql
+database/postgres/:apps/jive/sql
+"
 
 
 
@@ -12,9 +21,18 @@ SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
 
 base()
 {
+	local m
 	rm -rf fatpack/build
 	mkdir -p fatpack/build/lib
 	cp -R --parents $(dirname $1) fatpack/build/lib/
+	for m in $DYN_MODES
+	do
+		if [[ "$(dirname $1)/" == *${m%:*}* ]]
+		then
+			echo "+ ${m#*:}"
+			cp -R --parents ${m#*:} fatpack/build/lib/
+		fi
+	done
 	find fatpack/build/lib/ -type f ! -name "*.pm" -delete
 	cp centreon_plugins.pl fatpack/build/
 }
@@ -117,13 +135,14 @@ then
 	echo "On CentOS, just type: yum install perl-App-FatPacker"
 	exit
 fi
-if [[ ! -f $SCRIPT_DIR/../centreon_plugins.pl ]]
+script_dir="$(cd $(dirname $0) && pwd)"
+if [[ ! -f $script_dir/../centreon_plugins.pl ]]
 then
-	echo "$SCRIPT_DIR/../centreon_plugins.pl not found"
+	echo "$script_dir/../centreon_plugins.pl not found"
 	exit
 else
 	start_dir=$(pwd)
-	cd $SCRIPT_DIR/..
+	cd $script_dir/..
 fi
 rm -rf fatpack
 for plugin in $(find . -name plugin.pm -printf '%P\n')
@@ -135,4 +154,3 @@ do
 	echo
 done
 cd $start_dir
-
