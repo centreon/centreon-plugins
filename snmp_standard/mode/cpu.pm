@@ -30,7 +30,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
-        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output', message_multiple => 'CPU Cores utilization is ok' }
+        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
     ];
 
     $self->{maps_counters}->{cpu_avg} = [
@@ -62,7 +62,7 @@ sub set_counters {
 sub prefix_cpu_avg_output {
     my ($self, %options) = @_;
 
-    return $self->{cpu_avg}->{count} . " Average CPUs usage is ";
+    return $self->{cpu_avg}->{count} . " CPU(s) average usage is ";
 }
 
 sub prefix_cpu_core_output {
