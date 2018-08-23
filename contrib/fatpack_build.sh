@@ -59,25 +59,25 @@ findpm()
 	processedpm="$processedpm$1 "
 
 	# use/require pattern
-	for f in $(grep -P "^\s*(use(?! lib)|require) (base )?(qw\()?(')?.*::" $1 | sed -E "s+^\s*(use|require) (base )?(qw\()?(')?++; s+::+/+g; s+[ ');].*+.pm+")
+	for f in $(grep -P "^[ 	]*(use(?! lib)|require) (base )?(qw\()?(')?.*::" $1 | sed -E "s+^[ 	]*(use|require) (base )?(qw\()?(')?++; s+::+/+g; s+[ ');].*+.pm+")
 	do
 		findpm $f
 	done
 
 	# (custom_)?modes pattern
-	for f in $(awk -F\' '/^\s*%{ *\$self->{([a-z][a-z]*_)?modes} *} = \(/ {p=1} p && $4 {print} /\);/ {p=0}' $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $4".pm"}')
+	for f in $(awk -F\' '/^[ 	]*%{ *\$self->{([a-z][a-z]*_)?modes} *} = \(/ {p=1} p && $4 {print} /\);/ {p=0}' $1 | awk -F\' '! /^[ 	]*#/ {gsub("::","/");print $4".pm"}')
 	do
 		findpm $f
 	done
 
 	# custom modes pattern
-	for f in $(grep "\$self->{[a-z][a-z]*_modes}{[a-z][a-z]*} = '[^'][^']*';" $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $2".pm"}')
+	for f in $(grep "\$self->{[a-z][a-z]*_modes}{[a-z][a-z]*} = '[^'][^']*';" $1 | awk -F\' '! /^[ 	]*#/ {gsub("::","/");print $2".pm"}')
 	do
 		findpm $f
 	done
 
 	# components path pattern
-	components_path=$(grep "\$self->{components_path} = '[^'][^']*';" $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $2}')
+	components_path=$(grep "\$self->{components_path} = '[^'][^']*';" $1 | awk -F\' '! /^[ 	]*#/ {gsub("::","/");print $2}')
 	if [[ -d "$components_path" ]]
 	then
 		for f in $components_path/*.pm
