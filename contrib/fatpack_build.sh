@@ -76,11 +76,11 @@ findpm()
 		findpm $f
 	done
 
-	# defined components path pattern
+	# components path pattern
 	components_path=$(grep "\$self->{components_path} = '[^'][^']*';" $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $2}')
 	if [[ -d "$components_path" ]]
 	then
-		for f in $components_path/*
+		for f in $components_path/*.pm
 		do
 			findpm $f
 		done
