@@ -65,7 +65,7 @@ findpm()
 	done
 
 	# (custom_)?modes pattern
-	for f in $(awk -F\' '/^\s*%{ *\$self->{([a-z][a-z]*_)?modes} *} = \(/ {p=1} p && $4 {print} /);/ {p=0}' $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $4".pm"}')
+	for f in $(awk -F\' '/^\s*%{ *\$self->{([a-z][a-z]*_)?modes} *} = \(/ {p=1} p && $4 {print} /\);/ {p=0}' $1 | awk -F\' '! /^\s*#/ {gsub("::","/");print $4".pm"}')
 	do
 		findpm $f
 	done
