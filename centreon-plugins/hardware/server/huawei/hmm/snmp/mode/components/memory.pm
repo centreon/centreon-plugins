@@ -1,100 +1,85 @@
+#
+# Copyright 2018 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 package hardware::server::huawei::hmm::snmp::mode::components::memory;
 
 use strict;
 use warnings;
 
+my %map_status = (
+    1 => 'normal',
+    2 => 'minor',
+    3 => 'major',
+    4 => 'critical',
+);
+
+my %map_installation_status = (
+    0 => 'absence',
+    1 => 'presence',
+    2 => 'poweroff',
+);
+
+my $mapping = {
+    bladeMemoryMark            => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2007.1.2' },
+    bladeMemoryPresent         => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2007.1.4', map => \%map_installation_status },
+    bladeMemoryHealth          => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2007.1.5', map => \%map_status },
+};
+my $oid_bladeMemoryTable = '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2007.1';
+
+sub load {
+    my ($self) = @_;
+
+    $oid_bladeMemoryTable =~ s/#/$self->{blade_id}/;
+    push @{$self->{request}}, { oid => $oid_bladeMemoryTable };
+}
+
 sub check {
     my ($self) = @_;
-    
-    my %statusHash = ("1"=>"ok","2"=>"warning","3"=>"warning","4"=>"critical","5"=>"unknown");
-    my %eachStatus = ("1"=>"ok","2"=>"minor","3"=>"major","4"=>"critical","5"=>"unknown");     
-    
-    my $bladePresentOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.6.0", $self->{option_results}->{bladeNum};  
-    
-    my $tmpShortMessage = "";
-    my $componentStatus = "unknown";
-    
-    my $result= $self->{snmp}->get_leef(oids =>[$bladePresentOid]);
-    if (scalar(keys %$result) <= 0)
-    {
-        $tmpShortMessage = $tmpShortMessage."Get blade info error.";
-    }else 
-    {   
-        if ($result->{$bladePresentOid} eq "0")
-        {
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s not presence.", $self->{option_results}->{bladeNum};
-        }elsif ($result->{$bladePresentOid} eq "2")
-        {
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s status indeterminate.", $self->{option_results}->{bladeNum};
-        }elsif ($result->{$bladePresentOid} eq "1") 
-        {
-            my $componentPresentOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2007.1.4", $self->{option_results}->{bladeNum};
-    		my $componentStatusOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2007.1.5", $self->{option_results}->{bladeNum};
-    		my $componentMarkOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2007.1.2", $self->{option_results}->{bladeNum};
-          
-            $self->{snmp}->{snmp_force_getnext} = 1;
-            my $result = $self->{snmp}->get_table(oid => $componentPresentOid);
-            if (scalar(keys %$result) <= 0)
-            {
-                $tmpShortMessage = $tmpShortMessage."No memory presence.";
-            }else 
-            {   
-                my $endKey;
-                my $temnameOid;
-                my $statusOid;
-                my $tmpMsg;
-                my $tmpresult;
-                my $totalPresent = 0;
-                my $totalComponent = 0;
-                my $v;
-                foreach my $k ($self->{snmp}->oid_lex_sort(keys %$result))
-                {
-                    $v = $result->{$k};
-                    $endKey = "0";
-                    $temnameOid = "";
-                    $statusOid = "";
-                    $tmpMsg = "";
-                    $totalComponent++;
-                    if ($v eq "1")  # presence status: 0-not presence,1-presence 
-                    {           
-                        $totalPresent++;
-                        $k =~ /\.([0-9]+)$/;
-                        $endKey = $1;
-                        $temnameOid = $componentMarkOid.".".$endKey;
-                        $statusOid = $componentStatusOid.".".$endKey;
-                        $tmpresult = $self->{snmp}->get_leef(oids =>[$temnameOid]);
-                        
-                        $tmpMsg = $tmpresult->{$temnameOid}.":";
-                        $tmpresult = $self->{snmp}->get_leef(oids =>[$statusOid]);
-                        $tmpMsg = $tmpMsg.$eachStatus{$tmpresult->{$statusOid}}." ";
-                        $tmpShortMessage = $tmpShortMessage.$tmpMsg;
-                        if($statusHash{$tmpresult->{$statusOid}} eq "critical")
-                        {
-                            $componentStatus = "critical";
-                        }elsif (($statusHash{$tmpresult->{$statusOid}}) eq "warning" && ($componentStatus ne "critical"))
-                        {
-                            $componentStatus = "warning";
-                        }elsif (($statusHash{$tmpresult->{$statusOid}}) eq "ok")
-                        {
-                            if ($componentStatus eq "unknown")
-                            {
-                                $componentStatus = "ok";
-                            }
-                        }                
-                    }
-                }    
-                $tmpShortMessage = "memoryPresence:".$totalPresent."\/".$totalComponent." ".$tmpShortMessage;        
-            }
-        }else
-        {
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s status unknown.", $self->{option_results}->{bladeNum};
+
+    foreach my $entry (keys $mapping) {
+        $mapping->{$entry}->{oid} =~ s/#/$self->{blade_id}/;
+    }
+
+    $self->{output}->output_add(long_msg => "Checking memory slots");
+    $self->{components}->{memory} = {name => 'memory slots', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'memory'));
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_bladeMemoryTable}})) {
+        next if ($oid !~ /^$mapping->{bladeMemoryHealth}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeMemoryTable}, instance => $instance);
+
+        next if ($self->check_filter(section => 'memory', instance => $instance));
+        next if ($result->{bladeMemoryPresent} !~ /presence/);
+        $self->{components}->{memory}->{total}++;
+        
+        $self->{output}->output_add(long_msg => sprintf("Memory '%s' status is '%s' [instance = %s]",
+                                    $result->{bladeMemoryMark}, $result->{bladeMemoryHealth}, $instance, 
+                                    ));
+   
+        my $exit = $self->get_severity(label => 'default', section => 'memory', value => $result->{bladeMemoryHealth});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Memory '%s' status is '%s'", $result->{bladeMemoryMark}, $result->{bladeMemoryHealth}));
         }
     }
-      
-    $self->{output}->output_add(severity => $componentStatus,
-                                short_msg => $tmpShortMessage);
-    
-    $self->{output}->display(); 
-    $self->{output}->exit(); 
 }
+
 1;

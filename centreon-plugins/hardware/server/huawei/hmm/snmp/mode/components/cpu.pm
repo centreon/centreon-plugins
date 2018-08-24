@@ -1,101 +1,101 @@
+#
+# Copyright 2018 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 package hardware::server::huawei::hmm::snmp::mode::components::cpu;
 
 use strict;
 use warnings;
 
+my %map_status = (
+    1 => 'normal',
+    2 => 'minor',
+    3 => 'major',
+    4 => 'critical',
+);
+
+my %map_installation_status = (
+    0 => 'absence',
+    1 => 'presence',
+    2 => 'poweroff',
+);
+
+my $mapping = {
+    bladeCPUMark            => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2006.1.2' },
+    bladeCPUPresent         => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2006.1.4', map => \%map_installation_status },
+    bladeCPUHealth          => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2006.1.5', map => \%map_status },
+    bladeCPUTemperature     => { oid => '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2006.1.7' },
+};
+my $oid_bladeCPUTable = '.1.3.6.1.4.1.2011.2.82.1.82.4.#.2006.1';
+
+sub load {
+    my ($self) = @_;
+
+    $oid_bladeCPUTable =~ s/#/$self->{blade_id}/;
+    push @{$self->{request}}, { oid => $oid_bladeCPUTable };
+}
+
 sub check {
     my ($self) = @_;
-    
-    my %statusHash = ("1"=>"ok","2"=>"warning","3"=>"warning","4"=>"critical","5"=>"unknown");
-    my %eachStatus = ("1"=>"ok","2"=>"minor","3"=>"major","4"=>"critical","5"=>"unknown");     
-    
-    my $bladePresentOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.6.0", $self->{option_results}->{bladeNum};  
-    
-    my $tmpShortMessage = "";
-    my $componentStatus = "unknown";
-    
-    my $result= $self->{snmp}->get_leef(oids =>[$bladePresentOid]);
-    if (scalar(keys %$result) <= 0)
-    {
-        $tmpShortMessage = $tmpShortMessage."Get blade info error.";
-    }else 
-    {   
-        if ($result->{$bladePresentOid} eq "0")
-        {
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s not presence.", $self->{option_results}->{bladeNum};
-        }elsif ($result->{$bladePresentOid} eq "2")
-        {
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s status indeterminate.", $self->{option_results}->{bladeNum};
-        }elsif ($result->{$bladePresentOid} eq "1")
-        {
-            my $componentPresentOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2006.1.4", $self->{option_results}->{bladeNum};
-    		my $componentStatusOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2006.1.5", $self->{option_results}->{bladeNum};
-    		my $componentMarkOid = sprintf ".1.3.6.1.4.1.2011.2.82.1.82.4.%s.2006.1.2", $self->{option_results}->{bladeNum};
-          
-            $self->{snmp}->{snmp_force_getnext} = 1;
-            my $result = $self->{snmp}->get_table(oid => $componentPresentOid);
-            if (scalar(keys %$result) <= 0)
-            {
-                $tmpShortMessage = $tmpShortMessage."No cpu presence.";
-            }else 
-            {   
-                my $endKey;
-                my $temnameOid;
-                my $statusOid;
-                my $tmpMsg;
-                my $tmpresult;               
-                my $totalPresent = 0;
-                my $totalComponent = 0;
-                my $v;
-                foreach my $k ($self->{snmp}->oid_lex_sort(keys %$result))
-                {   
-                    $v = $result->{$k};
-                    $endKey = "0";
-                    $temnameOid = "";
-                    $statusOid = "";
-                    $tmpMsg = "";
-                    $totalComponent++;
-                    if ($v eq "1")  # presence status: 0-not presence,1-presence 
-                    {           
-                        $totalPresent++;
-                        $k =~ /\.([0-9]+)$/;
-                        $endKey = $1;
-                        $temnameOid = $componentMarkOid.".".$endKey;
-                        $statusOid = $componentStatusOid.".".$endKey;
-                        $tmpresult = $self->{snmp}->get_leef(oids =>[$temnameOid]);
-                        
-                        $tmpMsg = $tmpresult->{$temnameOid}.":";
-                        $tmpresult = $self->{snmp}->get_leef(oids =>[$statusOid]);
-                        $tmpMsg = $tmpMsg.$eachStatus{$tmpresult->{$statusOid}}." ";
-                        $tmpShortMessage = $tmpShortMessage.$tmpMsg;
-                        if($statusHash{$tmpresult->{$statusOid}} eq "critical")
-                        {
-                            $componentStatus = "critical";
-                        }elsif (($statusHash{$tmpresult->{$statusOid}}) eq "warning" && ($componentStatus ne "critical"))
-                        {
-                            $componentStatus = "warning";
-                        }elsif (($statusHash{$tmpresult->{$statusOid}}) eq "ok")
-                        {
-                            if ($componentStatus eq "unknown")
-                            {
-                                $componentStatus = "ok";
-                            }
-                        }                
-                    }
-                }    
-                $tmpShortMessage = "cpuPresence:".$totalPresent."\/".$totalComponent." ".$tmpShortMessage;        
+
+    foreach my $entry (keys $mapping) {
+        $mapping->{$entry}->{oid} =~ s/#/$self->{blade_id}/;
+    }
+
+    $self->{output}->output_add(long_msg => "Checking CPUs");
+    $self->{components}->{cpu} = {name => 'cpus', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'cpu'));
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_bladeCPUTable}})) {
+        next if ($oid !~ /^$mapping->{bladeCPUHealth}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeCPUTable}, instance => $instance);
+
+        next if ($self->check_filter(section => 'cpu', instance => $instance));
+        next if ($result->{bladeCPUPresent} !~ /presence/);
+        $self->{components}->{cpu}->{total}++;
+
+        if (defined($result->{bladeCPUTemperature}) && $result->{bladeCPUTemperature} =~ /[0-9]/) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'cpu', instance => $instance, value => $result->{bladeCPUTemperature});
+            
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Cpu '%s' temperature is %s celsius degrees", $result->{bladeCPUMark}, $result->{bladeCPUTemperature}));
             }
-        }else
-        {   
-            $tmpShortMessage = sprintf $tmpShortMessage."Blade%s status unknown.", $self->{option_results}->{bladeNum};
+            $self->{output}->perfdata_add(label => 'temperature_' . $result->{bladeCPUMark}, unit => 'C', 
+                                          value => $result->{bladeCPUTemperature},
+                                          warning => $warn,
+                                          critical => $crit,
+                                          min => 0
+                                          );
         }
         
+        $self->{output}->output_add(long_msg => sprintf("Cpu '%s' status is '%s' [instance = %s]",
+                                    $result->{bladeCPUMark}, $result->{bladeCPUHealth}, $instance, 
+                                    ));
+   
+        my $exit = $self->get_severity(label => 'default', section => 'Cpu', value => $result->{bladeCPUHealth});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Cpu '%s' status is '%s'", $result->{bladeCPUMark}, $result->{bladeCPUHealth}));
+        }
     }
-      
-    $self->{output}->output_add(severity => $componentStatus,
-                                short_msg => $tmpShortMessage );
-    
-    $self->{output}->display(); 
-    $self->{output}->exit(); 
 }
+
 1;
