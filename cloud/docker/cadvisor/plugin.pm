@@ -32,6 +32,8 @@ sub new {
     $self->{version} = '0.3';
     %{$self->{modes}} = (
                         'container-usage'   => 'cloud::docker::cadvisor::mode::containerusage',
+                        'disk-io'           => 'cloud::docker::cadvisor::mode::diskio',
+                        'traffic'           => 'cloud::docker::cadvisor::mode::traffic',
                         'list-containers'   => 'cloud::docker::cadvisor::mode::listcontainers',
                         'node-status'       => 'cloud::docker::cadvisor::mode::nodestatus',
                         );
