@@ -400,11 +400,11 @@ RETRY:
             # snmp.h     : #define SNMP_ERR_TOOBIG (1)
             # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
             if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
-                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{repeat_count} > 1)) {
-                    if ($self->{repeat_count} >= 10) {
-                        $self->{repeat_count} -= 5;
+                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($repeat_count > 1)) {
+                    if ($repeat_count >= 10) {
+                        $repeat_count -= 5;
                     } else {
-                        $self->{repeat_count} -= 1;
+                        $repeat_count -= 1;
                     }
                     if ($self->{snmp_params}->{Retries} > 1) {
                         $self->{snmp_params}->{Retries} = 1;
@@ -561,11 +561,11 @@ RETRY:
             # snmp.h     : #define SNMP_ERR_TOOBIG (1)
             # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
             if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
-                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{repeat_count} > 1)) {
-                    if ($self->{repeat_count} >= 10) {
-                        $self->{repeat_count} -= 5;
+                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($repeat_count > 1)) {
+                    if ($repeat_count >= 10) {
+                        $repeat_count -= 5;
                     } else {
-                        $self->{repeat_count} -= 1;
+                        $repeat_count -= 1;
                     }
                     if ($self->{snmp_params}->{Retries} > 1) {
                         $self->{snmp_params}->{Retries} = 1;
