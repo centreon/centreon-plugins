@@ -255,8 +255,8 @@ RETRY:
                     } else {
                         $self->{subsetleef} -= 1;
                     }
-                    if ($self->{snmp_params}->{Retries} > 0) {
-                        $self->{snmp_params}->{Retries} = 0;
+                    if ($self->{snmp_params}->{Retries} > 1) {
+                        $self->{snmp_params}->{Retries} = 1;
                         $self->connect();
                     }
                     goto RETRY;
@@ -406,8 +406,8 @@ RETRY:
                     } else {
                         $self->{repeat_count} -= 1;
                     }
-                    if ($self->{snmp_params}->{Retries} > 0) {
-                        $self->{snmp_params}->{Retries} = 0;
+                    if ($self->{snmp_params}->{Retries} > 1) {
+                        $self->{snmp_params}->{Retries} = 1;
                         $self->connect();
                     }
                     goto RETRY;
@@ -567,8 +567,8 @@ RETRY:
                     } else {
                         $self->{repeat_count} -= 1;
                     }
-                    if ($self->{snmp_params}->{Retries} > 0) {
-                        $self->{snmp_params}->{Retries} = 0;
+                    if ($self->{snmp_params}->{Retries} > 1) {
+                        $self->{snmp_params}->{Retries} = 1;
                         $self->connect();
                     }
                     goto RETRY;
