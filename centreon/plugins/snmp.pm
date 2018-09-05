@@ -53,6 +53,7 @@ sub new {
                   "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
                   "subsetleef:s"              => { name => 'subsetleef', default => 50 },
                   "subsettable:s"             => { name => 'subsettable', default => 100 },
+                  "autoreduce"                => { name => 'autoreduce' },
                   "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
                   "snmp-username:s"           => { name => 'snmp_security_name' },
                   "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
@@ -163,7 +164,7 @@ sub get_leef {
         push @{$options{oids}}, @{$self->{oids_loaded}};
         @{$self->{oids_loaded}} = ();
     }
-    
+RETRY:
     my $results = {};
     my @array_ref_ar = ();
     my $subset_current = 0;
@@ -243,7 +244,25 @@ sub get_leef {
                 # We are at the end with snmpv1. We next.
                 next;
             }
-        
+
+            # Let's try a smaller UDP packet if it was too big (in this case it may timeout (network drop))
+            # snmp.h     : #define SNMP_ERR_TOOBIG (1)
+            # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
+            if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
+                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{subsetleef} > 1)) {
+                    if ($self->{subsetleef} >= 10) {
+                        $self->{subsetleef} -= 5;
+                    } else {
+                        $self->{subsetleef} -= 1;
+                    }
+                    if ($self->{snmp_params}->{Retries} > 0) {
+                        $self->{snmp_params}->{Retries} = 0;
+                        $self->connect();
+                    }
+                    goto RETRY;
+                }
+            }
+
             my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};
             
             if ($dont_quit == 0) {
@@ -354,7 +373,7 @@ sub get_multiple_table {
         
         # Nothing more to check. We quit
         last if ($current_oids == 0);
-        
+RETRY:
         my $vb = new SNMP::VarList(@bindings);
         
         if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
@@ -376,7 +395,25 @@ sub get_multiple_table {
                 delete $working_oids->{$oid_base};
                 next;
             }
-            
+
+            # Let's try a smaller UDP packet if it was too big (in this case it may timeout (network drop))
+            # snmp.h     : #define SNMP_ERR_TOOBIG (1)
+            # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
+            if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
+                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{repeat_count} > 1)) {
+                    if ($self->{repeat_count} >= 10) {
+                        $self->{repeat_count} -= 5;
+                    } else {
+                        $self->{repeat_count} -= 1;
+                    }
+                    if ($self->{snmp_params}->{Retries} > 0) {
+                        $self->{snmp_params}->{Retries} = 0;
+                        $self->connect();
+                    }
+                    goto RETRY;
+                }
+            }
+
             my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
         
             if ($dont_quit == 0) {
@@ -500,6 +537,7 @@ sub get_table {
         $last_oid = $options{oid};
     }
     while ($leave) {
+RETRY:
         $last_oid =~ /(.*)\.(\d+)([\.\s]*)$/;
         my $vb = new SNMP::VarList([$1, $2]);
     
@@ -518,6 +556,25 @@ sub get_table {
                 # We are at the end with snmpv1. We quit.
                 last;
             }
+
+            # Let's try a smaller UDP packet if it was too big (in this case it may timeout (network drop))
+            # snmp.h     : #define SNMP_ERR_TOOBIG (1)
+            # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
+            if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
+                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{repeat_count} > 1)) {
+                    if ($self->{repeat_count} >= 10) {
+                        $self->{repeat_count} -= 5;
+                    } else {
+                        $self->{repeat_count} -= 1;
+                    }
+                    if ($self->{snmp_params}->{Retries} > 0) {
+                        $self->{snmp_params}->{Retries} = 0;
+                        $self->connect();
+                    }
+                    goto RETRY;
+                }
+            }
+
             my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
         
             if ($dont_quit == 0) {
@@ -645,6 +702,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{autoreduce} = $options{option_results}->{autoreduce};
     $self->{snmp_force_getnext} = $options{option_results}->{snmp_force_getnext};
     $self->{maxrepetitions} = $options{option_results}->{maxrepetitions};
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
@@ -854,6 +912,10 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 =item B<--subsetleef>
 
 How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious whe you set it. Prefer to let the default value).
+
+=item B<--autoreduce>
+
+Auto reduce SNMP request size in case of SNMP errors.
 
 =item B<--snmp-force-getnext>
 
