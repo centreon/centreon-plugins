@@ -263,9 +263,9 @@ sub manage_selection {
         my $last_dt = $self->parse_date(date => $last_ts);
         my $last_cpu_total = $last_stat->{cpu}{usage}{total};
         my $last_cpu_user = $last_stat->{cpu}{usage}{user};
-    my $last_cpu_system = $last_stat->{cpu}{usage}{system};
+        my $last_cpu_system = $last_stat->{cpu}{usage}{system};
 
-    my $diff_ts = $last_dt - $first_dt;
+        my $diff_ts = $last_dt - $first_dt;
         my $cpu_number = $machine_stats->{$result->{$container_id}->{NodeName}}->{num_cores};
         my $read_io = {};
         my $write_io = {};

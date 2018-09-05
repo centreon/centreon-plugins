@@ -47,10 +47,10 @@ sub new {
                         "hostname:s@"   => { name => 'hostname' },
                         "port:s"        => { name => 'port', default => 8080 },
                         "proto:s"       => { name => 'proto', default => 'http' },
-						"credentials"   => { name => 'credentials' },
-						"username:s"    => { name => 'username' },
-						"password:s"    => { name => 'password' },
-						"proxyurl:s"    => { name => 'proxyurl' },
+                        "credentials"   => { name => 'credentials' },
+                        "username:s"    => { name => 'username' },
+                        "password:s"    => { name => 'password' },
+                        "proxyurl:s"    => { name => 'proxyurl' },
                         "proxypac:s"    => { name => 'proxypac' },
                         "timeout:s"     => { name => 'timeout', default => 10 },
                         "ssl:s"         => { name => 'ssl' },
@@ -60,7 +60,7 @@ sub new {
                         "cert-pwd:s"    => { name => 'cert_pwd' },
                         "cert-pkcs12"   => { name => 'cert_pkcs12' },
                         "api-version:s"         => { name => 'api_version', default => 'v1.3' },
-				    });
+                    });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
