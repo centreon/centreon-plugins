@@ -32,6 +32,7 @@ my %map_search_field = (
     NS => 'nsdname',
     A => 'address',
     PTR => 'name',
+    CNAME => 'cname',
 );
 
 sub search {
