@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::voip::mitel::3300icp::snmp::plugin;
+package network::mitel::3300icp::snmp::plugin;
 
 use strict;
 use warnings;
@@ -34,11 +34,11 @@ sub new {
     %{$self->{modes}} = (
                          'interfaces'       => 'snmp_standard::mode::interfaces',
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-zaps'        => 'apps::voip::mitel::3300icp::snmp::mode::listzaps',
-                         'licenses'         => 'apps::voip::mitel::3300icp::snmp::mode::licenses',
+                         'list-zaps'        => 'network::mitel::3300icp::snmp::mode::listzaps',
+                         'licenses'         => 'network::mitel::3300icp::snmp::mode::licenses',
                          'uptime'           => 'snmp_standard::mode::uptime',
-                         'zap-bandwidth'    => 'apps::voip::mitel::3300icp::snmp::mode::zapbandwidth',
-                         'zap-calls'        => 'apps::voip::mitel::3300icp::snmp::mode::zapcalls',
+                         'zap-bandwidth'    => 'network::mitel::3300icp::snmp::mode::zapbandwidth',
+                         'zap-calls'        => 'network::mitel::3300icp::snmp::mode::zapcalls',
     );
 
     return $self;

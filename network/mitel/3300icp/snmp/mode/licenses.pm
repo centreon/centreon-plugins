@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::voip::mitel::3300icp::snmp::mode::licenses;
+package network::mitel::3300icp::snmp::mode::licenses;
 
 use base qw(centreon::plugins::templates::counter);
 

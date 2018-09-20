@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::voip::mitel::3300icp::snmp::mode::listzaps;
+package network::mitel::3300icp::snmp::mode::listzaps;
 
 use base qw(centreon::plugins::mode);
 
