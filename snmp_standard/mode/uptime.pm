@@ -27,7 +27,7 @@ use warnings;
 use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-use Time::HiRes qw(time);
+use Time::HiRes qw(time gettimeofday tv_interval);
 
 sub new {
     my ($class, %options) = @_;
@@ -103,6 +103,7 @@ sub run {
     my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
     my ($result, $value);
     
+    my $t0 = [gettimeofday];
     if (defined($self->{option_results}->{force_oid})) {
         $result = $self->{snmp}->get_leef(oids => [ $self->{option_results}->{force_oid} ], nothing_quit => 1);
         $value = $result->{$self->{option_results}->{force_oid}};
@@ -114,6 +115,7 @@ sub run {
             $value = $result->{$oid_sysUpTime};
         }
     }
+    my $elapsed = tv_interval ($t0, [gettimeofday]);
     
     $value = $self->check_overload(timeticks => $value);
     $value = floor($value / 100);
@@ -125,9 +127,11 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
+    $self->{output}->perfdata_add(label => 'rtt', unit => 's',
+                                  value => $elapsed);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s",
+                                short_msg => sprintf("System uptime is: %s, rtt is: $elapsed",
                                                      centreon::plugins::misc::change_seconds(value => $value, start => 'd')));
 
     $self->{output}->display();
