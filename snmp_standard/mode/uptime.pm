@@ -116,6 +116,7 @@ sub run {
         }
     }
     my $elapsed = tv_interval ($t0, [gettimeofday]);
+    $elapsed *= 1000;
     
     $value = $self->check_overload(timeticks => $value);
     $value = floor($value / 100);
@@ -127,12 +128,12 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);
-    $self->{output}->perfdata_add(label => 'rtt', unit => 's',
+    $self->{output}->perfdata_add(label => 'rtt', unit => 'ms',
                                   value => $elapsed);
 
     $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s, rtt is: $elapsed",
-                                                     centreon::plugins::misc::change_seconds(value => $value, start => 'd')));
+                                short_msg => sprintf("System uptime is: %s, rtt is: %sms",
+                                                     centreon::plugins::misc::change_seconds(value => $value, start => 'd'), $elapsed));
 
     $self->{output}->display();
     $self->{output}->exit();
