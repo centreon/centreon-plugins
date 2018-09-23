@@ -167,7 +167,7 @@ Set the search value (required).
 
 =item B<--search-type>
 
-Set the search type. Can be: 'MX', 'SOA', 'NS', 'A' or 'PTR'.
+Set the search type. Can be: 'MX', 'SOA', 'NS', 'A', 'CNAME' or 'PTR'.
 'A' or 'PTR' is used by default (depends if an IP or not).
 
 =item B<--expected-answer>
