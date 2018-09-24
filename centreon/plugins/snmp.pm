@@ -164,129 +164,135 @@ sub get_leef {
         push @{$options{oids}}, @{$self->{oids_loaded}};
         @{$self->{oids_loaded}} = ();
     }
-RETRY:
+
     my $results = {};
-    my @array_ref_ar = ();
-    my $subset_current = 0;
-    my $subset_construct = [];
-    foreach my $oid (@{$options{oids}}) {
-        # Get last value
-        next if ($oid !~ /(.*)\.(\d+)([\.\s]*)$/);
-        
-        my ($oid, $instance) = ($1, $2);
-        $results->{$oid . "." . $instance} = undef;
-        push @$subset_construct, [$oid, $instance];
-        $subset_current++;
-        if ($subset_current == $self->{subsetleef}) {
-            push @array_ref_ar, \@$subset_construct;
-            $subset_construct = [];
-            $subset_current = 0;
-        }
-    }
-    if ($subset_current) {
-        push @array_ref_ar, \@$subset_construct;
-    }
-    
-    ############################
-    # If wrong oid with SNMP v1, packet resent (2 packets more). Not the case with SNMP > 1.
-    # Can have "NoSuchName", if nothing works...
-    # = v1: wrong oid
-    #   bless( [
-    #       '.1.3.6.1.2.1.1.3',
-    #       '0',
-    #       '199720062',
-    #       'TICKS'
-    #       ], 'SNMP::Varbind' ),
-    #   bless( [
-    #       '.1.3.6.1.2.1.1.999',
-    #       '0'
-    #       ], 'SNMP::Varbind' ),
-    #   bless( [
-    #       '.1.3.6.1.2.1.1',
-    #       '1000'
-    #       ], 'SNMP::Varbind' )
-    # > v1: wrong oid
-    #   bless( [
-    #        '.1.3.6.1.2.1.1.3',
-    #        '0',
-    #        '199728713',
-    #        'TICKS'
-    #       ], 'SNMP::Varbind' ),
-    #   bless( [
-    #         '.1.3.6.1.2.1.1',
-    #         '3',
-    #         'NOSUCHINSTANCE',
-    #        'TICKS'
-    #    ], 'SNMP::Varbind' )
-    #   bless( [
-    #        '.1.3.6.1.2.1.1.999',
-    #        '0',
-    #        'NOSUCHOBJECT',
-    #        'NOSUCHOBJECT'
-    #       ], 'SNMP::Varbind' ),
-    #   bless( [
-    #        '.1.3.6.1.2.1.1',
-    #        '1000',
-    #        'NOSUCHOBJECT',
-    #        'NOSUCHOBJECT'
-    #       ], 'SNMP::Varbind' )
-    ############################
-    
     my $total = 0;
-    foreach (@array_ref_ar) {
-        my $vb = new SNMP::VarList(@{$_});
-        $self->{session}->get($vb);
-        if ($self->{session}->{ErrorNum}) {
-            # 0    noError       Pas d'erreurs.
-            # 1    tooBig        Reponse de taille trop grande.
-            # 2    noSuchName    Variable inexistante.
-            if ($self->{session}->{ErrorNum} == 2) {
-                # We are at the end with snmpv1. We next.
-                next;
+    # Loop which allows to retry SNMP requests if needed, exited at its end
+    REDO: while (1) {
+        $results = {};
+        my @array_ref_ar = ();
+        my $subset_current = 0;
+        my $subset_construct = [];
+        foreach my $oid (@{$options{oids}}) {
+            # Get last value
+            next if ($oid !~ /(.*)\.(\d+)([\.\s]*)$/);
+            
+            my ($oid, $instance) = ($1, $2);
+            $results->{$oid . "." . $instance} = undef;
+            push @$subset_construct, [$oid, $instance];
+            $subset_current++;
+            if ($subset_current == $self->{subsetleef}) {
+                push @array_ref_ar, \@$subset_construct;
+                $subset_construct = [];
+                $subset_current = 0;
             }
-
-            # Let's try a smaller UDP packet if it was too big (in this case it may timeout (network drop))
-            # snmp.h     : #define SNMP_ERR_TOOBIG (1)
-            # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
-            if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
-                if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{subsetleef} > 1)) {
-                    if ($self->{subsetleef} >= 10) {
-                        $self->{subsetleef} -= 5;
-                    } else {
-                        $self->{subsetleef} -= 1;
-                    }
-                    if ($self->{snmp_params}->{Retries} > 1) {
-                        $self->{snmp_params}->{Retries} = 1;
-                        $self->connect();
-                    }
-                    goto RETRY;
+        }
+        if ($subset_current) {
+            push @array_ref_ar, \@$subset_construct;
+        }
+        
+        ############################
+        # If wrong oid with SNMP v1, packet resent (2 packets more). Not the case with SNMP > 1.
+        # Can have "NoSuchName", if nothing works...
+        # = v1: wrong oid
+        #   bless( [
+        #       '.1.3.6.1.2.1.1.3',
+        #       '0',
+        #       '199720062',
+        #       'TICKS'
+        #       ], 'SNMP::Varbind' ),
+        #   bless( [
+        #       '.1.3.6.1.2.1.1.999',
+        #       '0'
+        #       ], 'SNMP::Varbind' ),
+        #   bless( [
+        #       '.1.3.6.1.2.1.1',
+        #       '1000'
+        #       ], 'SNMP::Varbind' )
+        # > v1: wrong oid
+        #   bless( [
+        #        '.1.3.6.1.2.1.1.3',
+        #        '0',
+        #        '199728713',
+        #        'TICKS'
+        #       ], 'SNMP::Varbind' ),
+        #   bless( [
+        #         '.1.3.6.1.2.1.1',
+        #         '3',
+        #         'NOSUCHINSTANCE',
+        #        'TICKS'
+        #    ], 'SNMP::Varbind' )
+        #   bless( [
+        #        '.1.3.6.1.2.1.1.999',
+        #        '0',
+        #        'NOSUCHOBJECT',
+        #        'NOSUCHOBJECT'
+        #       ], 'SNMP::Varbind' ),
+        #   bless( [
+        #        '.1.3.6.1.2.1.1',
+        #        '1000',
+        #        'NOSUCHOBJECT',
+        #        'NOSUCHOBJECT'
+        #       ], 'SNMP::Varbind' )
+        ############################
+        
+        $total = 0;
+        foreach (@array_ref_ar) {
+            my $vb = new SNMP::VarList(@{$_});
+            $self->{session}->get($vb);
+            if ($self->{session}->{ErrorNum}) {
+                # 0    noError       Pas d'erreurs.
+                # 1    tooBig        Reponse de taille trop grande.
+                # 2    noSuchName    Variable inexistante.
+                if ($self->{session}->{ErrorNum} == 2) {
+                    # We are at the end with snmpv1. We next.
+                    next;
                 }
+
+                # Let's try a smaller UDP packet if it was too big (in this case it may timeout (network drop))
+                # snmp.h     : #define SNMP_ERR_TOOBIG (1)
+                # snmp_api.h : #define SNMPERR_TIMEOUT (-24)
+                if (($self->{session}->{ErrorNum} == 1) || ($self->{session}->{ErrorNum} == -24)) {
+                    if (!defined($self->{snmp_force_getnext}) && defined($self->{autoreduce}) && ($self->{subsetleef} > 1)) {
+                        if ($self->{subsetleef} >= 10) {
+                            $self->{subsetleef} -= 5;
+                        } else {
+                            $self->{subsetleef} -= 1;
+                        }
+                        if ($self->{snmp_params}->{Retries} > 1) {
+                            $self->{snmp_params}->{Retries} = 1;
+                            $self->connect();
+                        }
+                        redo REDO;
+                    }
+                }
+
+                my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};
+                
+                if ($dont_quit == 0) {
+                    $self->{output}->add_option_msg(short_msg => $msg);
+                    $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+                }
+                
+                $self->set_error(error_status => -1, error_msg => $msg);
+                return undef;
             }
 
-            my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};
-            
-            if ($dont_quit == 0) {
-                $self->{output}->add_option_msg(short_msg => $msg);
-                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+            foreach my $entry (@$vb) {
+                if ($#$entry < 3) {
+                    # Can be snmpv1 not find
+                    next;
+                }
+                if (${$entry}[2] eq 'NOSUCHOBJECT' || ${$entry}[2] eq 'NOSUCHINSTANCE') {
+                    # Error in snmp > 1
+                    next;
+                }
+                
+                $total++;
+                $results->{${$entry}[0] . "." . ${$entry}[1]} = ${$entry}[2];
             }
-            
-            $self->set_error(error_status => -1, error_msg => $msg);
-            return undef;
         }
-
-        foreach my $entry (@$vb) {
-            if ($#$entry < 3) {
-                # Can be snmpv1 not find
-                next;
-            }
-            if (${$entry}[2] eq 'NOSUCHOBJECT' || ${$entry}[2] eq 'NOSUCHINSTANCE') {
-                # Error in snmp > 1
-                next;
-            }
-            
-            $total++;
-            $results->{${$entry}[0] . "." . ${$entry}[1]} = ${$entry}[2];
-        }
+        last;
     }
     
     if ($nothing_quit == 1 && $total == 0) {
@@ -373,7 +379,7 @@ sub get_multiple_table {
         
         # Nothing more to check. We quit
         last if ($current_oids == 0);
-RETRY:
+        
         my $vb = new SNMP::VarList(@bindings);
         
         if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
@@ -410,7 +416,7 @@ RETRY:
                         $self->{snmp_params}->{Retries} = 1;
                         $self->connect();
                     }
-                    goto RETRY;
+                    redo;
                 }
             }
 
@@ -537,7 +543,6 @@ sub get_table {
         $last_oid = $options{oid};
     }
     while ($leave) {
-RETRY:
         $last_oid =~ /(.*)\.(\d+)([\.\s]*)$/;
         my $vb = new SNMP::VarList([$1, $2]);
     
@@ -571,7 +576,7 @@ RETRY:
                         $self->{snmp_params}->{Retries} = 1;
                         $self->connect();
                     }
-                    goto RETRY;
+                    redo;
                 }
             }
 
