@@ -158,7 +158,7 @@ sub run {
 
     if (!defined($self->{option_results}->{diskpath}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All partitions are ok.');
+                                    short_msg => 'All '.$num_disk_check.' partitions are ok.');
     } elsif ($num_disk_check == 0) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'No usage for partition.');
