@@ -44,8 +44,6 @@ sub custom_metric_calc {
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{metric_perf} . '_' . $self->{result_values}->{stat}};
     $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{metric_perf} =~ s/\//_/g;
-    $self->{result_values}->{metric_label} =~ s/\//-/g;
     return 0;
 }
 
@@ -140,7 +138,9 @@ sub set_counters {
             my $metric_perf = lc($metric);
             my $metric_label = lc($metric);
             $metric_perf =~ s/ /_/g;
+            $metric_perf =~ s/\//_/g;
             $metric_label =~ s/ /-/g;
+            $metric_label =~ s/\//-/g;
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' },
                                     { name => 'stat' }, { name => 'timeframe' } ],
