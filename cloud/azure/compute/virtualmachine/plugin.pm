@@ -33,7 +33,7 @@ sub new {
     %{ $self->{modes} } = (
         'cpu'                   => 'cloud::azure::compute::virtualmachine::mode::cpu',
         'diskio'                => 'cloud::azure::compute::virtualmachine::mode::diskio',
-        'list-vms'              => 'cloud::azure::compute::virtualmachine::mode::listvms',
+        'list-resources'        => 'cloud::azure::compute::virtualmachine::mode::listresources',
         'network'               => 'cloud::azure::compute::virtualmachine::mode::network',
         'vm-sizes'              => 'cloud::azure::compute::virtualmachine::mode::vmsizes',
         'vms-state'             => 'cloud::azure::compute::virtualmachine::mode::vmsstate',
