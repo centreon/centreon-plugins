@@ -51,6 +51,7 @@ sub new {
                         "command:s"           => { name => 'command', default => 'az' },
                         "command-path:s"      => { name => 'command_path' },
                         "command-options:s"   => { name => 'command_options', default => '' },
+                        "proxyurl:s"          => { name => 'proxyurl' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AZCLI OPTIONS', once => 1);
@@ -85,6 +86,11 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
+        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
 
     if (defined($self->{option_results}->{aggregation})) {
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
@@ -386,10 +392,12 @@ Microsoft Azure CLI
 Microsoft Azure CLI 2.0
 
 To install the Azure CLI 2.0 in a CentOS/RedHat environment :
-# sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-# sudo sh -c 'echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+(As root)
+# rpm --import https://packages.microsoft.com/keys/microsoft.asc
+# sh -c 'echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
 # yum install azure-cli
-# az login -u <username> -p <password>
+(As centreon-engine)
+# az login
 Go to https://aka.ms/devicelogin and enter the code given by the last command.
 
 For futher informations, visit https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest.
@@ -435,6 +443,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: none).
+
+=item B<--proxyurl>
+
+Proxy URL if any
 
 =back
 
