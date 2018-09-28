@@ -33,10 +33,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "resource-group:s"    => { name => 'resource_group' },
-                                    "location:s"          => { name => 'location' },
-                                    "filter-type:s"       => { name => 'filter_type' },
-                                    "filter-name:s"       => { name => 'filter_name' },
+                                    "resource-group:s"      => { name => 'resource_group' },
+                                    "location:s"            => { name => 'location' },
+                                    "filter-type:s"         => { name => 'filter_type' },
+                                    "filter-name:s"         => { name => 'filter_name' },
                                 });
 
     return $self;

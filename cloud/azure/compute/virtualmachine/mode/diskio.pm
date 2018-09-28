@@ -164,9 +164,9 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                     "filter-metric:s"       => { name => 'filter_metric' },
-                                    "per-sec"	            => { name => 'per_sec' },
+                                    "per-sec"               => { name => 'per_sec' },
                                 });
     
     return $self;
@@ -198,7 +198,7 @@ sub check_options {
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
     
-    $self->{az_aggregations} = ['Total', 'Average'];
+    $self->{az_aggregations} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
         foreach my $stat (@{$self->{option_results}->{aggregation}}) {

@@ -93,8 +93,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s"            => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
-                                    "resource-type:s"	    => { name => 'resource_type' },
+                                    "resource-group:s"      => { name => 'resource_group' },
+                                    "resource-type:s"       => { name => 'resource_type' },
                                     "resource-namespace:s"  => { name => 'resource_namespace' },
                                     "metric:s@"             => { name => 'metric' },
                                 });
