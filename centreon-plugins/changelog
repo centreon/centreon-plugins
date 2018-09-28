@@ -1,4 +1,21 @@
-2018-08-21 Colin Gagnaire <cgagnaire@centreon.com>
+2018-09-28 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: Huawei iBMC (PR #1098, #1108, #1112, #1114)
+ * Plugin added: Huawei HMM (PR #1098, #1113)
+ * Plugin added: Barracuda CloudGen (PR #1109)
+ * Plugin added: Mitel 3300 ICP (PR #1146)
+ * Plugin added: AEG ACM (PR #1147)
+ * Plugin added: Ruckus SmartCell Gateway (PR #1141)
+ * Enhancement: [snmp_standard/cpu] add per core thresholds (PR #1107)
+ * Enhancement: [protocols/dns] add CNAME to possible search type (PR #1143)
+ * Enhancement: [azure] add proxyurl option, update cli installation process (PR #1154)
+ * Enhancement: [snmp_standard/interfaces] add --add-volume option (PR #1157)
+ * Enhancement: [os/freebsd] add standard ntp mode (PR #1152)
+ * Fix: [hp/ilo/pdrive] handle pdrive xml variants (#1087, PR #1105)
+ * Fix: [watchguard/cpu] fix watchguard cpu usage calcul (#1078, PR #1105)
+ * Break: [snmp_standard/cpu] option declaration --(critical|warning)-average instead of --(warning|critical) (PR #1107)
+ * Break: [azure] change paths to providers/services (PR #1154)
+ 
+ 2018-08-21 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Microsoft Azure API (PR #1097)
  * Plugin added: Slack RestAPI (PR #1076)
  * Plugin added: Peplink Balance SNMP (PR #1015, #1045)
