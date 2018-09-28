@@ -176,7 +176,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin 
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/tableServices/default'
 --aggregation='average' --critical-tablecapacity-average='10' --verbose
 
-Default aggregation: 'average' /Total and average are valid.
+Default aggregation: 'average' / Total and average are valid.
 
 =over 8
 

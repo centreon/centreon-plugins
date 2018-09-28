@@ -82,10 +82,10 @@ sub custom_usage_output {
 
     if (defined($instance_mode->{option_results}->{per_sec})) {
         my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit . "/s"; 
+        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit . "/s"; 
     } else {
         my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit;
+        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit;
     }
     return $msg;
 }
