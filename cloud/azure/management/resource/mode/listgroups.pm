@@ -33,8 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "location:s"          => { name => 'location' },
-                                    "filter-name:s"       => { name => 'filter_name' },
+                                    "location:s"            => { name => 'location' },
+                                    "filter-name:s"         => { name => 'filter_name' },
                                 });
 
     return $self;

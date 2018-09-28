@@ -65,7 +65,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                 });
     
     return $self;
@@ -167,13 +167,13 @@ Example:
 Using resource name :
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=blob-capacity
---resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='total' --critical-blobcapacity-total='10' --verbose
+--resource=MYFILER --resource-group=MYHOSTGROUP --aggregation='total' --critical-blobcount-total='10' --verbose
 
 Using resource id :
 
 perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin --custommode=azcli --mode=blob-capacity
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/blobServices/default'
---aggregation='total' --critical-blobcapacity-total='10' --verbose
+--aggregation='total' --critical-blobcount-total='10' --verbose
 
 Default aggregation: 'total' / Only total is valid.
 
@@ -187,11 +187,11 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--warning-blobcapacity-total>
+=item B<--warning-blobcount-total>
 
 Thresholds warning
 
-=item B<--critical-blobcapacity-total>
+=item B<--critical-blobcount-total>
 
 Thresholds critical
 
