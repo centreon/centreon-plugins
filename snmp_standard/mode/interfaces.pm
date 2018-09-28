@@ -491,6 +491,30 @@ sub set_counters {
             }
         };
     }
+    if ($self->{no_volume} == 0 && $self->{no_set_volume} == 0) {
+        $self->{maps_counters}->{int}->{'090_in-volume'} = { filter => 'add_volume', threshold => 0,
+            set => {
+                key_values => [ { name => 'in_volume', diff => 1 }, { name => 'display' } ],
+                output_template => 'Volume In : %.2f %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'volume_in', value => 'in_volume_absolute', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        };
+        $self->{maps_counters}->{int}->{'091_out-volume'} = {  filter => 'add_volume', threshold => 0,
+            set => {
+                key_values => [ { name => 'out_volume', diff => 1 }, { name => 'display' } ],
+                output_template => 'Volume Out : %.2f %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'volume_out', value => 'out_volume_absolute', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        };
+    }
 }
 
 sub set_key_values_status {
@@ -671,7 +695,7 @@ sub new {
     $self->{no_oid_options} = defined($options{no_oid_options}) && $options{no_oid_options} =~ /^[01]$/ ? $options{no_oid_options} : 0;
     $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ? 
         $options{no_interfaceid_options} : 0;
-    foreach (('traffic', 'errors', 'cast', 'speed')) {
+    foreach (('traffic', 'errors', 'cast', 'speed', 'volume')) {
         $self->{'no_' . $_} = defined($options{'no_' . $_}) && $options{'no_' . $_} =~ /^[01]$/ ? $options{'no_' . $_} : 0;
         $self->{'no_set_' . $_} = defined($options{'no_set_' . $_}) && $options{'no_set_' . $_} =~ /^[01]$/ ? $options{'no_set_' . $_} : 0;
     }
@@ -712,6 +736,9 @@ sub new {
     }
     if ($self->{no_speed} == 0) {
         $options{options}->add_options(arguments => { "add-speed" => { name => 'add_speed' }, });
+    }
+    if ($self->{no_volume} == 0) {
+        $options{options}->add_options(arguments => { "add-volume" => { name => 'add_volume' }, });
     }
     if ($self->{no_oid_options} == 0) {
         $options{options}->add_options(arguments =>
@@ -798,7 +825,7 @@ sub check_options {
         $self->{option_results}->{add_status} = 1;
     }
     $self->{checking} = '';
-    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
@@ -866,7 +893,7 @@ sub run {
         $self->run_global();
     }
     
-    if ($multiple == 1 && $self->{checking} =~ /cast|errors|traffic|status/) {
+    if ($multiple == 1 && $self->{checking} =~ /cast|errors|traffic|status|volume/) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All interfaces are ok');
     }
@@ -878,7 +905,7 @@ sub run {
     $self->{new_datas}->{last_timestamp} = time();
     
     foreach my $id (sort keys %{$self->{interface_selected}}) {
-        next if ($self->{checking} !~ /cast|errors|traffic|status/);
+        next if ($self->{checking} !~ /cast|errors|traffic|status|volume/);
     
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
@@ -1131,6 +1158,16 @@ sub load_speed {
     }
 }
 
+sub load_volume {
+    my ($self, %options) = @_;
+    
+    $self->set_oids_traffic();
+    $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
+        $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
+    }
+}
+
 sub get_informations {
     my ($self, %options) = @_;
 
@@ -1144,6 +1181,7 @@ sub get_informations {
     $self->load_traffic() if (defined($self->{option_results}->{add_traffic}));
     $self->load_cast() if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
     $self->load_speed() if (defined($self->{option_results}->{add_speed}));
+    $self->load_volume() if (defined($self->{option_results}->{add_volume}));
     $self->$custom_load_method() if ($custom_load_method);
 
     $self->{results} = $self->{snmp}->get_leef();
@@ -1155,6 +1193,7 @@ sub get_informations {
         $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
         $self->add_result_speed(instance => $_) if (defined($self->{option_results}->{add_speed}));
+        $self->add_result_volume(instance => $_) if (defined($self->{option_results}->{add_volume}));
         $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
     }
 }
@@ -1297,6 +1336,22 @@ sub add_result_speed {
     $self->{interface_selected}->{$options{instance}}->{speed} = $interface_speed;
 }
 
+sub add_result_volume {
+    my ($self, %options) = @_;
+    
+    $self->{interface_selected}->{$options{instance}}->{mode_traffic} = 32;
+    $self->{interface_selected}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
+    $self->{interface_selected}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
+    if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
+        if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
+            $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
+            $self->{interface_selected}->{$options{instance}}->{mode_traffic} = 64;
+            $self->{interface_selected}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
+            $self->{interface_selected}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
+        }
+    }
+}
+
 1;
 
 __END__
@@ -1330,6 +1385,10 @@ Check interface cast.
 =item B<--add-speed>
 
 Check interface speed.
+
+=item B<--add-volume>
+
+Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
 
 =item B<--warning-status>
 
