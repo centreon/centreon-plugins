@@ -168,9 +168,9 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                     "filter-metric:s"       => { name => 'filter_metric' },
-                                    "per-sec"	            => { name => 'per_sec' },
+                                    "per-sec"               => { name => 'per_sec' },
                                 });
     
     return $self;
@@ -187,7 +187,7 @@ sub check_options {
     
     $self->{az_resource_group} = '';
     $self->{az_resource_type} = 'networkInterfaces';
-    $self->{az_resource_namespace} = 'Microsoft.Compute';
+    $self->{az_resource_namespace} = 'Microsoft.Network';
 
     foreach my $resource (@{$self->{option_results}->{resource}}) {
         push @{$self->{az_resource}}, $resource;

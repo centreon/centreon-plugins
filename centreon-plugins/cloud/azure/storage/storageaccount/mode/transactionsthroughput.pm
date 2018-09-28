@@ -82,10 +82,10 @@ sub custom_usage_output {
 
     if (defined($instance_mode->{option_results}->{per_sec})) {
         my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit . "/s"; 
+        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit . "/s"; 
     } else {
         my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value});
-        $msg = $self->{result_values}->{metric_name}  . ": " . $value . $unit;
+        $msg = $self->{result_values}->{metric_name}  . ": " . $value . ' ' . $unit;
     }
     return $msg;
 }
@@ -125,10 +125,10 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                     "resource-namespace:s"  => { name => 'resource_namespace' },
                                     "filter-metric:s"       => { name => 'filter_metric' },
-                                    "per-sec"	            => { name => 'per_sec' },
+                                    "per-sec"               => { name => 'per_sec' },
                                 });
     
     return $self;

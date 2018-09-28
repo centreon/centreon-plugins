@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'list-resources'            => 'cloud::azure::network::networkinterface::mode::listresources',
-        'throughput'                => 'cloud::azure::network::networkinterface::mode::traffic',
+        'traffic'                   => 'cloud::azure::network::networkinterface::mode::traffic',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';

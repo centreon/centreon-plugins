@@ -47,11 +47,11 @@ sub set_counters {
             my $metric_label = lc($metric);
             my $entry = { label => $metric_label . '-' . $aggregation, set => {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f',
+                                output_template => $metric . ': %.2f %%',
                                 perfdatas => [
                                     { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation . '_absolute', 
                                       template => '%.2f', label_extra_instance => 1, instance_use => 'display_absolute',
-                                      min => 0 },
+                                      unit => '%', min => 0, max => 100 },
                                 ],
                             }
                         };
@@ -69,7 +69,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                     "resource-namespace:s"  => { name => 'resource_namespace' },
                                 });
     

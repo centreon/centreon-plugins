@@ -172,12 +172,12 @@ Filter resource name (Can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'items'.
+Can be: 'total', 'compute', 'storage', 'network'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'items'.
+Can be: 'total', 'compute', 'storage', 'network'.
 
 =back
 

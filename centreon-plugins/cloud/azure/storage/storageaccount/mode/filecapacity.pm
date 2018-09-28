@@ -66,7 +66,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"	    => { name => 'resource_group' },
+                                    "resource-group:s"      => { name => 'resource_group' },
                                 });
     
     return $self;
@@ -176,7 +176,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::storage::storageaccount::plugin 
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Storage/storageAccounts/xxx/fileServices/default'
 --aggregation='average' --critical-filecapacity-average='10' --verbose
 
-Default aggregation: 'average' /Total and average are valid.
+Default aggregation: 'average' / Total and average are valid.
 
 =over 8
 
