@@ -41,7 +41,7 @@ my $thresholds = {
 my $instance_mode;
 
 my $maps_counters = {
-    runtime => { 
+    runtime => {
         '000_status'   => { set => {
                         key_values => [ { name => 'health_state' } ],
                         closure_custom_calc => \&custom_status_calc,
@@ -51,7 +51,7 @@ my $maps_counters = {
                         closure_custom_threshold_check => \&custom_threshold_output,
                     }
                },
-        
+
         '001_request-completed' => { set => {
                         key_values => [ { name => 'completed', diff => 1 }, { name => 'runtime' } ],
                         output_template => 'Requests completed : %s',
@@ -78,19 +78,19 @@ my $maps_counters = {
                               min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
                         ],
                     }
-               }, 
+               },
     },
 };
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
-    
+
     return $instance_mode->get_severity(section => 'health', value => $self->{result_values}->{health_state});
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{health_state} = $options{new_datas}->{$self->{instance} . '_health_state'};
     return 0;
 }
@@ -99,17 +99,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "filter-application:s"    => { name => 'filter_application' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "filter-runtime:s"        => { name => 'filter_runtime' },
                                   "threshold-overload:s@"   => { name => 'threshold_overload' },
                                 });
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
- 
+
     foreach my $key (('runtime')) {
         foreach (keys %{$maps_counters->{$key}}) {
             my ($id, $name) = split /_/;
@@ -126,23 +126,23 @@ sub new {
             $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
         }
     }
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     foreach my $key (('runtime')) {
         foreach (keys %{$maps_counters->{$key}}) {
             $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
         }
     }
-    
+
     $self->{statefile_value}->check_options(%options);
     $instance_mode = $self;
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
@@ -162,19 +162,19 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     $self->{connector} = $options{custom};
-    
+
     $self->manage_selection();
-    
+
     my $multiple = 1;
     if (scalar(keys %{$self->{runtime}}) == 1) {
         $multiple = 0;
     }
-    
+
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'All WorkerManagers are ok');
     }
-    
+
     my $matching = '';
     foreach (('filter_application', 'filter_name', 'filter_runtime')) {
         $matching .= defined($self->{option_results}->{$_}) ? $self->{option_results}->{$_} : 'all';
@@ -182,14 +182,14 @@ sub run {
     $self->{new_datas} = {};
     $self->{statefile_value}->read(statefile => "weblogic_" . $self->{mode} . '_' .  md5_hex($self->{connector}->{url}) . '_' . md5_hex($matching));
     $self->{new_datas}->{last_timestamp} = time();
-    
-    foreach my $id (sort keys %{$self->{runtime}}) {     
+
+    foreach my $id (sort keys %{$self->{runtime}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (sort keys %{$maps_counters->{runtime}}) {
             my $obj = $maps_counters->{runtime}->{$_}->{obj};
             $obj->set(instance => $id);
-        
+
             my ($value_check) = $obj->execute(values => $self->{runtime}->{$id},
                                               new_datas => $self->{new_datas});
 
@@ -204,13 +204,13 @@ sub run {
             my $output = $obj->output();
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = ', ';
-            
+
             if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
                 $short_msg .= $short_msg_append . $output;
                 $short_msg_append = ', ';
             }
-            
-            $obj->perfdata(extra_instance => $multiple);
+
+            $obj->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "WorkerManager '$id' $long_msg");
@@ -220,7 +220,7 @@ sub run {
                                         short_msg => "WorkerManager '$id' $short_msg"
                                         );
         }
-        
+
         if ($multiple == 0) {
             $self->{output}->output_add(short_msg => "WorkerManager '$id' $long_msg");
         }
@@ -233,23 +233,23 @@ sub run {
 
 sub get_severity {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
+    my $status = 'UNKNOWN'; # default
+
     if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+        foreach (@{$self->{overload_th}->{$options{section}}}) {
             if ($options{value} =~ /$_->{filter}/i) {
                 $status = $_->{status};
                 return $status;
             }
         }
     }
-    foreach (@{$thresholds->{$options{section}}}) {           
+    foreach (@{$thresholds->{$options{section}}}) {
         if ($options{value} =~ /$$_[0]/i) {
             $status = $$_[1];
             return $status;
         }
     }
-    
+
     return $status;
 }
 
@@ -266,18 +266,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{request} = [
-         { mbean => 'com.bea:ApplicationRuntime=*,Name=*,ServerRuntime=*,Type=WorkManagerRuntime', 
+         { mbean => 'com.bea:ApplicationRuntime=*,Name=*,ServerRuntime=*,Type=WorkManagerRuntime',
           attributes => [ { name => 'HealthState' }, { name => 'StuckThreadCount' }, { name => 'CompletedRequests' }, { name => 'PendingRequests' } ] }
     ];
     my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 1);
-    
+
     $self->{runtime} = {};
-    foreach my $mbean (keys %{$result}) { 
+    foreach my $mbean (keys %{$result}) {
         next if ($mbean !~ /ApplicationRuntime=(.*?),Name=(.*?),ServerRuntime=(.*?),/);
         my ($app, $name, $runtime) = ($1, $2, $3);
-        my $health_state = defined($map_state{$result->{$mbean}->{HealthState}->{state}}) ? 
+        my $health_state = defined($map_state{$result->{$mbean}->{HealthState}->{state}}) ?
                             $map_state{$result->{$mbean}->{HealthState}->{state}} : 'unknown';
-        
+
         if (defined($self->{option_results}->{filter_application}) && $self->{option_results}->{filter_application} ne '' &&
             $app !~ /$self->{option_results}->{filter_application}/) {
             $self->{output}->output_add(long_msg => "Skipping  '" . $app . "': no matching filter application.");
@@ -293,11 +293,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "Skipping  '" . $runtime . "': no matching filter runtime.");
             next;
         }
-        
+
         $self->{runtime}->{$app . '/' . $name . '/' . $runtime} = { health_state => $health_state, runtime => $app . '/' . $name . '/' . $runtime,
             completed => $result->{$mbean}->{CompletedRequests}, pending => $result->{$mbean}->{PendingRequests}, stuck => $result->{$mbean}->{StuckThreadCount} };
     }
-    
+
     if (scalar(keys %{$self->{runtime}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
@@ -345,3 +345,4 @@ Example: --threshold-overload='health,CRITICAL,^(?!(HEALTH_OK)$)'
 =back
 
 =cut
+

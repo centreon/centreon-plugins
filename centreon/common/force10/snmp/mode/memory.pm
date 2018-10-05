@@ -122,7 +122,7 @@ sub run_instances {
                 $short_msg_append = ', ';
             }
             
-            $obj->perfdata(extra_instance => $multiple);
+            $obj->perfdata(level => 1, extra_instance => $multiple);
         }
 
         my $prefix = "Memory Usage ";

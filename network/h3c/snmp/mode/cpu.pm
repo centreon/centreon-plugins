@@ -134,7 +134,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{cpu}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $maps_counters->{cpu}->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "CPU '" . $self->{cpu}->{$id}->{num} . "' Usage $long_msg [entity = '" . $self->{cpu}->{$id}->{name} . "']");
