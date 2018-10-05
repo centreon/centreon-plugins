@@ -108,8 +108,18 @@ sub check_options {
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
  
-    if (!defined($self->{hostname})) {
+    if (!defined($self->{hostname}) && $self->{hostname} ne '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (!defined($self->{timeframe}) && $self->{timeframe} ne '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify timeframe option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (!defined($self->{step}) && $self->{step} ne '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify step option.");
         $self->{output}->option_exit();
     }
     
@@ -251,6 +261,14 @@ Prometheus Rest API custom mode
 =head1 REST API OPTIONS
 
 =over 8
+
+=item B<--timeframe>
+
+Set timeframe in seconds (i.e. 3600 to check last hour).
+
+=item B<--step>
+
+Set the step of the metric query (Examples: '30s', '1m', '15m', '1h').
 
 =item B<--hostname>
 

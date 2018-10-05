@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                         'cpu'               => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
                         'cpu-detailed'      => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+                        'load'              => 'cloud::prometheus::exporters::nodeexporter::mode::load',
                         'memory'            => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
                         );
 

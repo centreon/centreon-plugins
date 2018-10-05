@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::prometheus::exporters::nodeexporter::mode::cpu;
+package cloud::prometheus::exporters::nodeexporter::mode::load;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,31 +29,37 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes CPU usage are ok',
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output' } ] },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes load are ok' },
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'node-usage', set => {
-                key_values => [ { name => 'average' }, { name => 'display' } ],
-                output_template => 'usage %.2f %%',
+        { label => 'load1', set => {
+                key_values => [ { name => 'node_load1' }, { name => 'display' } ],
+                output_template => 'Load 1 minute: %.2f',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'node', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load1', value => 'node_load1_absolute', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-    ];
-    $self->{maps_counters}->{cpu} = [
-        { label => 'cpu-usage', set => {
-                key_values => [ { name => 'average' }, { name => 'multi' }, { name => 'display' } ],
-                output_template => 'usage %.2f %%',
+        { label => 'load5', set => {
+                key_values => [ { name => 'node_load5' }, { name => 'display' } ],
+                output_template => 'Load 5 minutes: %.2f',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cpu', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load5', value => 'node_load5_absolute', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'load15', set => {
+                key_values => [ { name => 'node_load15' }, { name => 'display' } ],
+                output_template => 'Load 15 minutes: %.2f',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'load15', value => 'node_load15_absolute', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -64,12 +70,6 @@ sub prefix_nodes_output {
     my ($self, %options) = @_;
 
     return "Node '" . $options{instance_value}->{display} . "' ";
-}
-
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{multi} . "' " . "Cpu '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -94,21 +94,15 @@ sub manage_selection {
 
     my $filter = (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '') ? $self->{option_results}->{filter} . ',' : '';
 
-    my $results = $options{custom}->query_range(queries => [ "(1 - irate(node_cpu_seconds_total{" . $filter . "mode='idle'}[1m])) * 100" ]);
+    my $results = $options{custom}->query_range(queries => [ "node_load1{" . $filter . "}", "node_load5{" . $filter . "}",
+                                                             "node_load15{" . $filter . "}" ]);
     
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{average} += $average;
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{multi} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{display} = $metric->{metric}->{cpu};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{average} = $average;
+        $self->{nodes}->{$metric->{metric}->{instance}}->{$metric->{metric}->{__name__}} = $average;
     }
     
-    foreach my $node (keys %{$self->{nodes}}) {
-        $self->{nodes}->{$node}->{average} /= scalar(keys %{$self->{nodes}->{$node}->{cpu}});
-    }
-
     if (scalar(keys %{$self->{nodes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No nodes found.");
         $self->{output}->option_exit();
