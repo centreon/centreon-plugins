@@ -221,6 +221,7 @@ sub run_instances {
     my $display_status_long_output = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     
+    $self->{problems} = 0;
     my $level = 1;
     my $multiple_lvl2 = 0;
     my $instances = $self->{$options{config}->{name}};
@@ -272,6 +273,7 @@ sub run_instances {
             $long_msg_append = $message_separator;
             
             if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
+                $self->{problems}++;
                 $short_msg .= $short_msg_append . $output;
                 $short_msg_append = $message_separator;
             }
@@ -296,7 +298,7 @@ sub run_instances {
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
         $debug = 1 if ($display_status_long_output == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
-        $self->{output}->output_add(long_msg => ($display_status_long_output == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}", debug => $debug);
+        $self->{output}->output_add(long_msg => ($display_status_long_output == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
             next;
@@ -361,7 +363,7 @@ sub run_group {
             
             if ($multiple == 0) {
                 $self->{output}->output_add(severity => $self->{most_critical_instance},
-                                            short_msg => "${prefix_output}$self->{problems} problem(s) detected");
+                                            short_msg => $prefix_output . $self->{problems} . " problem(s) detected");
             }
         }
     }
