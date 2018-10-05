@@ -163,7 +163,7 @@ sub manage_counters {
             $short_msg_append = ', ';
         }
         
-        $options{maps_counters}->{$_}->{obj}->perfdata(extra_instance => $self->{multiple});
+        $options{maps_counters}->{$_}->{obj}->perfdata(level => 1, extra_instance => $self->{multiple});
     }
 
     $self->{output}->output_add(long_msg => $options{label} . " " . $long_msg);

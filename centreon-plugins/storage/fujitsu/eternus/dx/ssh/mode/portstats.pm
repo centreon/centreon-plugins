@@ -174,7 +174,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $obj->perfdata(extra_instance => $multiple);
+            $obj->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Port '$self->{port}->{$id}->{display}' $long_msg");

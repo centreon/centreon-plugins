@@ -246,7 +246,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $maps_counters->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Volume '$name' $long_msg");

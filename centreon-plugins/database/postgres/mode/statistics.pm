@@ -260,7 +260,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{database}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $maps_counters->{database}->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Database '" . $self->{db_selected}->{$id}->{name} . "' $long_msg");

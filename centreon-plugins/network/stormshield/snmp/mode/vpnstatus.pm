@@ -193,7 +193,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $maps_counters->{vpn}->{$_}->{obj}->perfdata(extra_instance => $multiple);
+            $maps_counters->{vpn}->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $long_msg");
