@@ -187,9 +187,15 @@ sub query_range {
 sub query {
     my ($self, %options) = @_;
 
+    my $data;
     my $uri = URI::Encode->new({encode_reserved => 1});
 
-    return $self->get_endpoint(url_path => '/query?query=' . $uri->encode($options{query}));
+    foreach my $query (@{$options{queries}}) {
+        my $result = $self->get_endpoint(url_path => '/query?query=' . $uri->encode($query));
+        push @{$data}, @{$result->{result}};
+    }
+
+    return $data;
 }
 
 sub get_endpoint {

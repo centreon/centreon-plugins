@@ -139,13 +139,13 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter:s"            => { name => 'filter', default => '' },
-                                  "units:s"             => { name => 'units', default => '%' },
+                                  "node:s"                  => { name => 'node', default => '.*' },
+                                  "extra-filter:s@"         => { name => 'extra_filter' },
+                                  "units:s"                 => { name => 'units', default => '%' },
                                 });
    
     return $self;
 }
-
 
 sub check_options {
     my ($self, %options) = @_;
@@ -158,13 +158,20 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
-    my %nodes;
 
-    my $filter = (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '') ? $self->{option_results}->{filter} . ',' : '';
+    my $extra_filter = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $extra_filter .= ',' . $filter;
+    }
 
-    my $results = $options{custom}->query_range(queries => [ "node_memory_MemTotal_bytes{" . $filter . "}", "node_memory_MemAvailable_bytes{" . $filter . "}",
-                                                             "node_memory_Cached_bytes{" . $filter . "}", "node_memory_Buffers_bytes{" . $filter . "}" ]);
-    
+    my $results = $options{custom}->query_range(queries => [ 'node_memory_MemTotal_bytes{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}',
+                                                            'node_memory_MemAvailable_bytes{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}',
+                                                            'node_memory_Cached_bytes{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}',
+                                                            'node_memory_Buffers_bytes{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}' ]);
     
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
@@ -188,9 +195,13 @@ Check memory usage.
 
 =over 8
 
-=item B<--filter>
+=item B<--node>
 
-Set a PromQL filter (Example : 'instance=~".*master.*"')
+Filter on a specific node (Must be a regexp)
+
+=item B<--extra-filter>
+
+Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
 
 =item B<--warning-*>
 
