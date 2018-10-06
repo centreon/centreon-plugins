@@ -80,7 +80,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter:s"            => { name => 'filter', default => '' },
+                                  "node:s"                  => { name => 'node', default => '.*' },
+                                  "extra-filter:s@"         => { name => 'extra_filter' },
                                 });
    
     return $self;
@@ -92,10 +93,17 @@ sub manage_selection {
     $self->{nodes} = {};
     $self->{cpu} = {};
 
-    my $filter = (defined($self->{option_results}->{filter}) && $self->{option_results}->{filter} ne '') ? $self->{option_results}->{filter} . ',' : '';
+    my $extra_filter = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $extra_filter .= ',' . $filter;
+    }
 
-    my $results = $options{custom}->query_range(queries => [ "node_load1{" . $filter . "}", "node_load5{" . $filter . "}",
-                                                             "node_load15{" . $filter . "}" ]);
+    my $results = $options{custom}->query_range(queries => [ 'node_load1{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}',
+                                                            'node_load5{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}',
+                                                            'node_load15{instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}' ]);
     
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
@@ -115,23 +123,27 @@ __END__
 
 =head1 MODE
 
-Check CPU usage for nodes and each of their cores.
+Check nodes load.
 
 =over 8
 
-=item B<--filter>
+=item B<--node>
 
-Set a PromQL filter (Example : 'instance=~".*master.*"')
+Filter on a specific node (Must be a regexp)
+
+=item B<--extra-filter>
+
+Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'node-usage', 'cpu-usage'.
+Can be: 'load1', 'load5', 'load15'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'node-usage', 'cpu-usage'.
+Can be: 'load1', 'load5', 'load15'.
 
 =back
 

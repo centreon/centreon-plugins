@@ -35,6 +35,7 @@ sub new {
                         'cpu-detailed'      => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
                         'load'              => 'cloud::prometheus::exporters::nodeexporter::mode::load',
                         'memory'            => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
+                        'storage'           => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
                         );
 
     $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
