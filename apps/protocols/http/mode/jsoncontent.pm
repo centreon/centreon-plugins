@@ -39,6 +39,7 @@ sub new {
             {
             "data:s"                => { name => 'data' },
             "lookup:s@"             => { name => 'lookup' },
+            "extra-informations:s"  => { name => 'extra_informations' },
             "hostname:s"            => { name => 'hostname' },
             "http-peer-addr:s"      => { name => 'http_peer_addr' },
             "vhost:s"               => { name => 'vhost' },
@@ -167,7 +168,7 @@ sub display_output {
 
 sub lookup {
     my ($self, %options) = @_;
-    my ($xpath, @values);
+    my ($xpath, @values, @extra_values);
 
     my $json = JSON->new;
     my $content;
@@ -178,6 +179,9 @@ sub lookup {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
+
+    my $jpath_extra_info = JSON::Path->new($self->{option_results}->{extra_informations});
+    @extra_values =  $jpath_extra_info->values($content);
 
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
         eval {
@@ -210,9 +214,9 @@ sub lookup {
                                   critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
                                   min => 0);
 
-    my $count = 0;
-    foreach my $value (@{$self->{values}}) {
-        $count++;
+    for (my $count = 0; $count < @{$self->{values}}; $count++) {
+        my $value = $values[$count];
+        my $extra_value = $extra_values[$count];
         if ($value =~ /^[0-9.]+$/) {
             if ($self->{option_results}->{threshold_value} eq 'values') {
                 my $exit = lc($self->{perfdata}->threshold_check(value => $value,
@@ -227,11 +231,20 @@ sub lookup {
         } else {
             if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
                 $value =~ /$self->{option_results}->{critical_string}/) {
+                if (defined($extra_value)) {
+                       $value = $extra_value;
+                }
                 push @{$self->{values_string_critical}}, $value;
             } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
                      $value =~ /$self->{option_results}->{warning_string}/) {
+                if (defined($extra_value)) {
+                       $value = $extra_value;
+                }
                 push @{$self->{values_string_warning}}, $value;
             } else {
+                if (defined($extra_value)) {
+                       $value = $extra_value;
+                }
                 push @{$self->{values_string_ok}}, $value;
             }
         }
@@ -270,7 +283,6 @@ sub run {
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
                                   min => 0);
-
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -297,6 +309,10 @@ Set file with JSON request
 
 What to lookup in JSON response (JSON XPath string) (can be multiple)
 See: http://goessner.net/articles/JsonPath/
+
+=item B<--extra-informations>
+
+What to lookup in JSON response for the output message
 
 =back
 
