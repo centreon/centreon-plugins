@@ -28,6 +28,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
 use JSON::Path;
 use JSON;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -213,42 +214,45 @@ sub lookup {
                                   warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
                                   critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
                                   min => 0);
-
-    for (my $count = 0; $count < @{$self->{values}}; $count++) {
-        my $value = $values[$count];
-        my $extra_value = $extra_values[$count];
-        if ($value =~ /^[0-9.]+$/) {
-            if ($self->{option_results}->{threshold_value} eq 'values') {
-                my $exit = lc($self->{perfdata}->threshold_check(value => $value,
-                                            threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
-                push @{$self->{'values_' . $exit}}, $value;
-                $self->{'count_' . $exit}++
-            }
-            $self->{output}->perfdata_add(label => 'element_' . $count,
-                                          value => $value,
-                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
-        } else {
-            if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
-                $value =~ /$self->{option_results}->{critical_string}/) {
-                if (defined($extra_value)) {
-                       $value = $extra_value;
+    if(defined($self->{values})) {
+        for (my $count = 0; $count < @{$self->{values}}; $count++) {
+            my $value = $values[$count];
+            my $extra_value = $extra_values[$count];
+            if ($value =~ /^[0-9.]+$/) {
+                if ($self->{option_results}->{threshold_value} eq 'values') {
+                    my $exit = lc($self->{perfdata}->threshold_check(value => $value,
+                                                threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
+                    push @{$self->{'values_' . $exit}}, $value;
+                    $self->{'count_' . $exit}++
                 }
-                push @{$self->{values_string_critical}}, $value;
-            } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
-                     $value =~ /$self->{option_results}->{warning_string}/) {
-                if (defined($extra_value)) {
-                       $value = $extra_value;
-                }
-                push @{$self->{values_string_warning}}, $value;
+                $self->{output}->perfdata_add(label => 'element_' . $count,
+                                            value => $value,
+                                            warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                                            critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
             } else {
-                if (defined($extra_value)) {
-                       $value = $extra_value;
+                if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
+                    $value =~ /$self->{option_results}->{critical_string}/) {
+                    if (defined($extra_value)) {
+                        $value = $extra_value;
+                    }
+                    push @{$self->{values_string_critical}}, $value;
+                } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
+                        $value =~ /$self->{option_results}->{warning_string}/) {
+                    if (defined($extra_value)) {
+                        $value = $extra_value;
+                    }
+                    push @{$self->{values_string_warning}}, $value;
+                } else {
+                    if (defined($extra_value)) {
+                        $value = $extra_value;
+                    }
+                    push @{$self->{values_string_ok}}, $value;
                 }
-                push @{$self->{values_string_ok}}, $value;
             }
         }
-    }
+    } else {
+        $self->{output}->output_add(long_msg => ' OK : 0 element found ');
+    } 
 
     $self->display_output();
 }
