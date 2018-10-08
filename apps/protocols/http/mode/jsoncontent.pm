@@ -28,7 +28,6 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
 use JSON::Path;
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
