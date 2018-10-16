@@ -176,6 +176,8 @@ sub query_range {
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     foreach my $query (@{$options{queries}}) {
+        $self->{output}->output_add(long_msg => sprintf("Query range: '/query_range?query=%s&start=%s&end=%s&step=%s'",
+                                                            $query, $start_time, $end_time, $self->{step}), debug => 1);
         my $result = $self->get_endpoint(url_path => '/query_range?query=' . $uri->encode($query) .
             '&start=' . $start_time . '&end=' . $end_time . '&step=' . $self->{step});
         push @{$data}, @{$result->{result}};
@@ -191,6 +193,7 @@ sub query {
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     foreach my $query (@{$options{queries}}) {
+        $self->{output}->output_add(long_msg => sprintf("Query: '/query?query=%s'", $query), debug => 1);
         my $result = $self->get_endpoint(url_path => '/query?query=' . $uri->encode($query));
         push @{$data}, @{$result->{result}};
     }
