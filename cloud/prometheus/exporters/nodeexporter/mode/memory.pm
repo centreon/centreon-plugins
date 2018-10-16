@@ -178,13 +178,13 @@ sub manage_selection {
     }
 
     my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "total", "__name__", "(.*)")',
+                                                            '"' . $extra_filter . '}, "__name__", "total", "", "")',
                                                             'label_replace({__name__=~"' . $self->{metrics}->{available} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "available", "__name__", "(.*)")',
+                                                            '"' . $extra_filter . '}, "__name__", "available", "", "")',
                                                             'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "cached", "__name__", "(.*)")',
+                                                            '"' . $extra_filter . '}, "__name__", "cached", "", "")',
                                                             'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "buffer", "__name__", "(.*)")' ]);
+                                                            '"' . $extra_filter . '}, "__name__", "buffer", "", "")' ]);
 
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
@@ -225,11 +225,13 @@ Can be: 'usage', 'buffer', 'cached'.
 =item B<--extra-filter>
 
 Add a PromQL filter (Can be multiple)
+
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
 Overload default metrics name (Can be multiple, metric can be 'total', 'available', 'cached', 'buffer')
+
 Example : --metric-overload='metric,^my_metric_name$'
 
 =back

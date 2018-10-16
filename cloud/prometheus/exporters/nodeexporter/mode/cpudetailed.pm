@@ -309,11 +309,13 @@ Can be: 'node-idle', 'node-wait', 'node-irq', 'node-nice',
 =item B<--extra-filter>
 
 Add a PromQL filter (Can be multiple)
+
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
 Overload default metrics name (Can be multiple, metric can be 'cpu')
+
 Example : --metric-overload='metric,^my_metric_name$'
 
 =back

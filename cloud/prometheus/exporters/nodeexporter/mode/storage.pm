@@ -162,7 +162,7 @@ sub check_options {
     };
 
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
-        next if ($metric !~ /(.*)=(.*)/);
+        next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
     
@@ -182,11 +182,11 @@ sub manage_selection {
     my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{free} . '",instance=~"' . $self->{option_results}->{node} .
                                                         '",mountpoint=~"' . $self->{option_results}->{storage} .
                                                         '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}, "__name__", "free", "__name__", "(.*)")',
+                                                        '"' . $extra_filter . '}, "__name__", "free", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{size} . '",instance=~"' . $self->{option_results}->{node} .
                                                         '",mountpoint=~"' . $self->{option_results}->{storage} .
                                                         '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}, "__name__", "size", "__name__", "(.*)")' ]);
+                                                        '"' . $extra_filter . '}, "__name__", "size", "", "")' ]);
     
     foreach my $metric (@{$results}) {
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};

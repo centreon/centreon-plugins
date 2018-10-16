@@ -115,12 +115,12 @@ sub manage_selection {
     }
 
     my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{load1} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "load1", "__name__", "(.*)")',
+                                                            '"' . $extra_filter . '}, "__name__", "load1", "", "")',
                                                             'label_replace({__name__=~"' . $self->{metrics}->{load5} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "load5", "__name__", "(.*)")',
+                                                            '"' . $extra_filter . '}, "__name__", "load5", "", "")',
                                                             'label_replace({__name__=~"' . $self->{metrics}->{load15} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "load15", "__name__", "(.*)")' ]);
-                                                            
+                                                            '"' . $extra_filter . '}, "__name__", "load15", "", "")' ]);
+
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
@@ -160,11 +160,13 @@ Can be: 'load1', 'load5', 'load15'.
 =item B<--extra-filter>
 
 Add a PromQL filter (Can be multiple)
+
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
 Overload default metrics name (Can be multiple, metric can be 'load1', 'load5', 'load15')
+
 Example : --metric-overload='metric,^my_metric_name$'
 
 =back
