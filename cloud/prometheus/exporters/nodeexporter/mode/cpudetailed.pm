@@ -30,7 +30,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes CPU usage are ok',
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output' } ] },
+          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usage are ok' } ] },
     ];
 
     $self->{maps_counters}->{nodes} = [
