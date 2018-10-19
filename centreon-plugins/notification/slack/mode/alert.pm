@@ -165,6 +165,7 @@ sub service_message {
     my ($self, %options) = @_;
     
     my $url_service = "Host: " . $self->{option_results}->{host_name} . " | Service " . $self->{option_results}->{service_description};
+    $self->{payload_attachment}->{fallback} = $url_service;
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $url_service = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description} . '>';
         $self->{payload_attachment}->{fallback} = "Service " . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description};
