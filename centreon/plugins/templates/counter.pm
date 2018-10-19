@@ -238,7 +238,7 @@ sub run_instances {
             $self->{multiple_lvl1} = 1;
         }
     }
-    if ($self->{multiple_lvl1} > 0 && $resume == 0) {
+    if (($self->{multiple_lvl1} > 0 && $resume == 0 && !defined($options{instance})) || ($self->{multiple_lvl1} == 0 && $multiple_lvl2 > 0)) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $options{config}->{message_multiple});
     }
@@ -298,7 +298,9 @@ sub run_instances {
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
         $debug = 1 if ($display_status_long_output == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
-        $self->{output}->output_add(long_msg => ($display_status_long_output == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
+        if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0) {
+            $self->{output}->output_add(long_msg => ($display_status_long_output == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
+        }
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
             next;
@@ -310,7 +312,7 @@ sub run_instances {
                                         );
         }
         
-        if ($self->{multiple_lvl1} == 0 && $multiple_lvl2 == 0) {
+        if ($self->{multiple_lvl1} == 0 && $multiple_lvl2 == 0 && !$options{multi}) {
             $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
         }
 
