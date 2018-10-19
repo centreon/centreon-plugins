@@ -84,10 +84,10 @@ sub custom_usage_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{multi} = $options{new_datas}->{$self->{instance} . '_multi'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_node_filesystem_size_bytes'};    
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_node_filesystem_free_bytes'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_size'};    
+    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total});
+    $self->{result_values}->{prct_used} = ($self->{result_values}->{total} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{total} : 0;
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
     
     # limit to 100. Better output.
@@ -105,12 +105,12 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes storages usage are ok',
-          counters => [ { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output' } ] },
+          counters => [ { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages usage are ok' } ] },
     ];
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'node_filesystem_free_bytes' }, { name => 'node_filesystem_size_bytes' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'free' }, { name => 'size' }, { name => 'multi' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -146,6 +146,7 @@ sub new {
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
+                                  "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
     return $self;
@@ -154,7 +155,17 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+    
+    $self->{metrics} = {
+        'free'      => "^node_filesystem_free.*",
+        'size'      => "^node_filesystem_size.*",
+    };
 
+    foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
+        next if ($metric !~ /(.*),(.*)/);
+        $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+    
     $instance_mode = $self;
 }
 
@@ -162,21 +173,20 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
-    $self->{cpu} = {};
 
     my $extra_filter = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $extra_filter .= ',' . $filter;
     }
 
-    my $results = $options{custom}->query(queries => [ 'node_filesystem_free_bytes{instance=~"' . $self->{option_results}->{node} .
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{free} . '",instance=~"' . $self->{option_results}->{node} .
                                                         '",mountpoint=~"' . $self->{option_results}->{storage} .
                                                         '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}',
-                                                       'node_filesystem_size_bytes{instance=~".*' . $self->{option_results}->{node} .
+                                                        '"' . $extra_filter . '}, "__name__", "free", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{size} . '",instance=~"' . $self->{option_results}->{node} .
                                                         '",mountpoint=~"' . $self->{option_results}->{storage} .
                                                         '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}' ]);
+                                                        '"' . $extra_filter . '}, "__name__", "size", "", "")' ]);
     
     foreach my $metric (@{$results}) {
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
@@ -203,19 +213,15 @@ Check CPU usage for nodes and each of their cores.
 
 =item B<--node>
 
-Filter on a specific node (Must be a regexp)
+Filter on a specific node (Must be a regexp, Default: '.*')
 
 =item B<--storage>
 
-Filter on a specific storage (Must be a regexp)
+Filter on a specific storage (Must be a regexp, Default: '.*')
 
 =item B<--exclude-storage-type>
 
 Exclude storage types (Must be a regexp, Default: 'rootfs|tmpfs')
-
-=item B<--extra-filter>
-
-Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
 
 =item B<--units>
 
@@ -232,6 +238,18 @@ Threshold warning.
 =item B<--critical-usage>
 
 Threshold critical.
+
+=item B<--extra-filter>
+
+Add a PromQL filter (Can be multiple)
+
+Example : --extra-filter='name=~".*pretty.*"'
+
+=item B<--metric-overload>
+
+Overload default metrics name (Can be multiple, metric can be 'free', 'size')
+
+Example : --metric-overload='metric,^my_metric_name$'
 
 =back
 

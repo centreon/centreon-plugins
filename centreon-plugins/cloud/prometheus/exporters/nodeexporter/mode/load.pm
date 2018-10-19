@@ -34,31 +34,31 @@ sub set_counters {
 
     $self->{maps_counters}->{nodes} = [
         { label => 'load1', set => {
-                key_values => [ { name => 'node_load1' }, { name => 'display' } ],
+                key_values => [ { name => 'load1' }, { name => 'display' } ],
                 output_template => 'Load 1 minute: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load1', value => 'node_load1_absolute', template => '%.2f',
+                    { label => 'load1', value => 'load1_absolute', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'load5', set => {
-                key_values => [ { name => 'node_load5' }, { name => 'display' } ],
+                key_values => [ { name => 'load5' }, { name => 'display' } ],
                 output_template => 'Load 5 minutes: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load5', value => 'node_load5_absolute', template => '%.2f',
+                    { label => 'load5', value => 'load5_absolute', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'load15', set => {
-                key_values => [ { name => 'node_load15' }, { name => 'display' } ],
+                key_values => [ { name => 'load15' }, { name => 'display' } ],
                 output_template => 'Load 15 minutes: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load15', value => 'node_load15_absolute', template => '%.2f',
+                    { label => 'load15', value => 'load15_absolute', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -82,29 +82,45 @@ sub new {
                                 {
                                   "node:s"                  => { name => 'node', default => '.*' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
+                                  "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+    
+    $self->{metrics} = {
+        'load1'     => '^node_load1$',
+        'load5'     => '^node_load5$',
+        'load15'    => '^node_load15$',
+    };
+
+    foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
+        next if ($metric !~ /(.*),(.*)/);
+        $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
-    $self->{cpu} = {};
 
     my $extra_filter = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $extra_filter .= ',' . $filter;
     }
 
-    my $results = $options{custom}->query_range(queries => [ 'node_load1{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}',
-                                                            'node_load5{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}',
-                                                            'node_load15{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}' ]);
-    
+    my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{load1} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "load1", "", "")',
+                                                            'label_replace({__name__=~"' . $self->{metrics}->{load5} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "load5", "", "")',
+                                                            'label_replace({__name__=~"' . $self->{metrics}->{load15} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "load15", "", "")' ]);
+
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
@@ -129,11 +145,7 @@ Check nodes load.
 
 =item B<--node>
 
-Filter on a specific node (Must be a regexp)
-
-=item B<--extra-filter>
-
-Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
+Filter on a specific node (Must be a regexp, Default: '.*')
 
 =item B<--warning-*>
 
@@ -144,6 +156,18 @@ Can be: 'load1', 'load5', 'load15'.
 
 Threshold critical.
 Can be: 'load1', 'load5', 'load15'.
+
+=item B<--extra-filter>
+
+Add a PromQL filter (Can be multiple)
+
+Example : --extra-filter='name=~".*pretty.*"'
+
+=item B<--metric-overload>
+
+Overload default metrics name (Can be multiple, metric can be 'load1', 'load5', 'load15')
+
+Example : --metric-overload='metric,^my_metric_name$'
 
 =back
 
