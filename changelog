@@ -1,3 +1,14 @@
+2018-19-10 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: Prometheus (PR #1168, #1169)
+ * Plugin added: Prometheus for Node Exporter (PR #1168, #1169, #1179)
+ * Plugin added: Prometheus for Kubernetes (PR #1181)
+ * Plugin added: Masterclock NTP GPS (PR #1182)
+ * Plugin added: Moxa EDS/IKS switches (PR #1183)
+ * Enhancement: [counter] add type 3 (instances of instances) (PR #1167, #1178)
+ * Fix: [cloud/azure] fix azure plugin typos, helpers and other (PR #1159)
+ * Fix: [hyperv/nodesnapshot] bug with comma on french Windows OS (PR #1175)
+ * Fix: [slack/alert] host and service not printed (PR #1177)
+
 2018-09-28 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Huawei iBMC (PR #1098, #1108, #1112, #1114)
  * Plugin added: Huawei HMM (PR #1098, #1113)
