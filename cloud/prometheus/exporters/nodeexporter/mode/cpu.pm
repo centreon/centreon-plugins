@@ -30,7 +30,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes CPU usage are ok',
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output' } ] },
+          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usage are ok' } ] },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -82,9 +82,24 @@ sub new {
                                 {
                                   "node:s"                  => { name => 'node', default => '.*' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
+                                  "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+    
+    $self->{metrics} = {
+        'cpu' => "^node_cpu.*",
+    };
+
+    foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
+        next if ($metric !~ /(.*),(.*)/);
+        $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
 }
 
 sub manage_selection {
@@ -98,7 +113,7 @@ sub manage_selection {
         $extra_filter .= ',' . $filter;
     }
 
-    my $results = $options{custom}->query_range(queries => [ '(1 - irate(node_cpu_seconds_total{mode="idle",instance=~"' . $self->{option_results}->{node} .
+    my $results = $options{custom}->query_range(queries => [ '(1 - irate({__name__=~"' . $self->{metrics}->{cpu} . '",mode="idle",instance=~"' . $self->{option_results}->{node} .
                                                                 '"' . $extra_filter . '}[1m])) * 100' ]);
     
     foreach my $metric (@{$results}) {
@@ -132,11 +147,7 @@ Check CPU usage for nodes and each of their cores.
 
 =item B<--node>
 
-Filter on a specific node (Must be a regexp)
-
-=item B<--extra-filter>
-
-Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
+Filter on a specific node (Must be a regexp, Default: '.*')
 
 =item B<--warning-*>
 
@@ -147,6 +158,18 @@ Can be: 'node-usage', 'cpu-usage'.
 
 Threshold critical.
 Can be: 'node-usage', 'cpu-usage'.
+
+=item B<--extra-filter>
+
+Add a PromQL filter (Can be multiple)
+
+Example : --extra-filter='name=~".*pretty.*"'
+
+=item B<--metric-overload>
+
+Overload default metrics name (Can be multiple, metric can be 'cpu')
+
+Example : --metric-overload='metric,^my_metric_name$'
 
 =back
 

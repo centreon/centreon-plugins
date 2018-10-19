@@ -75,12 +75,12 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_node_memory_MemTotal_bytes'};
-    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_node_memory_MemAvailable_bytes'};
-    $self->{result_values}->{buffer} = $options{new_datas}->{$self->{instance} . '_node_memory_Buffers_bytes'};
-    $self->{result_values}->{cached} = $options{new_datas}->{$self->{instance} . '_node_memory_Cached_bytes'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_available'};
+    $self->{result_values}->{buffer} = $options{new_datas}->{$self->{instance} . '_buffer'};
+    $self->{result_values}->{cached} = $options{new_datas}->{$self->{instance} . '_cached'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{available} - $self->{result_values}->{buffer} - $self->{result_values}->{cached};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total});
+    $self->{result_values}->{prct_used} = ($self->{result_values}->{total} > 0) ? $self->{result_values}->{used} * 100 / $self->{result_values}->{total} : 0;
     
     return 0;
 }
@@ -94,8 +94,8 @@ sub set_counters {
 
     $self->{maps_counters}->{nodes} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'node_memory_MemTotal_bytes' }, { name => 'node_memory_MemAvailable_bytes' },
-                    { name => 'node_memory_Buffers_bytes' }, { name => 'node_memory_Cached_bytes' }, { name => 'display' } ],
+                key_values => [ { name => 'total' }, { name => 'available' },
+                    { name => 'buffer' }, { name => 'cached' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -103,21 +103,21 @@ sub set_counters {
             }
         },
         { label => 'buffer', set => {
-                key_values => [ { name => 'node_memory_Buffers_bytes' }, { name => 'display' } ],
+                key_values => [ { name => 'buffer' }, { name => 'display' } ],
                 output_template => 'Buffer: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'buffer', value => 'node_memory_Buffers_bytes_absolute', template => '%s',
+                    { label => 'buffer', value => 'buffer_absolute', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'cached', set => {
-                key_values => [ { name => 'node_memory_Cached_bytes' }, { name => 'display' } ],
+                key_values => [ { name => 'cached' }, { name => 'display' } ],
                 output_template => 'Cached: %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cached', value => 'node_memory_Cached_bytes_absolute', template => '%s',
+                    { label => 'cached', value => 'cached_absolute', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -142,6 +142,7 @@ sub new {
                                   "node:s"                  => { name => 'node', default => '.*' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "units:s"                 => { name => 'units', default => '%' },
+                                  "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
     return $self;
@@ -150,6 +151,18 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+    
+    $self->{metrics} = {
+        'total'     => "^node_memory_MemTotal.*",
+        'available' => "^node_memory_MemAvailable.*",
+        'cached'    => "^node_memory_Cached.*",
+        'buffer'    => "^node_memory_Buffers.*",
+    };
+
+    foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
+        next if ($metric !~ /(.*),(.*)/);
+        $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
     
     $instance_mode = $self;
 }
@@ -164,15 +177,15 @@ sub manage_selection {
         $extra_filter .= ',' . $filter;
     }
 
-    my $results = $options{custom}->query_range(queries => [ 'node_memory_MemTotal_bytes{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}',
-                                                            'node_memory_MemAvailable_bytes{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}',
-                                                            'node_memory_Cached_bytes{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}',
-                                                            'node_memory_Buffers_bytes{instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}' ]);
-    
+    my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "total", "", "")',
+                                                            'label_replace({__name__=~"' . $self->{metrics}->{available} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "available", "", "")',
+                                                            'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "cached", "", "")',
+                                                            'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",instance=~"' . $self->{option_results}->{node} .
+                                                            '"' . $extra_filter . '}, "__name__", "buffer", "", "")' ]);
+
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
@@ -197,11 +210,7 @@ Check memory usage.
 
 =item B<--node>
 
-Filter on a specific node (Must be a regexp)
-
-=item B<--extra-filter>
-
-Set a PromQL filter (Can be multiple, Example : 'name=~".*pretty.*"')
+Filter on a specific node (Must be a regexp, Default: '.*')
 
 =item B<--warning-*>
 
@@ -212,6 +221,18 @@ Can be: 'usage', 'buffer', 'cached'.
 
 Threshold critical.
 Can be: 'usage', 'buffer', 'cached'.
+
+=item B<--extra-filter>
+
+Add a PromQL filter (Can be multiple)
+
+Example : --extra-filter='name=~".*pretty.*"'
+
+=item B<--metric-overload>
+
+Overload default metrics name (Can be multiple, metric can be 'total', 'available', 'cached', 'buffer')
+
+Example : --metric-overload='metric,^my_metric_name$'
 
 =back
 
