@@ -159,28 +159,17 @@ sub get_port {
 
 sub query_range {
     my ($self, %options) = @_;
-    
-    
-    if (!defined($self->{timeframe}) || $self->{timeframe} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify timeframe option.");
-        $self->{output}->option_exit();
-    }
-    
-    if (!defined($self->{step}) || $self->{step} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify step option.");
-        $self->{output}->option_exit();
-    }
 
     my $data;
-    my $start_time = DateTime->now->subtract(seconds => $self->{timeframe})->iso8601.'Z';
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
     my $end_time = DateTime->now->iso8601.'Z';
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     foreach my $query (@{$options{queries}}) {
         $self->{output}->output_add(long_msg => sprintf("Query range: '/query_range?query=%s&start=%s&end=%s&step=%s'",
-                                                            $query, $start_time, $end_time, $self->{step}), debug => 1);
+                                                            $query, $start_time, $end_time, $options{step}), debug => 1);
         my $result = $self->get_endpoint(url_path => '/query_range?query=' . $uri->encode($query) .
-            '&start=' . $start_time . '&end=' . $end_time . '&step=' . $self->{step});
+            '&start=' . $start_time . '&end=' . $end_time . '&step=' . $options{step});
         push @{$data}, @{$result->{result}};
     }
 
