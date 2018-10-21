@@ -48,7 +48,7 @@ sub new {
                         "url-path:s"        => { name => 'url_path' },
                         "port:s"            => { name => 'port' },
                         "proto:s"           => { name => 'proto' },
-						"credentials"       => { name => 'credentials' },
+                        "credentials"       => { name => 'credentials' },
                         "basic"             => { name => 'basic' },
                         "username:s"        => { name => 'username' },
                         "password:s"        => { name => 'password' },
@@ -94,7 +94,7 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'undef';
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 9090;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1';
@@ -108,18 +108,8 @@ sub check_options {
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
  
-    if (!defined($self->{hostname}) && $self->{hostname} ne '') {
+    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
-        $self->{output}->option_exit();
-    }
-    
-    if (!defined($self->{timeframe}) && $self->{timeframe} ne '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify timeframe option.");
-        $self->{output}->option_exit();
-    }
-    
-    if (!defined($self->{step}) && $self->{step} ne '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify step option.");
         $self->{output}->option_exit();
     }
     
@@ -169,6 +159,17 @@ sub get_port {
 
 sub query_range {
     my ($self, %options) = @_;
+    
+    
+    if (!defined($self->{timeframe}) || $self->{timeframe} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify timeframe option.");
+        $self->{output}->option_exit();
+    }
+    
+    if (!defined($self->{step}) || $self->{step} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify step option.");
+        $self->{output}->option_exit();
+    }
 
     my $data;
     my $start_time = DateTime->now->subtract(seconds => $self->{timeframe})->iso8601.'Z';
