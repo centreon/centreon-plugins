@@ -29,7 +29,7 @@ my %map_fan_status = (
 );
 
 my $mapping = {
-    axisFanState => { oid => '.1.3.6.1.4.1.368.4.1.2.1', map => \%map_fan_status },
+    axisFanState => { oid => '.1.3.6.1.4.1.368.4.1.2.1.3', map => \%map_fan_status },
 };
 
 sub load {

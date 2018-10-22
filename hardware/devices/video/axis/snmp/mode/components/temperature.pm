@@ -58,7 +58,7 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Temperature common is %d°C (Sensor status is %s).",
+        $self->{output}->output_add(long_msg => sprintf("Temperature camera is %d°C (Sensor status is %s).",
                                     $result->{axisTemperatureCelsius}, $result->{axisTemperatureState}
                                     ));
         my $exit = $self->get_severity(section => 'temperature', value => $result->{axisTemperatureState});
@@ -72,8 +72,8 @@ sub check {
     if (defined($result->{axisTemperatureCelsius}) && $result->{axisTemperatureCelsius} != -1) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{axisTemperatureCelsius});
             if ($checked == 0) {
-                my $warn_th = '';
-                my $crit_th = '';
+                my $warn_th = '55';
+                my $crit_th = '60';
                 $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
                 $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
@@ -83,7 +83,7 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Temperature '%s' is %s degree centigrade", $instance, $result->{axisTemperatureCelsius}));
             }
-            $self->{output}->perfdata_add(label => "temp_" . $instance . "_" . $result->{axisTemperatureCelsius}, unit => 'C',
+            $self->{output}->perfdata_add(label => "temp_device_" . $instance, unit => '°C',
                                           value => $result->{axisTemperatureCelsius},
                                           warning => $warn,
                                           critical => $crit);
