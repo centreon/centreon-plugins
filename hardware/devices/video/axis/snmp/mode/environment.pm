@@ -28,12 +28,12 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(sensor|fan|psu|temperature)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(video|fan|psu|temperature)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
-        sensor => [
+        video => [
             ['unknown', 'UNKNOWN'],
             ['bad', 'CRITICAL'],
             ['warning', 'WARNING'],
@@ -41,15 +41,8 @@ sub set_system {
             ['not present', 'WARNING'],
         ],
         psu => [
-            ['psNotPresent', 'OK'],
-            ['psNotPlugged', 'WARNING'],
-            ['psPowered', 'OK'],
-            ['psFailed', 'CRITICAL'],
-            ['psPermFailure', 'CRITICAL'],
-            ['psMax', 'WARNING'],
-            ['psAuxFailure', 'CRITICAL'],
-            ['psNotPowered', 'WARNING'],
-            ['psAuxNotPowered', 'CRITICAL'],
+            ['failed', 'CRITICAL'],
+            ['ok', 'OK'],
         ],
         fan => [
             ['failed', 'CRITICAL'],
@@ -64,7 +57,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'hardware::devices::video::axis::snmp::mode::components';
-    $self->{components_module} = ['sensor', 'psu', 'fan', 'temperature'];
+    $self->{components_module} = ['video', 'psu', 'fan', 'temperature'];
 }
 
 sub snmp_execute {
@@ -93,24 +86,24 @@ __END__
 
 =head1 MODE
 
-Check sensors (AXIS-VIDEO-MIB).
+Check videos (AXIS-VIDEO-MIB).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'sensor', 'psu', 'fan', 'temperature'.
+Can be: 'video', 'psu', 'fan', 'temperature'.
 
 =item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --filter=sensor)
-Can also exclude specific instance: --filter=sensor,fan.1
+Exclude some parts (comma seperated list) (Example: --filter=video)
+Can also exclude specific instance: --filter=video,fan.1
 
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=sensor,temperature.2
+Can be specific or global: --absent-problem=video,temperature.2
 
 =item B<--no-component>
 
@@ -121,7 +114,7 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
-Example: --threshold-overload='sensor,CRITICAL,^(?!(good)$)'
+Example: --threshold-overload='video,CRITICAL,^(?!(good)$)'
 
 =back
 
