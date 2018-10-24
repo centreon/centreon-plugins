@@ -100,6 +100,9 @@ sub check_options {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
+
+    $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
 }
 
 sub manage_selection {
@@ -114,7 +117,8 @@ sub manage_selection {
     }
 
     my $results = $options{custom}->query_range(queries => [ '(1 - irate({__name__=~"' . $self->{metrics}->{cpu} . '",mode="idle",instance=~"' . $self->{option_results}->{node} .
-                                                                '"' . $extra_filter . '}[1m])) * 100' ]);
+                                                                '"' . $extra_filter . '}[1m])) * 100' ],
+                                                timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
     
     foreach my $metric (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});

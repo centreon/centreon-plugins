@@ -177,19 +177,18 @@ sub manage_selection {
         $extra_filter .= ',' . $filter;
     }
 
-    my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "total", "", "")',
-                                                            'label_replace({__name__=~"' . $self->{metrics}->{available} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "available", "", "")',
-                                                            'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "cached", "", "")',
-                                                            'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",instance=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "buffer", "", "")' ]);
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",instance=~"' . $self->{option_results}->{node} .
+                                                        '"' . $extra_filter . '}, "__name__", "total", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{available} . '",instance=~"' . $self->{option_results}->{node} .
+                                                        '"' . $extra_filter . '}, "__name__", "available", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",instance=~"' . $self->{option_results}->{node} .
+                                                        '"' . $extra_filter . '}, "__name__", "cached", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",instance=~"' . $self->{option_results}->{node} .
+                                                        '"' . $extra_filter . '}, "__name__", "buffer", "", "")' ]);
 
     foreach my $metric (@{$results}) {
-        my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
         $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{$metric->{metric}->{__name__}} = $average;
+        $self->{nodes}->{$metric->{metric}->{instance}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
