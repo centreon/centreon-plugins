@@ -35,13 +35,13 @@ sub set_counters {
     ];
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
-                key_values => [ { name => 'snapshot' }, { name => 'display' }],
+                key_values => [ { name => 'snapshot' }, { name => 'status' }, { name => 'display' }],
                 closure_custom_output => $self->can('custom_snapshot_output'),
                 closure_custom_perfdata => sub { return 0; },
             }
         },
         { label => 'backing', set => {
-                key_values => [ { name => 'backing' }, { name => 'display' }],
+                key_values => [ { name => 'backing' }, { name => 'status' }, { name => 'display' }],
                 closure_custom_output => $self->can('custom_backing_output'),
                 closure_custom_perfdata => sub { return 0; },
             }
@@ -51,14 +51,14 @@ sub set_counters {
 
 sub custom_snapshot_output {
     my ($self, %options) = @_;
-    my $msg = 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute});
+    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute}) . "' ago";
 
     return $msg;
 }
 
 sub custom_backing_output {
     my ($self, %options) = @_;
-    my $msg = 'backing started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute});
+    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute}) . "' ago";
 
     return $msg;
 }
@@ -120,7 +120,7 @@ sub manage_selection {
         while ($content =~ /\[checkpointCreationTime=\s*(.*?)\s*\]\[type=\s*(.*?)\s*\]/msig) {
             my ($timestamp, $type) = ($1, $2);
             $timestamp =~ s/,/\./g;
-            $chkpt{$type} = $timestamp if ($chkpt{$type} == -1 || $chkpt{$type} > $timestamp);
+            $chkpt{$type} = $timestamp if ($timestamp > 0 && ($chkpt{$type} == -1 || $chkpt{$type} > $timestamp));
         }
         next if ($chkpt{backing} == -1 && $chkpt{snapshot} == -1);
 
@@ -140,9 +140,12 @@ sub manage_selection {
             next;
         }
         
-        $self->{vm}->{$id} = { display => $name, 
+        $self->{vm}->{$id} = {
+            display => $name, 
             snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef, 
-            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef };
+            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef,
+            status => $status
+        };
         $id++;
     }
 }
