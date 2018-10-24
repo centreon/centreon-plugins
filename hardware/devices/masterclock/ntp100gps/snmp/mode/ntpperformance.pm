@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::masterclock::ntp100gps::snmp::mode::ntpperformance;
+package hardware::devices::masterclock::ntp100gps::snmp::mode::ntpperformance;
 
 use base qw(centreon::plugins::templates::counter);
 

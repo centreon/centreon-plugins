@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::masterclock::ntp100gps::snmp::plugin;
+package hardware::devices::masterclock::ntp100gps::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gps-status'       => 'network::masterclock::ntp100gps::snmp::mode::gpsstatus',
-                         'ntp-performance'  => 'network::masterclock::ntp100gps::snmp::mode::ntpperformance',
+                         'gps-status'       => 'hardware::devices::masterclock::ntp100gps::snmp::mode::gpsstatus',
+                         'ntp-performance'  => 'hardware::devices::masterclock::ntp100gps::snmp::mode::ntpperformance',
                          'uptime'           => 'snmp_standard::mode::uptime',
                         );
 
