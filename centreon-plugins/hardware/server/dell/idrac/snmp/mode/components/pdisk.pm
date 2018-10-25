@@ -52,21 +52,21 @@ sub check {
         next if ($self->check_filter(section => 'pdisk', instance => $instance));
         $self->{components}->{pdisk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power unit '%s' status is '%s' [instance = %s] [state = %s]",
+        $self->{output}->output_add(long_msg => sprintf("physical disk '%s' status is '%s' [instance = %s] [state = %s]",
                                     $result->{physicalDiskFQDD}, $result->{physicalDiskComponentStatus}, $instance, 
                                     $result->{physicalDiskState}));
         
         my $exit = $self->get_severity(section => 'pdisk.state', value => $result->{physicalDiskState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power unit '%s' state is '%s'", $result->{physicalDiskFQDD}, $result->{physicalDiskState}));
+                                        short_msg => sprintf("physical disk '%s' state is '%s'", $result->{physicalDiskFQDD}, $result->{physicalDiskState}));
             next;
         }
 
         $exit = $self->get_severity(label => 'default.status', section => 'pdisk.status', value => $result->{physicalDiskComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power unit '%s' status is '%s'", $result->{physicalDiskFQDD}, $result->{physicalDiskComponentStatus}));
+                                        short_msg => sprintf("physical disk '%s' status is '%s'", $result->{physicalDiskFQDD}, $result->{physicalDiskComponentStatus}));
         }
     }
 }
