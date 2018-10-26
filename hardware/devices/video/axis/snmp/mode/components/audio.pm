@@ -29,7 +29,7 @@ my %map_audio_status = (
 );
 
 my $mapping = {
-    axisAudioState => { oid => '.1.3.6.1.4.1.368.4.1.4.1.2', map => \%map_audio_status },
+    axisAudioState => { oid => '.1.3.6.1.4.1.368.4.1.5.1.2', map => \%map_audio_status },
 };
 
 sub load {
@@ -37,7 +37,7 @@ sub load {
     
     push @{$self->{request}}, { oid => $mapping->{axisAudioState}->{oid} };
 }
-    
+
 sub check {
     my ($self) = @_;
 
