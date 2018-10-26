@@ -29,35 +29,45 @@ sub set_system {
     my ($self, %options) = @_;
     
     $self->{regexp_threshold_overload_check_section_option} = '^(video|fan|psu|temperature)$';
-    
+
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
         video => [
-            ['unknown', 'UNKNOWN'],
-            ['bad', 'CRITICAL'],
-            ['warning', 'WARNING'],
-            ['good', 'OK'],
-            ['not present', 'WARNING'],
+            ['signalOk', 'OK'],
+            ['noSignal', 'CRITICAL'],
         ],
         psu => [
-            ['failed', 'CRITICAL'],
+            ['failure', 'CRITICAL'],
             ['ok', 'OK'],
         ],
         fan => [
             ['failed', 'CRITICAL'],
             ['ok', 'OK'],
         ],
-
         temperature => [
             ['failed', 'CRITICAL'],
             ['outOfBoundary', 'CRITICAL'],
             ['ok', 'OK'],
         ],
+        audio => [
+            ['signalOk', 'OK'],
+            ['noSignal', 'CRITICAL'],
+        ],
+        storage => [
+            ['yes', 'OK'],
+            ['no', 'CRITICAL'],
+        ],
+        casing => [
+            ['open', 'OK'],
+            ['closed', 'WARNING'],
+        ],
     };
     
     $self->{components_path} = 'hardware::devices::video::axis::snmp::mode::components';
-    $self->{components_module} = ['video', 'psu', 'fan', 'temperature'];
+    $self->{components_module} = ['video', 'psu', 'fan', 'temperature', 'audio', 'storage', 'casing'];
 }
 
 sub snmp_execute {
@@ -69,7 +79,7 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
@@ -89,11 +99,11 @@ __END__
 Check videos (AXIS-VIDEO-MIB).
 
 =over 8
-
+/
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'video', 'psu', 'fan', 'temperature'.
+Can be: 'video', 'psu', 'fan', 'temperature', 'audio', 'storage', 'casing'.
 
 =item B<--filter>
 
@@ -119,4 +129,3 @@ Example: --threshold-overload='video,CRITICAL,^(?!(good)$)'
 =back
 
 =cut
-    

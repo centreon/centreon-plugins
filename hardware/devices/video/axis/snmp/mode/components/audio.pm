@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::audio::axis::snmp::mode::components::audio;
+package hardware::devices::video::axis::snmp::mode::components::audio;
 
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ my %map_audio_status = (
 );
 
 my $mapping = {
-    axisAudioState => { oid => '.1.3.6.1.4.1.368.4.1.5.1.2', map => \%map_audio_status },
+    axisAudioState => { oid => '.1.3.6.1.4.1.368.4.1.4.1.2', map => \%map_audio_status },
 };
 
 sub load {
@@ -37,12 +37,12 @@ sub load {
     
     push @{$self->{request}}, { oid => $mapping->{axisAudioState}->{oid} };
 }
-
+    
 sub check {
     my ($self) = @_;
 
     
-    $self->{output}->output_add(long_msg => "Checking Audio Signal");
+    $self->{output}->output_add(long_msg => "Checking audio Signal");
     $self->{components}->{audio} = {name => 'audio', total => 0, skip => 0};
     return if ($self->check_filter(section => 'audio'));
 
