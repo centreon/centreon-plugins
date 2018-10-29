@@ -29,8 +29,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes CPU usage are ok',
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usage are ok' } ] },
+        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output',
+          message_multiple => 'All nodes CPU usage are ok', skipped_code => { -10 => 1 },
+          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output',
+            message_multiple => 'All CPU usage are ok', skipped_code => { -10 => 1 } } ] },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -219,7 +221,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "node:s"                  => { name => 'node', default => '.*' },
+                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
+                                  "cpu:s"                   => { name => 'cpu', default => 'cpu=~".*"' },
+                                  "type:s"                  => { name => 'type', default => 'mode=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -234,10 +238,23 @@ sub check_options {
     $self->{metrics} = {
         'cpu' => "^node_cpu.*",
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('instance', 'cpu', 'type')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
@@ -248,23 +265,21 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
-    
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
 
-    my $results = $options{custom}->query_range(queries => [ '(irate({__name__=~"' . $self->{metrics}->{cpu} . '",instance=~"' . $self->{option_results}->{node} .
-                                                                '"' . $extra_filter . '}[1m])) * 100' ],
+    my $results = $options{custom}->query_range(queries => [ '(irate({__name__=~"' . $self->{metrics}->{cpu} . '",' .
+                                                            $self->{option_results}->{instance} . ',' .
+                                                            $self->{option_results}->{cpu} . ',' .
+                                                            $self->{option_results}->{type} .
+                                                            $self->{extra_filter} . '}[1m])) * 100' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
-    foreach my $metric (@{$results}) {
-        my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
-        $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{$metric->{metric}->{mode}} += $average;
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{multi} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{display} = $metric->{metric}->{cpu};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{cpu}->{$metric->{metric}->{cpu}}->{$metric->{metric}->{mode}} = $average;
+    foreach my $result (@{$results}) {
+        my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{$result->{metric}->{$self->{labels}->{type}}} += $average;
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{multi} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{display} = $result->{metric}->{$self->{labels}->{cpu}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{$result->{metric}->{$self->{labels}->{type}}} = $average;
     }
     
     foreach my $node (keys %{$self->{nodes}}) {
@@ -290,9 +305,17 @@ Check CPU detailed usage for nodes and each of their cores.
 
 =over 8
 
-=item B<--node>
+=item B<--instance>
 
-Filter on a specific node (Must be a regexp, Default: '.*')
+Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
+
+=item B<--cpu>
+
+Filter on a specific cpu (Must be a PromQL filter, Default: 'cpu=~".*"')
+
+=item B<--type>
+
+Filter on a specific type (Must be a PromQL filter, Default: 'mode=~".*"')
 
 =item B<--warning-*>
 

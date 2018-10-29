@@ -140,12 +140,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "node:s"                  => { name => 'node', default => '.*' },
-                                  "storage:s"               => { name => 'storage', default => '.*' },
-                                  "exclude-storage-type:s"  => { name => 'exclude_storage_type', default => 'rootfs|tmpfs' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
+                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
+                                  "mountpoint:s"            => { name => 'mountpoint', default => 'mountpoint=~".*"' },
+                                  "fstype:s"                => { name => 'fstype', default => 'fstype=~"overlay"' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
+                                  "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
@@ -160,10 +160,23 @@ sub check_options {
         'free'      => "^node_filesystem_free.*",
         'size'      => "^node_filesystem_size.*",
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('instance', 'mountpoint', 'fstype')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
     
     $instance_mode = $self;
@@ -174,25 +187,22 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{free} . '",' .
+                                                            $self->{option_results}->{instance} . ',' .
+                                                            $self->{option_results}->{mountpoint} . ',' .
+                                                            $self->{option_results}->{fstype} .
+                                                            $self->{extra_filter} . '}, "__name__", "free", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{size} . '",' .
+                                                            $self->{option_results}->{instance} . ',' .
+                                                            $self->{option_results}->{mountpoint} . ',' .
+                                                            $self->{option_results}->{fstype} .
+                                                            $self->{extra_filter} . '}, "__name__", "size", "", "")' ]);
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{free} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '",mountpoint=~"' . $self->{option_results}->{storage} .
-                                                        '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}, "__name__", "free", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{size} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '",mountpoint=~"' . $self->{option_results}->{storage} .
-                                                        '",fstype!~"' . $self->{option_results}->{exclude_storage_type} .
-                                                        '"' . $extra_filter . '}, "__name__", "size", "", "")' ]);
-    
-    foreach my $metric (@{$results}) {
-        $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{storage}->{$metric->{metric}->{mountpoint}}->{multi} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{storage}->{$metric->{metric}->{mountpoint}}->{display} = $metric->{metric}->{mountpoint};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{storage}->{$metric->{metric}->{mountpoint}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{multi} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{display} = $result->{metric}->{$self->{labels}->{mountpoint}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -207,21 +217,21 @@ __END__
 
 =head1 MODE
 
-Check CPU usage for nodes and each of their cores.
+Check storages usage.
 
 =over 8
 
-=item B<--node>
+=item B<--instance>
 
-Filter on a specific node (Must be a regexp, Default: '.*')
+Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
 
-=item B<--storage>
+=item B<--mountpoint>
 
-Filter on a specific storage (Must be a regexp, Default: '.*')
+Filter on a specific mountpoint (Must be a PromQL filter, Default: 'mountpoint=~".*"')
 
-=item B<--exclude-storage-type>
+=item B<--fstype>
 
-Exclude storage types (Must be a regexp, Default: 'rootfs|tmpfs')
+Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype=~"overlay"')
 
 =item B<--units>
 

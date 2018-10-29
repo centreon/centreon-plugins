@@ -139,9 +139,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "node:s"                  => { name => 'node', default => '.*' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
+                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
                                   "units:s"                 => { name => 'units', default => '%' },
+                                  "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
    
@@ -158,10 +158,23 @@ sub check_options {
         'cached'    => "^node_memory_Cached.*",
         'buffer'    => "^node_memory_Buffers.*",
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('instance')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
     
     $instance_mode = $self;
@@ -172,23 +185,22 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",' .
+                                                            $self->{option_results}->{instance} .
+                                                            $self->{extra_filter} . '}, "__name__", "total", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
+                                                            $self->{option_results}->{instance} .
+                                                            $self->{extra_filter} . '}, "__name__", "available", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",' .
+                                                            $self->{option_results}->{instance} .
+                                                            $self->{extra_filter} . '}, "__name__", "cached", "", "")',
+                                                        'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",' .
+                                                            $self->{option_results}->{instance} .
+                                                            $self->{extra_filter} . '}, "__name__", "buffer", "", "")' ]);
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '"' . $extra_filter . '}, "__name__", "total", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{available} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '"' . $extra_filter . '}, "__name__", "available", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '"' . $extra_filter . '}, "__name__", "cached", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",instance=~"' . $self->{option_results}->{node} .
-                                                        '"' . $extra_filter . '}, "__name__", "buffer", "", "")' ]);
-
-    foreach my $metric (@{$results}) {
-        $self->{nodes}->{$metric->{metric}->{instance}}->{display} = $metric->{metric}->{instance};
-        $self->{nodes}->{$metric->{metric}->{instance}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -207,9 +219,9 @@ Check memory usage.
 
 =over 8
 
-=item B<--node>
+=item B<--instance>
 
-Filter on a specific node (Must be a regexp, Default: '.*')
+Filter on a specific instance (Must be a PromQL filter, Default: 'instance=~".*"')
 
 =item B<--warning-*>
 
@@ -220,6 +232,10 @@ Can be: 'usage', 'buffer', 'cached'.
 
 Threshold critical.
 Can be: 'usage', 'buffer', 'cached'.
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
 
 =item B<--extra-filter>
 
