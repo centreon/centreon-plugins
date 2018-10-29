@@ -66,20 +66,6 @@ sub check {
                                         short_msg => sprintf("casing state is %s [casing: %s]", 
                                                              $result->{axiscasingState}, $result->{axiscasingName}));
         }
-    
-
-       if (defined($result->{axiscasingName}) && $result->{axiscasingName} != -1) {
-            my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'casing', instance => $instance, value => $result->{axiscasingName}); 
-            
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("casing '%s' on %s ", $instance, $result->{axiscasingName}));
-            }
-            $self->{output}->perfdata_add(label => "casing_" . $instance,
-                                          value => $result->{axiscasingName},
-                                          warning => $warn,
-                                          critical => $crit);
-        }
      }
 }
 

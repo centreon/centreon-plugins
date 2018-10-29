@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(video|fan|psu|temperature)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(video|fan|psu|temperature|audio|storage|casing)$';
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
 
@@ -99,7 +99,7 @@ __END__
 Check videos (AXIS-VIDEO-MIB).
 
 =over 8
-/
+
 =item B<--component>
 
 Which component to check (Default: '.*').
