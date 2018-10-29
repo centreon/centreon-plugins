@@ -76,10 +76,23 @@ sub check_options {
     $self->{metrics} = {
         'load'      => '^container_cpu_load_average_10s$',
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
@@ -91,29 +104,19 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    next if ($self->{option_results}->{container} !~ /^(\w+)/);
-    my $container_label = $1;
-    next if ($self->{option_results}->{pod} !~ /^(\w+)/);
-    my $pod_label = $1;
-
     my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{load} . '",' .
                                                                 $self->{option_results}->{container} . ',' .
                                                                 $self->{option_results}->{pod} .
-                                                                $extra_filter . '}, "__name__", "load", "", "")' ],
+                                                                $self->{extra_filter} . '}, "__name__", "load", "", "")' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
-    foreach my $metric (@{$results}) {
-        next if (!defined($metric->{metric}->{name}));
-        my $average = $options{custom}->compute(aggregation => 'average', values => $metric->{values});
-        $self->{containers}->{$metric->{metric}->{name}}->{container} = $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{pod} = $metric->{metric}->{$pod_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{perf} = $metric->{metric}->{$pod_label} . "_" . $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{$metric->{metric}->{__name__}} = $average;
+    foreach my $result (@{$results}) {
+        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = $average;
     }
     
     if (scalar(keys %{$self->{containers}}) <= 0) {

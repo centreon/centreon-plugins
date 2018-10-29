@@ -189,10 +189,23 @@ sub check_options {
         'rss' => "^container_memory_rss.*",
         'swap' => "^container_memory_swap.*",
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
     
     $instance_mode = $self;
@@ -203,47 +216,37 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    next if ($self->{option_results}->{container} !~ /^(\w+)/);
-    my $container_label = $1;
-    next if ($self->{option_results}->{pod} !~ /^(\w+)/);
-    my $pod_label = $1;
-
     my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{usage} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "usage", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "usage", "", "")',
                                                         'label_replace({__name__=~"' . $self->{metrics}->{limits} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "limits", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "limits", "", "")',
                                                         'label_replace({__name__=~"' . $self->{metrics}->{working} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "working", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "working", "", "")',
                                                         'label_replace({__name__=~"' . $self->{metrics}->{cache} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "cache", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "cache", "", "")',
                                                         'label_replace({__name__=~"' . $self->{metrics}->{rss} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "rss", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "rss", "", "")',
                                                         'label_replace({__name__=~"' . $self->{metrics}->{swap} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "swap", "", "")' ]);
+                                                            $self->{extra_filter} . '}, "__name__", "swap", "", "")' ]);
 
-    foreach my $metric (@{$results}) {
-        next if (!defined($metric->{metric}->{name}));
-        $self->{containers}->{$metric->{metric}->{name}}->{container} = $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{pod} = $metric->{metric}->{$pod_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{perf} = $metric->{metric}->{$pod_label} . "_" . $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {

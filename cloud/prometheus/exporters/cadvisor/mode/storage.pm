@@ -38,7 +38,7 @@ sub custom_usage_perfdata {
     }
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{perf} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-    $extra_label .= '_' . $self->{result_values}->{display} if (!defined($options{extra_instance_lvl2}) || $options{extra_instance_lvl2} != 0);
+    $extra_label .= '_' . $self->{result_values}->{device} if (!defined($options{extra_instance_lvl2}) || $options{extra_instance_lvl2} != 0);
     my %total_options = ();
     if ($instance_mode->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -82,7 +82,6 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
     $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
     $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
@@ -113,7 +112,7 @@ sub set_counters {
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'used' }, { name => 'limit' }, { name => 'container' }, { name => 'pod' },
-                    { name => 'perf' }, { name => 'display' } ],
+                    { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -126,7 +125,7 @@ sub set_counters {
 sub prefix_storage_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] Device '" . $options{instance_value}->{display} . "' ";
+    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] Device '" . $options{instance_value}->{device} . "' ";
 }
 
 sub new {
@@ -157,10 +156,23 @@ sub check_options {
         'used' => "^container_fs_usage_bytes.*",
         'limit' => "^container_fs_limit_bytes.*",
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod', 'device')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
     
     $instance_mode = $self;
@@ -171,36 +183,24 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    next if ($self->{option_results}->{container} !~ /^(\w+)/);
-    my $container_label = $1;
-    next if ($self->{option_results}->{pod} !~ /^(\w+)/);
-    my $pod_label = $1;
-    next if ($self->{option_results}->{device} !~ /^(\w+)/);
-    my $device_label = $1;
-
     my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{used} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} . ',' .
                                                             $self->{option_results}->{device} .
-                                                            $extra_filter . '}, "__name__", "used", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "used", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{limit} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} . ',' .
                                                             $self->{option_results}->{device} .
-                                                            $extra_filter . '}, "__name__", "limit", "", "")' ]);
-    
-    foreach my $metric (@{$results}) {
-        next if (!defined($metric->{metric}->{name}));
-        $self->{containers}->{$metric->{metric}->{name}}->{storage}->{$metric->{metric}->{$device_label}}->{container} = $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{storage}->{$metric->{metric}->{$device_label}}->{pod} = $metric->{metric}->{$pod_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{storage}->{$metric->{metric}->{$device_label}}->{perf} = $metric->{metric}->{$pod_label} . "_" . $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{storage}->{$metric->{metric}->{$device_label}}->{display} = $metric->{metric}->{$device_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{storage}->{$metric->{metric}->{$device_label}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+                                                            $self->{extra_filter} . '}, "__name__", "limit", "", "")' ]);
+
+    foreach my $result (@{$results}) {
+        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{device} = $result->{metric}->{$self->{labels}->{device}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {

@@ -29,7 +29,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers tasks states are ok' },
+        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
+            message_multiple => 'All containers tasks states are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{containers} = [
@@ -102,6 +103,7 @@ sub new {
                                 {
                                   "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
                                   "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
+                                  "state:s"                 => { name => 'state', default => 'state=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -114,12 +116,25 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'tasks_state'      => '^container_tasks_state$',
+        'tasks_state' => '^container_tasks_state$',
     };
-
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod', 'state')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
 }
 
@@ -128,27 +143,18 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    next if ($self->{option_results}->{container} !~ /^(\w+)/);
-    my $container_label = $1;
-    next if ($self->{option_results}->{pod} !~ /^(\w+)/);
-    my $pod_label = $1;
-
     my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{tasks_state} . '",' .
                                                             $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "tasks_state", "", "")' ]);
+                                                            $self->{option_results}->{pod} . ',' .
+                                                            $self->{option_results}->{state} .
+                                                            $self->{extra_filter} . '}, "__name__", "tasks_state", "", "")' ]);
 
-    foreach my $metric (@{$results}) {
-        next if (!defined($metric->{metric}->{name}));
-        $self->{containers}->{$metric->{metric}->{name}}->{container} = $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{pod} = $metric->{metric}->{$pod_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{perf} = $metric->{metric}->{$pod_label} . "_" . $metric->{metric}->{$container_label};
-        $self->{containers}->{$metric->{metric}->{name}}->{$metric->{metric}->{state}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{$self->{labels}->{state}}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -174,6 +180,10 @@ Filter on a specific container (Must be a PromQL filter, Default: 'container_nam
 =item B<--pod>
 
 Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
+
+=item B<--state>
+
+Filter on a specific state (Must be a PromQL filter, Default: 'state=~".*"')
 
 =item B<--warning-*>
 
