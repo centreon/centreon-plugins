@@ -54,7 +54,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("status is '%s', new pods schedulable : %s",
+    return sprintf("Status is '%s', New Pods Schedulable : %s",
         $self->{result_values}->{status},
         $self->{result_values}->{schedulable});
 }
@@ -105,7 +105,7 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Allocation Capacity : %s, Allocated : %s (%.2f%%)",
+    my $msg = sprintf("Pods Allocation Capacity : %s, Allocated : %s (%.2f%%)",
                    $self->{result_values}->{capacity}, $self->{result_values}->{allocated}, $self->{result_values}->{prct_allocated});
     return $msg;
 }
@@ -165,7 +165,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "node:s"                  => { name => 'node', default => '.*' },
+                                  "node:s"                  => { name => 'node', default => 'node=~".*"' },
                                   "warning-status:s"        => { name => 'warning_status' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /Ready/ || %{schedulable} =~ /false/' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -191,6 +191,20 @@ sub check_options {
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
 
+    $self->{labels} = {};
+    foreach my $label (('node')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
+
     $instance_mode = $self;
     $self->change_macros();
 }
@@ -209,29 +223,25 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
+    
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{status} . '",' .
+                                                            $self->{option_results}->{node} . ',' .
+                                                            'status="true"' .
+                                                            $self->{extra_filter} . '}, "__name__", "status", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{unschedulable} . '",' .
+                                                            $self->{option_results}->{node} .
+                                                            $self->{extra_filter} . '}, "__name__", "unschedulable", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{capacity} . '",' .
+                                                            $self->{option_results}->{node} .
+                                                            $self->{extra_filter} . '}, "__name__", "capacity", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{allocatable} . '",' .
+                                                            $self->{option_results}->{node} .
+                                                            $self->{extra_filter} . '}, "__name__", "allocatable", "", "")' ]);
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-    
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{status} . '",
-                                                            node=~"' . $self->{option_results}->{node} . '",status="true"' .
-                                                            $extra_filter . '}, "__name__", "status", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{unschedulable} . '",
-                                                            node=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "unschedulable", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{capacity} . '",
-                                                            node=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "capacity", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{allocatable} . '",
-                                                            node=~"' . $self->{option_results}->{node} .
-                                                            '"' . $extra_filter . '}, "__name__", "allocatable", "", "")' ]);
-    
-    foreach my $metric (@{$results}) {
-        $self->{nodes}->{$metric->{metric}->{node}}->{display} = $metric->{metric}->{node};
-        $self->{nodes}->{$metric->{metric}->{node}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
-        $self->{nodes}->{$metric->{metric}->{node}}->{$metric->{metric}->{__name__}} = $metric->{metric}->{condition} if ($metric->{metric}->{__name__} =~ /status/);
+    foreach my $result (@{$results}) {
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{display} = $result->{metric}->{$self->{labels}->{node}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{$result->{metric}->{__name__}} = $result->{metric}->{condition} if ($result->{metric}->{__name__} =~ /status/);
     }
     
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -252,7 +262,7 @@ Check node status.
 
 =item B<--node>
 
-Filter on a specific node (Must be a regexp, Default: '.*')
+Filter on a specific node (Must be a PromQL filter, Default: 'node=~".*"')
 
 =item B<--warning-status>
 

@@ -132,7 +132,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "namespace:s"             => { name => 'namespace', default => '.*' },
+                                  "namespace:s"             => { name => 'namespace', default => 'namespace=~".*"' },
+                                  "phase:s"                 => { name => 'phase', default => 'phase=~".*"' },
                                   "warning-status:s"        => { name => 'warning_status' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{phase} !~ /Active/' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -152,6 +153,20 @@ sub check_options {
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+    }
+
+    $self->{labels} = {};
+    foreach my $label (('namespace', 'phase')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
     }
 
     $instance_mode = $self;
@@ -174,20 +189,16 @@ sub manage_selection {
     $self->{global} = { active => 0, terminating => 0 };
     $self->{namespaces} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
+    my $results = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{status} . '",' .
+                                                            $self->{option_results}->{namespace} .
+                                                            $self->{extra_filter} . '}' ]);
+
+    foreach my $result (@{$results}) {
+        $self->{namespaces}->{$result->{metric}->{$self->{labels}->{namespace}}}->{display} = $result->{metric}->{$self->{labels}->{namespace}};
+        $self->{namespaces}->{$result->{metric}->{$self->{labels}->{namespace}}}->{$self->{labels}->{phase}} = $result->{metric}->{$self->{labels}->{phase}} if (${$result->{value}}[1] == 1);
+        $self->{global}->{lc($result->{metric}->{$self->{labels}->{phase}})}++ if (${$result->{value}}[1] == 1);
     }
 
-    my $results = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{status} . '",namespace=~"' . $self->{option_results}->{namespace} .
-                                                                '"' . $extra_filter . '}' ]);
-    
-    foreach my $metric (@{$results}) {
-        $self->{namespaces}->{$metric->{metric}->{namespace}}->{display} = $metric->{metric}->{namespace};
-        $self->{namespaces}->{$metric->{metric}->{namespace}}->{phase} = $metric->{metric}->{phase} if (${$metric->{value}}[1] == 1);
-        $self->{global}->{lc($metric->{metric}->{phase})}++ if (${$metric->{value}}[1] == 1);
-    }
-    
     if (scalar(keys %{$self->{namespaces}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No namespaces found.");
         $self->{output}->option_exit();
@@ -206,7 +217,11 @@ Check namespace status phase.
 
 =item B<--namespace>
 
-Filter on a specific namespace (Must be a regexp, Default: '.*')
+Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+
+=item B<--phase>
+
+Filter on a specific phase (Must be a PromQL filter, Default: 'phase=~".*"')
 
 =item B<--warning-status>
 
