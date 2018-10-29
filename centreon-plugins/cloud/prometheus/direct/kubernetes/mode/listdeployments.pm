@@ -33,7 +33,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "deployment:s"            => { name => 'deployment', default => 'deployment=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -52,17 +52,28 @@ sub check_options {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
+
+    $self->{labels} = {};
+    foreach my $label (('deployment')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    $self->{deployments} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{labels} . '"' . $extra_filter . '}' ]);
+    $self->{deployments} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{labels} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}' ]);
 }
 
 sub run {
@@ -70,9 +81,8 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $deployment (@{$self->{deployments}}) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $deployment->{metric}->{deployment} !~ /$self->{option_results}->{filter_name}/);
-        $self->{output}->output_add(long_msg => sprintf("[deployment = %s]", $deployment->{metric}->{deployment}));
+        $self->{output}->output_add(long_msg => sprintf("[deployment = %s]",
+            $deployment->{metric}->{$self->{labels}->{deployment}}));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -93,7 +103,7 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $deployment (@{$self->{deployments}}) {
         $self->{output}->add_disco_entry(
-            deployment => $deployment->{metric}->{deployment},
+            deployment => $deployment->{metric}->{$self->{labels}->{deployment}},
         );
     }
 }
@@ -108,9 +118,9 @@ List deployments.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--deployment>
 
-Filter deployment name (Can be a regexp).
+Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--extra-filter>
 

@@ -33,7 +33,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "container:s"             => { name => 'container', default => 'container=~".*"' },
+                                  "pod:s"                   => { name => 'pod', default => 'pod=~".*"' },
+                                  "namespace:s"             => { name => 'namespace', default => 'namespace=~".*"' },
+                                  "image:s"                 => { name => 'image', default => 'image=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -52,17 +55,30 @@ sub check_options {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
+
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod', 'namespace', 'image')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    $self->{containers} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{info} . '"' . $extra_filter . '}' ]);
+    $self->{containers} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{info} . '",' .
+                                                            $self->{option_results}->{container} . ',' .
+                                                            $self->{option_results}->{pod} . ',' .
+                                                            $self->{option_results}->{namespace} . 
+                                                            $self->{extra_filter} . '}' ]);
 }
 
 sub run {
@@ -70,13 +86,11 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $container (@{$self->{containers}}) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $container->{metric}->{container} !~ /$self->{option_results}->{filter_name}/);
-        $self->{output}->output_add(long_msg => sprintf("[container = %s][container_id = %s][pod = %s][image = %s]",
-            $container->{metric}->{container}, $container->{metric}->{container_id}, $container->{metric}->{pod},
-            $container->{metric}->{image}));
+        $self->{output}->output_add(long_msg => sprintf("[container = %s][pod = %s][namespace = %s][image = %s]",
+            $container->{metric}->{$self->{labels}->{container}}, $container->{metric}->{$self->{labels}->{pod}},
+            $container->{metric}->{$self->{labels}->{namespace}}, $container->{metric}->{$self->{labels}->{image}}));
     }
-    
+
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'List containers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -86,7 +100,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['container', 'container_id', 'pod', 'image']);
+    $self->{output}->add_disco_format(elements => ['container', 'pod', 'namespace', 'image']);
 }
 
 sub disco_show {
@@ -95,10 +109,10 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $container (@{$self->{containers}}) {
         $self->{output}->add_disco_entry(
-            container => $container->{metric}->{container},
-            container_id => $container->{metric}->{container_id},
-            pod => $container->{metric}->{pod},
-            image => $container->{metric}->{image},
+            container => $container->{metric}->{$self->{labels}->{container}},
+            pod => $container->{metric}->{$self->{labels}->{pod}},
+            namespace => $container->{metric}->{$self->{labels}->{namespace}},
+            image => $container->{metric}->{$self->{labels}->{image}},
         );
     }
 }
@@ -113,9 +127,21 @@ List containers.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--container>
 
-Filter container name (Can be a regexp).
+Filter on a specific container (Must be a PromQL filter, Default: 'container_name=~".*"')
+
+=item B<--pod>
+
+Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
+
+=item B<--namespace>
+
+Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
+
+=item B<--image>
+
+Filter on a specific image (Must be a PromQL filter, Default: 'image=~".*"')
 
 =item B<--extra-filter>
 
@@ -125,7 +151,7 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'labels')
+Overload default metrics name (Can be multiple, metric can be 'info')
 
 Example : --metric-overload='metric,^my_metric_name$'
 

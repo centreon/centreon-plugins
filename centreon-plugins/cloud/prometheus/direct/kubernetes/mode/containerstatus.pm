@@ -148,6 +148,20 @@ sub check_options {
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
 
+    $self->{labels} = {};
+    foreach my $label (('container', 'pod')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
+
     $instance_mode = $self;
     $self->change_macros();
 }
@@ -167,51 +181,47 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
     my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{ready} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "ready", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "ready", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{running} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "running", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "running", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{terminated} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "terminated", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "terminated", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{terminated_reason} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "terminated_reason", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "terminated_reason", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{waiting} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "waiting", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "waiting", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{waiting_reason} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "waiting_reason", "", "")',
+                                                            $self->{extra_filter} . '}, "__name__", "waiting_reason", "", "")',
                                                        'label_replace({__name__=~"' . $self->{metrics}->{restarts} . '",' .
                                                             $self->{option_results}->{container} . ',' .
                                                             $self->{option_results}->{pod} .
-                                                            $extra_filter . '}, "__name__", "restarts", "", "")' ]);
+                                                            $self->{extra_filter} . '}, "__name__", "restarts", "", "")' ]);
 
-    foreach my $metric (@{$results}) {
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{container} = $metric->{metric}->{container};
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{pod} = $metric->{metric}->{pod};
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{perf} = $metric->{metric}->{pod} . "_" . $metric->{metric}->{container};
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{restarts} = ${$metric->{value}}[1] if ($metric->{metric}->{__name__} =~ /restarts/);
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{state} = ${$metric->{value}}[1] if ($metric->{metric}->{__name__} =~ /ready/);
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{status} = $metric->{metric}->{__name__} if ($metric->{metric}->{__name__} =~ /running|terminated|waiting/ && ${$metric->{value}}[1] == 1);
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{reason} = "";
-        $self->{containers}->{$metric->{metric}->{pod} . "-" . $metric->{metric}->{container}}->{reason} = $metric->{metric}->{reason} if ($metric->{metric}->{__name__} =~ /reason/ && ${$metric->{value}}[1] == 1);
+    foreach my $result (@{$results}) {
+        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{restarts} = ${$result->{value}}[1] if ($result->{metric}->{__name__} =~ /restarts/);
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{state} = ${$result->{value}}[1] if ($result->{metric}->{__name__} =~ /ready/);
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{status} = $result->{metric}->{__name__} if ($result->{metric}->{__name__} =~ /running|terminated|waiting/ && ${$result->{value}}[1] == 1);
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = "";
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{reason} = $result->{metric}->{reason} if ($result->{metric}->{__name__} =~ /reason/ && ${$result->{value}}[1] == 1);
     }
-    
+
     if (scalar(keys %{$self->{containers}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No containers found.");
         $self->{output}->option_exit();

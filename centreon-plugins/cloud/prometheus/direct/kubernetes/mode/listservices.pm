@@ -33,7 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "service:s"               => { name => 'service', default => 'service=~".*"' },
+                                  "cluster-ip:s"            => { name => 'cluster_ip', default => 'cluster_ip=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -52,17 +53,29 @@ sub check_options {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
+
+    $self->{labels} = {};
+    foreach my $label (('service', 'cluster_ip')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    $self->{services} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{info} . '"' . $extra_filter . '}' ]);
+    $self->{services} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{info} . '",' .
+                                                            $self->{option_results}->{service} . ',' .
+                                                            $self->{option_results}->{cluster_ip} .
+                                                            $self->{extra_filter} . '}' ]);
 }
 
 sub run {
@@ -70,10 +83,8 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $service (@{$self->{services}}) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $service->{metric}->{service} !~ /$self->{option_results}->{filter_name}/);
         $self->{output}->output_add(long_msg => sprintf("[service = %s][cluster_ip = %s]",
-            $service->{metric}->{service}, $service->{metric}->{cluster_ip}));
+            $service->{metric}->{$self->{labels}->{service}}, $service->{metric}->{$self->{labels}->{cluster_ip}}));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -94,8 +105,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $service (@{$self->{services}}) {
         $self->{output}->add_disco_entry(
-            service => $service->{metric}->{service},
-            cluster_ip => $service->{metric}->{cluster_ip},
+            service => $service->{metric}->{$self->{labels}->{service}},
+            cluster_ip => $service->{metric}->{$self->{labels}->{cluster_ip}},
         );
     }
 }
@@ -110,9 +121,13 @@ List services.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--service>
 
-Filter service name (Can be a regexp).
+Filter on a specific service (Must be a PromQL filter, Default: 'service=~".*"')
+
+=item B<--cluster-ip>
+
+Filter on a specific cluster ip (Must be a PromQL filter, Default: 'cluster_ip=~".*"')
 
 =item B<--extra-filter>
 
@@ -122,7 +137,7 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'labels')
+Overload default metrics name (Can be multiple, metric can be 'info')
 
 Example : --metric-overload='metric,^my_metric_name$'
 

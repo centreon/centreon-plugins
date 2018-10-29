@@ -33,7 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "daemonset:s"             => { name => 'daemonset', default => 'daemonset=~".*"' },
+                                  "namespace:s"             => { name => 'namespace', default => 'namespace=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
                                 });
@@ -52,17 +53,29 @@ sub check_options {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
+
+    $self->{labels} = {};
+    foreach my $label (('daemonset', 'namespace')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
-
-    $self->{daemonsets} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{created} . '"' . $extra_filter . '}' ]);
+    $self->{daemonsets} = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{created} . '",' .
+                                                            $self->{option_results}->{daemonset} . ',' .
+                                                            $self->{option_results}->{namespace} . 
+                                                            $self->{extra_filter} . '}' ]);
 }
 
 sub run {
@@ -70,10 +83,8 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $daemonset (@{$self->{daemonsets}}) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $daemonset->{metric}->{daemonset} !~ /$self->{option_results}->{filter_name}/);
         $self->{output}->output_add(long_msg => sprintf("[daemonset = %s][namespace = %s]",
-            $daemonset->{metric}->{daemonset}, $daemonset->{metric}->{namespace}));
+            $daemonset->{metric}->{$self->{labels}->{daemonset}}, $daemonset->{metric}->{$self->{labels}->{namespace}}));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -94,8 +105,8 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $daemonset (@{$self->{daemonsets}}) {
         $self->{output}->add_disco_entry(
-            daemonset => $daemonset->{metric}->{daemonset},
-            namespace => $daemonset->{metric}->{namespace},
+            daemonset => $daemonset->{metric}->{$self->{labels}->{daemonset}},
+            namespace => $daemonset->{metric}->{$self->{labels}->{namespace}},
         );
     }
 }
@@ -110,9 +121,13 @@ List daemonsets.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--daemonset>
 
-Filter daemonset name (Can be a regexp).
+Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".*"')
+
+=item B<--namespace>
+
+Filter on a specific namespace (Must be a PromQL filter, Default: 'namespace=~".*"')
 
 =item B<--extra-filter>
 
@@ -122,7 +137,7 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'labels')
+Overload default metrics name (Can be multiple, metric can be 'created')
 
 Example : --metric-overload='metric,^my_metric_name$'
 

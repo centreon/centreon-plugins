@@ -78,7 +78,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("nodes desired : %s, current : %s, available : %s, unavailable : %s, up-to-date : %s, ready : %s, misscheduled : %s",
+    return sprintf("Nodes Desired : %s, Current : %s, Available : %s, Unavailable : %s, Up-to-date : %s, Ready : %s, Misscheduled : %s",
         $self->{result_values}->{desired},
         $self->{result_values}->{current},
         $self->{result_values}->{available},
@@ -107,7 +107,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'daemonsets', type => 1, cb_prefix_output => 'prefix_daemonset_output', message_multiple => 'All daemonsets status are ok', skipped_code => { -11 => 1 } },
+        { name => 'daemonsets', type => 1, cb_prefix_output => 'prefix_daemonset_output',
+            message_multiple => 'All daemonsets status are ok', skipped_code => { -11 => 1 } },
     ];
 
     $self->{maps_counters}->{daemonsets} = [
@@ -138,7 +139,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "daemonset:s"             => { name => 'daemonset', default => '.*' },
+                                  "daemonset:s"             => { name => 'daemonset', default => 'daemonset=~".*"' },
                                   "warning-status:s"        => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{available} < %{desired}' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -166,6 +167,20 @@ sub check_options {
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
 
+    $self->{labels} = {};
+    foreach my $label (('daemonset')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
+
     $instance_mode = $self;
     $self->change_macros();
 }
@@ -185,36 +200,31 @@ sub manage_selection {
 
     $self->{daemonsets} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "desired", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{current} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "current", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "available", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "unavailable", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "up_to_date", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{ready} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "ready", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{misscheduled} . '",' .
+                                                            $self->{option_results}->{daemonset} .
+                                                            $self->{extra_filter} . '}, "__name__", "misscheduled", "", "")' ]);
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "desired", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{current} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "current", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{available} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "available", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "unavailable", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "up_to_date", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{ready} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "ready", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{misscheduled} . '",
-                                                            daemonset=~"' . $self->{option_results}->{daemonset} .
-                                                            '"' . $extra_filter . '}, "__name__", "misscheduled", "", "")' ]);
-    
-    foreach my $metric (@{$results}) {
-        $self->{daemonsets}->{$metric->{metric}->{daemonset}}->{display} = $metric->{metric}->{daemonset};
-        $self->{daemonsets}->{$metric->{metric}->{daemonset}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        $self->{daemonsets}->{$result->{metric}->{$self->{labels}->{daemonset}}}->{display} = $result->{metric}->{$self->{labels}->{daemonset}};
+        $self->{daemonsets}->{$result->{metric}->{$self->{labels}->{daemonset}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
     
     if (scalar(keys %{$self->{daemonsets}}) <= 0) {
@@ -235,7 +245,7 @@ Check daemonset status.
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (Must be a regexp, Default: '.*')
+Filter on a specific daemonset (Must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--warning-status>
 
