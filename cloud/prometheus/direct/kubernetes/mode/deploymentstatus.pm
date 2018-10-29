@@ -74,7 +74,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("replicas desired : %s, current : %s, available : %s, unavailable : %s, up-to-date : %s",
+    return sprintf("Replicas Desired : %s, Current : %s, Available : %s, Unavailable : %s, Up-to-date : %s",
         $self->{result_values}->{desired},
         $self->{result_values}->{current},
         $self->{result_values}->{available},
@@ -99,7 +99,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'deployments', type => 1, cb_prefix_output => 'prefix_deployment_output', message_multiple => 'All deployments status are ok', skipped_code => { -11 => 1 } },
+        { name => 'deployments', type => 1, cb_prefix_output => 'prefix_deployment_output',
+            message_multiple => 'All deployments status are ok', skipped_code => { -11 => 1 } },
     ];
 
     $self->{maps_counters}->{deployments} = [
@@ -129,7 +130,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "deployment:s"            => { name => 'deployment', default => '.*' },
+                                  "deployment:s"            => { name => 'deployment', default => 'deployment=~".*"' },
                                   "warning-status:s"        => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{available} < %{desired}' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -155,6 +156,20 @@ sub check_options {
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
     }
 
+    $self->{labels} = {};
+    foreach my $label (('deployment')) {
+        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
+            $self->{output}->option_exit();
+        }
+        $self->{labels}->{$label} = $1;
+    }
+
+    $self->{extra_filter} = '';
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        $self->{extra_filter} .= ',' . $filter;
+    }
+
     $instance_mode = $self;
     $self->change_macros();
 }
@@ -174,30 +189,25 @@ sub manage_selection {
 
     $self->{deployments} = {};
 
-    my $extra_filter = '';
-    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
-        $extra_filter .= ',' . $filter;
-    }
+    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}, "__name__", "desired", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{current} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}, "__name__", "current", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}, "__name__", "available", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}, "__name__", "unavailable", "", "")',
+                                                       'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",' .
+                                                            $self->{option_results}->{deployment} .
+                                                            $self->{extra_filter} . '}, "__name__", "up_to_date", "", "")' ]);
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",
-                                                            deployment=~"' . $self->{option_results}->{deployment} .
-                                                            '"' . $extra_filter . '}, "__name__", "desired", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{current} . '",
-                                                            deployment=~"' . $self->{option_results}->{deployment} .
-                                                            '"' . $extra_filter . '}, "__name__", "current", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{available} . '",
-                                                            deployment=~"' . $self->{option_results}->{deployment} .
-                                                            '"' . $extra_filter . '}, "__name__", "available", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",
-                                                            deployment=~"' . $self->{option_results}->{deployment} .
-                                                            '"' . $extra_filter . '}, "__name__", "unavailable", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",
-                                                            deployment=~"' . $self->{option_results}->{deployment} .
-                                                            '"' . $extra_filter . '}, "__name__", "up_to_date", "", "")' ]);
-    
-    foreach my $metric (@{$results}) {
-        $self->{deployments}->{$metric->{metric}->{deployment}}->{display} = $metric->{metric}->{deployment};
-        $self->{deployments}->{$metric->{metric}->{deployment}}->{$metric->{metric}->{__name__}} = ${$metric->{value}}[1];
+    foreach my $result (@{$results}) {
+        $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{display} = $result->{metric}->{$self->{labels}->{deployment}};
+        $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
     
     if (scalar(keys %{$self->{deployments}}) <= 0) {
@@ -218,7 +228,7 @@ Check deployment status.
 
 =item B<--deployment>
 
-Filter on a specific deployment (Must be a regexp, Default: '.*')
+Filter on a specific deployment (Must be a PromQL filter, Default: 'deployment=~".*"')
 
 =item B<--warning-status>
 
