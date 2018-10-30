@@ -212,7 +212,7 @@ sub manage_selection {
             last_error => $active->{lastError},
 
         };
-        foreach my $label (keys $active->{labels}) {
+        foreach my $label (keys %{$active->{labels}}) {
             $self->{targets}->{$active->{scrapeUrl}}->{labels} .= "[" . $label . " = " . $active->{labels}->{$label} . "]";
         }
         $self->{global}->{$active->{health}}++;
