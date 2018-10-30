@@ -55,6 +55,7 @@ sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = "health is '" . $self->{result_values}->{health} . "'";
     $msg .= " [last error: " . $self->{result_values}->{last_error} . "]" if ($self->{result_values}->{last_error} ne '');
+    $msg .= " " . $self->{result_values}->{labels} if ($self->{result_values}->{labels} ne '');
 
     return $msg;
 }
@@ -64,6 +65,7 @@ sub custom_status_calc {
     
     $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
     $self->{result_values}->{last_error} = $options{new_datas}->{$self->{instance} . '_last_error'};
+    $self->{result_values}->{labels} = $options{new_datas}->{$self->{instance} . '_labels'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     
     return 0;
@@ -138,7 +140,8 @@ sub set_counters {
     ];
     $self->{maps_counters}->{targets} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'health' }, { name => 'last_error' }, { name => 'display' } ],
+                key_values => [ { name => 'health' }, { name => 'last_error' }, { name => 'display' },
+                    { name => 'labels' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -156,6 +159,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "filter-label:s@"   => { name => 'filter_label' },
                                   "warning-status:s"  => { name => 'warning_status', default => '' },
                                   "critical-status:s" => { name => 'critical_status', default => '%{health} !~ /up/' },
                                 });
@@ -166,6 +170,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+    
+    foreach my $filter (@{$self->{option_results}->{filter_label}}) {
+        next if ($filter !~ /^(\w+),(.*)/);
+        $self->{filters}->{$1} = $2;
+    }
 
     $instance_mode = $self;
     $self->change_macros();
@@ -190,6 +199,12 @@ sub manage_selection {
     my $result = $options{custom}->get_endpoint(url_path => '/targets');
 
     foreach my $active (@{$result->{activeTargets}}) {
+        my $next;
+        foreach my $filter (keys %{$self->{filters}}) {
+            $next = 1 if (defined($active->{labels}->{$filter}) && $active->{labels}->{$filter} !~ /$self->{filters}->{$filter}/);
+        }
+        next if ($next);
+
         $self->{global}->{active}++;
         $self->{targets}->{$active->{scrapeUrl}} = {
             display => $active->{scrapeUrl},
@@ -197,6 +212,9 @@ sub manage_selection {
             last_error => $active->{lastError},
 
         };
+        foreach my $label (keys $active->{labels}) {
+            $self->{targets}->{$active->{scrapeUrl}}->{labels} .= "[" . $label . " = " . $active->{labels}->{$label} . "]";
+        }
         $self->{global}->{$active->{health}}++;
     }
 
@@ -219,6 +237,10 @@ __END__
 Check targets status.
 
 =over 8
+
+=item B<--filter-label>
+
+Set filter on label (Regexp, Can be multiple) (Example: --filter-label='job,kube.*').
 
 =item B<--warning-status>
 
