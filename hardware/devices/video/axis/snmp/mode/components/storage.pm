@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::devices::storage::axis::snmp::mode::components::storage;
+package hardware::devices::video::axis::snmp::mode::components::storage;
 
 use strict;
 use warnings;
@@ -40,9 +40,8 @@ sub load {
 
 sub check {
     my ($self) = @_;
-
     
-    $self->{output}->output_add(long_msg => "Checking Storage Signal");
+    $self->{output}->output_add(long_msg => "Checking Storage");
     $self->{components}->{storage} = {name => 'storage', total => 0, skip => 0};
     return if ($self->check_filter(section => 'storage'));
 

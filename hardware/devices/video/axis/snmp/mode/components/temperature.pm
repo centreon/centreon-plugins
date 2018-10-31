@@ -44,7 +44,6 @@ sub load {
 
 sub check {
     my ($self) = @_;
-
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};

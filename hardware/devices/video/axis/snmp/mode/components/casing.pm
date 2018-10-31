@@ -43,7 +43,6 @@ sub load {
 
 sub check {
     my ($self) = @_;
-
     
     $self->{output}->output_add(long_msg => "Checking casings");
     $self->{components}->{casing} = {name => 'casings', total => 0, skip => 0};

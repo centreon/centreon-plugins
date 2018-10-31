@@ -40,8 +40,7 @@ sub load {
 
 sub check {
     my ($self) = @_;
-
-    
+ 
     $self->{output}->output_add(long_msg => "Checking power supply");
     $self->{components}->{psu} = {name => 'psu', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
