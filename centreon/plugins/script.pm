@@ -30,7 +30,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20181019;
+my $global_version = 20181031;
 my $alternative_fatpacker = 0;
 
 sub new {
