@@ -13,10 +13,10 @@ stage('Source') {
 
 try {
   stage('Package') {
-    parallel 'centos7': {
+    parallel 'all': {
       node {
         sh 'setup_centreon_build.sh'
-        sh './centreon-build/jobs/plugins/plugins-package.sh centos7'
+        sh './centreon-build/jobs/plugins/plugins-package.sh'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
