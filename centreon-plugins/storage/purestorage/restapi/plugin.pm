@@ -31,10 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'alarms'        => 'storage::purestorage::restapi::mode::alarms',
-        'hardware'      => 'storage::purestorage::restapi::mode::hardware',
-        'list-volumes'  => 'storage::purestorage::restapi::mode::listvolumes',
-        'volume-usage'  => 'storage::purestorage::restapi::mode::volumeusage',
+        'alarms'                => 'storage::purestorage::restapi::mode::alarms',
+        'hardware'              => 'storage::purestorage::restapi::mode::hardware',
+        'list-pgroups'          => 'storage::purestorage::restapi::mode::listpgroups',
+        'list-volumes'          => 'storage::purestorage::restapi::mode::listvolumes',
+        'pgroup-replication'    => 'storage::purestorage::restapi::mode::pgroupreplication',
+        'volume-usage'          => 'storage::purestorage::restapi::mode::volumeusage',
     );
 
     $self->{custom_modes}{api} = 'storage::purestorage::restapi::custom::api';
