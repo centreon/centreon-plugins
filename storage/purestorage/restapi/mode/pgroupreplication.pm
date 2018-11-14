@@ -31,7 +31,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'pgroup', type => 1, cb_prefix_output => 'prefix_pgroup_output', message_multiple => 'All protection groups are ok' },
+        { name => 'pgroup', type => 1, cb_prefix_output => 'prefix_pgroup_output', message_multiple => 'All protection groups replication are ok' },
     ];
     
     $self->{maps_counters}->{pgroup} = [
@@ -105,7 +105,7 @@ sub new {
 sub prefix_pgroup_output {
     my ($self, %options) = @_;
     
-    return "Protection group '" . $options{instance_value}->{display} . "' ";
+    return "Protection group '" . $options{instance_value}->{display} . "' replication ";
 }
 
 sub manage_selection {
@@ -119,7 +119,7 @@ sub manage_selection {
     #    ...
     #]
     foreach my $entry (@{$result}) {
-        next if ($entry->{name} !~ /(.*)\.[0-9]+$/)
+        next if ($entry->{name} !~ /(.*)\.[0-9]+$/);
         my $pgroup_name = $1;
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
