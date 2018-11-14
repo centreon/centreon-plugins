@@ -119,9 +119,12 @@ sub manage_selection {
     #    ...
     #]
     foreach my $entry (@{$result}) {
+        next if ($entry->{name} !~ /(.*)\.[0-9]+$/)
+        my $pgroup_name = $1;
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $entry->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $entry->{pgroup_name} . "': no matching filter.", debug => 1);
+            $pgroup_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $pgroup_name . "': no matching filter.", debug => 1);
             next;
         }
 
@@ -131,15 +134,15 @@ sub manage_selection {
         my $created_time = $dt->epoch;
         my $creation_seconds = time() - $created_time;
 
-        next if (defined($self->{pgroup}->{$entry->{name}}->{creation_seconds}) && $creation_seconds > $self->{pgroup}->{$entry->{name}}->{creation_seconds});
+        next if (defined($self->{pgroup}->{$pgroup_name}->{creation_seconds}) && $creation_seconds > $self->{pgroup}->{$pgroup_name}->{creation_seconds});
 
         $entry->{completed} =~ /^(\d+)-(\d+)-(\d+)T(\d+)[:\/](\d+)[:\/](\d+)Z$/;
         $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
                             time_zone => $self->{option_results}->{timezone});
         my $completed_time = $dt->epoch;
         
-        $self->{pgroup}->{$entry->{name}} = {
-            display => $entry->{name},
+        $self->{pgroup}->{$pgroup_name} = {
+            display => $pgroup_name,
             progress => $entry->{progress} * 100,
             physical_bytes_written => $entry->{physical_bytes_written},
             data_transferred => $entry->{data_transferred},
