@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'alarms'        => 'storage::purestorage::restapi::mode::alarms',
         'hardware'      => 'storage::purestorage::restapi::mode::hardware',
+        'list-pgroups'  => 'storage::purestorage::restapi::mode::listpgroups',
         'list-volumes'  => 'storage::purestorage::restapi::mode::listvolumes',
         'volume-usage'  => 'storage::purestorage::restapi::mode::volumeusage',
     );
