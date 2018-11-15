@@ -176,8 +176,9 @@ sub get_endpoint {
     <slapi:authenticate>
       <apiKey>' . $self->get_api_key() . '</apiKey>
       <username>' . $self->get_api_username() . '</username>
-    </slapi:authenticate>
-  </soap:Header>
+    </slapi:authenticate>' .
+    $options{extra_content}
+  . '</soap:Header>
   <soap:Body>
     <slapi:' . $options{method} . ' xsi:nil="true"/>
   </soap:Body>

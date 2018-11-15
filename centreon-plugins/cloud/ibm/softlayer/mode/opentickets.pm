@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::ibm::softlayer::mode::gettickets;
+package cloud::ibm::softlayer::mode::opentickets;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -108,7 +108,7 @@ sub manage_selection {
 
     my $group_id = '';
     my %groups_hash;
-    my (undef, $groups) = $options{custom}->get_endpoint(service => 'SoftLayer_Ticket', method => 'getAllTicketGroups');
+    my (undef, $groups) = $options{custom}->get_endpoint(service => 'SoftLayer_Ticket', method => 'getAllTicketGroups', extra_content => '');
     foreach my $group (@{$groups->{'ns1:getAllTicketGroupsResponse'}->{'getAllTicketGroupsReturn'}->{'item'}}) {
         $groups_hash{$group->{id}->{content}} = $group->{name}->{content};
 
@@ -123,7 +123,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    my (undef, $tickets) = $options{custom}->get_endpoint(service => 'SoftLayer_Account', method => 'getOpenTickets');
+    my (undef, $tickets) = $options{custom}->get_endpoint(service => 'SoftLayer_Account', method => 'getOpenTickets', extra_content => '');
     foreach my $ticket (@{$tickets->{'ns1:getOpenTicketsResponse'}->{'getOpenTicketsReturn'}->{'item'}}) {
         next if (defined($group_id) && $group_id ne '' && $ticket->{groupId}->{content} ne $group_id);
 
