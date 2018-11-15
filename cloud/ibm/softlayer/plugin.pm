@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'get-tickets'   => 'cloud::ibm::softlayer::mode::gettickets',
+                            'events'        => 'cloud::ibm::softlayer::mode::events',
+                            'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets',
                         );
 
     $self->{custom_modes}{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
