@@ -67,7 +67,7 @@ sub custom_status_calc {
     return 0;
 }
 
-sub prefix_status_output {
+sub prefix_global_output {
     my ($self, %options) = @_;
     
     return "Number of members ";
