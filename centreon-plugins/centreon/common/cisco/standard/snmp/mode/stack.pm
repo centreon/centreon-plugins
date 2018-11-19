@@ -67,6 +67,12 @@ sub custom_status_calc {
     return 0;
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Number of members ";
+}
+
 sub prefix_status_output {
     my ($self, %options) = @_;
     
@@ -77,21 +83,112 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'stacks', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'members', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'members', set => {
-                key_values => [ { name => 'members' } ],
-                output_template => 'Number of members : %d',
+        { label => 'waiting', set => {
+                key_values => [ { name => 'waiting' } ],
+                output_template => 'Waiting: %d',
                 perfdatas => [
-                    { label => 'members', value => 'members_absolute', template => '%d',
+                    { label => 'waiting', value => 'waiting_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'progressing', set => {
+                key_values => [ { name => 'progressing' } ],
+                output_template => 'Progressing: %d',
+                perfdatas => [
+                    { label => 'progressing', value => 'progressing_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'added', set => {
+                key_values => [ { name => 'added' } ],
+                output_template => 'Added: %d',
+                perfdatas => [
+                    { label => 'added', value => 'added_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'ready', set => {
+                key_values => [ { name => 'ready' } ],
+                output_template => 'Ready: %d',
+                perfdatas => [
+                    { label => 'ready', value => 'ready_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'sdm-mismatch', set => {
+                key_values => [ { name => 'sdmMismatch' } ],
+                output_template => 'SDM Mismatch: %d',
+                perfdatas => [
+                    { label => 'sdm_mismatch', value => 'sdmMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'version-mismatch', set => {
+                key_values => [ { name => 'verMismatch' } ],
+                output_template => 'Version Mismatch: %d',
+                perfdatas => [
+                    { label => 'version_mismatch', value => 'verMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'feature-mismatch', set => {
+                key_values => [ { name => 'featureMismatch' } ],
+                output_template => 'Feature Mismatch: %d',
+                perfdatas => [
+                    { label => 'feature_mismatch', value => 'featureMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'new-master-init', set => {
+                key_values => [ { name => 'newMasterInit' } ],
+                output_template => 'New Master Init: %d',
+                perfdatas => [
+                    { label => 'new_master_init', value => 'newMasterInit_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'provisioned', set => {
+                key_values => [ { name => 'provisioned' } ],
+                output_template => 'Provisioned: %d',
+                perfdatas => [
+                    { label => 'provisioned', value => 'provisioned_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'invalid', set => {
+                key_values => [ { name => 'invalid' } ],
+                output_template => 'Invalid: %d',
+                perfdatas => [
+                    { label => 'invalid', value => 'invalid_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'removed', set => {
+                key_values => [ { name => 'removed' } ],
+                output_template => 'Removed: %d',
+                perfdatas => [
+                    { label => 'removed', value => 'removed_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
     ];
+    
     $self->{maps_counters}->{members} = [
         { label => 'member', threshold => 0, set => {
                 key_values => [ { name => 'id' }, { name => 'role' }, { name => 'state' } ],
@@ -143,10 +240,23 @@ my %map_role = (
     3 => 'notMember',
     4 => 'standby'
 );
+my %map_state = (
+    1 => 'waiting',
+    2 => 'progressing',
+    3 => 'added',
+    4 => 'ready',
+    5 => 'sdmMismatch',
+    6 => 'verMismatch',
+    7 => 'featureMismatch',
+    8 => 'newMasterInit',
+    9 => 'provisioned',
+    10 => 'invalid',
+    11 => 'removed',
+);
 
 my $mapping = {
     cswSwitchRole => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.3', map => \%map_role },
-    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.5' },
+    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.5', map => \%map_state },
 };
 my $oid_cswSwitchInfoEntry = '.1.3.6.1.4.1.9.9.500.1.2.1.1';
 
@@ -156,7 +266,9 @@ sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    $self->{global}->{members} = 0;
+    $self->{global} = { waiting => 0, progressing => 0, added => 0, ready => 0, sdmMismatch => 0, 
+        verMismatch => 0, featureMismatch => 0, newMasterInit => 0, provisioned => 0, 
+        invalid => 0, removed => 0 };
     $self->{members} = {};
 
     my $redundant = $self->{snmp}->get_leef(oids => [ $oid_cswRingRedundant ], nothing_quit => 1);
@@ -182,7 +294,7 @@ sub run {
             role => $result->{cswSwitchRole},
             state => $result->{cswSwitchState},
         };
-        $self->{global}->{members}++;
+        $self->{global}->{$result->{cswSwitchState}}++;
     }
 
     if (scalar(keys %{$self->{members}}) <= 0) {
@@ -201,13 +313,17 @@ Check Cisco Stack (CISCO-STACKWISE-MIB).
 
 =over 8
 
-=item B<--warning-members>
+=item B<--warning-*>
 
-Set warning threshold on members count.
+Set warning threshold on members count for each states.
+(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
 
-=item B<--critical-members>
+=item B<--critical-*>
 
-Set critical threshold on members count.
+Set warning threshold on members count for each states.
+(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
 
 =item B<--warning-status>
 
