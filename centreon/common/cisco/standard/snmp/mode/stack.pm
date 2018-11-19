@@ -20,30 +20,89 @@
 
 package centreon::common::cisco::standard::snmp::mode::stack;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
-my %map_role = (
-    1 => 'master',
-    2 => 'member',
-    3 => 'notMember',
-    4 => 'standby'
-);
-my %states = (
-    1 => ['waiting', 'WARNING'], 
-    2 => ['progressing', 'WARNING'], 
-    3 => ['added', 'WARNING'], 
-    4 => ['ready', 'OK'],
-    5 => ['sdmMismatch', 'CRITICAL'],
-    6 => ['verMismatch', 'CRITICAL'],
-    7 => ['featureMismatch', 'CRITICAL'],
-    8 => ['newMasterInit', 'WARNING'],
-    9 => ['provisioned', 'OK'],
-    10 => ['invalid', 'WARNING'],
-    11 => ['removed', 'WARNING'],
-);
+my $instance_mode;
+
+sub custom_status_threshold {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
+    
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+            eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("State is '%s', Role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
+    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub prefix_status_output {
+    my ($self, %options) = @_;
+    
+    return "Member '" . $options{instance_value}->{id} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'stacks', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'members', set => {
+                key_values => [ { name => 'members' } ],
+                output_template => 'Number of members : %d',
+                perfdatas => [
+                    { label => 'members', value => 'members_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{members} = [
+        { label => 'member', threshold => 0, set => {
+                key_values => [ { name => 'id' }, { name => 'role' }, { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +112,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "warning-status:s"  => { name => 'warning_status', default => '' },
+                                  "critical-status:s" => { name => 'critical_status', default => '%{state} !~ /ready/ && %{state} !~ /provisioned/' },
                                 });
 
     return $self;
@@ -60,49 +121,74 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+    
+    $instance_mode = $self;
+    $self->change_macros();
 }
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
+}
+
+my %map_role = (
+    1 => 'master',
+    2 => 'member',
+    3 => 'notMember',
+    4 => 'standby'
+);
+
+my $mapping = {
+    cswSwitchRole => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.3', map => \%map_role },
+    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.5' },
+};
+my $oid_cswSwitchInfoEntry = '.1.3.6.1.4.1.9.9.500.1.2.1.1';
+
+my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
 
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3';
-    my $oid_cswSwitchRole = '.1.3.6.1.4.1.9.9.500.1.2.1.1.3';
-    my $oid_cswSwitchState = '.1.3.6.1.4.1.9.9.500.1.2.1.1.6';
-    my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_cswRingRedundant },
-                                                            { oid => $oid_cswSwitchState },
-                                                            { oid => $oid_cswSwitchRole }
-                                                            ],
-                                                   nothing_quit => 1);    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Stack ring is redundant');
-    if ($results->{$oid_cswRingRedundant}->{$oid_cswRingRedundant . '.0'} != 1) {
-        $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => 'Stack ring is not redundant');
-    }
-    
-    foreach my $oid (keys %{$results->{$oid_cswSwitchState}}) {
-        $oid =~ /\.([0-9]+)$/;
-        my $instance = $1;
+    $self->{global}->{members} = 0;
+    $self->{members} = {};
 
-        my $state = $results->{$oid_cswSwitchState}->{$oid};
-        my $role = defined($results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance}) ? $results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance} : 'unknown';
-        # .1001, .2001 the instance.
-        my $number = int(($instance - 1) / 1000);
-        
-        $self->{output}->output_add(long_msg => sprintf("Member '%s' state is %s [Role is '%s']", $number,
-                                            ${$states{$state}}[0], $map_role{$role}));
-        if (${$states{$state}}[1] ne 'OK') {
-             $self->{output}->output_add(severity => ${$states{$state}}[1],
-                                        short_msg => sprintf("Member '%s' state is %s", $number,
-                                                             ${$states{$state}}[0]));
-        }
+    my $redundant = $self->{snmp}->get_leef(oids => [ $oid_cswRingRedundant ], nothing_quit => 1);
+
+    if ($redundant->{$oid_cswRingRedundant} != 1) {
+        $self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
+        $self->{output}->option_exit();
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    $self->{results} = $options{snmp}->get_table(oid => $oid_cswSwitchInfoEntry,
+                                                 nothing_quit => 1);
+
+    foreach my $oid (keys %{$self->{results}}) {
+        next if($oid !~ /^$mapping->{cswSwitchRole}->{oid}\.(.*)$/);
+        my $instance = $1;
+        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+
+        # .1001, .2001 the instance.
+        my $id = int(($instance - 1) / 1000);
+        $self->{members}->{$id} = {
+            id => $id,
+            role => $result->{cswSwitchRole},
+            state => $result->{cswSwitchState},
+        };
+        $self->{global}->{members}++;
+    }
+
+    if (scalar(keys %{$self->{members}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No stack members found');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -114,6 +200,30 @@ __END__
 Check Cisco Stack (CISCO-STACKWISE-MIB).
 
 =over 8
+
+=item B<--warning-members>
+
+Set warning threshold on members count.
+
+=item B<--critical-members>
+
+Set critical threshold on members count.
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{id}, %{role}, %{state}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
+Can used special variables like: %{id}, %{role}, %{state}
+
+Role can be: 'master', 'member', 'notMember', 'standby'.
+
+State can be: 'waiting', 'progressing', 'added',
+'ready', 'sdmMismatch', 'verMismatch', 'featureMismatch',
+'newMasterInit', 'provisioned', 'invalid', 'removed'.
 
 =back
 
