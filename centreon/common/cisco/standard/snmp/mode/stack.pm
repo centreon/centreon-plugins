@@ -196,6 +196,14 @@ Check Cisco Stack (CISCO-STACKWISE-MIB).
 
 =over 8
 
+=item B<--warning-members>
+
+Set warning threshold on members count.
+
+=item B<--critical-members>
+
+Set critical threshold on members count.
+
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -206,7 +214,7 @@ Can used special variables like: %{id}, %{role}, %{state}
 Set critical threshold for status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
 Can used special variables like: %{id}, %{role}, %{state}
 
-Role can be: 'master', 'member', 'notMember'.
+Role can be: 'master', 'member', 'notMember', 'standby'.
 
 State can be: 'waiting', 'progressing', 'added',
 'ready', 'sdmMismatch', 'verMismatch', 'featureMismatch',
