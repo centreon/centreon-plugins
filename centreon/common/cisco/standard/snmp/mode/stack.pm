@@ -256,13 +256,13 @@ my %map_state = (
 
 my $mapping = {
     cswSwitchRole => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.3', map => \%map_role },
-    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.5', map => \%map_state },
+    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.6', map => \%map_state },
 };
 my $oid_cswSwitchInfoEntry = '.1.3.6.1.4.1.9.9.500.1.2.1.1';
 
 my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
