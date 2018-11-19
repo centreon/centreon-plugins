@@ -184,6 +184,11 @@ sub run {
         };
         $self->{global}->{members}++;
     }
+
+    if (scalar(keys %{$self->{members}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No stack members found');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
