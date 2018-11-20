@@ -135,12 +135,12 @@ Example: --filter-counters='^av$'
 
 =item B<--warning-*>
 
-Threshold warning (in hours).
+Threshold warning (in seconds).
 Can be: 'av', 'ips'
 
 =item B<--critical-*>
 
-Threshold critical (in hours).
+Threshold critical (in seconds).
 Can be: 'av', 'ips'
 
 =back
