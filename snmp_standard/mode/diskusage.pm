@@ -331,13 +331,13 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*>
 
-Threshold warning.
+Threshold warning (Can be: 'usage', 'count').
 
-=item B<--critical-usage>
+=item B<--critical-*>
 
-Threshold critical.
+Threshold warning (Can be: 'usage', 'count').
 
 =item B<--units>
 
