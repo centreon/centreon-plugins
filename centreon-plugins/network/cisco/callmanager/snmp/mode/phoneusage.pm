@@ -62,7 +62,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_ccmPhoneStatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_ccmPhoneDescription'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_ccmPhoneName'};
     return 0;
 }
 
@@ -76,7 +76,7 @@ sub set_counters {
     
     $self->{maps_counters}->{phone} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'ccmPhoneStatus' }, { name => 'ccmPhoneDescription' } ],
+                key_values => [ { name => 'ccmPhoneStatus' }, { name => 'ccmPhoneName' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -134,7 +134,7 @@ sub check_options {
 sub prefix_phone_output {
     my ($self, %options) = @_;
 
-    return "Phone '" . $options{instance_value}->{ccmPhoneDescription} . "' ";
+    return "Phone '" . $options{instance_value}->{ccmPhoneName} . "' ";
 }
 
 sub prefix_global_output {
@@ -159,8 +159,8 @@ my %mapping_status = (
 );
 
 my $mapping = {
-    ccmPhoneDescription => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.4' },
     ccmPhoneStatus      => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.7', map => \%mapping_status },
+    ccmPhoneName        => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.20' },
 };
 
 my $oid_ccmPhoneEntry = '.1.3.6.1.4.1.9.9.156.1.2.1.1';
@@ -168,7 +168,7 @@ my $oid_ccmPhoneEntry = '.1.3.6.1.4.1.9.9.156.1.2.1.1';
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_ccmPhoneEntry, start => $mapping->{ccmPhoneDescription}->{oid}, end => $mapping->{ccmPhoneStatus}->{oid}, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_ccmPhoneEntry, start => $mapping->{ccmPhoneStatus}->{oid}, end => $mapping->{ccmPhoneName}->{oid}, nothing_quit => 1);
     
     $self->{phone} = {};
     $self->{global} = { unknown => 0, registered => 0, unregistered => 0, rejected => 0, partiallyregistered => 0 };
