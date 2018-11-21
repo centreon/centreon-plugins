@@ -331,6 +331,10 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
 
+=item B<--filter-counters>
+
+Filter counters to be displayed (Default: 'usage', Can be: 'usage', 'count').
+
 =item B<--warning-*>
 
 Threshold warning (Can be: 'usage', 'count').
