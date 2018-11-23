@@ -30,7 +30,7 @@ my $instance_mode;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $label = $self->{result_values}->{perfdata};
     my $value_perf = $self->{result_values}->{used};
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{perf} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
@@ -42,8 +42,8 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
                                   value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, %total_options),
                                   min => 0, max => $total_options{total});
 }
 
@@ -56,8 +56,8 @@ sub custom_usage_threshold {
     if ($instance_mode->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                                         { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{result_values}->{label}, exit_litteral => 'critical' },
+                                                                                         { label => 'warning-'. $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -67,12 +67,12 @@ sub custom_usage_output {
     my $msg;
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     if ($self->{result_values}->{total} <= 0) {
-        $msg = sprintf("Used: %s (unlimited)", $total_used_value . " " . $total_used_unit);
+        $msg = sprintf("%s: %s (unlimited)", ucfirst($self->{result_values}->{label}), $total_used_value . " " . $total_used_unit);
     } else {
         my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-        $msg = sprintf("Limits: %s, Used : %s (%.2f%%)",
-                $total_size_value . " " . $total_size_unit,
-                $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used});
+        $msg = sprintf("%s: %s (%.2f%% of %s)", ucfirst($self->{result_values}->{label}), $total_used_value . " " . $total_used_unit,
+                $self->{result_values}->{prct_used},
+                $total_size_value . " " . $total_size_unit);
     }
 
     return $msg;
@@ -81,11 +81,13 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{perfdata} = $options{extra_options}->{perfdata_ref};
     $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
     $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
     $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_limits'};    
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_usage'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
     return 0 if ($self->{result_values}->{total} == 0);
 
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -105,19 +107,20 @@ sub set_counters {
                 key_values => [ { name => 'limits' }, { name => 'usage' }, { name => 'container' },
                     { name => 'pod' }, { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_calc_extra_options => { label_ref => 'usage', perfdata_ref => 'used' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
         { label => 'working', set => {
-                key_values => [ { name => 'working' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
-                output_template => 'Working: %.2f %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'working', value => 'working_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'perf_absolute' },
-                ],
+                key_values => [ { name => 'limits' }, { name => 'working' }, { name => 'container' },
+                    { name => 'pod' }, { name => 'perf' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_calc_extra_options => { label_ref => 'working', perfdata_ref => 'working' },
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
         { label => 'cache', set => {
@@ -276,12 +279,16 @@ Filter on a specific pod (Must be a PromQL filter, Default: 'pod_name=~".*"')
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'usage', 'working', 'cache', 'rss', 'swap'.
+Can be: 'usage', 'working', 'cache' (B), 'rss' (B), 'swap' (B).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'usage', 'working', 'cache', 'rss', 'swap'.
+Can be: 'usage', 'working', 'cache' (B), 'rss' (B), 'swap' (B).
+
+=item B<--units>
+
+Units of thresholds (Default: '%') ('%', 'B').
 
 =item B<--extra-filter>
 
