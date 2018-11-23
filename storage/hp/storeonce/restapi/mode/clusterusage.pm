@@ -229,12 +229,15 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping  '" . $entry->{properties}->{applianceName} . "': no matching filter.", debug => 1);
                 next;
             }
+
+            my $total = (defined($entry->{properties}->{capacity})) ? $entry->{properties}->{capacity} * 1024 * 1024 * 1024 : $entry->{properties}->{localCapacityBytes};
+            my $used = $total - (defined($entry->{properties}->{freeSpace})) ? $entry->{properties}->{freeSpace} * 1024 * 1024 * 1024 : $entry->{properties}->{localFreeBytes};
             
             $self->{cluster}->{$entry->{properties}->{serialNumber}} = { 
                 display => $entry->{properties}->{applianceName}, 
                 health => $mapping_health_level{$entry->{properties}->{healthLevel}},
-                total => $entry->{properties}->{capacity} * 1024 * 1024 * 1024, # GB
-                used => ($entry->{properties}->{capacity} - $entry->{properties}->{freeSpace}) * 1024 * 1024 * 1024, # GB
+                total => $total,
+                used => $used,
                 dedup => $entry->{properties}->{dedupeRatio} };
         }
     }
