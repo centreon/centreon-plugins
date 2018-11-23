@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+                         'configuration'    => 'centreon::common::cisco::standard::snmp::mode::configuration',
                          'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
                          'environment'      => 'centreon::common::cisco::standard::snmp::mode::environment',
                          'hsrp'             => 'centreon::common::cisco::standard::snmp::mode::hsrp',
