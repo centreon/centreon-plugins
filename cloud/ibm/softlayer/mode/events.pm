@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
 
 my $instance_mode;
 
@@ -45,7 +46,7 @@ sub custom_status_threshold {
         }
     };
     if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message, debug => 1);
     }
 
     return $status;
@@ -54,7 +55,11 @@ sub custom_status_threshold {
 sub custom_event_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Status is '%s', Impacted items: %d", $self->{result_values}->{status}, $self->{result_values}->{items});
+    my $msg = sprintf("Status is '%s', Impacted items: %d, Start date: %s, End date: %s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{items},
+        ($self->{result_values}->{start_date} ne "-") ? $self->{result_values}->{start_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_start}) . ' ago)' : '-',
+        ($self->{result_values}->{end_date} ne "-") ? $self->{result_values}->{end_date} . ' (' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since_end}) . ' ago)' : '-');
     return $msg;
 }
 
@@ -65,6 +70,10 @@ sub custom_event_calc {
     $self->{result_values}->{subject} = $options{new_datas}->{$self->{instance} . '_subject'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{items} = $options{new_datas}->{$self->{instance} . '_items'};
+    $self->{result_values}->{start_date} = $options{new_datas}->{$self->{instance} . '_start_date'};
+    $self->{result_values}->{since_start} = $options{new_datas}->{$self->{instance} . '_since_start'};
+    $self->{result_values}->{end_date} = $options{new_datas}->{$self->{instance} . '_end_date'};
+    $self->{result_values}->{since_end} = $options{new_datas}->{$self->{instance} . '_since_end'};
     return 0;
 }
 
@@ -119,7 +128,8 @@ sub set_counters {
     ];
     $self->{maps_counters}->{events} = [
         { label => 'event', threshold => 0, set => {
-                key_values => [ { name => 'id' }, { name => 'subject' }, { name => 'status' }, { name => 'items' } ],
+                key_values => [ { name => 'id' }, { name => 'subject' }, { name => 'status' }, { name => 'items' },
+                    { name => 'start_date' }, { name => 'since_start' }, { name => 'end_date' }, { name => 'since_end' } ],
                 closure_custom_calc => $self->can('custom_event_calc'),
                 closure_custom_output => $self->can('custom_event_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -166,6 +176,8 @@ sub change_macros {
 sub manage_selection {
     my ($self, %options) = @_;
     
+    my $current_time = time();
+    
     my %status_hash;
     my (undef, $events) = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getAllObjects', extra_content => '');
     foreach my $event (@{$events->{'ns1:getAllObjectsResponse'}->{'getAllObjectsReturn'}->{'item'}}) {
@@ -187,11 +199,44 @@ sub manage_selection {
             $items = scalar(@{$ressources->{'ns1:getImpactedResourcesResponse'}->{'getImpactedResourcesReturn'}->{'item'}}) if (ref($ressources->{'ns1:getImpactedResourcesResponse'}->{'getImpactedResourcesReturn'}->{'item'}) eq 'ARRAY');
         }
 
+        my $start_epoch = '';
+        my $end_epoch = '';
+        if (defined($event->{startDate}->{content}) && 
+            $event->{startDate}->{content} =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.*)$/) { # 2018-10-18T15:36:54+00:00
+            my $dt = DateTime->new(
+                year => $1,
+                month => $2,
+                day => $3,
+                hour => $4,
+                minute => $5,
+                second => $6,
+                time_zone => $7
+            );
+            $start_epoch = $dt->epoch;
+        }
+        if (defined($event->{endDate}->{content}) && 
+            $event->{endDate}->{content} =~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.*)$/) { # 2018-10-18T15:36:54+00:00
+            my $dt = DateTime->new(
+                year => $1,
+                month => $2,
+                day => $3,
+                hour => $4,
+                minute => $5,
+                second => $6,
+                time_zone => $7
+            );
+            $end_epoch = $dt->epoch;
+        }
+        
         $self->{events}->{$event->{id}->{content}} = {
             id => $event->{id}->{content},
             subject => $event->{subject}->{content},
             status => $status,
             items => $items,
+            start_date => (defined($event->{startDate}->{content})) ? $event->{startDate}->{content} : "-",
+            since_start => ($start_epoch ne '') ? $current_time - $start_epoch : "-",
+            end_date => (defined($event->{endDate}->{content})) ? $event->{endDate}->{content} : "-",
+            since_end => ($end_epoch ne '') ? $current_time - $end_epoch : "-",
         };
 
         $self->{global}->{lc($status)}++;
@@ -215,12 +260,14 @@ Filter events status (Default: 'Active')
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '')
-Can used special variables like: %{status}, %{items}.
+Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
+%{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /Active/ && %{items} > 0').
-Can used special variables like: %{status}, %{items}.
+Can used special variables like: %{id}, %{subject}, %{status}, %{items}, 
+%{start_date}, %{since_start}, %{end_date}, %{since_end}.
 
 =item B<--warning-*>
 
