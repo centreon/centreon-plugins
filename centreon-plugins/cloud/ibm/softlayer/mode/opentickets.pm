@@ -24,12 +24,43 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
+
+my $instance_mode;
+
+sub custom_status_threshold {
+    my ($self, %options) = @_; 
+    my $status = 'ok';
+    my $message;
+    
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+        
+        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
+            eval "$instance_mode->{option_results}->{critical_status}") {
+            $status = 'critical';
+        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
+            eval "$instance_mode->{option_results}->{warning_status}") {
+            $status = 'warning';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
 
 sub custom_ticket_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Title: '%s', Group: '%s', Priority: %s, Create Date: %s", $self->{result_values}->{title}, 
-        $self->{result_values}->{group}, $self->{result_values}->{priority}, $self->{result_values}->{createDate});
+    my $msg = sprintf("Title: '%s', Group: '%s', Priority: %s, Create Date: %s (%s ago)",
+        $self->{result_values}->{title}, 
+        $self->{result_values}->{group},
+        $self->{result_values}->{priority},
+        $self->{result_values}->{create_date},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since}));
     return $msg;
 }
 
@@ -39,8 +70,9 @@ sub custom_ticket_calc {
     $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
     $self->{result_values}->{title} = $options{new_datas}->{$self->{instance} . '_title'};
     $self->{result_values}->{priority} = $options{new_datas}->{$self->{instance} . '_priority'};
-    $self->{result_values}->{createDate} = $options{new_datas}->{$self->{instance} . '_createDate'};
+    $self->{result_values}->{create_date} = $options{new_datas}->{$self->{instance} . '_create_date'};
     $self->{result_values}->{group} = $options{new_datas}->{$self->{instance} . '_group'};
+    $self->{result_values}->{since} = $options{new_datas}->{$self->{instance} . '_since'};
     return 0;
 }
 
@@ -71,11 +103,12 @@ sub set_counters {
     ];
     $self->{maps_counters}->{tickets} = [
         { label => 'ticket', threshold => 0, set => {
-                key_values => [ { name => 'id' }, { name => 'title' }, { name => 'priority' }, { name => 'createDate' },
-                { name => 'group' } ],
+                key_values => [ { name => 'id' }, { name => 'title' }, { name => 'priority' }, { name => 'create_date' },
+                { name => 'group' }, { name => 'since' } ],
                 closure_custom_calc => $self->can('custom_ticket_calc'),
                 closure_custom_output => $self->can('custom_ticket_output'),
                 closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
     ];
@@ -90,6 +123,8 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "ticket-group:s"    => { name => 'ticket_group' },
+                                    "warning-status:s"  => { name => 'warning_status', default => '' },
+                                    "critical-status:s" => { name => 'critical_status', default => '' },
                                 });
 
     return $self;
@@ -98,6 +133,19 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
+    $self->change_macros();
+}
+
+sub change_macros {
+    my ($self, %options) = @_;
+    
+    foreach (('warning_status', 'critical_status')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
 }
 
 sub manage_selection {
@@ -123,16 +171,30 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    my $current_time = time();
+
     my (undef, $tickets) = $options{custom}->get_endpoint(service => 'SoftLayer_Account', method => 'getOpenTickets', extra_content => '');
     foreach my $ticket (@{$tickets->{'ns1:getOpenTicketsResponse'}->{'getOpenTicketsReturn'}->{'item'}}) {
         next if (defined($group_id) && $group_id ne '' && $ticket->{groupId}->{content} ne $group_id);
 
+        next if ($ticket->{createDate}->{content} !~ /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.*)$/); # 2018-10-18T15:36:54+00:00
+        my $dt = DateTime->new(
+            year => $1,
+            month => $2,
+            day => $3,
+            hour => $4,
+            minute => $5,
+            second => $6,
+            time_zone => $7
+        );
+        
         $self->{tickets}->{$ticket->{id}->{content}} = {
             id => $ticket->{id}->{content},
             title => $ticket->{title}->{content},
             priority => $ticket->{priority}->{content},
-            createDate => $ticket->{createDate}->{content},
+            create_date => $ticket->{createDate}->{content},
             group => $groups_hash{$ticket->{groupId}->{content}},
+            since => $current_time - $dt->epoch,
         };
 
         $self->{global}->{open}++;
@@ -152,6 +214,18 @@ Check if there is open tickets
 =item B<--ticket-group>
 
 Name of the ticket group (Can be a regexp).
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '')
+Can used special variables like: %{id}, %{title},
+%{priority}, %{create_date}, %{group}, %{since}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{id}, %{title},
+%{priority}, %{create_date}, %{group}, %{since}.
 
 =item B<--warning-open>
 
