@@ -177,7 +177,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $current_time = time();
-    use Data::Dumper;
+    
     my %status_hash;
     my (undef, $events) = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getAllObjects', extra_content => '');
     foreach my $event (@{$events->{'ns1:getAllObjectsResponse'}->{'getAllObjectsReturn'}->{'item'}}) {
