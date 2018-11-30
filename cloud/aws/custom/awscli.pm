@@ -44,6 +44,7 @@ sub new {
                     {
                         "aws-secret-key:s"    => { name => 'aws_secret_key' },
                         "aws-access-key:s"    => { name => 'aws_access_key' },
+                        "endpoint-url:s"      => { name => 'endpoint_url' },
                         "region:s"            => { name => 'region' },
                         "timeframe:s"         => { name => 'timeframe' },
                         "period:s"            => { name => 'period' },
@@ -54,6 +55,7 @@ sub new {
                         "command:s"           => { name => 'command', default => 'aws' },
                         "command-path:s"      => { name => 'command_path' },
                         "command-options:s"   => { name => 'command_options', default => '' },
+                        "proxyurl:s"          => { name => 'proxyurl' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
@@ -89,6 +91,11 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
+    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
+        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
+
     if (defined($self->{option_results}->{aws_secret_key}) && $self->{option_results}->{aws_secret_key} ne '') {
         $ENV{AWS_SECRET_ACCESS_KEY} = $self->{option_results}->{aws_secret_key};
     }
@@ -110,6 +117,8 @@ sub check_options {
         }
     }
 
+    $self->{endpoint_url} = (defined($self->{option_results}->{endpoint_url})) ? $self->{option_results}->{endpoint_url} : undef;
+
     return 0;
 }
 
@@ -118,11 +127,13 @@ sub cloudwatch_get_metrics_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options =
-        "cloudwatch get-metric-statistics --region $options{region} --namespace $options{namespace} --metric-name '$options{metric_name}' --start-time $options{start_time} --end-time $options{end_time} --period $options{period} --statistics " . join(' ', @{$options{statistics}}) . " --output json --dimensions";
+    my $cmd_options = "cloudwatch get-metric-statistics --region $options{region} --namespace $options{namespace}" . 
+        " --metric-name '$options{metric_name}' --start-time $options{start_time} --end-time $options{end_time}" . 
+        " --period $options{period} --statistics " . join(' ', @{$options{statistics}}) . " --output json --dimensions";
     foreach my $entry (@{$options{dimensions}}) {
         $cmd_options .= " 'Name=$entry->{Name},Value=$entry->{Value}'";
     }
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
     return $cmd_options; 
 }
@@ -188,6 +199,7 @@ sub cloudwatch_get_alarms_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "cloudwatch describe-alarms --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -232,6 +244,7 @@ sub cloudwatch_list_metrics_set_cmd {
     my $cmd_options = "cloudwatch list-metrics --region $options{region} --output json";
     $cmd_options .= " --namespace $options{namespace}" if defined($options{namespace});
     $cmd_options .= " --metric-name $options{metric}" if defined($options{metric});
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -264,6 +277,7 @@ sub ec2_get_instances_status_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -302,6 +316,7 @@ sub ec2_list_resources_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "ec2 describe-instances --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -362,6 +377,7 @@ sub asg_get_resources_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "autoscaling describe-auto-scaling-groups --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -395,6 +411,7 @@ sub rds_get_instances_status_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -432,6 +449,7 @@ sub rds_list_instances_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -475,6 +493,7 @@ sub rds_list_clusters_set_cmd {
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     my $cmd_options = "rds describe-db-clusters --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
     return $cmd_options; 
 }
 
@@ -520,11 +539,9 @@ __END__
 
 Amazon AWS
 
-=head1 SYNOPSIS
-
-Amazon AWS
-
 =head1 AWSCLI OPTIONS
+
+Amazon AWS CLI
 
 =over 8
 
@@ -535,6 +552,10 @@ Set AWS secret key.
 =item B<--aws-access-key>
 
 Set AWS access key.
+
+=item B<--endpoint-url>
+
+Override AWS service endpoint URL if necessary.
 
 =item B<--region>
 
