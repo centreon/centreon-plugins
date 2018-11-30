@@ -143,24 +143,13 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $self->{az_resource_group} = '';
+    $self->{az_resource} = $self->{option_results}->{resource};
+    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'storageAccounts';
     $self->{az_resource_namespace} = 'Microsoft.Storage';
-
-    foreach my $resource (@{$self->{option_results}->{resource}}) {
-        push @{$self->{az_resource}}, $resource;
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Storage\/storageAccounts\/.*/) {
-            $self->{az_resource_type} = '';
-            $self->{az_resource_namespace} = '';
-        } else {
-            $self->{az_resource_group} = $self->{option_results}->{resource_group};
-        }
-    }
-
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
     $self->{az_resource_extra_namespace} = defined($self->{option_results}->{resource_namespace}) ? $self->{option_results}->{resource_namespace} : '';
-    
     $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -186,21 +175,25 @@ sub manage_selection {
 
     my %metric_results;
     foreach my $resource (@{$self->{az_resource}}) {
+        my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
+        my $namespace = $self->{az_resource_namespace};
         my $namespace_full = ($self->{az_resource_extra_namespace} ne '') ? '/' . lc($self->{az_resource_extra_namespace}) . 'Services/default' : '';
         my $namespace_name = ($self->{az_resource_extra_namespace} ne '') ? $self->{az_resource_extra_namespace} : "Account";
-        if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
-            $resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
-                $resource_name = $1;
-                $namespace_name = $2 if(defined($2));
+        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)\/(.*)\/default$/ ||
+            $resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Storage\/storageAccounts\/(.*)$/) {
+            $resource_group = $1;
+            $resource_name = $2;
+            $namespace_full = '/' . $3 . '/default' if(defined($3));
+            $namespace_name = $3 if(defined($3));
         }
         $namespace_name =~ s/Services//g;
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource . $namespace_full,
-            resource_group => $self->{az_resource_group},
+            resource => $resource_name . $namespace_full,
+            resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
+            resource_namespace => $namespace,
             metrics => $self->{az_metrics},
             aggregations => $self->{az_aggregations},
             timeframe => $self->{az_timeframe},

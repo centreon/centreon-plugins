@@ -67,8 +67,16 @@ sub run {
             && $resource->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
             && $resource->{type} !~ /$self->{option_results}->{filter_type}/);
+        my $resource_group = '-';
+        $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
+        $resource_group = $1 if (defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
         $self->{output}->output_add(long_msg => sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][type = %s]",
-            $resource->{name}, $resource->{resourceGroup}, $resource->{location}, $resource->{id}, $resource->{type}));
+            $resource->{name},
+            $resource_group,
+            $resource->{location},
+            $resource->{id},
+            $resource->{type}
+        ));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -88,9 +96,12 @@ sub disco_show {
 
     $self->manage_selection(%options);
     foreach my $resource (@{$self->{resources}}) {
+        my $resource_group = '-';
+        $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
+        $resource_group = $1 if (defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
         $self->{output}->add_disco_entry(
             name => $resource->{name},
-            resourcegroup => $resource->{resourceGroup},
+            resourcegroup => $resource_group,
             location => $resource->{location},
             id => $resource->{id},
             type => $resource->{type},

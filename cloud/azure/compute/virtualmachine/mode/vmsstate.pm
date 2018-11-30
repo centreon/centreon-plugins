@@ -191,7 +191,7 @@ __END__
 
 =head1 MODE
 
-Check virtual machines status.
+Check virtual machines status (Only with az CLI).
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=vms-state

@@ -61,13 +61,25 @@ sub run {
     foreach my $vm (@{$self->{vms}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $vm->{name} !~ /$self->{option_results}->{filter_name}/);
+        my $computer_name = '-';
+        $computer_name = $vm->{properties}->{osProfile}->{computerName} if (defined($vm->{properties}->{osProfile}->{computerName}));
+        $computer_name = $vm->{osProfile}->{computerName} if (defined($vm->{osProfile}->{computerName}));
+        my $resource_group = '-';
+        $resource_group = $vm->{resourceGroup} if (defined($vm->{resourceGroup}));
+        $resource_group = $1 if (defined($vm->{id}) && $vm->{id} =~ /resourceGroups\/(.*)\/providers/);
         $self->{output}->output_add(long_msg => sprintf("[name = %s][computername = %s][resourcegroup = %s]" .
             "[location = %s][vmid = %s][vmsize = %s][os = %s][state = %s]",
-            $vm->{name}, (defined($vm->{osProfile}->{computerName})) ? $vm->{osProfile}->{computerName} : "-",
-            $vm->{resourceGroup}, $vm->{location}, $vm->{vmId}, $vm->{hardwareProfile}->{vmSize},
-            $vm->{storageProfile}->{osDisk}->{osType}, $vm->{powerState}));
+            $vm->{name},
+            $computer_name,
+            $resource_group,
+            $vm->{location},
+            (defined($vm->{properties}->{vmId})) ? $vm->{properties}->{vmId} : $vm->{vmId},
+            (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
+            (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
+            (defined($vm->{powerState})) ? $vm->{powerState} : "-",
+        ));
     }
-    
+
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'List vitual machines:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -85,15 +97,21 @@ sub disco_show {
 
     $self->manage_selection(%options);
     foreach my $vm (@{$self->{vms}}) {
+        my $computer_name = '-';
+        $computer_name = $vm->{properties}->{osProfile}->{computerName} if (defined($vm->{properties}->{osProfile}->{computerName}));
+        $computer_name = $vm->{osProfile}->{computerName} if (defined($vm->{osProfile}->{computerName}));
+        my $resource_group = '-';
+        $resource_group = $vm->{resourceGroup} if (defined($vm->{resourceGroup}));
+        $resource_group = $1 if (defined($vm->{id}) && $vm->{id} =~ /resourceGroups\/(.*)\/providers/);
         $self->{output}->add_disco_entry(
             name => $vm->{name},
-            computername => (defined($vm->{osProfile}->{computerName})) ? $vm->{osProfile}->{computerName} : "-",
-            resourcegroup => $vm->{resourceGroup},
+            computername => $computer_name,
+            resourcegroup => $resource_group,
             location => $vm->{location},
-            vmid => $vm->{vmId},
-            vmsize => $vm->{hardwareProfile}->{vmSize},
-            os => $vm->{storageProfile}->{osDisk}->{osType},
-            state => $vm->{powerState},
+            vmid => (defined($vm->{properties}->{vmId})) ? $vm->{properties}->{vmId} : $vm->{vmId},
+            vmsize => (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
+            os => (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
+            state => (defined($vm->{powerState})) ? $vm->{powerState} : "-",
         );
     }
 }

@@ -132,7 +132,10 @@ sub manage_selection {
         };
 
         foreach my $item (@{$resources}) {
-            next if ($item->{resourceGroup} !~ /$group->{name}/);
+            my $resource_group = '';
+            $resource_group = $item->{resourceGroup} if (defined($item->{resourceGroup}));
+            $resource_group = $1 if (defined($item->{id}) && $item->{id} =~ /resourceGroups\/(.*)\/providers/);
+            next if (defined($resource_group) && $resource_group !~ /$group->{name}/);
             next if (!defined($self->{option_results}->{hidden}) && $item->{type} =~ /^Microsoft\..*\/.*\/.*/);
             $self->{groups}->{$group->{name}}->{total}++;
             $self->{groups}->{$group->{name}}->{compute}++ if ($item->{type} =~ /^Microsoft\.Compute\//);

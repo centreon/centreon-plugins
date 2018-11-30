@@ -159,15 +159,18 @@ sub manage_selection {
     my $vms = $options{custom}->azure_list_vms(resource_group => $self->{option_results}->{resource_group}, show_details => 1);
     
     foreach my $vm (@{$vms}) {
-        next if (defined($self->{option_results}->{running}) && $vm->{powerState} !~ /running/);
+        next if (defined($self->{option_results}->{running}) && defined($vm->{powerState}) && $vm->{powerState} !~ /running/);
         if (defined($self->{option_results}->{filter_size}) && $self->{option_results}->{filter_size} ne '' &&
-            $vm->{hardwareProfile}->{vmSize} !~ /$self->{option_results}->{filter_size}/) {
-            $self->{output}->output_add(long_msg => sprintf("skipping size '%s'", $vm->{hardwareProfile}->{vmSize}), debug => 1);
+            (defined($vm->{hardwareProfile}->{vmSize}) && $vm->{hardwareProfile}->{vmSize} !~ /$self->{option_results}->{filter_size}/ ||
+            defined($vm->{properties}->{hardwareProfile}->{vmSize}) && $vm->{properties}->{hardwareProfile}->{vmSize} !~ /$self->{option_results}->{filter_size}/)) {
+            $self->{output}->output_add(long_msg => sprintf("skipping size '%s'", $vm->{hardwareProfile}->{vmSize}), debug => 1) if (defined($vm->{hardwareProfile}->{vmSize}));
+            $self->{output}->output_add(long_msg => sprintf("skipping size '%s'", $vm->{properties}->{hardwareProfile}->{vmSize}), debug => 1) if (defined($vm->{properties}->{hardwareProfile}->{vmSize}));
             next;
         }
         foreach my $type (keys %vm_types) {
             next if (!defined($self->{maps_counters}->{$type}));
-            $self->{$type}->{$vm->{hardwareProfile}->{vmSize}}++ if (map(/$vm->{hardwareProfile}->{vmSize}/, @{$vm_types{$type}}));
+            $self->{$type}->{$vm->{hardwareProfile}->{vmSize}}++ if (defined($vm->{hardwareProfile}->{vmSize}) && map(/$vm->{hardwareProfile}->{vmSize}/, @{$vm_types{$type}}));
+            $self->{$type}->{$vm->{properties}->{hardwareProfile}->{vmSize}}++ if (defined($vm->{properties}->{hardwareProfile}->{vmSize}) && map(/$vm->{properties}->{hardwareProfile}->{vmSize}/, @{$vm_types{$type}}));
         }
     }
     
@@ -255,7 +258,7 @@ Can be: 'standard-b1s', 'standard-b1ms', 'standard-b2s', 'standard-b2ms', 'stand
 
 =item B<--running>
 
-Only check running virtual machines.
+Only check running virtual machines (only with az CLI).
 
 =back
 
