@@ -140,23 +140,12 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $self->{az_resource_group} = '';
+    $self->{az_resource} = $self->{option_results}->{resource};
+    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'virtualMachines';
     $self->{az_resource_namespace} = 'Microsoft.Compute';
-
-    foreach my $resource (@{$self->{option_results}->{resource}}) {
-        push @{$self->{az_resource}}, $resource;
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Compute\/virtualMachines\/.*$/) {
-            $self->{az_resource_type} = '';
-            $self->{az_resource_namespace} = '';
-        } else {
-            $self->{az_resource_group} = $self->{option_results}->{resource_group};
-        }
-    }
-
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
-    
     $self->{az_aggregations} = ['Total'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregations} = [];
@@ -182,12 +171,16 @@ sub manage_selection {
 
     my %metric_results;
     foreach my $resource (@{$self->{az_resource}}) {
+        my $resource_group = $self->{az_resource_group};
         my $resource_name = $resource;
-        $resource_name = $1 if ($resource_name =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Compute\/virtualMachines\/(.*)$/);
+        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Compute\/virtualMachines\/(.*)$/) {
+            $resource_group = $1;
+            $resource_name = $2;
+        }
 
         ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource => $resource,
-            resource_group => $self->{az_resource_group},
+            resource => $resource_name,
+            resource_group => $resource_group,
             resource_type => $self->{az_resource_type},
             resource_namespace => $self->{az_resource_namespace},
             metrics => $self->{az_metrics},
