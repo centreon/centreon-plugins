@@ -36,7 +36,19 @@ sub new {
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
+    $self->{custom_modes}{api} = 'cloud::azure::custom::api';
     return $self;
+}
+
+sub init {
+    my ($self, %options) = @_;
+
+    $self->{options}->add_options(arguments =>
+                                    {
+                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+                                    });
+
+    $self->SUPER::init(%options);
 }
 
 1;
