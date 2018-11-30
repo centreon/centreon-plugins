@@ -555,7 +555,7 @@ Set AWS access key.
 
 =item B<--endpoint-url>
 
-Override AWS service endpoint URL if necessary).
+Override AWS service endpoint URL if necessary.
 
 =item B<--region>
 
