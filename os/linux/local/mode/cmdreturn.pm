@@ -121,7 +121,7 @@ Check command returns.
 =item B<--manage-returns>
 
 Set action according command exit code.
-Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#,UNKNOWN,Command problem
+Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#UNKNOWN,Command problem
 
 =item B<--remote>
 
