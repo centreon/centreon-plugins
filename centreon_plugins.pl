@@ -29,3 +29,5 @@ use lib "$FindBin::Bin";
 use centreon::plugins::script;
 
 centreon::plugins::script->new()->run();
+
+__END__
