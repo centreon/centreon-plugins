@@ -34,6 +34,7 @@ sub new {
                          'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
                          'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
                          'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
+                         'dummy'                    => 'apps::centreon::local::mode::dummy',
                          'metaservice'              => 'apps::centreon::local::mode::metaservice',
                          'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
                          );
