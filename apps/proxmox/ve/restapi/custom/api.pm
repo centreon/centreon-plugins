@@ -28,7 +28,9 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::misc;
+use centreon::plugins::statefile;
 use JSON;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
   my ($class, %options) = @_;
@@ -55,12 +57,13 @@ sub new {
     "timeout:s"         => { name => 'timeout' },
     "ssl-opt:s@"        => { name => 'ssl_opt' },
     "timeout:s" => { name => 'timeout', default => 30 },
-    "reload-cache-time:s"   => { name => 'reload_cache_time', default => 300 },
+    "reload-cache-time:s"   => { name => 'reload_cache_time', default => 7200 },
   });
   $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
   $self->{output} = $options{output};
   $self->{mode} = $options{mode};
   $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{cache} = centreon::plugins::statefile->new(%options);
 
 
   return $self;
@@ -113,6 +116,9 @@ sub check_options {
     $self->{output}->option_exit();
   }
 
+  $self->{cache}->check_options(option_results => $self->{option_results});
+
+
   return 0;
 
 }
@@ -149,51 +155,69 @@ sub settings {
   my ($self, %options) = @_;
 
   $self->build_options_for_httplib();
-  $self->{http}->add_header(key => 'Accept', value => 'application/json');
-  $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-  if (!defined($self->{access_token})) {
-    $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
+  if (!defined($self->{proxmox_ticket})) {
+    $self->{proxmox_ticket} = $self->get_ticket(statefile => $self->{cache});
   }
-  $self->{http}->add_header(key=>'Cookie',value=>'PVEAuthCookie='.$self->{access_token});
+  $self->{http}->add_header(key=>'Cookie',value=>'PVEAuthCookie='.$self->{proxmox_ticket});
+  $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
   $self->{http}->set_options(%{$self->{option_results}});
 
 
 }
 
-sub get_access_token {
+sub get_ticket {
   my ($self, %options) = @_;
-  # my $has_cache_file = $options{statefile}->read(statefile => 'proxmox_ve_api');
+  my $has_cache_file = $options{statefile}->read(statefile => 'proxmox_ve_api_'.md5_hex($self->{option_results}->{hostname}).'_'.md5_hex($self->{option_results}->{api_username}));
+  my $expires_on = $options{statefile}->get(name => 'expires_on');
+  my $proxmox_ticket = $options{statefile}->get(name => 'proxmox_ticket');
+  my $renew_ticket=0;
+  if ($has_cache_file == 0 || !defined($proxmox_ticket)) {
+    $renew_ticket=1;
+  }
+  if (defined($expires_on)){ ##Avoid Incorrect Substraction
+    if (($expires_on - time()) < 10) {
+      $renew_ticket=1;
+    }else{
+      $renew_ticket=0
+    }
+  }
+  if ($renew_ticket==1) {
+    my $post_data = 'username=' . $self->{api_username} .
+    '&password=' . $self->{api_password} .
+    '&realm=' . $self->{realm};
+    $self->build_options_for_httplib();
+    $self->{http}->set_options(%{$self->{option_results}});
+    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
+    $self->{http}->add_header(key => 'Accept', value => 'application/json');
+    my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
+    url_path => '/api2/json/access/ticket');
 
-  my $post_data = 'username=' . $self->{api_username} .
-  '&password=' . $self->{api_password} .
-  '&realm=' . $self->{realm};
+    my $decoded;
+    eval {
+      $decoded = decode_json($content);
 
-  $self->build_options_for_httplib();
-  $self->{http}->set_options(%{$self->{option_results}});
-  $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
-  my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-  url_path => '/api2/json/access/ticket');
-  my $decoded;
-  eval {
-    $decoded = decode_json($content);
+    };
 
-  };
-
-  if ($@) {
-    $self->{output}->output_add(long_msg => $content, debug => 1);
-    $self->{output}->add_option_msg(short_msg => "Cannot decode json response for Token");
-    $self->{output}->option_exit();
+    if ($@) {
+      $self->{output}->output_add(long_msg => $content, debug => 1);
+      $self->{output}->add_option_msg(short_msg => "Cannot decode json response for Token");
+      $self->{output}->option_exit();
+    }
+    $proxmox_ticket = $decoded->{data}->{ticket};
+    my $datas = { last_timestamp => time(), proxmox_ticket => $proxmox_ticket, expires_on => time()+7200 };
+    $options{statefile}->write(data => $datas);
   }
 
-
-  my $proxmox_ticket = $decoded->{data}->{ticket};
   return $proxmox_ticket;
 
 }
 
 sub request_api {
+
   my ($self, %options) = @_;
+
   $self->settings();
+
   my $content = $self->{http}->request(%options);
   my $decoded;
   eval {
