@@ -570,6 +570,13 @@ Set Proxmox VE Port (Default 8006)
 =item B<--api-username>
 
 Set Proxmox VE Username
+API user need to have this privileges
+'VM.Monitor, VM.Audit, Datastore.Audit, Sys.Audit, Sys.Syslog'
+
+=item B<--realm>
+
+Set Proxmox VE Realm (pam, pve or custom)
+Default to pam.
 
 =item B<--api-password>
 
