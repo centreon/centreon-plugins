@@ -27,7 +27,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Data::Dumper qw(Dumper);
 
 my %telegram_icon_host = (
 up => "\x{2705}",
