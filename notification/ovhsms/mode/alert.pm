@@ -17,6 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package notification::ovhsms::mode::alert;
 
@@ -26,87 +27,86 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
-use Data::Dumper qw(Dumper);
 
 my $ovh_url='https://www.ovh.com/cgi-bin/sms/http2sms.cgi';
 
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+  my ($class, %options) = @_;
+  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+  bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "account:s"   => { name => 'account' },
-                                  "username:s"      => { name => 'username' },
-                                  "password:s"      => { name => 'password' },
-                                  "phonenumber:s"   => { name => 'phonenumber' },
-                                  "message:s"       => { name => 'message' },
-                                  "nostop:s"        => { name => 'nostop',default => 1 },
-                                  "from:s"          => { name => 'from'},
-                                  "class:s"        => { name => 'class' ,default => 1 },
-                                  "proxyurl:s"      => { name => 'proxyurl' },
-                                  "proxypac:s"      => { name => 'proxypac' },
-                                  "timeout:s"       => { name => 'timeout' },
-                                  "ssl-opt:s@"      => { name => 'ssl_opt' },
-                                });
+  $self->{version} = '1.0';
+  $options{options}->add_options(arguments =>
+  {
+    "account:s"   => { name => 'account' },
+    "username:s"      => { name => 'username' },
+    "password:s"      => { name => 'password' },
+    "phonenumber:s"   => { name => 'phonenumber' },
+    "message:s"       => { name => 'message' },
+    "nostop:s"        => { name => 'nostop',default => 1 },
+    "from:s"          => { name => 'from'},
+    "class:s"        => { name => 'class' ,default => 1 },
+    "proxyurl:s"      => { name => 'proxyurl' },
+    "proxypac:s"      => { name => 'proxypac' },
+    "timeout:s"       => { name => 'timeout' },
+    "ssl-opt:s@"      => { name => 'ssl_opt' },
+  });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{http} = centreon::plugins::http->new(output => $self->{output});
 
-    return $self;
+  return $self;
 }
 
 
 sub check_options {
-    my ($self, %options) = @_;
+  my ($self, %options) = @_;
 
-    $self->SUPER::init(%options);
-    if ((!defined($self->{option_results}->{username}) && !defined($self->{option_results}->{password}))) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= option");
-        $self->{output}->option_exit();
-    }
+  $self->SUPER::init(%options);
+  if ((!defined($self->{option_results}->{username}) && !defined($self->{option_results}->{password}))) {
+    $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= option");
+    $self->{output}->option_exit();
+  }
 
-    if (!defined($self->{option_results}->{account})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --account option");
-        $self->{output}->option_exit();
-    }
+  if (!defined($self->{option_results}->{account})) {
+    $self->{output}->add_option_msg(short_msg => "Please set the --account option");
+    $self->{output}->option_exit();
+  }
 
-    if (!defined($self->{option_results}->{phonenumber})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --phonenumber option");
-        $self->{output}->option_exit();
-    }
+  if (!defined($self->{option_results}->{phonenumber})) {
+    $self->{output}->add_option_msg(short_msg => "Please set the --phonenumber option");
+    $self->{output}->option_exit();
+  }
 
-    $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
+  $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
 
 }
 
 sub run {
-    my ($self, %options) = @_;
+  my ($self, %options) = @_;
 
-    $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
-    $self->{http}->add_header(key => 'Accept', value => 'text/xml');
+  $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
+  $self->{http}->add_header(key => 'Accept', value => 'text/xml');
 
-    my $sms_arg={};
+  my $sms_arg={};
 
-    $sms_arg->{account} = $self->{option_results}->{account};
-    $sms_arg->{login} = $self->{option_results}->{username};
-    $sms_arg->{password} = $self->{option_results}->{password};
-    $sms_arg->{to} = $self->{option_results}->{phonenumber};
-    $sms_arg->{noStop} = $self->{option_results}->{nostop};
-    $sms_arg->{class} = $self->{option_results}->{class};
-    $sms_arg->{from} = $self->{option_results}->{from};
-    $sms_arg->{message} = $self->{option_results}->{message};
+  $sms_arg->{account} = $self->{option_results}->{account};
+  $sms_arg->{login} = $self->{option_results}->{username};
+  $sms_arg->{password} = $self->{option_results}->{password};
+  $sms_arg->{to} = $self->{option_results}->{phonenumber};
+  $sms_arg->{noStop} = $self->{option_results}->{nostop};
+  $sms_arg->{class} = $self->{option_results}->{class};
+  $sms_arg->{from} = $self->{option_results}->{from};
+  $sms_arg->{message} = $self->{option_results}->{message};
 
 
-    my $url = $ovh_url;
-    print Dumper($sms_arg);
-    my $response = $self->{http}->request(full_url => $url,  get_params =>$sms_arg, method => 'GET');
+  my $url = $ovh_url;
+  print Dumper($sms_arg);
+  my $response = $self->{http}->request(full_url => $url,  get_params =>$sms_arg, method => 'GET');
 
-    $self->{output}->output_add(short_msg => 'push_id : ' . $response);
-    $self->{output}->display(force_ignore_perfdata => 1);
-    $self->{output}->exit();
+  $self->{output}->output_add(short_msg => 'push_id : ' . $response);
+  $self->{output}->display(force_ignore_perfdata => 1);
+  $self->{output}->exit();
 }
 
 1;
@@ -116,6 +116,7 @@ __END__
 =head1 MODE
 
 Send SMS with OVH API.
+https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_une_url_-_http2sms/
 
 =over 6
 
