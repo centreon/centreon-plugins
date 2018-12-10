@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package notification::telegram::mode::alert;
 
@@ -29,195 +28,253 @@ use centreon::plugins::http;
 use JSON::XS;
 
 my %telegram_icon_host = (
-up => "\x{2705}",
-down => "\x{1F525}",
-unreachable => "\x{2753}",
+    up          => "\x{2705}",
+    down        => "\x{1F525}",
+    unreachable => "\x{2753}",
 );
 my %telegram_icon_service = (
-ok => "\x{2705}",
-warning => "\x{26A0}",
-critical => "\x{1F525}",
-unknown => "\x{2753}",
+    ok       => "\x{2705}",
+    warning  => "\x{26A0}",
+    critical => "\x{1F525}",
+    unknown  => "\x{2753}",
 );
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-  $self->{version} = '1.0';
-  $options{options}->add_options(arguments =>
-  {
-    "chat-id:s"             => { name => 'chat_id' },
-    "bot-token:s"           => { name => 'bot_token' },
-    "proxyurl:s"            => { name => 'proxyurl' },
-    "proxypac:s"            => { name => 'proxypac' },
-    "username:s"            => { name => 'username' },
-    "password:s"            => { name => 'password' },
-    "timeout:s"             => { name => 'timeout' },
-    "message:s"             => { name => 'message' },
-    "host-name:s"           => { name => 'host_name' },
-    "host-state:s"          => { name => 'host_state' },
-    "host-output:s"         => { name => 'host_output' },
-    "service-description:s" => { name => 'service_description' },
-    "service-state:s"       => { name => 'service_state' },
-    "service-output:s"      => { name => 'service_output' },
-    "graph-url:s"           => { name => 'graph_url' },
-    "link-url:s"            => { name => 'link_url' },
-    "centreon-url:s"        => { name => 'centreon_url' },
-    "centreon-token:s"      => { name => 'centreon_token' },
-  });
+    $self->{version} = '1.0';
+    $options{options}->add_options(
+        arguments => {
+            "chat-id:s"             => { name => 'chat_id' },
+            "bot-token:s"           => { name => 'bot_token' },
+            "proxyurl:s"            => { name => 'proxyurl' },
+            "proxypac:s"            => { name => 'proxypac' },
+            "username:s"            => { name => 'username' },
+            "password:s"            => { name => 'password' },
+            "timeout:s"             => { name => 'timeout' },
+            "message:s"             => { name => 'message' },
+            "host-name:s"           => { name => 'host_name' },
+            "host-state:s"          => { name => 'host_state' },
+            "host-output:s"         => { name => 'host_output' },
+            "service-description:s" => { name => 'service_description' },
+            "service-state:s"       => { name => 'service_state' },
+            "service-output:s"      => { name => 'service_output' },
+            "graph-url:s"           => { name => 'graph_url' },
+            "link-url:s"            => { name => 'link_url' },
+            "centreon-url:s"        => { name => 'centreon_url' },
+            "centreon-token:s"      => { name => 'centreon_token' },
+        }
+    );
 
-  $self->{http} = centreon::plugins::http->new(output => $self->{output});
-  return $self;
+    $self->{http} = centreon::plugins::http->new( output => $self->{output} );
+    return $self;
 }
 
-
 sub check_options {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  $self->SUPER::init(%options);
-  if ((!defined($self->{option_results}->{chat_id}))) {
-    $self->{output}->add_option_msg(short_msg => "You need to set --chat_id option");
-    $self->{output}->option_exit();
-  }
-
-  if (!defined($self->{option_results}->{bot_token})) {
-    $self->{output}->add_option_msg(short_msg => "Please set the --bot_token option");
-    $self->{output}->option_exit();
-  }
-
-  if (!defined($self->{option_results}->{host_name}) || $self->{option_results}->{host_name} eq '') {
-    $self->{output}->add_option_msg(short_msg => "You need to specify --host-name option.");
-    $self->{output}->option_exit();
-  }
-
-  foreach (('graph_url', 'link_url')) {
-    if (defined($self->{option_results}->{$_})) {
-      $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{option_results}->{$1}/g;
-      eval "\$self->{option_results}->{\$_} = \"$self->{option_results}->{$_}\"";
+    $self->SUPER::init(%options);
+    if ( ( !defined( $self->{option_results}->{chat_id} ) ) ) {
+        $self->{output}
+          ->add_option_msg( short_msg => "You need to set --chat_id option" );
+        $self->{output}->option_exit();
     }
-  }
 
-  $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
+    if ( !defined( $self->{option_results}->{bot_token} ) ) {
+        $self->{output}
+          ->add_option_msg( short_msg => "Please set the --bot_token option" );
+        $self->{output}->option_exit();
+    }
+
+    if ( !defined( $self->{option_results}->{host_name} )
+        || $self->{option_results}->{host_name} eq '' )
+    {
+        $self->{output}->add_option_msg(
+            short_msg => "You need to specify --host-name option." );
+        $self->{output}->option_exit();
+    }
+
+    foreach ( ( 'graph_url', 'link_url' ) ) {
+        if ( defined( $self->{option_results}->{$_} ) ) {
+            $self->{option_results}->{$_} =~
+              s/%\{(.*?)\}/\$self->{option_results}->{$1}/g;
+            eval
+"\$self->{option_results}->{\$_} = \"$self->{option_results}->{$_}\"";
+        }
+    }
+
+    $self->{http}
+      ->set_options( %{ $self->{option_results} }, hostname => 'dummy' );
 }
 
 sub host_message {
 
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
+    my $url_host = $self->{option_results}->{host_name};
 
-  my $url_host = $self->{option_results}->{host_name};
-
-
-  if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne ''  )
-  {
-    if (defined($telegram_icon_host{lc($self->{option_results}->{host_state})})) {
-      $self->{message} = $telegram_icon_host{lc($self->{option_results}->{host_state})};
+    if ( defined( $self->{option_results}->{host_state} )
+        && $self->{option_results}->{host_state} ne '' )
+    {
+        if (
+            defined(
+                $telegram_icon_host{
+                    lc( $self->{option_results}->{host_state} ) }
+            )
+          )
+        {
+            $self->{message} =
+              $telegram_icon_host{ lc( $self->{option_results}->{host_state} )
+              };
+        }
     }
-  }
 
-  $self->{message} .= " Host <i>" . $url_host."</i>";
+    $self->{message} .= " Host <i>" . $url_host . "</i>";
 
-  if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
-    $self->{message} .= ' is <b>' . $self->{option_results}->{host_state}."</b>";
+    if ( defined( $self->{option_results}->{host_state} )
+        && $self->{option_results}->{host_state} ne '' )
+    {
+        $self->{message} .=
+          ' is <b>' . $self->{option_results}->{host_state} . "</b>";
 
-  } else {
-    $self->{message}.= ' alert';
-  }
+    }
+    else {
+        $self->{message} .= ' alert';
+    }
 
-  if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
-    $self->{message} .= ' - <a href="' . $self->{option_results}->{link_url}.'">Link</a>';
-  }
+    if ( defined( $self->{option_results}->{link_url} )
+        && $self->{option_results}->{link_url} ne '' )
+    {
+        $self->{message} .=
+          ' - <a href="' . $self->{option_results}->{link_url} . '">Link</a>';
+    }
 
 }
 
-
 sub service_message {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne ''  )
-  {
-    if (defined($telegram_icon_service{lc($self->{option_results}->{service_state})})) {
-      $self->{message} = $telegram_icon_service{lc($self->{option_results}->{service_state})};
+    if ( defined( $self->{option_results}->{service_state} )
+        && $self->{option_results}->{service_state} ne '' )
+    {
+        if (
+            defined(
+                $telegram_icon_service{
+                    lc( $self->{option_results}->{service_state} ) }
+            )
+          )
+        {
+            $self->{message} = $telegram_icon_service{
+                lc( $self->{option_results}->{service_state} ) };
+        }
     }
-  }
-  my $url_service = "Host: " . $self->{option_results}->{host_name} . " | Service " . $self->{option_results}->{service_description};
-  $self->{message} .= " ".$url_service;
+    my $url_service =
+        "Host: "
+      . $self->{option_results}->{host_name}
+      . " | Service "
+      . $self->{option_results}->{service_description};
+    $self->{message} .= " " . $url_service;
 
-  if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
-    $self->{message} .= " is " . $self->{option_results}->{service_state};
-  } else {
-    $self->{message} .= " alert";
-  }
-  if (defined($self->{option_results}->{service_output}) && $self->{option_results}->{service_output} ne '') {
-    $self->{message} .= "\n ".  $self->{option_results}->{service_output};
-  }
-  if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
-    $self->{message} .= "\n <a href=\"" . $self->{option_results}->{link_url}."\">Link</a>";
-  }
-  if (defined($self->{option_results}->{graph_url}) && $self->{option_results}->{graph_url} ne '') {
-    $self->{message} .= "\n <a href=\"".$self->{option_results}->{graph_url}."\">Graph</a>";
-  }
+    if ( defined( $self->{option_results}->{service_state} )
+        && $self->{option_results}->{service_state} ne '' )
+    {
+        $self->{message} .= " is " . $self->{option_results}->{service_state};
+    }
+    else {
+        $self->{message} .= " alert";
+    }
+    if ( defined( $self->{option_results}->{service_output} )
+        && $self->{option_results}->{service_output} ne '' )
+    {
+        $self->{message} .= "\n " . $self->{option_results}->{service_output};
+    }
+    if ( defined( $self->{option_results}->{link_url} )
+        && $self->{option_results}->{link_url} ne '' )
+    {
+        $self->{message} .=
+          "\n <a href=\"" . $self->{option_results}->{link_url} . "\">Link</a>";
+    }
+    if ( defined( $self->{option_results}->{graph_url} )
+        && $self->{option_results}->{graph_url} ne '' )
+    {
+        $self->{message} .=
+            "\n <a href=\""
+          . $self->{option_results}->{graph_url}
+          . "\">Graph</a>";
+    }
 
 }
 
 sub set_payload {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
-    $self->service_message();
-  } else {
-    $self->host_message();
-  }
+    if ( defined( $self->{option_results}->{service_description} )
+        && $self->{option_results}->{service_description} ne '' )
+    {
+        $self->service_message();
+    }
+    else {
+        $self->host_message();
+    }
 }
 
 sub format_payload {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  my $json = JSON::XS->new->utf8;
+    my $json = JSON::XS->new->utf8;
 
-  my $payload = {chat_id =>$self->{option_results}->{chat_id},
-  parse_mode => 'HTML',
-  text=>$self->{message}};
+    my $payload = {
+        chat_id    => $self->{option_results}->{chat_id},
+        parse_mode => 'HTML',
+        text       => $self->{message}
+    };
 
+    eval { $self->{payload_str} = $json->encode($payload); };
 
-  eval {
-    $self->{payload_str} = $json->encode($payload);
-  };
-
-  if ($@) {
-    $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
-    $self->{output}->option_exit();
-  }
+    if ($@) {
+        $self->{output}
+          ->add_option_msg( short_msg => "Cannot encode json request" );
+        $self->{output}->option_exit();
+    }
 
 }
 
-
 sub run {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-  $self->{http}->add_header(key => 'Accept', value => 'application/json');
-  $self->set_payload();
-  $self->format_payload();
-  my $url = 'https://api.telegram.org/bot' . $self->{option_results}->{bot_token}."/sendMessage";
-  my $response = $self->{http}->request(full_url => $url, method => 'POST', query_form_post => $self->{payload_str} );
-  my $telegram_response;
+    $self->{http}
+      ->add_header( key => 'Content-Type', value => 'application/json' );
+    $self->{http}->add_header( key => 'Accept', value => 'application/json' );
+    $self->set_payload();
+    $self->format_payload();
+    my $url =
+        'https://api.telegram.org/bot'
+      . $self->{option_results}->{bot_token}
+      . "/sendMessage";
+    my $response = $self->{http}->request(
+        full_url        => $url,
+        method          => 'POST',
+        query_form_post => $self->{payload_str}
+    );
+    my $telegram_response;
 
-  eval {
-    $telegram_response = decode_json($response);
-  };
-  if ($@) {
-    $telegram_response = {};
-    $self->{output}->output_add(severity => 'UNKNOWN',
-    short_msg => "Cannot decode json get Telegram response: $@");
-  }else{
+    eval { $telegram_response = decode_json($response); };
+    if ($@) {
+        $telegram_response = {};
+        $self->{output}->output_add(
+            severity  => 'UNKNOWN',
+            short_msg => "Cannot decode json get Telegram response: $@"
+        );
+    }
+    else {
 
-    $self->{output}->output_add(short_msg => ' message_id : ' . $telegram_response->{result}->{message_id});
-  }
-  $self->{output}->display(force_ignore_perfdata => 1);
-  $self->{output}->exit();
+        $self->{output}->output_add( short_msg => ' message_id : '
+              . $telegram_response->{result}->{message_id} );
+    }
+    $self->{output}->display( force_ignore_perfdata => 1 );
+    $self->{output}->exit();
 }
 
 1;
