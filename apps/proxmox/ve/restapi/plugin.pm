@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package apps::proxmox::ve::restapi::plugin;
 
@@ -26,29 +25,29 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
 
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
     $self->{version} = '0.5';
-    %{$self->{modes}} = (
-                         'vm-usage' => 'apps::proxmox::ve::restapi::mode::vmusage',
-                         'node-usage' => 'apps::proxmox::ve::restapi::mode::nodeusage',
-                         'storage-usage' => 'apps::proxmox::ve::restapi::mode::storageusage',
-                         'list-storages' => 'apps::proxmox::ve::restapi::mode::liststorages',
-                         'list-vms' => 'apps::proxmox::ve::restapi::mode::listvms',
-                         'list-nodes' => 'apps::proxmox::ve::restapi::mode::listnodes',
-                         'version' => 'apps::proxmox::ve::restapi::mode::version',
+    %{ $self->{modes} } = (
+        'vm-usage'      => 'apps::proxmox::ve::restapi::mode::vmusage',
+        'node-usage'    => 'apps::proxmox::ve::restapi::mode::nodeusage',
+        'storage-usage' => 'apps::proxmox::ve::restapi::mode::storageusage',
+        'list-storages' => 'apps::proxmox::ve::restapi::mode::liststorages',
+        'list-vms'      => 'apps::proxmox::ve::restapi::mode::listvms',
+        'list-nodes'    => 'apps::proxmox::ve::restapi::mode::listnodes',
+        'version'       => 'apps::proxmox::ve::restapi::mode::version',
 
-                         );
+    );
     $self->{custom_modes}{api} = 'apps::proxmox::ve::restapi::custom::api';
 
     return $self;
 }
 
 sub init {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
     $self->SUPER::init(%options);
 }

@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package apps::proxmox::ve::restapi::mode::version;
 
@@ -27,33 +26,37 @@ use strict;
 use warnings;
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options( arguments => {} );
     return $self;
 }
 
 sub check_options {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
     $self->SUPER::init(%options);
 }
+
 sub run {
-    my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
     my $result = $options{custom}->get_version();
-       $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $result );
-        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-        $self->{output}->exit();
+    $self->{output}->output_add(
+        severity  => 'OK',
+        short_msg => $result
+    );
+    $self->{output}->display(
+        nolabel               => 1,
+        force_ignore_perfdata => 1,
+        force_long_output     => 1
+    );
+    $self->{output}->exit();
 
 }
 
 1;
-
 
 =head1 MODE
 

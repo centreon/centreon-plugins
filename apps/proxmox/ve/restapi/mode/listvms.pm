@@ -27,66 +27,79 @@ use strict;
 use warnings;
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    bless $self, $class;
 
-  $self->{version} = '1.0';
-  $options{options}->add_options(arguments =>
-  {
-  });
-  return $self;
+    $self->{version} = '1.0';
+    $options{options}->add_options( arguments => {} );
+    return $self;
 }
 
 sub check_options {
-  my ($self, %options) = @_;
-  $self->SUPER::init(%options);
+    my ( $self, %options ) = @_;
+    $self->SUPER::init(%options);
 }
 
 sub manage_selection {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  $self->{vms} = $options{custom}->api_list_vms();
+    $self->{vms} = $options{custom}->api_list_vms();
 }
-
 
 sub run {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  $self->manage_selection(%options);
-  foreach my $vm_id (sort keys %{$self->{vms}}) {
-    $self->{output}->output_add(long_msg => '[id = ' . $vm_id . "] [name = '" . $self->{vms}->{$vm_id}->{Name} . "']" .
-    " [node = '" . $self->{vms}->{$vm_id}->{Node} . "']" .
-    " [state = '" . $self->{vms}->{$vm_id}->{State} . "']" .
-    " [vmid = '" . $self->{vms}->{$vm_id}->{Vmid} . "']" .
-    " [type = '" . $self->{vms}->{$vm_id}->{Type} . "']"
+    $self->manage_selection(%options);
+    foreach my $vm_id ( sort keys %{ $self->{vms} } ) {
+        $self->{output}->output_add( long_msg => '[id = '
+              . $vm_id
+              . "] [name = '"
+              . $self->{vms}->{$vm_id}->{Name} . "']"
+              . " [node = '"
+              . $self->{vms}->{$vm_id}->{Node} . "']"
+              . " [state = '"
+              . $self->{vms}->{$vm_id}->{State} . "']"
+              . " [vmid = '"
+              . $self->{vms}->{$vm_id}->{Vmid} . "']"
+              . " [type = '"
+              . $self->{vms}->{$vm_id}->{Type}
+              . "']" );
+    }
+
+    $self->{output}->output_add(
+        severity  => 'OK',
+        short_msg => 'List VMs:'
     );
-  }
-
-  $self->{output}->output_add(severity => 'OK',
-  short_msg => 'List VMs:');
-  $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-  $self->{output}->exit();
+    $self->{output}->display(
+        nolabel               => 1,
+        force_ignore_perfdata => 1,
+        force_long_output     => 1
+    );
+    $self->{output}->exit();
 }
-sub disco_format {
-  my ($self, %options) = @_;
 
-  $self->{output}->add_disco_format(elements => ['id', 'name', 'node' ,'status','type','vmid']);
+sub disco_format {
+    my ( $self, %options ) = @_;
+
+    $self->{output}->add_disco_format(
+        elements => [ 'id', 'name', 'node', 'status', 'type', 'vmid' ] );
 }
 
 sub disco_show {
-  my ($self, %options) = @_;
+    my ( $self, %options ) = @_;
 
-  $self->manage_selection(%options);
-  foreach my $vm_id (sort keys %{$self->{vms}}) {
-    $self->{output}->add_disco_entry(name => $self->{vms}->{$vm_id}->{Name},
-    node => $self->{vms}->{$vm_id}->{Node},
-    state => $self->{vms}->{$vm_id}->{State},
-    id => $vm_id,
-    type=> $self->{vms}->{$vm_id}->{Type},
-    vmid =>$self->{vms}->{$vm_id}->{Vmid},
-    );
-  }
+    $self->manage_selection(%options);
+    foreach my $vm_id ( sort keys %{ $self->{vms} } ) {
+        $self->{output}->add_disco_entry(
+            name  => $self->{vms}->{$vm_id}->{Name},
+            node  => $self->{vms}->{$vm_id}->{Node},
+            state => $self->{vms}->{$vm_id}->{State},
+            id    => $vm_id,
+            type  => $self->{vms}->{$vm_id}->{Type},
+            vmid  => $self->{vms}->{$vm_id}->{Vmid},
+        );
+    }
 }
 
 1;
