@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package apps::proxmox::ve::restapi::plugin;
 
@@ -31,17 +30,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.5';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'vm-usage' => 'apps::proxmox::ve::restapi::mode::vmusage',
-                         'node-usage' => 'apps::proxmox::ve::restapi::mode::nodeusage',
-                         'storage-usage' => 'apps::proxmox::ve::restapi::mode::storageusage',
-                         'list-storages' => 'apps::proxmox::ve::restapi::mode::liststorages',
-                         'list-vms' => 'apps::proxmox::ve::restapi::mode::listvms',
-                         'list-nodes' => 'apps::proxmox::ve::restapi::mode::listnodes',
-                         'version' => 'apps::proxmox::ve::restapi::mode::version',
-
+                            'list-nodes'        => 'apps::proxmox::ve::restapi::mode::listnodes',
+                            'list-storages'     => 'apps::proxmox::ve::restapi::mode::liststorages',
+                            'list-vms'          => 'apps::proxmox::ve::restapi::mode::listvms',
+                            'storage-usage'     => 'apps::proxmox::ve::restapi::mode::storageusage',
+                            'node-usage'        => 'apps::proxmox::ve::restapi::mode::nodeusage',
+                            'version'           => 'apps::proxmox::ve::restapi::mode::version',
+                            'vm-usage'          => 'apps::proxmox::ve::restapi::mode::vmusage',
                          );
+
     $self->{custom_modes}{api} = 'apps::proxmox::ve::restapi::custom::api';
 
     return $self;
@@ -59,11 +58,11 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Proxmox VE Ressources through its HTTPS Remote API
+Check Proxmox VE ressources through its HTTPS remote API.
 
-Doc can be check at https://pve.proxmox.com/pve-docs/api-viewer/
+API documentation can be checked at https://pve.proxmox.com/pve-docs/api-viewer/.
 
-Requirements: Proxmox VE 5.x
+Requirements: Proxmox VE 5.x.
 
 =over 8
 

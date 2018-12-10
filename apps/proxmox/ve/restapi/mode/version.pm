@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package apps::proxmox::ve::restapi::mode::version;
 
@@ -42,18 +41,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 }
+
 sub run {
     my ($self, %options) = @_;
     my $result = $options{custom}->get_version();
-       $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $result );
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => "Version is '" . $result . "'");
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
-
 }
 
 1;
-
 
 =head1 MODE
 

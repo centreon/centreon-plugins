@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package apps::proxmox::ve::restapi::mode::listnodes;
 
@@ -27,72 +26,71 @@ use strict;
 use warnings;
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-  $self->{version} = '1.0';
-  $options{options}->add_options(arguments =>
-  {
-  });
-  return $self;
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                {
+                                });
+    return $self;
 }
 
 sub check_options {
-  my ($self, %options) = @_;
-  $self->SUPER::init(%options);
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
 }
 
 sub manage_selection {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->{nodes} = $options{custom}->api_list_nodes();
+    $self->{nodes} = $options{custom}->api_list_nodes();
 }
 
-
 sub run {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->manage_selection(%options);
-  foreach my $node_id (sort keys %{$self->{nodes}}) {
-    $self->{output}->output_add(long_msg => '[id = ' . $node_id . "] " .
-    " [name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
-    " [state = '" . $self->{nodes}->{$node_id}->{State} . "']"
-    );
-  }
+    $self->manage_selection(%options);
+    foreach my $node_id (sort keys %{$self->{nodes}}) {
+        $self->{output}->output_add(long_msg => '[id = ' . $node_id . "] " .
+            " [name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
+            " [state = '" . $self->{nodes}->{$node_id}->{State} . "']"
+        );
+    }
 
-  $self->{output}->output_add(severity => 'OK',
-  short_msg => 'List Nodes:');
-  $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-  $self->{output}->exit();
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List Nodes:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
 }
 
 sub disco_format {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->{output}->add_disco_format(elements => ['id', 'name', 'state']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'state']);
 }
 
 sub disco_show {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->manage_selection(%options);
-  foreach my $node_id (sort keys %{$self->{nodes}}) {
-    $self->{output}->add_disco_entry(name => $self->{nodes}->{$node_id}->{Name},
-    status => $self->{nodes}->{$node_id}->{State},
-    id => $node_id,
-    );
-  }
+    $self->manage_selection(%options);
+    foreach my $node_id (sort keys %{$self->{nodes}}) {
+        $self->{output}->add_disco_entry(
+            name => $self->{nodes}->{$node_id}->{Name},
+            status => $self->{nodes}->{$node_id}->{State},
+            id => $node_id,
+        );
+    }
 }
 
 1;
 
 __END__
 
-
 =head1 MODE
 
-List Nodes on  Proxmox VE Cluster
+List nodes
 
 =over 8
 

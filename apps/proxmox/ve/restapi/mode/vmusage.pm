@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
+
 package apps::proxmox::ve::restapi::mode::vmusage;
 
 use base qw(centreon::plugins::templates::counter);
@@ -41,7 +41,7 @@ sub custom_status_threshold {
             eval "$instance_mode->{option_results}->{critical_vm_status}") {
             $status = 'critical';
         } elsif (defined($instance_mode->{option_results}->{warning_vm_status}) && $instance_mode->{option_results}->{warning_vm_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_vm_status}") {
+            eval "$instance_mode->{option_results}->{warning_vm_status}") {
             $status = 'warning';
         }
     };
@@ -95,7 +95,8 @@ sub custom_memory_perfdata {
 sub custom_memory_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
+                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -215,12 +216,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "vm-id:s"              => { name => 'vm_id' },
-                                  "vm-name:s"            => { name => 'vm_name' },
-                                  "filter-name:s"               => { name => 'filter_name' },
-                                  "use-name"                    => { name => 'use_name' },
-                                  "warning-vm-status:s"  => { name => 'warning_vm_status', default => '' },
-                                  "critical-vm-status:s" => { name => 'critical_vm_status', default => '' },
+                                  "vm-id:s"                 => { name => 'vm_id' },
+                                  "vm-name:s"               => { name => 'vm_name' },
+                                  "filter-name:s"           => { name => 'filter_name' },
+                                  "use-name"                => { name => 'use_name' },
+                                  "warning-vm-status:s"     => { name => 'warning_vm_status', default => '' },
+                                  "critical-vm-status:s"    => { name => 'critical_vm_status', default => '' },
                                 });
    $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
    return $self;
@@ -262,41 +263,42 @@ sub manage_selection {
 
     $self->{vms} = {};
     $self->{vms_traffic} = {};
-    my $result = $options{custom}->api_get_vms(vm_id => $self->{option_results}->{vm_id},
-       vm_name => $self->{option_results}->{vm_name}, statefile => $self->{statefile_cache_vms});
+
+    my $result = $options{custom}->api_get_vms(
+        vm_id => $self->{option_results}->{vm_id},
+        vm_name => $self->{option_results}->{vm_name},
+        statefile => $self->{statefile_cache_vms}
+    );
+
     foreach my $vm_id (keys %{$result}) {
         next if (!defined($result->{$vm_id}->{Stats}));
+
         my $name = $result->{$vm_id}->{Name};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-    #    if ($result->{$vm_id}->{Stats}->{type} eq "lxc") {
-          my $read_io = $result->{$vm_id}->{Stats}->{diskread};
-          my $write_io = $result->{$vm_id}->{Stats}->{diskwrite};
-          $self->{vms}->{$vm_id} = {
-              display => defined($self->{option_results}->{use_name}) ? $name : $vm_id,
-              name => $name,
-              state => $result->{$vm_id}->{State},
-              read_io => $read_io,
-              write_io => $write_io,
-              cpu_total_usage => $result->{$vm_id}->{Stats}->{cpu},
-              cpu_number => $result->{$vm_id}->{Stats}->{cpus},
-              memory_usage => $result->{$vm_id}->{Stats}->{mem},
-              memory_total => $result->{$vm_id}->{Stats}->{maxmem},
-              swap_usage => $result->{$vm_id}->{Stats}->{swap},
-              swap_total => $result->{$vm_id}->{Stats}->{maxswap},
-            };
-            $self->{vms_traffic}->{$name} = {
+
+        $self->{vms}->{$vm_id} = {
+            display => defined($self->{option_results}->{use_name}) ? $name : $vm_id,
+            name => $name,
+            state => $result->{$vm_id}->{State},
+            read_io => $result->{$vm_id}->{Stats}->{diskread},
+            write_io => $result->{$vm_id}->{Stats}->{diskwrite},
+            cpu_total_usage => $result->{$vm_id}->{Stats}->{cpu},
+            cpu_number => $result->{$vm_id}->{Stats}->{cpus},
+            memory_usage => $result->{$vm_id}->{Stats}->{mem},
+            memory_total => $result->{$vm_id}->{Stats}->{maxmem},
+            swap_usage => $result->{$vm_id}->{Stats}->{swap},
+            swap_total => $result->{$vm_id}->{Stats}->{maxswap},
+        };
+        $self->{vms_traffic}->{$name} = {
             display => $name,
-            traffic_in => $result->{$vm_id}->{Stats}->{netin}*8,
-            traffic_out => $result->{$vm_id}->{Stats}->{netout}*8
-            };
-            }
-    #}
-
-
+            traffic_in => $result->{$vm_id}->{Stats}->{netin} * 8,
+            traffic_out => $result->{$vm_id}->{Stats}->{netout} * 8
+        };
+    }
 
     if (scalar(keys %{$self->{vms}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No vm found.");
@@ -312,7 +314,6 @@ sub manage_selection {
 }
 
 1;
-
 
 =head1 MODE
 
