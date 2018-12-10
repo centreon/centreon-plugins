@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Data::Dumper;
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
