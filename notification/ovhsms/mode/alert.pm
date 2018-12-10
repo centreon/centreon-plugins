@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package notification::ovhsms::mode::alert;
 
@@ -26,87 +25,111 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON;
-
-my $ovh_url='https://www.ovh.com/cgi-bin/sms/http2sms.cgi';
-
+use JSON::XS;
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-  $self->{version} = '1.0';
-  $options{options}->add_options(arguments =>
-  {
-    "account:s"   => { name => 'account' },
-    "username:s"      => { name => 'username' },
-    "password:s"      => { name => 'password' },
-    "phonenumber:s"   => { name => 'phonenumber' },
-    "message:s"       => { name => 'message' },
-    "nostop:s"        => { name => 'nostop',default => 1 },
-    "from:s"          => { name => 'from'},
-    "class:s"        => { name => 'class' ,default => 1 },
-    "proxyurl:s"      => { name => 'proxyurl' },
-    "proxypac:s"      => { name => 'proxypac' },
-    "timeout:s"       => { name => 'timeout' },
-    "ssl-opt:s@"      => { name => 'ssl_opt' },
-  });
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments =>
+                                {
+                                    "hostname:s"        => { name => 'hostname', default => 'www.ovh.com' },
+                                    "port:s"            => { name => 'port', default => 443 },
+                                    "proto:s"           => { name => 'proto', default => 'https' },
+                                    "urlpath:s"         => { name => 'url_path', default => "/cgi-bin/sms/http2sms.cgi" },
+                                    "account:s"         => { name => 'account' },
+                                    "login:s"           => { name => 'login' },
+                                    "password:s"        => { name => 'password' },
+                                    "from:s"            => { name => 'from'},
+                                    "to:s"              => { name => 'to' },
+                                    "message:s"         => { name => 'message' },
+                                    "class:s"           => { name => 'class', default => 1 },
+                                    "nostop:s"          => { name => 'nostop', default => 1 },
+                                    "smscoding:s"       => { name => 'smscoding', default => 1 },
+                                    "proxyurl:s"        => { name => 'proxyurl' },
+                                    "proxypac:s"        => { name => 'proxypac' },
+                                    "timeout:s"         => { name => 'timeout' },
+                                    "ssl-opt:s@"        => { name => 'ssl_opt' },
+                                });
 
-  $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(output => $self->{output});
 
-  return $self;
+    return $self;
 }
 
 
 sub check_options {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->SUPER::init(%options);
-  if ((!defined($self->{option_results}->{username}) && !defined($self->{option_results}->{password}))) {
-    $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= option");
-    $self->{output}->option_exit();
-  }
+    $self->SUPER::init(%options);
+    if (!defined($self->{option_results}->{account})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --account option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{login})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --login option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{password})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --password option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{from})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --from option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{to})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --to option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{message})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
+        $self->{output}->option_exit();
+    }
 
-  if (!defined($self->{option_results}->{account})) {
-    $self->{output}->add_option_msg(short_msg => "Please set the --account option");
-    $self->{output}->option_exit();
-  }
-
-  if (!defined($self->{option_results}->{phonenumber})) {
-    $self->{output}->add_option_msg(short_msg => "Please set the --phonenumber option");
-    $self->{output}->option_exit();
-  }
-
-  $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
-
+    $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub run {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-  $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
-  $self->{http}->add_header(key => 'Accept', value => 'text/xml');
+    $self->{http}->add_header(key => 'Content-Type', value => 'text/plain');
+    $self->{http}->add_header(key => 'Accept', value => 'text/plain');
 
-  my $sms_arg={};
+    my $sms_arg = {};
 
-  $sms_arg->{account} = $self->{option_results}->{account};
-  $sms_arg->{login} = $self->{option_results}->{username};
-  $sms_arg->{password} = $self->{option_results}->{password};
-  $sms_arg->{to} = $self->{option_results}->{phonenumber};
-  $sms_arg->{noStop} = $self->{option_results}->{nostop};
-  $sms_arg->{class} = $self->{option_results}->{class};
-  $sms_arg->{from} = $self->{option_results}->{from};
-  $sms_arg->{message} = $self->{option_results}->{message};
+    $sms_arg->{account} = $self->{option_results}->{account};
+    $sms_arg->{login} = $self->{option_results}->{login};
+    $sms_arg->{password} = $self->{option_results}->{password};
+    $sms_arg->{to} = $self->{option_results}->{to};
+    $sms_arg->{from} = $self->{option_results}->{from};
+    $sms_arg->{message} = $self->{option_results}->{message};
+    $sms_arg->{class} = $self->{option_results}->{class};
+    $sms_arg->{noStop} = $self->{option_results}->{nostop};
+    $sms_arg->{contentType} = 'application/json';
+    $sms_arg->{smsCoding} = $self->{option_results}->{smscoding};
 
+    my $response = $self->{http}->request(method => 'GET', get_params => $sms_arg);
+    
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $response, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    if (defined($decoded->{status}) && ($decoded->{status} < 100 || $decoded->{status} >= 200)) {
+        $self->{output}->add_option_msg(short_msg => "API returned status '" . $decoded->{status} . "' and message '" . $decoded->{message} . "'");
+        $self->{output}->option_exit();
+    }
 
-  my $url = $ovh_url;
-  print Dumper($sms_arg);
-  my $response = $self->{http}->request(full_url => $url,  get_params =>$sms_arg, method => 'GET');
-
-  $self->{output}->output_add(short_msg => 'push_id : ' . $response);
-  $self->{output}->display(force_ignore_perfdata => 1);
-  $self->{output}->exit();
+    $self->{output}->output_add(short_msg => 'SmsIds : ' . join(', ', @{$decoded->{SmsIds}}));
+    $self->{output}->display(force_ignore_perfdata => 1);
+    $self->{output}->exit();
 }
 
 1;
@@ -115,30 +138,69 @@ __END__
 
 =head1 MODE
 
-Send SMS with OVH API.
-https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_une_url_-_http2sms/
+Send SMS with OVH API (https://docs.ovh.com/fr/sms/envoyer_des_sms_depuis_une_url_-_http2sms/)
 
 =over 6
 
+=item B<--hostname>
+
+Hostname of the OVH SMS API (Default: 'www.ovh.com')
+
+=item B<--port>
+
+Port used by API (Default: '443')
+
+=item B<--proto>
+
+Specify https if needed (Default: 'https').
+
+=item B<--urlpath>
+
+Set path to the SMS API (Default: '/cgi-bin/sms/http2sms.cgi').
+
 =item B<--proxyurl>
 
-Proxy URL
+Proxy URL if any.
 
 =item B<--proxypac>
 
-Proxy pac file (can be an url or local file)
+Proxy pac file (can be an url or local file).
 
 =item B<--account>
 
 Specify SMS Account for API authentification.
 
-=item B<--username>
+=item B<--login>
 
-Specify username for API authentification.
+Specify login for API authentification.
 
 =item B<--password>
 
 Specify password for API authentification.
+
+=item B<--from>
+
+Specify sender linked to account.
+
+=item B<--to>
+
+Specify receiver phone number (format 00336xxxx for French Number).
+
+=item B<--message>
+
+Specify the message to send.
+
+=item B<--class>
+
+Specify the class of message. (Default : '1').
+
+=item B<--nostop>
+
+Specify the nostop option. (Default : '1').
+
+=item B<--smsdoding>
+
+Specify the coding of message. (Default : '1').
 
 =item B<--timeout>
 
@@ -146,19 +208,7 @@ Threshold for HTTP timeout
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
-
-=item B<--phonenumber>
-
-Specify phone number (format 00336xxxx for French Number)
-
-=item B<--message>
-
-Specify the message to send.
-
-=item B<--sender>
-
-Specify the sender Name . It is mandatory to create it before on OVH Console.
+Set SSL options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

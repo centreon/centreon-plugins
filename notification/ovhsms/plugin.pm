@@ -17,7 +17,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Contribution of YPSI SAS - (http://www.ypsi.fr)
 
 package notification::ovhsms::plugin;
 
@@ -26,16 +25,16 @@ use warnings;
 use base qw(centreon::plugins::script_simple);
 
 sub new {
-  my ($class, %options) = @_;
-  my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-  bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-  $self->{version} = '0.1';
-  %{$self->{modes}} = (
-  'alert'    => 'notification::ovhsms::mode::alert',
-  );
+    $self->{version} = '1.0';
+    %{$self->{modes}} = (
+        'alert'    => 'notification::ovhsms::mode::alert',
+    );
 
-  return $self;
+    return $self;
 }
 
 1;
@@ -44,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Send SMS via OVH API notifications.
+Send SMS via OVH SMS API.
 
 =cut
