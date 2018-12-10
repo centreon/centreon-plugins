@@ -121,7 +121,7 @@ sub check_options {
             $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
         }
     }
-    
+
     $self->{ssl_context} = '';
     if (!defined($options{request}->{ssl_opt})) {
         $options{request}->{ssl_opt} = [];
@@ -238,8 +238,8 @@ sub request {
     }
 
     my $uri = URI->new($url);
-    if (defined($self->{get_params})) {
-        $uri->query_form($self->{get_params});
+    if (defined($request_options->{get_params})) {
+        $uri->query_form($request_options->{get_params});
     }
     $req = HTTP::Request->new($request_options->{method}, $uri);
 
