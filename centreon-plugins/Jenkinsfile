@@ -8,6 +8,11 @@ stage('Source') {
     source = readProperties file: 'source.properties'
     env.VERSION = "${source.VERSION}"
     env.RELEASE = "${source.RELEASE}"
+    if (env.BRANCH_NAME == 'master') {
+      withSonarQubeEnv('SonarQube') {
+        sh './centreon-build/jobs/plugins/plugins-analysis.sh'
+      }
+    }
   }
 }
 
