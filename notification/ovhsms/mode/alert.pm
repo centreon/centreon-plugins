@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-
+use Data::Dumper;
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -112,7 +112,7 @@ sub run {
     $sms_arg->{smsCoding} = $self->{option_results}->{smscoding};
 
     my $response = $self->{http}->request(method => 'GET', get_params => $sms_arg);
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($response);
@@ -127,7 +127,7 @@ sub run {
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(short_msg => 'SmsIds : ' . join(', ', @{$decoded->{SmsIds}}));
+    $self->{output}->output_add(short_msg => 'smsIds : ' . join(', ', @{$decoded->{smsIds}}));
     $self->{output}->display(force_ignore_perfdata => 1);
     $self->{output}->exit();
 }
