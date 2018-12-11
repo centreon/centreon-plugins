@@ -53,11 +53,11 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $vm_id (sort keys %{$self->{vms}}) {
-        $self->{output}->output_add(long_msg => '[id = ' . $vm_id . "] [name = '" . $self->{vms}->{$vm_id}->{Name} . "']" .
-            " [node = '" . $self->{vms}->{$vm_id}->{Node} . "']" .
-            " [state = '" . $self->{vms}->{$vm_id}->{State} . "']" .
-            " [vmid = '" . $self->{vms}->{$vm_id}->{Vmid} . "']" .
-            " [type = '" . $self->{vms}->{$vm_id}->{Type} . "']"
+        $self->{output}->output_add(long_msg => '[id = ' . $vm_id . "][name = '" . $self->{vms}->{$vm_id}->{Name} . "']" .
+            "[node = '" . $self->{vms}->{$vm_id}->{Node} . "']" .
+            "[state = '" . $self->{vms}->{$vm_id}->{State} . "']" .
+            "[vmid = '" . $self->{vms}->{$vm_id}->{Vmid} . "']" .
+            "[type = '" . $self->{vms}->{$vm_id}->{Type} . "']"
         );
     }
 

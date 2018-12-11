@@ -53,10 +53,10 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $storage_id (sort keys %{$self->{storages}}) {
-        $self->{output}->output_add(long_msg => '[id = ' . $storage_id . "] " .
-            " [name = '" . $self->{storages}->{$storage_id}->{Name} . "']" .
-            " [node = '" . $self->{storages}->{$storage_id}->{Node} . "']" .
-            " [state = '" . $self->{storages}->{$storage_id}->{State} . "']"
+        $self->{output}->output_add(long_msg => '[id = ' . $storage_id . "]" .
+            "[name = '" . $self->{storages}->{$storage_id}->{Name} . "']" .
+            "[node = '" . $self->{storages}->{$storage_id}->{Node} . "']" .
+            "[state = '" . $self->{storages}->{$storage_id}->{State} . "']"
         );
     }
 
