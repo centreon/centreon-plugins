@@ -53,9 +53,9 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $node_id (sort keys %{$self->{nodes}}) {
-        $self->{output}->output_add(long_msg => '[id = ' . $node_id . "] " .
-            " [name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
-            " [state = '" . $self->{nodes}->{$node_id}->{State} . "']"
+        $self->{output}->output_add(long_msg => '[id = ' . $node_id . "]" .
+            "[name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
+            "[state = '" . $self->{nodes}->{$node_id}->{State} . "']"
         );
     }
 
