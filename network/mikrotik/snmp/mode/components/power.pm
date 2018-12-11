@@ -18,13 +18,13 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::components::voltage;
+package network::mikrotik::snmp::mode::components::power;
 
 use strict;
 use warnings;
 
 my $mapping = {
-    mtxrHlVoltage => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' },
+    mtxrHlPower => { oid => '.1.3.6.1.4.1.14988.1.1.3.12' },
 };
 
 my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
@@ -38,28 +38,28 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking voltage");
-    $self->{components}->{voltage} = {name => 'voltage', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'voltage'));
+    $self->{output}->output_add(long_msg => "Checking power");
+    $self->{components}->{power} = {name => 'power', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'power'));
     
     my $instance = 0;
     my ($exit, $warn, $crit, $checked);
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_mtxrHealth}, instance => $instance);
     
-    if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
+    if (defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
         
-        $self->{output}->output_add(long_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
+        $self->{output}->output_add(long_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower}));
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{mtxrHlVoltage} / 10);
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'power', instance => $instance, value => $result->{mtxrHlPower});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
+                                        short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower}));
         }
-        $self->{output}->perfdata_add(label => 'voltage', unit => 'V', 
-                                      value => $result->{mtxrHlVoltage} / 10,
+        $self->{output}->perfdata_add(label => 'power', unit => 'W', 
+                                      value => $result->{mtxrHlPower},
                                       warning => $warn,
                                       critical => $crit);
-        $self->{components}->{voltage}->{total}++;
+        $self->{components}->{power}->{total}++;
     }
 }
 

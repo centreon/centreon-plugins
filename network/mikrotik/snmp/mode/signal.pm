@@ -75,8 +75,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "strength:s" =>  { name => "strength" },
-                                    "noise:s"    =>  { name => "noise" }
+                                    "strength"  =>  { name => "strength" },
+                                    "noise"     =>  { name => "noise" }
                                 });
     
     return $self;
@@ -89,10 +89,10 @@ sub prefix_mac_output {
 }
 
 my $mapping = {
-    regmac      => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.1' },
-    rx          => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.3' },
-    tx          => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.19' },
-    regs2n      => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.12' },
+    regmac => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.1' },
+    rx => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.3' },
+    tx => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.19' },
+    regs2n => { oid => '.1.3.6.1.4.1.14988.1.1.1.2.1.12' },
 };
 
 sub manage_selection {
@@ -103,7 +103,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $oids = [$mapping->{regmac}];
+    my $oids = [ $mapping->{regmac} ];
     
     if(defined($self->{option_results}->{strength})){
         push @{$oids}, ($mapping->{rx}, $mapping->{tx});
@@ -184,11 +184,11 @@ Gets values for signal strength
 
 =item B<--warning-*>
 
-Can be rx, tx or regs2n
+Can be rx-strength, tx-strength or signal2noise
 
 =item B<--critical-*>
 
-Can be rx, tx or regs2n
+Can be rx-strength, tx-strength or signal2noise
 
 =back
 

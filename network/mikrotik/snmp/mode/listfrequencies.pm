@@ -46,9 +46,13 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
 sub run {
     my ($self, %options) = @_;
-
     
     my $oids = [{ oid => $self->{oids_label}->{'ifname'} }];
     $self->{snmp} = $options{snmp};
@@ -91,13 +95,10 @@ sub run {
 
 sub get_display_value {
     my ($self, %options) = @_;
+
     my $value = $self->{datas}->{"ifname_" . $options{id}};
     return $value;
 }
-
-
-
-sub check_options {}
 
 1;
 
@@ -105,7 +106,7 @@ __END__
 
 =head1 MODE
 
-Lists frequencies for each interface.
+List frequencies for each interface.
 
 =over 8
 

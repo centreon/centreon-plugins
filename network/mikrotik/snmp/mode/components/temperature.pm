@@ -23,51 +23,58 @@ package network::mikrotik::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-
 my $mapping = {
-    overallTemp   => { oid => '.1.3.6.1.4.1.14988.1.1.3.10' },
-    cpuTemp       => { oid => '.1.3.6.1.4.1.14988.1.1.3.11' },
+    mtxrHlTemperature => { oid => '.1.3.6.1.4.1.14988.1.1.3.10' },
+    mtxrHlProcessorTemperature => { oid => '.1.3.6.1.4.1.14988.1.1.3.11' },
 };
+
+my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, ($mapping->{overallTemp}, $mapping->{cpuTemp});
+    push @{$self->{request}}, { oid => $oid_mtxrHealth };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    $self->{output}->output_add(long_msg => "Checking temperature");
+    $self->{components}->{temperature} = {name => 'temperature', total => 0, skip => 0};
     return if ($self->check_filter(section => 'temperature'));
+    
     my $instance = 0;
     my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_mtxrHealth}, instance => $instance);
+    
+    if (defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
+        
+        $self->{output}->output_add(long_msg => sprintf("Temperature is '%s' C", $result->{mtxrHlTemperature} / 10));
 
-    ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{overallTemp}/10);
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Overall Temperature is '%s' °C", $result->{overallTemp}/10));
-    }
-    $self->{output}->perfdata_add(label => 'overall_temp', unit => 'C', 
-                                  value => $result->{overallTemp}/10,
-                                  warning => $warn,
-                                  critical => $crit,
-                                  );
-    $self->{components}->{temperature}->{total}++;
-
-    if(defined($result->{cpuTemp}) && $result->{cpuTemp} > 0) {
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{cpuTemp}/10);
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => '1', value => $result->{mtxrHlTemperature} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("CPU Temperature is '%s' °C", $result->{cpuTemp}/10));
+                                        short_msg => sprintf("Temperature is '%s' C", $result->{mtxrHlTemperature} / 10));
         }
-        $self->{output}->perfdata_add(label => 'cpu_temp', unit => 'C', 
-                                    value => $result->{cpuTemp}/10,
-                                    warning => $warn,
-                                    critical => $crit,
-                                    );
+        $self->{output}->perfdata_add(label => 'temperature', unit => 'C', 
+                                      value => $result->{mtxrHlTemperature} / 10,
+                                      warning => $warn,
+                                      critical => $crit);
+        $self->{components}->{temperature}->{total}++;
+    }
+    if (defined($result->{mtxrHlProcessorTemperature}) && $result->{mtxrHlProcessorTemperature} =~ /[0-9]+/) {
+        
+        $self->{output}->output_add(long_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10));
+
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => '2', value => $result->{mtxrHlProcessorTemperature} / 10);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10));
+        }
+        $self->{output}->perfdata_add(label => 'temperature_processor', unit => 'C', 
+                                      value => $result->{mtxrHlProcessorTemperature} / 10,
+                                      warning => $warn,
+                                      critical => $crit);
         $self->{components}->{temperature}->{total}++;
     }
 }

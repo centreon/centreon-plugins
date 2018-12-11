@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::hardware;
+package network::mikrotik::snmp::mode::environment;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -28,12 +28,12 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan|current|power)$';
     
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['voltage', 'temperature', 'fan'];
+    $self->{components_module} = ['current', 'fan', 'power', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {

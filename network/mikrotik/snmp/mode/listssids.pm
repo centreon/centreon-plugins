@@ -46,10 +46,14 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+}
+
 sub run {
     my ($self, %options) = @_;
-
-    
+  
     my $oids = [{ oid => $self->{oids_label}->{'ifname'} }];
     $self->{snmp} = $options{snmp};
     my $interfaceTables = $self->{snmp}->get_multiple_table(oids => $oids);
@@ -71,7 +75,7 @@ sub run {
         $self->{output}->option_exit();
     }
     
-    my $mktFrequenOid = '.1.3.6.1.4.1.14988.1.1.1.3.1.4.';
+    my $mktFrequenOid = '.1.3.6.1.4.1.14988.1.1.1.3.1.4';
 
     foreach (sort @{$self->{datas}->{all_ids}}) {
         my $display_value = $self->get_display_value(id => $_);
@@ -91,13 +95,10 @@ sub run {
 
 sub get_display_value {
     my ($self, %options) = @_;
+
     my $value = $self->{datas}->{"ifname_" . $options{id}};
     return $value;
 }
-
-
-
-sub check_options {}
 
 1;
 
@@ -105,7 +106,7 @@ __END__
 
 =head1 MODE
 
-lists ssids for each interface.
+List SSIDs for each interface.
 
 =over 8
 
