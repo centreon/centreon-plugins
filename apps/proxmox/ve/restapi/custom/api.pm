@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON:XS;
+use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -98,6 +98,9 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8006;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
+    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
+    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
     $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pam';
@@ -185,7 +188,7 @@ sub get_ticket {
             $self->{output}->option_exit();
         }
         if (!defined($decoded->{data}->{ticket})) {
-            $self->{output}->output_add(long_msg => $decoded, debug => 1);
+            $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Error retrieving ticket");
             $self->{output}->option_exit();
         }
