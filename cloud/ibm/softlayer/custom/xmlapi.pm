@@ -186,9 +186,16 @@ sub get_endpoint {
 
     my $response = $self->{http}->request(url_path => $self->{url_path} . '/' . $options{service}, method => 'POST', query_form_post => $content);
     
-    my $xml_hash = XMLin($response);
+    my $xml_hash = XMLin($response, ForceArray => ['item']);
+
+    if (defined($xml_hash->{'SOAP-ENV:Body'}->{'SOAP-ENV:Fault'})) {
+        $self->{output}->output_add(long_msg => "Returned message: " . $response, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "API returned error code '" . $xml_hash->{'SOAP-ENV:Body'}->{'SOAP-ENV:Fault'}->{faultcode} . 
+            "' with message '" . $xml_hash->{'SOAP-ENV:Body'}->{'SOAP-ENV:Fault'}->{faultstring} . "'");
+        $self->{output}->option_exit();
+    }
     
-    return $xml_hash->{'SOAP-ENV:Header'}, $xml_hash->{'SOAP-ENV:Body'};
+    return $xml_hash->{'SOAP-ENV:Body'};
 }
 
 1;

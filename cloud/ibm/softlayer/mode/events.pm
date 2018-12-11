@@ -179,7 +179,7 @@ sub manage_selection {
     my $current_time = time();
     
     my %status_hash;
-    my (undef, $events) = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getAllObjects', extra_content => '');
+    my $events = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getAllObjects', extra_content => '');
     foreach my $event (@{$events->{'ns1:getAllObjectsResponse'}->{'getAllObjectsReturn'}->{'item'}}) {
         my $status;
         $status = $event->{statusCode}->{name}->{content} if (defined($event->{statusCode}->{name}->{content}));
@@ -192,7 +192,7 @@ sub manage_selection {
   <id>' . $event->{id}->{content} . '</id>
 </slapi:SoftLayer_Notification_Occurrence_EventInitParameters>';
 
-        my (undef, $ressources) = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getImpactedResources', extra_content => $extra_content);
+        my $ressources = $options{custom}->get_endpoint(service => 'SoftLayer_Notification_Occurrence_Event', method => 'getImpactedResources', extra_content => $extra_content);
         my $items = 0;
         if (defined($ressources->{'ns1:getImpactedResourcesResponse'}->{'getImpactedResourcesReturn'}->{'item'})) {
             $items = 1;
