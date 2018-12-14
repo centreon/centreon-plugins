@@ -43,6 +43,9 @@ sub new {
         $options{options}->add_options(arguments => 
                     {
                         "subscription:s"      => { name => 'subscription' },
+                        "tenant:s"            => { name => 'tenant' },
+                        "client-id:s"         => { name => 'client_id' },
+                        "client-secret:s"     => { name => 'client_secret' },
                         "timeframe:s"         => { name => 'timeframe' },
                         "interval:s"          => { name => 'interval' },
                         "aggregation:s@"      => { name => 'aggregation' },
