@@ -187,8 +187,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-       $self->{output}->add_option_msg(short_msg => "Need to specify --hostname.");
-       $self->{output}->option_exit();
+       $self->{option_results}->{remote} = 1;
     }
 
     $instance_mode = $self;
