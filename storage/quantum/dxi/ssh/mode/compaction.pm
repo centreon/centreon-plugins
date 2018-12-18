@@ -167,11 +167,6 @@ sub new {
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"          => { name => 'hostname' },
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{compaction_status} !~ /ready/i' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
                                   "ssh-option:s@"       => { name => 'ssh_option' },
                                   "ssh-path:s"          => { name => 'ssh_path' },
                                   "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
@@ -180,6 +175,8 @@ sub new {
                                   "command:s"           => { name => 'command', default => 'syscli' },
                                   "command-path:s"      => { name => 'command_path' },
                                   "command-options:s"   => { name => 'command_options', default => '--getstatus compaction' },
+                                  "warning-status:s"    => { name => 'warning_status', default => '' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{compaction_status} !~ /ready/i' },
                                 });
     
     return $self;
