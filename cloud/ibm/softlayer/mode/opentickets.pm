@@ -161,7 +161,7 @@ sub manage_selection {
         $groups_hash{$group->{id}->{content}} = $group->{name}->{content};
 
         if (defined($self->{option_results}->{ticket_group}) && $self->{option_results}->{ticket_group} ne '' && 
-            $group->{name}->{content} =~ /$self->{option_results}->{ticket_group}/) {
+            $group->{name}->{content} =~ /^$self->{option_results}->{ticket_group}$/) {
             $group_id = $group->{id}->{content};
         }
     }
