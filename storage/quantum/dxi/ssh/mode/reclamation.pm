@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::quantum::dxi::ssh::mode::compaction;
+package storage::quantum::dxi::ssh::mode::reclamation;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -54,14 +54,14 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'Compaction status: ' . $self->{result_values}->{compaction_status};
+    my $msg = 'Reclamation status: ' . $self->{result_values}->{reclamation_status};
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{compaction_status} = $options{new_datas}->{$self->{instance} . '_compaction_status'};
+    $self->{result_values}->{reclamation_status} = $options{new_datas}->{$self->{instance} . '_reclamation_status'};
     return 0;
 }
 
@@ -127,35 +127,44 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'compaction_status' } ],
+                key_values => [ { name => 'reclamation_status' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'status-progress', set => {
-                key_values => [ { name => 'status_progress' } ],
-                output_template => 'Status progress: %.2f %%',
+        { label => 'stage-status-progress', set => {
+                key_values => [ { name => 'stage_status_progress' } ],
+                output_template => 'Stage Status progress: %.2f %%',
                 perfdatas => [
-                    { label => 'status_progress', value => 'status_progress_absolute', template => '%.2f',
+                    { label => 'stage_status_progress', value => 'stage_status_progress_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
         },
-        { label => 'compacted', set => {
-                key_values => [ { name => 'compacted' } ],
+        { label => 'total-progress', set => {
+                key_values => [ { name => 'total_progress' } ],
+                output_template => 'Total progress: %.2f %%',
+                perfdatas => [
+                    { label => 'total_progress', value => 'total_progress_absolute', template => '%.2f',
+                      unit => '%', min => 0, max => 100 },
+                ],
+            }
+        },
+        { label => 'data-scanned', set => {
+                key_values => [ { name => 'data_scanned' } ],
                 closure_custom_calc => $self->can('custom_volume_calc'),
-                closure_custom_calc_extra_options => { label_ref => 'compacted', display_ref => 'Compacted' },
+                closure_custom_calc_extra_options => { label_ref => 'data_scanned', display_ref => 'Data Scanned' },
                 closure_custom_output => $self->can('custom_volume_output'),
                 closure_custom_perfdata => $self->can('custom_volume_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_volume_threshold'),
             }
         },
-        { label => 'still-to-compact', set => {
-                key_values => [ { name => 'still_to_compact' } ],
+        { label => 'reclaimable-space', set => {
+                key_values => [ { name => 'reclaimable_space' } ],
                 closure_custom_calc => $self->can('custom_volume_calc'),
-                closure_custom_calc_extra_options => { label_ref => 'still_to_compact', display_ref => 'Still to compact' },
+                closure_custom_calc_extra_options => { label_ref => 'reclaimable_space', display_ref => 'Reclaimable Space' },
                 closure_custom_output => $self->can('custom_volume_output'),
                 closure_custom_perfdata => $self->can('custom_volume_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_volume_threshold'),
@@ -180,9 +189,9 @@ sub new {
                                   "sudo"                => { name => 'sudo' },
                                   "command:s"           => { name => 'command', default => 'syscli' },
                                   "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus compaction' },
+                                  "command-options:s"   => { name => 'command_options', default => '--getstatus reclamation' },
                                   "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{compaction_status} !~ /ready/i' },
+                                  "critical-status:s"   => { name => 'critical_status', default => '%{reclamation_status} !~ /ready/i' },
                                 });
     
     return $self;
@@ -223,18 +232,21 @@ sub manage_selection {
                                                                 command_options => $self->{option_results}->{command_options},
                                                                 );
     # Output data:
-    #    Compaction Status = Ready
-    #    Status Progress = 0 %
-    #    Start Time =
-    #    End Time =
-    #    Compacted = 12.00 MB
-    #    Still to compact = 123.00 MB
+    #    Reclamation Status =
+    #    Stage Status Progress = 100 %
+    #    Total Progress = 100 %
+    #    Start Time = Sun Dec 16 15:30:00 2018
+    #    End Time = Sun Dec 16 16:08:57 2018
+    #    Data Scanned = 8.12 TB
+    #    Number of Stages = 2
+    #    Reclaimable Space = 187.87 GB
 
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{compaction_status} = $1 if ($_ =~ /.*Compaction\sStatus\s=\s(.*)$/i);
-        $self->{global}->{status_progress} = $1 if ($_ =~ /.*Status\sProgress\s=\s(.*)\s%$/i);
-        $self->{global}->{compacted} = $1 if ($_ =~ /.*Compacted\s=\s(.*)$/i);
-        $self->{global}->{still_to_compact} = $1 if ($_ =~ /.*Still\sto\scompact\s=\s(.*)$/i);
+        $self->{global}->{reclamation_status} = $1 if ($_ =~ /.*Reclamation\sStatus\s=\s(.*)$/i);
+        $self->{global}->{stage_status_progress} = $1 if ($_ =~ /.*Stage\sStatus\sProgress\s=\s(.*)\s%$/i);
+        $self->{global}->{total_progress} = $1 if ($_ =~ /.*Total\sProgress\s=\s(.*)\s%$/i);
+        $self->{global}->{data_scanned} = $1 if ($_ =~ /.*Data\sScanned\s=\s(.*)$/i);
+        $self->{global}->{reclaimable_space} = $1 if ($_ =~ /.*Reclaimable\sSpace\s=\s(.*)$/i);
     }
 }
 
@@ -244,7 +256,7 @@ __END__
 
 =head1 MODE
 
-Check compaction status and volumes.
+Check reclamation status and volumes.
 
 =over 8
 
@@ -260,12 +272,12 @@ Example: --filter-counters='status'
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{compaction_status}
+Can used special variables like: %{reclamation_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{compaction_status} !~ /ready/i').
-Can used special variables like: %{compaction_status}
+Set critical threshold for status (Default: '%{reclamation_status} !~ /ready/i').
+Can used special variables like: %{reclamation_status}
 
 =item B<--warning-*>
 
@@ -307,7 +319,7 @@ Command path.
 
 =item B<--command-options>
 
-Command options (Default: '--getstatus compaction').
+Command options (Default: '--getstatus reclamation').
 
 =back
 

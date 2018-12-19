@@ -276,8 +276,6 @@ sub manage_selection {
     #	    Deduplicated Data = 501.95 GB  5.02%
     #	    System Metadata = 147.83 GB  1.48%
     #	    Data Not Intended for Deduplication = 0.00 MB  0.00%
-    #
-    # Command completed successfully.
 
     foreach (split(/\n/, $stdout)) {
         $self->{global}->{disk_capacity} = $1 if ($_ =~ /.*Disk\sCapacity\s=\s(.*)$/i);

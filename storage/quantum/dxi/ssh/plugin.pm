@@ -31,9 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'compaction'    => 'storage::quantum::dxi::ssh::mode::compaction',
-                            'disk-usage'    => 'storage::quantum::dxi::ssh::mode::diskusage',
-                            'reduction'     => 'storage::quantum::dxi::ssh::mode::reduction',
+                            'compaction'                => 'storage::quantum::dxi::ssh::mode::compaction',
+                            'disk-usage'                => 'storage::quantum::dxi::ssh::mode::diskusage',
+                            'hostbus-adapter-status'    => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',
+                            'health'                    => 'storage::quantum::dxi::ssh::mode::health',
+                            'memory'                    => 'storage::quantum::dxi::ssh::mode::memory',
+                            'network'                   => 'storage::quantum::dxi::ssh::mode::network',
+                            'reclamation'               => 'storage::quantum::dxi::ssh::mode::reclamation',
+                            'reduction'                 => 'storage::quantum::dxi::ssh::mode::reduction',
+                            'storage-array-status'      => 'storage::quantum::dxi::ssh::mode::storagearraystatus',
+                            'system-status'             => 'storage::quantum::dxi::ssh::mode::systemstatus',
+                            'throughput'                => 'storage::quantum::dxi::ssh::mode::throughput',
                         );
 
     return $self;
