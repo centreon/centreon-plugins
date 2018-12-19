@@ -248,8 +248,6 @@ sub manage_selection {
     #     - Deduplication Ratio = 3.95 : 1
     #     - Compression Ratio = 1.33 : 1
 
-    # Command completed successfully.
-
     foreach (split(/\n/, $stdout)) {
         $self->{global}->{size_before_reduction} = $1 if ($_ =~ /.*Data\sSize\sBefore\sReduction\s=\s(.*)$/i);
         $self->{global}->{incoming_namespace} = $1 if ($_ =~ /.*Incoming\sNamespace\s=\s(.*)$/i);
