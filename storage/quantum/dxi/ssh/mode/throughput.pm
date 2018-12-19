@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::quantum::dxi::ssh::mode::compaction;
+package storage::quantum::dxi::ssh::mode::throughput;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -27,48 +27,10 @@ use warnings;
 
 my $instance_mode;
 
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-    
-    my $msg = 'Compaction status: ' . $self->{result_values}->{compaction_status};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{compaction_status} = $options{new_datas}->{$self->{instance} . '_compaction_status'};
-    return 0;
-}
-
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
+    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B/s',
                                   value => $self->{result_values}->{volume},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
@@ -87,7 +49,7 @@ sub custom_volume_output {
     my ($self, %options) = @_;
     
     my ($volume_value, $volume_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{volume});
-    my $msg = sprintf("%s: %s %s", $self->{result_values}->{display}, $volume_value, $volume_unit);
+    my $msg = sprintf("%s: %s %s/s", $self->{result_values}->{display}, $volume_value, $volume_unit);
     return $msg;
 }
 
@@ -126,36 +88,19 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'compaction_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
-            }
-        },
-        { label => 'status-progress', set => {
-                key_values => [ { name => 'status_progress' } ],
-                output_template => 'Status progress: %.2f %%',
-                perfdatas => [
-                    { label => 'status_progress', value => 'status_progress_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
-            }
-        },
-        { label => 'compacted', set => {
-                key_values => [ { name => 'compacted' } ],
+        { label => 'read-rate', set => {
+                key_values => [ { name => 'read_rate' } ],
                 closure_custom_calc => $self->can('custom_volume_calc'),
-                closure_custom_calc_extra_options => { label_ref => 'compacted', display_ref => 'Compacted' },
+                closure_custom_calc_extra_options => { label_ref => 'read_rate', display_ref => 'Read Rate' },
                 closure_custom_output => $self->can('custom_volume_output'),
                 closure_custom_perfdata => $self->can('custom_volume_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_volume_threshold'),
             }
         },
-        { label => 'still-to-compact', set => {
-                key_values => [ { name => 'still_to_compact' } ],
+        { label => 'write-rate', set => {
+                key_values => [ { name => 'write_rate' } ],
                 closure_custom_calc => $self->can('custom_volume_calc'),
-                closure_custom_calc_extra_options => { label_ref => 'still_to_compact', display_ref => 'Still to compact' },
+                closure_custom_calc_extra_options => { label_ref => 'write_rate', display_ref => 'Write Rate' },
                 closure_custom_output => $self->can('custom_volume_output'),
                 closure_custom_perfdata => $self->can('custom_volume_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_volume_threshold'),
@@ -180,9 +125,7 @@ sub new {
                                   "sudo"                => { name => 'sudo' },
                                   "command:s"           => { name => 'command', default => 'syscli' },
                                   "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus compaction' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{compaction_status} !~ /ready/i' },
+                                  "command-options:s"   => { name => 'command_options', default => '--get ingestrate' },
                                 });
     
     return $self;
@@ -197,17 +140,6 @@ sub check_options {
     }
 
     $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {
@@ -223,18 +155,12 @@ sub manage_selection {
                                                                 command_options => $self->{option_results}->{command_options},
                                                                 );
     # Output data:
-    #    Compaction Status = Ready
-    #    Status Progress = 0 %
-    #    Start Time =
-    #    End Time =
-    #    Compacted = 12.00 MB
-    #    Still to compact = 123.00 MB
+    #     Write Throughput = 0.03 MB/s
+    #     Read Throughput = 6.98 MB/s
 
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{compaction_status} = $1 if ($_ =~ /.*Compaction\sStatus\s=\s(.*)$/i);
-        $self->{global}->{status_progress} = $1 if ($_ =~ /.*Status\sProgress\s=\s(.*)\s%$/i);
-        $self->{global}->{compacted} = $1 if ($_ =~ /.*Compacted\s=\s(.*)$/i);
-        $self->{global}->{still_to_compact} = $1 if ($_ =~ /.*Still\sto\scompact\s=\s(.*)$/i);
+        $self->{global}->{write_rate} = $1 if ($_ =~ /.*Write\sThroughput\s=\s(.*)$/i);
+        $self->{global}->{read_rate} = $1 if ($_ =~ /.*Read\sThroughput\s=\s(.*)$/i);
     }
 }
 
@@ -244,7 +170,7 @@ __END__
 
 =head1 MODE
 
-Check compaction status and volumes.
+Check ingest throughput rate.
 
 =over 8
 
@@ -252,30 +178,15 @@ Check compaction status and volumes.
 
 Hostname to query.
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='status'
-
-=item B<--warning-status>
-
-Set warning threshold for status (Default: '').
-Can used special variables like: %{compaction_status}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{compaction_status} !~ /ready/i').
-Can used special variables like: %{compaction_status}
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'status-progress', 'compacted', 'still-to-compact'.
+Can be: 'read-rate', 'write-rate'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'status-progress', 'compacted', 'still-to-compact'.
+Can be: 'read-rate', 'write-rate'.
 
 =item B<--ssh-option>
 
@@ -307,7 +218,7 @@ Command path.
 
 =item B<--command-options>
 
-Command options (Default: '--getstatus compaction').
+Command options (Default: '--get ingestrate').
 
 =back
 
