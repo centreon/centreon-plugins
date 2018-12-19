@@ -87,15 +87,24 @@ sub custom_volume_output {
     my ($self, %options) = @_;
     
     my ($volume_value, $volume_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{volume});
-    my $msg = sprintf("%s volume: %s %s", $self->{result_values}->{display}, $volume_value, $volume_unit);
+    my $msg = sprintf("%s: %s %s", $self->{result_values}->{display}, $volume_value, $volume_unit);
     return $msg;
 }
 
 sub custom_volume_calc {
     my ($self, %options) = @_;
 
-    my $raw_value = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
-    my ($value, $unit) = split(/\s+/, $raw_value);
+    $self->{result_values}->{volume} = $instance_mode->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    $self->{result_values}->{display} = $options{extra_options}->{display_ref};
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    
+    return 0;
+}
+
+sub convert_to_bytes {
+    my ($class, %options) = @_;
+    
+    my ($value, $unit) = split(/\s+/, $options{raw_value});
     if ($unit =~ /kb*/i) {
         $value = $value * 1024;
     } elsif ($unit =~ /mb*/i) {
@@ -105,11 +114,8 @@ sub custom_volume_calc {
     } elsif ($unit =~ /tb*/i) {
         $value = $value * 1024 * 1024 * 1024 * 1024;
     }
-    $self->{result_values}->{volume} = $value;
-    $self->{result_values}->{display} = $options{extra_options}->{display_ref};
-    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
-    
-    return 0;
+
+    return $value;
 }
 
 sub set_counters {
@@ -227,10 +233,10 @@ sub manage_selection {
     # Command completed successfully.
 
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{compaction_status} = $1 if ($_ =~ /^\s+Compaction\sStatus\s=\s(.*)$/i);
-        $self->{global}->{status_progress} = $1 if ($_ =~ /^\s+Status\sProgress\s=\s(.*)\s%$/i);
-        $self->{global}->{compacted} = $1 if ($_ =~ /^\s+Compacted\s=\s(.*)$/i);
-        $self->{global}->{still_to_compact} = $1 if ($_ =~ /^\s+Still\sto\scompact\s=\s(.*)$/i);
+        $self->{global}->{compaction_status} = $1 if ($_ =~ /.*Compaction\sStatus\s=\s(.*)$/i);
+        $self->{global}->{status_progress} = $1 if ($_ =~ /.*Status\sProgress\s=\s(.*)\s%$/i);
+        $self->{global}->{compacted} = $1 if ($_ =~ /.*Compacted\s=\s(.*)$/i);
+        $self->{global}->{still_to_compact} = $1 if ($_ =~ /.*Still\sto\scompact\s=\s(.*)$/i);
     }
 }
 

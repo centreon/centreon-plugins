@@ -32,6 +32,8 @@ sub new {
     $self->{version} = '0.1';
     %{$self->{modes}} = (
                             'compaction'    => 'storage::quantum::dxi::ssh::mode::compaction',
+                            'disk-usage'    => 'storage::quantum::dxi::ssh::mode::diskusage',
+                            'reduction'     => 'storage::quantum::dxi::ssh::mode::reduction',
                         );
 
     return $self;
