@@ -48,6 +48,7 @@ sub new {
                          'transactions'         => 'database::mssql::mode::transactions',
                          );
 
+    $self->{sql_modes}{dbi} = 'database::mssql::dbi';
     return $self;
 }
 

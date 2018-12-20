@@ -190,6 +190,12 @@ sub is_version_minimum {
     
     return 1;
 }
+
+sub set_version {
+    my ($self) = @_;
+    
+    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+}
     
 sub connect {
     my ($self, %options) = @_;
@@ -220,7 +226,7 @@ sub connect {
         return (-1, $err_msg);
     }
     
-    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+    $self->set_version();
     return 0;
 }
 
