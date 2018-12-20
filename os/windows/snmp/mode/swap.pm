@@ -90,22 +90,24 @@ sub run {
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
 
-    my $physicalSize = 0;
-    my $physicalUsed = 0;
+    my ($physicalSize, $physicalUsed, $physicalUnits) = (0, 0, 0);
     if (defined($self->{option_results}->{real_swap})) {
         $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
                             instances => [$self->{physical_memory_id}]);
         $result = $self->{snmp}->get_leef();
         $physicalSize = $result->{$oid_hrStorageSize . "." . $self->{physical_memory_id}};
         $physicalUsed = $result->{$oid_hrStorageUsed . "." . $self->{physical_memory_id}};
+        $physicalUnits = $result->{$oid_hrStorageAllocationUnits . "." . $self->{physical_memory_id}};
     }
 
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed],
                         instances => [$self->{swap_memory_id}]);
     $result = $self->{snmp}->get_leef();
 
-    my $swap_used = ($result->{$oid_hrStorageUsed . "." . $self->{swap_memory_id}} - $physicalUsed) * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}};
-    my $total_size = ($result->{$oid_hrStorageSize . "." . $self->{swap_memory_id}} - $physicalSize) * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}};
+    my $swap_used = ($result->{$oid_hrStorageUsed . "." . $self->{swap_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}})
+        - ($physicalUsed * $physicalUnits);
+    my $total_size = ($result->{$oid_hrStorageSize . "." . $self->{swap_memory_id}} * $result->{$oid_hrStorageAllocationUnits . "." . $self->{swap_memory_id}})
+        - ($physicalSize * $physicalUnits);
 
     my $prct_used = $swap_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -150,8 +152,8 @@ Threshold critical in percent.
 
 =item B<--real-swap>
 
-Use this option to remove physical
-memory from Windows SNMP swap values.
+Use this option to remove physical memory from Windows SNMP swap values.
+Using that option can give wrong values (incoherent or negative).
 
 =back
 
