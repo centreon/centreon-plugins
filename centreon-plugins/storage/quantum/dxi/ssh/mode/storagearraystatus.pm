@@ -118,7 +118,7 @@ sub new {
 sub change_macros {
     my ($self, %options) = @_;
 
-    foreach ('warning_status', 'critical_status') {
+    foreach (('warning_status', 'critical_status')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
         }
@@ -128,6 +128,10 @@ sub change_macros {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $self->{option_results}->{remote} = 1;
+    }
     
     $instance_mode = $self;
     $self->change_macros();
