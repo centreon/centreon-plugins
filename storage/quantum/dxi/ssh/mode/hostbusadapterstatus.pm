@@ -128,6 +128,10 @@ sub change_macros {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        $self->{option_results}->{remote} = 1;
+    }
     
     $instance_mode = $self;
     $self->change_macros();
