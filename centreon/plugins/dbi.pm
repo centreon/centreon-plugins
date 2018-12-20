@@ -190,6 +190,12 @@ sub is_version_minimum {
     
     return 1;
 }
+
+sub set_version {
+    my ($self) = @_;
+    
+    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+}
     
 sub connect {
     my ($self, %options) = @_;
@@ -220,7 +226,7 @@ sub connect {
         return (-1, $err_msg);
     }
     
-    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+    $self->set_version();
     return 0;
 }
 
@@ -256,18 +262,23 @@ sub fetchrow_hashref {
 
 sub query {
     my ($self, %options) = @_;
+    my $continue_error = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
     
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
+        return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{instance}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
     my $rv = $self->{statement_handle}->execute;
     if (!$rv) {
+        return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{statement_handle}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
-    }    
+    }
+    
+    return 0;
 }
 
 1;
