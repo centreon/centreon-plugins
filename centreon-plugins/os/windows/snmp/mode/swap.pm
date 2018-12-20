@@ -152,8 +152,8 @@ Threshold critical in percent.
 
 =item B<--real-swap>
 
-Use this option to remove physical
-memory from Windows SNMP swap values.
+Use this option to remove physical memory from Windows SNMP swap values.
+Using that option can give wrong values (incoherent or negative).
 
 =back
 
