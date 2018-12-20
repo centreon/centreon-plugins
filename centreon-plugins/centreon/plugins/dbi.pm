@@ -262,18 +262,23 @@ sub fetchrow_hashref {
 
 sub query {
     my ($self, %options) = @_;
+    my $continue_error = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
     
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
+        return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{instance}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
     my $rv = $self->{statement_handle}->execute;
     if (!$rv) {
+        return 1 if ($continue_error == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{statement_handle}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
-    }    
+    }
+    
+    return 0;
 }
 
 1;
