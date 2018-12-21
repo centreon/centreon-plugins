@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
+        'list-services'         => 'cloud::microsoft::office365::management::mode::listservices',
         'service-status'        => 'cloud::microsoft::office365::management::mode::servicestatus',
     );
 
