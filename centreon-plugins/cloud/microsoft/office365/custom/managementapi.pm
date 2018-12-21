@@ -194,8 +194,6 @@ sub request_api {
     $self->settings();
 
     my $content = $self->{http}->request(%options);
-use Data::Dumper;
-print Dumper $content;
     
     my $decoded;
     eval {
@@ -227,6 +225,23 @@ sub office_get_services_status {
     my ($self, %options) = @_;
 
     my $full_url = $self->office_get_services_status_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub office_list_services_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/api/v1.0/" . $self->{tenant} . "/ServiceComms/Services";
+
+    return $url; 
+}
+
+sub office_list_services {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_list_services_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
 
     return $response;
