@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::sharepoint::mode::listsites;
+package cloud::microsoft::office365::onedrive::mode::listsites;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -34,7 +34,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "filter-url:s"      => { name => 'filter_url' },
-                                    "filter-id:s"       => { name => 'filter_id' },
+                                    "filter-owner:s"    => { name => 'filter_owner' },
                                 });
    
     return $self;
@@ -48,7 +48,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->office_get_sharepoint_site_usage();
+    my $results = $options{custom}->office_get_onedrive_usage();
 
     foreach my $site (@{$results}) {
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
@@ -56,14 +56,14 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $site->{'Site Id'} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site Id'} . "': no matching filter name.", debug => 1);
+        if (defined($self->{option_results}->{filter_owner}) && $self->{option_results}->{filter_owner} ne '' &&
+            $site->{'Owner Display Name'} !~ /$self->{option_results}->{filter_owner}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Owner Display Name'} . "': no matching filter name.", debug => 1);
             next;
         }
 
-        $self->{sites}->{$site->{'Site Id'}} = {
-            id => $site->{'Site Id'},
+        $self->{sites}->{$site->{'Site URL'}} = {
+            owner => $site->{'Owner Display Name'},
             url => $site->{'Site URL'},
         }
     }
@@ -74,8 +74,8 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $site (sort keys %{$self->{sites}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[id = %s] [url = %s]",
-                                                         $self->{sites}->{$site}->{id},
+        $self->{output}->output_add(long_msg => sprintf("[owner = %s] [url = %s]",
+                                                         $self->{sites}->{$site}->{owner},
                                                          $self->{sites}->{$site}->{url}));
     }
     
@@ -88,7 +88,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;  
     
-    $self->{output}->add_disco_format(elements => ['id', 'url']);
+    $self->{output}->add_disco_format(elements => ['owner', 'url']);
 }
 
 sub disco_show {
@@ -97,7 +97,7 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $site (sort keys %{$self->{sites}}) {             
         $self->{output}->add_disco_entry(
-            id => $self->{sites}->{$site}->{id},
+            owner => $self->{sites}->{$site}->{owner},
             url => $self->{sites}->{$site}->{url},
         );
     }
