@@ -26,6 +26,8 @@ use DateTime;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
+use Text::CSV;
+use Encode;
 use URI::Encode;
 use Digest::MD5 qw(md5_hex);
 
@@ -184,7 +186,7 @@ sub get_access_token {
     return $access_token;
 }
 
-sub request_api {
+sub request_api_json {
     my ($self, %options) = @_;
 
     if (!defined($self->{access_token})) {
@@ -213,20 +215,79 @@ sub request_api {
     return $decoded;
 }
 
-sub office_get_active_users_set_url {
+sub request_api_csv {
     my ($self, %options) = @_;
 
-    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOffice365ActiveUserDetail(period='D7')";
+    if (!defined($self->{access_token})) {
+        $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
+    }
+
+    $self->settings();
+
+    my $content = $self->{http}->request(%options);
+    my $response = $self->{http}->get_response();
+
+    if ($response->code() != 200) {
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->option_exit();
+        }
+        if (defined($decoded->{error})) {
+            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+    }    
+    
+    my $decoded;
+    eval {
+        $decoded = decode('UTF-8', $content);
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $content, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response: $@");
+        $self->{output}->option_exit();
+    }
+    $decoded =~ s/^\x{feff}//;
+
+    my @rows;
+    eval {
+        open my $fh, '<', \$decoded;
+        my $csv = Text::CSV->new({ binary => 1 });
+        $csv->column_names($csv->getline($fh));
+        my $dummy = <$fh>;
+        while (my $row = $csv->getline_hr($fh)) {
+            push @rows, $row;
+        }
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $content, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot parse csv response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return \@rows;
+}
+
+sub office_get_sharepoint_site_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointSiteUsageDetail(period='D7')";
 
     return $url;
 }
 
-sub office_get_active_users {
+sub office_get_sharepoint_site_usage {
     my ($self, %options) = @_;
 
-    my $full_url = $self->office_get_active_users_set_url(%options);
-    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-
+    my $full_url = $self->office_get_sharepoint_site_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
     return $response;
 }
 
