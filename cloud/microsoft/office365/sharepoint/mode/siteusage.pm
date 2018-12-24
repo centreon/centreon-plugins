@@ -217,7 +217,7 @@ __END__
 
 =head1 MODE
 
-Check sites usage.
+Check sites usage (reporting period over the last 7 days).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/sharepoint-site-usage?view=o365-worldwide)
