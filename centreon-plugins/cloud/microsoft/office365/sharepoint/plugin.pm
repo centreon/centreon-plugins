@@ -33,6 +33,7 @@ sub new {
     %{ $self->{modes} } = (
         'list-sites'            => 'cloud::microsoft::office365::sharepoint::mode::listsites',
         'site-usage'            => 'cloud::microsoft::office365::sharepoint::mode::siteusage',
+        'users-activity'        => 'cloud::microsoft::office365::sharepoint::mode::usersactivity',
     );
 
     $self->{custom_modes}{graphapi} = 'cloud::microsoft::office365::custom::graphapi';
