@@ -226,7 +226,7 @@ sub request_api_csv {
 
     my $content = $self->{http}->request(%options);
     my $response = $self->{http}->get_response();
-
+    
     if ($response->code() != 200) {
         my $decoded;
         eval {
@@ -260,7 +260,6 @@ sub request_api_csv {
         open my $fh, '<', \$decoded;
         my $csv = Text::CSV->new({ binary => 1 });
         $csv->column_names($csv->getline($fh));
-        my $dummy = <$fh>;
         while (my $row = $csv->getline_hr($fh)) {
             push @rows, $row;
         }
@@ -286,6 +285,40 @@ sub office_get_sharepoint_site_usage {
     my ($self, %options) = @_;
 
     my $full_url = $self->office_get_sharepoint_site_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_sharepoint_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSharePointActivityUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_sharepoint_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_sharepoint_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_onedrive_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getOneDriveUsageAccountDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_onedrive_usage {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_onedrive_usage_set_url(%options);
     my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
     
     return $response;
