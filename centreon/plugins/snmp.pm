@@ -410,7 +410,7 @@ sub get_multiple_table {
             my $base = $bases[$pos % $current_oids];
             if ($complete_oid !~ /^$base\./ ||
                 (defined($working_oids->{ $bases[$pos % $current_oids] }->{end}) && 
-                 $self->check_oid_up($complete_oid, $working_oids->{ $bases[$pos % $current_oids] }->{end}) )) {
+                 $self->check_oid_up(current => $complete_oid, end => $working_oids->{ $bases[$pos % $current_oids] }->{end}))) {
                 delete $working_oids->{ $bases[$pos % $current_oids] };
                 next;
             }
@@ -540,7 +540,7 @@ sub get_table {
             # Not in same table
             my $complete_oid = ${$entry}[0] . "." . ${$entry}[1];
             if ($complete_oid !~ /^$main_indice\./ ||
-                (defined($options{end}) && $self->check_oid_up($complete_oid, $options{end}) )) {
+                (defined($options{end}) && $self->check_oid_up(current => $complete_oid, end => $options{end}))) {
                 $leave = 0;
                 last;
             }
@@ -615,8 +615,10 @@ sub clean_oid {
 }
 
 sub check_oid_up {
-    my ($self) = @_;
-    my ($current_oid, $end_oid) = @_;
+    my ($self, %options) = @_;
+
+    my $current_oid = $options{current};
+    my $end_oid = $options{end};
     
     my @current_oid_splitted = split /\./, $current_oid;
     my @end_oid_splitted = split /\./, $end_oid;
