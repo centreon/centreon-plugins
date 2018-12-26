@@ -42,6 +42,11 @@ sub new {
                          'memory'               => 'centreon::common::fortinet::fortigate::mode::memory',
                          'sessions'             => 'centreon::common::fortinet::fortigate::mode::sessions',
                          'signatures'           => 'centreon::common::fortinet::fortigate::mode::signatures',
+                         'vdom-cpu'             => 'centreon::common::fortinet::fortigate::mode::vdomcpu',
+                         'vdom-memory'          => 'centreon::common::fortinet::fortigate::mode::vdommemory',
+                         'vdom-session'         => 'centreon::common::fortinet::fortigate::mode::vdomsession',
+                         'vdom-state'           => 'centreon::common::fortinet::fortigate::mode::vdomstate',
+                         'vdom-usage'           => 'centreon::common::fortinet::fortigate::mode::vdomusage',
                          'virus'                => 'centreon::common::fortinet::fortigate::mode::virus',
                          'vpn'                  => 'centreon::common::fortinet::fortigate::mode::vpn',
                          );
