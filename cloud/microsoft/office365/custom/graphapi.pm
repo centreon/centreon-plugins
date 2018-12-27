@@ -324,6 +324,40 @@ sub office_get_onedrive_usage {
     return $response;
 }
 
+sub office_get_exchange_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getEmailActivityUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_exchange_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_exchange_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_exchange_mailbox_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getMailboxUsageDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_exchange_mailbox_usage {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_exchange_mailbox_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
 1;
 
 __END__
