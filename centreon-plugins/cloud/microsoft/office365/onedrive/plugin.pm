@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Microsoft Office 365.
+Check Microsoft Office 365 OneDrive.
 
 =cut
