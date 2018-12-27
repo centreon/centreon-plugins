@@ -117,8 +117,6 @@ sub manage_selection {
     $self->{users} = {};
 
     my $results = $options{custom}->office_get_sharepoint_activity();
-    use Data::Dumper;
-    print Dumper $results;
 
     foreach my $user (@{$results}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
@@ -170,6 +168,7 @@ Can be: 'viewed-edited-file-count', 'file-count', 'shared-int-file-count',
 Threshold critical.
 Can be: 'viewed-edited-file-count', 'file-count', 'shared-int-file-count',
 'shared-ext-file-count', 'visited-page-count'.
+
 =back
 
 =cut
