@@ -151,6 +151,7 @@ sub new {
                                     "filter-owner:s"    => { name => 'filter_owner' },
                                     "units:s"           => { name => 'units', default => '%' },
                                     "free"              => { name => 'free' },
+                                    "active-only"       => { name => 'active_only' },
                                 });
     
     return $self;
@@ -179,6 +180,10 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_owner}) && $self->{option_results}->{filter_owner} ne '' &&
             $site->{'Owner Display Name'} !~ /$self->{option_results}->{filter_owner}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Owner Display Name'} . "': no matching filter name.", debug => 1);
+            next;
+        }
+        if ($self->{option_results}->{active_only} && defined($site->{'Last Activity Date'}) && $site->{'Last Activity Date'} eq '') {
+            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no activity.", debug => 1);
             next;
         }
 
@@ -224,6 +229,10 @@ Can be: 'usage', 'file-count', 'active-file-count'.
 
 Threshold critical.
 Can be: 'usage', 'file-count', 'active-file-count'.
+
+=item B<--active-only>
+
+Filter only active entries ('Last Activity' set).
 
 =back
 
